@@ -59,7 +59,7 @@ namespace AZ
                 m_timestampResult = AZ::RPI::TimestampResult();
             }
 
-            if (GetScopeId().IsEmpty())
+            if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != Pass::GetDeviceIndex()))
             {
                 InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics, Pass::GetDeviceIndex());
             }
@@ -71,15 +71,22 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
-                rayTracingFeatureProcessor->BeginFrame();
-                auto revision = rayTracingFeatureProcessor->GetRevision();
-                m_rayTracingRevisionOutDated = revision != m_rayTracingRevision;
-                m_rayTracingRevision = revision;
-                if (m_rayTracingRevisionOutDated || rayTracingFeatureProcessor->GetSkinnedMeshCount() != 0)
+                rayTracingFeatureProcessor->BeginFrame(static_cast<RHI::ScopeProducer*>(this)->GetDeviceIndex());
+                if (RaytracingRevisionOutdated())
                 {
                     ReadbackScopeQueryResults();
                 }
             }
+        }
+
+        bool RayTracingAccelerationStructurePass::RaytracingRevisionOutdated() const
+        {
+            auto fp = GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (fp)
+            {
+                return fp->GetRevision() != fp->GetBuiltRevision(RHI::ScopeProducer::GetDeviceIndex()) || fp->GetSkinnedMeshCount() != 0;
+            }
+            return false;
         }
 
         RHI::Ptr<RPI::Query> RayTracingAccelerationStructurePass::GetQuery(RPI::ScopeQueryType queryType)
@@ -149,7 +156,7 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
-                if (m_rayTracingRevisionOutDated)
+                if (RaytracingRevisionOutdated())
                 {
                     // create the TLAS buffers based on the descriptor
                     RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
@@ -223,7 +230,7 @@ namespace AZ
                 return;
             }
 
-            if (!m_rayTracingRevisionOutDated && rayTracingFeatureProcessor->GetSkinnedMeshCount() == 0)
+            if (!RaytracingRevisionOutdated())
             {
                 // TLAS is up to date
                 return;
@@ -234,6 +241,8 @@ namespace AZ
                 // no ray tracing meshes in the scene
                 return;
             }
+
+            rayTracingFeatureProcessor->SetBuiltRevision(context.GetDeviceIndex(), rayTracingFeatureProcessor->GetRevision());
 
             BeginScopeQuery(context);
 

@@ -56,7 +56,6 @@ namespace AZ
             // FeatureProcessor overrides
             void Activate() override;
             void Deactivate() override;
-            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             // RayTracingFeatureProcessorInterface overrides
             ProceduralGeometryTypeHandle RegisterProceduralGeometryType(
@@ -98,8 +97,10 @@ namespace AZ
             const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const override { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const override { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
             void Render(const RenderPacket&) override;
-            void BeginFrame() override;
+            void BeginFrame(int deviceIndex) override;
             uint32_t GetRevision() const override { return m_revision; }
+            uint32_t GetBuiltRevision(int deviceIndex) const override;
+            void SetBuiltRevision(int deviceIndex, uint32_t revision) override;
             uint32_t GetProceduralGeometryTypeRevision() const override { return m_proceduralGeometryTypeRevision; }
             RHI::RayTracingBufferPools& GetBufferPools() override { return *m_bufferPools; }
             void UpdateRayTracingSrgs() override;
@@ -156,6 +157,9 @@ namespace AZ
 
             // current revision number of ray tracing data
             uint32_t m_revision = 0;
+
+            // Currently built revision by device
+            AZStd::unordered_map<int, uint32_t> m_builtRevisions;
 
             // latest tlas revision number
             uint32_t m_tlasRevision = 0;
@@ -254,15 +258,14 @@ namespace AZ
             struct BlasFrameEvent
             {
                 int m_frameIndex = -1;
-                RHI::MultiDevice::DeviceMask m_deviceMask;
             };
             // List of Blas instances that are enqueued for compaction
             // The frame index corresponds to the frame where the compaction query is ready
-            AZStd::unordered_map<Data::AssetId, BlasFrameEvent> m_blasEnqueuedForCompact;
+            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, BlasFrameEvent>> m_blasEnqueuedForCompact;
 
             // List of Blas instances where the compacted Blas is already built
             // The frame index corresponds to the frame where the uncompacted Blas is no longer needed and can be deleted
-            AZStd::unordered_map<Data::AssetId, BlasFrameEvent> m_uncompactedBlasEnqueuedForDeletion;
+            AZStd::unordered_map<int, AZStd::unordered_map<Data::AssetId, BlasFrameEvent>> m_uncompactedBlasEnqueuedForDeletion;
 
             int m_frameIndex = 0;
             int m_updatedFrameIndex = 0;
