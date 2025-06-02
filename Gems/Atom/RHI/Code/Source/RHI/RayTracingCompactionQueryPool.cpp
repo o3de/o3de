@@ -36,28 +36,43 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode RayTracingCompactionQueryPool::InitQuery(RayTracingCompactionQuery* query)
+    ResultCode RayTracingCompactionQueryPool::InitQuery(MultiDevice::DeviceMask deviceMask, RayTracingCompactionQuery* query)
     {
         AZ_Assert(query, "Null query");
-        auto resultCode = IterateObjects<DeviceRayTracingCompactionQueryPool>(
-            [&](auto deviceIndex, auto deviceQueryPool)
+        ResultCode resultCode{ ResultCode::Success };
+        IterateDevices(
+            deviceMask,
+            [&](auto deviceIndex) -> bool
             {
-                RHI::Ptr<DeviceRayTracingCompactionQuery> deviceQuery;
-                deviceQuery = RHI::Factory::Get().CreateRayTracingCompactionQuery();
-                auto resultCode = deviceQuery->Init(deviceQueryPool->GetDevice(), deviceQueryPool.get());
-
-                if (resultCode != ResultCode::Success)
-                {
-                    return resultCode;
-                }
-
-                query->m_deviceObjects[deviceIndex] = deviceQuery;
-                query->m_deviceObjects[deviceIndex]->SetName(query->GetName());
-
-                return resultCode;
+                resultCode = AddDeviceToQuery(deviceIndex, query);
+                return resultCode == ResultCode::Success;
             });
 
         return resultCode;
+    }
+
+    ResultCode RayTracingCompactionQueryPool::AddDeviceToQuery(int deviceIndex, RayTracingCompactionQuery* query)
+    {
+        query->Init(SetBit(query->GetDeviceMask(), deviceIndex));
+        const auto& deviceQueryPool = GetDeviceRayTracingCompactionQueryPool(deviceIndex);
+        RHI::Ptr<DeviceRayTracingCompactionQuery> deviceQuery;
+        deviceQuery = RHI::Factory::Get().CreateRayTracingCompactionQuery();
+        auto resultCode = deviceQuery->Init(deviceQueryPool->GetDevice(), deviceQueryPool.get());
+        if (resultCode != ResultCode::Success)
+        {
+            return resultCode;
+        }
+
+        query->m_deviceObjects[deviceIndex] = deviceQuery;
+        query->m_deviceObjects[deviceIndex]->SetName(query->GetName());
+
+        return resultCode;
+    }
+
+    void RayTracingCompactionQueryPool::RemoveDeviceFromQuery(int deviceIndex, RayTracingCompactionQuery* query)
+    {
+        query->Init(ResetBit(query->GetDeviceMask(), deviceIndex));
+        query->m_deviceObjects.erase(deviceIndex);
     }
 
     void RayTracingCompactionQueryPool::BeginFrame(int frame)
