@@ -162,15 +162,6 @@ namespace AZ
 namespace AZStd
 {
     template<>
-    struct hash<AZ::RPI::ShaderVariantId>
-    {
-        size_t operator()(const AZ::RPI::ShaderVariantId& variantId) const
-        {
-            return AZStd::hash_range(variantId.m_key.data(), variantId.m_key.data() + variantId.m_key.num_words());
-        }
-    };
-
-    template<>
     struct hash<AZ::RPI::ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId>
     {
         size_t operator()(const AZ::RPI::ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId& tuple) const

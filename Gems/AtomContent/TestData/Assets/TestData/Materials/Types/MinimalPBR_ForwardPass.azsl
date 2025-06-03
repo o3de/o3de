@@ -40,10 +40,7 @@ ShaderResourceGroup MinimalPBRSrg : SRG_PerMaterial
 #include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
-#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
-#include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassStandardLighting.azsli>
 
 VsOutput MinimalPBR_MainPassVS(VsInput IN, uint instanceId : SV_InstanceID)
 {
@@ -78,53 +75,15 @@ ForwardPassOutput MinimalPBR_MainPassPS(VsOutput IN)
 
     // ------- Surface -------
 
-    Surface surface;
-    
-    // Position, Normal, Roughness
-    surface.position = IN.worldPosition.xyz;
-    surface.normal = normalWS;
-    surface.vertexNormal = normalWS;
-    surface.roughnessLinear = MinimalPBRSrg::m_roughness;
-    surface.CalculateRoughnessA();
-
-    // Albedo, SpecularF0
-    float3 baseColor = MinimalPBRSrg::m_baseColor;
-    float metallic = MinimalPBRSrg::m_metallic;
     float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
-    // Clear Coat
-    surface.clearCoat.InitializeToZero();
-
-    // ------- LightingData -------
-
-    LightingData lightingData;
-
-    // Light iterator
-    lightingData.tileIterator.Init(IN.position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
-
-
-    // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-
-    const float alpha = 1.0f;
+    Surface surface = EvaluateSurface(IN.worldPosition.xyz, normalWS, normalWS, MinimalPBRSrg::m_baseColor, specularF0Factor, MinimalPBRSrg::m_roughness, MinimalPBRSrg::m_metallic, ObjectSrg::m_lightingChannelMask);
 
     // ------- Lighting Calculation -------
 
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
 
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, IN.position);
-
-    // Apply Image Based Lighting (IBL)
-    ApplyIblForward(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting();
-
+    const float alpha = 1.0f;
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     // ------- Output -------

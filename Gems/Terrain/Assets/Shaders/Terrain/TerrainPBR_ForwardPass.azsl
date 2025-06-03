@@ -32,11 +32,12 @@ struct VSOutput
 
 #include <Atom/Features/SampleBrdfMap.azsli>
 #include <Atom/Features/GoboTexture.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
-#include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLightingDataEval.azsli>
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
+
 
 
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
@@ -109,7 +110,9 @@ void GatherSurfaceDataFromClipmaps(
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 {
     // ------- Surface -------
-    Surface surface;
+    Surface surface = (Surface)0;
+    surface.lightingChannels = -1u; // enable all lightingchannels for the terrain mesh
+
     surface.position = input.m_worldPosition.xyz;
     surface.vertexNormal = normalize(input.m_normal);
     float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
@@ -162,36 +165,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     // Clear Coat
     surface.clearCoat.InitializeToZero();
 
-    // ------- LightingData -------
+    surface.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
-    LightingData lightingData;
-
-    // Light iterator
-    lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
-
-    // Shadow, Occlusion
-    lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
-
-    // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     const float alpha = 1.0f;
 
     // ------- Lighting Calculation -------
 
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
-
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, input.m_position);
-
-    // Apply Image Based Lighting (IBL)
-    ApplyIblForward(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting();
+    LightingData lightingData = EvaluateLighting(surface, input.m_position, ViewSrg::m_worldPosition);
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

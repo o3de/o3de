@@ -215,7 +215,7 @@ float3 CalculateLighting(
 
     //------- LightingData init -------
     LightingData lightingData;
-
+    
     float4 screenPositionForLighting = mul(ViewSrg::m_viewProjectionMatrix, float4(vPositionWS, 1.0));
     uint2 dimensions;
     PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
@@ -223,12 +223,16 @@ float3 CalculateLighting(
     screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
 
     // Light iterator - required for the init but the culling is not used yet.
-    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    LightCullingTileIterator tileIterator;
+    //tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    tileIterator.InitNoCulling();
 
     // The normal assignment will be overriden afterwards per light
-    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
+    InitializeLightingData(lightingData, surface.position, surface.GetSpecularNormal(), surface.specularF0, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
 
-    ApplyLighting(surface, lightingData, screenCoords);
+    ApplyDirectLighting_Hair(surface, lightingData, screenCoords, tileIterator);
+
+    FinalizeLightingData(lightingData);
 
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }

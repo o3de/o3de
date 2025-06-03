@@ -11,54 +11,66 @@
 // This #define magic lets you use the EvaluateLighting function in this file without making it the final EvaluateLighting
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
-#ifndef EvaluateLighting
-#define EvaluateLighting EvaluateLighting_BasePBR
+#ifndef InitializeLightingData
+#define InitializeLightingData InitializeLightingData_BasePBR
 #endif
 
-#include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
+#ifndef FinalizeLightingData
+#define FinalizeLightingData FinalizeLightingData_BasePBR
+#endif
 
-void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
+
+void InitializeLightingData_BasePBR(Surface surface, float3 viewPosition, inout LightingData lightingData)
 {
-    // Light iterator
-#if ENABLE_LIGHT_CULLING
-    lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-#else
-    lightingData.tileIterator.InitNoCulling();
+    lightingData.diffuseLighting = real3(0.0, 0.0, 0.0);
+    lightingData.specularLighting = real3(0.0, 0.0, 0.0);
+    lightingData.multiScatterCompensation = real3(1.0, 1.0, 1.0);
+    lightingData.emissiveLighting = real3(0.0, 0.0, 0.0);
+#if ENABLE_TRANSMISSION
+    lightingData.translucentBackLighting = real3(0.0, 0.0, 0.0);
 #endif
+    lightingData.diffuseAmbientOcclusion = 1.0;
+    lightingData.specularOcclusion = 1.0;
+        
+    lightingData.dirToCamera = normalize(viewPosition - surface.position);
 
-    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, viewPosition);
-
-    lightingData.lightingChannels = ObjectSrg::m_lightingChannelMask;
+    // sample BRDF map (indexed by smoothness values rather than roughness)
+    lightingData.NdotV = saturate(dot(surface.GetSpecularNormal(), lightingData.dirToCamera));
+    float2 brdfUV = float2(lightingData.NdotV, (1.0 - surface.roughnessLinear));
+    lightingData.brdf = real2(SampleBrdfMap(brdfUV));
     
     // Diffuse and Specular response (used in IBL calculations)
-    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.GetSpecularF0(), surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - specularResponse;
 
     // Multiscatter
-    lightingData.CalculateMultiscatterCompensation(surface.GetSpecularF0(), o_specularF0_enableMultiScatterCompensation);
+    lightingData.multiScatterCompensation = GetMultiScatterCompensation(surface.GetSpecularF0(), lightingData.brdf, o_specularF0_enableMultiScatterCompensation);
 }
 
-void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
+
+void FinalizeLightingData_BasePBR(Surface surface, inout LightingData lightingData)
 {
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
+    lightingData.specularLighting *= lightingData.specularOcclusion;
+    lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
 
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, screenPosition);
+    if(!IsSpecularLightingEnabled())
+    {
+        lightingData.specularLighting = real3(0, 0, 0);
+    }
+    if(!IsDiffuseLightingEnabled())
+    {
+        lightingData.diffuseLighting = real3(0, 0, 0);
+    }
 
-    // Apply Image Based Lighting (IBL)
-    ApplyIblForward(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting(surface);
+    // Transmitted light
+#if ENABLE_TRANSMISSION
+    if(o_transmission_mode != TransmissionMode::None)
+    {
+        lightingData.diffuseLighting += lightingData.translucentBackLighting * surface.transmission.tint;
+    }
+#endif
 }
 
-LightingData EvaluateLighting_BasePBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
-{
-    LightingData lightingData;
-    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
-    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
-    return lightingData;
-}
+// use the default PBR lights for all supported light types
+#include <Atom/Features/PBR/Lights/Lights.azsli>
+

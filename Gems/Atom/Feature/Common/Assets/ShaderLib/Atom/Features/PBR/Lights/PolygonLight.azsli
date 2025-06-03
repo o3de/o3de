@@ -8,74 +8,75 @@
 
 #pragma once
 
+
+#if ENABLE_POLYGON_LTC_LIGHTS
+
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 #include <Atom/RPI/Math.azsli>
 
-#if ENABLE_POLYGON_LTC_LIGHTS
-// Polygon lights using Linearly Transformed Cosines
-void ApplyPoylgonLight(PolygonLight light, Surface surface, inout LightingData lightingData)
-{
-    float3 posToLight = light.m_position - surface.position;
-    float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = distanceToLight2 * abs(light.m_invAttenuationRadiusSquared);
-    
-    if (falloff > 1.0f)
-    {
-        return; // light out of range
-    }
 
-    bool doubleSided = light.m_invAttenuationRadiusSquared < 0.0;
-    uint startIndex = ViewSrg::PolygonLightGetStartIndex(light.m_startEndIndex);
-    uint endIndex = ViewSrg::PolygonLightGetEndIndex(light.m_startEndIndex);
-
-    if (!doubleSided)
-    {
-        if (dot(posToLight, -light.m_direction) <= 0.0)
-        {
-            return; // Light isn't facing the surface
-        }
-    }
-
-    // Above test passed, so evaluate the polygon light.
-
-    // Smoothly adjusts the light intensity so it reaches 0 at the attenuation radius
-    float radiusAttenuation = 1.0 - (falloff * falloff);
-    radiusAttenuation = radiusAttenuation * radiusAttenuation;
-
-    float diffuse = 0.0;
-    float3 specularRgb = 0.0;
-
-    LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specularRgb);
-
-    diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
-    specularRgb = doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
-
-    // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
-    float3 intensity = 0.5 * INV_PI * radiusAttenuation * abs(light.m_rgbIntensityNits);
-
-    lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
-    lightingData.specularLighting += specularRgb * intensity;
-}
-
-void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
-{
-    if (o_enablePolygonLights)
-    {
-        for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
-        {
-            PolygonLight light = ViewSrg::m_polygonLights[currLightIndex];
-            if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
-            {
-                continue;
-            }            
-            ApplyPoylgonLight(light, surface, lightingData);
-        }
-    }
-}
-#else
-void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
-{
-    return;
-}
+#ifndef PolygonLightUtil
+#define PolygonLightUtil PolygonLightUtil_PBR
 #endif
+
+
+class PolygonLightUtil_PBR
+{
+
+    real3 posToLight;
+    real distanceToLight2;
+    bool doubleSided;
+    real falloff;
+
+    static PolygonLightUtil_PBR Init(PolygonLight light, Surface surface, float3 cameraPositionWS)
+    {
+        PolygonLightUtil_PBR result;
+        result.posToLight = light.m_position - surface.position;
+        result.distanceToLight2 = dot(result.posToLight, result.posToLight); // light distance squared
+        result.falloff = result.distanceToLight2 * abs(light.m_invAttenuationRadiusSquared);
+    
+        result.doubleSided = light.m_invAttenuationRadiusSquared < 0.0;
+        if (!result.doubleSided)
+        {
+            if (dot(result.posToLight, -light.m_direction) <= 0.0)
+            {
+                result.falloff = 1.0f; // Light isn't facing the surface
+            }
+        }
+        return result;
+    }
+
+    real GetFalloff()
+    {
+        return falloff;
+    }
+
+    void Apply(PolygonLight light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at the attenuation radius
+        
+        uint startIndex = ViewSrg::PolygonLightGetStartIndex(light.m_startEndIndex);
+        uint endIndex = ViewSrg::PolygonLightGetEndIndex(light.m_startEndIndex);
+        
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        float diffuse = 0.0;
+        float3 specularRgb = 0.0;
+
+        LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, ViewSrg::m_polygonLightPoints, startIndex, endIndex, diffuse, specularRgb);
+
+        diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
+        specularRgb = doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
+
+        // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
+        float3 intensity = 0.5 * INV_PI * radiusAttenuation * abs(light.m_rgbIntensityNits);
+
+        lightingData.diffuseLighting += surface.albedo * diffuse * intensity * litRatio;
+        lightingData.specularLighting += specularRgb * intensity * litRatio;
+
+    }
+};
+
+#endif // ENABLE_POLYGON_LTC_LIGHTS

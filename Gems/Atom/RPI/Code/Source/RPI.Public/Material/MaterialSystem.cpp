@@ -203,7 +203,7 @@ namespace AZ::RPI
         if (materialTypeAssetIterator == m_materialTypeIndicesMap.end())
         {
             materialTypeIndex = m_materialTypeIndices.Aquire();
-            m_materialTypeData.resize(m_materialTypeIndices.Max());
+            m_materialTypeData.resize(m_materialTypeIndices.MaxCount());
             m_materialTypeIndicesMap.insert(AZStd::make_pair(materialTypeAsset.GetId(), materialTypeIndex));
             MaterialTypeData& materialTypeData = m_materialTypeData[materialTypeIndex];
 
@@ -231,7 +231,7 @@ namespace AZ::RPI
         MaterialTypeData& materialTypeData = m_materialTypeData[materialTypeIndex];
 
         auto materialInstanceIndex = materialTypeData.m_instanceIndices.Aquire();
-        materialTypeData.m_instanceData.resize(materialTypeData.m_instanceIndices.Max());
+        materialTypeData.m_instanceData.resize(materialTypeData.m_instanceIndices.MaxCount());
         auto& instanceData = materialTypeData.m_instanceData[materialInstanceIndex];
 
         instanceData.m_material = material.get();
@@ -302,7 +302,7 @@ namespace AZ::RPI
             materialTypeData.m_materialTypeAssetHint.c_str(),
             materialInstanceIndex,
             instanceData.m_material->GetAsset().GetHint().c_str(),
-            materialTypeData.m_instanceIndices.Max());
+            materialTypeData.m_instanceIndices.MaxCount());
 #endif
 
         return result;
@@ -323,7 +323,7 @@ namespace AZ::RPI
             materialTypeData->m_materialTypeAssetHint.c_str(),
             materialInstance.m_materialInstanceId,
             materialInstanceData->m_material->GetAsset().GetHint().c_str(),
-            materialTypeData->m_instanceIndices.Max());
+            materialTypeData->m_instanceIndices.MaxCount());
 #endif
 
         materialTypeData->m_instanceData[materialInstance.m_materialInstanceId] = {};
@@ -438,7 +438,7 @@ namespace AZ::RPI
             {
                 AZ_Assert(shaderParamsSize > 0, "MaterialSystem: Material uses SceneMaterialSrg, but has no Shader Parameters");
             }
-            for (int32_t instanceIndex = 0; instanceIndex < materialTypeEntry.m_instanceIndices.Max(); instanceIndex++)
+            for (int32_t instanceIndex = 0; instanceIndex < materialTypeEntry.m_instanceIndices.MaxCount(); instanceIndex++)
             {
                 auto& instanceData = materialTypeEntry.m_instanceData[instanceIndex];
                 if (instanceData.m_material && instanceData.m_material->GetCurrentChangeId() != instanceData.m_compiledChangeId)
@@ -528,7 +528,7 @@ namespace AZ::RPI
                     break;
                 }
             }
-            auto bufferSize = bufferEntrySize * materialTypeEntry.m_instanceIndices.Max();
+            auto bufferSize = bufferEntrySize * materialTypeEntry.m_instanceIndices.MaxCount();
 
             // create or resize the MaterialParameter-buffer for this material-type
             if (materialTypeEntry.m_parameterBuffer == nullptr)
@@ -571,7 +571,7 @@ namespace AZ::RPI
             AZStd::unordered_map<int, AZStd::vector<int32_t>> deviceBufferData;
             for (auto deviceIndex{ 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
-                deviceBufferData[deviceIndex].resize(m_materialTypeIndices.Max(), -1);
+                deviceBufferData[deviceIndex].resize(m_materialTypeIndices.MaxCount(), -1);
             }
 
             // collect the per-device read indices of the material parameter buffers
@@ -589,7 +589,7 @@ namespace AZ::RPI
             }
 
             // prepare / resize the GPU buffer
-            auto indicesBufferSize = static_cast<uint64_t>(sizeof(int32_t) * m_materialTypeIndices.Max());
+            auto indicesBufferSize = static_cast<uint64_t>(sizeof(int32_t) * m_materialTypeIndices.MaxCount());
             if (!m_materialTypeBufferIndicesBuffer)
             {
                 m_materialTypeBufferIndicesBuffer = createBuffer(m_materialTypeData.size());

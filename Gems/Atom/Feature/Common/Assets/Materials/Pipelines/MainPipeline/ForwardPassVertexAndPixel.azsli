@@ -53,7 +53,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, SV, isFrontFace, GetMaterialParameters());
 
-    Surface surface = EvaluateSurface(IN, geoData, GetMaterialParameters());
+    Surface surface = EvaluateSurface(IN, SV, geoData, GetMaterialParameters());
 
     LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
 
@@ -93,7 +93,6 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 #endif
 
     OUT.m_normal.a = EncodeUnorm2BitFlags(applyIblInFullscreenPasses, o_specularF0_enableMultiScatterCompensation);
-
     // --- Emissive ---
     // Sending to specular output for historical reasons until sending to diffuse can be validated
     OUT.m_specularColor.rgb += lightingData.emissiveLighting; 

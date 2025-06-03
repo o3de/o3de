@@ -11,16 +11,20 @@
 // This #define magic lets you use the EvaluateLighting function in this file without making it the final EvaluateLighting
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
-#ifndef EvaluateLighting
-#define EvaluateLighting EvaluateLighting_StandardPBR
+#ifndef InitializeLightingData
+#define InitializeLightingData InitializeLightingData_StandardPBR
+#endif
+
+#ifndef FinalizeLightingData
+#define FinalizeLightingData FinalizeLightingData_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_LightingEval.azsli"
 
-void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
+void InitializeLightingData_StandardPBR(inout Surface surface, float3 viewPosition, inout LightingData lightingData)
 {
     // --- Base PBR ---
-    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
+    InitializeLightingData_BasePBR(surface, viewPosition, lightingData);
 
     // --- Standard PBR ---
 
@@ -37,10 +41,8 @@ void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosi
 #endif
 }
 
-LightingData EvaluateLighting_StandardPBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
+void FinalizeLightingData_StandardPBR(inout Surface surface, inout LightingData lightingData)
 {
-    LightingData lightingData;
-    InitializeLightingData_StandardPBR(surface, screenPosition, viewPosition, lightingData);
-    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
-    return lightingData;
+    FinalizeLightingData_BasePBR(surface, lightingData);
 }
+

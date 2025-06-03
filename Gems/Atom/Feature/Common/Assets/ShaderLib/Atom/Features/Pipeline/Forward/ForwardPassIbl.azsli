@@ -10,12 +10,18 @@
 
 // This file provides exentions to Ibl.azsli that are specific to forward render pipelines.
 
-#include "Ibl.azsli"
+#include <Atom/Features/PBR/Lights/Ibl.azsli>
 
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;
 
-void ApplyIblForward(Surface surface, inout LightingData lightingData)
+#ifndef PIPELINE_HAS_OBJECT_SRG
+// assume by default that we have an object-srg
+#define PIPELINE_HAS_OBJECT_SRG 1
+#endif
+
+#if PIPELINE_HAS_OBJECT_SRG
+void ApplyIbl_ForwardPass(Surface surface, inout LightingData lightingData)
 {
 #if FORCE_IBL_IN_FORWARD_PASS
     bool useDiffuseIbl = true;
@@ -32,3 +38,9 @@ void ApplyIblForward(Surface surface, inout LightingData lightingData)
 
     ApplyIBL(surface, lightingData, useDiffuseIbl, useSpecularIbl, ObjectSrg::m_reflectionProbeData, ObjectSrg::m_reflectionProbeCubeMap);
 }
+#else 
+void ApplyIbl_ForwardPass(Surface surface, inout LightingData lightingData)
+{
+    // empty
+}
+#endif

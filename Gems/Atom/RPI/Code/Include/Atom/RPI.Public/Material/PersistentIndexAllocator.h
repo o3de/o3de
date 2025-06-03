@@ -65,7 +65,7 @@ namespace AZ::RPI
             }
         }
 
-        T Max() const
+        T MaxCount() const
         {
             return m_max;
         }
