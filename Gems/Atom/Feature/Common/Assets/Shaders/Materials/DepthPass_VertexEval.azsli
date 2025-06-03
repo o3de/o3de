@@ -18,17 +18,17 @@ VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV, const M
 {
     VsOutput output;
 
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
     float4 worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
     output.position = mul(viewProjectionMatrix, worldPosition);
-#if PIPELINE_VERTEX_POSITIONWS
+#if MATERIAL_USES_VERTEX_POSITIONWS
     output.worldPosition = worldPosition.xyz;
-#endif // PIPELINE_VERTEX_POSITIONWS
-#endif // PIPELINE_VERTEX_POSITION
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+#endif // MATERIAL_USES_VERTEX_POSITION
 
-#if PIPELINE_VERTEX_PREV_POSITION
+#if MATERIAL_USES_VERTEX_PREV_POSITION
     if (o_prevPosition_isBound)
     {
         output.worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV), float4(IN.m_optional_prevPosition, 1.0)).xyz;
@@ -37,7 +37,7 @@ VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV, const M
     {
         output.worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV), float4(IN.position, 1.0)).xyz;
     }
-#endif // PIPELINE_VERTEX_PREV_POSITION
+#endif // MATERIAL_USES_VERTEX_PREV_POSITION
 
     return output;
 }

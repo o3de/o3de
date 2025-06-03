@@ -26,52 +26,52 @@
 #define VsOutput        VsOutput_ForwardPass
 #endif
 
-#ifndef PIPELINE_VERTEX_POSITION
-#define PIPELINE_VERTEX_POSITION 0
+#ifndef MATERIAL_USES_VERTEX_POSITION
+#define MATERIAL_USES_VERTEX_POSITION 0
 #endif
 
-#ifndef PIPELINE_VERTEX_POSITIONWS
-#define PIPELINE_VERTEX_POSITIONWS 0
+#ifndef MATERIAL_USES_VERTEX_POSITIONWS
+#define MATERIAL_USES_VERTEX_POSITIONWS 0
 #endif
 
-#ifndef PIPELINE_VERTEX_LOCALPOSITION
-#define PIPELINE_VERTEX_LOCALPOSITION 0
+#ifndef MATERIAL_USES_VERTEX_LOCALPOSITION
+#define MATERIAL_USES_VERTEX_LOCALPOSITION 0
 #endif
 
-#ifndef PIPELINE_VERTEX_PREV_POSITION
-#define PIPELINE_VERTEX_PREV_POSITION 0
+#ifndef MATERIAL_USES_VERTEX_PREV_POSITION
+#define MATERIAL_USES_VERTEX_PREV_POSITION 0
 #endif
 
-#ifndef PIPELINE_VERTEX_NORMAL
-#define PIPELINE_VERTEX_NORMAL 0
+#ifndef MATERIAL_USES_VERTEX_NORMAL
+#define MATERIAL_USES_VERTEX_NORMAL 0
 #endif
 
-#ifndef PIPELINE_VERTEX_TANGENT
-#define PIPELINE_VERTEX_TANGENT 0
+#ifndef MATERIAL_USES_VERTEX_TANGENT
+#define MATERIAL_USES_VERTEX_TANGENT 0
 #endif
 
-#ifndef PIPELINE_VERTEX_BITANGENT
-#define PIPELINE_VERTEX_BITANGENT 0
+#ifndef MATERIAL_USES_VERTEX_BITANGENT
+#define MATERIAL_USES_VERTEX_BITANGENT 0
 #endif
 
-#ifndef PIPELINE_VERTEX_UV
-#define PIPELINE_VERTEX_UV 0
+#ifndef MATERIAL_USES_VERTEX_UV
+#define MATERIAL_USES_VERTEX_UV 0
 #endif
 
-#ifndef PIPELINE_VERTEX_DETAIL_UV
-#define PIPELINE_VERTEX_DETAIL_UV 0
+#ifndef MATERIAL_USES_VERTEX_DETAIL_UV
+#define MATERIAL_USES_VERTEX_DETAIL_UV 0
 #endif
 
-#ifndef PIPELINE_VERTEX_COLOR
-#define PIPELINE_VERTEX_COLOR 0
+#ifndef MATERIAL_USES_VERTEX_COLOR
+#define MATERIAL_USES_VERTEX_COLOR 0
 #endif
 
-#ifndef PIPELINE_VERTEX_BLENDMASK 
-#define PIPELINE_VERTEX_BLENDMASK 0
+#ifndef MATERIAL_USES_VERTEX_BLENDMASK 
+#define MATERIAL_USES_VERTEX_BLENDMASK 0
 #endif
 
-#if PIPELINE_VERTEX_COLOR && PIPELINE_VERTEX_BLENDMASK
-#error("Only one of PIPELINE_VERTEX_BLENDMASK and PIPELINE_VERTEX_COLOR can be active at once")
+#if MATERIAL_USES_VERTEX_COLOR && MATERIAL_USES_VERTEX_BLENDMASK
+#error("Only one of MATERIAL_USES_VERTEX_BLENDMASK and MATERIAL_USES_VERTEX_COLOR can be active at once")
 #endif
 
 
@@ -80,13 +80,13 @@
 // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
 // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
 
-#if PIPELINE_VERTEX_COLOR
+#if MATERIAL_USES_VERTEX_COLOR
     option bool o_color0_isBound = false;
 #endif
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
     option bool o_blendMask_isBound = false;
 #endif
-#if PIPELINE_VERTEX_PREV_POSITION
+#if MATERIAL_USES_VERTEX_PREV_POSITION
     option bool o_prevPosition_isBound = false;
 #endif
 
@@ -94,36 +94,36 @@
 struct VsInput_ForwardPass
 {
     // Base fields (required by the template azsli file)...
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     float3 position : POSITION;
 #endif
 
-#if PIPELINE_VERTEX_NORMAL
+#if MATERIAL_USES_VERTEX_NORMAL
     float3 normal : NORMAL;
 #endif
-#if PIPELINE_VERTEX_TANGENT
+#if MATERIAL_USES_VERTEX_TANGENT
     float4 tangent : TANGENT;
 #endif
-#if PIPELINE_VERTEX_BITANGENT
+#if MATERIAL_USES_VERTEX_BITANGENT
     float3 bitangent : BITANGENT;
 #endif
 
-#if PIPELINE_VERTEX_UV
+#if MATERIAL_USES_VERTEX_UV
     float2 uv0 : UV0;
     float2 uv1 : UV1;
 #endif
 
-#if PIPELINE_VERTEX_PREV_POSITION
+#if MATERIAL_USES_VERTEX_PREV_POSITION
     float3 m_optional_prevPosition : POSITIONT;
 #endif
 
-#if PIPELINE_VERTEX_COLOR
+#if MATERIAL_USES_VERTEX_COLOR
     // This gets set automatically by the system at runtime only if it's available.
     // There is a soft naming convention that associates this with o_color0_isBound, which will be set to true whenever m_optional_color0 is available.
     float4 m_optional_color0 : COLOR0;
 #endif
 
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
     // This gets set automatically by the system at runtime only if it's available.
     // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
     float4 m_optional_blendMask : COLOR0;
@@ -140,48 +140,48 @@ struct VsOutput_ForwardPass
 {
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     precise linear centroid 
     float4 position : SV_Position;
 #endif
 
-#if PIPELINE_VERTEX_NORMAL
+#if MATERIAL_USES_VERTEX_NORMAL
     float3 normal: NORMAL;
 #endif 
 
-#if PIPELINE_VERTEX_TANGENT
+#if MATERIAL_USES_VERTEX_TANGENT
     float4 tangent : TANGENT;
 #endif
 
-#if PIPELINE_VERTEX_BITANGENT
+#if MATERIAL_USES_VERTEX_BITANGENT
     float3 bitangent : BITANGENT;
 #endif
 
-#if PIPELINE_VERTEX_UV
+#if MATERIAL_USES_VERTEX_UV
     float2 uvs[UvSetCount] : UV0;
 #endif
 
-#if PIPELINE_VERTEX_DETAIL_UV
+#if MATERIAL_USES_VERTEX_DETAIL_UV
     float2 detailUvs[UvSetCount] : UV2;
 #endif
 
-#if PIPELINE_VERTEX_POSITIONWS
+#if MATERIAL_USES_VERTEX_POSITIONWS
     float3 worldPosition : UV4;
 #endif
 
-#if PIPELINE_VERTEX_LOCALPOSITION
+#if MATERIAL_USES_VERTEX_LOCALPOSITION
     float3 localPosition: UV5;
 #endif
 
-#if PIPELINE_VERTEX_PREV_POSITION
+#if MATERIAL_USES_VERTEX_PREV_POSITION
     float3 worldPosPrev: UV6;
 #endif
 
-#if PIPELINE_VERTEX_COLOR
+#if MATERIAL_USES_VERTEX_COLOR
     float4 color0 : UV7;
 #endif
 
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
     float4 blendFactors: UV8;
 #endif
 
