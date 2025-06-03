@@ -9,6 +9,12 @@
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_MaterialInputs.azsli>
 
+// TODO(MaterialPipeline): There is no good reason for StandardMultilayerPBR to have o_opacity_mode, it doesn't support transparency or alpha cutout.
+// It is only needed because the Transparent - Shader needs it, and that shader is part of the "Standard" lighting model. We can't use "Base" lighting 
+// because the material uses things like emission and clear coat. One option would be to add a new "StandardOpaque" lighting model. 
+// But really I think we should get rid of the "lighting model" concept from the material pipeline interface and instead let the .materialtype 
+// communicate the specific combination features it wants, and this would configure preprocessor flags to do something like omit the transparency features.
+option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 

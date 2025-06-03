@@ -1,7 +1,8 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "../MaterialInputs/BaseColorInput.azsli"
