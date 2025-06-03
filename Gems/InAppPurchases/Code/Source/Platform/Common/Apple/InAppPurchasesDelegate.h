@@ -10,6 +10,12 @@
 
 #import <StoreKit/StoreKit.h>
 
+#if defined(CARBONATED)
+// ignore deprecated API
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 @interface InAppPurchasesDelegate : NSObject<SKProductsRequestDelegate, SKPaymentTransactionObserver>
 @property (strong, nonatomic) SKProductsRequest* m_productsRequest;
 @property (strong, nonatomic) NSMutableArray* m_products;
@@ -25,3 +31,7 @@
 -(void) initialize;
 -(void) deinitialize;
 @end
+
+#if defined(CARBONATED)
+#pragma clang diagnostic pop
+#endif

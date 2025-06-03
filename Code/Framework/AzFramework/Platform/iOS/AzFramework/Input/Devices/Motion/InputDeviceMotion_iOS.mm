@@ -137,7 +137,16 @@ namespace AzFramework
         if(@available(iOS 13.0, tvOS 13.0, *))
         {
             UIWindow* foundWindow = nil;
+#if defined(CARBONATED)  // remove deprecated API
+            NSArray *scenes = [[[UIApplication sharedApplication] connectedScenes] allObjects];
+            NSArray *windows = nil;
+            if (scenes && [scenes count] > 0)
+            {
+                windows = [[scenes objectAtIndex:0] windows];
+            }
+#else
             NSArray* windows = [[UIApplication sharedApplication] windows];
+#endif
             for (UIWindow* window in windows)
             {
                 if (window.isKeyWindow)

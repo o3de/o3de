@@ -15,6 +15,12 @@
 
 #include <AzCore/std/string/conversions.h>
 
+#if defined(CARBONATED)
+// ignore deprecated API
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 @implementation InAppPurchasesDelegate
 
 #if defined(CARBONATED)  // PR375
@@ -535,3 +541,7 @@
 }
 
 @end
+
+#if defined(CARBONATED)
+#pragma clang diagnostic pop
+#endif

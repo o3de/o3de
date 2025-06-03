@@ -117,9 +117,11 @@ namespace AZ
                 {
                     return false;
                 }
-                
+#if defined(CARBONATED)
+                bool isGPUFamily4 = [mtlDevice supportsFamily: MTLGPUFamilyApple4];  // deprecated API fix
+#else
                 bool isGPUFamily4 = [mtlDevice supportsFeatureSet: MTLFeatureSet_iOS_GPUFamily4_v1];
-                
+#endif
                 if(!isGPUFamily4)
                 {
                     //Not supported for GPUFamily3 and below
@@ -216,6 +218,8 @@ namespace AZ
                         return MTLPixelFormatETC2_RGB8A1;
                     case RHI::Format::ETC2A_UNORM_SRGB:
                         return MTLPixelFormatETC2_RGB8A1_sRGB;
+#if !defined(CARBONATED)
+                    // deprecated API removal
                     case RHI::Format::PVRTC2_UNORM:
                         return MTLPixelFormatPVRTC_RGBA_2BPP;
                     case RHI::Format::PVRTC2_UNORM_SRGB:
@@ -224,6 +228,7 @@ namespace AZ
                         return MTLPixelFormatPVRTC_RGBA_4BPP;
                     case RHI::Format::PVRTC4_UNORM_SRGB:
                         return MTLPixelFormatPVRTC_RGBA_4BPP_sRGB;
+#endif
                     case RHI::Format::ASTC_4x4_UNORM:
                         return MTLPixelFormatASTC_4x4_LDR;
                     case RHI::Format::ASTC_4x4_UNORM_SRGB:
