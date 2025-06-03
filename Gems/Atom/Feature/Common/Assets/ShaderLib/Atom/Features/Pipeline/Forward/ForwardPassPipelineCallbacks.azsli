@@ -14,6 +14,11 @@
 
 // DrawSrg, ObjectSrg, ViewSrg and SceneSrg need to be defined fully before this file 
 
+#ifndef PIPELINE_HAS_PASS_SRG
+// assume we have a pass-srg by default
+#define PIPELINE_HAS_PASS_SRG 1
+#endif
+
 #include <Atom/Features/GoboTexture.azsli>
 #include <Atom/Features/LightingChannels.azsli>
 #include <Atom/Features/StreamTangentBitmask.azsli>
@@ -69,7 +74,5 @@ float4x4 GetViewProjectionPrevMatrix(VsSystemValues SV)
     return ViewSrg::m_viewProjectionPrevMatrix;
 }
 #endif // MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
-
-
 
 

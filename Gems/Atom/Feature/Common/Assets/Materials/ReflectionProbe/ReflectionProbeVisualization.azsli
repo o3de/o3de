@@ -17,7 +17,7 @@
         VsOutput output;
 
         float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
-        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
+        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0)).xyz;
         
         float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
         output.position = mul(viewProjectionMatrix, output.worldPosition);

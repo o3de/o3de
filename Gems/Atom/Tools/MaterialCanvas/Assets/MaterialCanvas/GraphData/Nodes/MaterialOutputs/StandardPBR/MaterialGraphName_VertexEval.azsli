@@ -110,7 +110,6 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
 {
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
-
     return EvaluateVertexGeometry_MaterialGraphName(
         params,
         position,
