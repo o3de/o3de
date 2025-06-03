@@ -16,6 +16,9 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "AutoBrick_Common.azsli"  // MaterialSrg
 
+// intentionally empty, needed for GetParallaxOffset()
+struct MaterialParameters {};
+
 // Control which fields we get in the VsInput and VsOutput
 #define UvSetCount 1
 #define PIPELINE_VERTEX_POSITION 1
