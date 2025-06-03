@@ -224,7 +224,7 @@ Surface EvaluateSurface_StandardMultilayerPBR(
     {
         real startDepth = real(-params.m_displacementMax);
         real stopDepth = real(-params.m_displacementMin);
-        real depth = GetNormalizedDepth(GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), startDepth, stopDepth, uvs[params.m_parallaxUvIndex], real2(0,0), real2(0,0));
+        real depth = GetNormalizedDepth(params, GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), startDepth, stopDepth, uvs[params.m_parallaxUvIndex], real2(0,0), real2(0,0));
         real height = 1 - saturate(depth);
         return MakeDebugSurface(positionWS, normalWS, real3(height,height,height));
     }

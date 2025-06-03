@@ -42,6 +42,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
     VsOutput OUT = EvaluateVertexGeometry(IN, SV, GetMaterialParameters());
+    OUT.m_instanceId = instanceId;
     return OUT;
 }
 
