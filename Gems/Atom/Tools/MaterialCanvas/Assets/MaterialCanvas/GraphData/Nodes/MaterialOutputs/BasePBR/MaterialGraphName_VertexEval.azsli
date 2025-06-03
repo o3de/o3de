@@ -57,24 +57,24 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     #undef O3DE_MC_UV
 
     VsOutput output;
-    #if PIPELINE_VERTEX_POSITIONWS
+    #if MATERIAL_USES_VERTEX_POSITIONWS
     output.worldPosition = (float3)positionWS + (float3)inPositionOffset;
-    #endif // PIPELINE_VERTEX_POSITIONWS
-    #if PIPELINE_VERTEX_POSITION
+    #endif // MATERIAL_USES_VERTEX_POSITIONWS
+    #if MATERIAL_USES_VERTEX_POSITION
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
     output.position = mul(viewProjectionMatrix, float4(output.worldPosition, 1.0));
-    #endif // PIPELINE_VERTEX_POSITION
-    #if PIPELINE_VERTEX_UV
+    #endif // MATERIAL_USES_VERTEX_POSITION
+    #if MATERIAL_USES_VERTEX_UV
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
-    #endif // PIPELINE_VERTEX_UV
-    #if PIPELINE_VERTEX_NORMAL
+    #endif // MATERIAL_USES_VERTEX_UV
+    #if MATERIAL_USES_VERTEX_NORMAL
     output.normal = normal;
-    #endif // PIPELINE_VERTEX_NORMAL
-    #if PIPELINE_VERTEX_TANGENT
+    #endif // MATERIAL_USES_VERTEX_NORMAL
+    #if MATERIAL_USES_VERTEX_TANGENT
     output.tangent = tangent;
-    #endif // PIPELINE_VERTEX_TANGENT
-#if PIPELINE_VERTEX_COLOR
+    #endif // MATERIAL_USES_VERTEX_TANGENT
+#if MATERIAL_USES_VERTEX_COLOR
     if(useVertexColor0)
     {
         output.color0 =  color0;
@@ -89,7 +89,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
-#if PIPELINE_VERTEX_COLOR
+#if MATERIAL_USES_VERTEX_COLOR
     float4 color0 = IN.m_optional_color0;
     bool useVertexColor = o_color0_isBound;
 #else

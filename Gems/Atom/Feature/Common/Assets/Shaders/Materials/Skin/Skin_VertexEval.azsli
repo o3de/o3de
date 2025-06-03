@@ -15,7 +15,7 @@
 #define EvaluateVertexGeometry EvaluateVertexGeometry_Skin
 #endif
 
-#if PIPELINE_VERTEX_DETAIL_UV
+#if MATERIAL_USES_VERTEX_DETAIL_UV
 #include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
 #endif
 
@@ -31,19 +31,19 @@ VsOutput EvaluateVertexGeometry_Skin(
 {
     VsOutput output;
 
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
 
-#if PIPELINE_VERTEX_POSITIONWS
+#if MATERIAL_USES_VERTEX_POSITIONWS
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
     output.position = mul(viewProjectionMatrix, worldPosition);
-#endif // PIPELINE_VERTEX_POSITIONWS
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
 
-#endif // PIPELINE_VERTEX_POSITION
+#endif // MATERIAL_USES_VERTEX_POSITION
 
-#if PIPELINE_VERTEX_UV  
+#if MATERIAL_USES_VERTEX_UV  
     // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
     // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
     // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
@@ -58,7 +58,7 @@ VsOutput EvaluateVertexGeometry_Skin(
     
 #endif
 
-#if PIPELINE_VERTEX_DETAIL_UV    
+#if MATERIAL_USES_VERTEX_DETAIL_UV    
     // Detail UVs
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
@@ -66,9 +66,9 @@ VsOutput EvaluateVertexGeometry_Skin(
     output.detailUvs[0] = mul(params.m_detailUvMatrix, float3(output.detailUvs[0], 1.0)).xy;
     output.detailUvs[1] = output.detailUvs[0];
 
-#endif // PIPELINE_VERTEX_DETAIL_UV
+#endif // MATERIAL_USES_VERTEX_DETAIL_UV
 
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
     if(o_blendMask_isBound)
     {
         output.blendFactors = optionalBlendMask;
@@ -77,15 +77,15 @@ VsOutput EvaluateVertexGeometry_Skin(
     {
         output.blendFactors = float4(0,0,0,0);
     }
-#endif // PIPELINE_VERTEX_BLENDMASK
+#endif // MATERIAL_USES_VERTEX_BLENDMASK
 
-#if PIPELINE_VERTEX_NORMAL
+#if MATERIAL_USES_VERTEX_NORMAL
     output.normal = normal;
-#endif // PIPELINE_VERTEX_NORMAL
+#endif // MATERIAL_USES_VERTEX_NORMAL
 
-#if PIPELINE_VERTEX_TANGENT
+#if MATERIAL_USES_VERTEX_TANGENT
     output.tangent = tangent;
-#endif // PIPELINE_VERTEX_TANGENT
+#endif // MATERIAL_USES_VERTEX_TANGENT
     
     return output;
 }

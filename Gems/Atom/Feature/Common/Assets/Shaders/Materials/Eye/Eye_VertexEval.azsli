@@ -27,38 +27,38 @@ VsOutput EvaluateVertexGeometry_Eye(
 {
     VsOutput output;
 
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
 
-#if PIPELINE_VERTEX_POSITIONWS
+#if MATERIAL_USES_VERTEX_POSITIONWS
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
     output.position = mul(viewProjectionMatrix, worldPosition);
-#endif // PIPELINE_VERTEX_POSITIONWS
-#endif // PIPELINE_VERTEX_POSITION
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+#endif // MATERIAL_USES_VERTEX_POSITION
 
-#if PIPELINE_VERTEX_UV
+#if MATERIAL_USES_VERTEX_UV
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
-#endif // PIPELINE_VERTEX_UV
+#endif // MATERIAL_USES_VERTEX_UV
 
-#if PIPELINE_VERTEX_NORMAL
+#if MATERIAL_USES_VERTEX_NORMAL
     output.normal = normal;
-#endif // PIPELINE_VERTEX_NORMAL
+#endif // MATERIAL_USES_VERTEX_NORMAL
 
-#if PIPELINE_VERTEX_TANGENT
+#if MATERIAL_USES_VERTEX_TANGENT
     output.tangent = tangent;
-#endif // PIPELINE_VERTEX_TANGENT
+#endif // MATERIAL_USES_VERTEX_TANGENT
     
-#if PIPELINE_VERTEX_BITANGENT
+#if MATERIAL_USES_VERTEX_BITANGENT
     // Bitangent is temporarily added back to fix the eye material screenshot test.
     output.bitangent = bitangent;
-#endif // PIPELINE_VERTEX_BITANGENT
+#endif // MATERIAL_USES_VERTEX_BITANGENT
 
-#if PIPELINE_VERTEX_LOCALPOSITION
+#if MATERIAL_USES_VERTEX_LOCALPOSITION
     output.localPosition = position.xyz;
-#endif // PIPELINE_VERTEX_LOCALPOSITION
+#endif // MATERIAL_USES_VERTEX_LOCALPOSITION
 
     return output;
 }

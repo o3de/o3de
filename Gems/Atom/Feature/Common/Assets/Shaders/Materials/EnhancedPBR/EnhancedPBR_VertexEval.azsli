@@ -32,7 +32,7 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     // BasePBRP
     VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, SV, useVertexColor, color0);
 
-#ifdef PIPELINE_VERTEX_DETAIL_UV
+#ifdef MATERIAL_USES_VERTEX_DETAIL_UV
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
     TransformDetailUvs(params, detailUvs, output.detailUvs);
