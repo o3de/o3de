@@ -10,7 +10,9 @@
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
+#if PIPELINE_HAS_OBJECT_SRG
     #include <Atom/Features/WrinkleMask.azsli>
+#endif
 
     COMMON_OPTIONS_BASE_COLOR()
     COMMON_OPTIONS_ROUGHNESS()
@@ -28,6 +30,8 @@
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_VertexEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_PixelGeometryEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_SurfaceEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingBrdf.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingEval.azsli>
 
 #else
 

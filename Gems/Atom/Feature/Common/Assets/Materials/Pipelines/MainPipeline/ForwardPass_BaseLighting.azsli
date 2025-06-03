@@ -38,11 +38,8 @@
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+// Lighting eval functions from the forward-pass that use functions defined by the material
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
 #include "ForwardPassVertexAndPixel.azsli"
 

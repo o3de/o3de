@@ -30,7 +30,8 @@ Surface EvaluateSurface_MaterialGraphName(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
     const float3 O3DE_MC_POSITION = (float3)IN.position;
@@ -72,6 +73,7 @@ Surface EvaluateSurface_MaterialGraphName(
     CheckClipping((real)inAlpha, (real)inOpacityFactor);
 
     Surface surface;
+    surface.lightingChannels = lightingChannels;
     surface.position = positionWS;
     surface.vertexNormal = normalWS;
     surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
@@ -125,7 +127,8 @@ Surface EvaluateSurface_MaterialGraphName(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    uint lightingChannels)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
@@ -138,11 +141,12 @@ Surface EvaluateSurface_MaterialGraphName(
         isFrontFace,
         isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false); 
+        false,
+        lightingChannels); 
 }
 
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
@@ -155,10 +159,11 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         uvDxDy,
-        customDerivatives);
+        customDerivatives,
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
@@ -171,5 +176,6 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        GetLightingChannelMask(SV));
 }

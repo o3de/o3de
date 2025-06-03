@@ -62,7 +62,6 @@ real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real
     return specular;
 }
 
-
 // Then include everything else
 #include <Atom/Features/PBR/Lights/Lights.azsli>
 
@@ -104,3 +103,20 @@ PbrLightingOutput DebugOutput(real3 color)
 
     return output;
 }
+
+// These functions are kept for compatabiltiy, the functionality now resides in Atom/Features/Pipeline/Forward/*.azsli
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassDecals.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassDirectLighting.azsli>
+
+void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+{
+    ApplyDecals_ForwardPass(tileIterator, surface);
+}
+
+void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenPosition, inout LightCullingTileIterator tileIterator)
+{
+    ApplyDirectLighting_ForwardPass(surface, lightingData, screenPosition, tileIterator);
+}
+
+

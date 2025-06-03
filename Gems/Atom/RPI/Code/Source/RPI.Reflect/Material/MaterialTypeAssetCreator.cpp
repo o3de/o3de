@@ -62,6 +62,10 @@ namespace AZ
                 if (currentSrgLayout->GetHash() != newSrgLayout->GetHash())
                 {
                     ReportError("All shaders in a material must use the same %s ShaderResourceGroup.", srgDebugName);
+                    ReportError(
+                        "SRG layout from %s clashes with layout from %s.",
+                        srgShaderAssetToUpdate.GetHint().c_str(),
+                        newShaderAsset.GetHint().c_str());
                     return false;
                 }
             }

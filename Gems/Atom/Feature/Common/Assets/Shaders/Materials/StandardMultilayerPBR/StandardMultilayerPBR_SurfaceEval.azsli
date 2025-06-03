@@ -209,7 +209,8 @@ Surface EvaluateSurface_StandardMultilayerPBR(
     bool isDisplacementClipped,
     real3 vertexBlendMask,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     LayerBlendSource blendSource = GetFinalLayerBlendSource();
     
@@ -303,6 +304,7 @@ Surface EvaluateSurface_StandardMultilayerPBR(
     // ------- Combine all layers ---------
 
     Surface surface;
+    surface.lightingChannels = lightingChannels;
     surface.position = positionWS;
     // ------- Combine Normals ---------
     real3 normalTS = real3(0,0,1);
@@ -365,7 +367,8 @@ Surface EvaluateSurface_StandardMultilayerPBR(
     float2 uvs[UvSetCount],
     bool isFrontFace,
     bool isDisplacementClipped,
-    real3 vertexBlendMask)
+    real3 vertexBlendMask,
+    uint lightingChannels)
 {
     return EvaluateSurface_StandardMultilayerPBR(
         params,
@@ -378,10 +381,11 @@ Surface EvaluateSurface_StandardMultilayerPBR(
         isDisplacementClipped,
         vertexBlendMask,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        lightingChannels);
 }
 
-Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_StandardMultilayerPBR(
         params,
@@ -394,10 +398,11 @@ Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geo
         geoData.isDisplacementClipped,
         geoData.m_vertexBlendMask,
         uvDxDy,
-        customDerivatives);
+        customDerivatives, 
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_StandardMultilayerPBR(
         params,
@@ -409,6 +414,7 @@ Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geo
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         geoData.m_vertexBlendMask,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false, /* customDerivatives */
+        GetLightingChannelMask(SV));
 }

@@ -5,10 +5,36 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
-#include <Atom/Features/Debug.azsli>
+/* Each light implements a Util - class similar to this:
+
+// This define construct enables something like inhertiance, since you can implement your own class before including this file, 
+// and still use functions from this class by refering to CapsuleLightUtil_PBR directly.
+#ifndef CapsuleLightUtil
+#define CapsuleLightUtil CapsuleLightUtil_PBR
+#endif
+
+class CapsuleLightUtil_PBR
+{
+   
+    // create an instance of the Class, prepare values required during both apply and falloff-calculation
+    static CapsuleLightUtil_PBR Init(CapsuleLight light, Surface surface)
+
+    // return the falloff-value based on the orientation and attenuation radius.
+    // Values >= 1.0 means the light can be skipped safely, since the LightingData would not change noticeably
+    real GetFalloff()
+
+    // Apply the light to the surface. Area-lights will be applied analytical, and do not take partial shadows into account.
+    // the litRatio - parameter denotes the shadow-vale of the surface, and is only available with certain lights.
+    void Apply(CapsuleLight light, Surface surface, [real litRatio], inout LightingData lightingData)
+    
+    // Only for Area-Lights: Generate several sample-points on the surface and apply them as point-light. 
+    // This is used to validate the analyitical implementation for area lights, but assumes the light is entirely unobstructed.
+    static void ApplySampled(CapsuleLight light, Surface surface, inout LightingData lightingData, const uint sampleCount)
+};
+*/
+
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
@@ -17,49 +43,3 @@
 #include <Atom/Features/PBR/Lights/QuadLight.azsli>
 #include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 #include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
-
-void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenUv)
-{
-    if( IsDirectLightingEnabled() )
-    {
-        if (o_enableDirectionalLights)
-        {
-            ApplyDirectionalLights(surface, lightingData, screenUv);
-        }
-        if (o_enablePunctualLights)
-        {
-            ApplySimplePointLights(surface, lightingData);
-            ApplySimpleSpotLights(surface, lightingData);
-        }
-        if (o_enableAreaLights)
-        {
-            ApplyPointLights(surface, lightingData);
-            ApplyDiskLights(surface, lightingData);
-            ApplyCapsuleLights(surface, lightingData);
-            ApplyQuadLights(surface, lightingData);
-            ApplyPolygonLights(surface, lightingData);
-        }
-    }
-    else if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
-    {
-        if (o_enableDirectionalLights)
-        {
-            ApplyDirectionalLights(surface, lightingData, screenUv);
-        }
-    }
-    else if( UseDebugLight() )
-    {
-        real3 lightIntensity = real3(SceneSrg::m_debugLightingIntensity);
-        real3 lightDirection = real3(SceneSrg::m_debugLightingDirection);
-
-        // Diffuse lighting is view-independent
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
-
-        // Calculate specular lighting for each view
-        [unroll]
-        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
-        {
-            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection, viewIndex);
-        }
-    }
-}

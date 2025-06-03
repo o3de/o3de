@@ -122,3 +122,15 @@ namespace AZ
         };
     } // namespace RPI
 } // namespace AZ
+
+namespace AZStd
+{
+    template<>
+    struct hash<AZ::RPI::ShaderVariantId>
+    {
+        size_t operator()(const AZ::RPI::ShaderVariantId& variantId) const
+        {
+            return AZStd::hash_range(variantId.m_key.data(), variantId.m_key.data() + variantId.m_key.num_words());
+        }
+    };
+} // namespace AZStd

@@ -39,6 +39,7 @@ struct VSOutput
 #include <Atom/Features/PBR/Decals.azsli>
 
 
+
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
 {
     VSOutput output;
@@ -112,7 +113,9 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
     // ------- Surface -------
-    Surface surface;
+    Surface surface = (Surface)0;
+    surface.lightingChannels = -1u; // enable all lightingchannels for the terrain mesh
+
     surface.position = input.m_worldPosition.xyz;
     surface.vertexNormal = normalize(input.m_normal);
     float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
@@ -165,12 +168,12 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     // Clear Coat
     surface.clearCoat.InitializeToZero();
 
-    // ------- LightingData -------
-
-    LightingData lightingData;
-
     // Light iterator
-    lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    LightCullingTileIterator tileIterator;
+    tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+
+    // ------- LightingData -------
+    LightingData lightingData;
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
     // Shadow, Occlusion
@@ -185,17 +188,16 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     // ------- Lighting Calculation -------
 
     // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
+    ApplyDecals(tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, input.m_position);
+    ApplyDirectLighting(surface, lightingData, input.m_position, tileIterator);
 
     // Apply Image Based Lighting (IBL)
     ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting();
-
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     // ------- Output -------
