@@ -9,6 +9,27 @@
 #include <Atom/Features/Bindless.azsli>
 #include <Atom/Features/IndirectRayTracing.azsli>
 
+// Provides triangle cluster ID of a hit with a triangle for the ray being traced, or -1 if the hit object is not a cluster object.
+// Reference of this function will automatically add a builtin input 'ClusterIDNV' into the shader entry point. It must be called only in
+// closest hit or any hit shaders.
+// This function is called GetClusterId() to not collide with the potential future introduction of a ClusterId() function (similar to
+// InstanceId(), PrimitiveIndex()).
+int GetClusterId()
+{
+    // TODO(CLAS): Uncomment this once DXC can successfully compile this function
+#if 1
+    return 0;
+#else
+    // Only SPIRV support for now; otherwise it will be initialized to zero as a static variable
+    [[vk::ext_extension("SPV_NV_cluster_acceleration_structure")]]
+    [[vk::ext_capability(/* RayTracingClusterAccelerationStructureNV */ 5437)]]
+    [[vk::ext_builtin_input(/* ClusterIDNV */ 5436)]]
+    static const int clusterIDNV;
+
+    return clusterIDNV;
+#endif
+}
+
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
 {
