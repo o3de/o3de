@@ -118,7 +118,7 @@ namespace AZ
                     return false;
                 }
 #if defined(CARBONATED)
-                bool isGPUFamily4 = [mtlDevice supportsFamily: MTLGPUFamilyApple4];  // deprec ated API fix
+                bool isGPUFamily4 = [mtlDevice supportsFamily: MTLGPUFamilyApple4];  // deprecated API fix
 #else
                 bool isGPUFamily4 = [mtlDevice supportsFeatureSet: MTLFeatureSet_iOS_GPUFamily4_v1];
 #endif

@@ -146,13 +146,13 @@ namespace AZ
                 }
                 
                 UIWindow* foundWindow = nil;
-#if defined(CARBONATED)
-            NSArray *scenes = [[[UIApplication sharedApplication] connectedScenes] allObjects];
-            NSArray *windows = nil;
-            if (scenes && [scenes count] > 0)
-            {
-                windows = [[scenes objectAtIndex:0] windows];
-            }
+#if defined(CARBONATED)  // remove deprecated API
+                NSArray *scenes = [[[UIApplication sharedApplication] connectedScenes] allObjects];
+                NSArray *windows = nil;
+                if (scenes && [scenes count] > 0)
+                {
+                    windows = [[scenes objectAtIndex:0] windows];
+                }
 #else
                 NSArray* windows = [[UIApplication sharedApplication] windows];
 #endif
