@@ -26,7 +26,7 @@ VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(
 {
     VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, SV, false, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
     if(o_blendMask_isBound)
     {
         output.blendFactors = float4(vertexBlendMask, 0);
@@ -35,7 +35,7 @@ VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(
     {
         output.blendFactors = float4(0,0,0,0);
     }
-#endif // PIPELINE_VERTEX_BLENDMASK
+#endif // MATERIAL_USES_VERTEX_BLENDMASK
 
     return output;
 }
@@ -49,7 +49,7 @@ VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN, VsSystemValues
         IN.tangent,
         IN.uv0,
         IN.uv1,
-#if PIPELINE_VERTEX_BLENDMASK
+#if MATERIAL_USES_VERTEX_BLENDMASK
         IN.m_optional_blendMask.rgb,
 #else
         float3(0, 0, 0),

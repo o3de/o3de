@@ -65,16 +65,16 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName_Depth(VsInput IN, VsSystemValu
         IN.uv1);
 
     VsOutput output;
-#if PIPELINE_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_POSITION
     float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
     output.position = mul(viewProjectionMatrix, worldPosition);
-#endif // PIPELINE_VERTEX_POSITION
+#endif // MATERIAL_USES_VERTEX_POSITION
 
-#if PIPELINE_VERTEX_POSITIONWS
+#if MATERIAL_USES_VERTEX_POSITIONWS
     output.worldPosition = worldPosition.xyz;
-#endif // PIPELINE_VERTEX_POSITIONWS
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
 
-#if PIPELINE_VERTEX_PREV_POSITION 
+#if MATERIAL_USES_VERTEX_PREV_POSITION 
     output.worldPosPrev = GenerateWorldPosition(
         params,
         GetObjectToWorldMatrixPrev(SV),
@@ -84,7 +84,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName_Depth(VsInput IN, VsSystemValu
         real4(IN.tangent),
         IN.uv0,
         IN.uv1).xyz;
-#endif // PIPELINE_VERTEX_PREV_POSITION
+#endif // MATERIAL_USES_VERTEX_PREV_POSITION
 
     return output;
 }
