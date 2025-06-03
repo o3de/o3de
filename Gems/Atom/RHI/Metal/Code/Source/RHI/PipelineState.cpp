@@ -106,7 +106,7 @@ namespace AZ
                 {
                     //In case byte code was not generated try to create the lib with source code
                     MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
-#if defined(CARBONATED)
+#if defined(CARBONATED) && defined(AZ_PLATFORM_IOS)
                     compileOptions.mathMode = MTLMathModeFast;  // remove deprecated API
 #else
                     compileOptions.fastMathEnabled = YES;
