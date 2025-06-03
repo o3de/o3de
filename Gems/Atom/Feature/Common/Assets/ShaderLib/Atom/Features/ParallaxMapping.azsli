@@ -55,17 +55,19 @@ DepthResult DepthResultAbsolute(float depth)
 //! The client shader must define this function.
 //! This allows the client shader to implement special depth map sampling, for example procedurally generating or blending depth maps.
 //! In simple cases though, the implementation of GetDepth() can simply call SampleDepthFromHeightmap().
+//! @param params The MaterialParameters struct, as defined by the material. Passed through unchanged
 //! @param uv the UV coordinates to use for sampling
 //! @param uv_ddx will be set to ddx_fine(uv)
 //! @param uv_ddy will be set to ddy_fine(uv)
 //! @return see struct DepthResult
-DepthResult GetDepth(Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy);
+DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy);
 
 //! Convenience function that can be used to implement GetDepth().
 //! @return see struct DepthResult. In this case it will always contain a Code::Normalized result. 
 DepthResult SampleDepthFromHeightmap(Texture2D map, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     DepthResult result;
+    // TODO: there is no guarantee that the heightmap is actually normalized
     result.m_resultCode = DepthResultCode_Normalized;
     result.m_depth = 1.0 - map.SampleGrad(mapSampler, uv, uv_ddx, uv_ddy).r;
     return result;
@@ -79,7 +81,7 @@ DepthResult SampleDepthFromHeightmap(Texture2D map, sampler mapSampler, float2 u
 //! @param uv_ddx must be set to ddx_fine(uv)
 //! @param uv_ddy must be set to ddy_fine(uv)
 //! @param a depth value in the range [0,1]
-float GetNormalizedDepth(Texture2D heightmap, sampler mapSampler, float startDepth, float stopDepth, float inverseDepthRange, float2 uv, float2 uv_ddx, float2 uv_ddy)
+float GetNormalizedDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float startDepth, float stopDepth, float inverseDepthRange, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     // startDepth can be less than 0, representing a displacement above the mesh surface.
     // But since we don't currently support any vertex displacement, negative depth values would cause various 
@@ -88,7 +90,7 @@ float GetNormalizedDepth(Texture2D heightmap, sampler mapSampler, float startDep
 
     float normalizedDepth = 0.0;
 
-    DepthResult depthResult = GetDepth(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
+    DepthResult depthResult = GetDepth(params, heightmap, mapSampler, uv, uv_ddx, uv_ddy);
 
     if(stopDepth - startDepth > 0.0001)
     {
@@ -107,10 +109,10 @@ float GetNormalizedDepth(Texture2D heightmap, sampler mapSampler, float startDep
     return normalizedDepth;
 }
 
-float GetNormalizedDepth(Texture2D heightmap, sampler mapSampler, float startDepth, float stopDepth, float2 uv, float2 uv_ddx, float2 uv_ddy)
+float GetNormalizedDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float startDepth, float stopDepth, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float inverseDepthRange = 1.0 / (stopDepth - startDepth);
-    return GetNormalizedDepth(heightmap, mapSampler, startDepth, stopDepth, inverseDepthRange, uv, uv_ddx, uv_ddy);
+    return GetNormalizedDepth(params, heightmap, mapSampler, startDepth, stopDepth, inverseDepthRange, uv, uv_ddx, uv_ddy);
 }
 
 void ApplyParallaxClippingHighlight(inout float3 baseColor)
@@ -126,13 +128,13 @@ struct ParallaxOffset
 
 // dirToCameraTS should be in tangent space and normalized
 // From Reat-Time Rendering 3rd edition, p.192
-ParallaxOffset BasicParallaxMapping(Texture2D heightmap, sampler mapSampler, float depthFactor, float2 uv, float3 dirToCameraTS)
+ParallaxOffset BasicParallaxMapping(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float depthFactor, float2 uv, float3 dirToCameraTS)
 {
     // the amount to shift
 #ifdef CS_SAMPLERS
-    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(heightmap, mapSampler, 0, depthFactor, uv, float2(0, 0), float2(0, 0)) * depthFactor;
+    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(params, heightmap, mapSampler, 0, depthFactor, uv, float2(0, 0), float2(0, 0)) * depthFactor;
 #else
-    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(heightmap, mapSampler, 0, depthFactor, uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
+    float2 delta = dirToCameraTS.xy * GetNormalizedDepth(params, heightmap, mapSampler, 0, depthFactor, uv, ddx_fine(uv), ddy_fine(uv)) * depthFactor;
 #endif
 
     ParallaxOffset result;
@@ -146,6 +148,7 @@ ParallaxOffset BasicParallaxMapping(Texture2D heightmap, sampler mapSampler, flo
 // Performs ray intersection against a surface with a heightmap.
 // Adapted from CryEngine shader shadelib.cfi and POM function in https://github.com/a-riccardi/shader-toy
 // check https://github.com/UPBGE/blender/issues/1009 for more details.
+// @param params - The MaterialParameters struct as defined by the Material. Passed through unchanged to GetDepth()
 // @param heightmap - the heightmap texture.
 // @param mapSampler - the sampler for the heightmap texture.
 // @param depthFactor - scales the heightmap in tangent space units (which normally ends up being world units).
@@ -155,7 +158,7 @@ ParallaxOffset BasicParallaxMapping(Texture2D heightmap, sampler mapSampler, flo
 // @param dirToLightTS - normalized direction to a light source, in tangent space, for self-shadowing (if enabled via o_parallax_shadow).
 // @param numSteps - the number of steps to take when marching along the ray searching for intersection.
 // @param parallaxShadowAttenuation - returns a factor for attenuating a light source, for self-shadowing (if enabled via o_parallax_shadow).
-ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, int numSteps, inout float parallaxShadowAttenuation)
+ParallaxOffset AdvancedParallaxMapping(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, int numSteps, inout float parallaxShadowAttenuation)
 {
     ParallaxOffset result;
     result.m_isClipped = false;
@@ -185,7 +188,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
     float3 parallaxOffset = -dirToCameraTS.xyz * dirToCameraZInverse * depthOffset;
     
     // Get an initial heightmap sample to start the intersection search, starting at our initial parallaxOffset position.
-    float currentSample = GetNormalizedDepth(heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+    float currentSample = GetNormalizedDepth(params, heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
     float prevSample;
     
     // Note that when depthOffset > 0, we could actually narrow the search so that instead of going through the entire [depthSearchStart,depthSearchEnd] range
@@ -199,7 +202,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
         parallaxOffset += delta;
                 
         prevSample = currentSample;
-        currentSample = GetNormalizedDepth(heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+        currentSample = GetNormalizedDepth(params, heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
     }
 
     // Depending on the algorithm, we refine the result of the above search
@@ -239,7 +242,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
                     parallaxOffset += reliefDelta * depthSign;
                     currentStep += reliefStep * depthSign;
 
-                    currentSample = GetNormalizedDepth(heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                    currentSample = GetNormalizedDepth(params, heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
                 }
             }
             break;
@@ -267,7 +270,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
                     parallaxOffset += adjustedDelta;
                     prevSample = currentSample;
 
-                    currentSample = GetNormalizedDepth(heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
+                    currentSample = GetNormalizedDepth(params, heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, uv + parallaxOffset.xy, ddx_uv, ddy_uv);
                 }
             }
             break;
@@ -288,7 +291,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
         // The most accurate way to report clipping is to sample the heightmap one last time at the final adjusted UV.
         // (trying to do it based on parallaxOffset.z values just leads to too many edge cases)
 
-        DepthResult depthResult = GetDepth(heightmap, mapSampler, float2(uv + parallaxOffset.xy), ddx_uv, ddy_uv);
+        DepthResult depthResult = GetDepth(params, heightmap, mapSampler, float2(uv + parallaxOffset.xy), ddx_uv, ddy_uv);
         
         if(DepthResultCode_Normalized == depthResult.m_resultCode)
         {
@@ -323,7 +326,7 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
             }
 
             shadowUV += shadowDelta;
-            currentSample = GetNormalizedDepth(heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, shadowUV, ddx_uv, ddy_uv);
+            currentSample = GetNormalizedDepth(params, heightmap, mapSampler, depthSearchStart, depthSearchEnd, inverseDepthFactor, shadowUV, ddx_uv, ddy_uv);
             currentStep -= step;
         }
 
@@ -342,11 +345,11 @@ ParallaxOffset AdvancedParallaxMapping(Texture2D heightmap, sampler mapSampler, 
 }
 
 // return offset in tangent space
-ParallaxOffset CalculateParallaxOffset(Texture2D heightmap, sampler mapSampler, float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
+ParallaxOffset CalculateParallaxOffset(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float depthFactor, float depthOffset, float2 uv, float3 dirToCameraTS, float3 dirToLightTS, inout float parallaxShadowAttenuation)
 {
     if(o_parallax_algorithm == ParallaxAlgorithm::Basic)
     {
-        return BasicParallaxMapping(heightmap, mapSampler, depthFactor, uv, dirToCameraTS);
+        return BasicParallaxMapping(params, heightmap, mapSampler, depthFactor, uv, dirToCameraTS);
     }
     else
     {
@@ -354,16 +357,16 @@ ParallaxOffset CalculateParallaxOffset(Texture2D heightmap, sampler mapSampler, 
         switch(o_parallax_quality)
         {
             case ParallaxQuality::Low:
-                parallaxOffset = AdvancedParallaxMapping(heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 16, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(params, heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 16, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::Medium:
-                parallaxOffset = AdvancedParallaxMapping(heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 32, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(params, heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 32, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::High:
-                parallaxOffset = AdvancedParallaxMapping(heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 64, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(params, heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 64, parallaxShadowAttenuation);
                 break;
             case ParallaxQuality::Ultra:
-                parallaxOffset = AdvancedParallaxMapping(heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 128, parallaxShadowAttenuation);
+                parallaxOffset = AdvancedParallaxMapping(params, heightmap, mapSampler, depthFactor, depthOffset, uv, dirToCameraTS, dirToLightTS, 128, parallaxShadowAttenuation);
                 break;
         }
         return parallaxOffset;
@@ -371,12 +374,14 @@ ParallaxOffset CalculateParallaxOffset(Texture2D heightmap, sampler mapSampler, 
 }
 
 // Performs ray intersection against a surface with a heightmap, to determine an offset amount required for a parallax effect.
+// @param params - The MaterialParameters - struct as defined by the material. Passed through to GetDepth() unchanged
 // @param depthFactor - scales the heightmap in tangent space units (which normally ends up being world units).
 // @param depthOffset - offsets the heighmap up or down in tangent space units (which normally ends up being world units).
 // @param uv - the UV coordinates on the surface, where the search will begin, used to sample the heightmap.
 // @param dirToCameraTS - normalized direction to the camera, in tangent space.
 // @param dirToLightTS - normalized direction to a light source, in tangent space, for self-shadowing (if enabled via o_parallax_shadow).
-ParallaxOffset GetParallaxOffset( Texture2D heightmap,
+ParallaxOffset GetParallaxOffset( const MaterialParameters params,
+                                  Texture2D heightmap,
                                   sampler mapSampler,
                                   float depthFactor, 
                                   float depthOffset,
@@ -401,7 +406,7 @@ ParallaxOffset GetParallaxOffset( Texture2D heightmap,
     float4 dirToCameraTransformed = mul(uv3DTransform, float4(dirToCameraTS, 0.0));
 
     float dummy = 1;
-    return CalculateParallaxOffset(heightmap, mapSampler, depthFactor, depthOffset, uv, normalize(dirToCameraTransformed.xyz), float3(0,0,0), dummy);
+    return CalculateParallaxOffset(params, heightmap, mapSampler, depthFactor, depthOffset, uv, normalize(dirToCameraTransformed.xyz), float3(0,0,0), dummy);
 }
 
 struct PixelDepthOffset

@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+uint GetWrinkleMaskCount(VsSystemValues SV)
+{
+    return ObjectSrg::m_wrinkle_mask_count;
+}
+real4 SampleWrinkleMask(VsSystemValues SV, sampler textureSampler, uint wrinkleMaskIndex, float2 wrinkleMaskUv, float4 uvDxDy, bool customDerivatives)
+{
+    if (customDerivatives)
+    {
+        return real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleGrad(textureSampler, wrinkleMaskUv, uvDxDy.xy, uvDxDy.zw));
+    }
+    else
+    {
+#ifdef CS_SAMPLERS
+        return real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleLevel(textureSampler, wrinkleMaskUv, 0));
+#else
+        return real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(textureSampler, wrinkleMaskUv));
+#endif
+    }
+}
+real GetWrinkleMaskWeight(VsSystemValues SV, uint wrinkleMaskIndex)
+{
+    return ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex);
+}
+

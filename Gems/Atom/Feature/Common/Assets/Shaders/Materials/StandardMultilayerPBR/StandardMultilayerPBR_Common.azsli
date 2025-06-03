@@ -373,14 +373,12 @@ real3 ApplyBlendMaskToDepthValues(const MaterialParameters params, real3 blendMa
 }
 
 //! Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     LayerBlendSource blendSource = GetFinalLayerBlendSource();
 
-    // heightmap and mapSampler ignored here, since each layer can have it's own heightmap:
-    // we simply fetch the MaterialParameters from the SRG again and sample and blend the height from our configured layers
-    const MaterialParameters params = GetMaterialParameters();
-
+    // heightmap and mapSampler ignored here, since each layer can have it's own heightmap
+    // we sample and blend the height from our configured layers
     real3 layerDepthValues = real3(GetLayerDepthValues(params, uv, uv_ddx, uv_ddy));
     
     // Note, when the blend source uses the blend mask from the vertex colors, parallax will not be able to blend correctly between layers. It will end up using the same blend mask values

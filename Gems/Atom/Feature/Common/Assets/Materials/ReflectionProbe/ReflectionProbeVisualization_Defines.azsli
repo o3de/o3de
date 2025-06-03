@@ -10,11 +10,7 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 struct MaterialParameters {};
-
-const MaterialParameters GetMaterialParameters()
-{
-    return (MaterialParameters)0;
-}
+#include <Atom/Features/Materials/MaterialSrg.azsli>
 
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 

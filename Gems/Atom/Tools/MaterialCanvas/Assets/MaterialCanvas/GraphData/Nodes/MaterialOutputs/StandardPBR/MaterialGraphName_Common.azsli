@@ -49,7 +49,7 @@ COMMON_OPTIONS_PARALLAX()
 
 #if ENABLE_PARALLAX
 // Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
 }

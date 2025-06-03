@@ -279,6 +279,10 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/LightingChannels.azsli
+    ShaderLib/Atom/Features/SampleBrdfMap.azsli
+    ShaderLib/Atom/Features/GoboTexture.azsli
+    ShaderLib/Atom/Features/WrinkleMask.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/InstancedTransforms.azsli

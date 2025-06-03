@@ -115,30 +115,30 @@ Surface EvaluateSurface_Skin(
 
     if(o_wrinkleLayers_enabled)
     {
+#if PIPELINE_HAS_OBJECT_SRG
         real4 wrinkleMaskBlendFactors = real4(0.0, 0.0, 0.0, 0.0);
 
+        // TODO: get the VsSystemValues as a parameter.
+        // This is okay for now since the wrinkle-mask functions don't really use the SV - parameter yet.
+        VsSystemValues SV = (VsSystemValues)(0);
+
         // Combine the optional per-morph target wrinkle masks
-        for(uint wrinkleMaskIndex = 0; wrinkleMaskIndex < ObjectSrg::m_wrinkle_mask_count; ++wrinkleMaskIndex)
+        for(uint wrinkleMaskIndex = 0; wrinkleMaskIndex < GetWrinkleMaskCount(SV); ++wrinkleMaskIndex)
         {
-            if (customDerivatives)
-            {
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleGrad(GetMaterialTextureSampler(), normalUv, uvDxDy.xy, uvDxDy.zw) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
-            }
-            else
-            {
-                #ifdef CS_SAMPLERS
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].SampleLevel(GetMaterialTextureSampler(), normalUv, 0) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
-                #else
-                wrinkleMaskBlendFactors += real4(ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(GetMaterialTextureSampler(), normalUv) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex));
-                #endif
-            }
+            wrinkleMaskBlendFactors += SampleWrinkleMask(SV, GetMaterialTextureSampler(), wrinkleMaskIndex, normalUv, uvDxDy, customDerivatives) * GetWrinkleMaskWeight(SV, wrinkleMaskIndex);
         }
 
         // If texture based morph target driven masks are being used, use those values instead of the per-vertex colors
-        if(ObjectSrg::m_wrinkle_mask_count)
+        if(GetWrinkleMaskCount(SV) > 0)
         {
             wrinkleBlendFactors = saturate(wrinkleMaskBlendFactors);
         }
+        else {
+            wrinkleBlendFactors = real4(0.0, 0.0, 0.0, 0.0);
+        }
+#else 
+        wrinkleBlendFactors = real4(0.0, 0.0, 0.0, 0.0);
+#endif // PIPELINE_HAS_OBJECT_SRG
     }
 
     // ------- Normal -------
