@@ -60,7 +60,7 @@ const MaterialParameters GetMaterialParameters(const int materialTypeId, const i
     ByteAddressBuffer materialInstances = Bindless::GetByteAddressBuffer(materialTypeBufferIndex);
     uint baseOffset = sizeof(MaterialParameters) * materialInstanceId;
     uint2 loadedId = materialInstances.Load2(baseOffset);
-    if (loadedId.x != m_materialTypeId || loadedId.y != materialInstanceId)
+    if (loadedId.x != materialTypeId || loadedId.y != materialInstanceId)
     {
         return (MaterialParameters)0;
     }
@@ -72,7 +72,7 @@ const MaterialParameters GetMaterialParameters()
 {
     return GetMaterialParameters(ObjectSrg::m_materialTypeId, ObjectSrg::m_materialInstanceId);
 }
-#endif
+#endif // PIPELINE_HAS_OBJECT_SRG
 
 // All MaterialProperties with the type TextureSampler are collected from all active Materials and stored in the SceneMaterialSrg::m_samplers array.
 // The Shader - Parameter (in the Srg or the Parameter-Buffer) is then the sampler-index.
