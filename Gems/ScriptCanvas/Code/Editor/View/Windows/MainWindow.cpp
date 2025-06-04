@@ -161,8 +161,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using namespace AzToolsFramework;
-
     namespace
     {
         template <typename T>
@@ -4072,6 +4070,8 @@ namespace ScriptCanvasEditor
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
     {
+        using namespace AzToolsFramework;
+
         EditorScriptCanvasComponentRequests* firstRequestBus = nullptr;
         EditorScriptCanvasComponentRequests* firstEmptyRequestBus = nullptr;
 
@@ -4515,4 +4515,4 @@ namespace ScriptCanvasEditor
 
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>
-}
+} // namespace ScriptCanvasEditor
