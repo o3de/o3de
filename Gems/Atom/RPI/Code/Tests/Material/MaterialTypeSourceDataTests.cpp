@@ -2169,8 +2169,8 @@ namespace UnitTest
                     ]
                 },
                 "lightingModel": "standard",
+                "materialShaderCode": "TestMaterial.azsli",
                 "materialShaderDefines": "TestMaterialDefines.azsli"
-                "materialShaderCode": "TestMaterial.azsli"
             }
         )";
 
