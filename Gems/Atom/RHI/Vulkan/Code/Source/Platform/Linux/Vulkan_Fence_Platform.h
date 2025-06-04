@@ -19,10 +19,10 @@ namespace AZ::Vulkan
     {
         int fd;
         VkSemaphoreGetFdInfoKHR semaphoreGetFdInfoKHR = {};
-        semaphoreGetFdInfoKHR.sType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+        semaphoreGetFdInfoKHR.sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR;
         semaphoreGetFdInfoKHR.pNext = NULL;
         semaphoreGetFdInfoKHR.semaphore = originalSemaphore;
-        semaphoreGetFdInfoKHR.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+        semaphoreGetFdInfoKHR.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
         const VkResult error = originalDevice.GetContext().GetSemaphoreFdKHR(originalDevice.GetNativeDevice(), &semaphoreGetFdInfoKHR, &fd);
         AZ_Assert(error == VK_SUCCESS, "Could not retrieve semaphore handle");
 
