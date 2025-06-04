@@ -17,48 +17,13 @@
 #include <Atom/Features/BlendUtility.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/BaseColorInput.azsli>
 #include <Atom/Features/Decals/DecalTextureUtil.azsli>
-#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 #ifndef ENABLE_DECALS_CAP
 #define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
 #endif
 
-
-void ApplyDecal(uint currDecalIndex, inout Surface surface);
-
 #if ENABLE_DECALS
-
-void ApplyDecalInternal(uint currDecalIndex, inout Surface surface)
-{
-    if (o_enableDecals)
-    {
-        ApplyDecal(currDecalIndex, surface);
-    }
-}
-
-void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
-{
-#if ENABLE_LIGHT_CULLING
-    tileIterator.LoadAdvance();
-    
-    while( !tileIterator.IsDone() )
-    {
-        uint currDecalIndex = tileIterator.GetValue();
-        tileIterator.LoadAdvance();
-        
-        ApplyDecalInternal(currDecalIndex, surface);
-    }
-#else
-    // Since there's no GPU culling for decals, we rely on culling done by CPU
-    // Only apply visible decals
-    for(uint decalIndex = 0; (decalIndex < ENABLE_DECALS_CAP && decalIndex < ViewSrg::m_visibleDecalCount); decalIndex++)
-    {
-        ApplyDecalInternal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
-    }
-#endif
-}
- 
  
 real GetDecalAttenuation(real3 surfNormal, real3 decalUp, real decalAngleAttenutation)
 {
@@ -72,7 +37,7 @@ real GetDecalAttenuation(real3 surfNormal, real3 decalUp, real decalAngleAttenut
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface)
 {
-    ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];
+    Decal decal = ViewSrg::m_decals[currDecalIndex];
 
     real3x3 decalRot = MatrixFromQuaternion(real4(decal.m_quaternion));
     decalRot = transpose(decalRot);
@@ -137,7 +102,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
     }
 }
 #else
-void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+void ApplyDecal(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
     //Not Enabled
 }

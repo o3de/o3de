@@ -14,12 +14,15 @@
 #include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/AssetInitBus.h>
+#include <Atom/RPI.Public/Material/MaterialShaderParameterLayout.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 
 namespace AZ
 {
@@ -136,6 +139,8 @@ namespace AZ
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
 
+            const MaterialShaderParameterLayout& GetMaterialShaderParameterLayout() const;
+
             //! Returns the list of values for all properties in this material.
             //! The entries in this list align with the entries in the MaterialPropertiesLayout. Each AZStd::any is guaranteed 
             //! to have a value of type that matches the corresponding MaterialPropertyDescriptor.
@@ -205,6 +210,9 @@ namespace AZ
 
             //! Contains actions to perform for each material update version.
             MaterialVersionUpdates m_materialVersionUpdates;
+
+            //! Describes the layout of the MaterialParameter - struct
+            MaterialShaderParameterLayout m_materialShaderParameterLayout;
 
             bool m_isNonSerializedDataInitialized = false;
         };

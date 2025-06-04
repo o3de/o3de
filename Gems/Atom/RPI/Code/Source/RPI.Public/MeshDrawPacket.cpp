@@ -6,16 +6,17 @@
  *
  */
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
-#include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <AzCore/Console/Console.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {
@@ -23,23 +24,28 @@ namespace AZ
     {
         Data::Instance<RPI::ShaderResourceGroup> MeshDrawPacket::InvalidSrg;
 
-        AZ_CVAR(bool,
+        AZ_CVAR(
+            bool,
             r_forceRootShaderVariantUsage,
             false,
-            [](const bool&) { AZ::Interface<AZ::IConsole>::Get()->PerformCommand("MeshFeatureProcessor.ForceRebuildDrawPackets"); },
+            [](const bool&)
+            {
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("MeshFeatureProcessor.ForceRebuildDrawPackets");
+            },
             ConsoleFunctorFlags::Null,
-            "(For Testing) Forces usage of root shader variant in the mesh draw packet level, ignoring any other shader variants that may exist."
-        );
+            "(For Testing) Forces usage of root shader variant in the mesh draw packet level, ignoring any other shader variants that may "
+            "exist.");
 
         MeshDrawPacket::MeshDrawPacket(
             ModelLod& modelLod,
             size_t modelLodMeshIndex,
+            int32_t meshInfoIndex,
             Data::Instance<Material> materialOverride,
             Data::Instance<ShaderResourceGroup> objectSrg,
-            const MaterialModelUvOverrideMap& materialModelUvMap
-        )
+            const MaterialModelUvOverrideMap& materialModelUvMap)
             : m_modelLod(&modelLod)
             , m_modelLodMeshIndex(modelLodMeshIndex)
+            , m_meshInfoIndex(meshInfoIndex)
             , m_objectSrg(objectSrg)
             , m_material(materialOverride)
             , m_materialModelUvMap(materialModelUvMap)
@@ -60,11 +66,16 @@ namespace AZ
 
         const ModelLod::Mesh& MeshDrawPacket::GetMesh() const
         {
-            AZ_Assert(m_modelLodMeshIndex < m_modelLod->GetMeshes().size(), "m_modelLodMeshIndex %zu is out of range %zu", m_modelLodMeshIndex, m_modelLod->GetMeshes().size());
+            AZ_Assert(
+                m_modelLodMeshIndex < m_modelLod->GetMeshes().size(),
+                "m_modelLodMeshIndex %zu is out of range %zu",
+                m_modelLodMeshIndex,
+                m_modelLod->GetMeshes().size());
             return m_modelLod->GetMeshes()[m_modelLodMeshIndex];
         }
 
-        void MeshDrawPacket::ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
+        void MeshDrawPacket::ForValidShaderOptionName(
+            const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback)
         {
             m_material->ForAllShaderItems(
                 [&](const Name&, const ShaderCollection::Item& shaderItem)
@@ -121,14 +132,14 @@ namespace AZ
             }
 
             // Shader option isn't on the list, look to see if it's even valid for at least one shader item, and if so, add it.
-            ForValidShaderOptionName(shaderOptionName,
+            ForValidShaderOptionName(
+                shaderOptionName,
                 [&]([[maybe_unused]] const ShaderCollection::Item& shaderItem, [[maybe_unused]] ShaderOptionIndex index)
                 {
                     // Store the option name and value, they will be used in DoUpdate() to select the appropriate shader variant
                     m_shaderOptions.push_back({ shaderOptionName, value });
                     return false; // stop checking other shader items.
-                }
-            );
+                });
 
             m_needUpdate = true;
             return true;
@@ -203,17 +214,21 @@ namespace AZ
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()
             //      - Material::Compile() updates all the material's outputs (SRG data, shader selection, shader options, etc).
             //      - Material::SetPropertyValue("bar",...). This bumps the materials' CurrentChangeId() again.
-            //      - We do not process Material::Compile() a second time because you can only call SRG::Compile() once per frame. Material::Compile()
+            //      - We do not process Material::Compile() a second time because you can only call SRG::Compile() once per frame.
+            //      Material::Compile()
             //        will be processed on the next frame. (See implementation of Material::Compile())
-            //      - MeshDrawPacket::Update() is called. It runs DoUpdate() to rebuild the draw packet, but everything is still in the state when "foo" was
-            //        set. The "bar" changes haven't been applied yet. It also sets m_materialChangeId to GetCurrentChangeId(), which corresponds to "bar" not "foo".
+            //      - MeshDrawPacket::Update() is called. It runs DoUpdate() to rebuild the draw packet, but everything is still in the
+            //      state when "foo" was
+            //        set. The "bar" changes haven't been applied yet. It also sets m_materialChangeId to GetCurrentChangeId(), which
+            //        corresponds to "bar" not "foo".
             //    Frame B:
-            //      - Something calls Material::Compile(). This finally updates the material's outputs with the latest data corresponding to "bar".
-            //      - MeshDrawPacket::Update() is called. But since the GetCurrentChangeId() hasn't changed since last time, DoUpdate() is not called.
+            //      - Something calls Material::Compile(). This finally updates the material's outputs with the latest data corresponding to
+            //      "bar".
+            //      - MeshDrawPacket::Update() is called. But since the GetCurrentChangeId() hasn't changed since last time, DoUpdate() is
+            //      not called.
             //      - The mesh continues rendering with only the "foo" change applied, indefinitely.
 
-            if (forceUpdate || (!m_material->NeedsCompile() && m_materialChangeId != m_material->GetCurrentChangeId())
-                || m_needUpdate)
+            if (forceUpdate || (!m_material->NeedsCompile() && m_materialChangeId != m_material->GetCurrentChangeId()) || m_needUpdate)
             {
                 DoUpdate(parentScene);
                 m_materialChangeId = m_material->GetCurrentChangeId();
@@ -237,7 +252,8 @@ namespace AZ
             uint32_t index = 0;
 
             AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_modelLod->GetAssetId());
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_modelLod->GetAssetId());
 
             AZ_TracePrintf("MeshDrawPacket", "Mesh: %s", assetInfo.m_relativePath.data());
             for (const auto& variant : m_shaderVariantNames)
@@ -247,7 +263,7 @@ namespace AZ
 #endif
         }
 
-        Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex)
+        const Data::Instance<RPI::ShaderResourceGroup>& MeshDrawPacket::GetDrawSrg(uint32_t drawItemIndex) const
         {
             if (drawItemIndex >= aznumeric_cast<uint32_t>(m_perDrawSrgs.size()))
             {
@@ -269,7 +285,7 @@ namespace AZ
 
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
-            RHI::DrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
+            RHI::DrawPacketBuilder drawPacketBuilder{ RHI::MultiDevice::AllDevices };
             drawPacketBuilder.Begin(nullptr);
             drawPacketBuilder.SetGeometryView(&mesh);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
@@ -337,16 +353,21 @@ namespace AZ
                 Data::Instance<Shader> shader = RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
                 if (!shader)
                 {
-                    AZ_Error("MeshDrawPacket", false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                    AZ_Error(
+                        "MeshDrawPacket",
+                        false,
+                        "Shader '%s'. Failed to find or create instance",
+                        shaderItem.GetShaderAsset()->GetName().GetCStr());
                     return false;
                 }
 
                 RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
 
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
-                // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
-                // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
-                // This might not be necessary anymore though, since ShaderAsset::GetDefaultShaderOptions() does this when the material type builder is creating the ShaderCollection.
+                // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify
+                // those options) [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default
+                // values for us, and remove this step here. This might not be necessary anymore though, since
+                // ShaderAsset::GetDefaultShaderOptions() does this when the material type builder is creating the ShaderCollection.
                 shaderOptions.SetUnspecifiedToDefaultValues();
 
                 if (isRasterShader)
@@ -378,7 +399,8 @@ namespace AZ
                 }
 
                 const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
-                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
+                const ShaderVariant& variant =
+                    r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
 
 #ifdef DEBUG_MESH_SHADERVARIANTS
                 m_shaderVariantNames.push_back(variant.GetShaderVariantAsset().GetHint());
@@ -423,40 +445,49 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
                 if (drawSrg)
                 {
-                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
-
-                    AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
-                    auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
-
-                    if (index.IsValid())
+                    // Note: ShaderInputNameIndex as a local variable isn't all that useful, since it can't actually cache the index across
+                    // multiple calls. But it does save us from having the "index = FindConstantIndex(..); if (index.IsValid()) {}"
+                    // construct everywhere
                     {
-                        drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex(UvStreamTangentBitmask::SrgName);
+                        drawSrg->SetConstant(nameIndex, uvStreamTangentBitmask.GetFullTangentBitmask());
                     }
-
-                    AZ::Name drawSrgModelLodMeshIndex = AZ::Name(DrawSrgModelLodMeshIndex);
-                    index = drawSrg->FindShaderInputConstantIndex(drawSrgModelLodMeshIndex);
-
-                    if (index.IsValid())
                     {
-                        drawSrg->SetConstant(index, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                        // To enable this shader constant in DrawSrg, a shader must:
+                        // #define USE_DRAWSRG_MESHLOD_MESHINDEX 1
+                        // By default it is NOT defined.
+                        // When defined, the value of @m_modelLodMeshIndex (aka subMesh index) is written
+                        // to the shader constant.
+                        RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_modelLodMeshIndex"));
+                        drawSrg->SetConstant(nameIndex, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
+                    {
+                        // Pass MeshInfoIndex to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_meshInfoIndex");
+                        drawSrg->SetConstant(nameIndex, m_meshInfoIndex);
                     }
 
                     // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?
                     // Leaving it as always calling Compile() as precaution that there's code somewhere else that assumes
-                    // Compile() was already called on DrawSrg.
+                    // Compile() was already called on DrawSrg.                    {
                     drawSrg->Compile();
                 };
 
                 const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(*pipelineStateDescriptor);
                 if (!pipelineState)
                 {
-                    AZ_Error("MeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                    AZ_Error(
+                        "MeshDrawPacket",
+                        false,
+                        "Shader '%s'. Failed to acquire default pipeline state",
+                        shaderItem.GetShaderAsset()->GetName().GetCStr());
                     return false;
                 }
 
                 const RHI::ConstantsLayout* rootConstantsLayout =
                     pipelineStateDescriptor->m_pipelineLayoutDescriptor->GetRootConstantsLayout();
-                if(isFirstShaderItem)
+                if (isFirstShaderItem)
                 {
                     if (HasRootConstants(rootConstantsLayout))
                     {
@@ -472,7 +503,8 @@ namespace AZ
                     AZ_Error(
                         "MeshDrawPacket",
                         (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
-                        (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
+                            (m_rootConstantsLayout && rootConstantsLayout &&
+                             m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
                         "Shader %s has mis-matched root constant layout in material %s. "
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.",
@@ -519,15 +551,21 @@ namespace AZ
 
             m_material->ApplyGlobalShaderOptions();
 
-            // TODO(MaterialPipeline): We might want to detect duplicate ShaderItem objects here, and merge them to avoid redundant RHI DrawItems.
+            // TODO(MaterialPipeline): We might want to detect duplicate ShaderItem objects here, and merge them to avoid redundant RHI
+            // DrawItems.
             m_material->ForAllShaderItems(
                 [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
-                    if (shaderItem.IsEnabled())
+                    // TODO: use the drawlist-filter to skip deferred material-items
+                    if (shaderItem.IsEnabled() && shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster)
                     {
                         if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                         {
-                            AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::DrawPacketBuilder::DrawItemCountMax);
+                            AZ_Error(
+                                "MeshDrawPacket",
+                                false,
+                                "Material has more than the limit of %d active shader items.",
+                                RHI::DrawPacketBuilder::DrawItemCountMax);
                             return false;
                         }
 
@@ -557,4 +595,3 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
-

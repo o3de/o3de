@@ -21,6 +21,7 @@
 
 Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
+    const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
     float3 tangents[UvSetCount],
@@ -29,7 +30,8 @@ Surface EvaluateSurface_MaterialGraphName(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
     const float3 O3DE_MC_POSITION = (float3)IN.position;
@@ -47,8 +49,8 @@ Surface EvaluateSurface_MaterialGraphName(
 #endif
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
 
-    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
-    const bool placeHolder = MaterialSrg::m_placeHolder;
+    // placeholder to keep MaterialParams from being compiled out when iterating on graphs
+    const int materialType = params.m_materialType;
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inOpacityFactor, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
     real3 inNormal = normalWS;
@@ -71,6 +73,7 @@ Surface EvaluateSurface_MaterialGraphName(
     CheckClipping((real)inAlpha, (real)inOpacityFactor);
 
     Surface surface;
+    surface.lightingChannels = lightingChannels;
     surface.position = positionWS;
     surface.vertexNormal = normalWS;
     surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
@@ -117,16 +120,19 @@ Surface EvaluateSurface_MaterialGraphName(
 // because dxc compiler doesn't allow default parameters on functions with overloads
 Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
+    const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    uint lightingChannels)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         positionWS,
         normalWS,
         tangents,
@@ -135,14 +141,16 @@ Surface EvaluateSurface_MaterialGraphName(
         isFrontFace,
         isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false); 
+        false,
+        lightingChannels); 
 }
 
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -151,13 +159,15 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         uvDxDy,
-        customDerivatives);
+        customDerivatives,
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_MaterialGraphName(
         IN,
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -166,5 +176,6 @@ Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        GetLightingChannelMask(SV));
 }

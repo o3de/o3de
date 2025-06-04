@@ -91,10 +91,23 @@
             },
             { 
                 "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/VertexColorPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
             }
         ]
     },
     "lightingModel": "Standard",
+    "materialShaderDefines": "Materials/Types/StandardPBR_Defines.azsli",
     "materialShaderCode": "Materials/Types/StandardPBR.azsli",
     "functors": [
     ],

@@ -9,8 +9,9 @@
 #pragma once
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
+#include <Atom/RPI.Public/Material/MaterialShaderParameterLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzCore/JSON/document.h>
 
 namespace AZ
@@ -91,7 +92,8 @@ namespace AZ
                 enum class MaterialTypeProductSubId : u32
                 {
                     MaterialTypeAsset = MaterialTypeAsset::SubId,
-                    AllPropertiesMaterialSourceFile
+                    AllPropertiesMaterialSourceFile,
+                    MaterialShaderParameterLayoutSourceFile
                 };
 
             } m_finalStage;

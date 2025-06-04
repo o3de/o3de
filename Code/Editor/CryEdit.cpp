@@ -1765,7 +1765,7 @@ bool CCryEditApp::InitInstance()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::LoadFile(QString fileName)
+void CCryEditApp::LoadFile([[maybe_unused]] QString fileName)
 {
     if (GetIEditor()->GetViewManager()->GetViewCount() == 0)
     {

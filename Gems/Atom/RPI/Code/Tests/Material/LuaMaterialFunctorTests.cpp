@@ -40,10 +40,7 @@ namespace UnitTest
             MaterialNameContext nameContext;
 
             MaterialFunctorSourceData::RuntimeContext createFunctorContext{
-                "Dummy.materialtype",
-                materialTypeCreator.GetMaterialPropertiesLayout(materialPipelineName),
-                (materialPipelineName == MaterialPipelineNone) ? materialTypeCreator.GetMaterialShaderResourceGroupLayout() : nullptr,
-                &nameContext
+                "Dummy.materialtype", materialTypeCreator.GetMaterialPropertiesLayout(materialPipelineName), &nameContext
             };
 
             MaterialFunctorSourceData::FunctorResult result = functorSourceData.CreateFunctor(createFunctorContext);
@@ -112,12 +109,13 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
         }
 
-        // Setup for a single material property and a specific shader constant input 
+        // Setup for a single material property and a specific shader constant input
         void Setup(
             RHI::Ptr<RHI::ShaderResourceGroupLayout> materialSrgLayout,
+            MaterialShaderParameterLayout& materialShaderParameterLayout,
             MaterialPropertyDataType dataType,
             const char* materialPropertyName,
             const char* shaderInputName,
@@ -128,6 +126,7 @@ namespace UnitTest
             materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout));
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
             materialTypeCreator.EndMaterialProperty();
+            materialTypeCreator.SetMaterialShaderParameterLayout(materialShaderParameterLayout);
             LuaMaterialFunctorTests::AddLuaFunctor(materialTypeCreator, luaFunctorScript);
             EXPECT_TRUE(materialTypeCreator.End(m_materialTypeAsset));
 
@@ -138,8 +137,55 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
-            m_srgConstantIndex = m_material->GetRHIShaderResourceGroup()->GetData().FindShaderInputConstantIndex(Name{shaderInputName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
+            m_shaderParameterLayoutIndex.emplace_back(
+                m_material->GetAsset()->GetMaterialTypeAsset()->GetMaterialShaderParameterLayout().GetParameterIndex(shaderInputName));
+            m_srgConstantIndex.emplace_back(
+                m_material->GetRHIShaderResourceGroup()->GetData().FindShaderInputConstantIndex(Name{ shaderInputName }));
+        }
+
+        // Setup for multiple material properties and shader constant inputs
+        struct TestMaterialProperty
+        {
+            MaterialPropertyDataType m_dataType;
+            const char* m_materialPropertyName;
+            const char* m_shaderParamteterName;
+        };
+
+        void Setup(
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> materialSrgLayout,
+            MaterialShaderParameterLayout& materialShaderParameterLayout,
+            AZStd::vector<TestMaterialProperty> testProperties,
+            const char* luaFunctorScript)
+        {
+            MaterialTypeAssetCreator materialTypeCreator;
+            materialTypeCreator.Begin(Uuid::CreateRandom());
+            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout));
+            for (auto& entry : testProperties)
+            {
+                materialTypeCreator.BeginMaterialProperty(Name{ entry.m_materialPropertyName }, entry.m_dataType);
+                materialTypeCreator.EndMaterialProperty();
+            }
+            materialTypeCreator.SetMaterialShaderParameterLayout(materialShaderParameterLayout);
+            LuaMaterialFunctorTests::AddLuaFunctor(materialTypeCreator, luaFunctorScript);
+            EXPECT_TRUE(materialTypeCreator.End(m_materialTypeAsset));
+
+            Data::Asset<MaterialAsset> materialAsset;
+            MaterialAssetCreator materialCreator;
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset);
+            EXPECT_TRUE(materialCreator.End(materialAsset));
+
+            m_material = Material::Create(materialAsset);
+
+            for (auto& entry : testProperties)
+            {
+                m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ entry.m_materialPropertyName }));
+                m_shaderParameterLayoutIndex.emplace_back(
+                    m_material->GetAsset()->GetMaterialTypeAsset()->GetMaterialShaderParameterLayout().GetParameterIndex(
+                        entry.m_shaderParamteterName));
+                m_srgConstantIndex.emplace_back(
+                    m_material->GetRHIShaderResourceGroup()->GetData().FindShaderInputConstantIndex(Name{ entry.m_shaderParamteterName }));
+            }
         }
 
         // Setup for a single material property and a specific shader option
@@ -165,8 +211,8 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
-            m_shaderOptionIndex = shaderOptionsLayout->FindShaderOptionIndex(Name{shaderOptionName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
+            m_shaderOptionIndex.emplace_back(shaderOptionsLayout->FindShaderOptionIndex(Name{ shaderOptionName }));
         }
 
         // Setup for two material properties for testing one property affecting another property's metadata 
@@ -194,8 +240,8 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{primaryPropertyName});
-            m_otherMaterialPropertyIndex = m_material->FindPropertyIndex(Name{secondaryPropertyName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ primaryPropertyName }));
+            m_otherMaterialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ secondaryPropertyName }));
         }
 
         // Setup for a single material property connected to a material pipeline property, with a material pipeline functor
@@ -209,7 +255,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom()),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, dataType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
@@ -225,7 +276,7 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
         }
 
         // Setup for a single material property connected to a material pipeline property, with a material pipeline functor, including a shader option
@@ -241,7 +292,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, dataType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
@@ -257,8 +313,8 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
-            m_shaderOptionIndex = shaderOptionsLayout->FindShaderOptionIndex(Name{shaderOptionName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
+            m_shaderOptionIndex.emplace_back(shaderOptionsLayout->FindShaderOptionIndex(Name{ shaderOptionName }));
         }
 
         // Setup for a single material property with a material functor, and a material pipeline property with a material pipeline functor
@@ -274,7 +330,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom()),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, pipelineMaterialPropertyType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, materialPropertyType);
@@ -291,26 +352,31 @@ namespace UnitTest
 
             m_material = Material::Create(materialAsset);
 
-            m_materialPropertyIndex = m_material->FindPropertyIndex(Name{materialPropertyName});
+            m_materialPropertyIndex.emplace_back(m_material->FindPropertyIndex(Name{ materialPropertyName }));
         }
 
         Data::Asset<MaterialTypeAsset> GetMaterialTypeAsset() { return m_materialTypeAsset; }
         Data::Instance<Material> GetMaterial() { return m_material; }
-        MaterialPropertyIndex GetMaterialPropertyIndex() { return m_materialPropertyIndex; }
-        MaterialPropertyIndex GetOtherMaterialPropertyIndex() { return m_otherMaterialPropertyIndex; }
-        RHI::ShaderInputConstantIndex GetSrgConstantIndex() { return m_srgConstantIndex; }
-        ShaderOptionIndex GetShaderOptionIndex() { return m_shaderOptionIndex; }
+        MaterialPropertyIndex GetMaterialPropertyIndex(const int index = 0) { return m_materialPropertyIndex[index]; }
+        MaterialPropertyIndex GetOtherMaterialPropertyIndex(const int index = 0) { return m_otherMaterialPropertyIndex[index]; }
+        RHI::ShaderInputConstantIndex GetSrgConstantIndex(const int index = 0) { return m_srgConstantIndex[index]; }
+        MaterialShaderParameterLayout::Index GetShaderParameterLayoutIndex(const int index = 0)
+        {
+            return m_shaderParameterLayoutIndex[index];
+        }
+        ShaderOptionIndex GetShaderOptionIndex(const int index = 0) { return m_shaderOptionIndex[index]; }
 
     private:
         Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
         Data::Instance<Material> m_material;
-        MaterialPropertyIndex m_materialPropertyIndex;
-        MaterialPropertyIndex m_otherMaterialPropertyIndex;
-        RHI::ShaderInputConstantIndex m_srgConstantIndex;
-        ShaderOptionIndex m_shaderOptionIndex;
+        AZStd::vector<MaterialPropertyIndex> m_materialPropertyIndex;
+        AZStd::vector<MaterialPropertyIndex> m_otherMaterialPropertyIndex;
+        AZStd::vector<RHI::ShaderInputConstantIndex> m_srgConstantIndex;
+        AZStd::vector<MaterialShaderParameterLayout::Index> m_shaderParameterLayoutIndex;
+        AZStd::vector<ShaderOptionIndex> m_shaderOptionIndex;
     };
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Bool)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValues_Bool)
     {
         using namespace AZ::RPI;
 
@@ -322,287 +388,161 @@ namespace UnitTest
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_bool("general.TestBool")
-                    context:SetShaderConstant_bool("m_bool", value)
+                    context:SetShaderParameterValue_bool("m_bool", value)
                 end
             )";
 
         auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
+        auto shaderParamsLayout = CreateCommonTestMaterialShaderParameterLayout();
+        EXPECT_EQ(16, shaderParamsLayout.ConnectParametersToSrg(materialSrgLayout.get()));
         auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
 
         TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Bool, "general.TestBool", "m_bool", functorScript);
+        testData.Setup(materialSrgLayout, shaderParamsLayout, MaterialPropertyDataType::Bool, "general.TestBool", "m_bool", functorScript);
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
         ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
+        // clang-format off
         EXPECT_TRUE(testData.GetMaterial()->Compile());
+        MaterialInstanceHandlerInterface::Get()->Compile();
         EXPECT_EQ(true, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<bool>(testData.GetSrgConstantIndex()));
+        EXPECT_EQ(true, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<bool>(testData.GetShaderParameterLayoutIndex()));
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});
         ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
         EXPECT_TRUE(testData.GetMaterial()->Compile());
+        MaterialInstanceHandlerInterface::Get()->Compile();
         EXPECT_EQ(false, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<bool>(testData.GetSrgConstantIndex()));
+        EXPECT_EQ(false, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<bool>(testData.GetShaderParameterLayoutIndex()));
+        // clang-format on
     }
 
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Float)
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderParameterValues)
     {
         using namespace AZ::RPI;
 
         const char* functorScript =
             R"(
                 function GetMaterialPropertyDependencies()
-                    return {"general.TestFloat"}
+                    return {
+                        "general.TestFloat",
+                        "general.TestInt",
+                        "general.TestUInt",
+                        "general.TestVector2",
+                        "general.TestVector3",
+                        "general.TestVector4",
+                        "general.TestColor",
+                        "general.Scale",
+                        "general.Offset"
+                    };
+
                 end
 
                 function Process(context)
                     local value = context:GetMaterialPropertyValue_float("general.TestFloat")
-                    context:SetShaderConstant_float("m_float", value * 2.0)
-                end
-            )";
+                    context:SetShaderParameterValue_float("m_float", value * 2.0)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Float, "general.TestFloat", "m_float", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{1.25f});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_FLOAT_EQ(2.5f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<float>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Int)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestInt"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_int("general.TestInt")
-                    context:SetShaderConstant_int("m_int", value * -1)
-                end
-            )";
+                    context:SetShaderParameterValue_int("m_int", value * -1)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Int, "general.TestInt", "m_int", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{2});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(-2, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<int32_t>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_UInt)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestUInt"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_uint("general.TestUInt")
-                    context:SetShaderConstant_uint("m_uint", value + 5)
-                end
-            )";
+                    context:SetShaderParameterValue_uint("m_uint", value + 5)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::UInt, "general.TestUInt", "m_uint", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{2u});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(7, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<uint32_t>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Float2)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestVector2"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_Vector2("general.TestVector2")
                     local swap = value.y
                     value.y = value.x
                     value.x = swap
-                    context:SetShaderConstant_Vector2("m_float2", value)
-                end
-            )";
+                    context:SetShaderParameterValue_Vector2("m_float2", value)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Vector2, "general.TestVector2", "m_float2", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{Vector2(1.0f, 2.0f)});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Vector2(2.0f, 1.0f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector2>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Vector3)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestVector3"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_Vector3("general.TestVector3")
                     value:Normalize()
-                    context:SetShaderConstant_Vector3("m_float3", value)
-                end
-            )";
+                    context:SetShaderParameterValue_Vector3("m_float3", value)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Vector3, "general.TestVector3", "m_float3", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{Vector3(5.0f, 4.0f, 3.0f)});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Vector3(5.0f, 4.0f, 3.0f).GetNormalized(), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector3>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Vector4)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestVector4"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_Vector4("general.TestVector4")
                     value:Homogenize()
-                    context:SetShaderConstant_Vector4("m_float4", value)
-                end
-            )";
+                    context:SetShaderParameterValue_Vector4("m_float4", value)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Vector4, "general.TestVector4", "m_float4", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{Vector4(1.0f, 2.0f, 3.0f, 4.0f)});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector4>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.TestColor"}
-                end
-
-                function Process(context)
                     local value = context:GetMaterialPropertyValue_Color("general.TestColor")
                     value.r = value.r * value.a
                     value.g = value.g * value.a
                     value.b = value.b * value.a
-                    context:SetShaderConstant_Color("m_color", value)
-                end
-            )";
+                    context:SetShaderParameterValue_Color("m_color", value)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Color, "general.TestColor", "m_color", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{Color(1.0f, 0.5f, 0.4f, 0.5f)});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Color(0.5f, 0.25f, 0.2f, 0.5f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Color>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderConstant_Matrix3x3)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.Scale"}
-                end
-
-                function Process(context)
                     local scale = context:GetMaterialPropertyValue_float("general.Scale")
                     local tansform = Matrix3x3.CreateScale(Vector3(scale, scale, 1.0))
-                    context:SetShaderConstant_Matrix3x3("m_float3x3", tansform)
-                end
-            )";
+                    context:SetShaderParameterValue_Matrix3x3("m_float3x3", tansform)
 
-        auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
-        auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
-
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Float, "general.Scale", "m_float3x3", functorScript);
-
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{0.5f});
-        ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
-        EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Matrix3x3::CreateScale(Vector3(0.5f, 0.5f, 1.0f)), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Matrix3x3>(testData.GetSrgConstantIndex()));
-    }
-
-    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderConstant_Matrix4x4)
-    {
-        using namespace AZ::RPI;
-
-        const char* functorScript =
-            R"(
-                function GetMaterialPropertyDependencies()
-                    return {"general.Offset"}
-                end
-
-                function Process(context)
                     local offset = context:GetMaterialPropertyValue_Vector3("general.Offset")
                     local tansform = Matrix4x4.CreateTranslation(offset)
-                    context:SetShaderConstant_Matrix4x4("m_float4x4", tansform)
+                    context:SetShaderParameterValue_Matrix4x4("m_float4x4", tansform)
+
                 end
             )";
 
         auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
+        auto shaderParamsLayout = CreateCommonTestMaterialShaderParameterLayout();
+        EXPECT_EQ(16, shaderParamsLayout.ConnectParametersToSrg(materialSrgLayout.get()));
         auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
 
-        TestMaterialData testData;
-        testData.Setup(materialSrgLayout, MaterialPropertyDataType::Vector3, "general.Offset", "m_float4x4", functorScript);
+        AZStd::vector<TestMaterialData::TestMaterialProperty> properties = {
+            { MaterialPropertyDataType::Float, "general.TestFloat", "m_float" },
+            { MaterialPropertyDataType::Int, "general.TestInt", "m_int" },
+            { MaterialPropertyDataType::UInt, "general.TestUInt", "m_uint" },
+            { MaterialPropertyDataType::Vector2, "general.TestVector2", "m_float2" },
+            { MaterialPropertyDataType::Vector3, "general.TestVector3", "m_float3" },
+            { MaterialPropertyDataType::Vector4, "general.TestVector4", "m_float4" },
+            { MaterialPropertyDataType::Color, "general.TestColor", "m_color" },
+            { MaterialPropertyDataType::Float, "general.Scale", "m_float3x3" },
+            { MaterialPropertyDataType::Vector3, "general.Offset", "m_float4x4" }
+        };
 
-        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{Vector3(1.0f, 2.0f, 3.0f)});
+        TestMaterialData testData;
+        testData.Setup(materialSrgLayout, shaderParamsLayout, properties, functorScript);
+
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(0), MaterialPropertyValue{ 1.25f });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(1), MaterialPropertyValue{ 2 });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(2), MaterialPropertyValue{ 2u });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(3), MaterialPropertyValue{ Vector2(1.0f, 2.0f) });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(4), MaterialPropertyValue{ Vector3(5.0f, 4.0f, 3.0f) });
+        testData.GetMaterial()->SetPropertyValue(
+            testData.GetMaterialPropertyIndex(5), MaterialPropertyValue{ Vector4(1.0f, 2.0f, 3.0f, 4.0f) });
+        testData.GetMaterial()->SetPropertyValue(
+            testData.GetMaterialPropertyIndex(6), MaterialPropertyValue{ Color(1.0f, 0.5f, 0.4f, 0.5f) });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(7), MaterialPropertyValue{ 0.5f });
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(8), MaterialPropertyValue{ Vector3(1.0f, 2.0f, 3.0f) });
+
         ProcessQueuedSrgCompilations(shaderAsset, materialSrgLayout->GetName());
+        // clang-format off
         EXPECT_TRUE(testData.GetMaterial()->Compile());
-        EXPECT_EQ(Matrix4x4::CreateTranslation(Vector3(1.0f, 2.0f, 3.0f)), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Matrix4x4>(testData.GetSrgConstantIndex()));
+        MaterialInstanceHandlerInterface::Get()->Compile();
+        EXPECT_FLOAT_EQ(2.5f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<float>(testData.GetSrgConstantIndex(0)));
+        EXPECT_FLOAT_EQ(2.5f, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<float>(testData.GetShaderParameterLayoutIndex(0)));
+
+        EXPECT_EQ(-2, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<int32_t>(testData.GetSrgConstantIndex(1)));
+        EXPECT_EQ(-2, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<int32_t>(testData.GetShaderParameterLayoutIndex(1)));
+
+        EXPECT_EQ(7, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<uint32_t>(testData.GetSrgConstantIndex(2)));
+        EXPECT_EQ(7, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<uint32_t>(testData.GetShaderParameterLayoutIndex(2)));
+
+        EXPECT_EQ(Vector2(2.0f, 1.0f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector2>(testData.GetSrgConstantIndex(3)));
+        EXPECT_EQ(Vector2(2.0f, 1.0f), testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Vector2>(testData.GetShaderParameterLayoutIndex(3)));
+
+        EXPECT_EQ(Vector3(5.0f, 4.0f, 3.0f).GetNormalized(), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector3>(testData.GetSrgConstantIndex(4)));
+        EXPECT_EQ(Vector3(5.0f, 4.0f, 3.0f).GetNormalized(), testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Vector3>(testData.GetShaderParameterLayoutIndex(4)));
+
+        EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector4>(testData.GetSrgConstantIndex(5)));
+        EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Vector4>(testData.GetShaderParameterLayoutIndex(5)));
+
+        EXPECT_EQ(Color(0.5f, 0.25f, 0.2f, 0.5f), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Color>(testData.GetSrgConstantIndex(6)));
+        EXPECT_EQ(Color(0.5f, 0.25f, 0.2f, 0.5f), testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Color>(testData.GetShaderParameterLayoutIndex(6)));
+
+        EXPECT_EQ(Matrix3x3::CreateScale(Vector3(0.5f, 0.5f, 1.0f)), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Matrix3x3>(testData.GetSrgConstantIndex(7)));
+        EXPECT_EQ(Matrix3x3::CreateScale(Vector3(0.5f, 0.5f, 1.0f)), testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Matrix3x3>(testData.GetShaderParameterLayoutIndex(7)));
+
+        EXPECT_EQ(Matrix4x4::CreateTranslation(Vector3(1.0f, 2.0f, 3.0f)), testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Matrix4x4>(testData.GetSrgConstantIndex(8)));
+        EXPECT_EQ(Matrix4x4::CreateTranslation(Vector3(1.0f, 2.0f, 3.0f)), testData.GetMaterial()->GetMaterialShaderParameter()->GetShaderParameterData<Matrix4x4>(testData.GetShaderParameterLayoutIndex(8)));
+
+        // clang-format on
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetShaderOption_Bool)
@@ -1226,6 +1166,9 @@ namespace UnitTest
         TestMaterialData testData;
 
         ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddIgnoredErrorMessage(
+            "Unable to find product asset 'shaders/scenematerialsrg.azshader'. Has the source asset finished building?");
+        errorMessageFinder.AddIgnoredErrorMessage("Unable to locate the Material SRG shader asset, try again");
 
         errorMessageFinder.AddExpectedErrorMessage("ClearMultisampleCustomPosition(18,...) index is out of range. Must be less than 16.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
@@ -1266,6 +1209,9 @@ namespace UnitTest
         TestMaterialData testData;
 
         ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddIgnoredErrorMessage(
+            "Unable to find product asset 'shaders/scenematerialsrg.azshader'. Has the source asset finished building?");
+        errorMessageFinder.AddIgnoredErrorMessage("Unable to locate the Material SRG shader asset, try again");
 
         errorMessageFinder.AddExpectedErrorMessage("ClearBlendEnabled(10,...) index is out of range. Must be less than 8.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);

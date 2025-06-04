@@ -14,6 +14,7 @@
 #include "ParallaxShadowUtil.azsli"
 
  void SetPixelDepth(
+     const MaterialParameters params,
      inout float3 positionWS,
      real3 normal,
      float3 tangents[UvSetCount],
@@ -25,22 +26,24 @@
      inout float depthCS,
      out bool isClipped)
 {
-    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
-    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : CreateIdentity3x3_real();
+    real3x3 uvMatrix = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixInverse) : CreateIdentity3x3_real();
     
-    float heightmapScale = float(MaterialSrg::m_heightmapScale);
-    float heightmapOffset = float(MaterialSrg::m_heightmapOffset);
+    float heightmapScale = float(params.m_heightmapScale);
+    float heightmapOffset = float(params.m_heightmapOffset);
     
-    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, float(MaterialSrg::m_parallax_pdo_shadowFactor));
+    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, float(params.m_parallax_pdo_shadowFactor));
 
     GetParallaxInput(
-        normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
+        params,
+        GetMaterialTexture(params.m_heightmap), GetMaterialTextureSampler(), normal, tangents[params.m_parallaxUvIndex], bitangents[params.m_parallaxUvIndex],
         heightmapScale, heightmapOffset,
         objectToWorld, uvMatrix, uvMatrixInverse,
-        uvs[MaterialSrg::m_parallaxUvIndex], positionWS, depthNDC, depthCS, isClipped);
+        uvs[params.m_parallaxUvIndex], positionWS, depthNDC, depthCS, isClipped);
 }
 
  void SetPixelDepth(
+     const MaterialParameters params,
      inout float3 positionWS,
      real3 normal,
      float3 tangents[UvSetCount],
@@ -54,10 +57,11 @@
     float depthCS = 1.0;
     bool isClipped = false;
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
+    SetPixelDepth(params, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }
 
  void SetPixelDepth(
+     const MaterialParameters params,
      inout float3 positionWS,
      float3 normal,
      float3 tangents[UvSetCount],
@@ -73,10 +77,10 @@
     // GetParallaxInput applies an tangent offset to the UV. We want to apply the same offset to the detailUv (note: this needs to be tested with content)
     // The math is:   offset = newUv - oldUv;   detailUv += offset;
     // This is the same as:   detailUv -= oldUv;   detailUv += newUv;
-    detailUv[MaterialSrg::m_parallaxUvIndex] -= uvs[MaterialSrg::m_parallaxUvIndex];
+    detailUv[params.m_parallaxUvIndex] -= uvs[params.m_parallaxUvIndex];
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
+    SetPixelDepth(params, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 
     // Apply second part of the offset to the detail UV (see comment above)
-    detailUv[MaterialSrg::m_parallaxUvIndex] += uvs[MaterialSrg::m_parallaxUvIndex];
+    detailUv[params.m_parallaxUvIndex] += uvs[params.m_parallaxUvIndex];
 }

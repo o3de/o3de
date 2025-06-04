@@ -1,0 +1,68 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+// the CapsuleLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/CapsuleLight.azsli
+
+#if ENABLE_CAPSULE_LIGHTS
+
+#ifndef CapsuleLightUtil
+#error "CapsuleLightUtil needs to be defined"
+#endif // CapsuleLightUtil
+
+void ApplyCapsuleLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    CapsuleLight srgLight = ViewSrg::m_capsuleLights[lightIndex];
+
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+
+    CapsuleLightUtil light = CapsuleLightUtil::Init(srgLight, surface, ViewSrg::m_worldPosition);
+
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+    // CapsuleLights don't get shadows
+    real litRatio = 1.0f;
+
+#if ENABLE_AREA_LIGHT_VALIDATION
+    if (o_area_light_validation)
+    {
+        light.ApplySampled(srgLight, surface, lightingData);
+    }
+    else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+    {
+        light.Apply(srgLight, surface, litRatio, lightingData);
+    }
+}
+
+void ApplyCapsuleLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();    
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        ApplyCapsuleLight(currLightIndex, surface, lightingData);
+    }
+#else
+
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_pointLightCount; lightIndex++)
+    {
+        ApplyCapsuleLight(lightIndex, surface, lightingData);
+    }
+#endif /* ENABLE_LIGHT_CULLING */
+}
+#else 
+void ApplyCapsuleLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+    // empty
+}
+#endif /* ENABLE_CAPSULE_LIGHTS */
+
+

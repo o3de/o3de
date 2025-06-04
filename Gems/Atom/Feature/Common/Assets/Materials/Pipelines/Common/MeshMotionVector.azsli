@@ -5,19 +5,32 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
 
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0 // Well, it does have a pixel stage, but not one that can be customized.
 #define MATERIALPIPELINE_USES_PREV_VERTEX_POSITION 1
+#define PIPELINE_HAS_PASS_SRG 0
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <scenesrg_all.srgi>
-#include <viewsrg_all.srgi>
 
 struct PsOutput
 {
@@ -28,19 +41,26 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
-    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV, GetMaterialParameters());
+    OUT.m_instanceId = instanceId;
     return OUT;
 }
 
 PsOutput PixelShader(VsOutput IN)
 {
     PsOutput OUT;
+    
+    // re-create the System-Values for the Pixel
+    VsSystemValues SV;
+    SV.m_instanceId = IN.m_instanceId;
 
     // Current clip position
-    float4 clipPos = mul(ViewSrg::m_viewProjectionMatrix, float4(IN.m_worldPos, 1.0));
+    float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+    float4 clipPos = mul(viewProjectionMatrix, float4(IN.worldPosition, 1.0));
     
+    float4x4 viewProjectionPrevMatrix = GetViewProjectionPrevMatrix(SV);
     // Reprojected last frame's clip position, for skinned mesh it also implies last key frame
-    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4(IN.m_worldPosPrev, 1.0));
+    float4 clipPosPrev = mul(viewProjectionPrevMatrix, float4(IN.worldPosPrev, 1.0));
 
     float2 motion = (clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w) * 0.5;
 

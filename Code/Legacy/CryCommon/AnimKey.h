@@ -243,9 +243,7 @@ struct ISoundKey
     ISoundKey()
         : fDuration(0.0f)
     {
-        customColor.x = Col_TrackviewDefault.r;
-        customColor.y = Col_TrackviewDefault.g;
-        customColor.z = Col_TrackviewDefault.b;
+        customColor.Set(Col_TrackviewDefault.r, Col_TrackviewDefault.g, Col_TrackviewDefault.b);
     }
 
     AZStd::string sStartTrigger;
@@ -520,11 +518,11 @@ struct IScreenFaderKey
 
     //-----------------------------------------------------------------------------
     //!
-    float       m_fadeTime;
-    AZ::Color   m_fadeColor;
-    AZStd::string m_strTexture;
-    bool        m_bUseCurColor;
-    EFadeType   m_fadeType;
+    float           m_fadeTime;
+    AZ::Color       m_fadeColor;
+    AZStd::string   m_strTexture;
+    bool            m_bUseCurColor;
+    EFadeType       m_fadeType;
     EFadeChangeType m_fadeChangeType;
 };
 

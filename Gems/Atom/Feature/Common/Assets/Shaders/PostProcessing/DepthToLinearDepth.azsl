@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
+#include <Atom/Features/Decals/DecalStructures.azsli>
 
 #include <viewsrg_all.srgi>
 

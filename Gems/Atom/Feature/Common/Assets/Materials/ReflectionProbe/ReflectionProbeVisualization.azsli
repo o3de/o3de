@@ -6,51 +6,28 @@
  *
  */
 
-#include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Features/VertexUtility.azsli>
-
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
     
 #define MATERIAL_HAS_UVS 0
 
-    struct VsInput
-    {
-        float3 position : POSITION;
-        float3 normal : NORMAL;
-    };
-
-    struct VsSystemValues
-    {
-        uint m_instanceId;
-    };
-
-    struct VsOutput
-    {
-        precise linear centroid float4 position : SV_Position;
-        float3 normal: NORMAL;
-        float3 worldPosition : UV0;
-    };
-    
-    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
     {        
         VsOutput output;
-        output.worldPosition = LocalSpaceToWorldSpace(IN.position, SV.m_instanceId);
-        output.position = WorldSpaceToClipSpace(output.worldPosition);
+
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0)).xyz;
+        
+        float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+        output.position = mul(viewProjectionMatrix, float4(output.worldPosition, 1.0));
+
         output.normal = IN.normal;
+
         return output;
     }
         
-    class PixelGeometryData
-    {
-        float3 positionWS;
-        float3 vertexNormal;
-    };
-
-    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, bool isFrontFace)
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
     {
         PixelGeometryData geoData;
         geoData.positionWS = IN.worldPosition;
@@ -58,11 +35,10 @@
         return geoData;
     }
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
-
-    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
     {
         Surface surface;
+        surface.lightingChannels = GetLightingChannelMask(SV);
         surface.position = geoData.positionWS;
         surface.vertexNormal = geoData.vertexNormal;
         surface.normal = geoData.vertexNormal;
@@ -78,9 +54,12 @@
         return surface;
     }
 
+    // use the lighting model (lightingData, BRDF - function and ApplyLights) from the BasePBR
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>
+
 #else
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 
 #endif

@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+// Note: Adapted from LightUtilTemplate.azsli
+
+#pragma once
+
+#ifndef SimplePointLightUtil
+#define SimplePointLightUtil SimplePointLightUtil_Hair
+#endif
+
+#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
+
+class SimplePointLightUtil_Hair
+{
+    SimplePointLightUtil_PBR base;
+
+    static SimplePointLightUtil_Hair Init(SimplePointLight light, Surface surface, float3 cameraPositionWS)
+    {
+        SimplePointLightUtil_Hair result;
+        result.base = SimplePointLightUtil_PBR::Init(light, surface, cameraPositionWS);
+        return result;
+    }
+
+    real3 GetSurfaceToLightDirection()
+    {
+        return base.GetSurfaceToLightDirection();
+    }
+
+    real GetFalloff()
+    {
+        return base.GetFalloff();
+    }
+
+    void Apply(SimplePointLight light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+        SetNormalAndUpdateLightingParams(surface.tangent, GetSurfaceToLightDirection(), surface, lightingData);
+        base.Apply(light, surface, litRatio, lightingData);
+    }
+
+};
+
+#endif // ENABLE_DISK_LIGHTS

@@ -8,14 +8,7 @@
 
 #pragma once
 
-#define ENABLE_VERTEX_COLOR 1
-
-//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
-//TODO(MaterialPipeline): Try removing different parts of the SRG and see how hard/easy it is to customize the surface function.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli>
-
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
@@ -42,19 +35,16 @@
     }
     
     // Callback function for ParallaxMapping.azsli
-    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
-        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+        return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
     }
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
-
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
-
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
 
 #elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 
@@ -76,28 +66,26 @@
     }
     
     // Callback function for ParallaxMapping.azsli
-    DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+    DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
     {
-        return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+        return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
     }
     
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
     
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
-    
+
     #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
     {
-        GetAlphaAndClip(geoData.uvs);
+        GetAlphaAndClip(params, geoData.uvs);
     }
+
 
 #else
 
     //TODO(MaterialPipeline): I think we should rename these to "PositionOnly_*"
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 
 #endif

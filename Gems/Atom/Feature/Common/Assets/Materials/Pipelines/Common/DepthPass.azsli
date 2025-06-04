@@ -5,8 +5,25 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+#pragma once 
+
+#include <Atom/Features/SrgSemantics.azsli>
+
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 0
+#define PIPELINE_HAS_PASS_SRG 0
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,7 +34,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
-    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV, GetMaterialParameters());
     return OUT;
 }
 

@@ -21,19 +21,20 @@
 
 #include <Atom/Features/MatrixUtility.azsli>
 
-real3 BlendVertexColor(real3 baseColor, real3 vertexColor)
+real3 BlendVertexColor(real3 baseColor, real3 vertexColor, real factor)
 {
 #if ENABLE_VERTEX_COLOR
     // Check to ensure the material is using vertex colors (i.e o_useVertexColor) and that the mesh supports color vertex stream (i.e o_color0_isBound)
     if(o_useVertexColor && o_color0_isBound)
     {
-        baseColor = BlendBaseColor(vertexColor, baseColor, real(MaterialSrg::m_vertexColorFactor), o_vertexColorBlendMode, true);
+        baseColor = BlendBaseColor(vertexColor, baseColor, factor, o_vertexColorBlendMode, true);
     }
 #endif
     return baseColor;
 }
 
 Surface EvaluateSurface_BasePBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -42,52 +43,54 @@ Surface EvaluateSurface_BasePBR(
     bool isFrontFace,
     float4 uvDxDy,
     bool customDerivatives,
-    float4 vertexColor)
+    float4 vertexColor,
+    uint lightingChannels)
 {
     Surface surface;
     surface.position = positionWS;
+    surface.lightingChannels = lightingChannels;
 
     // ------- Normal -------
 
     surface.vertexNormal = vertexNormal;
-    float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
+    float2 normalUv = uvs[params.m_normalMapUvIndex];
 
-    real3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
+    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
     if (customDerivatives)
     {
-        surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, vertexNormal,
-                                           tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, real(MaterialSrg::m_normalFactor), uvDxDy, customDerivatives);
+        surface.normal = GetNormalInputWS(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, isFrontFace, vertexNormal,
+                                           tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], uvMatrix, o_normal_useTexture, real(params.m_normalFactor), uvDxDy, customDerivatives);
     }
     else
     {
-        surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, vertexNormal,
-                                           tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, real(MaterialSrg::m_normalFactor), float4(0.0f, 0.0f, 0.0f, 0.0f), false);
+        surface.normal = GetNormalInputWS(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, isFrontFace, vertexNormal,
+                                           tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], uvMatrix, o_normal_useTexture, real(params.m_normalFactor), float4(0.0f, 0.0f, 0.0f, 0.0f), false);
     }
 
     // ------- Base Color -------
 
-    float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
-    real3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, real3(MaterialSrg::m_baseColor.rgb), o_baseColor_useTexture, uvDxDy, customDerivatives);
-    real3 baseColor = BlendBaseColor(sampledColor, real3(MaterialSrg::m_baseColor.rgb), real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode, o_baseColor_useTexture);
-    baseColor = BlendVertexColor(baseColor, real3(vertexColor.rgb));
+    float2 baseColorUv = uvs[params.m_baseColorMapUvIndex];
+    real3 sampledColor = GetBaseColorInput(GetMaterialTexture(params.m_baseColorMap), GetMaterialTextureSampler(), baseColorUv, real3(params.m_baseColor.rgb), o_baseColor_useTexture, uvDxDy, customDerivatives);
+    real3 baseColor = BlendBaseColor(sampledColor, real3(params.m_baseColor.rgb), real(params.m_baseColorFactor), o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    baseColor = BlendVertexColor(baseColor, real3(vertexColor.rgb), real(params.m_vertexColorFactor));
     
     // ------- Metallic -------
 
-    float2 metallicUv = uvs[MaterialSrg::m_metallicMapUvIndex];
-    real metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, real(MaterialSrg::m_metallicFactor), o_metallic_useTexture, uvDxDy, customDerivatives);
+    float2 metallicUv = uvs[params.m_metallicMapUvIndex];
+    real metallic = GetMetallicInput(GetMaterialTexture(params.m_metallicMap), GetMaterialTextureSampler(), metallicUv, real(params.m_metallicFactor), o_metallic_useTexture, uvDxDy, customDerivatives);
 
     // ------- Specular -------
 
-    float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
-    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
+    float2 specularUv = uvs[params.m_specularF0MapUvIndex];
+    real specularF0Factor = GetSpecularInput(GetMaterialTexture(params.m_specularF0Map), GetMaterialTextureSampler(), specularUv, real(params.m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // ------- Roughness -------
 
-    float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
-    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
-                                        real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
+    float2 roughnessUv = uvs[params.m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(GetMaterialTexture(params.m_roughnessMap), GetMaterialTextureSampler(), roughnessUv, real(params.m_roughnessFactor),
+                                        real(params.m_roughnessLowerBound), real(params.m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
     surface.CalculateRoughnessA();
 
     return surface;
@@ -105,6 +108,7 @@ float4 GetVertexColor(VsOutput IN)
 // helper function to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
 Surface EvaluateSurface_BasePBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
@@ -112,9 +116,11 @@ Surface EvaluateSurface_BasePBR(
     float2 uvs[UvSetCount],
     bool isFrontFace,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     return EvaluateSurface_BasePBR(
+        params,
         positionWS,
         vertexNormal,
         tangents,
@@ -123,31 +129,37 @@ Surface EvaluateSurface_BasePBR(
         isFrontFace,
         uvDxDy,
         customDerivatives,
-        float4(1.0f, 1.0f, 1.0f, 1.0f));
+        float4(1.0f, 1.0f, 1.0f, 1.0f), /* VertexColor */
+        lightingChannels);
 }
 
 Surface EvaluateSurface_BasePBR(
+    const MaterialParameters params,
     float3 positionWS,
     real3 vertexNormal,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    uint lightingChannels)
 {
     return EvaluateSurface_BasePBR(
+        params,
         positionWS,
         vertexNormal,
         tangents,
         bitangents,
         uvs,
         isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false, /* customDerivatives */
+        lightingChannels);
 }
 
-Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_BasePBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_BasePBR(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
@@ -156,19 +168,22 @@ Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, float4 u
         geoData.isFrontFace,
         uvDxDy,
         customDerivatives,
-        GetVertexColor(IN));
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData)
+Surface EvaluateSurface_BasePBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_BasePBR(
+        params,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,
         geoData.bitangents,
         geoData.uvs,
         geoData.isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false,
-        GetVertexColor(IN));
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false,  /* customDerivatives */     
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }

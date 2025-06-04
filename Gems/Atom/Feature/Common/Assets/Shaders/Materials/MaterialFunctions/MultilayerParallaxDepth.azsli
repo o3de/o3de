@@ -12,6 +12,7 @@
 #include "ParallaxShadowUtil.azsli"
 
  void MultilayerSetPixelDepth(
+     const MaterialParameters params,
      real3 vertexBlendMask,
      inout float3 worldPosition,
      real3 normal,
@@ -24,24 +25,27 @@
      inout float depthCS,
      out bool isClipped)
 {
-    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : CreateIdentity3x3_real();
-    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : CreateIdentity3x3_real();
+    real3x3 uvMatrix = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixInverse) : CreateIdentity3x3_real();
 
-    real parallaxOverallOffset = real(MaterialSrg::m_displacementMax);
-    real parallaxOverallFactor = real(MaterialSrg::m_displacementMax) - real(MaterialSrg::m_displacementMin);
+    real parallaxOverallOffset = real(params.m_displacementMax);
+    real parallaxOverallFactor = real(params.m_displacementMax) - real(params.m_displacementMin);
     
-    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, real(MaterialSrg::m_parallax_pdo_shadowFactor));
+    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, real(params.m_parallax_pdo_shadowFactor));
     
     s_blendMaskFromVertexStream = vertexBlendMask;
     
+    // heightmap and heightmap sampler don't matter here: They get passed to the GetDepth() - function of the StandardMultiLayerPBR - material, where they are ignored.
     GetParallaxInput(
-        normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
+        params,
+        GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), normal, tangents[params.m_parallaxUvIndex], bitangents[params.m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
         objectToWorld, uvMatrix, uvMatrixInverse,
-        uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
+        uvs[params.m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
 }
 
  void MultilayerSetPixelDepth(
+     const MaterialParameters params,
      real3 vertexBlendMask,
      inout float3 positionWS,
      real3 normal,
@@ -56,5 +60,5 @@
     float depthCS = 1.0;
     bool isClipped = false;
 
-    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
+    MultilayerSetPixelDepth(params, vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }

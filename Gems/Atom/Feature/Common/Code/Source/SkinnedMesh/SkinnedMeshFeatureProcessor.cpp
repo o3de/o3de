@@ -309,8 +309,8 @@ namespace AZ
             m_skinningDispatches.clear();
             m_morphTargetDispatches.clear();
 
-            m_alreadyCreatedSkinningScopeThisFrame = false;
-            m_alreadyCreatedMorphTargetScopeThisFrame = false;
+            m_alreadyCreatedSkinningScopeThisFrame = {};
+            m_alreadyCreatedMorphTargetScopeThisFrame = {};
         }
 
         SkinnedMeshFeatureProcessor::SkinnedMeshHandle SkinnedMeshFeatureProcessor::AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc)
@@ -370,12 +370,11 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ::Name{ "SkinningPassTemplate" }, renderPipeline);
             RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
-                skinnedMeshComputePass->SetFeatureProcessor(this);
 
                 // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
                 m_skinningShader = skinnedMeshComputePass->GetShader();
@@ -390,12 +389,12 @@ namespace AZ
                 }
             }
 
-            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::PassFilter morphPassFilter =
+                RPI::PassFilter::CreateWithTemplateName(AZ::Name{ "MorphTargetPassTemplate" }, renderPipeline);
             RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
-                morphTargetComputePass->SetFeatureProcessor(this);
 
                 // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
                 m_morphTargetShader = morphTargetComputePass->GetShader();
@@ -419,29 +418,29 @@ namespace AZ
             m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
         }
 
-        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph)
+        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph, int deviceIndex)
         {
-            if (m_alreadyCreatedSkinningScopeThisFrame)
+            if (RHI::CheckBit(m_alreadyCreatedSkinningScopeThisFrame, deviceIndex))
             {
                 frameGraph.SetEstimatedItemCount(0);
             }
             else
             {
                 frameGraph.SetEstimatedItemCount((u32)m_skinningDispatches.size());
-                m_alreadyCreatedSkinningScopeThisFrame = true;
+                RHI::SetBit(m_alreadyCreatedSkinningScopeThisFrame, deviceIndex);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph)
+        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph, int deviceIndex)
         {
-            if (m_alreadyCreatedMorphTargetScopeThisFrame)
+            if (RHI::CheckBit(m_alreadyCreatedMorphTargetScopeThisFrame, deviceIndex))
             {
                 frameGraph.SetEstimatedItemCount(0);
             }
             else
             {
                 frameGraph.SetEstimatedItemCount((u32)m_morphTargetDispatches.size());
-                m_alreadyCreatedMorphTargetScopeThisFrame = true;
+                RHI::SetBit(m_alreadyCreatedMorphTargetScopeThisFrame, deviceIndex);
             }
         }
 

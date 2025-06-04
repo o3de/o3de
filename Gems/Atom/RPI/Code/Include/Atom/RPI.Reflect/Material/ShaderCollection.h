@@ -50,11 +50,26 @@ namespace AZ
                 //! Required for use in containers; not meant to be called directly.
                 Item();
 
+                enum class DrawItemType : uint32_t
+                {
+                    Raster = 0, // the shader expects a default draw item for a rasterpass (default)
+                    Deferred, // the shader expects a fullscreen draw item for a deferred rendering pass
+                    None // no draw-item should be created
+                };
+
                 //! @param shaderAsset The ShaderAsset represented by this item.
                 //! @param shaderTag Unique tag to identify this item.
                 //! @param variantId The the initial state of shader option values for use with this shader item.
-                Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
-                Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
+                Item(
+                    const Data::Asset<ShaderAsset>& shaderAsset,
+                    const AZ::Name& shaderTag,
+                    DrawItemType drawItemType,
+                    ShaderVariantId variantId = ShaderVariantId{});
+                Item(
+                    Data::Asset<ShaderAsset>&& shaderAsset,
+                    const AZ::Name& shaderTag,
+                    DrawItemType drawItemType,
+                    ShaderVariantId variantId = ShaderVariantId{});
 
                 const Data::Asset<ShaderAsset>& GetShaderAsset() const;
 
@@ -102,6 +117,11 @@ namespace AZ
                 // Only returns false if @m_shaderAsset is not ready.
                 bool InitializeShaderOptionGroup();
 
+                DrawItemType GetDrawItemType() const
+                {
+                    return m_drawItemType;
+                }
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
@@ -112,6 +132,7 @@ namespace AZ
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
                 bool m_enabled = true;                   //!< Disabled items will not be included in the final draw packet that gets sent to the renderer.
                 AZ::Name m_shaderTag;                    //!< Unique tag that identifies this item
+                DrawItemType m_drawItemType = DrawItemType::Raster; //!< Type of draw-item that this shader expects
             };
 
             using iterator = AZStd::vector<Item>::iterator;
@@ -144,6 +165,8 @@ namespace AZ
             AZStd::vector<Item> m_shaderItems;
             NameReflectionMapForIndex m_shaderTagIndexMap;
         };
+
+        AZ_TYPE_INFO_SPECIALIZE(ShaderCollection::Item::DrawItemType, "{967D8A25-E303-44E2-A0D0-0F75C8F9CEA7}");
 
     } // namespace RPI
 } // namespace AZ

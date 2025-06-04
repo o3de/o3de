@@ -7,8 +7,7 @@
  */
 
 #include <ImGui/ImGuiSystemComponent.h>
-#include <ImGui/ImGuiPass.h>
-
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>

@@ -46,8 +46,7 @@ namespace UnitTest
                 serializeContext->Class<Splat3Functor, AZ::RPI::MaterialFunctor>()
                     ->Version(1)
                     ->Field("m_floatIndex", &Splat3Functor::m_floatIndex)
-                    ->Field("m_vector3Index", &Splat3Functor::m_vector3Index)
-                    ;
+                    ->Field("m_vector3Name", &Splat3Functor::m_vector3Name);
             }
 
             using AZ::RPI::MaterialFunctor::Process;
@@ -55,12 +54,12 @@ namespace UnitTest
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
                 float f = context.GetMaterialPropertyValue(m_floatIndex).GetValue<float>();
-                float f3[3] = { f,f,f };
-                context.GetShaderResourceGroup()->SetConstantRaw(m_vector3Index, f3, sizeof(float) * 3);
+                Vector3 f3{ f, f, f };
+                context.GetMaterialShaderParameter()->SetParameter(m_vector3Name, f3);
             }
 
             AZ::RPI::MaterialPropertyIndex m_floatIndex;
-            RHI::ShaderInputConstantIndex m_vector3Index;
+            AZ::Name m_vector3Name;
         };
 
         /// Sample used for testing a MaterialFunctor that updates the shader collection
@@ -92,6 +91,7 @@ namespace UnitTest
         };
 
         RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
+        MaterialShaderParameterLayout m_testMaterialShaderParamterLayout;
         Ptr<ShaderOptionGroupLayout> m_testShaderOptionsLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
@@ -138,6 +138,9 @@ namespace UnitTest
 
             m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
+            m_testMaterialShaderParamterLayout = CreateCommonTestMaterialShaderParameterLayout();
+            m_testMaterialShaderParamterLayout.ConnectParametersToSrg(m_testMaterialSrgLayout.get());
+
             AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
             AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
             AZStd::vector<RPI::ShaderOptionValuePair> intOptionRange = CreateIntRangeShaderOptionValues(0, 8);
@@ -167,6 +170,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_testMaterialSrgLayout = nullptr;
+            m_testMaterialShaderParamterLayout = {};
             m_testShaderAsset.Reset();
             m_testShaderOptionsLayout = nullptr;
 
@@ -201,6 +205,10 @@ namespace UnitTest
 
             materialTypeCreator.AddShader(m_testShaderAsset);
 
+            // Material Shader Parameter layout
+
+            materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
+
             // Functor-driven shader
 
             materialTypeCreator.BeginMaterialProperty(Name{ "EnableSpecialPass" }, MaterialPropertyDataType::Bool);
@@ -223,8 +231,11 @@ namespace UnitTest
 
             Ptr<Splat3Functor> shaderInputFunctor = aznew Splat3Functor;
             shaderInputFunctor->m_floatIndex = materialTypeCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(Name{ "NonAliasFloat" });
-            shaderInputFunctor->m_vector3Index = m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{ "m_float3" });
+            shaderInputFunctor->m_vector3Name = Name{ "m_float3" };
             materialTypeCreator.AddMaterialFunctor(shaderInputFunctor);
+
+            // update the connections between the Properties and the Shader Parameters
+            materialTypeCreator.UpdateShaderParameterConnections();
 
             EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
             EXPECT_EQ(assetId, materialTypeAsset->GetId());
@@ -253,17 +264,48 @@ namespace UnitTest
             const MaterialPropertyDescriptor* floatDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(floatIndex);
             const MaterialPropertyDescriptor* imageDescriptor = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(imageIndex);
 
-            EXPECT_EQ(1, colorDescriptor->GetOutputConnections().size());
             EXPECT_EQ(1, floatDescriptor->GetOutputConnections().size());
             EXPECT_EQ(1, imageDescriptor->GetOutputConnections().size());
 
-            EXPECT_EQ(1, colorDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
-            EXPECT_EQ(2, floatDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
-            EXPECT_EQ(1, imageDescriptor->GetOutputConnections()[0].m_itemIndex.GetIndex());
+            auto checkShaderParameterIndices = [&](const AZStd::string& name,
+                                                   const MaterialPropertyDescriptor* propertyDesc,
+                                                   const int expectedIndex,
+                                                   const int expectedSrgIndex)
+            {
+                // Check if the descriptor has exactly one output connection with the ShaderInput type
+                EXPECT_EQ(1, propertyDesc->GetOutputConnections().size());
+                EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, propertyDesc->GetOutputConnections()[0].m_type);
 
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, colorDescriptor->GetOutputConnections()[0].m_type);
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, floatDescriptor->GetOutputConnections()[0].m_type);
-            EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, imageDescriptor->GetOutputConnections()[0].m_type);
+                auto itemIndex = materialTypeAsset->GetMaterialShaderParameterLayout().GetParameterIndex(name);
+
+                // check if the index in the ShaderParameters has the expected value
+                EXPECT_EQ(expectedIndex, itemIndex.GetIndex());
+
+                // check if the ShaderParameter index is registered in the property output connection
+                EXPECT_EQ(itemIndex.GetIndex(), propertyDesc->GetOutputConnections()[0].m_itemIndex.GetIndex());
+
+                // check if the srg-connection of the ShaderParameter agrees with the srg-layout
+                auto* srgConstantIndex = AZStd::get_if<RHI::ShaderInputConstantIndex>(
+                    &materialTypeAsset->GetMaterialShaderParameterLayout().GetDescriptor(itemIndex)->m_srgInputIndex);
+                auto* srgImageIndex = AZStd::get_if<RHI::ShaderInputImageIndex>(
+                    &materialTypeAsset->GetMaterialShaderParameterLayout().GetDescriptor(itemIndex)->m_srgInputIndex);
+                EXPECT_TRUE((srgConstantIndex != nullptr || srgImageIndex != nullptr));
+
+                if (srgConstantIndex)
+                {
+                    EXPECT_EQ(expectedSrgIndex, srgConstantIndex->m_index);
+                    EXPECT_EQ(srgConstantIndex->m_index, m_testMaterialSrgLayout->FindShaderInputConstantIndex(AZ::Name{ name }).m_index);
+                }
+                else if (srgImageIndex)
+                {
+                    EXPECT_EQ(expectedSrgIndex, srgImageIndex->m_index);
+                    EXPECT_EQ(srgImageIndex->m_index, m_testMaterialSrgLayout->FindShaderInputImageIndex(AZ::Name{ name }).m_index);
+                }
+            };
+
+            checkShaderParameterIndices("m_color", colorDescriptor, 3 /* shader Parameter Index */, 4 /* srg constant index*/);
+            checkShaderParameterIndices("m_image", imageDescriptor, 10 /* shader Parameter Index */, 1 /* srg image index */);
+            checkShaderParameterIndices("m_float", floatDescriptor, 4 /* shader Parameter Index */, 1 /* srg constant index */);
 
             // Check non-aliased, functor-based properties
 
@@ -277,8 +319,6 @@ namespace UnitTest
 
             // Check the functors
 
-            const RHI::ShaderInputConstantIndex expectedVector3Index = materialTypeAsset->GetMaterialSrgLayout()->FindShaderInputConstantIndex(Name{ "m_float3" });
-
             EXPECT_EQ(2, materialTypeAsset->GetMaterialFunctors().size());
             const DummyShaderCollectionFunctor* shaderCollectionFunctor = azrtti_cast<DummyShaderCollectionFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
             EXPECT_TRUE(nullptr != shaderCollectionFunctor);
@@ -287,7 +327,6 @@ namespace UnitTest
             const Splat3Functor* shaderInputFunctor = azrtti_cast<Splat3Functor*>(materialTypeAsset->GetMaterialFunctors()[1].get());
             EXPECT_TRUE(nullptr != shaderInputFunctor);
             EXPECT_EQ(nonAliasFloatIndex, shaderInputFunctor->m_floatIndex);
-            EXPECT_EQ(expectedVector3Index, shaderInputFunctor->m_vector3Index);
         };
 
     }
@@ -316,6 +355,7 @@ namespace UnitTest
         CheckPropertyValue<Vector4> (materialTypeAsset, Name{"MyFloat4"}, Vector4{ 0.0f, 0.0f, 0.0f, 0.0f });
         CheckPropertyValue<Color>   (materialTypeAsset, Name{"MyColor"}, Color{ 1.0f, 1.0f, 1.0f, 1.0f });
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"MyImage"}, Data::Asset<ImageAsset>({}));
+        CheckPropertyValue<RHI::SamplerState>(materialTypeAsset, Name{ "MySamplerState" }, GetDefaultSamplerState());
         CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 0u);
     }
 
@@ -342,6 +382,7 @@ namespace UnitTest
         materialTypeCreator.SetPropertyValue(Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
         materialTypeCreator.SetPropertyValue(Name{"MyImage"},  m_testImageAsset);
         materialTypeCreator.SetPropertyValue(Name{"MyEnum"}, 1u);
+        materialTypeCreator.SetPropertyValue(Name{ "MySamplerState" }, GetClampSamplerState());
 
         EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
 
@@ -355,6 +396,7 @@ namespace UnitTest
         CheckPropertyValue<Color>   (materialTypeAsset, Name{"MyColor"}, Color{ 0.1f, 0.2f, 0.3f, 0.4f });
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"MyImage"}, m_testImageAsset);
         CheckPropertyValue<uint32_t>(materialTypeAsset, Name{"MyEnum"}, 1u);
+        CheckPropertyValue<RHI::SamplerState>(materialTypeAsset, Name{ "MySamplerState" }, GetClampSamplerState());
     }
 
     TEST_F(MaterialTypeAssetTests, EnumPropertyValues)
@@ -595,6 +637,7 @@ namespace UnitTest
             MaterialVersionUpdate versionUpdate(7);
             AddSetValueAction(versionUpdate, "MyEnum",   2u);
             AddSetValueAction(versionUpdate, "MyImage",  m_testImageAsset2);
+            AddSetValueAction(versionUpdate, "MySamplerState", GetClampSamplerState());
             materialTypeCreator.AddVersionUpdate(versionUpdate);
         }
 
@@ -636,6 +679,7 @@ namespace UnitTest
         CheckMaterialPropertyValue<Color>   (materialAssetV1, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
         CheckMaterialPropertyValue<uint32_t>(materialAssetV1, Name{"MyEnum"}, 2u);
         CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV1, Name{"MyImage"}, m_testImageAsset2);
+        CheckMaterialPropertyValue<RHI::SamplerState>(materialAssetV1, Name{ "MySamplerState" }, GetClampSamplerState());
 
         CheckMaterialPropertyValue<bool>    (materialAssetV3, Name{"MyBool"},   true);
         CheckMaterialPropertyValue<float>   (materialAssetV3, Name{"MyFloat"},  1.2f);
@@ -647,6 +691,7 @@ namespace UnitTest
         CheckMaterialPropertyValue<Color>   (materialAssetV3, Name{"MyColor"},  Color{ 1.0f, 0.9f, 0.8f, 0.6f });
         CheckMaterialPropertyValue<uint32_t>(materialAssetV3, Name{"MyEnum"}, 2u);
         CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV3, Name{"MyImage"}, m_testImageAsset2);
+        CheckMaterialPropertyValue<RHI::SamplerState>(materialAssetV3, Name{ "MySamplerState" }, GetClampSamplerState());
 
         CheckMaterialPropertyValue<bool>    (materialAssetV6, Name{"MyBool"},   true);
         CheckMaterialPropertyValue<float>   (materialAssetV6, Name{"MyFloat"},  1.2f);
@@ -658,6 +703,7 @@ namespace UnitTest
         CheckMaterialPropertyValue<Color>   (materialAssetV6, Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
         CheckMaterialPropertyValue<uint32_t>(materialAssetV6, Name{"MyEnum"}, 2u);
         CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV6, Name{"MyImage"}, m_testImageAsset2);
+        CheckMaterialPropertyValue<RHI::SamplerState>(materialAssetV6, Name{ "MySamplerState" }, GetClampSamplerState());
 
         CheckMaterialPropertyValue<bool>    (materialAssetV9, Name{"MyBool"},   true);
         CheckMaterialPropertyValue<float>   (materialAssetV9, Name{"MyFloat"},  1.2f);
@@ -669,6 +715,7 @@ namespace UnitTest
         CheckMaterialPropertyValue<Color>   (materialAssetV9, Name{"MyColor"},  Color{ 0.1f, 0.2f, 0.3f, 0.4f });
         CheckMaterialPropertyValue<uint32_t>(materialAssetV9, Name{"MyEnum"}, 1u);
         CheckMaterialPropertyValue<Data::Asset<ImageAsset>>(materialAssetV9, Name{"MyImage"}, m_testImageAsset);
+        CheckMaterialPropertyValue<RHI::SamplerState>(materialAssetV9, Name{ "MySamplerState" }, GetDefaultSamplerState());
     }
 
     TEST_F(MaterialTypeAssetTests, ApplySetValues_FuzzyCast)
@@ -910,15 +957,17 @@ namespace UnitTest
         materialTypeCreator.Begin(assetId);
 
         // Include a shader for both MaterialPipelineNone and "TestPipeline" because it doesn't matter where the ShaderResourceGroup
-        // appears, the material pipeline should not have access to it. 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"TestPipeline"});
+        // appears, the material pipeline should not have access to it.
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialTypeAssetCreator::DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialTypeAssetCreator::DrawItemType::Raster, Name{ "TestPipeline" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"materialPipelineBoolProperty"}, MaterialPropertyDataType::Bool, Name{"TestPipeline"});
 
         ErrorMessageFinder errorMessageFinder("Material property 'materialPipelineBoolProperty': Connection type 'ShaderInput' is not supported by internal material pipeline properties.");
         errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
-        materialTypeCreator.ConnectMaterialPropertyToShaderInput(Name{"m_bool"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderParameter(Name{ "m_bool" });
         materialTypeCreator.EndMaterialProperty();
         errorMessageFinder.CheckExpectedErrorsFound();
 
@@ -932,6 +981,7 @@ namespace UnitTest
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -940,12 +990,13 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, MaterialPipelineNone);
+        // Modify the drawItemType to make sure it doesn't interfere
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"debug"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
@@ -975,13 +1026,14 @@ namespace UnitTest
         checkShaderOption(5, Name{"PipelineB"}, 1);
     }
 
-    TEST_F(MaterialTypeAssetTests, InternalPipelineProperty_ConnectToShaderOption_AccessesLocalShadersOnly)
+    TEST_F(MaterialTypeAssetTests, MaterialTypeAsset_DrawItemType)
     {
-        // Internal material properties that are part of a material pipeline should only set shader options
-        // on the shaders that are part of that pipeline.
+        // Normal material property connections to ShaderOption will apply to every shader in the material type,
+        // including any shaders that are inside MaterialPipeline(s).
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -990,12 +1042,72 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        // Default: DrawItemType::Raster
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, MaterialPipelineNone);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineA" });
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineB" });
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        auto checkShaderDrawItemType =
+            [&materialTypeAsset](uint32_t shaderIndex, const Name& pipelineName, const MaterialTypeAssetCreator::DrawItemType drawItemType)
+        {
+            if (pipelineName == MaterialPipelineNone)
+            {
+                auto& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
+                EXPECT_EQ(shaderCollection[shaderIndex].GetDrawItemType(), drawItemType);
+            }
+            else
+            {
+                auto& pipelinePayload = materialTypeAsset->GetMaterialPipelinePayloads().at(pipelineName);
+                auto& shaderCollection = pipelinePayload.m_shaderCollection;
+                EXPECT_EQ(shaderCollection[shaderIndex].GetDrawItemType(), drawItemType);
+            }
+        };
+
+        checkShaderDrawItemType(0, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::Raster);
+        checkShaderDrawItemType(1, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::Deferred);
+        checkShaderDrawItemType(2, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::None);
+
+        checkShaderDrawItemType(0, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::Raster);
+        checkShaderDrawItemType(1, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
+        checkShaderDrawItemType(2, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::None);
+
+        checkShaderDrawItemType(0, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::None);
+        checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Raster);
+        checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
+    }
+
+    TEST_F(MaterialTypeAssetTests, InternalPipelineProperty_ConnectToShaderOption_AccessesLocalShadersOnly)
+    {
+        // Internal material properties that are part of a material pipeline should only set shader options
+        // on the shaders that are part of that pipeline.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"debug"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
@@ -1030,6 +1142,7 @@ namespace UnitTest
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1038,12 +1151,12 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, Name{ "PipelineB" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"enable"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
         materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"shaderB"});
@@ -1067,6 +1180,7 @@ namespace UnitTest
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1075,12 +1189,12 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderA" }, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "shaderB" }, DrawItemType::Raster, Name{ "PipelineB" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"enable"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
         materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"shaderB"});
@@ -1105,6 +1219,7 @@ namespace UnitTest
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1113,9 +1228,9 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineC"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineC" });
 
         // PipelineA properties
         materialTypeCreator.BeginMaterialProperty(Name{"unused1"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
@@ -1173,6 +1288,7 @@ namespace UnitTest
 
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1181,9 +1297,9 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineC"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineC" });
 
         // PipelineA property
         materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
@@ -1204,6 +1320,7 @@ namespace UnitTest
     {
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1212,7 +1329,7 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
 
         // PipelineA property is a int
         materialTypeCreator.BeginMaterialProperty(Name{"someInt"}, MaterialPropertyDataType::UInt, Name{"PipelineA"});
@@ -1233,6 +1350,7 @@ namespace UnitTest
     {
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1241,7 +1359,7 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(assetId);
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
 
         // PipelineA property
         materialTypeCreator.BeginMaterialProperty(Name{"enableSomething"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
@@ -1262,6 +1380,7 @@ namespace UnitTest
     {
         using namespace AZ;
         using namespace AZ::RPI;
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -1297,14 +1416,20 @@ namespace UnitTest
 
         // Note we just use the same shader asset repeatedly for simplicity, not realism.
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"depth"}, Name{"MainPipeline"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shadows"}, Name{"MainPipeline"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"forward"}, Name{"MainPipeline"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{ "depth" }, DrawItemType::Raster, Name{ "MainPipeline" });
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{ "shadows" }, DrawItemType::Raster, Name{ "MainPipeline" });
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{ "forward" }, DrawItemType::Raster, Name{ "MainPipeline" });
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shadows"}, Name{"DeferredPipeline"});
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"deferred"}, Name{"DeferredPipeline"});
+        // Set the DrawItemType to deferred, to make sure it doesn't interfere with anything else
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{ "shadows" }, DrawItemType::Deferred, Name{ "DeferredPipeline" });
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{ "deferred" }, DrawItemType::Deferred, Name{ "DeferredPipeline" });
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"forward"}, Name{"LowEndPipeline"});
+        materialTypeCreator.AddShader(
+            m_testShaderAsset, ShaderVariantId{}, Name{ "forward" }, DrawItemType::Raster, Name{ "LowEndPipeline" });
 
         // This internal property enables the shadow shader via direct connection
         materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"MainPipeline"});
@@ -2042,11 +2167,12 @@ namespace UnitTest
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
         creator.AddShader(m_testShaderAsset);
-
+        creator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
         creator.BeginMaterialProperty(Name{ "MyColor" }, MaterialPropertyDataType::Color);
-
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "doesNotExist" });
+        creator.EndMaterialProperty();
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "doesNotExist" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2058,11 +2184,13 @@ namespace UnitTest
 
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
-
+        creator.SetMaterialShaderParameterLayout(m_testMaterialShaderParamterLayout);
         creator.BeginMaterialProperty(Name{ "MyColor" }, MaterialPropertyDataType::Color);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_color" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_color" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2075,9 +2203,11 @@ namespace UnitTest
         creator.AddShader(m_testShaderAsset);
 
         creator.BeginMaterialProperty(Name{ "MyImage" }, MaterialPropertyDataType::Image);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_float" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_float" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2090,9 +2220,11 @@ namespace UnitTest
         creator.AddShader(m_testShaderAsset);
 
         creator.BeginMaterialProperty(Name{ "MyFloat" }, MaterialPropertyDataType::Float);
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_image" });
+        creator.EndMaterialProperty();
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{ "m_image" });
+        creator.UpdateShaderParameterConnections();
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -2155,14 +2287,14 @@ namespace UnitTest
         EXPECT_EQ(1, creator.GetErrorCount());
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderInput)
+    TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderParameter)
     {
         MaterialTypeAssetCreator creator;
         creator.Begin(Uuid::CreateRandom());
         creator.AddShader(m_testShaderAsset);
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderInput(Name{"m_bool"});
+        creator.ConnectMaterialPropertyToShaderParameter(Name{ "m_bool" });
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());

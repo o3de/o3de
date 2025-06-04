@@ -100,7 +100,14 @@ set(FILES
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h
     Source/Decals/DecalTextureArrayFeatureProcessor.h
-    Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
+    Source/Decals/DecalTextureArrayFeatureProcessor.cpp
+    Source/DeferredMaterial/DeferredDrawPacket.h
+    Source/DeferredMaterial/DeferredDrawPacket.cpp
+    Source/DeferredMaterial/DeferredDrawPacketManager.h
+    Source/DeferredMaterial/DeferredDrawPacketManager.cpp
+    Source/DeferredMaterial/DeferredMeshDrawPacket.h
+    Source/DeferredMaterial/DeferredMeshDrawPacket.cpp   
+    Source/DeferredMaterial/DeferredMaterialFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp
@@ -108,8 +115,6 @@ set(FILES
     Source/DisplayMapper/DisplayMapperFullScreenPass.cpp
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.cpp
     Source/DisplayMapper/OutputTransformPass.cpp
-    Source/ImGui/ImGuiPass.cpp
-    Source/ImGui/ImGuiPass.h
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
@@ -131,6 +136,8 @@ set(FILES
     Source/Mesh/MeshInstanceGroupList.h
     Source/Mesh/MeshInstanceManager.cpp
     Source/Mesh/MeshInstanceManager.h
+    Source/Mesh/MeshInfoManager.cpp
+    Source/Mesh/MeshInfoManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
     Source/Mesh/MeshFeatureProcessor.h
     Source/Mesh/ModelReloader.cpp

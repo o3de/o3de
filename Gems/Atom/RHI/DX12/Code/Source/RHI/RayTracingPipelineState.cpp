@@ -33,8 +33,8 @@ namespace AZ
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
 
-            size_t dxilLibraryCount = descriptor->GetShaderLibraries().size();
-            size_t hitGroupCount = descriptor->GetHitGroups().size();
+            size_t dxilLibraryCount = descriptor->m_shaderLibraries.size();
+            size_t hitGroupCount = descriptor->m_hitGroups.size();
        
             // calculate the number of state sub-objects
             size_t subObjectCount =
@@ -56,7 +56,7 @@ namespace AZ
             AZStd::vector<D3D12_DXIL_LIBRARY_DESC> libraryDescs;
             libraryDescs.reserve(dxilLibraryCount);
             AZStd::vector<ShaderByteCode> patchedShaderCache;
-            for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->GetShaderLibraries())
+            for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->m_shaderLibraries)
             {
                 const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
                 ShaderByteCodeView byteCode =
@@ -86,7 +86,7 @@ namespace AZ
             AZStd::vector<AZStd::wstring> intersectionShaderNameWstrings;
             intersectionShaderNameWstrings.reserve(hitGroupCount);
 
-            for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
+            for (const RHI::RayTracingHitGroup& hitGroup : descriptor->m_hitGroups)
             {
                 AZStd::wstring hitGroupNameWstring;
                 AZStd::to_wstring(hitGroupNameWstring, hitGroup.m_hitGroupName.GetStringView());
@@ -120,8 +120,8 @@ namespace AZ
 
             // add shader payload and attribute sizes
             D3D12_RAYTRACING_SHADER_CONFIG shaderConfig = {};
-            shaderConfig.MaxPayloadSizeInBytes = descriptor->GetConfiguration().m_maxPayloadSize;
-            shaderConfig.MaxAttributeSizeInBytes = descriptor->GetConfiguration().m_maxAttributeSize;
+            shaderConfig.MaxPayloadSizeInBytes = descriptor->m_configuration.m_maxPayloadSize;
+            shaderConfig.MaxAttributeSizeInBytes = descriptor->m_configuration.m_maxAttributeSize;
         
             D3D12_STATE_SUBOBJECT shaderConfigSubObject = {};
             shaderConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
@@ -129,7 +129,7 @@ namespace AZ
             subObjects[currentIndex++] = shaderConfigSubObject;
 
             // add global root signature
-            const PipelineLayout* pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
+            const PipelineLayout* pipelineLayout = static_cast<const PipelineState*>(descriptor->m_pipelineState)->GetPipelineLayout();
             m_globalRootSignature = pipelineLayout->Get();
             D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = {};
             globalRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
@@ -141,7 +141,7 @@ namespace AZ
 
             // add pipeline configuration
             D3D12_RAYTRACING_PIPELINE_CONFIG pipelineConfig = {};
-            pipelineConfig.MaxTraceRecursionDepth = descriptor->GetConfiguration().m_maxRecursionDepth;
+            pipelineConfig.MaxTraceRecursionDepth = descriptor->m_configuration.m_maxRecursionDepth;
         
             D3D12_STATE_SUBOBJECT pipelineConfigSubObject = {};
             pipelineConfigSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG;

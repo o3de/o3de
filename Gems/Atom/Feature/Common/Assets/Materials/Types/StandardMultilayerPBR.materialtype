@@ -362,6 +362,7 @@
         ]
     },
     "lightingModel": "Standard",
+    "materialShaderDefines": "StandardMultilayerPBR_Defines.azsli",
     "materialShaderCode": "StandardMultilayerPBR.azsli",
     "functors": [
         {
@@ -379,7 +380,17 @@
         {
             "type": "Lua",
             "args": {
-                "file": "Materials/Types/StandardMultilayerPBR_Displacement.lua"
+                "file": "Materials/Types/StandardMultilayerPBR_Displacement.lua",
+                "shaderParameters": [
+                    {
+                        "name": "m_displacementMin",
+                        "type": "float"
+                    },
+                    {
+                        "name": "m_displacementMax",
+                        "type": "float"
+                    }
+                ]
             }
         }
     ],
