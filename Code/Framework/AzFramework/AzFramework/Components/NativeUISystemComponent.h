@@ -23,7 +23,7 @@ namespace AzFramework
 {
     //! This component manages the lifecycle of the UI-related factories and interfaces and initializes the ones that are 
     //! supported by the current platform.
-    class AZF_API NativeUISystemComponent
+    class NativeUISystemComponent
         : public AZ::Component
     {
     public:
