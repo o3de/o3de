@@ -15,8 +15,7 @@
 // You can keep it here, or move it into this module's 
 // system component
 #include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
-#include <Source/${Name}_Nodeables.generated.h>
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(${Name}Object);
+
 /////////////////////////////////////////////////////////////
 
 namespace ScriptCanvas::Nodes
