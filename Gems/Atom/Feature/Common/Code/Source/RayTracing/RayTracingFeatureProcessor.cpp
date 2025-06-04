@@ -417,8 +417,13 @@ namespace AZ
             else
             {
                 itMeshBlasInstance->second.m_count++;
-                AZ_Assert(itMeshBlasInstance->second.m_subMeshes.size() == mesh.m_subMeshIndices.size(), "");
             }
+            AZ_Error(
+                "RaytracingFeatureProcessor",
+                itMeshBlasInstance->second.m_subMeshes.size() == mesh.m_subMeshIndices.size(),
+                "AddMesh: The number of submeshes given does match the number of submeshes in the mesh (%d vs %d)",
+                itMeshBlasInstance->second.m_subMeshes.size(),
+                mesh.m_subMeshIndices.size());
 
             for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
             {
@@ -834,8 +839,16 @@ namespace AZ
                         m_deviceMask,
                         [&](int deviceIndex)
                         {
-                            const auto& blasInstance =
-                                m_blasInstanceMap.at(subMesh.m_blasInstanceId.first).m_subMeshes[subMesh.m_blasInstanceId.second];
+                            auto meshIt = m_blasInstanceMap.find(subMesh.m_blasInstanceId.first);
+                            if (meshIt == m_blasInstanceMap.end())
+                            {
+                                return false;
+                            }
+                            if (subMesh.m_blasInstanceId.second >= meshIt->second.m_subMeshes.size())
+                            {
+                                return false;
+                            }
+                            const auto& blasInstance = meshIt->second.m_subMeshes[subMesh.m_blasInstanceId.second];
                             RHI::RayTracingBlas* blas = blasInstance.m_compactBlas.get();
                             if (blas == nullptr || !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
                             {
