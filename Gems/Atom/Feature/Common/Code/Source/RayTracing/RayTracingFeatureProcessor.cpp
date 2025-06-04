@@ -788,6 +788,10 @@ namespace AZ
                 m_deviceMask = RHI::SetBit(m_deviceMask, deviceIndex);
                 updatedDeviceMask = true;
                 m_revision++;
+
+                // Make sure the map entries are present so we don't have a race condition in MarkBlasInstance*
+                m_uncompactedBlasEnqueuedForDeletion.insert(deviceIndex);
+                m_blasEnqueuedForCompact.insert(deviceIndex);
             }
 
             if (m_updatedFrameIndex == m_frameIndex)
@@ -954,7 +958,6 @@ namespace AZ
 
         const void RayTracingFeatureProcessor::MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId)
         {
-            AZStd::unique_lock lock(m_queueMutex);
             auto it = m_blasInstanceMap.find(assetId);
             if (RHI::Validation::IsEnabled())
             {
@@ -974,7 +977,6 @@ namespace AZ
 
         const void RayTracingFeatureProcessor::MarkBlasInstanceAsCompactionEnqueued(int deviceIndex, Data::AssetId assetId)
         {
-            AZStd::unique_lock lock(m_queueMutex);
             auto it = m_blasInstanceMap.find(assetId);
             if (RHI::Validation::IsEnabled())
             {
