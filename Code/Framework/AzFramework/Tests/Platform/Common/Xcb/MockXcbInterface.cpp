@@ -109,6 +109,16 @@ uint32_t xcb_generate_id(xcb_connection_t *c)
     return MockXcbInterface::Instance()->xcb_generate_id(c);
 }
 
+xcb_query_keymap_cookie_t xcb_query_keymap(xcb_connection_t* c)
+{
+    return MockXcbInterface::Instance()->xcb_query_keymap(c);
+}
+
+xcb_query_keymap_reply_t* xcb_query_keymap_reply(xcb_connection_t* c, xcb_query_keymap_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_query_keymap_reply(c, cookie, e);
+}
+
 // ----------------------------------------------------------------------------
 // xcb-xkb
 xcb_xkb_use_extension_cookie_t xcb_xkb_use_extension(xcb_connection_t* c, uint16_t wantedMajor, uint16_t wantedMinor)
