@@ -251,10 +251,6 @@ namespace AZ
             AZStd::unordered_map<int, BlasBuildList> m_blasToCompact;
             BlasBuildList m_skinnedBlasIds;
 
-            // Mutex for the queues that are modified by the RaytracingAccelerationStructurePasses
-            // The BuildCommandList of these passes are on different threads so we need lock access to the queues
-            AZStd::mutex m_queueMutex;
-
             struct BlasFrameEvent
             {
                 int m_frameIndex = -1;
