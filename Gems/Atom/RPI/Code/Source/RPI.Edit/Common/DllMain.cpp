@@ -11,9 +11,4 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-extern "C" AZ_DLL_EXPORT void CleanUpRpiEditGenericClassInfo()
-{
-    AZ::GetCurrentSerializeContextModule().Cleanup();
-}
-
 #endif

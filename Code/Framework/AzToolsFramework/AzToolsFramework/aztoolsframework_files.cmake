@@ -15,7 +15,7 @@ set(FILES
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
     ActionManager/Action/ActionManagerInternalInterface.h
-	ActionManager/Action/ActionManagerNotificationBus.cpp
+    ActionManager/Action/ActionManagerNotificationBus.cpp
     ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h

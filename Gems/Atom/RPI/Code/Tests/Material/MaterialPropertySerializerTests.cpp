@@ -15,9 +15,6 @@
 #include <Common/TestUtils.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
-extern "C" void CleanUpRpiPublicGenericClassInfo();
-extern "C" void CleanUpRpiEditGenericClassInfo();
-
 namespace JsonSerializationTests
 {
     class MaterialPropertySerializerTestDescription :
@@ -144,8 +141,7 @@ namespace JsonSerializationTests
 
         void TearDown() override
         {
-            CleanUpRpiPublicGenericClassInfo();
-            CleanUpRpiEditGenericClassInfo();
+            AZ::GetGlobalSerializeContextModule().Cleanup();
 
             JsonSerializerConformityTestDescriptor::TearDown();
         }

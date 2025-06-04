@@ -164,7 +164,6 @@ namespace AzFramework
         class AZF_API Implementation
         {
         public:
-            static Implementation* Create();
             virtual ~Implementation() = default;
 
             void InitWindow(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks);

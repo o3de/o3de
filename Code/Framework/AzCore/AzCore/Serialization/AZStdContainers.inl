@@ -2300,7 +2300,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2376,7 +2376,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2447,7 +2447,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2518,7 +2518,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2596,7 +2596,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2672,7 +2672,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2749,7 +2749,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2821,7 +2821,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -2906,7 +2906,7 @@ namespace AZ
         using ClassInfoType = GenericClassOutcome;
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<OutcomeType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<OutcomeType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3014,7 +3014,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<PairType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<PairType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3097,7 +3097,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<TupleType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<TupleType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3164,7 +3164,7 @@ namespace AZ
         using ClassInfoType = GenericClassWrapper;
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<WrapperType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<WrapperType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3247,7 +3247,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3330,7 +3330,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3408,7 +3408,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3485,7 +3485,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3552,7 +3552,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3618,7 +3618,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3694,7 +3694,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3770,7 +3770,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3846,7 +3846,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -3917,7 +3917,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ContainerType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ContainerType>();
         }
 
         static AZ::TypeId GetClassTypeId()

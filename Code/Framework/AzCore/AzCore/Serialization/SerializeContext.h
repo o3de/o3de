@@ -678,14 +678,14 @@ namespace AZ
         AZStd::unordered_map<TypeId, TypeId> m_enumTypeIdToUnderlyingTypeIdMap; ///< Uuid to keep track of the correspond underlying type id for an enum type that is reflected as a Field within the SerializeContext
         AZStd::vector<AZStd::unique_ptr<IDataContainer>> m_dataContainers; ///< Takes care of all related IDataContainer's lifetimes
 
-        class PerModuleGenericClassInfo;
-        AZStd::unordered_set<PerModuleGenericClassInfo*>  m_perModuleSet; ///< Stores the static PerModuleGenericClass structures keeps track of reflected GenericClassInfo per module
+        class GlobalGenericClassInfo;
+        AZStd::unordered_set<GlobalGenericClassInfo*>  m_perModuleSet; ///< Stores the static PerModuleGenericClass structures keeps track of reflected GenericClassInfo per module
 
-        friend AZCORE_API PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
+        friend AZCORE_API GlobalGenericClassInfo& GetGlobalSerializeContextModule();
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, SerializeContext);
 
-    AZCORE_API SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
+    AZCORE_API SerializeContext::GlobalGenericClassInfo& GetGlobalSerializeContextModule();
 } // namespace AZ
 
 namespace AZ
@@ -2214,12 +2214,12 @@ namespace AZ
     * PerModuleGenericClassInfo tracks module specific reflections of GenericClassInfo for each serializeContext
     * registered with this module(.dll)
     */
-    class AZCORE_API SerializeContext::PerModuleGenericClassInfo final
+    class AZCORE_API SerializeContext::GlobalGenericClassInfo final
     {
     public:
         using GenericInfoModuleMap = AZStd::unordered_map<AZ::Uuid, AZ::GenericClassInfo*>;
 
-        ~PerModuleGenericClassInfo();
+        ~GlobalGenericClassInfo();
 
         void AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo);
         void RemoveGenericClassInfo(const AZ::TypeId& canonicalTypeId);
@@ -2246,7 +2246,7 @@ namespace AZ
     };
 
     template<typename T>
-    typename SerializeGenericTypeInfo<T>::ClassInfoType* SerializeContext::PerModuleGenericClassInfo::CreateGenericClassInfo()
+    typename SerializeGenericTypeInfo<T>::ClassInfoType* SerializeContext::GlobalGenericClassInfo::CreateGenericClassInfo()
     {
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
@@ -2267,7 +2267,7 @@ namespace AZ
     }
 
     template<typename T>
-    AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo() const
+    AZ::GenericClassInfo* SerializeContext::GlobalGenericClassInfo::FindGenericClassInfo() const
     {
         return FindGenericClassInfo(AZ::AzTypeInfo<T>::Uuid());
     }

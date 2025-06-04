@@ -210,7 +210,7 @@ namespace AZ::IO::ZipDir
 
         using FileEntryBase::FileEntryBase;
 
-        AZ_DISABLE_COPY(FileEntry);
+        AZ_DISABLE_COPY_MOVE(FileEntry);
 
         bool IsInitialized()
         {
