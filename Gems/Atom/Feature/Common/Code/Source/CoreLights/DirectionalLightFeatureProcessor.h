@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <CoreLights/EsmShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
