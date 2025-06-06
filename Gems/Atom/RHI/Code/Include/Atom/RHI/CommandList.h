@@ -88,8 +88,8 @@ namespace AZ::RHI
         /// Builds a Cluster Level Acceleration Structure (CLAS) for ray tracing operations
         virtual void BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
 
-        /// Builds a Cluster Bottom Level Acceleration Structure (cluster-BLAS) for ray tracing operations
-        virtual void BuildClusterBottomLevelAccelerationStructure(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
+        /// Builds a list of Cluster Bottom Level Acceleration Structures (cluster-BLAS) for ray tracing operations
+        virtual void BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList) = 0;
 
         /// Inserts queries for the size of the compacted Blas
         virtual void QueryBlasCompactionSizes(
@@ -101,7 +101,9 @@ namespace AZ::RHI
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that
         /// refer to a BLAS entry
         virtual void BuildTopLevelAccelerationStructure(
-            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) = 0;
+            const RHI::DeviceRayTracingTlas& rayTracingTlas,
+            const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList) = 0;
 
         /// Defines the submit range for a CommandList
         /// Note: the default is 0 items, which disables validation for items submitted outside of the framegraph

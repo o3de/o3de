@@ -247,6 +247,7 @@ namespace AZ
             BeginScopeQuery(context);
 
             AZStd::vector<const AZ::RHI::DeviceRayTracingBlas*> changedBlasList;
+            AZStd::vector<const AZ::RHI::DeviceRayTracingClusterBlas*> changedClusterBlasList;
             AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>> compactionQueries;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
 
@@ -310,10 +311,9 @@ namespace AZ
 
                     if (submeshBlasInstance.IsClusterMesh())
                     {
-                        context.GetCommandList()->BuildClusterAccelerationStructures(
-                            *submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex()));
-                        context.GetCommandList()->BuildClusterBottomLevelAccelerationStructure(
-                            *submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex()));
+                        auto clusterBlas = submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex());
+                        context.GetCommandList()->BuildClusterAccelerationStructures(*clusterBlas);
+                        changedClusterBlasList.push_back(clusterBlas.get());
                     }
                     else
                     {
@@ -344,6 +344,8 @@ namespace AZ
                 }
             }
 
+            context.GetCommandList()->BuildClusterBottomLevelAccelerationStructures(changedClusterBlasList);
+
             // Compact Blas instances
             auto& toCompactList = rayTracingFeatureProcessor->GetBlasCompactionList(context.GetDeviceIndex());
             for (auto assetId : toCompactList)
@@ -370,7 +372,9 @@ namespace AZ
 
             // build the TLAS object
             context.GetCommandList()->BuildTopLevelAccelerationStructure(
-                *rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
+                *rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()),
+                changedBlasList,
+                changedClusterBlasList);
             if (!compactionQueries.empty())
             {
                 context.GetCommandList()->QueryBlasCompactionSizes(compactionQueries);

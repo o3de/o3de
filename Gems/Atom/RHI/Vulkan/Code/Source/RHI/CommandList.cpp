@@ -1296,32 +1296,40 @@ namespace AZ
             context.CmdBuildClusterAccelerationStructureIndirectNV(GetNativeCommandBuffer(), &clusterBuffers.m_buildClasCommandInfo);
         }
 
-        void CommandList::BuildClusterBottomLevelAccelerationStructure(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        void CommandList::BuildClusterBottomLevelAccelerationStructures(
+            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList)
         {
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
-            VkMemoryBarrier memoryBarrier = {};
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = nullptr;
-            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            if (!clusterBlasList.empty())
+            {
+                VkMemoryBarrier memoryBarrier = {};
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = nullptr;
+                memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+                memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            // We need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the CLAS objects are built prior to
-            // building the cluster BLAS
-            context.CmdPipelineBarrier(
-                GetNativeCommandBuffer(),
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                0,
-                1,
-                &memoryBarrier,
-                0,
-                nullptr,
-                0,
-                nullptr);
+                // We need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the CLAS objects are built
+                // prior to building the cluster BLAS
+                context.CmdPipelineBarrier(
+                    GetNativeCommandBuffer(),
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    0,
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr);
+            }
 
-            const auto& clusterBuffers = static_cast<RayTracingClusterBlas&>(rayTracingClusterBlas).GetBuffers();
-            context.CmdBuildClusterAccelerationStructureIndirectNV(GetNativeCommandBuffer(), &clusterBuffers.m_buildClusterBlasCommandInfo);
+            for (const auto& clusterBlas : clusterBlasList)
+            {
+                const auto& clusterBuffers = static_cast<const RayTracingClusterBlas*>(clusterBlas)->GetBuffers();
+                context.CmdBuildClusterAccelerationStructureIndirectNV(
+                    GetNativeCommandBuffer(), &clusterBuffers.m_buildClusterBlasCommandInfo);
+            }
         }
 
         void CommandList::QueryBlasCompactionSizes(
@@ -1392,7 +1400,9 @@ namespace AZ
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
+            const RHI::DeviceRayTracingTlas& rayTracingTlas,
+            const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList)
         {
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
@@ -1402,7 +1412,7 @@ namespace AZ
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            if (!changedBlasList.empty())
+            if (!changedBlasList.empty() || !changedClusterBlasList.empty())
             {
                 // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
                 // are built prior to building the TLAS
