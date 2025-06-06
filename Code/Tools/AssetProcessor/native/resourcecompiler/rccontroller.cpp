@@ -354,7 +354,7 @@ namespace AssetProcessor
     }
     void RCController::DispatchJobs()
     {
-        if (!m_dispatchJobsQueued)
+        if ((!m_dispatchJobsQueued) && (!m_dispatchingPaused))
         {
             m_dispatchJobsQueued = true;
             QMetaObject::invokeMethod(this, "DispatchJobsImpl", Qt::QueuedConnection);
