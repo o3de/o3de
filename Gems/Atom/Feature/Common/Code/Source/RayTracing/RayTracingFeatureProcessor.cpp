@@ -593,6 +593,7 @@ namespace AZ
                 {
                     m_meshes.clear();
                     m_subMeshes.clear();
+                    m_blasInstanceMap.clear();
 
                     for (auto& [deviceIndex, meshInfos] : m_meshInfos)
                     {
