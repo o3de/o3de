@@ -419,6 +419,14 @@ namespace AZ
         {
             if (m_graphicsPipelineState)
             {
+                if (m_renderPipelineDesc.vertexFunction)
+                {
+                    [m_renderPipelineDesc.vertexFunction release];
+                }
+                if (m_renderPipelineDesc.fragmentFunction)
+                {
+                    [m_renderPipelineDesc.fragmentFunction release];
+                }
                 [m_renderPipelineDesc release];
                 m_renderPipelineDesc = nil;
                 [m_graphicsPipelineState release];
@@ -427,6 +435,10 @@ namespace AZ
             
             if (m_computePipelineState)
             {
+                if (m_computePipelineDesc.computeFunction)
+                {
+                    [m_computePipelineDesc.computeFunction release];
+                }
                 [m_computePipelineDesc release];
                 m_computePipelineDesc = nil;
                 [m_computePipelineState release];
