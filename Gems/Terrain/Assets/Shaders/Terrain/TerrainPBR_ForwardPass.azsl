@@ -102,7 +102,7 @@ void GatherSurfaceDataFromClipmaps(
 
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 {
-    float3 views[SHADING_VIEW_COUNT];
+    float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
     // ------- Surface -------

@@ -28,7 +28,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 #endif
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    float3 views[SHADING_VIEW_COUNT];
+    float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
     // ------- Geometry -> Surface -> Lighting -------
@@ -45,7 +45,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     real3 color = lightingData.diffuseLighting.rgb + lightingData.emissiveLighting.rgb;
 
-    for(uint i = 0; i < SHADING_VIEW_COUNT; ++i)
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
         color += lightingData.specularLighting[i];
 
 #if ENABLE_MERGE_FILMIC_TONEMAP

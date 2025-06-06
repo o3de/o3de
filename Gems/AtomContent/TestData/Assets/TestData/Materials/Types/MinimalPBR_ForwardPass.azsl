@@ -61,7 +61,7 @@ VSOutput MinimalPBR_MainPassVS(VSInput IN, uint instanceId : SV_InstanceID)
 
 ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
 {
-    float3 views[SHADING_VIEW_COUNT];
+    float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
     real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
