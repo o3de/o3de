@@ -17,7 +17,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/IO/FileOperations.h>
-#include <AzFramework/Network/IRemoteTools.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
@@ -46,7 +45,6 @@
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvasContextIdentifiers.h>
 
@@ -119,14 +117,6 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Activate()
     {
-#if defined(ENABLE_REMOTE_TOOLS)
-        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
-        {
-            remoteToolsInterface->RegisterToolingServiceHost(
-                ScriptCanvas::RemoteToolsKey, ScriptCanvas::RemoteToolsName, ScriptCanvas::RemoteToolsPort);
-        }
-#endif
-
         AZ::JobManagerDesc jobDesc;
         for (size_t i = 0; i < cs_jobThreads; ++i)
         {
@@ -300,32 +290,10 @@ namespace ScriptCanvasEditor
 
         if (AZ::IO::Path(fullSourceFileName).Extension() == ScriptCanvasEditor::SourceDescription::GetFileExtension())
         {
-            auto scriptCanvasOpenInEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+            auto scriptCanvasOpenInEditorCallback =
+                [this](const char* fullSourceFileNameInCall, [[maybe_unused]] const AZ::Uuid& sourceUUIDInCall)
             {
-                AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-
-                auto sourceHandle = CompleteDescription(SourceHandle(nullptr, sourceUUIDInCall));
-
-                if (sourceHandle)
-                {
-                    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
-
-                    GeneralRequestBus::BroadcastResult(openOutcome
-                        , &GeneralRequests::OpenScriptCanvasAsset
-                        , *sourceHandle
-                        , Tracker::ScriptCanvasFileState::UNMODIFIED
-                        , -1);
-
-                    if (!openOutcome.IsSuccess())
-                    {
-                        AZ_Error("ScriptCanvas", false, openOutcome.GetError().data());
-                    }
-                }
-                else
-                {
-                    AZ_Warning("ScriptCanvas", false
-                        , "Unabled to find full path for Source UUid %s", sourceUUIDInCall.ToString<AZStd::string>().c_str());
-                }
+                OpenScriptCanvasEditor(fullSourceFileNameInCall);
             };
 
             openers.push_back({ "O3DE_ScriptCanvasEditor"

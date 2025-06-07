@@ -11,4 +11,7 @@ set(FILES
     Application/ScriptCanvasApplication.cpp
     Application/ScriptCanvasApplication.h
     Application/ScriptCanvasApplicationResources.qrc
+    Application/Document/ScriptCanvasDocument.cpp
+    Application/Document/ScriptCanvasDocument.h
+    Application/Document/ScriptCanvasDocumentRequestBus.h
 )
