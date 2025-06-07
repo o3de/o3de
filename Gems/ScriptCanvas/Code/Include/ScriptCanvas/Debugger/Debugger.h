@@ -26,7 +26,8 @@ namespace ScriptCanvas
 {
     namespace Debugger
     {
-        //! The ScriptCanvas debugger component, this is the runtime debugger code that directly controls the execution
+        //! The ScriptCanvas debugger component - Game side only
+        //! this is the runtime debugger code that directly controls the execution
         //! and provides insight into a running ScriptCanvas graph.
         class ServiceComponent
             : public AZ::Component

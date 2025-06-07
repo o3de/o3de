@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
- * this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -8,6 +8,8 @@
 
 #include "ScriptCanvasApplication.h"
 
+#include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <QApplication>
 #include <QIcon>
 
@@ -59,6 +61,14 @@ namespace ScriptCanvas
         Base::StartCommon(systemEntity);
 
         InitMainWindow();
+
+#if defined(ENABLE_REMOTE_TOOLS)
+        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+        {
+            remoteToolsInterface->RegisterToolingServiceHost(
+                AzFramework::ScriptCanvasToolsKey, AzFramework::ScriptCanvasToolsName, AzFramework::ScriptCanvasToolsPort);
+        }
+#endif
     }
 
     void ScriptCanvasApplication::Destroy()
