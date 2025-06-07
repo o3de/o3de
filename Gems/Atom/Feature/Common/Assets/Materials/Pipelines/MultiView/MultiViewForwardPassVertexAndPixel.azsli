@@ -66,4 +66,3 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     return OUT;
 }
-
