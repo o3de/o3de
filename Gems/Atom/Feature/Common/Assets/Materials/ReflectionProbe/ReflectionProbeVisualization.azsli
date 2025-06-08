@@ -84,7 +84,9 @@ const MaterialParameters GetMaterialParameters()
 
         [unroll]
         for(uint i = 0; i < UvSetCount; ++i)
+        {
             geoData.uvs[i] = float2(0, 0);
+        }
 
         return geoData;
     }

@@ -173,7 +173,9 @@ void ValidatePointLight(PointLight light, Surface surface, inout LightingData li
     
     [unroll]
     for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
         specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
+    }
 
     for (uint i = 0; i < sampleCount; ++i)
     {
@@ -194,7 +196,9 @@ void ValidatePointLight(PointLight light, Surface surface, inout LightingData li
 
     [unroll]
     for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
         lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / real(sampleCount)) * intensity;
+    }
 
 #if ENABLE_TRANSMISSION
     lightingData.translucentBackLighting += (translucentAcc / real(sampleCount)) * intensity;

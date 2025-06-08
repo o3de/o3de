@@ -236,7 +236,9 @@ float3 CalculateLighting(
     float3 ligthingOutput = lightingData.diffuseLighting;
 
     for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
+    {
         ligthingOutput += lightingData.specularLighting[i];
+    }
 
     return ligthingOutput;
 }

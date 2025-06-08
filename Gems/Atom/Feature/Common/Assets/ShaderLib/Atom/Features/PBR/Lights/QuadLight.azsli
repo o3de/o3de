@@ -231,7 +231,9 @@ void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData ligh
     
     [unroll]
     for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
         specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
+    }
 
     bool emitsBothDirections = (light.m_flags & EmitsBothDirections) > 0;
     float bothDirectionsFactor = emitsBothDirections ? -1.0 : 0.0;
@@ -250,7 +252,9 @@ void ValidateQuadLight(QuadLight light, Surface surface, inout LightingData ligh
 
     [unroll]
     for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
         lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / float(sampleCount)) * intensityCandelas;
+    }
 
 #if ENABLE_TRANSMISSION
     lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensityCandelas;

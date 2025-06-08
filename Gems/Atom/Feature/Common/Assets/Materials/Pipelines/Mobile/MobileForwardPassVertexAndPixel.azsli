@@ -46,7 +46,9 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     real3 color = lightingData.diffuseLighting.rgb + lightingData.emissiveLighting.rgb;
 
     for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
+    {
         color += lightingData.specularLighting[i];
+    }
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
