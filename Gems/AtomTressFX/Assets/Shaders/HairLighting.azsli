@@ -192,6 +192,9 @@ float3 CalculateLighting(
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
     float thickness, in HairShadeParams material )
 {    
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     //-------- Surface init --------
     Surface surface;
 
@@ -226,11 +229,18 @@ float3 CalculateLighting(
     lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
     // The normal assignment will be overriden afterwards per light
-    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
 
-    ApplyLighting(surface, lightingData, screenCoords);
+    ApplyLighting(surface, lightingData, screenCoords, views);
 
-    return lightingData.diffuseLighting + lightingData.specularLighting;
+    float3 ligthingOutput = lightingData.diffuseLighting;
+
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
+    {
+        ligthingOutput += lightingData.specularLighting[i];
+    }
+
+    return ligthingOutput;
 }
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 tangent, float3 baseColor, float thickness, int shaderParamIndex)
