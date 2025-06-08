@@ -97,7 +97,7 @@ namespace CrashHandler
 #endif
     }
 
-    bool CrashHandlerBase::CreateCrashHandlerDB(const std::string& reportPath) const
+    bool CrashHandlerBase::CreateCrashHandlerDB(const std::string& reportPath, bool manualCrashSubmission) const
     {
         AZ_TracePrintf("CrashReporting", "Creating new crash dump db at %s", reportPath.c_str());
 
@@ -112,7 +112,7 @@ namespace CrashHandler
         std::unique_ptr<crashpad::CrashReportDatabase> crashDb = crashpad::CrashReportDatabase::Initialize(db);
         if (crashDb)
         {
-            return crashDb->GetSettings()->SetUploadsEnabled(true);
+            return crashDb->GetSettings()->SetUploadsEnabled(!manualCrashSubmission);
         }
         return false;
     }
@@ -211,7 +211,7 @@ namespace CrashHandler
 #else
         base::FilePath db{ dbPath };
 #endif
-        if (!CreateCrashHandlerDB(m_crashDbPath))
+        if (!CreateCrashHandlerDB(m_crashDbPath, manualCrashSubmission))
         {
             AZ_Warning("CrashReporting", false, "Failed to create crash dump path.");
         }

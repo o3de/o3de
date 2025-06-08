@@ -53,7 +53,7 @@ namespace CrashHandler
 
         virtual const char* GetProductName() const { return O3DEProductName; }
 
-        virtual bool CreateCrashHandlerDB(const std::string& reportPath) const;
+        virtual bool CreateCrashHandlerDB(const std::string& reportPath, bool manualCrashSubmission) const;
 
         virtual std::string GetCrashSubmissionURL() const { return{}; }
         virtual std::string GetCrashSubmissionToken() const { return{}; }
