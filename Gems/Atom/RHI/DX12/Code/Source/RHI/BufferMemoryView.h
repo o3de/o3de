@@ -30,7 +30,7 @@ namespace AZ
             BufferMemoryView() = default;
             BufferMemoryView(MemoryView&& memoryView, BufferMemoryType memoryType);
 
-            /// Supports copy and move construction / assignment.
+            /// Supports only move construction / assignment because of constraints in the base class.
             BufferMemoryView(const BufferMemoryView& rhs) = delete;
             BufferMemoryView(BufferMemoryView&& rhs) = default;
             BufferMemoryView& operator=(const BufferMemoryView& rhs) = delete;

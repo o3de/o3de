@@ -59,7 +59,8 @@ namespace AZ
             MemoryView(
                 const MemoryAllocation& memAllocation, MemoryViewType viewType, ID3D12Heap* heap = nullptr, size_t heapOffset = 0ull);
 
-            /// Supports copy and move construction / assignment.
+            /// Supports only move construction / assignment.
+            /// Copying is disallowed as it may lead to double frees of device allocations
             MemoryView(const MemoryView& rhs) = delete;
             MemoryView(MemoryView&& rhs) = default;
             MemoryView& operator=(const MemoryView& rhs) = delete;

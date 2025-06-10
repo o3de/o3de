@@ -177,7 +177,7 @@ namespace AZ
         }
 
         RHI::ResultCode FenceImpl::InitInternal(
-            RHI::Device& deviceBase, RHI::FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice)
+            RHI::Device& deviceBase, RHI::FenceState initialState, [[maybe_unused]] bool usedForWaitingOnDevice, bool usedForCrossDevice)
         {
             return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState, usedForCrossDevice);
         }

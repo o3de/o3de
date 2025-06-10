@@ -106,10 +106,10 @@ namespace AZ
             RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
             for (int deviceIndex = 0; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); deviceIndex++)
             {
-                auto device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
-                if (device->GetFeatures().m_crossDeviceHostMemory)
+                auto currentDevice = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+                if (currentDevice->GetFeatures().m_crossDeviceHostMemory)
                 {
-                    alignment = static_cast<const PhysicalDevice&>(device->GetPhysicalDevice())
+                    alignment = static_cast<const PhysicalDevice&>(currentDevice->GetPhysicalDevice())
                                     .GetExternalMemoryHostProperties()
                                     .minImportedHostPointerAlignment;
                 }
@@ -154,9 +154,8 @@ namespace AZ
                 if (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
                     continue;
 
-                if ((hostMemoryProps.memoryTypeBits & (1 << memoryTypeIndex)) &&
-                    (((hostMemoryProps.memoryTypeBits & (1 << bestMemoryTypeIndex)) == 0) ||
-                     (bestMemoryFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ||
+                if (RHI::CheckBit(hostMemoryProps.memoryTypeBits, memoryTypeIndex) &&
+                    (bestMemoryTypeIndex == -1 ||
                      (az_popcnt_u32(static_cast<uint32_t>(bestMemoryFlags)) > az_popcnt_u32(static_cast<uint32_t>(flags)))))
                 {
                     bestMemoryFlags = flags;

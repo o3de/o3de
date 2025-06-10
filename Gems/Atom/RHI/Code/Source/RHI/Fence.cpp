@@ -118,6 +118,8 @@ namespace AZ::RHI
 
         if (m_ownerDeviceIndex)
         {
+            // Only the owner device is reset here
+            // All the other device fences share the state of the owner device and thus resetting them does not make sense
             return GetDeviceFence(m_ownerDeviceIndex.value())->Reset();
         }
         else

@@ -52,7 +52,8 @@ namespace AZ::RHI
     protected:
         bool ValidateIsInitialized() const;
 
-        // TODO documentation
+        // If this is set, the Fence was created on the owner device
+        // For all other devices the Fence was exported from the owner device and then imported into the other device
         AZStd::optional<int> m_ownerDeviceIndex;
     };
 } // namespace AZ::RHI

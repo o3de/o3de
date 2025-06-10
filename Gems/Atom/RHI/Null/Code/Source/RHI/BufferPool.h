@@ -36,7 +36,7 @@ namespace AZ
             // RHI::DeviceBufferPool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::BufferPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
-            RHI::ResultCode InitBufferInternal([[maybe_unused]] RHI::DeviceBuffer& buffer, [[maybe_unused]] const RHI::BufferDescriptor& rhiDescriptor, bool usedForCrossDevice) override{ return RHI::ResultCode::Success;}
+            RHI::ResultCode InitBufferInternal([[maybe_unused]] RHI::DeviceBuffer& buffer, [[maybe_unused]] const RHI::BufferDescriptor& rhiDescriptor, [[maybe_unused]] bool usedForCrossDevice) override{ return RHI::ResultCode::Success;}
             RHI::ResultCode InitBufferCrossDeviceInternal([[maybe_unused]] RHI::DeviceBuffer& bufferBase, [[maybe_unused]] RHI::DeviceBuffer& originalDeviceBuffer) override { return RHI::ResultCode::Success; };
             void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resource) override {}
             RHI::ResultCode OrphanBufferInternal([[maybe_unused]] RHI::DeviceBuffer& buffer) override { return RHI::ResultCode::Success;}

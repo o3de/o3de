@@ -670,7 +670,7 @@ namespace AZ
             ConvertBufferDescriptor(bufferDescriptor, resourceDesc);
             if (importedFromCrossDevice)
             {
-                resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER;
+                resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER;
             }
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
