@@ -170,7 +170,9 @@ namespace UnitTest
             }
 
             AZ::RHI::ResultCode InitBufferInternal(
-                AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor, bool usedForCrossDevice) override
+                AZ::RHI::DeviceBuffer& bufferBase,
+                const AZ::RHI::BufferDescriptor& descriptor,
+                [[maybe_unused]] bool usedForCrossDevice) override
             {
                 AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 

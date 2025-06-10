@@ -52,7 +52,7 @@ namespace UnitTest
     void BufferPool::ShutdownInternal() {}
 
     RHI::ResultCode BufferPool::InitBufferInternal(
-        RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor, bool usedForCrossDevice)
+        RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor, [[maybe_unused]] bool usedForCrossDevice)
     {
         AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 

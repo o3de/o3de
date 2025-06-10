@@ -64,7 +64,8 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode BinaryFence::InitCrossDeviceInternal(RHI::Device& baseDevice, RHI::Ptr<Fence> originalDeviceFence)
+        RHI::ResultCode BinaryFence::InitCrossDeviceInternal(
+            [[maybe_unused]] RHI::Device& baseDevice, [[maybe_unused]] RHI::Ptr<Fence> originalDeviceFence)
         {
             AZ_Assert(false, "BinaryFence is not supported for Cross Device operations");
             return RHI::ResultCode::Fail;
