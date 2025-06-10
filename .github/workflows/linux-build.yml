@@ -53,7 +53,7 @@ jobs:
         # Resize and combine disks as LVM in order to maximize the amount of space for builds
         uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
         with:
-          root-reserve-mb: 6000
+          root-reserve-mb: 8000
           swap-size-mb: 200
           remove-dotnet: true
           remove-haskell: true
@@ -84,7 +84,7 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=15G
+            max_size=10G
             cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
