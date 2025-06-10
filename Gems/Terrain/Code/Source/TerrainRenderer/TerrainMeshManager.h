@@ -153,7 +153,10 @@ namespace Terrain
 
         struct Sector
         {
-            AZ::RHI::GeometryView m_geometryView;
+            using GeometryView = AZ::RHI::GeometryView;
+            static constexpr auto AllDevices = AZ::RHI::MultiDevice::AllDevices;
+
+            AZ::RHI::GeometryView m_geometryView{ AZ::RHI::MultiDevice::AllDevices };
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::array<AZ::Aabb, 4> m_quadrantAabbs;
@@ -162,7 +165,9 @@ namespace Terrain
             // When drawing, either the m_rhiDrawPacket will be used, or some number of the m_rhiDrawPacketQuadrants
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
-            AZStd::array<AZ::RHI::GeometryView, 4> m_quadrantGeometryViews;
+            AZStd::array<AZ::RHI::GeometryView, 4> m_quadrantGeometryViews{
+                GeometryView{ AllDevices }, GeometryView{ AllDevices }, GeometryView{ AllDevices }, GeometryView{ AllDevices }
+            };
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;

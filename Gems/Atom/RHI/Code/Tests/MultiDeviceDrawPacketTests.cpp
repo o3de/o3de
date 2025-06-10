@@ -164,7 +164,7 @@ namespace UnitTest
         RHI::Ptr<RHI::ShaderResourceGroupPool> m_srgPool;
         AZStd::array<RHI::Ptr<RHI::ShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
         AZStd::array<uint8_t, sizeof(unsigned int) * 4> m_rootConstants;
-        RHI::GeometryView m_geometryView;
+        RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
         AZStd::vector<MultiDeviceDrawItemData> m_drawItemDatas;
     };

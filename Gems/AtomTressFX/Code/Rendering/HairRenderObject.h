@@ -382,7 +382,7 @@ namespace AZ
  
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::Buffer> m_indexBuffer;
-                RHI::GeometryView m_geometryView;
+                RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

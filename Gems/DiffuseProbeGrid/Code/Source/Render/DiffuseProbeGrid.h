@@ -34,7 +34,7 @@ namespace AZ
             RHI::Ptr<RHI::ImagePool> m_imagePool;
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
-            RHI::GeometryView m_geometryView;
+            RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
             // image views
             RHI::ImageViewDescriptor m_probeRayTraceImageViewDescriptor;
