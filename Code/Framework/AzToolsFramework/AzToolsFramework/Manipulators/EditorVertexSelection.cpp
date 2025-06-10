@@ -1596,7 +1596,7 @@ namespace AzToolsFramework
         EditorVertexSelectionBase<Vertex>::m_actionOverrides[static_cast<size_t>(EditorVertexSelectionBase<Vertex>::State::Translating)] =
             AZStd::vector<ActionOverride>{ ActionOverride()
                                                .SetUri(AzToolsFramework::s_duplicateAction)
-                                               .SetKeySequence(QKeySequence(Qt::CTRL + Qt::Key_D))
+                                               .SetKeySequence(QKeySequence(0x0 | Qt::CTRL | Qt::Key_D))
                                                .SetTitle(s_duplicateVerticesTitle)
                                                .SetTip(s_duplicateVerticesDesc)
                                                .SetCallback(

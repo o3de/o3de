@@ -169,8 +169,8 @@ namespace O3DE::ProjectManager
             QPair<int, int> versionXBounds = CalcColumnXBounds(HeaderOrder::Version);
             QRect gemVersionRect{ versionXBounds.first, contentRect.top(), versionXBounds.second - versionXBounds.first, contentRect.height() };
             painter->setFont(standardFont);
-            gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
-            painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
+            gemVersionRect = painter->boundingRect(gemVersionRect, 0x0 | Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
+            painter->drawText(gemVersionRect, 0x0 | Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
 
             GemSortFilterProxyModel* proxyModel = reinterpret_cast<GemSortFilterProxyModel*>(m_model);
             bool showCompatibleUpdatesOnly = proxyModel ? proxyModel->GetCompatibleFilterFlag() : true;

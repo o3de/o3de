@@ -52,8 +52,8 @@ namespace AZ
             const AZ::u32 GetElementVersion() const { return m_addressClassVersion; }
             bool IsValid() const { return m_isValid; }
 
-            static constexpr const char* PathDelimiter = "/";
-            static constexpr const char* VersionDelimiter = u8"\u00B7"; // utf-8 for <middledot>
+            static constexpr const char PathDelimiter[] = "/";
+            static constexpr const char VersionDelimiter[] = u8"\u00B7"; // utf-8 for <middledot>
 
             void SetAddressClassTypeId(const AZ::TypeId& id) { m_addressClassTypeId = id; }
             void SetPathElement(const AZStd::string& path) { m_pathElement = path; }

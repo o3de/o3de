@@ -1275,7 +1275,7 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot.IsLatent())
             {
-                executionConfiguration.m_textDecoration = u8"\U0001f552";
+                executionConfiguration.m_textDecoration = reinterpret_cast<const char*>(u8"\U0001f552");
                 executionConfiguration.m_textDecorationToolTip = "This slot will not be executed immediately.";
             }
 
@@ -1302,7 +1302,7 @@ namespace ScriptCanvasEditor::Nodes
 
             if (slot.IsLatent())
             {
-                dataSlotConfiguration.m_textDecoration = u8"\U0001f552";
+                dataSlotConfiguration.m_textDecoration = reinterpret_cast<const char*>(u8"\U0001f552");
                 dataSlotConfiguration.m_textDecorationToolTip = "This slot will not be executed immediately.";
             }
 

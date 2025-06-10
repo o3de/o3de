@@ -147,7 +147,7 @@ namespace AZ
         // important note: to use this, the T type must either include the AZ_RTTI macro, or be externally exposed via AZ_TYPE_INFO_SPECIALIZE
         template<class T>
         AZ::Outcome<AZStd::shared_ptr<InstancePool<T>>, AZStd::string> CreatePool(
-            typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, 
+            typename InstancePool<T>::ResetInstance resetFunc = [](T&){},
             [[maybe_unused]] typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
             return CreatePool<T>(GetDefaultName<T>(), resetFunc);

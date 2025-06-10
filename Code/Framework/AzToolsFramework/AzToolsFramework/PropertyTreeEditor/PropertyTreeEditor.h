@@ -112,7 +112,6 @@ namespace AzToolsFramework
 
         struct ContainerData final
         {
-            ContainerData() = default;
             ~ContainerData() = default;
 
             const PropertyTreeEditorNode* m_propertyTreeEditorNode = nullptr;
@@ -122,7 +121,6 @@ namespace AzToolsFramework
 
         struct AssociatePairInfo final
         {
-            AssociatePairInfo() = default;
             ~AssociatePairInfo() = default;
 
             const AZ::SerializeContext::ClassData* m_pairClass = nullptr;
