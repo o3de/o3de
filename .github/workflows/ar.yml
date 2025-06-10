@@ -11,6 +11,12 @@ name: AR
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+        CLEAN_ARTIFACTS:
+            type: boolean
+            description: Use no artifacts for next build (will be saved as clean artifacts)
+            required: false
+            default: false
   push:
     branches:
       - main
@@ -39,7 +45,7 @@ jobs:
             image: windows-2022
             platform: Windows
             type: profile
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }} # If CLEAN_ARTIFACTS is false, then this returns true
     
     Windows-Asset:
         needs: Windows-Profile
@@ -69,7 +75,7 @@ jobs:
             image: windows-2022
             platform: Windows
             type: release
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
 
 #### Linux Build ####
     Linux-Profile:
@@ -80,7 +86,7 @@ jobs:
             image: ubuntu-22.04
             platform: Linux
             type: profile
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
 
     Linux-Asset:
         needs: Linux-Profile
@@ -112,7 +118,7 @@ jobs:
             image: windows-2022
             platform: Android
             type: profile
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
 
     Android-Asset:
         uses: ./.github/workflows/android-build.yml
@@ -122,7 +128,7 @@ jobs:
             image: windows-2022
             platform: Android
             type: asset_profile
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
             
     Android-Gradle:
         uses: ./.github/workflows/android-build.yml
@@ -132,4 +138,4 @@ jobs:
             image: windows-2022
             platform: Android
             type: gradle
-            last_artifact: true
+            last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
