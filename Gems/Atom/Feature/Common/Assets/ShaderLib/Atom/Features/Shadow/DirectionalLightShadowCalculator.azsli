@@ -338,7 +338,7 @@ real DirectionalShadowCalculator::GetVisibilityFromLightPcf()
         [branch]
         if (blendBetweenCascadesAmount < 1.0f && nextCascadeIndex < m_cascadeCount)
         {
-            const real nextLit = SamplePcfBicubic(real3(m_shadowCoords[nextCascadeIndex]), nextCascadeIndex);
+            const real nextLit = SamplePcfBicubic(m_shadowCoords[nextCascadeIndex], nextCascadeIndex);
             lit = lerp(nextLit, lit, blendBetweenCascadesAmount);
         }
     } 
@@ -394,7 +394,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
                 static const real pcfFallbackThreshold = 1.04;
                 if (ratio > pcfFallbackThreshold)
                 {
-                    ratio = SamplePcfBicubic(real3(shadowCoord), indexOfCascade);
+                    ratio = SamplePcfBicubic(shadowCoord, indexOfCascade);
                 }
                 return saturate(ratio);
             }
