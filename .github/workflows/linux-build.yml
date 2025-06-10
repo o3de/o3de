@@ -183,11 +183,10 @@ jobs:
         continue-on-error: true
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
-            python \
+            .ccache \
+            .o3de/python \
             3rdParty/packages \
-            AutomatedTesting/Cache \
-            AutomatedTesting/user \
-            .ccache
+            AutomatedTesting/Cache
   
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

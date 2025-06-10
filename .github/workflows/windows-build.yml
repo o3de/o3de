@@ -177,11 +177,10 @@ jobs:
         run: |
           try {
             tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
-              python `
+              .ccache `
+              .o3de\python `
               3rdParty\packages `
-              AutomatedTesting\Cache `
-              AutomatedTesting\user `
-              .ccache
+              AutomatedTesting\Cache
           } catch {
             echo "Warning: Error during tar compression"
           }
