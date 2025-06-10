@@ -69,6 +69,17 @@ jobs:
           ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
           "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
 
+      - name: Move Page File to Workspace drive
+        # Configure the page file to the workspace drive for the duration of the run
+        run: |
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
+            -Name "PagingFiles" -Value "${{ runner.temp }}\pagefile.sys 8192 8192"
+          echo "Page file moved to ${{ runner.temp }}\pagefile.sys"
+
+      - name: Get drive info
+        run: |
+          Get-PSDrive
+
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
         continue-on-error: true
@@ -79,7 +90,11 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=15G
+            max_size=5G
+            compression_level=5
+            stats=true
+            inode_cache=true
+            temporary_dir=${{ runner.temp }}
             cache_dir=${{ github.workspace }}\.ccache
       
       - name: Get last run
@@ -148,6 +163,8 @@ jobs:
         # Builds with presets in ../scripts/build/Platform/Windows/build_config.json
         env:
           LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
+          TEMP: ${{ runner.temp }} # Set temp folders to the workspace drive as the boot drive is slow
+          TMP: ${{ runner.temp }}
         run: |
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
       
