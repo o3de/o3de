@@ -81,10 +81,10 @@ namespace AZ
 
         bool RayTracingAccelerationStructurePass::RaytracingRevisionOutdated() const
         {
-            auto fp = GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (fp)
+            auto rayTracingFeatureProcessor = GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (rayTracingFeatureProcessor)
             {
-                return fp->GetRevision() != fp->GetBuiltRevision(RHI::ScopeProducer::GetDeviceIndex()) || fp->GetSkinnedMeshCount() != 0;
+                return rayTracingFeatureProcessor->GetRevision() != rayTracingFeatureProcessor->GetBuiltRevision(RHI::ScopeProducer::GetDeviceIndex()) || rayTracingFeatureProcessor->GetSkinnedMeshCount() != 0;
             }
             return false;
         }
