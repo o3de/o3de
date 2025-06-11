@@ -1196,8 +1196,7 @@ namespace AZ
                             {
                                 AZ_Assert(
                                     subMeshInstance.m_compactBlas, "Deleting a uncompacted Blas from a submesh without a compacted one");
-                                // We assume here that all device Blas are handled at the same frame for all devices
-                                if (subMeshInstance.m_blas->GetDeviceMask() == RHI::SetBit(RHI::MultiDevice::DeviceMask{}, deviceIndex))
+                                if (subMeshInstance.m_blas->GetDeviceMask() == RHI::SetBit(RHI::MultiDevice::NoDevices, deviceIndex))
                                 {
                                     subMeshInstance.m_blas = {};
                                 }

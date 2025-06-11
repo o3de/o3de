@@ -131,8 +131,7 @@ namespace AZ
                     tlasInstance.m_transform = transform;
                 }
 
-                RHI::MultiDevice::DeviceMask deviceMask{};
-                deviceMask = RHI::SetBit(deviceMask, deviceIndex);
+                auto deviceMask = RHI::SetBit(RHI::MultiDevice::NoDevices, deviceIndex);
 
                 // create the TLAS buffers from on the descriptor
                 RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
