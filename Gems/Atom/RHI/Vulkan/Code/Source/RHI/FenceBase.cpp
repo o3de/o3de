@@ -44,7 +44,8 @@ namespace AZ
             m_inSignalledState = true;
         }
 
-        RHI::ResultCode FenceBase::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForCrossDevice)
+        RHI::ResultCode FenceBase::InitInternal(
+            RHI::Device& baseDevice, RHI::FenceState initialState, [[maybe_unused]] bool usedForCrossDevice)
         {
             switch (initialState)
             {
