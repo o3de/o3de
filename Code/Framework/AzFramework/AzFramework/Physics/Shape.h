@@ -134,6 +134,9 @@ namespace Physics
         //! Retrieve this shape AABB using local coordinates
         virtual AZ::Aabb GetAabbLocal() const = 0;
 
+        //! Retrieve this shape configuration
+        virtual AZStd::shared_ptr<ShapeConfiguration> GetShapeConfiguration() const = 0;
+
         //! Fills in the vertices and indices buffers representing this shape.
         //! If vertices are returned but not indices you may assume the vertices are in triangle list format.
         //! @param vertices A buffer to be filled with vertices
