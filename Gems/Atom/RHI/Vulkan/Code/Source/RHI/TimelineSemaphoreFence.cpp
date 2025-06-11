@@ -87,7 +87,8 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode TimelineSemaphoreFence::InitCrossDeviceInternal(RHI::Device& baseDevice, RHI::Ptr<Fence> originalDeviceFence)
+        RHI::ResultCode TimelineSemaphoreFence::InitCrossDeviceInternal(
+            [[maybe_unused]] RHI::Device& baseDevice, [[maybe_unused]] RHI::Ptr<Fence> originalDeviceFence)
         {
 #if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
             auto originalTimelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(&originalDeviceFence->GetFenceBase());
