@@ -782,7 +782,7 @@ namespace AZ
         {
             if (deviceIndex == RHI::MultiDevice::InvalidDeviceIndex)
             {
-                deviceIndex = 0;
+                deviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
             }
             bool updatedDeviceMask = false;
             if (!RHI::CheckBit(m_deviceMask, deviceIndex))
