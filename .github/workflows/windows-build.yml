@@ -55,7 +55,7 @@ jobs:
         run: |
           if ("${{ github.workspace }}" -like "C:\*") {
             New-Item "D:\a" -ItemType 'Directory' -Force
-            New-Item -Path "C:\a" -ItemType SymbolicLink -Target "D:\a"
+            New-Item -Path "C:\a" -ItemType SymbolicLink -Target "D:\a" -Force
             Write-Host "Created symlink: C:\a -> D:\a"
           } else {
             Write-Host "Workspace is on ${{ github.workspace }}. Skipping symlink creation."
