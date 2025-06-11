@@ -1098,7 +1098,7 @@ namespace AZ
                             m_skinnedBlasIds.insert(assetId);
                         }
                     }
-                    else if (createdOnDevices != RHI::MultiDevice::DeviceMask{})
+                    else if (createdOnDevices != RHI::MultiDevice::NoDevices)
                     {
                         RHI::MultiDeviceObject::IterateDevices(
                             createdOnDevices,
