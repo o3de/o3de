@@ -115,7 +115,7 @@ namespace AZ
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
                 AZStd::unordered_map<int, RHI::DeviceRayTracingTlasDescriptor> tlasDescriptor;
 
-                auto deviceIndex = static_cast<RHI::ScopeProducer*>(this)->GetDeviceIndex();
+                auto deviceIndex = RHI::ScopeProducer::GetDeviceIndex();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();
