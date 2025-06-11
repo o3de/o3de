@@ -52,6 +52,16 @@ jobs:
     runs-on: ${{ inputs.image }}
         
     steps:
+      - name: Symlink if workspace is on C drive to D drive
+        run: |
+          if ("${{ github.workspace }}" -like "C:\*") {
+            New-Item "D:\a" -ItemType 'Directory' -Force
+            New-Item -Path "C:\a" -ItemType SymbolicLink -Target "D:\a"
+            Write-Host "Created symlink: C:\a -> D:\a"
+          } else {
+            Write-Host "Workspace is not on C:. Skipping symlink creation."
+          }
+
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
