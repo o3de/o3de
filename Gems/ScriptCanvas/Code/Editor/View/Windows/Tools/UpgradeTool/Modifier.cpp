@@ -365,7 +365,7 @@ namespace ScriptCanvasEditor
             using namespace AzFramework;
             // \note DO NOT put asset into the m_assetsCompletedByAP here. That can only be done when the message is received by the AP
             m_results.m_successes.push_back(m_result.asset.Describe());
-            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
+            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
             NextModification();
         }
 
