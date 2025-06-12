@@ -48,6 +48,9 @@ namespace AZ
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
             aiAABB GetAABB() const { return m_aabb; }
             uint32_t GetVertices() const { return m_vertices; }
+
+            bool GetExtractEmbeddedTextures() const { return m_extractEmbeddedTextures; }
+
         protected:
             const aiScene* m_assImpScene = nullptr;
             AZStd::unique_ptr<Assimp::Importer> m_importer;
@@ -57,6 +60,7 @@ namespace AZ
             AZStd::string m_sceneFileName;
             aiAABB m_aabb;
             uint32_t m_vertices;
+            bool m_extractEmbeddedTextures;
         };
 
     } // namespace AssImpSDKWrapper

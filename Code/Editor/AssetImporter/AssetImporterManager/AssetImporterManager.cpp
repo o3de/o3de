@@ -540,7 +540,7 @@ void AssetImporterManager::ProcessMoveFiles()
     }
 }
 
-bool AssetImporterManager::Copy(QString relativePath, QString oldAbsolutePath, QString destinationAbsolutePath)
+bool AssetImporterManager::Copy([[maybe_unused]] QString relativePath, QString oldAbsolutePath, QString destinationAbsolutePath)
 {
     QString fileName = GetFileName(destinationAbsolutePath);
     QString subPath = QFileInfo(destinationAbsolutePath).absoluteDir().absolutePath();

@@ -64,6 +64,8 @@ namespace Maestro
         {
             bool val(false);
             pGsmCache->GetValue(ac.time, val);
+            // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+            //gEnv->p3DEngine->SetShadowsGSMCache(val);
         }
     }
 
@@ -74,6 +76,8 @@ namespace Maestro
 
     void CShadowsSetupNode::OnReset()
     {
+        // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+        // gEnv->p3DEngine->SetShadowsGSMCache(false);
     }
 
     unsigned int CShadowsSetupNode::GetParamCount() const

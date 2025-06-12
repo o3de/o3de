@@ -222,7 +222,7 @@ TEST_F(RCcontrollerTest_Simple, DISABLED_SameJobIsCompletedMultipleTimes_Complet
     using namespace AssetProcessor;
 
     AZStd::vector<JobEntry> jobEntries;
-    QObject::connect(m_rcController.get(), &RCController::FileCompiled, [&jobEntries](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+    QObject::connect(m_rcController.get(), &RCController::FileCompiled, [&jobEntries](JobEntry entry, [[maybe_unused]] AssetBuilderSDK::ProcessJobResponse response)
     {
         jobEntries.push_back(entry);
     });

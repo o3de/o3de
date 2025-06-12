@@ -6,13 +6,7 @@
  *
  */
 
-//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialSrg.azsli>
-
-#include <scenesrg_all.srgi>
-#include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
@@ -25,19 +19,11 @@
     COMMON_OPTIONS_SPECULAR_F0()
     COMMON_OPTIONS_OCCLUSION()
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_VertexEval.azsli>
-
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_PixelGeometryData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_PixelGeometryEval.azsli>
-
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_SurfaceData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_SurfaceEval.azsli>
-    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingEval.azsli>
+
 #else
-
-    //TODO(MaterialPipeline): I think we should rename these to "PositionOnly_*"
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
-
 #endif

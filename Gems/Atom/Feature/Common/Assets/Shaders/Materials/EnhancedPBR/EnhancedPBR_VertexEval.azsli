@@ -19,45 +19,50 @@
 #include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
 
 VsOutput EvaluateVertexGeometry_EnhancedPBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId,
+    VsSystemValues SV,
     bool useVertexColor,
     float4 color0)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId, useVertexColor, color0);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(params, position, normal, tangent, uv0, uv1, SV, useVertexColor, color0);
 
+#ifdef MATERIAL_USES_VERTEX_DETAIL_UV
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
-    TransformDetailUvs(detailUvs, output.detailUvs);
+    TransformDetailUvs(params, detailUvs, output.detailUvs);
+#endif
 
     return output;
 }
 
 // Helper functions to keep compatible with the previous version
 // because dxc compiler doesn't allow default parameters on functions with overloads
-VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
     float4 color0;
     bool useVertexColor0;
     GetVertexColor(IN, color0, useVertexColor0);
 
     return EvaluateVertexGeometry_EnhancedPBR(
+        params,
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId,
+        SV,
         useVertexColor0,
         color0);
 }
 
 VsOutput EvaluateVertexGeometry_EnhancedPBR(
+    const MaterialParameters params,
     float3 position,
     float3 normal,
     float4 tangent,
@@ -65,13 +70,17 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float2 uv1,
     uint instanceId)
 {
+    VsSystemValues  SV;
+    SV.m_instanceId = instanceId;
+
     return EvaluateVertexGeometry_EnhancedPBR(
+        params,
         position,
         normal,
         tangent,
         uv0,
         uv1,
-        instanceId,
+        SV,
         false,
         float4(1.0f, 1.0f, 1.0f, 1.0f));
 }

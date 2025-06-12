@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/PBR/LightingUtils.azsli>
+
+class LightingData
+{
+
+    // Lighting outputs
+    real3 diffuseLighting;
+    real3 specularLighting;
+    real3 translucentBackLighting;
+
+    // Factors for the amount of diffuse and specular lighting applied
+    real3 diffuseResponse;
+    real3 specularResponse;
+
+    // (N . L) to accept below (N . L = 0) in scattering through thin objects
+    real transmissionNdLBias; 
+    
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    real shrinkFactor;
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    real distanceAttenuation;
+
+    // Normalized direction from surface to camera
+    real3 dirToCamera;
+    
+    // Scaling term to approximate multiscattering contribution in specular BRDF
+    real3 multiScatterCompensation;
+
+    // Lighting emitted from the surface
+    real3 emissiveLighting;
+
+    // BRDF texture values
+    real2 brdf;
+
+    // Normal . View
+    real NdotV;
+
+    // Occlusion factors
+    // 0 = dark, 1 = light
+    real diffuseAmbientOcclusion;
+    real specularOcclusion;
+
+    void CalculateMultiscatterCompensation(real3 specularF0, bool enabled)
+    {
+        multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
+    }
+    real GetSpecularNdotV() 
+    { 
+        return NdotV; 
+    }
+
+};
+

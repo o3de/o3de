@@ -13,15 +13,22 @@
 // Include options first
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-// Then include custom surface and lighting data types
-#include <Atom/Features/PBR/Lighting/LightingData.azsli>
 #include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLightingData.azsli>
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 
+#ifndef GetDiffuseLighting
+#define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_StandardLighting(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
+#ifndef GetSpecularLighting
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_StandardLighting(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
 // Then define the Diffuse and Specular lighting functions
-real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
+real3 GetDiffuseLighting_StandardLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
     real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
 
@@ -38,7 +45,7 @@ real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 light
     return diffuse;
 }
 
-real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
+real3 GetSpecularLighting_StandardLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
     real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
 
@@ -53,8 +60,7 @@ real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real
     return specular;
 }
 
-
-// Then include everything else
+// then include the supported PBR light types
 #include <Atom/Features/PBR/Lights/Lights.azsli>
 
 struct PbrLightingOutput

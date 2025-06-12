@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
         SignalNeedsVersionConversion();
     }
 
-    void ScriptEventSenderNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventSenderNodeDescriptorComponent::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         SignalNeedsVersionConversion();
     }

@@ -33,29 +33,31 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <SourceControl/SourceControlAPI.h>
 
+#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <UI/DocumentPropertyEditor/FilteredDPE.h>
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
-#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
-#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
-#include <UI/DocumentPropertyEditor/FilteredDPE.h>
-
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <QAction>
+#include <QDir>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
+
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have
                                                           // dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileDialog>
 AZ_POP_DISABLE_WARNING
-#include <QAction>
 
 namespace AzToolsFramework
 {
@@ -362,7 +364,7 @@ namespace AzToolsFramework
                         {
                             Q_EMIT OnAssetSavedSignal();
                                             
-                            m_parentEditorWidget->AddRecentPath(assetFullPath);
+                            m_parentEditorWidget->AddRecentPath(m_inMemoryAsset->GetType(), assetFullPath);
                             if (!m_useDPE)
                             {
                                 m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
@@ -466,19 +468,10 @@ namespace AzToolsFramework
                     {
                         AzFramework::StringFunc::Path::StripPath(fileName);
                         m_currentAsset = fileName.c_str();
-
-                        m_parentEditorWidget->SetLastSavePath(targetFilePath);
-                        AZStd::size_t findIndex = targetFilePath.find(fileName.c_str());
-
-                        if (findIndex != AZStd::string::npos)
-                        {
-                            AZStd::string savePath = m_parentEditorWidget->GetLastSavePath().toUtf8().data();
-                            m_parentEditorWidget->SetLastSavePath(savePath.substr(0, findIndex));
-                        }
                     }
 
                     m_dirty = false;
-                    m_parentEditorWidget->AddRecentPath(targetFilePath);
+                    m_parentEditorWidget->AddRecentPath(asset.GetType(), targetFilePath);
                     m_parentEditorWidget->UpdateTabTitle(this);
                     SetStatusText(Status::assetCreated);
 
@@ -533,7 +526,7 @@ namespace AzToolsFramework
             auto serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
             serializeContext->CloneObjectInplace((*m_inMemoryAsset.GetData()), asset.GetData());
 
-            // Make sure the saved state key is reset since this could be a file opened with the same property editor intance
+            // Make sure the saved state key is reset since this could be a file opened with the same property editor instance
             m_savedStateKey = AZ::Crc32(&asset.GetId(), sizeof(AZ::Data::AssetId));
 
             UpdatePropertyEditor(m_inMemoryAsset);
@@ -548,6 +541,8 @@ namespace AzToolsFramework
             SetupHeader();
             m_parentEditorWidget->SetCurrentTab(this);
             m_parentEditorWidget->UpdateSaveMenuActionsStatus();
+
+            m_parentEditorWidget->AddRecentPath(asset.GetType(), asset.GetHint());
         }
 
         void AssetEditorTab::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -645,8 +640,27 @@ namespace AzToolsFramework
                 filter.append(")");
             }
 
-            const QString saveAs = AzQtComponents::FileDialog::GetSaveFileName(
-                AzToolsFramework::GetActiveWindow(), tr("Save As..."), m_parentEditorWidget->GetLastSavePath(), filter);
+            AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
+            projectSourcePath /= "Assets";
+
+            auto& recentPathForAssetType = m_parentEditorWidget->GetRecentPathForAssetType(m_inMemoryAsset.GetType());
+            if (!recentPathForAssetType.isEmpty())
+            {
+                projectSourcePath = recentPathForAssetType.toStdString().c_str();
+            }
+
+            QDir dir(projectSourcePath.c_str());
+            if (!dir.exists())
+            {
+                auto result = AZ::IO::SystemFile::CreateDir(projectSourcePath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", projectSourcePath.c_str());
+                    return false;
+                }
+            }
+
+            const QString saveAs = AzQtComponents::FileDialog::GetSaveFileName(AzToolsFramework::GetActiveWindow(), tr("Save As..."), projectSourcePath.c_str(), filter);
 
             return SaveImpl(m_inMemoryAsset, saveAs);
         }
@@ -705,13 +719,9 @@ namespace AzToolsFramework
             AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> dstByteStream(&newSaveData);
 
             AssetEditorValidationRequestBus::Event(m_sourceAssetId, &AssetEditorValidationRequests::PreAssetSave, m_inMemoryAsset);
+            auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(m_inMemoryAsset.GetType()));
 
-            if (AZ::Utils::SaveObjectToStream(
-                    dstByteStream,
-                    AZ::DataStream::ST_XML,
-                    m_inMemoryAsset.Get(),
-                    m_inMemoryAsset.Get()->RTTI_GetType(),
-                    m_serializeContext))
+            if (m_inMemoryAsset && assetHandler && assetHandler->SaveAssetData(m_inMemoryAsset, &dstByteStream))
             {
                 AZStd::swap(newSaveData, m_saveData);
             }

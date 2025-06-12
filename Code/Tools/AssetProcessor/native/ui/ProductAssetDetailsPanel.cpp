@@ -261,7 +261,7 @@ namespace AssetProcessor
     }
 
     void ProductAssetDetailsPanel::BuildIncomingProductDependencies(
-        const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
+        [[maybe_unused]] const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData,
         const AZ::Data::AssetId& assetId,
         const AZStd::string& platform)
     {

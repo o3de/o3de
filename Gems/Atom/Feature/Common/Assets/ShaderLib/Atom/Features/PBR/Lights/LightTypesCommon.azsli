@@ -8,10 +8,9 @@
 
 #pragma once
 
-#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
-
 #include <Atom/Features/PBR/BackLighting.azsli>
 #include <Atom/Features/PBR/Hammersley.azsli>
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
 
 //! Adjust the intensity of specular light based on the radius of the light source and roughness of the surface to approximate energy conservation.
 real GetIntensityAdjustedByRadiusAndRoughness(real roughnessA, real radius, real distance2)
@@ -64,4 +63,92 @@ bool IsSameLightChannel(uint channelA, uint channelB)
 {
     uint bitResult = channelA & channelB;
     return bitResult;
+}
+
+float3 SampleDisk(float2 randomPoint, DiskLight light)
+{
+    // Uniformly distributed point at light surface
+    float distanceFromCenter = sqrt(randomPoint.x) * light.m_diskRadius;
+    float angle = 2.0 * PI * randomPoint.y;
+    float3 outPoint = float3(distanceFromCenter * cos(angle), distanceFromCenter * sin(angle), 0.0);
+
+    // Orient point using the tangent / bitangent as a uv space.
+    float3 tangent;
+    if (abs(light.m_direction.z) > 0.9)
+    {
+        // If vector is close to aligned with z axis choose y as up.
+        tangent = normalize(cross(light.m_direction, float3(0.0, 1.0, 0.0)));
+    }
+    else
+    {
+        tangent = normalize(cross(light.m_direction, float3(0.0, 0.0, 1.0)));
+    }
+    float3 bitangent = cross(tangent, light.m_direction);
+    outPoint = tangent * outPoint.x + bitangent * outPoint.y;
+
+    // Translate by light position
+    outPoint += light.m_position;
+
+    return outPoint;
+}
+
+// Generates uniformly distributed sample on a unit sphere from a 2d position in the 0.0 -> 1.0 range.
+real3 SampleSphere(real2 randomPoint)
+{
+    real angle = 2.0 * PI * randomPoint.y;
+    real cosTheta = 1.0 - 2.0 * randomPoint.x; // Transform x from 0.0 -> 1.0 to -1.0 -> 1.0
+    real sinTheta = sqrt(saturate(1.0 - cosTheta * cosTheta));
+    return real3(sinTheta * cos(angle), sinTheta * sin(angle), cosTheta);
+}
+
+float3 SampleRectangle(float2 randomPoint, QuadLight light)
+{
+    randomPoint = randomPoint * 2.0 - 1.0; // transform to -1 to 1 range.
+    randomPoint *= float2(light.m_halfWidth, light.m_halfHeight);
+    // Random point on light surface
+    float3 outPoint = light.m_position + light.m_leftDir * randomPoint.x + light.m_upDir * randomPoint.y;
+
+    return outPoint;
+}
+
+// Get a uniformly distributed point on the surface of a capsule from the provided uniformly distributed 2d point. Uses
+// capsRatio to determine if the point should be on the caps or cylinder to ensure an even distribution. 
+void SampleCapsule(float2 randomPoint, CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
+{
+    float3 startToEnd = light.m_direction * light.m_length;
+    float3 endPoint = light.m_startPoint + startToEnd;
+    if (randomPoint.x < capToCylinderAreaRatio)
+    {
+        // Sample on cap
+        float2 spherePoint = randomPoint;
+        spherePoint.x /= capToCylinderAreaRatio; // normalize to 0.0 -> 1.0
+
+        float3 pointDirection = SampleSphere(spherePoint);
+        if (dot(pointDirection, light.m_direction) < 0.0)
+        {
+            // start point cap
+            outPosition = light.m_startPoint + pointDirection * light.m_radius;
+        }
+        else
+        {
+            // end point cap
+            outPosition = endPoint + pointDirection * light.m_radius;
+        }
+        outDirection = pointDirection;
+    }
+    else
+    {
+        // Sample on cylinder
+        float angle = randomPoint.y * PI * 2.0;
+        outDirection.x = 0.0;
+        outDirection.y = sin(angle);
+        outDirection.z = cos(angle);
+        outDirection = mul(outDirection, localToWorld);
+
+        float positionAlongCylinder = (randomPoint.x - capToCylinderAreaRatio) / (1.0 - capToCylinderAreaRatio); // normalize to 0.0 -> 1.0
+        positionAlongCylinder *= light.m_length;
+        
+        float3 positionInCylinder = light.m_startPoint + light.m_direction * positionAlongCylinder;
+        outPosition = positionInCylinder + outDirection * light.m_radius;
+    }
 }

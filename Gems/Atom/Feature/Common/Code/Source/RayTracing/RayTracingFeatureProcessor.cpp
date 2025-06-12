@@ -163,10 +163,8 @@ namespace AZ
 
             RHI::Ptr<AZ::RHI::RayTracingBlas> rayTracingBlas = aznew AZ::RHI::RayTracingBlas;
             RHI::RayTracingBlasDescriptor blasDescriptor;
-            blasDescriptor.Build()
-                ->AABB(aabb)
-                ;
-            rayTracingBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_bufferPools);
+            blasDescriptor.m_aabb = aabb;
+            rayTracingBlas->CreateBuffers(m_deviceMask, &blasDescriptor, *m_bufferPools);
 
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;
@@ -198,7 +196,7 @@ namespace AZ
             m_blasInstanceMap.emplace(Data::AssetId(uuid), meshBlasInstance);
 
             RHI::MultiDeviceObject::IterateDevices(
-                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                m_deviceMask,
                 [&](int deviceIndex)
                 {
                     m_blasToBuild[deviceIndex].insert(Data::AssetId(uuid));
@@ -379,17 +377,38 @@ namespace AZ
                 // Note: the build flags are set to be the same for each BLAS created for the mesh
                 RHI::RayTracingAccelerationStructureBuildFlags buildFlags =
                     CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
+
+                auto rpiDesc = RPI::RPISystemInterface::Get()->GetDescriptor();
+                if (mesh.m_subMeshIndices.size() > rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize)
+                {
+                    AZ_Warning(
+                        "RaytracingFeatureProcessor",
+                        false,
+                        "CompactionQueryPool is not large enough for model %s.\n"
+                        "Pool size: %d\n"
+                        "Num meshes in model: %d\n"
+                        "Raytracing Acceleration Structure Compaction will be disabled for this model\n"
+                        "Consider increasing the size of the pool through the registry setting "
+                        "O3DE/Atom/RPI/Initialization/RayTracingSystemDescriptor/RayTracingCompactionQueryPoolSize",
+                        mesh.m_assetId.ToFixedString().c_str(),
+                        rpiDesc.m_rayTracingSystemDescriptor.m_rayTracingCompactionQueryPoolSize,
+                        mesh.m_subMeshIndices.size());
+                    buildFlags = buildFlags & ~RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION;
+                }
+
                 for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
                 {
                     const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
                     SubMeshBlasInstance subMeshBlasInstance;
-                    subMeshBlasInstance.m_blasDescriptor.Build()
-                        ->Geometry()
-                        ->VertexFormat(subMesh.m_positionFormat)
-                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
-                        ->IndexBuffer(subMesh.m_indexBufferView)
-                        ->BuildFlags(buildFlags);
+
+                    RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
+                    blasDescriptor.m_buildFlags = buildFlags;
+
+                    RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
+                    blasGeometry.m_vertexFormat = subMesh.m_positionFormat;
+                    blasGeometry.m_vertexBuffer = subMesh.m_positionVertexBufferView;
+                    blasGeometry.m_indexBuffer = subMesh.m_indexBufferView;
 
                     itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
                 }
@@ -546,11 +565,11 @@ namespace AZ
                     m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
 
-                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_baseColorImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_normalImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_metallicImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_roughnessImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_material.m_emissiveImageView.get());
 #endif
 
                     if (globalIndex < m_subMeshes.size() - 1)
@@ -773,7 +792,6 @@ namespace AZ
 
                 // create the TLAS descriptor
                 RHI::RayTracingTlasDescriptor tlasDescriptor;
-                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 uint32_t instanceIndex = 0;
                 for (auto& subMesh : m_subMeshes)
@@ -783,14 +801,14 @@ namespace AZ
                     auto& blas = blasInstance.m_compactBlas ? blasInstance.m_compactBlas : blasInstance.m_blas;
                     if (blas)
                     {
-                        tlasDescriptorBuild->Instance()
-                            ->InstanceID(instanceIndex)
-                            ->InstanceMask(subMesh.m_mesh->m_instanceMask)
-                            ->HitGroupIndex(0)
-                            ->Blas(blas)
-                            ->Transform(subMesh.m_mesh->m_transform)
-                            ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
-                            ->Transparent(subMesh.m_material.m_irradianceColor.GetA() < 1.0f);
+                        RHI::RayTracingTlasInstance& tlasInstance = tlasDescriptor.m_instances.emplace_back();
+                        tlasInstance.m_instanceID = instanceIndex;
+                        tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
+                        tlasInstance.m_hitGroupIndex = 0;
+                        tlasInstance.m_blas = blas;
+                        tlasInstance.m_transform = subMesh.m_mesh->m_transform;
+                        tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
+                        tlasInstance.m_transparent = subMesh.m_material.m_irradianceColor.GetA() < 1.0f;
                     }
 
                     instanceIndex++;
@@ -806,19 +824,20 @@ namespace AZ
 
                 for (const auto& proceduralGeometry : m_proceduralGeometry)
                 {
-                    tlasDescriptorBuild->Instance()
-                        ->InstanceID(instanceIndex)
-                        ->InstanceMask(proceduralGeometry.m_instanceMask)
-                        ->HitGroupIndex(geometryTypeMap[proceduralGeometry.m_typeHandle->m_name])
-                        ->Blas(proceduralGeometry.m_blas)
-                        ->Transform(proceduralGeometry.m_transform)
-                        ->NonUniformScale(proceduralGeometry.m_nonUniformScale);
+                    RHI::RayTracingTlasInstance& tlasInstance = tlasDescriptor.m_instances.emplace_back();
+                    tlasInstance.m_instanceID = instanceIndex;
+                    tlasInstance.m_instanceMask = proceduralGeometry.m_instanceMask;
+                    tlasInstance.m_hitGroupIndex = geometryTypeMap[proceduralGeometry.m_typeHandle->m_name];
+                    tlasInstance.m_blas = proceduralGeometry.m_blas;
+                    tlasInstance.m_transform = proceduralGeometry.m_transform;
+                    tlasInstance.m_nonUniformScale = proceduralGeometry.m_nonUniformScale;
+
                     instanceIndex++;
                 }
 
                 // create the TLAS buffers based on the descriptor
                 RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = m_tlas;
-                rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, *m_bufferPools);
+                rayTracingTlas->CreateBuffers(m_deviceMask, &tlasDescriptor, *m_bufferPools);
             }
 
             // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
@@ -929,7 +948,7 @@ namespace AZ
                         {
                             // create the BLAS object and store it in the BLAS list
                             if (RHI::CheckBitsAny(
-                                    subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                    subMeshInstance.m_blasDescriptor.m_buildFlags,
                                     RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
                             {
                                 numSubmeshesWithCompactionQuery++;
@@ -947,7 +966,7 @@ namespace AZ
                         // create the BLAS object and store it in the BLAS list
                         RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = aznew RHI::RayTracingBlas;
                         if (RHI::CheckBitsAny(
-                                subMeshInstance.m_blasDescriptor.GetBuildFlags(),
+                                subMeshInstance.m_blasDescriptor.m_buildFlags,
                                 RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
                         {
                             subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
@@ -956,8 +975,7 @@ namespace AZ
                         }
                         subMeshInstance.m_blas = rayTracingBlas;
                         // create the buffers from the BLAS descriptor
-                        subMeshInstance.m_blas->CreateBuffers(
-                            RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &subMeshInstance.m_blasDescriptor, *m_bufferPools);
+                        subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
                     }
 
                     if (instance.m_isSkinnedMesh)
@@ -1006,7 +1024,7 @@ namespace AZ
                                 auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
                                 AZ_Assert(!subMeshInstance.m_compactBlas, "Trying to compact a Blas twice");
                                 AZ_Assert(
-                                    frameEvent.m_deviceMask == RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                    frameEvent.m_deviceMask == m_deviceMask,
                                     "All device Blas of a SubMesh must be compacted in the same frame");
                                 AZStd::unordered_map<int, uint64_t> sizes;
                                 RHI::MultiDeviceObject::IterateDevices(
@@ -1024,7 +1042,7 @@ namespace AZ
                                 changed = true;
                             }
                             RHI::MultiDeviceObject::IterateDevices(
-                                RHI::RHISystemInterface::Get()->GetRayTracingSupport(),
+                                m_deviceMask,
                                 [&, assetId = assetId](int deviceIndex)
                                 {
                                     m_blasToCompact[deviceIndex].insert(assetId);
@@ -1148,21 +1166,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMeshBufferIndices(m_meshBufferIndices.GetIndexList().size());
-                uint32_t resolvedMeshBufferIndex = 0;
-                for (auto& meshBufferIndex : m_meshBufferIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMeshBufferIndicesMap;
+
+                for (const auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
                 {
-                    if (!m_meshBufferIndices.IsValidIndex(meshBufferIndex))
+                    IndexVector& resolvedMeshBufferIndices = resolvedMeshBufferIndicesMap[deviceIndex];
+                    resolvedMeshBufferIndices.resize(meshBufferIndices.GetIndexList().size());
+                    uint32_t resolvedMeshBufferIndex = 0;
+                    for (auto& meshBufferIndex : meshBufferIndices.GetIndexList())
                     {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        if (!meshBufferIndices.IsValidIndex(meshBufferIndex))
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
+                        }
                     }
                 }
 
-                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndices);
+                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMeshData;
 
@@ -1178,21 +1202,27 @@ namespace AZ
 #if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
-                IndexVector resolvedMaterialTextureIndices(m_materialTextureIndices.GetIndexList().size());
-                uint32_t resolvedMaterialTextureIndex = 0;
-                for (auto& materialTextureIndex : m_materialTextureIndices.GetIndexList())
+                AZStd::unordered_map<int, IndexVector> resolvedMaterialTextureIndicesMap;
+
+                for (const auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
                 {
-                    if (!m_materialTextureIndices.IsValidIndex(materialTextureIndex))
+                    IndexVector& resolvedMaterialTextureIndices = resolvedMaterialTextureIndicesMap[deviceIndex];
+                    resolvedMaterialTextureIndices.resize(materialTextureIndices.GetIndexList().size());
+                    uint32_t resolvedMaterialTextureIndex = 0;
+                    for (auto& materialTextureIndex : materialTextureIndices.GetIndexList())
                     {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
-                    }
-                    else
-                    {
-                        resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        if (!materialTextureIndices.IsValidIndex(materialTextureIndex))
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
+                        }
+                        else
+                        {
+                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
+                        }
                     }
                 }
 
-                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndices);
+                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndicesMap);
 #else
                 AZStd::unordered_map<int, const void*> rawMaterialData;
 
@@ -1350,71 +1380,52 @@ namespace AZ
             m_rayTracingMaterialSrg->Compile();
         }
 
-        void RayTracingFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        void RayTracingFeatureProcessor::OnRenderPipelineChanged(
+            [[maybe_unused]] RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!m_rayTracingEnabled)
             {
                 return;
             }
 
-            // determine which devices need RayTracingAccelerationStructurePasses and distribute multiple existing ones to the devices
-            AZ::RPI::Pass* firstRayTracingAccelerationStructurePass{ nullptr };
-            auto rayTracingDeviceMask{ RHI::RHISystemInterface::Get()->GetRayTracingSupport() };
-            AZ::RHI::MultiDevice::DeviceMask devicesToAdd{ rayTracingDeviceMask };
-
-            // only enable the RayTracingAccelerationStructurePass for each device on the first pipeline in this scene, this will avoid
-            // multiple updates to the same AS
-            AZ::RPI::PassFilter passFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("RayTracingAccelerationStructurePassTemplate"), GetParentScene());
+            // Find out which devices have a RayTracingAccelerationStructurePass
+            // We then only build the BLAS and TLAS objects on these devices
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(
+                AZ_NAME_LITERAL("RayTracingAccelerationStructurePassTemplate"), renderPipeline->GetScene());
             AZ::RPI::PassSystemInterface::Get()->ForEachPass(
                 passFilter,
-                [&devicesToAdd, &firstRayTracingAccelerationStructurePass, &rayTracingDeviceMask](
-                    AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                [this](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                 {
-                    if (!firstRayTracingAccelerationStructurePass)
+                    auto deviceIndex = pass->GetDeviceIndex();
+                    if (deviceIndex == AZ::RHI::MultiDevice::InvalidDeviceIndex)
                     {
-                        firstRayTracingAccelerationStructurePass = pass;
+                        // We assume that the whole pipelines runs on device 0 here
+                        // Pipelines that might be scheduled on other devices have to take care to set the device index of RTAS passes
+                        deviceIndex = 0;
+                    }
+                    if (m_blasInstanceMap.empty())
+                    {
+                        m_deviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
+                    }
+                    else
+                    {
+                        // Adding new RTAS passes when a scene is already loaded is currently not supported
+                        // We would need to build all current BLAS on this new device
+                        // Additionally we would need to find a way to have a compacted BLAS on one device and an uncompacted on another
+                        [[maybe_unused]] auto newDeviceMask = AZ::RHI::SetBit(m_deviceMask, deviceIndex);
+                        AZ_Assert(
+                            newDeviceMask == m_deviceMask,
+                            "RaytracingAccelerationStructurePasses cannot be added while the scene already contains objects");
                     }
 
-                    // we always set an invalid device index to the first available device
-                    if (pass->GetDeviceIndex() == RHI::MultiDevice::InvalidDeviceIndex)
-                    {
-                        pass->SetDeviceIndex(az_ctz_u32(AZStd::to_underlying(rayTracingDeviceMask)));
-                    }
+                    AZ_Assert(
+                        RHI::CheckBit(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), deviceIndex),
+                        "Pass %s does not run on a raytracing capable device",
+                        pass->GetName().GetCStr());
 
-                    auto mask = RHI::MultiDevice::DeviceMask(AZ_BIT(pass->GetDeviceIndex()));
-
-                    // only have one RayTracingAccelerationStructurePass per device
-                    pass->SetEnabled((mask & devicesToAdd) != RHI::MultiDevice::NoDevices);
-                    devicesToAdd &= ~mask;
-
-                    return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    return AZ::RPI::ContinueVisitingPasses;
                 });
-
-            // we only add the passes on the other devices if the pipeline contains one in the first place
-            if (firstRayTracingAccelerationStructurePass && changeType != RPI::SceneNotification::RenderPipelineChangeType::Removed &&
-                renderPipeline->FindFirstPass(firstRayTracingAccelerationStructurePass->GetName()))
-            {
-                // add passes for the remaining devices
-                while (devicesToAdd != RHI::MultiDevice::NoDevices)
-                {
-                    auto deviceIndex{ az_ctz_u32(AZStd::to_underlying(devicesToAdd)) };
-
-                    AZStd::shared_ptr<RPI::PassRequest> passRequest = AZStd::make_shared<RPI::PassRequest>();
-                    passRequest->m_templateName = Name("RayTracingAccelerationStructurePassTemplate");
-                    passRequest->m_passName = Name("RayTracingAccelerationStructurePass" + AZStd::to_string(deviceIndex));
-
-                    AZStd::shared_ptr<RPI::PassData> passData = AZStd::make_shared<RPI::PassData>();
-                    passData->m_deviceIndex = deviceIndex;
-                    passRequest->m_passData = passData;
-
-                    auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest.get());
-
-                    renderPipeline->AddPassAfter(pass, firstRayTracingAccelerationStructurePass->GetName());
-
-                    devicesToAdd &= RHI::MultiDevice::DeviceMask(~AZ_BIT(deviceIndex));
-                }
-            }
         }
 
         void RayTracingFeatureProcessor::RemoveBlasInstance(Data::AssetId id)

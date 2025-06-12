@@ -9,14 +9,33 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Network/IRemoteTools.h>
 
 #include "TargetSelectorButton.hxx"
 
 #include <QAction>
 #include <QMenu>
+#include <QLabel>
 
 namespace AzToolsFramework
 {
+    static bool KeyHasTarget(AZ::Crc32 key)
+    {
+        if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+        {
+            AzFramework::RemoteToolsEndpointContainer targets;
+            remoteToolsInterface->EnumTargetInfos(key, targets);
+            for (const auto& [_, info] : targets)
+            {
+                if (!info.IsSelf())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     TargetSelectorButton::TargetSelectorButton(AZ::Crc32 key, QWidget *pParent) 
         : QPushButton(pParent)
         , m_remoteToolsKey(key)
@@ -55,6 +74,15 @@ namespace AzToolsFramework
         }
 
         QMenu menu;
+
+        if (!KeyHasTarget(m_remoteToolsKey))
+        {
+            QLabel* noRemoteToolsLabel = new QLabel("Please enable the **Remote Tools Connection** gem to use the Target tool");
+            noRemoteToolsLabel->setTextFormat(Qt::TextFormat::MarkdownText);
+            QWidgetAction* noRemoteToolsAction = new QWidgetAction(this);
+            noRemoteToolsAction->setDefaultWidget(noRemoteToolsLabel);
+            menu.addAction(noRemoteToolsAction);
+        }
 
         QAction *pNoneAction = new QAction(QIcon(":/general/target_none"), "Disconnect", this);
         pNoneAction->setProperty("targetID", 0);
@@ -169,7 +197,33 @@ namespace AzToolsFramework
     TargetSelectorButtonAction::TargetSelectorButtonAction(AZ::Crc32 key, QObject *pParent) : QWidgetAction(pParent)
     {
         m_remoteToolsKey = key;
-    }    
+    }
+
+    bool TargetSelectorButtonAction::HasTarget() const
+    {
+        return KeyHasTarget(m_remoteToolsKey);
+    }
+
+    void TargetSelectorButtonAction::ConnectToFirstTargetIfNotConnected() const
+    {
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (!remoteToolsInterface)
+            return;
+
+        if (remoteToolsInterface->GetDesiredEndpoint(m_remoteToolsKey).IsValid())
+            return; // If we are already connected to a target, we don't do anything
+
+        AzFramework::RemoteToolsEndpointContainer targets;
+        remoteToolsInterface->EnumTargetInfos(m_remoteToolsKey, targets);
+        for (const auto& [_, info] : targets)
+        {
+            if (!info.IsSelf() && info.IsOnline())
+            {
+                remoteToolsInterface->SetDesiredEndpoint(m_remoteToolsKey, info.GetPersistentId());
+                return;
+            }
+        }
+    }
 
     QWidget* TargetSelectorButtonAction::createWidget(QWidget* pParent)
     {

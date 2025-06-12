@@ -87,11 +87,11 @@ float4 SampleTriangleTexture(uint texIndex, float2 uv)
 {
     if ((InstanceSrg::m_isClamp & (1U << texIndex)) != 0)
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_clampSampler, uv);
+        return InstanceSrg::m_texture[NonUniformResourceIndex(texIndex)].Sample(InstanceSrg::m_clampSampler, uv);
     }
     else
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_wrapSampler, uv);
+        return InstanceSrg::m_texture[NonUniformResourceIndex(texIndex)].Sample(InstanceSrg::m_wrapSampler, uv);
     }
 }
 

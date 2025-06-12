@@ -116,7 +116,7 @@ public: // member functions
     virtual void OnUiAnimationEvent(IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, AZStd::string animSequenceName) = 0;
 
     //! Called on animation track event triggered
-    virtual void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, AZStd::string animSequenceName) {}
+    virtual void OnUiTrackEvent([[maybe_unused]] AZStd::string eventName, [[maybe_unused]] AZStd::string valueName, [[maybe_unused]] AZStd::string animSequenceName) {}
 };
 
 typedef AZ::EBus<UiAnimationNotifications> UiAnimationNotificationBus;

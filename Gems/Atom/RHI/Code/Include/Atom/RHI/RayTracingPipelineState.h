@@ -18,86 +18,29 @@ namespace AZ::RHI
 {
     //! RayTracingPipelineStateDescriptor
     //!
-    //! The Build() operation in the descriptor allows the pipeline state to be initialized
-    //! using the following pattern:
-    //!
-    //! RHI::RayTracingPipelineStateDescriptor descriptor;
-    //! descriptor.Build()
-    //!     ->ShaderLibrary(shaderDescriptor)
-    //!         ->RayGenerationShaderName(AZ::Name("RayGenerationShader"))
-    //!     ->ShaderLibrary(missShaderDescriptor)
-    //!         ->MissShaderName(AZ::Name("MissShader"))
-    //!     ->ShaderLibrary(closestHitShader1Descriptor)
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader1"))
-    //!     ->ShaderLibrary(closestHitShader2Descriptor)
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader2"))
-    //!     ->HitGroup(AZ::Name("HitGroup1"))
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader1"))
-    //!     ->HitGroup(AZ::Name("HitGroup2"))
-    //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader2"))
-    //!     ;
-    //!
+    //! Describes a ray tracing pipeline state.
     class RayTracingPipelineStateDescriptor final
     {
     public:
-        RayTracingPipelineStateDescriptor() = default;
-        ~RayTracingPipelineStateDescriptor() = default;
-
         //! Returns the device-specific DeviceRayTracingPipelineStateDescriptor for the given index
         DeviceRayTracingPipelineStateDescriptor GetDeviceRayTracingPipelineStateDescriptor(int deviceIndex) const;
 
-        //! Accessors
-        const RayTracingConfiguration& GetConfiguration() const
-        {
-            return m_descriptor.GetConfiguration();
-        }
-        RayTracingConfiguration& GetConfiguration()
-        {
-            return m_descriptor.GetConfiguration();
-        }
+        //! Convenience functions for adding shader libraries
+        void AddRayGenerationShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& rayGenerationShaderName);
+        void AddMissShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& missShaderName);
+        void AddCallableShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& callableShaderName);
+        void AddClosestHitShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& closestHitShaderName);
+        void AddAnyHitShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& anyHitShaderName);
+        void AddIntersectionShaderLibrary(const PipelineStateDescriptorForRayTracing& descriptor, const Name& intersectionShaderName);
 
-        const RHI::PipelineState* GetPipelineState() const
-        {
-            return m_pipelineState;
-        }
+        //! Convenience functions for adding hit groups
+        void AddHitGroup(const Name& hitGroupName, const Name& closestHitShaderName);
+        void AddHitGroup(const Name& hitGroupName, const Name& closestHitShaderName, const Name& intersectionShaderName);
 
-        const RayTracingShaderLibraryVector& GetShaderLibraries() const
-        {
-            return m_descriptor.GetShaderLibraries();
-        }
-        RayTracingShaderLibraryVector& GetShaderLibraries()
-        {
-            return m_descriptor.GetShaderLibraries();
-        }
-
-        const RayTracingHitGroupVector& GetHitGroups() const
-        {
-            return m_descriptor.GetHitGroups();
-        }
-        RayTracingHitGroupVector& GetHitGroups()
-        {
-            return m_descriptor.GetHitGroups();
-        }
-
-        //! Build operations
-        RayTracingPipelineStateDescriptor* Build();
-        RayTracingPipelineStateDescriptor* MaxPayloadSize(uint32_t maxPayloadSize);
-        RayTracingPipelineStateDescriptor* MaxAttributeSize(uint32_t maxAttributeSize);
-        RayTracingPipelineStateDescriptor* MaxRecursionDepth(uint32_t maxRecursionDepth);
-        RayTracingPipelineStateDescriptor* PipelineState(const RHI::PipelineState* pipelineState);
-        RayTracingPipelineStateDescriptor* ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor);
-
-        RayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
-        RayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
-        RayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
-        RayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
-        RayTracingPipelineStateDescriptor* IntersectionShaderName(const AZ::Name& intersectionShaderName);
-
-        RayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
-
-    private:
+        RayTracingConfiguration m_configuration;
+        RayTracingShaderLibraryVector m_shaderLibraries;
+        RayTracingHitGroupVector m_hitGroups;
         const RHI::PipelineState* m_pipelineState = nullptr;
-        DeviceRayTracingPipelineStateDescriptor m_descriptor;
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations across multiple devices.

@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Note: Adapted from LightUtilTemplate.azsli
+#pragma once
+
+#ifndef DirectionalLightUtil
+#define DirectionalLightUtil DirectionalLightUtil_Hair
+#endif
+
+#include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
+
+class DirectionalLightUtil_Hair
+{
+    DirectionalLightUtil_PBR base;
+
+    static DirectionalLightUtil_Hair Init(DirectionalLight light, Surface surface, float3 cameraPositionWS)
+    {
+        DirectionalLightUtil_Hair result;
+        result.base = DirectionalLightUtil_PBR::Init(light, surface, cameraPositionWS);
+        return result;
+    }
+
+#if ENABLE_TRANSMISSION
+    void SetTransmissionDistance(real distance)
+    {
+        base.SetTransmissionDistance(distance);
+    }
+#endif
+
+    void Apply(DirectionalLight light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+        SetNormalAndUpdateLightingParams(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
+
+        base.Apply(light, surface, litRatio, lightingData);
+
+        float backShadowRatio = 1.0;
+        if (o_enableShadows)
+        {
+            backShadowRatio = 1.0f - litRatio;
+        }
+
+        float3 dirToLight = normalize(-light.m_direction);
+
+        lightingData.translucentBackLighting += GetBackLighting_Hair(surface, lightingData, light.m_rgbIntensityLux, dirToLight, backShadowRatio);
+    }
+
+};
+
+#endif // ENABLE_DISK_LIGHTS

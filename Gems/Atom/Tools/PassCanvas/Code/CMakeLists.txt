@@ -43,6 +43,10 @@ ly_add_target(
         Gem::AtomToolsFramework.Editor
 )
 
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(PassCanvas PRIVATE AZ::ToolsCrashHandler)
+endif()
+
 ly_set_gem_variant_to_load(TARGETS PassCanvas VARIANTS Tools)
 
 # Add a 'builders' alias to allow the PassCanvas root gem path to be added to the generated

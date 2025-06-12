@@ -78,7 +78,7 @@ namespace AZ
             bool ValidateSurfaceDimensions(const RHI::SwapChainDimensions& dimensions);
             //! Returns the corresponding Vulkan format that is supported by the surface.
             //! If such format is not found, return the first supported format from the surface.
-            VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format) const;
+            VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format, const VkColorSpaceKHR preferredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) const;
             //! Returns the correct presentation mode.
             //! If verticalSyncInterval is non-zero, returns VK_PRESENT_MODE_FIFO_KHR.
             //! Otherwise, choose preferred mode if they are supported.

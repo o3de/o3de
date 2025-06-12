@@ -40,7 +40,7 @@ namespace AZ::DocumentPropertyEditor
             if (typeIdAttribute != containerNode.MemberEnd())
             {
                 AZ::TypeId typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-                if (const AZ::SerializeContext::ClassData* classData = m_serializeContext->FindClassData(typeId))
+                if (m_serializeContext->FindClassData(typeId))
                 {
                     AZ::JsonSerializerSettings storeSettings;
                     // Defaults must be kept to make sure a complete object is written to the Dom::Value

@@ -29,12 +29,7 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 
-#include <scenesrg_all.srgi>
-#include <viewsrg_all.srgi>
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
 
@@ -44,22 +39,6 @@
 COMMON_OPTIONS_PARALLAX()
 #endif
  
-// O3DE_GENERATED_INCLUDES_BEGIN
-// O3DE_GENERATED_INCLUDES_END
-
-option bool o_normal_override_enabled = false;
-option bool o_opacity_affects_specular_factor = true;
-option bool o_clearCoat_enabled = false;
-option bool o_clearCoat_normal_override_enabled = false;
-
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    // m_placeHolder keeps MaterialSrg from being compiled out, causing SRG mismatches while assets are processing when iterating on graphs
-    bool m_placeHolder;
-
-    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
-    // O3DE_GENERATED_MATERIAL_SRG_END
-}
 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END
@@ -70,9 +49,9 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
 #if ENABLE_PARALLAX
 // Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
-    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
 }
 
 bool ShouldHandleParallax()
@@ -96,24 +75,20 @@ bool NeedsTangentFrame()
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
-#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include "MaterialGraphName_VertexEval.azsli"
-
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
 #include "MaterialGraphName_PixelGeometryEval.azsli"
-
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
 #include "MaterialGraphName_SurfaceEval.azsli"
 
-#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
-    
-#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
-#include "MaterialGraphName_VertexEval.azsli"
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
 
-#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+#include "MaterialGraphName_VertexEval.azsli"
 #include "MaterialGraphName_PixelGeometryEval.azsli"
     
-void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
     const float3 O3DE_MC_POSITION = (float3)IN.position;
@@ -126,8 +101,8 @@ void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     const float3 O3DE_MC_BITANGENT_WS = geoData.bitangents[0];
     #define O3DE_MC_UV(index) geoData.uvs[clamp(index, 0, UvSetCount-1)];
 
-    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
-    const bool placeHolder = MaterialSrg::m_placeHolder;
+    // placeholder to keep MaterialParams from being compiled out when iterating on graphs
+    const int materialType = params.m_materialType;
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inAlpha, inOpacityFactor
     real inAlpha = 1.0;
@@ -141,7 +116,6 @@ void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
 
 #else
 
-#include "MaterialGraphName_DepthVertexData.azsli"
 #include "MaterialGraphName_DepthVertexEval.azsli"
 
 #endif

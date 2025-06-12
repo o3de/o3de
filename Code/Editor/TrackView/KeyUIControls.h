@@ -67,15 +67,13 @@ public:
     CSmartVariableArray mv_table;
     CSmartVariable<QString> mv_asset;
     CSmartVariable<bool> mv_loop;
-    CSmartVariable<float> mv_startTime;
-    CSmartVariable<float> mv_endTime;
     CSmartVariable<float> mv_timeScale;
     CSmartVariable<float> mv_blendInTime;
     CSmartVariable<float> mv_blendOutTime;
 
     void OnCreateVars() override
     {
-        // Init to an invalid id
+        // Initialize to an invalid id
         AZ::Data::AssetId assetId;
         assetId.SetInvalid();
         mv_asset->SetUserData(assetId.m_subId);
@@ -86,12 +84,9 @@ public:
         // "motion" for the Simple Motion Component is the only instance.
         AddVariable(mv_table, mv_asset, "Motion", IVariable::DT_MOTION);
         AddVariable(mv_table, mv_loop, "Loop");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
         AddVariable(mv_table, mv_timeScale, "Time Scale");
         AddVariable(mv_table, mv_blendInTime, "Blend In Time");
         AddVariable(mv_table, mv_blendOutTime, "Blend Out Time");
-        mv_timeScale->SetLimits(0.001f, 100.f);
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -116,6 +111,7 @@ public:
 
 protected:
     void ResetStartEndLimits(float AssetBlendKeyDuration);
+    bool m_skipOnUIChange = false;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -171,7 +167,7 @@ public:
     CSmartVariable<QString> mv_comment;
     CSmartVariable<float> mv_duration;
     CSmartVariable<float> mv_size;
-    CSmartVariable<Vec3> mv_color;
+    CSmartVariable<AZ::Vector3> mv_color;
     CSmartVariableEnum<int> mv_align;
     CSmartVariableEnum<QString> mv_font;
 
@@ -346,13 +342,25 @@ public:
 class CScreenFaderKeyUIControls
     : public CTrackViewKeyUIControls
 {
-    CSmartVariableArray     mv_table;
-    CSmartVariable<float>   mv_fadeTime;
-    CSmartVariable<Vec3>    mv_fadeColor;
-    CSmartVariable<QString> mv_strTexture;
-    CSmartVariable<bool>    mv_bUseCurColor;
-    CSmartVariableEnum<int> mv_fadeType;
-    CSmartVariableEnum<int> mv_fadechangeType;
+    CSmartVariableArray             mv_table;
+
+    CSmartVariable<float>           mv_fadeTime;
+
+    // Could be single item with X,Y,Z fields, reflected AZ::Vector3 <-> CReflectedVarColor3, - as commented out below ...
+    //CSmartVariable<AZ::Vector3> mv_fadeColor;
+    // ... but properly named full-featured group of three R,G,B items seems more user-friendly.
+    CSmartVariableArray             mv_fadeColor;
+    CSmartVariable<float>           mv_fadeColorR;
+    CSmartVariable<float>           mv_fadeColorG;
+    CSmartVariable<float>           mv_fadeColorB;
+
+    CSmartVariable<AZStd::string>   mv_strTexture;
+
+    CSmartVariable<bool>            mv_bUseCurColor;
+
+    CSmartVariableEnum<int>         mv_fadeType;
+
+    CSmartVariableEnum<int>         mv_fadechangeType;
 
 public:
     //-----------------------------------------------------------------------------
@@ -381,11 +389,19 @@ public:
         mv_fadechangeType->AddEnumItem("Sin", IScreenFaderKey::eFCT_Sin);
         AddVariable(mv_table, mv_fadechangeType, "ChangeType");
 
-        AddVariable(mv_table, mv_fadeColor, "Color", IVariable::DT_COLOR);
+        // For single CSmartVariable<AZ::Vector3> mv_fadeColor; - with XYZ sub-items, code would be as commented out below:
+        //AddVariable(mv_table, mv_fadeColor, "Color", IVariable::DT_COLOR);
+        // Forming sub-group for R,G,B floats 
+        AddVariable(mv_fadeColor, mv_fadeColorR, "Red");
+        AddVariable(mv_fadeColor, mv_fadeColorG, "Green");
+        AddVariable(mv_fadeColor, mv_fadeColorB, "Blue");
+        AddVariable(mv_table, mv_fadeColor, "Color");
 
         mv_fadeTime->SetLimits(0.f, 100.f);
         AddVariable(mv_table, mv_fadeTime, "Duration");
         AddVariable(mv_table, mv_strTexture, "Texture", IVariable::DT_TEXTURE);
+        mv_strTexture.GetVar()->SetDescription("Relative path to an existing texture (.png, .tif, .jpg, ...)");
+
         AddVariable(mv_table, mv_bUseCurColor, "Use Current Color");
     }
 
@@ -408,6 +424,12 @@ public:
         };
         return guid;
     }
+
+private:
+    bool m_skipOnUIChange = false;
+
+    const float colorMin = 0.0f;
+    const float colorMax = 255.0f;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -524,7 +546,7 @@ public:
     CSmartVariable<QString> mv_startTrigger;
     CSmartVariable<QString> mv_stopTrigger;
     CSmartVariable<float> mv_duration;
-    CSmartVariable<Vec3> mv_customColor;
+    CSmartVariable<AZ::Vector3> mv_customColor;
 
     void OnCreateVars() override
     {

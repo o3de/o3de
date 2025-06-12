@@ -383,8 +383,6 @@ function(ly_add_target)
             add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
                 COMMENT "Copying ${ly_add_target_NAME} runtime dependencies to output..."
-                DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/${ly_add_target_NAME}.cmake
-                COMMENT "Copying runtime dependencies..."
                 VERBATIM
             )
 

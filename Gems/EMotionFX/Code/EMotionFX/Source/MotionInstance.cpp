@@ -273,7 +273,7 @@ namespace EMotionFX
 
     void MotionInstance::ExtractMotionEvents(const PlayStateIn& inState, PlayStateOut& outState, AnimGraphEventBuffer& eventBuffer) const
     {
-        if (inState.m_isFrozen)
+        if (inState.m_isFrozen || GetReferenceCount() < 1)
         {
             return;
         }
@@ -284,7 +284,7 @@ namespace EMotionFX
 
     void MotionInstance::ProcessMotionEvents(const PlayStateIn& inState, PlayStateOut& outState) const
     {
-        if (inState.m_isFrozen)
+        if (inState.m_isFrozen || GetReferenceCount() < 1)
         {
             return;
         }
@@ -315,6 +315,12 @@ namespace EMotionFX
         m_timeDiffToEnd = outState.m_timeDiffToEnd;
         m_curLoops = outState.m_numLoops;
         SetIsFrozen(outState.m_isFrozen);
+
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
 
         // If we became frozen.
         if (inState.m_freezeAtLastFrame && inState.m_isFrozen != outState.m_isFrozen && triggerEvents)
@@ -358,6 +364,11 @@ namespace EMotionFX
         if (!GetIsActive())
         {
             return;
+        }
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
         }
 
         const float currentTimePreUpdate = m_currentTime;
@@ -439,6 +450,11 @@ namespace EMotionFX
 
     void MotionInstance::ProcessEvents(float oldTime, float newTime)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
         const float realTimePassed = newTime - oldTime;
         if (GetMotionEventsEnabled() &&
             !GetIsPaused() &&
@@ -452,6 +468,11 @@ namespace EMotionFX
 
     void MotionInstance::ExtractEvents(float oldTime, float newTime, AnimGraphEventBuffer* outBuffer)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
         const float realTimePassed = newTime - oldTime;
         if (GetMotionEventsEnabled() &&
             !GetIsPaused() &&
@@ -465,6 +486,11 @@ namespace EMotionFX
 
     void MotionInstance::ExtractEventsNonLoop(float oldTime, float newTime, AnimGraphEventBuffer* outBuffer)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
         const float realTimePassed = newTime - oldTime;
         if (AZ::GetAbs(realTimePassed) < AZ::Constants::FloatEpsilon)
         {
@@ -568,6 +594,12 @@ namespace EMotionFX
     // stop the motion with a new fadeout time
     void MotionInstance::Stop(float fadeOutTime)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return;  // This instance is destroyed or is beeing destroyed
+        }
+
         // trigger a motion event
         GetEventManager().OnStop(this);
 
@@ -584,6 +616,12 @@ namespace EMotionFX
     // stop the motion using the currently setup fadeout time
     void MotionInstance::Stop()
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         // trigger a motion event
         GetEventManager().OnStop(this);
 
@@ -596,6 +634,12 @@ namespace EMotionFX
 
     void MotionInstance::SetIsActive(bool enabled)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         if (GetIsActive() != enabled)
         {
             SetFlag(BOOL_ISACTIVE, enabled);
@@ -605,6 +649,12 @@ namespace EMotionFX
 
     void MotionInstance::Pause()
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         if (!GetIsPaused())
         {
             EnableFlag(BOOL_ISPAUSED);
@@ -615,6 +665,12 @@ namespace EMotionFX
     // unpause
     void MotionInstance::UnPause()
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         if (GetIsPaused())
         {
             DisableFlag(BOOL_ISPAUSED);
@@ -625,6 +681,12 @@ namespace EMotionFX
     // enable or disable pause state
     void MotionInstance::SetPause(bool pauseEnabled)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         if (GetIsPaused() != pauseEnabled)
         {
             SetFlag(BOOL_ISPAUSED, pauseEnabled);
@@ -635,7 +697,18 @@ namespace EMotionFX
     // add a given event handler
     void MotionInstance::AddEventHandler(MotionInstanceEventHandler* eventHandler)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         AZ_Assert(eventHandler, "Expected non-null event handler");
+        if (!eventHandler)
+        {
+            return;
+        }
+
         eventHandler->SetMotionInstance(this);
 
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
@@ -649,6 +722,12 @@ namespace EMotionFX
     // remove a given handler from memory
     void MotionInstance::RemoveEventHandler(MotionInstanceEventHandler* eventHandler)
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
             EventHandlerVector& eventHandlers = m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
@@ -673,6 +752,11 @@ namespace EMotionFX
     // on a motion event
     void MotionInstance::OnEvent(const EventInfo& eventInfo) const
     {
+        if (GetReferenceCount() < 1)
+        {
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
@@ -693,7 +777,14 @@ namespace EMotionFX
     // when this motion instance gets deleted
     void MotionInstance::OnDeleteMotionInstance()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_INSTANCE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_INSTANCE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteMotionInstance();
@@ -703,6 +794,12 @@ namespace EMotionFX
     // when this motion instance is stopped
     void MotionInstance::OnStop()
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
@@ -713,6 +810,12 @@ namespace EMotionFX
     // when it has looped
     void MotionInstance::OnHasLooped()
     {
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
         const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_LOOPED - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
@@ -723,7 +826,14 @@ namespace EMotionFX
     // when it reached the maximimum number of loops
     void MotionInstance::OnHasReachedMaxNumLoops()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_NUM_LOOPS - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_NUM_LOOPS - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnHasReachedMaxNumLoops();
@@ -733,7 +843,14 @@ namespace EMotionFX
     // when it has reached the maximimum playback time
     void MotionInstance::OnHasReachedMaxPlayTime()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_PLAY_TIME - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_PLAY_TIME - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnHasReachedMaxPlayTime();
@@ -743,7 +860,14 @@ namespace EMotionFX
     // when it is frozen in the last frame
     void MotionInstance::OnIsFrozenAtLastFrame()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_IS_FROZEN_AT_LAST_FRAME - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_IS_FROZEN_AT_LAST_FRAME - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnIsFrozenAtLastFrame();
@@ -753,7 +877,14 @@ namespace EMotionFX
     // when the pause state changes
     void MotionInstance::OnChangedPauseState()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_PAUSE_STATE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_PAUSE_STATE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnChangedPauseState();
@@ -763,7 +894,14 @@ namespace EMotionFX
     // when the active state changes
     void MotionInstance::OnChangedActiveState()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_ACTIVE_STATE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_ACTIVE_STATE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnChangedActiveState();
@@ -773,7 +911,14 @@ namespace EMotionFX
     // when it starts blending in or out
     void MotionInstance::OnStartBlending()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_BLENDING - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        const EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_START_BLENDING - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStartBlending();
@@ -783,7 +928,14 @@ namespace EMotionFX
     // when it stops blending
     void MotionInstance::OnStopBlending()
     {
-        EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP_BLENDING - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_STOP_BLENDING - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStopBlending();
@@ -793,7 +945,14 @@ namespace EMotionFX
     // when the motion instance is queued
     void MotionInstance::OnQueueMotionInstance(PlayBackInfo* info)
     {
-        EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_QUEUE_MOTION_INSTANCE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return; // This instance is destroyed or is beeing destroyed
+        }
+
+        EventHandlerVector& eventHandlers =
+            m_eventHandlersByEventType[EVENT_TYPE_ON_QUEUE_MOTION_INSTANCE - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
         for (MotionInstanceEventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnQueueMotionInstance(info);
@@ -867,6 +1026,12 @@ namespace EMotionFX
         if (!GetMotionExtractionEnabled())
         {
             return true;
+        }
+
+        if (GetReferenceCount() < 1)
+        {
+            SetFlag(BOOL_ISACTIVE, false);
+            return false; // This instance is destroyed or is beeing destroyed
         }
 
         Actor*  actor               = m_actorInstance->GetActor();

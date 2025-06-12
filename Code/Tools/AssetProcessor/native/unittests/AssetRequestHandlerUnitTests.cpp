@@ -66,7 +66,7 @@ namespace AssetProcessor
             m_fenceId = fenceId;
             return m_fenceFileName;
         }
-        bool DeleteFenceFile(QString fenceFileName) override
+        bool DeleteFenceFile([[maybe_unused]] QString fenceFileName) override
         {
             m_numTimesDeleteFenceFileCalled++;
             return m_deleteFenceFileResult;

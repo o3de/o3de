@@ -166,7 +166,7 @@ namespace UnitTests
     }
 
     void MockMultiBuilderInfoHandler::ProcessJob(
-        AssetBuilderExtraInfo extraInfo,
+        [[maybe_unused]] AssetBuilderExtraInfo extraInfo,
         [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request,
         AssetBuilderSDK::ProcessJobResponse& response)
     {

@@ -91,12 +91,14 @@ namespace AzFramework
             const char* group,
             const char* extension,
             const AZ::Uuid& componentTypeId = AZ::Uuid::CreateNull(),
-            AZ::SerializeContext* serializeContext = nullptr)
+            AZ::SerializeContext* serializeContext = nullptr,
+            const AZ::DataStream::StreamType streamType = AZ::ObjectStream::ST_XML)
             : m_displayName(displayName)
             , m_group(group)
             , m_extension(extension)
             , m_componentTypeId(componentTypeId)
             , m_serializeContext(serializeContext)
+            , m_streamType(streamType)
         {
             AZ_Assert(extension, "Extension is required.");
             if (extension[0] == '.')
@@ -151,7 +153,7 @@ namespace AzFramework
             if (assetData && m_serializeContext)
             {
                 return AZ::Utils::SaveObjectToStream<AssetType>(*stream,
-                    AZ::ObjectStream::ST_XML,
+                    m_streamType,
                     assetData,
                     m_serializeContext);
             }
@@ -236,6 +238,7 @@ namespace AzFramework
         AZStd::string m_extension;
         AZ::Uuid m_componentTypeId = AZ::Uuid::CreateNull();
         AZ::SerializeContext* m_serializeContext;
+        AZ::DataStream::StreamType m_streamType;
         GenericAssetHandler(const GenericAssetHandler&) = delete;
     };
 } // namespace AzFramework

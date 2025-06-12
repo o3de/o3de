@@ -46,6 +46,8 @@
     class SurfaceData_StandardPBR
     {
 
+        uint lightingChannels;     //!< Lightingchannel of the object
+
     #if ENABLE_CLEAR_COAT
         ClearCoatSurfaceData clearCoat;
     #endif

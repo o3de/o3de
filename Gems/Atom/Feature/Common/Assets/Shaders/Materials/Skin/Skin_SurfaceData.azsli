@@ -25,7 +25,9 @@ class SurfaceData_Skin
 #endif
 
     // ------- BasePbrSurfaceData -------
-    
+
+    uint lightingChannels;     //!< Lightingchannel of the object
+
     float3 position;           //!< Position in world-space
     real3 normal;              //!< Normal in world-space
     real3 vertexNormal;        //!< Vertex normal in world-space

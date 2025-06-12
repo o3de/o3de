@@ -144,6 +144,35 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     bool m_updatingEnums;
 };
 
+class EDITOR_CORE_API ReflectedVarColor3Adapter : public ReflectedVarAdapter
+{
+public:
+    void SetVariable(IVariable* pVariable) override;
+    void SyncReflectedVarToIVar(IVariable* pVariable) override;
+    void SyncIVarToReflectedVar(IVariable* pVariable) override;
+    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
+
+private:
+    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    QScopedPointer<CReflectedVarVector3> m_reflectedVar;
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+};
+
+class EDITOR_CORE_API ReflectedVarColor4Adapter : public ReflectedVarAdapter
+{
+public:
+    void SetVariable(IVariable* pVariable) override;
+    void SyncReflectedVarToIVar(IVariable* pVariable) override;
+    void SyncIVarToReflectedVar(IVariable* pVariable) override;
+    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
+
+private:
+    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    QScopedPointer<CReflectedVarVector4> m_reflectedVar;
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+};
+
+
 class EDITOR_CORE_API ReflectedVarVector2Adapter
     : public ReflectedVarAdapter
 {

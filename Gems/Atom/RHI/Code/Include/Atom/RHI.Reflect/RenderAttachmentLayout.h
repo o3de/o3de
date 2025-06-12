@@ -40,6 +40,7 @@ namespace AZ::RHI
 
         bool operator==(const RenderAttachmentDescriptor& other) const;
         bool operator!=(const RenderAttachmentDescriptor& other) const;
+        bool IsEqual(const RenderAttachmentDescriptor& other, const bool compareLoadStoreAction) const;
 
         //! Position of the attachment in the layout.
         uint32_t m_attachmentIndex = InvalidRenderAttachmentIndex;
@@ -95,6 +96,7 @@ namespace AZ::RHI
 
         bool operator==(const SubpassRenderAttachmentLayout& other) const;
         bool operator!=(const SubpassRenderAttachmentLayout& other) const;
+        bool IsEqual(const SubpassRenderAttachmentLayout& other, const bool compareLoadStoreAction) const;
 
         //! Number of render targets in the subpass.
         uint32_t m_rendertargetCount = 0;
@@ -126,6 +128,7 @@ namespace AZ::RHI
         HashValue64 GetHash() const;
 
         bool operator==(const RenderAttachmentLayout& other) const;
+        bool IsEqual(const RenderAttachmentLayout& other, const bool compareLoadStoreAction) const;
 
         //! Number of total attachments in the list.
         uint32_t m_attachmentCount = 0;
@@ -148,6 +151,7 @@ namespace AZ::RHI
         HashValue64 GetHash() const;
 
         bool operator==(const RenderAttachmentConfiguration& other) const;
+        bool IsEqual(const RenderAttachmentConfiguration& other, const bool compareLoadStoreAction) const;
 
         //! Returns the format of a render target in the subpass being used.
         Format GetRenderTargetFormat(uint32_t index) const;

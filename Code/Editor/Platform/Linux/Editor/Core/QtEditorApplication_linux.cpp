@@ -49,6 +49,8 @@ namespace Editor
     {
         auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
         interface->SetEnableXInput(GetXcbConnectionFromQt(), false);
+
+        AzFramework::XcbEventHandlerBus::Broadcast(&AzFramework::XcbEventHandler::ResetStoredInputStates);
     }
 
     bool EditorQtApplicationXcb::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long*)

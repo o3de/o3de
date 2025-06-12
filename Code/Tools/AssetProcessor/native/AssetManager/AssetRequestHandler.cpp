@@ -290,7 +290,7 @@ namespace
         return response;
     }
 
-    GetScanFoldersResponse HandleGetScanFoldersRequest(MessageData<GetScanFoldersRequest> messageData)
+    GetScanFoldersResponse HandleGetScanFoldersRequest([[maybe_unused]] MessageData<GetScanFoldersRequest> messageData)
     {
         bool success = true;
         AZStd::vector<AZStd::string> scanFolders;
@@ -305,7 +305,7 @@ namespace
         return GetScanFoldersResponse(move(scanFolders));
     }
 
-    GetAssetSafeFoldersResponse HandleGetAssetSafeFoldersRequest(MessageData<GetAssetSafeFoldersRequest> messageData)
+    GetAssetSafeFoldersResponse HandleGetAssetSafeFoldersRequest([[maybe_unused]] MessageData<GetAssetSafeFoldersRequest> messageData)
     {
         bool success = true;
         AZStd::vector<AZStd::string> assetSafeFolders;

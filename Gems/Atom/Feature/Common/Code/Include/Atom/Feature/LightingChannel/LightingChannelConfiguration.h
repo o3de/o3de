@@ -30,7 +30,7 @@ namespace AZ
 
             uint32_t GetLightingChannelMask() const;
 
-            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags{ true, false, false, false, false };
+            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags{ true, true, true, true, true };
 
         private:
             AZStd::string GetLabelForIndex(int index) const;

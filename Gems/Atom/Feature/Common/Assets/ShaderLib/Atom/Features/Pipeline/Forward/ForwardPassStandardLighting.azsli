@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+/* 
+Convenience include to get everything needed to call 'EvaluateLighting' with the StandardLighting in a forward pass
+Note that StandardLighting is different from BasePBR or StandardPBR in that it doesn't use the materialpipeline, 
+and therefore has no Material-Parameters, but only declares a Surface - struct and a LightingData - struct that is suitable 
+for the EvaluateLighting - function of the Forward-Pass.
+
+usage:
+
+    // construct the surface (alternatively fill the surface struct manually)
+    Surface surface = EvaluateSurface(...);
+    
+    // iterate over all assigned lights, evaluate shadows and calculate the direct lighting
+    LightingData lightingData = EvaluateLighting(surface, float4 screenPosition, float3 cameraPosition);
+*/ 
+
+// defines the Surface and LightingData structs, provides some BRDF - functions, and utils for the supported light-types, used by ForwardPassEvaluateLighting
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+// provides InitializeLightingData() used by ForwardPassEvaluateLighting
+#include <Atom/Features/PBR/Lighting/StandardLightingDataEval.azsli>
+// provides EvaluateSurface(). (optional)
+#include <Atom/Features/PBR/Surfaces/StandardSurfaceEval.azsli>
+// defines struct ForwardPassOutput
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+// provides EvaluateLighting suitable for the Forward-Pass
+//  - uses the LightCullingTileIterator
+//  - uses cascaded shadowmaps for one Directional light
+//  - uses projected shadowmaps for sphere lights and disk lights
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>

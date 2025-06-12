@@ -107,7 +107,6 @@ void ReflectedVarIntAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 }
 
 
-
 void ReflectedVarFloatAdapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarFloat(pVariable->GetHumanName().toUtf8().data()));
@@ -135,7 +134,6 @@ void ReflectedVarFloatAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 }
 
 
-
 void ReflectedVarStringAdapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarString(pVariable->GetHumanName().toUtf8().data()));
@@ -155,8 +153,6 @@ void ReflectedVarStringAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 }
 
 
-
-
 void ReflectedVarBoolAdapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarBool(pVariable->GetHumanName().toUtf8().data()));
@@ -174,8 +170,6 @@ void ReflectedVarBoolAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
     pVariable->Set(m_reflectedVar->m_value);
 }
-
-
 
 
 ReflectedVarEnumAdapter::ReflectedVarEnumAdapter()
@@ -253,23 +247,62 @@ void ReflectedVarEnumAdapter::OnVariableChange([[maybe_unused]] IVariable* pVari
     }
 }
 
+
+void ReflectedVarColor3Adapter::SetVariable(IVariable* pVariable)
+{
+    m_reflectedVar.reset(new CReflectedVarVector3(pVariable->GetHumanName().toUtf8().data()));
+    m_reflectedVar->m_description = pVariable->GetDescription().toUtf8().data();
+}
+
+void ReflectedVarColor3Adapter::SyncReflectedVarToIVar(IVariable* pVariable)
+{
+    AZ::Vector3 vec;
+    pVariable->Get(vec);
+    m_reflectedVar->m_value = vec;
+}
+
+void ReflectedVarColor3Adapter::SyncIVarToReflectedVar(IVariable* pVariable)
+{
+    pVariable->Set(m_reflectedVar->m_value);
+}
+
+
+void ReflectedVarColor4Adapter::SetVariable(IVariable* pVariable)
+{
+    m_reflectedVar.reset(new CReflectedVarVector4(pVariable->GetHumanName().toUtf8().data()));
+    m_reflectedVar->m_description = pVariable->GetDescription().toUtf8().data();
+}
+
+void ReflectedVarColor4Adapter::SyncReflectedVarToIVar(IVariable* pVariable)
+{
+    AZ::Vector4 vec;
+    pVariable->Get(vec);
+    m_reflectedVar->m_value = vec;
+}
+
+void ReflectedVarColor4Adapter::SyncIVarToReflectedVar(IVariable* pVariable)
+{
+    pVariable->Set(m_reflectedVar->m_value);
+}
+
+
 void ReflectedVarVector2Adapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarVector2(pVariable->GetHumanName().toUtf8().data()));
     m_reflectedVar->m_description = pVariable->GetDescription().toUtf8().data();
-    UpdateRangeLimits(pVariable);
 }
 
 void ReflectedVarVector2Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec2 vec;
+    AZ::Vector2 vec;
     pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector2(vec.x, vec.y);
+    m_reflectedVar->m_value = vec;
 }
+
 
 void ReflectedVarVector2Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
-    pVariable->Set(Vec2(m_reflectedVar->m_value.GetX(), m_reflectedVar->m_value.GetY()));
+    pVariable->Set(m_reflectedVar->m_value);
 }
 
 
@@ -282,14 +315,14 @@ void ReflectedVarVector3Adapter::SetVariable(IVariable *pVariable)
 
 void ReflectedVarVector3Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec3 vec;
+    AZ::Vector3 vec;
     pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector3(vec.x, vec.y, vec.z);
+    m_reflectedVar->m_value = vec;
 }
 
 void ReflectedVarVector3Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
-    pVariable->Set(Vec3(m_reflectedVar->m_value.GetX(), m_reflectedVar->m_value.GetY(), m_reflectedVar->m_value.GetZ()));
+    pVariable->Set(m_reflectedVar->m_value);
 }
 
 
@@ -302,14 +335,14 @@ void ReflectedVarVector4Adapter::SetVariable(IVariable *pVariable)
 
 void ReflectedVarVector4Adapter::SyncReflectedVarToIVar(IVariable *pVariable)
 {
-    Vec4 vec;
+    AZ::Vector4 vec;
     pVariable->Get(vec);
-    m_reflectedVar->m_value = AZ::Vector4(vec.x, vec.y, vec.z, vec.w);
+    m_reflectedVar->m_value = vec;
 }
 
 void ReflectedVarVector4Adapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
-    pVariable->Set(Vec4(m_reflectedVar->m_value.GetX(), m_reflectedVar->m_value.GetY(), m_reflectedVar->m_value.GetZ(), m_reflectedVar->m_value.GetW()));
+    pVariable->Set(m_reflectedVar->m_value);
 }
 
 void ReflectedVarResourceAdapter::SetVariable(IVariable *pVariable)

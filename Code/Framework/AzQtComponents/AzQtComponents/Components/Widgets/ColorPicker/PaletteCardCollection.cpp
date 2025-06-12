@@ -206,7 +206,7 @@ namespace AzQtComponents
         }
     }
 
-    QString PaletteCardCollection::uniquePaletteName(QSharedPointer<PaletteCard> card, const QString& name) const
+    QString PaletteCardCollection::uniquePaletteName([[maybe_unused]] QSharedPointer<PaletteCard> card, const QString& name) const
     {
         const auto paletteNameExists = [this](const QString& name)
         {

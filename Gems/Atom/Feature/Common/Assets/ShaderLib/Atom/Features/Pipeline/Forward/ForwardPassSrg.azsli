@@ -50,3 +50,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // And the shaders can calculate linear depth themselves
     uint m_isOriginalDepth;
 }
+
+
+
+

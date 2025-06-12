@@ -216,6 +216,8 @@ set(FILES
     Source/BlendTreeConnection.h
     Source/BlendTreeDirectionToWeightNode.cpp
     Source/BlendTreeDirectionToWeightNode.h
+    Source/BlendTreeFabrikNode.cpp
+    Source/BlendTreeFabrikNode.h
     Source/BlendTreeFinalNode.cpp
     Source/BlendTreeFinalNode.h
     Source/BlendTreeFloatConditionNode.cpp

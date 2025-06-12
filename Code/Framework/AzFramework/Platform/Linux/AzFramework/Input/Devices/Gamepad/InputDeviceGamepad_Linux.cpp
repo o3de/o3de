@@ -462,151 +462,143 @@ namespace AzFramework
         // If they are inactive, we should check if they have been activated, and vice-versa
         TryConnect();
 
-        if (m_isConnected)
+        if (!m_isConnected)
         {
-            // we can only get into this block of code if the libevdevModule is valid in the first place
-            // so we don't need to check that here.
+            return;
+        }
 
-            struct input_event ev; // note that this comes from linux/input.h, not evdev.
+        // we can only get into this block of code if the libevdevModule is valid in the first place
+        // so we don't need to check that here.
 
-            bool updatedGamepadAxis = false;
-            int libevdevResult = 0;
-            auto nextEventFn = m_internalState->m_libevdevModule->m_libevdev_next_event;
-            while ((libevdevResult = nextEventFn(m_internalState->m_evdevDevice, O3DEWRAPPER_LIBEVDEV_READ_FLAG_NORMAL, &ev)) == O3DEWRAPPER_LIBEVDEV_READ_STATUS_SUCCESS)
+        struct input_event ev; // note that this comes from linux/input.h, not evdev.
+
+        int libevdevResult = 0;
+        auto nextEventFn = m_internalState->m_libevdevModule->m_libevdev_next_event;
+        while ((libevdevResult = nextEventFn(m_internalState->m_evdevDevice, O3DEWRAPPER_LIBEVDEV_READ_FLAG_NORMAL, &ev)) == O3DEWRAPPER_LIBEVDEV_READ_STATUS_SUCCESS)
+        {
+            switch (ev.type)
             {
-                switch (ev.type)
+                case EV_KEY:
                 {
-                    case EV_KEY:
+                    AZ::u32 buttonMask = GetButtonMaskForActualButton(ev.code);
+                    if (buttonMask != 0)
                     {
-                        AZ::u32 buttonMask = GetButtonMaskForActualButton(ev.code);
-                        if (buttonMask != 0)
-                        {
-                            bool pressed = ev.value != 0;
-                            UpdateButtonState(buttonMask, pressed);
-                        }
-                        break;
+                        bool pressed = ev.value != 0;
+                        UpdateButtonState(buttonMask, pressed);
                     }
-                    case EV_ABS:
+                    break;
+                }
+                case EV_ABS:
+                {
+                    int currentValue = static_cast<float>(ev.value);
+                    switch (ev.code)
                     {
-                        int currentValue = static_cast<float>(ev.value);
-                        switch (ev.code)
+                        // the axes (X, Y, RX, RY) are special here because they must assume 0 is the center according to O3DE
+                        // API - but some joysticks start at 0 and have some integer as the max,
+                        // with the center being the middle, so this requires us to offset and scale to translate for O3DE.
+                        case ABS_X:
                         {
-                            // the axes (X, Y, RX, RY) are special here because they must assume 0 is the center according to O3DE
-                            // API - but some joysticks start at 0 and have some integer as the max, 
-                            // with the center being the middle, so this requires us to offset and scale to translate for O3DE.
-                            case ABS_X:
+                            m_rawGamepadState.m_thumbStickLeftXState = (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
+                            break;
+                        }
+                        case ABS_Y:
+                        {
+                            // note that O3DE expects positive Y to mean moving the stick "away from the user",
+                            // ie, moving the stick towards the back of the controller where the triggers are.
+                            // (I am avoiding using the ambiguous term 'up' here).
+                            // libevdev outputs positive Y values when the user is pulling the stick towards them, so we need to invert the value.
+                            // You can see the same kind of inversion happening in Gems/VirtualGamepad/Code/Source/VirtualGamepadThumbStickComponent.cpp
+                            // You do NOT see this same inversion in the windows gamepad file since it uses XInput
+                            // and XInput by default maps positive Y values to mean "away from the user".
+                            m_rawGamepadState.m_thumbStickLeftYState = -1.0f * (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
+                            break;
+                        }
+                        case ABS_RX:
+                        {
+                            m_rawGamepadState.m_thumbStickRightXState = (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
+                            break;
+                        }
+                        case ABS_RY:
+                        {
+                            m_rawGamepadState.m_thumbStickRightYState = -1.0f * (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
+                            break;
+                        }
+                        case ABS_Z:
+                        {
+                            m_rawGamepadState.m_triggerButtonLState = ev.value;
+                            break;
+                        }
+                        case ABS_RZ:
+                        {
+                            m_rawGamepadState.m_triggerButtonRState = ev.value;
+                            break;
+                        }
+                        case ABS_HAT0X:
+                        {
+                            if (m_internalState->m_dPadHatMax != 0.0f)
                             {
-                                m_rawGamepadState.m_thumbStickLeftXState = (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_Y:
-                            {
-                                // note that O3DE expects positive Y to mean moving the stick "away from the user",
-                                // ie, moving the stick towards the back of the controller where the triggers are.
-                                // (I am avoiding using the ambiguous term 'up' here).
-                                // libevdev outputs positive Y values when the user is pulling the stick towards them, so we need to invert the value.
-                                // You can see the same kind of inversion happening in Gems/VirtualGamepad/Code/Source/VirtualGamepadThumbStickComponent.cpp
-                                // You do NOT see this same inversion in the windows gamepad file since it uses XInput
-                                // and XInput by default maps positive Y values to mean "away from the user".
-                                m_rawGamepadState.m_thumbStickLeftYState = -1.0f * (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_RX:
-                            {
-                                m_rawGamepadState.m_thumbStickRightXState = (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_RY:
-                            {
-                                m_rawGamepadState.m_thumbStickRightYState = -1.0f * (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_Z:
-                            {
-                                m_rawGamepadState.m_triggerButtonLState = ev.value;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_RZ:
-                            {
-                                m_rawGamepadState.m_triggerButtonRState = ev.value;
-                                updatedGamepadAxis = true;
-                                break;
-                            }
-                            case ABS_HAT0X:
-                            {
-                                if (m_internalState->m_dPadHatMax != 0.0f)
+                                if (ev.value > 0)
                                 {
-                                    if (ev.value > 0)
-                                    {
-                                        UpdateButtonState(BTN_DPAD_RIGHT_MASK, true);
-                                        UpdateButtonState(BTN_DPAD_LEFT_MASK, false);
+                                    UpdateButtonState(BTN_DPAD_RIGHT_MASK, true);
+                                    UpdateButtonState(BTN_DPAD_LEFT_MASK, false);
 
-                                    }
-                                    else if (ev.value < 0)
-                                    {
-                                        UpdateButtonState(BTN_DPAD_RIGHT_MASK, false);
-                                        UpdateButtonState(BTN_DPAD_LEFT_MASK, true);
-                                    }
-                                    else // centered.
-                                    {
-                                        UpdateButtonState(BTN_DPAD_RIGHT_MASK, false);
-                                        UpdateButtonState(BTN_DPAD_LEFT_MASK, false);
-                                    }
                                 }
-                                break;
-                            }
-                            case ABS_HAT0Y:
-                            {
-                                if (m_internalState->m_dPadHatMax != 0.0f)
+                                else if (ev.value < 0)
                                 {
-                                    if (ev.value > 0)
-                                    {
-                                        // > 0 actually indicates downwards, not upwards
-                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, true);
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
-                                    }
-                                    else if (ev.value < 0)
-                                    {
-                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, true);
-                                    }
-                                    else
-                                    {
-                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
-                                    }
+                                    UpdateButtonState(BTN_DPAD_RIGHT_MASK, false);
+                                    UpdateButtonState(BTN_DPAD_LEFT_MASK, true);
                                 }
-                                break;
+                                else // centered.
+                                {
+                                    UpdateButtonState(BTN_DPAD_RIGHT_MASK, false);
+                                    UpdateButtonState(BTN_DPAD_LEFT_MASK, false);
+                                }
                             }
+                            break;
                         }
-                        break;
+                        case ABS_HAT0Y:
+                        {
+                            if (m_internalState->m_dPadHatMax != 0.0f)
+                            {
+                                if (ev.value > 0)
+                                {
+                                    // > 0 actually indicates downwards, not upwards
+                                    UpdateButtonState(BTN_DPAD_DOWN_MASK, true);
+                                    UpdateButtonState(BTN_DPAD_UP_MASK, false);
+                                }
+                                else if (ev.value < 0)
+                                {
+                                    UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
+                                    UpdateButtonState(BTN_DPAD_UP_MASK, true);
+                                }
+                                else
+                                {
+                                    UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
+                                    UpdateButtonState(BTN_DPAD_UP_MASK, false);
+                                }
+                            }
+                            break;
+                        }
                     }
+                    break;
                 }
             }
+        }
 
-            if (libevdevResult == -ENODEV) // note that other results could just mean that there are no events ready.
-            {
-                // A device disconnected - 
-                AZ_Info("Input", "Gamepad at index %u disconnected.\n", GetInputDeviceIndex());
-                m_isConnected = false;
-                m_rawGamepadState.Reset();
-                m_internalState->CloseDevice();
-                ResetInputChannelStates();
-                BroadcastInputDeviceDisconnectedEvent();
-                m_tryAgainTimeout = s_retryDelayAfterFail + AZ::TimeMs(10 * GetInputDeviceIndex());
-            }
-            else
-            {
-                if (updatedGamepadAxis)
-                {
-                    ProcessRawGamepadState(m_rawGamepadState);
-                }
-            }
+        if (libevdevResult == -ENODEV) // note that other results could just mean that there are no events ready.
+        {
+            // A device disconnected -
+            AZ_Info("Input", "Gamepad at index %u disconnected.\n", GetInputDeviceIndex());
+            m_isConnected = false;
+            m_rawGamepadState.Reset();
+            m_internalState->CloseDevice();
+            ResetInputChannelStates();
+            BroadcastInputDeviceDisconnectedEvent();
+            m_tryAgainTimeout = s_retryDelayAfterFail + AZ::TimeMs(10 * GetInputDeviceIndex());
+        }
+        else
+        {
+            ProcessRawGamepadState(m_rawGamepadState);
         }
     }
 

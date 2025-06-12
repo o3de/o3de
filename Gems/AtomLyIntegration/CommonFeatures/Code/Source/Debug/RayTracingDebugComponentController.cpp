@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Feature/Debug/RayTracingDebugFeatureProcessorInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Debug/RayTracingDebugComponentController.h>
 
@@ -48,6 +49,11 @@ namespace AZ::Render
 
     void RayTracingDebugComponentController::Activate(EntityId entityId)
     {
+        if (!IsRayTracingSupported())
+        {
+            return;
+        }
+
         m_entityId = entityId;
 
         auto fp{ RPI::Scene::GetFeatureProcessorForEntity<RayTracingDebugFeatureProcessorInterface>(m_entityId) };
@@ -65,6 +71,11 @@ namespace AZ::Render
 
     void RayTracingDebugComponentController::Deactivate()
     {
+        if (!IsRayTracingSupported())
+        {
+            return;
+        }
+
         auto fp{ RPI::Scene::GetFeatureProcessorForEntity<RayTracingDebugFeatureProcessorInterface>(m_entityId) };
         if (fp)
         {
@@ -90,6 +101,16 @@ namespace AZ::Render
     void RayTracingDebugComponentController::OnConfigurationChanged()
     {
         m_configuration.CopySettingsTo(m_rayTracingDebugSettingsInterface);
+    }
+
+    bool RayTracingDebugComponentController::IsRayTracingSupported() const
+    {
+        return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+    }
+
+    bool RayTracingDebugComponentController::IsRayTracingNotSupported() const
+    {
+        return !IsRayTracingSupported();
     }
 
     // clang-format off

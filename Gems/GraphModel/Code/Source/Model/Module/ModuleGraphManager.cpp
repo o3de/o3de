@@ -44,7 +44,7 @@ namespace GraphModel
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
     }
 
-    void ModuleGraphManager::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID)
+    void ModuleGraphManager::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid sourceUUID)
     {
         AZStd::string extension;
         if (AzFramework::StringFunc::Path::GetExtension(relativePath.data(), extension) && extension == m_moduleFileExtension)

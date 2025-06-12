@@ -1029,7 +1029,7 @@ namespace AzToolsFramework
         }
 
         //=========================================================================
-        SliceTransaction::Result SlicePreSaveCallbackForWorldEntities(SliceTransaction::TransactionPtr transaction, const char* fullPath, SliceTransaction::SliceAssetPtr& asset)
+        SliceTransaction::Result SlicePreSaveCallbackForWorldEntities([[maybe_unused]] SliceTransaction::TransactionPtr transaction, const char* fullPath, SliceTransaction::SliceAssetPtr& asset)
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::SlicePreSaveCallbackForWorldEntities");
 

@@ -75,7 +75,7 @@ namespace UnitTest
             void PreShutdown() override {}
             AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
             AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
-            void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+            void ObjectCollectionNotify([[maybe_unused]] AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
             AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
             {
                 return AZ::RHI::ShadingRateImageValue{};

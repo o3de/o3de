@@ -1,0 +1,88 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef InitializeLightingData
+#define InitializeLightingData InitializeLightingData_StandardLighting
+#endif
+
+#ifndef FinalizeLightingData
+#define FinalizeLightingData FinalizeLightingData_StandardLighting
+#endif
+
+#include <viewsrg_all.srgi>
+#include <Atom/Features/Debug.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+void InitializeLightingData_StandardLighting(inout LightingData lightingData, real3 positionWS, real3 normal, real3 specularF0, real roughnessLinear, float3 viewPosition)
+{
+    lightingData = (LightingData)0;
+    lightingData.diffuseLighting = real3(0.0, 0.0, 0.0);
+    lightingData.specularLighting = real3(0.0, 0.0, 0.0);
+    lightingData.translucentBackLighting = real3(0.0, 0.0, 0.0);
+    lightingData.multiScatterCompensation = real3(1.0, 1.0, 1.0);
+    lightingData.emissiveLighting = real3(0.0, 0.0, 0.0);
+    lightingData.diffuseAmbientOcclusion = 1.0;
+    lightingData.specularOcclusion = 1.0;
+    
+    lightingData.dirToCamera = normalize(viewPosition - positionWS);
+
+    // sample BRDF map (indexed by smoothness values rather than roughness)
+    lightingData.NdotV = saturate(dot(normal, lightingData.dirToCamera));
+    real2 brdfUV = real2(lightingData.NdotV, (1.0 - roughnessLinear));
+    lightingData.brdf = real2(SampleBrdfMap(brdfUV));
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, specularF0, roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+}
+
+void InitializeLightingData_StandardLighting(Surface surface, float3 viewPosition, inout LightingData lightingData)
+{
+    InitializeLightingData_StandardLighting(lightingData, surface.position, surface.GetSpecularNormal(), surface.specularF0, surface.roughnessLinear, viewPosition);
+    lightingData.emissiveLighting = surface.emissiveLighting;
+    lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
+    lightingData.specularOcclusion = surface.specularOcclusion;
+}
+
+void FinalizeLightingData_StandardLighting(inout LightingData lightingData)
+{
+    lightingData.specularLighting *= lightingData.specularOcclusion;
+    lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
+
+    if(!IsSpecularLightingEnabled())
+    {
+        lightingData.specularLighting = real3(0, 0, 0);
+    }
+    if(!IsDiffuseLightingEnabled())
+    {
+        lightingData.diffuseLighting = real3(0, 0, 0);
+    }
+}
+
+void FinalizeLightingData_StandardLighting(inout LightingData lightingData, real3 transmissionTint)
+{
+    FinalizeLightingData_StandardLighting(lightingData);
+
+    // Transmitted light
+#if ENABLE_TRANSMISSION
+    if(o_transmission_mode != TransmissionMode::None)
+    {
+        lightingData.diffuseLighting += lightingData.translucentBackLighting * transmissionTint;
+    }
+#endif
+}
+
+void FinalizeLightingData_StandardLighting(Surface surface, inout LightingData lightingData)
+{
+    FinalizeLightingData_StandardLighting(lightingData);
+}
+
+
+

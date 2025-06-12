@@ -26,5 +26,6 @@ namespace AZ::SceneAPI
 
         bool m_optimizeScene = false;
         bool m_optimizeMeshes = false;
+        bool m_extractEmbeddedTextures = false;
     };
 } //namespace AZ::SceneAPI

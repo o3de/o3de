@@ -188,7 +188,7 @@ namespace Maestro
             AZStd::string GetStringValue() const override
             {
                 char buffer[33] = { 0 };
-                azsprintf(buffer, "%f", m_value);
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f", m_value);
                 return AZStd::string(buffer);
             }
 
@@ -317,7 +317,7 @@ namespace Maestro
             AZStd::string GetStringValue() const override
             {
                 char buffer[97] = { 0 };
-                azsprintf(buffer, "%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ());
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ());
                 return AZStd::string(buffer);
             }
 
@@ -450,7 +450,7 @@ namespace Maestro
             AZStd::string GetStringValue() const override
             {
                 char buffer[129] = { 0 };
-                azsprintf(buffer, "%f,%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ(), m_value.GetW());
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f,%f,%f,%f", m_value.GetX(), m_value.GetY(), m_value.GetZ(), m_value.GetW());
                 return AZStd::string(buffer);
             }
 
@@ -583,7 +583,7 @@ namespace Maestro
             AZStd::string GetStringValue() const override
             {
                 char buffer[2] = { 0 };
-                azsprintf(buffer, "%d", m_value ? 1 : 0); // 1 or 0 representation
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%d", m_value ? 1 : 0); // 1 or 0 representation
                 return AZStd::string(buffer);
             }
 
@@ -881,42 +881,42 @@ namespace Maestro
             bool SetValue(const AZ::Vector3& vector3Value) override
             {
                 char buffer[97] = { 0 };
-                azsprintf(buffer, "%f,%f,%f", vector3Value.GetX(), vector3Value.GetY(), vector3Value.GetZ());
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f,%f,%f", vector3Value.GetX(), vector3Value.GetY(), vector3Value.GetZ());
                 m_value = buffer;
                 return false;
             }
             bool SetValue(const AZ::Quaternion& quaternionValue) override
             {
                 char buffer[129] = { 0 };
-                azsprintf(buffer, "%f,%f,%f,%f", quaternionValue.GetX(), quaternionValue.GetY(), quaternionValue.GetZ(), quaternionValue.GetW());
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f,%f,%f,%f", quaternionValue.GetX(), quaternionValue.GetY(), quaternionValue.GetZ(), quaternionValue.GetW());
                 m_value = buffer;
                 return false;
             }
             bool SetValue(float floatValue) override
             {
                 char buffer[33] = { 0 };
-                azsprintf(buffer, "%f", floatValue);
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%f", floatValue);
                 m_value = buffer;
                 return false;
             }
             bool SetValue(bool boolValue) override
             {
                 char buffer[2] = { 0 };
-                azsprintf(buffer, "%d", boolValue ? 1 : 0);
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%d", boolValue ? 1 : 0);
                 m_value = buffer;
                 return false;
             }
             bool SetValue(AZ::s32 s32Value) override
             {
                 char buffer[33] = { 0 };
-                azsprintf(buffer, "%d", s32Value);
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%d", s32Value);
                 m_value = buffer;
                 return false;
             }
             bool SetValue(AZ::u32 u32Value) override
             {
                 char buffer[33] = { 0 };
-                azsprintf(buffer, "%u", u32Value);
+                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%u", u32Value);
                 m_value = buffer;
                 return false;
             }

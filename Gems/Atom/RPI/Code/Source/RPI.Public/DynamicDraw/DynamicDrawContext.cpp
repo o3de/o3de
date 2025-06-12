@@ -634,6 +634,7 @@ namespace AZ
             vertexBuffer->Write(vertexData, vertexDataSize);
             newGeometryView.AddStreamBufferView(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
 
+            drawItem.SetStreamIndices(newGeometryView.GetFullStreamBufferIndices());
             drawItemInfo.m_cachedIndex = static_cast<u32>(m_cachedGeometryViews.size());
             m_cachedGeometryViews.emplace_back(AZStd::move(newGeometryView));
 

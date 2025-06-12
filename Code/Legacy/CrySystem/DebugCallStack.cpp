@@ -604,7 +604,7 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
     else if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
     {
         AZStd::string msg = AZStd::string::format(
-            "O3DE has encountered an unexpected error.\n\nDo you want to manually report the issue on Github ?\nInformation about the "
+            "O3DE has encountered an unexpected error.\n\nDo you want to manually report the issue ?\nInformation about the "
             "crash are located in %s via error.log and error.dmp",
             path.c_str());
         constexpr bool showCancel = false;

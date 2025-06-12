@@ -95,6 +95,8 @@ public:
     MOCK_CONST_METHOD3(xcb_get_property_reply, xcb_get_property_reply_t*(xcb_connection_t* c, xcb_get_property_cookie_t cookie, xcb_generic_error_t** e));
     MOCK_CONST_METHOD1(xcb_get_property_value, void*(const xcb_get_property_reply_t* R));
     MOCK_CONST_METHOD1(xcb_generate_id, uint32_t(xcb_connection_t *c));
+    MOCK_CONST_METHOD1(xcb_query_keymap, xcb_query_keymap_cookie_t(xcb_connection_t* c));
+    MOCK_CONST_METHOD3(xcb_query_keymap_reply, xcb_query_keymap_reply_t*(xcb_connection_t* c, xcb_query_keymap_cookie_t cookie, xcb_generic_error_t** e));
 
     // xcb-xkb
     MOCK_CONST_METHOD3(xcb_xkb_use_extension, xcb_xkb_use_extension_cookie_t(xcb_connection_t* c, uint16_t wantedMajor, uint16_t wantedMinor));
@@ -143,6 +145,9 @@ public:
     MOCK_CONST_METHOD1(xcb_input_raw_button_press_axisvalues_length, int(const xcb_input_raw_button_press_event_t* R));
     MOCK_CONST_METHOD1(xcb_input_raw_button_press_axisvalues_raw, xcb_input_fp3232_t*(const xcb_input_raw_button_press_event_t* R));
     MOCK_CONST_METHOD1(xcb_input_raw_button_press_valuator_mask, uint32_t*(const xcb_input_raw_button_press_event_t* R));
+
+
+
 
 private:
     static inline MockXcbInterface* self = nullptr;

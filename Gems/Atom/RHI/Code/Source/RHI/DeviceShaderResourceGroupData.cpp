@@ -33,6 +33,12 @@ namespace AZ::RHI
     {
         m_imageViews.resize(layout->GetGroupSizeForImages());
         m_bufferViews.resize(layout->GetGroupSizeForBuffers());
+        auto groupSizeForSamplers = layout->GetGroupSizeForSamplers();
+        if (groupSizeForSamplers == AZStd::numeric_limits<uint32_t>::max())
+        {
+            AZ_Assert(false, "SRG %s: Unbound arrays for samplers are not supported", m_shaderResourceGroupLayout->GetUniqueId().c_str());
+            groupSizeForSamplers = 0;
+        }
         m_samplers.resize(layout->GetGroupSizeForSamplers());
     }
 
@@ -145,7 +151,12 @@ namespace AZ::RHI
             bool isValidAll = true;
             for (size_t i = 0; i < imageViews.size(); ++i)
             {
-                const bool isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(inputIndex, imageViews[i], static_cast<uint32_t>(i));
+                bool isValid = true;
+                if (imageViews[i])
+                {
+                    isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(
+                        inputIndex, imageViews[i], static_cast<uint32_t>(i));
+                }
                 if (isValid)
                 {
                     m_imageViewsUnboundedArray.push_back(imageViews[i]);
@@ -201,7 +212,12 @@ namespace AZ::RHI
             bool isValidAll = true;
             for (size_t i = 0; i < bufferViews.size(); ++i)
             {
-                const bool isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(inputIndex, bufferViews[i], static_cast<uint32_t>(i));
+                bool isValid = true;
+                if (bufferViews[i])
+                {
+                    isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(
+                        inputIndex, bufferViews[i], static_cast<uint32_t>(i));
+                }
                 if (isValid)
                 {
                     m_bufferViewsUnboundedArray.push_back(bufferViews[i]);

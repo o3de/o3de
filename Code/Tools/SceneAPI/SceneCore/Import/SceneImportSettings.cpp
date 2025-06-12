@@ -16,9 +16,10 @@ namespace AZ::SceneAPI
         if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context); serializeContext)
         {
             serializeContext->Class<SceneImportSettings>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("OptimizeScene", &SceneImportSettings::m_optimizeScene)
-                ->Field("OptimizeMeshes", &SceneImportSettings::m_optimizeMeshes);
+                ->Field("OptimizeMeshes", &SceneImportSettings::m_optimizeMeshes)
+                ->Field("ExtractEmbeddedTextures", &SceneImportSettings::m_extractEmbeddedTextures);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext(); editContext)
             {
@@ -39,7 +40,12 @@ namespace AZ::SceneAPI
                         &SceneImportSettings::m_optimizeMeshes,
                         "Merge Duplicate Meshes",
                         "Non-instanced unskinned meshes with the same vertices and faces are merged into instanced meshes. "
-                        "This will reduce the number of draw calls in the scene.");
+                        "This will reduce the number of draw calls in the scene.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SceneImportSettings::m_extractEmbeddedTextures,
+                        "Extract Embedded Textures",
+                        "Extract textures embedded in the scene file and write them into the directory of the source scene.");
             }
         }
     }

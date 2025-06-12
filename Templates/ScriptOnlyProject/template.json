@@ -23,6 +23,10 @@
             "isTemplated": false
         },
         {
+            "file": ".command_settings",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },

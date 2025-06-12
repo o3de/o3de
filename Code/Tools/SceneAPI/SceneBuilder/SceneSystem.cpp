@@ -29,11 +29,11 @@ namespace AZ
 
         void SceneSystem::Set(const SDKScene::SceneWrapperBase* scene)
         {
-            static constexpr const char* s_UseNewAssimpBehaviorKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
-            bool useNewAssimpBehavior{ false };
+            static constexpr const char* s_ReadRootTransformKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
+            bool readRootTransform = false;
             if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
             {
-                settingsRegistry->Get(useNewAssimpBehavior, s_UseNewAssimpBehaviorKey);
+                settingsRegistry->Get(readRootTransform, s_ReadRootTransformKey);
             }
             // Get unit conversion factor to meter.
             if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(scene))
@@ -62,8 +62,14 @@ namespace AZ
                 m_unitSizeInMeters = rootTransform.ExtractScale().GetMaxElement();
                 rootTransform /= m_unitSizeInMeters;
             }
+            // for FBX, root transform is not converted where there are no meshes in the scene.
+            if ((assImpScene->GetAssImpScene()->mFlags | AI_SCENE_FLAGS_INCOMPLETE)
+                && assImpScene->GetAssImpScene()->mMetaData->HasKey("UpAxis"))
+            {
+                readRootTransform = false;
+            }
 
-            if (useNewAssimpBehavior)
+            if (readRootTransform)
             {
                 // AssImp SDK internally uses a Y-up coordinate system, so we need to adjust the coordinate system to match the O3DE coordinate system (Z-up).
                 AZ::Matrix3x4 adjustmatrix = AZ::Matrix3x4::CreateFromRows(

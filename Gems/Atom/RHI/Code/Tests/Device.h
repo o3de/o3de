@@ -74,7 +74,7 @@ namespace UnitTest
 
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
 
-        void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+        void ObjectCollectionNotify([[maybe_unused]] AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
 
         AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
         {

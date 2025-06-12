@@ -46,6 +46,8 @@ namespace AZ::RHI
             return m_descriptor;
         }
 
+        AZStd::unordered_map<int, uint32_t> GetBindlessReadIndex() const;
+
         const DeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
         {
             return GetDeviceImageView(deviceIndex).get();

@@ -207,10 +207,10 @@ public:
         }
     }
 
-private:
     CTrackViewKeyHandle GetPrevKey(float time);
     CTrackViewKeyHandle GetNextKey(float time);
 
+private:
     // Those are called from CTrackViewKeyHandle
     void SetKey(unsigned int keyIndex, IKey* pKey);
     void GetKey(unsigned int keyIndex, IKey* pKey) const;

@@ -32,7 +32,7 @@ namespace Prop
         { IVariable::DT_PERCENT, "Float", ePropertyInt, 13 },
         { IVariable::DT_BOOLEAN, "Boolean", ePropertyBool, 2 },
         { IVariable::DT_COLOR, "Color", ePropertyColor, 1 },
-        { IVariable::DT_COLORA, "ColorA", ePropertyColor, 1 },
+        { IVariable::DT_COLORA, "ColorA", ePropertyColorA, 1 },
         { IVariable::DT_CURVE | IVariable::DT_PERCENT, "FloatCurve", ePropertyFloatCurve, 13 },
         { IVariable::DT_CURVE | IVariable::DT_COLOR, "ColorCurve", ePropertyColorCurve, 1 },
         { IVariable::DT_ANGLE, "Angle", ePropertyAngle, 0 },

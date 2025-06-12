@@ -55,11 +55,23 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework;
 
         EditorComponentBase::Activate();
+
+        auto entityId = GetEntityId();
+        if (entityId.IsValid())
+        {
+            EditorScriptCanvasComponentRequestBus::Handler::BusConnect(entityId);
+        }
+
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([this](const Configuration&)
             {
                 this->InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             });
+
+        m_handlerSourcePropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&)
+        {
+            this->SetDirty();
+        });
 
         m_configuration.Refresh();
         InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
@@ -69,6 +81,7 @@ namespace ScriptCanvasEditor
     {
         m_handlerSourceCompiled.Disconnect();
         EditorComponentBase::Deactivate();
+        EditorScriptCanvasComponentRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
@@ -126,6 +139,22 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
+        SetDirty();
         m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
+    }
+
+
+    void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
+    {
+        if (assetId.IsDescriptionValid()
+            && (!m_configuration.HasSource() || m_configuration.GetSource().Describe() != assetId.Describe()))
+        {
+            this->SetPrimaryAsset(assetId.Id());
+        }
+    }
+
+    bool EditorScriptCanvasComponent::HasAssetId() const
+    {
+        return m_configuration.HasSource() && m_configuration.GetSource().IsDescriptionValid();
     }
 }

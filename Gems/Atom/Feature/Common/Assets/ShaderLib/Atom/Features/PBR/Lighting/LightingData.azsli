@@ -16,8 +16,6 @@
 class LightingData
 {
     LightCullingTileIterator tileIterator;
-        
-    uint lightingChannels;
 
     // Lighting outputs
     real3 diffuseLighting;

@@ -108,6 +108,8 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+
+        m_viewportDragDropHandler = AZStd::make_unique<ScriptCanvasAssetDragDropHandler>();
     }
 
     void SystemComponent::Activate()

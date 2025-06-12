@@ -96,7 +96,7 @@ const char* BatchApplicationManager::GetLogBaseName()
     return "AP_Batch";
 }
 
-ApplicationManager::RegistryCheckInstructions BatchApplicationManager::PopupRegistryProblemsMessage(QString warningText)
+ApplicationManager::RegistryCheckInstructions BatchApplicationManager::PopupRegistryProblemsMessage([[maybe_unused]] QString warningText)
 {
     return RegistryCheckInstructions::Exit;
 }

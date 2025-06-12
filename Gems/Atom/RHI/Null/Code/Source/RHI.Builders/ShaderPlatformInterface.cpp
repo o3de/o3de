@@ -21,6 +21,9 @@ namespace AZ
 
         static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Null/AzslcHeader.azsli";
         static const char* MacAzslShaderHeader = "Builders/ShaderHeaders/Platform/Mac/Null/AzslcHeader.azsli";
+        static const char* iOSsAzslShaderHeader = "Builders/ShaderHeaders/Platform/iOS/Null/AzslcHeader.azsli";
+        static const char* LinuxAzslShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Null/AzslcHeader.azsli";
+        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Null/AzslcHeader.azsli";
 
         ShaderPlatformInterface::ShaderPlatformInterface(uint32_t apiUniqueIndex)
             : RHI::ShaderPlatformInterface(apiUniqueIndex)
@@ -89,6 +92,18 @@ namespace AZ
             else if (platform.m_identifier == "mac")
             {
                 return MacAzslShaderHeader;
+            }
+            else if (platform.m_identifier == "ios")
+            {
+                return iOSsAzslShaderHeader;
+            }
+            else if (platform.m_identifier == "linux")
+            {
+                return LinuxAzslShaderHeader;
+            }
+            else if (platform.m_identifier == "android")
+            {
+                return AndroidAzslShaderHeader;
             }
             else
             {

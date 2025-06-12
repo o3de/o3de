@@ -64,11 +64,11 @@ namespace Maestro
         description = buffer;
         if (!m_keys[keyIndex].folder.empty())
         {
-            azsprintf(buffer, "[%s], %.3f, %s", prefix, m_keys[keyIndex].timeStep, m_keys[keyIndex].folder.c_str());
+            azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "[%s], %.3f, %s", prefix, m_keys[keyIndex].timeStep, m_keys[keyIndex].folder.c_str());
         }
         else
         {
-            azsprintf(buffer, "[%s], %.3f", prefix, m_keys[keyIndex].timeStep);
+            azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "[%s], %.3f", prefix, m_keys[keyIndex].timeStep);
         }
     }
 

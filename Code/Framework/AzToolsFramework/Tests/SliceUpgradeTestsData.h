@@ -131,7 +131,7 @@ namespace UnitTest
                 serializeContext->Class<TestComponentA_V1, AzToolsFramework::Components::EditorComponentBase>()
                     ->Version(1)
                     ->Field("NewData", &TestComponentA_V1::m_data)
-                    ->TypeChange<TestDataA, NewTestDataA>("Data", 0, 1, [](TestDataA in) -> NewTestDataA {
+                    ->TypeChange<TestDataA, NewTestDataA>("Data", 0, 1, []([[maybe_unused]] TestDataA in) -> NewTestDataA {
                         return NewTestDataA();
                     })
                     ->NameChange(0, 1, "Data", "NewData")

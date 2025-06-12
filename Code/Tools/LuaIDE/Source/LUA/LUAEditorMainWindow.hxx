@@ -14,6 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/map.h>
 
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/UI/LegacyFramework/UIFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
@@ -101,6 +102,8 @@ namespace LUAEditor
         DebugAttachmentButtonAction* m_pDebugAttachmentButton;
         bool m_bAutocompleteEnabled;
         int m_SkinChoice;
+        AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointJoinedHandler;
+        AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointLeftHandler;
 
     Q_SIGNALS:
         void OnReferenceDataChanged();
@@ -169,6 +172,7 @@ namespace LUAEditor
         // help menu
         void OnLuaDocumentation();
 
+        void OnRemoteToolsEndpointListChanged();
         void OnDebugExecute();
         void OnDebugExecuteOnTarget();
 

@@ -11,6 +11,9 @@
 #include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
+#include <AzCore/Console/IConsole.h>
+AZ_CVAR_EXTERNED(bool, r_hdrOutput);
+
 namespace AZ::RHI
 {
     //! The platform-independent swap chain base class. Swap chains contain a "chain" of images which

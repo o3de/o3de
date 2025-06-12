@@ -32,7 +32,7 @@ namespace Maestro
             s_screenFaderNodeParams.push_back(param);
         }    
 
-        static bool CalculateIsolatedKeyColor(const IScreenFaderKey& key, float fTime, Vec4& colorOut)
+        static bool CalculateIsolatedKeyColor(const IScreenFaderKey& key, float fTime, AZ::Vector4& colorOut)
         {
             float ratio = fTime - key.time;
 
@@ -43,27 +43,27 @@ namespace Maestro
 
             if (key.m_fadeTime == 0.f)
             {
-                colorOut(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
+                colorOut.Set(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
                 if (key.m_fadeType == IScreenFaderKey::eFT_FadeIn)
                 {
-                    colorOut.w = 0.f;
+                    colorOut.SetW(0.f);
                 }
                 else
                 {
-                    colorOut.w = 1.f;
+                    colorOut.SetW(1.f);
                 }
             }
             else
             {
-                colorOut(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
+                colorOut.Set(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
                 ratio = ratio / key.m_fadeTime;
                 if (key.m_fadeType == IScreenFaderKey::eFT_FadeIn)
                 {
-                    colorOut.w = MAX(0.f, 1.f - ratio);
+                    colorOut.SetW(AZStd::max(0.f, 1.f - ratio));
                 }
                 else
                 {
-                    colorOut.w = MIN(1.f, ratio);
+                    colorOut.SetW(AZStd::min(1.f, ratio));
                 }
             }
 
@@ -74,12 +74,10 @@ namespace Maestro
     CAnimScreenFaderNode::CAnimScreenFaderNode(const int id)
         : CAnimNode(id, AnimNodeType::ScreenFader)
         , m_bActive(false)
-        , m_screenWidth(800.f)
-        , m_screenHeight(600.f)
         , m_lastActivatedKey(-1)
         , m_texPrecached(false)
     {
-        m_startColor = Vec4(1, 1, 1, 1);
+        m_startColor = AZ::Vector4(1, 1, 1, 1);
         CAnimScreenFaderNode::Initialize();
         PrecacheTexData();
     }
@@ -106,15 +104,15 @@ namespace Maestro
 
     void CAnimScreenFaderNode::Animate(SAnimContext& ac)
     {
-        size_t const nScreenFaderTracksNumber = m_tracks.size();
+        const auto nScreenFaderTracksNumber = static_cast<unsigned int>(m_tracks.size());
 
-        for (size_t nFaderTrackNo = 0; nFaderTrackNo < nScreenFaderTracksNumber; ++nFaderTrackNo)
+        for (unsigned int nFaderTrackNo = 0; nFaderTrackNo < nScreenFaderTracksNumber; ++nFaderTrackNo)
         {
-            CScreenFaderTrack* pTrack =
-                static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(nFaderTrackNo)));
+            CScreenFaderTrack* pTrack =static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, nFaderTrackNo));
 
             if (!pTrack)
             {
+                AZ_Assert(false, "AnimTrack at %u is null", nFaderTrackNo);
                 continue;
             }
 
@@ -195,7 +193,7 @@ namespace Maestro
 
                     if (!key.m_bUseCurColor || nActiveKeyIndex == 0)
                     {
-                        m_startColor(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
+                        m_startColor = key.m_fadeColor.GetAsVector4();
                     }
                     else
                     {
@@ -208,7 +206,7 @@ namespace Maestro
                     {
                         if (!key.m_bUseCurColor || nActiveKeyIndex == 0)
                         {
-                            m_startColor.w = 1.f;
+                            m_startColor.SetW(1.f);
                         }
                         key.m_fadeColor.SetA(0.f);
                     }
@@ -216,15 +214,14 @@ namespace Maestro
                     {
                         if (!key.m_bUseCurColor || nActiveKeyIndex == 0)
                         {
-                            m_startColor.w = 0.f;
+                            m_startColor.SetW(0.f);
                         }
                         key.m_fadeColor.SetA(1.f);
                     }
 
-                    Vec4 fadeColorAsVec4(key.m_fadeColor.GetR(), key.m_fadeColor.GetG(), key.m_fadeColor.GetB(), key.m_fadeColor.GetA());
-                    pTrack->SetDrawColor(m_startColor + (fadeColorAsVec4 - m_startColor) * ratio);
+                    pTrack->SetDrawColor(m_startColor + (key.m_fadeColor.GetAsVector4() - m_startColor) * ratio);
 
-                    if (pTrack->GetDrawColor().w < 0.01f)
+                    if (pTrack->GetDrawColor().GetW() < 0.01f)
                     {
                         m_bActive = IsAnyTextureVisible();
                     }
@@ -240,6 +237,7 @@ namespace Maestro
                 m_bActive = IsAnyTextureVisible();
             }
         }
+        // Actual drawing made by Render() is postponed till OnPostRender() event.
     }
 
     void CAnimScreenFaderNode::CreateDefaultTracks()
@@ -331,16 +329,71 @@ namespace Maestro
 
     void CAnimScreenFaderNode::Render()
     {
+        if (!m_bActive)
+        {
+            return;
+        }
+
+        const auto paramCount = static_cast<int>(m_tracks.size());
+        for (int paramIndex = 0; paramIndex < paramCount; ++paramIndex)
+        {
+            CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, paramIndex));
+
+            if (!pTrack)
+            {
+                continue;
+            }
+
+            // TODO : https://github.com/o3de/o3de/issues/6169, legacy code was:
+            #if 0
+            if (gEnv->pRenderer)
+            {
+                int textureId = -1;
+                if (pTrack->IsTextureVisible())
+                {
+                    textureId = (pTrack->GetActiveTexture() != 0) ? pTrack->GetActiveTexture()->GetTextureID() : -1;
+                }
+                gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
+                gEnv->pRenderer->Draw2dImage(0, 0, m_screenWidth, m_screenHeight, textureId, 0.0f, 1.0f, 1.0f, 0.0f, 0.f,
+                pTrack->GetDrawColor().x, pTrack->GetDrawColor().y, pTrack->GetDrawColor().z, pTrack->GetDrawColor().w, 0.f);
+            }
+            #endif // 0
+
+            // Actual  code could be something like this:
+            AZ::Data::Instance<AZ::RPI::Image> image = nullptr; // Legal for no texture, just color fading
+            if (pTrack->IsTextureVisible())
+            {
+                image = pTrack->GetActiveTexture();
+            }
+
+            #if 0
+            auto draw2d = AZ::Interface<IDraw2dSystem>::Get();
+            if (!draw2d)
+            {
+                AZ_Assert(false, "Draw2dSystem not found.");
+                return;
+            }
+
+            const auto color = pTrack->GetDrawColor();
+            IDraw2dSystem::ImageOptions imageOptions;
+            imageOptions.m_color = color.GetAsVector3();
+            imageOptions.m_clamp = true;
+            imageOptions.m_renderState.m_blendState.m_enable = true;
+            imageOptions.m_renderState.m_blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            imageOptions.m_renderState.m_blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+            imageOptions.m_renderState.m_depthState.m_enable = false;
+
+            draw2d->DrawImage(image, AZ::Vector2::CreateZero(), windowSize, color.GetW(), 0.0f, nullptr, nullptr, &imageOptions);
+            #endif // 0
+        }
     }
 
     bool CAnimScreenFaderNode::IsAnyTextureVisible() const
     {
-        size_t const paramCount = m_tracks.size();
-        for (size_t paramIndex = 0; paramIndex < paramCount; ++paramIndex)
+        auto const paramCount = static_cast<unsigned int>(m_tracks.size());
+        for (unsigned int paramIndex = 0; paramIndex < paramCount; ++paramIndex)
         {
-            CScreenFaderTrack* pTrack =
-                static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(paramIndex)));
-
+            CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, paramIndex));
             if (!pTrack)
             {
                 continue;
@@ -357,11 +410,10 @@ namespace Maestro
 
     void CAnimScreenFaderNode::PrecacheTexData()
     {
-        size_t const paramCount = m_tracks.size();
-        for (size_t paramIndex = 0; paramIndex < paramCount; ++paramIndex)
+        auto const paramCount = static_cast<unsigned int>(m_tracks.size());
+        for (unsigned int paramIndex = 0; paramIndex < paramCount; ++paramIndex)
         {
             IAnimTrack* pTrack = m_tracks[paramIndex].get();
-
             if (!pTrack)
             {
                 continue;

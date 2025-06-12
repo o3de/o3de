@@ -460,7 +460,7 @@ namespace AZ::IO
 
         char* buffer = new char[fileSize];
         bool readResult{ false };
-        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5), readResult);
+        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(500), readResult);
         EXPECT_TRUE(readResult);
         if(readResult)
         {

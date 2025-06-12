@@ -96,7 +96,7 @@ void AddDetailSurface(inout DetailSurface surface, in DetailSurface surfaceToAdd
 
 float4 SampleTexture(uint index, in MaterialContext materialContext)
 {
-    return Bindless::GetTexture2D(index).SampleGrad(TerrainMaterialSrg::m_detailSampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
+    return Bindless::GetTexture2D(NonUniformResourceIndex(index)).SampleGrad(TerrainMaterialSrg::m_detailSampler, materialContext.m_uv, materialContext.m_ddx, materialContext.m_ddy);
 }
 
 float3 GetDetailColor(in MaterialContext materialContext, in float3 macroColor)

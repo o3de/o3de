@@ -20,14 +20,29 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialFunctor::Reflect(ReflectContext* context)
+
+        void MaterialFunctorShaderParameter::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                serializeContext->Class<MaterialFunctorShaderParameter>()
+                    ->Version(0)
+                    ->Field("name", &MaterialFunctorShaderParameter::m_name)
+                    ->Field("type", &MaterialFunctorShaderParameter::m_typeName)
+                    ->Field("size", &MaterialFunctorShaderParameter::m_typeSize);
+            }
+        }
+
+        void MaterialFunctor::Reflect(ReflectContext* context)
+        {
+            MaterialFunctorShaderParameter::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
                 serializeContext->Class<MaterialFunctor>()
-                    ->Version(2)
+                    ->Version(3) // added functorShaderParameters
                     ->Field("materialPropertyDependencies", &MaterialFunctor::m_materialPropertyDependencies)
-                    ;
+                    ->Field("functorShaderParameters", &MaterialFunctor::m_functorShaderParameters);
             }
         }
 
@@ -140,14 +155,13 @@ namespace AZ
             const MaterialPropertyCollection& materialProperties,
             const MaterialPropertyFlags* materialPropertyDependencies,
             MaterialPropertyPsoHandling psoHandling,
-            ShaderResourceGroup* shaderResourceGroup,
+            MaterialShaderParameter* shaderParameters,
             ShaderCollection* generalShaderCollection,
-            MaterialPipelineDataMap* materialPipelineData
-        )
+            MaterialPipelineDataMap* materialPipelineData)
             : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
             , MaterialFunctorAPI::ReadMaterialPropertyValues(materialProperties, materialPropertyDependencies)
             , MaterialFunctorAPI::ConfigureShaders(generalShaderCollection)
-            , m_shaderResourceGroup(shaderResourceGroup)
+            , m_materialShaderParameter(shaderParameters)
             , m_materialPipelineData(materialPipelineData)
         {
         }
@@ -168,9 +182,9 @@ namespace AZ
             }
         }
 
-        ShaderResourceGroup* MaterialFunctorAPI::RuntimeContext::GetShaderResourceGroup()
+        MaterialShaderParameter* MaterialFunctorAPI::RuntimeContext::GetMaterialShaderParameter()
         {
-            return m_shaderResourceGroup;
+            return m_materialShaderParameter;
         }
 
         bool MaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value)
@@ -498,6 +512,11 @@ namespace AZ
         const MaterialPropertyFlags& MaterialFunctor::GetMaterialPropertyDependencies() const
         {
             return m_materialPropertyDependencies;
+        }
+
+        const AZStd::vector<MaterialFunctorShaderParameter>& MaterialFunctor::GetMaterialFunctorShaderParameters() const
+        {
+            return m_functorShaderParameters;
         }
 
     } // namespace RPI

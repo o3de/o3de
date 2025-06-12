@@ -199,6 +199,29 @@ namespace O3de
             {nullptr, no_argument, nullptr, EndFlags}
         };
 
+        for (int i = 0; i < argc; ++i)
+        {
+            std::string inputString = argv[i];
+            size_t equalPos = inputString.find_first_of('=');
+            if (equalPos == std::string::npos || equalPos == inputString.length() - 1)
+            {
+                continue;
+            }
+
+            std::string tokenStr = inputString.substr(0, equalPos);
+            std::string valueStr = inputString.substr(equalPos + 1);
+
+            if (tokenStr == "--submission-token")
+            {
+                m_submissionToken = valueStr;
+            }
+            else if (tokenStr == "--executable-name")
+            {
+                m_executableName = valueStr;
+            }
+        }
+
+        // FIXME: argument parsing is broken, fallback above
         int opt{ 0 };
         while ((opt = getopt_long(argc, argv, "", options_list, nullptr)) != -1)
         {

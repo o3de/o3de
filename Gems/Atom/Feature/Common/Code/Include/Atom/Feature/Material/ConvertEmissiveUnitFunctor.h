@@ -33,11 +33,13 @@ namespace AZ
             void Process(RPI::MaterialFunctorAPI::EditorContext& context) override;
             float GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const;
 
+            bool UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout) override;
+
         private:
 
             AZ::RPI::MaterialPropertyIndex m_intensityPropertyIndex;
             AZ::RPI::MaterialPropertyIndex m_lightUnitPropertyIndex;
-            AZ::RHI::ShaderInputConstantIndex m_shaderInputIndex;
+            AZ::RPI::MaterialShaderParameterNameIndex m_shaderParameter;
 
             uint32_t m_ev100Index;
             uint32_t m_nitIndex;

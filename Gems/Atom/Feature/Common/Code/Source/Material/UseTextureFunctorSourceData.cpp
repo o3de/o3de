@@ -19,13 +19,12 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<UseTextureFunctorSourceData>()
-                    ->Version(6)
+                serializeContext->Class<UseTextureFunctorSourceData, RPI::MaterialFunctorSourceData>()
+                    ->Version(7) // added base class
                     ->Field("textureProperty", &UseTextureFunctorSourceData::m_texturePropertyName)
                     ->Field("useTextureProperty", &UseTextureFunctorSourceData::m_useTexturePropertyName)
                     ->Field("dependentProperties", &UseTextureFunctorSourceData::m_dependentProperties)
-                    ->Field("shaderOption", &UseTextureFunctorSourceData::m_useTextureOptionName)
-                    ;
+                    ->Field("shaderOption", &UseTextureFunctorSourceData::m_useTextureOptionName);
             }
         }
 
@@ -69,6 +68,8 @@ namespace AZ
             functor->m_useTextureOptionName = m_useTextureOptionName;
             context.GetNameContext()->ContextualizeShaderOption(functor->m_useTextureOptionName);
 
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
+
             return Success(Ptr<MaterialFunctor>(functor));
         }
 
@@ -101,6 +102,8 @@ namespace AZ
                 return Failure();
             }
             AddMaterialPropertyDependency(functor, functor->m_useTexturePropertyIndex);
+
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(Ptr<MaterialFunctor>(functor));
         }

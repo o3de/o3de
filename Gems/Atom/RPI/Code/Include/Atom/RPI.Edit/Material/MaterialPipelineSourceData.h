@@ -65,16 +65,19 @@ namespace AZ
             AZStd::vector<ShaderTemplate> m_shaderTemplates;
 
             // A list of members to be added to the Object SRG. For example, writing:
-            // 
-            // "objectSrgAdditions": [
-            //     "float4 m_myCustomVar1;",
-            //     "uint   m_myCustomVar2;"
+            //
+            // "objectSrg": [
+            //     "float4 m_myCustomVar1",
+            //     "uint   m_myCustomVar2"
             // ],
-            // 
+            //
             // in your .materialpipeline file will add m_myCustomVar1 and m_myCustomVar2
             // to the ObjectSrg of all materials rendered in your material pipeline.
             // NOTE: this feature currently only supports "type variableName" entries and
             // doesn't support arbitrary strings, which may cause shader compilation failure
+            //
+            // NOTE 2: Keep in mind that this can't be supported in Raytracing shaders or Deferred shaders, since
+            // those don't have an ObjectSrg or DrawSrg.
             AZStd::vector<AZStd::string> m_objectSrgAdditions;
 
             // A list of members to be added to the Draw SRG. For example, writing:
@@ -88,6 +91,9 @@ namespace AZ
             // to the DrawSrg of all materials rendered in your material pipeline.
             // NOTE: this feature currently only supports "type variableName" entries and
             // doesn't support arbitrary strings, which may cause shader compilation failure
+            //
+            // NOTE 2: As abovce, keep in mind that this can't be supported in Raytracing shaders or Deferred shaders, since
+            // those don't have an ObjectSrg or DrawSrg.
             AZStd::vector<AZStd::string> m_drawSrgAdditions;
 
             //! Relative path to a lua script to configure shader compilation

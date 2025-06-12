@@ -206,7 +206,7 @@ namespace EMotionFX
             }
 
             // if the layer faded out, remove it when we should
-            if (source->GetWeight() <= 0.0f && (source->GetDeleteOnZeroWeight() || source->GetIsStopping()))
+            if (source->GetWeight() <= 0.0f && (source->GetDeleteOnZeroWeight() && source->GetIsStopping())) // was ||
             {
                 RemoveMotionInstance(source);
                 i--;

@@ -202,7 +202,7 @@ void RCcontrollerUnitTests::ConnectCompileGroupSignalsAndSlots(bool& gotCreated,
 
 void RCcontrollerUnitTests::ConnectJobSignalsAndSlots(bool& allJobsCompleted, JobEntry& completedJob)
 {
-    QObject::connect(m_rcController.get(), &RCController::FileCompiled, this, [&](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+    QObject::connect(m_rcController.get(), &RCController::FileCompiled, this, [&](JobEntry entry, [[maybe_unused]] AssetBuilderSDK::ProcessJobResponse response)
         {
             completedJob = entry;
         });

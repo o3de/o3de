@@ -18,24 +18,9 @@
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     uint m_objectId;
-
-    //! Returns the matrix for transforming points from Object Space to World Space.
-    float4x4 GetWorldMatrix()
-    {
-        return SceneSrg::GetObjectToWorldMatrix(m_objectId);
-    }
-
-    //! Returns the inverse-transpose of the world matrix.
-    //! Commonly used to transform normals while supporting non-uniform scale.
-    float3x3 GetWorldMatrixInverseTranspose()
-    {
-        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
-    }
-
-    float4x4 GetWorldMatrixPrev()
-    {
-        return SceneSrg::GetObjectToWorldMatrixPrev(m_objectId);
-    }
+    int m_materialTypeId;
+    int m_materialInstanceId;
+    
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;

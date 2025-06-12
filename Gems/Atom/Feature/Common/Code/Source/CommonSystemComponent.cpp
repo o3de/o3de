@@ -97,7 +97,7 @@
 #include <Shadows/FullscreenShadowPass.h>
 #include <CoreLights/LightCullingRemap.h>
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
-#include <ImGui/ImGuiPass.h>
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>

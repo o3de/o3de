@@ -28,25 +28,23 @@ namespace Maestro
 
         static void Initialize();
 
-        //-----------------------------------------------------------------------------
         //! Overrides from CAnimNode
-        void Animate(SAnimContext& ac) override;
-
+        void Activate(bool bActivate) override;
         void CreateDefaultTracks() override;
 
+        void Animate(SAnimContext& ac) override;
         void OnReset() override;
 
-        void Activate(bool bActivate) override;
-
         void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
+        //~ Overrides from CAnimNode
 
-        //-----------------------------------------------------------------------------
         //! Overrides from IAnimNode
         unsigned int GetParamCount() const override;
         CAnimParamType GetParamType(unsigned int nIndex) const override;
         void SetFlags(int flags) override;
 
-        void Render() override;
+        void Render() override; // With OnPostRender() event.
+        //~ Overrides from IAnimNode
 
         bool IsAnyTextureVisible() const;
 
@@ -66,9 +64,8 @@ namespace Maestro
     private:
         void PrecacheTexData();
 
-        Vec4 m_startColor;
+        AZ::Vector4 m_startColor;
         bool m_bActive;
-        float m_screenWidth, m_screenHeight;
         int m_lastActivatedKey;
 
         bool m_texPrecached;

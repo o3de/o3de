@@ -39,10 +39,10 @@ namespace AZ
             // process shader libraries into shader stages and groups
             AZStd::vector<VkPipelineShaderStageCreateInfo> stages;
             AZStd::vector<VkRayTracingShaderGroupCreateInfoKHR> groups;
-            AZStd::vector<SpecializationConstantData> specializationDataVector(descriptor->GetShaderLibraries().size());
+            AZStd::vector<SpecializationConstantData> specializationDataVector(descriptor->m_shaderLibraries.size());
 
-            m_shaderModules.reserve(descriptor->GetShaderLibraries().size());
-            const auto& libraries = descriptor->GetShaderLibraries();
+            m_shaderModules.reserve(descriptor->m_shaderLibraries.size());
+            const auto& libraries = descriptor->m_shaderLibraries;
             for (uint32_t i = 0; i < libraries.size(); ++i)
             {
                 const RHI::RayTracingShaderLibrary& shaderLibrary = libraries[i];
@@ -140,7 +140,7 @@ namespace AZ
             }
 
             // create group entries for the hit group shaders, using the hitStageIndices map to retrieve the stage index for the shader
-            for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
+            for (const RHI::RayTracingHitGroup& hitGroup : descriptor->m_hitGroups)
             {
                 uint32_t closestHitShaderIndex = VK_SHADER_UNUSED_KHR;
                 uint32_t anytHitShaderIndex = VK_SHADER_UNUSED_KHR;
@@ -188,7 +188,7 @@ namespace AZ
             }
 
             // store the pipeline layout
-            m_pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout()->GetNativePipelineLayout();
+            m_pipelineLayout = static_cast<const PipelineState*>(descriptor->m_pipelineState)->GetPipelineLayout()->GetNativePipelineLayout();
 
             // create the ray tracing pipeline
             VkRayTracingPipelineCreateInfoKHR createInfo = {};
@@ -199,7 +199,7 @@ namespace AZ
             createInfo.pStages = stages.data();
             createInfo.groupCount = static_cast<uint32_t>(groups.size());
             createInfo.pGroups = groups.data();
-            createInfo.maxPipelineRayRecursionDepth = descriptor->GetConfiguration().m_maxRecursionDepth;
+            createInfo.maxPipelineRayRecursionDepth = descriptor->m_configuration.m_maxRecursionDepth;
             createInfo.layout = m_pipelineLayout;
             createInfo.basePipelineHandle = nullptr;
             createInfo.basePipelineIndex = 0;

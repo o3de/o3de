@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-    
-//TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
-#include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_MaterialSrg.azsli>
 
-#include <Atom/Features/Skin/SkinObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#if PIPELINE_HAS_OBJECT_SRG
+    #include <Atom/Features/WrinkleMask.azsli>
+#endif
 
     COMMON_OPTIONS_BASE_COLOR()
     COMMON_OPTIONS_ROUGHNESS()
@@ -26,19 +26,17 @@
         return o_normal_useTexture || o_detail_normal_useTexture;
     }
     
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_VertexData.azsli>
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_VertexEval.azsli>
 
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_PixelGeometryData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_VertexEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_PixelGeometryEval.azsli>
-    
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_SurfaceData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_SurfaceEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingBrdf.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingEval.azsli>
 
 #else
 
     //TODO(MaterialPipeline): I think we should rename these to "PositionOnly_*"
-    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
+
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 
 #endif

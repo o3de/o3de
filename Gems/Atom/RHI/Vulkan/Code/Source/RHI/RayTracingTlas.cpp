@@ -41,7 +41,7 @@ namespace AZ
                 buffers.m_accelerationStructure = nullptr;
             }
 
-            const RHI::DeviceRayTracingTlasInstanceVector& instances = descriptor->GetInstances();
+            const RHI::DeviceRayTracingTlasInstanceVector& instances = descriptor->m_instances;
             if (instances.empty())
             {
                 // no instances in the scene, clear the TLAS buffers
@@ -53,7 +53,7 @@ namespace AZ
 
             AZStd::vector<RHI::Ptr<RHI::DeviceBuffer>> blasBuffers;
             VkDeviceAddress tlasInstancesGpuAddress = 0;
-            if (descriptor->GetInstancesBuffer() == nullptr)
+            if (descriptor->m_instancesBuffer == nullptr)
             {
                 buffers.m_instanceCount = aznumeric_caster(instances.size());
                 uint64_t instanceDescsSizeInBytes = aznumeric_cast<uint32_t>(sizeof(VkAccelerationStructureInstanceKHR) * instances.size());
@@ -115,14 +115,14 @@ namespace AZ
             }
             else
             {
-                AZ_Assert(descriptor->GetNumInstancesInBuffer(), "TLAS InstancesBuffer set but instances count is zero");
+                AZ_Assert(descriptor->m_numInstancesInBuffer, "TLAS InstancesBuffer set but instances count is zero");
 
                 VkBufferDeviceAddressInfo addressInfo = {};
                 addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
                 addressInfo.pNext = nullptr;
-                addressInfo.buffer = static_cast<Buffer*>(descriptor->GetInstancesBuffer().get())->GetBufferMemoryView()->GetNativeBuffer();
+                addressInfo.buffer = static_cast<Buffer*>(descriptor->m_instancesBuffer.get())->GetBufferMemoryView()->GetNativeBuffer();
                 tlasInstancesGpuAddress = device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo);
-                buffers.m_instanceCount = descriptor->GetNumInstancesInBuffer();
+                buffers.m_instanceCount = descriptor->m_numInstancesInBuffer;
             }
             
             buffers.m_geometry = {};

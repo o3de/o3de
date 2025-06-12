@@ -19,14 +19,26 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# If you change these, please change the copy of them below in the installer 
+# section.  That installer section is the ONLY part of the file that is shipped in the installer
+# (SDK) version of the package, the rest of this file is not, so it must be duplicated there.
+set(RECAST_GIT_REPO "https://github.com/recastnavigation/recastnavigation.git")
+set(RECAST_GIT_TAG 5a870d4)
+set(RECAST_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/recast-o3de.patch")
+
 # Add RecastNavigation dependency using FetchContent
 # Note: RecastNavigation::Detour requires lowering of the warning level to compile.
 include(FetchContent)
 FetchContent_Declare(
         RecastNavigation
-        GIT_REPOSITORY "https://github.com/recastnavigation/recastnavigation"
-        GIT_TAG "5a870d427e47abd4a8e4ce58a95582ec049434d5" # main branch
+        GIT_REPOSITORY ${RECAST_GIT_REPO}
+        GIT_TAG ${RECAST_GIT_TAG} # main branch as of March 17, 2022
+        PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${RECAST_GIT_PATCH}
 )
+
+# please always be really clear about what third parties your gem uses.
+message(STATUS "RecastNavigation Gem uses ${RECAST_GIT_REPO} commit 5a870d4 (License: Zlib)")
+
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(RECASTNAVIGATION_DEMO OFF)
 set(RECASTNAVIGATION_TESTS OFF)
@@ -71,7 +83,14 @@ foreach(recastLibrary ${recastLibraries})
 endforeach()
 
 # Export external recast navigation targets for installers.
+# Note that the following property in the square brackets is the only part of this entire file
+# that gets included in installers.  This is why we need to duplicate the github repo from above
+# and cannot reuse the variables above.  The rest of this file won't be there to refer to.
 set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
+    set(RECAST_GIT_REPO "https://github.com/recastnavigation/recastnavigation.git")
+    set(RECAST_GIT_TAG 5a870d4)
+    message(STATUS "RecastNavigation Gem uses ${RECAST_GIT_REPO} commit 5a870d4 (License: Zlib)")
+    
     set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
     foreach(recastLibrary ${recastLibraries})
         add_library(RecastNavigation::${recastLibrary} STATIC IMPORTED GLOBAL)

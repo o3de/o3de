@@ -19,7 +19,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SubsurfaceTransmissionParameterFunctorSourceData, RPI::MaterialFunctorSourceData>()
-                    ->Version(1)
+                    ->Version(2) // added shrinkFactor, transmissionNdLBias and distanceAttenuation
                     ->Field("mode", &SubsurfaceTransmissionParameterFunctorSourceData::m_mode)
                     ->Field("scale", &SubsurfaceTransmissionParameterFunctorSourceData::m_scale)
                     ->Field("power", &SubsurfaceTransmissionParameterFunctorSourceData::m_power)
@@ -36,7 +36,7 @@ namespace AZ
                     ->Field("scatterDistanceShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_scatterDistance)
                     ->Field("parametersShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionParams)
                     ->Field("tintThickenssShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionTintThickness);
-                    ;
+                ;
             }
         }
 
@@ -82,27 +82,11 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceColor);
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceIntensity);
 
-            functor->m_scatterDistance = context.FindShaderInputConstantIndex(Name{ m_scatterDistance });
-            functor->m_transmissionParams = context.FindShaderInputConstantIndex(Name{ m_transmissionParams });
-            functor->m_transmissionTintThickness = context.FindShaderInputConstantIndex(Name{ m_transmissionTintThickness });
-
-            if (functor->m_scatterDistance.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_scatterDistance.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionParams.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionParams.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionTintThickness.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionTintThickness.c_str());
-                return Failure();
-            }
+            functor->m_scatterDistance = RPI::MaterialShaderParameterNameIndex{ m_scatterDistance, context.GetNameContext() };
+            functor->m_transmissionParams = RPI::MaterialShaderParameterNameIndex{ m_transmissionParams, context.GetNameContext() };
+            functor->m_transmissionTintThickness =
+                RPI::MaterialShaderParameterNameIndex{ m_transmissionTintThickness, context.GetNameContext() };
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }
