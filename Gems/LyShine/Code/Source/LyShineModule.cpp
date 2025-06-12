@@ -15,6 +15,7 @@
 
 #include "UiCanvasComponent.h"
 #include "UiElementComponent.h"
+#include "UiElementGroupComponent.h"
 #include "UiTransform2dComponent.h"
 #include "UiImageComponent.h"
 #include "UiImageSequenceComponent.h"
@@ -73,6 +74,7 @@ namespace LyShine
                 UiCanvasOnMeshComponent::CreateDescriptor(),
                 UiCanvasComponent::CreateDescriptor(),
                 UiElementComponent::CreateDescriptor(),
+                UiElementGroupComponent::CreateDescriptor(),
                 UiTransform2dComponent::CreateDescriptor(),
                 UiImageComponent::CreateDescriptor(),
                 UiImageSequenceComponent::CreateDescriptor(),
