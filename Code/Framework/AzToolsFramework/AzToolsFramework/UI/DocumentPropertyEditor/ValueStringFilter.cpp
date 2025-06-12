@@ -37,6 +37,8 @@ namespace AZ::DocumentPropertyEditor
             {
                 SetFilterActive(true);
             }
+
+            NotifyFilterChanged(m_filterString);
         }
     }
 
