@@ -8,6 +8,7 @@
 
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 
+
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
     
 #define MATERIAL_HAS_UVS 0
@@ -27,10 +28,10 @@
         SV.m_instanceId = instanceId;
 
         float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
-        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
-
+        float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
         float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
-        output.position = mul(viewProjectionMatrix, output.worldPosition);
+        output.worldPosition = worldPosition.xyz;
+        output.position = mul(viewProjectionMatrix, worldPosition);
 
         output.normal = normal;
         return output;
@@ -41,10 +42,10 @@
         VsOutput output;
 
         float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
-        output.worldPosition = mul(objectToWorld, float4(IN.position, 1.0)).xyz;
-        
+        float4 worldPosition = mul(objectToWorld, float4(IN.position, 1.0));
         float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
-        output.position = mul(viewProjectionMatrix, output.worldPosition);
+        output.worldPosition = worldPosition.xyz;
+        output.position = mul(viewProjectionMatrix, worldPosition);
 
         output.normal = IN.normal;
 
