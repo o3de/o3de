@@ -1447,7 +1447,7 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::SetFilterString(AZStd::string str)
     {
-        AZ_PROFILE_FUNCTION(Editor);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const QString filter = str.c_str();
 
@@ -1681,7 +1681,7 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
     {
-        AZ_PROFILE_FUNCTION(Editor);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_isBeingCleared)
         {
