@@ -27,8 +27,8 @@
 #define ENABLE_DEBUG_MODIFY_OUTPUT 0
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
-    
-#define MATERIAL_HAS_UVS 0
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 
 // by default the Vertex-Data is empty, so enable the parts we need
 #define MATERIAL_USES_VERTEX_POSITION 1
@@ -46,6 +46,7 @@
     class PixelGeometryData
     {
         float3 positionWS;
+        float2 uvs[UvSetCount];
         float3 vertexNormal;
     };
 
