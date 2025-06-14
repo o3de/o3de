@@ -53,25 +53,33 @@ namespace AZ::RPI::MaterialBuilderUtils
 
         for (size_t propertyIndex = 0; propertyIndex < propertyLayout->GetPropertyCount(); ++propertyIndex)
         {
-            auto descriptor = propertyLayout->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
-            if (descriptor->GetDataType() == MaterialPropertyDataType::Image)
-            {
-                if (propertyIndex >= propertyValues.size())
-                {
-                    continue; // invalid index, but let's not crash!
-                }
+            const MaterialPropertyDescriptor* descriptor = propertyLayout->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
 
-                auto propertyValue = propertyValues[propertyIndex];
-                if (propertyValue.IsValid())
-                {
-                    AZ::Data::Asset<ImageAsset> imageAsset = propertyValue.GetValue<AZ::Data::Asset<ImageAsset>>();
-                    if (imageAsset.GetId().IsValid())
-                    {
-                        // preload images (set to NoLoad to avoid this)
-                        auto loadFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
-                        product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(imageAsset.GetId(), loadFlags));
-                    }
-                }
+            if ((!descriptor) || (descriptor->GetDataType() != MaterialPropertyDataType::Image))
+            {
+                continue;
+            }
+
+            if (propertyIndex >= propertyValues.size())
+            {
+                AZ_Error("Material Builder", false, "Material has invalid property layout - %s is in the desriptor, but not the property values array",
+                    descriptor->GetName().GetCStr()); // Making this an error, not an assert, as it could be a problem with the .material file not the code.
+                continue;
+            }
+
+            const MaterialPropertyValue& propertyValue = propertyValues[propertyIndex];
+            if (!propertyValue.IsValid())
+            {
+                // its okay for a property value not to be assigned an actual value, ie, an empty image assignment.
+                continue;
+            }
+
+            AZ::Data::Asset<ImageAsset> imageAsset = propertyValue.GetValue<AZ::Data::Asset<ImageAsset>>();
+            if (imageAsset.GetId().IsValid())
+            {
+                // preload images (set to NoLoad to avoid this)
+                auto loadFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
+                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(imageAsset.GetId(), loadFlags));
             }
         }
     }

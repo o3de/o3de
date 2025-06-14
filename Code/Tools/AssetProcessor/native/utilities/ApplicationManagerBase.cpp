@@ -24,6 +24,7 @@
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/ApplicationServer.h>
 #include <native/utilities/AssetServerHandler.h>
+#include <native/utilities/AssetUtils.h>
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
@@ -166,7 +167,7 @@ void ApplicationManagerBase::InitAssetProcessorManager(AZStd::vector<Application
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
 
     const APCommandLineSwitch Command_waitOnLaunch(commandLineInfo, "waitOnLaunch", "Briefly pauses Asset Processor during initializiation. Useful if you want to attach a debugger.");
-    const APCommandLineSwitch Command_zeroAnalysisMode(commandLineInfo, "zeroAnalysisMode", "Enables using file modification time when examining source assets for processing.");
+    const APCommandLineSwitch Command_zeroAnalysisMode(commandLineInfo, AssetUtilities::ZeroAnalysisModeOptionName, "Enables using file modification time when examining source assets for processing.");
     const APCommandLineSwitch Command_enableQueryLogging(commandLineInfo, "enableQueryLogging", "Enables logging database queries.");
     const APCommandLineSwitch Command_dependencyScanPattern(commandLineInfo, "dependencyScanPattern", "Scans assets that match the given pattern for missing product dependencies.");
     const APCommandLineSwitch Command_dsp(commandLineInfo, "dsp", Command_dependencyScanPattern.m_helpText);

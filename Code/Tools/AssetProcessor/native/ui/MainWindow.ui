@@ -1546,7 +1546,7 @@
                <widget class="QLabel" name="fullScanHeader">
                 <property name="minimumSize">
                  <size>
-                  <width>170</width>
+                  <width>190</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1685,7 +1685,7 @@
                <widget class="QLabel" name="fastScanHeader">
                 <property name="minimumSize">
                  <size>
-                  <width>170</width>
+                  <width>190</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1830,7 +1830,7 @@
                <widget class="QLabel" name="disableStartupScanHeader">
                 <property name="minimumSize">
                  <size>
-                  <width>170</width>
+                  <width>190</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1963,7 +1963,7 @@
                <widget class="QLabel" name="debugOutputHeader">
                 <property name="minimumSize">
                  <size>
-                  <width>170</width>
+                  <width>190</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -2114,7 +2114,7 @@
                <widget class="QLabel" name="logfileLevelHeader">
                 <property name="minimumSize">
                  <size>
-                  <width>170</width>
+                  <width>190</width>
                   <height>0</height>
                  </size>
                 </property>

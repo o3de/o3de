@@ -101,7 +101,7 @@ namespace AssetProcessor
         {
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
-                m_verboseMode = AssetUtilities::GetUserSetting("logVerbosity", false);
+                m_verboseMode = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
             }
 
             AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler::BusConnect();
@@ -116,9 +116,9 @@ namespace AssetProcessor
 
         void OnSettingChanged(const AZStd::string_view& settingName) override
         {
-            if (settingName == "logVerbosity")
+            if (settingName == AssetUtilities::VerboseLoggingOptionName)
             {
-                m_verboseMode = AssetUtilities::GetUserSetting("logVerbosity", false);
+                m_verboseMode = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
             }
         }
 

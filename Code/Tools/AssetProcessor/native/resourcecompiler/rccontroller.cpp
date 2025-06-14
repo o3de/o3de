@@ -7,77 +7,15 @@
  */
 
 #include "rccontroller.h"
-#include <native/resourcecompiler/RCCommon.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/thread.h>
-#include <QTimer>
+#include <native/resourcecompiler/RCCommon.h>
+#include <QMetaObject>
 #include <QThreadPool>
+#include <QTimer>
 
 namespace AssetProcessor
 {
-    void RCController::UpdateAndComputeJobSlots()
-    {
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get())
-        {
-            auto settingsRoot = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey);
-            AZ::s64 valueFromRegistry = 0;
-            if (settingsRegistry->Get(valueFromRegistry, settingsRoot + "/Jobs/maxJobs"))
-            {
-                m_maxJobs = aznumeric_cast<int>(valueFromRegistry);
-            }
-
-            settingsRegistry->Get(m_alwaysUseMaxJobs, settingsRoot + "/Jobs/AlwaysUseMaxJobs");
-        }
-
-        if (m_maxJobs <= 1) // its not set in the registry to a specific value, or the registry set it to 0 (auto)
-        {
-            // Determine a good starting value for max jobs, we want to use hand tuned numbers for 2, 4, 8, 12, 16, etc
-            unsigned int cpuConcurrency = AZStd::thread::hardware_concurrency();
-            if (cpuConcurrency <= 1)
-            {
-                AZ_Printf(
-                    ConsoleChannel,
-                    "Unable to determine the number of hardware threads supported on this platform, assuming 4.\n",
-                    cpuConcurrency);
-                cpuConcurrency = 4; // we can't query it on this platform, set a reasonable default that gets some work done
-            }
-            AZ_Printf(ConsoleChannel, "Auto (0) selected for maxJobs - auto-configuring based on %u available CPU cores.\n", cpuConcurrency)
-
-            // for very low numbers of cores, hand-tune the values, these might be logical cores (hyperthread) and not real ones.
-            // we will reserve about half of this for "backround processing" and then the other half will be reserved for on-demand
-            // (critical or escalated) processing when we actually dispatch jobs.
-            if (cpuConcurrency <= 4)
-            {
-                m_maxJobs = 3;
-            }
-            else if (cpuConcurrency <= 6)
-            {
-                m_maxJobs = 5;
-            }
-            else
-            {
-                // for larger number of cores, 8, 16, 24, we want a few extra cores free
-                m_maxJobs = (cpuConcurrency - 2);
-            }
-        }
-
-        // final fail-safe
-        if (m_maxJobs < 2)
-        {
-            m_maxJobs = 2;
-        }
-        AZ_Printf(ConsoleChannel, "Asset Processor CPU Usage: (settings registry 'Jobs' section):\n")
-        AZ_Printf(ConsoleChannel, "    - Process up to %u jobs in parallel\n", m_maxJobs);
-        if (m_alwaysUseMaxJobs)
-        {
-            AZ_Printf(ConsoleChannel, "    - use all %u jobs whenever possible\n", m_maxJobs);
-        }
-        else
-        {
-            AZ_Printf(ConsoleChannel, "    - only use %u jobs when critical work is waiting, %u otherwise.\n", m_maxJobs, AZStd::GetMax(m_maxJobs / 2u, 1u));
-        }
-
-    }
-
     RCController::RCController(QObject* parent)
         : QObject(parent)
         , m_dispatchingJobs(false)
@@ -99,15 +37,95 @@ namespace AssetProcessor
         QObject::connect(this, &RCController::EscalateJobs, &m_RCQueueSortModel, &AssetProcessor::RCQueueSortModel::OnEscalateJobs);
     }
 
+    void RCController::UpdateAndComputeJobSlots()
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            auto settingsRoot = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey);
+            AZ::s64 valueFromRegistry = 0;
+            if (settingsRegistry->Get(valueFromRegistry, settingsRoot + "/Jobs/maxJobs"))
+            {
+                m_maxJobs = aznumeric_cast<int>(valueFromRegistry);
+            }
+
+            settingsRegistry->Get(m_alwaysUseMaxJobs, settingsRoot + "/Jobs/AlwaysUseMaxJobs");
+        }
+
+        bool isDefaultJobCount = m_maxJobs <= 1;
+
+        if (isDefaultJobCount)
+        {
+            // Determine a good starting value for max jobs, we want to use hand tuned numbers for 2, 4, 8, 12, 16, etc
+            unsigned int cpuConcurrency = AZStd::thread::hardware_concurrency();
+            if (cpuConcurrency <= 1)
+            {
+                AZ_Printf(
+                    ConsoleChannel,
+                    "Unable to determine the number of hardware threads supported on this platform, assuming 4.\n",
+                    cpuConcurrency);
+                cpuConcurrency = 4; // we can't query it on this platform, set a reasonable default that gets some work done
+            }
+            AZ_Printf(ConsoleChannel, "Auto (0) selected for maxJobs - auto-configuring based on %u available CPU cores.\n", cpuConcurrency)
+
+                // for very low numbers of cores, hand-tune the values, these might be logical cores (hyperthread) and not real ones.
+                // we will reserve about half of this for "backround processing" and then the other half will be reserved for on-demand
+                // (critical or escalated) processing when we actually dispatch jobs.
+                if (cpuConcurrency <= 4)
+            {
+                m_maxJobs = 3;
+            }
+            else if (cpuConcurrency <= 6)
+            {
+                m_maxJobs = 5;
+            }
+            else
+            {
+                // for larger number of cores, 8, 16, 24, we want a few extra cores free
+                m_maxJobs = (cpuConcurrency - 2);
+            }
+        }
+
+        // final fail-safe
+        if (m_maxJobs < 2)
+        {
+            m_maxJobs = 2;
+        }
+        AZ_Printf(ConsoleChannel, "Asset Processor CPU Usage: (settings registry 'Jobs' section):\n");
+        AZ_Printf(ConsoleChannel, "    - Process up to %u jobs in parallel\n", m_maxJobs);
+        if (m_alwaysUseMaxJobs)
+        {
+            AZ_Printf(ConsoleChannel, "    - use all %u jobs whenever possible\n", m_maxJobs);
+        }
+        else
+        {
+            AZ_Printf(
+                ConsoleChannel,
+                "    - only use %u jobs when critical work is waiting, %u otherwise.\n",
+                m_maxJobs,
+                AZStd::GetMax(m_maxJobs / 2u, 1u));
+        }
+    }
+
+
     RCController::~RCController()
     {
         AssetProcessorPlatformBus::Handler::BusDisconnect();
         m_RCQueueSortModel.AttachToModel(nullptr);
     }
 
+    RCJobListModel* RCController::GetQueueModel()
+    {
+        return &m_RCJobListModel;
+    }
+
     void RCController::StartJob(RCJob* rcJob)
     {
-        Q_ASSERT(rcJob);
+        AZ_Assert(rcJob, "StartJob(nullptr) invoked, programmer error.");
+        if (!rcJob)
+        {
+            return;
+        }
+
         // request to be notified when job is done
         QObject::connect(rcJob, &RCJob::Finished, this, [this, rcJob]()
         {
@@ -377,46 +395,47 @@ namespace AssetProcessor
     void RCController::DispatchJobsImpl()
     {
         m_dispatchJobsQueued = false;
-        if (!m_dispatchingJobs)
+        if (m_dispatchingJobs)
         {
-            m_dispatchingJobs = true;
+            return;
+        }
+        m_dispatchingJobs = true;
 
-            do
+        do
+        {
+            RCJob* rcJob = m_RCQueueSortModel.GetNextPendingJob();
+
+            if (!rcJob)
             {
-                RCJob* rcJob = m_RCQueueSortModel.GetNextPendingJob();
+                // there aren't any jobs remaining to dispatch.
+                break;
+            }
 
-                if (!rcJob)
+            // note that critical jobs and escalated jobs will always be at the top of the list
+            const bool criticalOrEscalated = rcJob->IsCritical() || (rcJob->JobEscalation() > AssetProcessor::DefaultEscalation);
+
+            // do we have an open slot for this job?
+            const unsigned int numJobsInFlight = m_RCJobListModel.jobsInFlight();
+            const unsigned int regularJobLimit = m_alwaysUseMaxJobs ? m_maxJobs : AZStd::GetMax(m_maxJobs / 2, 1u);
+            const unsigned int maxJobsToStart = criticalOrEscalated ? m_maxJobs : regularJobLimit;
+
+            // note that "auto fail jobs" oimmediately return as failed without doing any processing
+            // so they get to skip the line (they don't use up a thread
+            const bool isAutoJob = rcJob->IsAutoFail();
+            const bool tooManyJobs = numJobsInFlight >= maxJobsToStart;
+
+            if (!isAutoJob)
+            {
+                if ((tooManyJobs) || (m_dispatchingPaused))
                 {
-                    // there aren't any jobs remaining to dispatch.
+                    // already using too much slots.
                     break;
                 }
-
-                // note that critical jobs and escalated jobs will always be at the top of the list
-                bool criticalOrEscalated = rcJob->IsCritical() || (rcJob->JobEscalation() > AssetProcessor::DefaultEscalation);
-
-                // do we have an open slot for this job?
-                unsigned int numJobsInFlight = m_RCJobListModel.jobsInFlight();
-                unsigned int regularJobLimit = m_alwaysUseMaxJobs ? m_maxJobs : AZStd::GetMax(m_maxJobs / 2, 1u);
-                unsigned int maxJobsToStart = criticalOrEscalated ? m_maxJobs : regularJobLimit;
-
-                // note that "auto fail jobs" oimmediately return as failed without doing any processing
-                // so they get to skip the line (they don't use up a thread
-                bool isAutoJob = rcJob->IsAutoFail();
-                bool tooManyJobs = numJobsInFlight >= maxJobsToStart;
-
-                if (!isAutoJob)
-                {
-                    if ((tooManyJobs) || (m_dispatchingPaused))
-                    {
-                        // already using too much slots.
-                        break;
-                    }
-                }
-                StartJob(rcJob);
-            } while (true);
+            }
+            StartJob(rcJob);
+        } while (true);
             
-             m_dispatchingJobs = false;
-        }
+        m_dispatchingJobs = false;
     }
     void RCController::DispatchJobs()
     {

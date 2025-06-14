@@ -12,8 +12,6 @@
 #include "RCCommon.h"
 
 #include <QObject>
-#include <QProcess>
-#include <QDir>
 #include <QList>
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -47,6 +45,8 @@ namespace AssetProcessor
         };
         explicit RCController(QObject* parent = 0);
         virtual ~RCController();
+
+        AssetProcessor::RCJobListModel* GetQueueModel();
 
         void StartJob(AssetProcessor::RCJob* rcJob);
         int NumberOfPendingCriticalJobsPerPlatform(QString platform);

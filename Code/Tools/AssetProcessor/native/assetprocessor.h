@@ -33,7 +33,7 @@
 namespace AssetProcessor
 {
     // global settings for Asset Processor, they usually come from the engine config file
-    // but inidividual gems, projects, and users can override them.
+    // but individual gems, projects, and users can override them.
     constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
     constexpr const char* DebugChannel = "Debug"; //Use this channel name if you want to write the message to the log file only.
     constexpr const char* ConsoleChannel = "AssetProcessor";// Use this channel name if you want to write the message to both the console and the log file.

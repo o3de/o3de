@@ -18,6 +18,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 
 #include <AzQtComponents/Components/StyleManager.h>

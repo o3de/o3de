@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
@@ -171,10 +172,9 @@ namespace AssetUtilsInternal
         constexpr AZStd::string_view BootstrapSettingsKey = AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey;
         constexpr AZStd::string_view UserSettingsKey = AssetProcessorUserSettingsRootKey;
 
-        auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/allowed_list";
-        auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/assetProcessor_branch_token";
-        auto generalUserSettingsKey = AZ::SettingsRegistryInterface::FixedValueString(UserSettingsKey);
-
+        const auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/allowed_list";
+        const auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/assetProcessor_branch_token";
+        const auto generalUserSettingsKey = AZ::SettingsRegistryInterface::FixedValueString(UserSettingsKey);
 
         AZStd::string apSettingsJson;
         AZ::IO::ByteContainerStream apSettingsStream(&apSettingsJson);

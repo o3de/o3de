@@ -604,10 +604,10 @@ void MainWindow::Activate()
     const auto apm = m_guiApplicationManager->GetAssetProcessorManager();
 
     // Zero Analysis mode ("Fast scan mode") is enabled by default in the gui (running this mainwindow file), false in batch mode.
-    bool zeroAnalysisMode = AssetUtilities::GetUserSetting("zeroAnalysisMode", true);
-    bool enableBuilderDebugFlag = AssetUtilities::GetUserSetting("enableBuilderDebugFlag", apm->GetBuilderDebugFlag());
-    bool initialScanSkippingEnabled = AssetUtilities::GetUserSetting("initialScanSkippingEnabled", apm->GetInitialScanSkippingFeatureEnabled());
-    bool verboseLogDump = AssetUtilities::GetUserSetting("verboseLogging", false);
+    bool zeroAnalysisMode = AssetUtilities::GetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, true);
+    bool enableBuilderDebugFlag = AssetUtilities::GetUserSetting(AssetUtilities::EnableBuilderDebugFlagOptionName, apm->GetBuilderDebugFlag());
+    bool initialScanSkippingEnabled = AssetUtilities::GetUserSetting(AssetUtilities::SkipInitialScanOptionName, apm->GetInitialScanSkippingFeatureEnabled());
+    bool verboseLogDump = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
     // zero analysis flag
 
     apm->SetEnableModtimeSkippingFeature(zeroAnalysisMode);
@@ -626,7 +626,7 @@ void MainWindow::Activate()
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(newOption);
-            AssetUtilities::SetUserSetting("zeroAnalysisMode", newOption);
+            AssetUtilities::SetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, newOption);
         });
 
     QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
@@ -634,7 +634,7 @@ void MainWindow::Activate()
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
-            AssetUtilities::SetUserSetting("enableBuilderDebugFlag", newOption);
+            AssetUtilities::SetUserSetting(AssetUtilities::EnableBuilderDebugFlagOptionName, newOption);
         });
 
 
@@ -643,15 +643,14 @@ void MainWindow::Activate()
         {
             // this is not something that we change while running, so just set it for next time.
             bool newOption = newCheckState == Qt::Checked ? true : false;
-            AssetUtilities::SetUserSetting("initialScanSkippingEnabled", newOption);
+            AssetUtilities::SetUserSetting(AssetUtilities::SkipInitialScanOptionName, newOption);
         });
 
      QObject::connect(ui->verboseLoggingCheckbox, &QCheckBox::stateChanged, this,
         [](int newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
-            AssetUtilities::SetUserSetting("verboseLogging", newOption);
-            // Todo: Notify the log system immediately
+            AssetUtilities::SetUserSetting(AssetUtilities::VerboseLoggingOptionName, newOption);
         });
 
     // Shared Cache tab:
