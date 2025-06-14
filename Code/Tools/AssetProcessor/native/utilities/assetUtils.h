@@ -23,6 +23,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AssetManager/SourceAssetReference.h>
+#include <AzCore/EBus/Event.h>
+#include <AzCore/std/parallel/mutex.h>
 
 namespace AzToolsFramework
 {
@@ -51,6 +53,37 @@ namespace AssetProcessor
 namespace AssetUtilities
 {
     inline constexpr char ProjectPathOverrideParameter[] = "project-path";
+
+    //! You can read and write any sub-keys to this key and it will be persisted to the project user registry folder:
+    inline constexpr AZStd::string_view AssetProcessorUserSettingsRootKey = "/O3DE/AssetProcessor/UserSettings";
+
+    class AssetProcessorUserSettingsNotifications : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // any number of connected listeners
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // no addressing used.
+        typedef AZStd::recursive_mutex MutexType; // protect bus addition and removal since listeners can disconnect in threads.
+
+        //! Invoked on SetUserSetting(settingName, ...) and the settingName will be just the name of the setting, not the full registry path.
+        //! If you hanle your own reading and writing to the above sub-keys, consider invoking this yourself.
+        virtual void OnSettingChanged(const AZStd::string_view& settingName) = 0;
+    };
+
+    using AssetProcessorUserSettingsNotificationBus = AZ::EBus<AssetProcessorUserSettingsNotifications>;
+
+    //! Set a named user setting.  The name must be json-path compatible name (avoid dots, slashes, spaces, etc)
+    //! The value must be something that can be written into the settings registry.
+    //! Really only meant to be used for very simple types (ints, strings, bools, etc).  Don't use it for structs.
+    //! You can write your own structs as a sub key of AssetProcessorUserSettingsRootKey and invoke SaveSettingsFile.
+    template<typename T>
+    bool SetUserSetting(const char* settingName, T value);
+
+    //! Gets a named user setting, it will be persisted only for this project, for this user.
+    template<typename T>
+    T GetUserSetting(const char* settingName, T defaultValue);
+
+    //! Save user settings into the default settings file.
+    bool SaveSettingsFile();
 
     //! Set precision fingerprint timestamps will be truncated to avoid mismatches across systems/packaging with different file timestamp precisions
     //! Timestamps default to milliseconds.  A value of 1 will keep the default millisecond precision.  A value of 1000 will reduce the precision to seconds
@@ -389,4 +422,21 @@ namespace AssetUtilities
 
         void AppendLog(AzFramework::LogFile::SeverityLevel severity, const char* window, const char* message);
     };
+
+    extern template bool SetUserSetting<bool>(const char* settingName, bool value);
+    extern template bool GetUserSetting<bool>(const char* settingName, bool defaultValue);
+
+    extern template bool SetUserSetting<AZ::s64>(const char* settingName, AZ::s64 value);
+    extern template AZ::s64 GetUserSetting<AZ::s64>(const char* settingName, AZ::s64 defaultValue);
+
+    extern template bool SetUserSetting<AZ::u64>(const char* settingName, AZ::u64 value);
+    extern template AZ::u64 GetUserSetting<AZ::u64>(const char* settingName, AZ::u64 defaultValue);
+
+    extern template bool SetUserSetting<double>(const char* settingName, double value);
+    extern template double GetUserSetting<double>(const char* settingName, double defaultValue);
+
+    extern template bool SetUserSetting<AZStd::string>(const char* settingName, AZStd::string value);
+    extern template AZStd::string GetUserSetting<AZStd::string>(const char* settingName, AZStd::string defaultValue);
+
+    //! Gets a named user setting, it will be persisted only for this project, for this user.
 } // namespace AssetUtilities

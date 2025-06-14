@@ -10,7 +10,11 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AZ::RPI::MaterialBuilderUtils
 {
@@ -37,28 +41,60 @@ namespace AZ::RPI::MaterialBuilderUtils
         return jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
     }
 
-    void AddPossibleImageDependencies(
-        const AZStd::string& originatingSourceFilePath,
-        const AZStd::string& referencedSourceFilePath,
-        AssetBuilderSDK::JobDescriptor& jobDescriptor)
+    void AddImageAssetDependenciesToProduct(
+        const MaterialPropertiesLayout* propertyLayout,
+        const AZStd::vector<MaterialPropertyValue>& propertyValues,
+        AssetBuilderSDK::JobProduct& product)
     {
-        if (!referencedSourceFilePath.empty())
+        if (!propertyLayout)
         {
-            AZStd::string ext;
-            AzFramework::StringFunc::Path::GetExtension(referencedSourceFilePath.c_str(), ext, false);
-            AZStd::to_upper(ext.begin(), ext.end());
+            return;
+        }
 
-            if (!ext.empty())
+        for (size_t propertyIndex = 0; propertyIndex < propertyLayout->GetPropertyCount(); ++propertyIndex)
+        {
+            auto descriptor = propertyLayout->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
+            if (descriptor->GetDataType() == MaterialPropertyDataType::Image)
             {
-                auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
-                    jobDescriptor,
-                    AssetUtils::ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath),
-                    "Image Compile: " + ext,
-                    {},
-                    { 0 });
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
+                if (propertyIndex >= propertyValues.size())
+                {
+                    continue; // invalid index, but let's not crash!
+                }
+
+                auto propertyValue = propertyValues[propertyIndex];
+                if (propertyValue.IsValid())
+                {
+                    AZ::Data::Asset<ImageAsset> imageAsset = propertyValue.GetValue<AZ::Data::Asset<ImageAsset>>();
+                    if (imageAsset.GetId().IsValid())
+                    {
+                        // preload images (set to NoLoad to avoid this)
+                        auto loadFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
+                        product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(imageAsset.GetId(), loadFlags));
+                    }
+                }
             }
         }
+    }
+
+    void AddImageAssetDependenciesToProduct(const AZ::RPI::MaterialAsset* materialAsset, AssetBuilderSDK::JobProduct& product)
+    {
+        if (!materialAsset)
+        {
+            return;
+        }
+
+        AddImageAssetDependenciesToProduct(materialAsset->GetMaterialPropertiesLayout(), materialAsset->GetPropertyValues(), product);
+        
+    }
+
+    void AddImageAssetDependenciesToProduct(const AZ::RPI::MaterialTypeAsset* materialTypeAsset, AssetBuilderSDK::JobProduct& product)
+    {
+        if (!materialTypeAsset)
+        {
+            return;
+        }
+
+        AddImageAssetDependenciesToProduct(materialTypeAsset->GetMaterialPropertiesLayout(), materialTypeAsset->GetDefaultPropertyValues(), product);
     }
 
     void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor)

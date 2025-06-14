@@ -60,6 +60,7 @@ namespace AssetProcessor
     //! we filter the main app logs to only include non-job-thread messages:
     class FilteredLogComponent
         : public AzFramework::LogComponent
+        , public AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(FilteredLogComponent, AZ::SystemAllocator)
@@ -90,11 +91,40 @@ namespace AssetProcessor
                 return;
             }
 
-            AzFramework::LogComponent::OutputMessage(severity, window, message);
+            if ((m_verboseMode) || (severity >= AzFramework::LogFile::SEV_NORMAL))
+            {
+                AzFramework::LogComponent::OutputMessage(severity, window, message);
+            }
+        }
+
+        void Activate() override
+        {
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                m_verboseMode = AssetUtilities::GetUserSetting("logVerbosity", false);
+            }
+
+            AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler::BusConnect();
+            AzFramework::LogComponent::Activate();
+        }
+
+        void Deactivate() override
+        {
+            AzFramework::LogComponent::Deactivate();
+            AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler::BusDisconnect();
+        }
+
+        void OnSettingChanged(const AZStd::string_view& settingName) override
+        {
+            if (settingName == "logVerbosity")
+            {
+                m_verboseMode = AssetUtilities::GetUserSetting("logVerbosity", false);
+            }
         }
 
     protected:
         bool m_inException = false;
+        bool m_verboseMode = false;
     };
 }
 

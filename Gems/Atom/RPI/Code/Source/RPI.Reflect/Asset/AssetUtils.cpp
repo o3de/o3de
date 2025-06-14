@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
 {
@@ -53,6 +54,26 @@ namespace AZ
                 return true;
             }
 
+            bool TryToCompileAsset(const AZ::Data::AssetId& assetId, TraceLevel reporting)
+            {
+                AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSyncById, assetId);
+
+                if ((status != AzFramework::AssetSystem::AssetStatus_Compiled) && (status != AzFramework::AssetSystem::AssetStatus_Unknown))
+                {
+                    AssetUtilsInternal::ReportIssue(
+                        reporting,
+                        AZStd::string::format(
+                            "TryToCompileAsset::Could not compile asset '%s', status = %u.",
+                            assetId.ToString<AZStd::string>().c_str(),
+                            static_cast<uint32_t>(status)).c_str());
+
+                    return false;
+                }
+
+                return true;
+            }
+
             Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting, Data::AssetType assetType)
             {
                 // Don't create a new entry in the asset catalog for this asset if it doesn't exist.
@@ -71,9 +92,25 @@ namespace AZ
 
                 if (!assetId.IsValid())
                 {
-                    AZStd::string errorMessage = AZStd::string::format(
-                        "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
-                    AssetUtilsInternal::ReportIssue(reporting, errorMessage.c_str());
+                    // Wait for the asset be compiled if possible.  Note that if AP is not connected, this will return immmediately (0ms)
+                    // and if AP is connected, but, the asset cannot be found or is in an error state, it returns almost immediately (~0ms)
+                    // the only time it actually blocks is if the asset IS found, IS in the queue, in which case it escalates it to the very top
+                    // of the queue and processes it ASAP before returning.
+                    AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, productPath);
+
+                    if (status == AzFramework::AssetSystem::AssetStatus_Compiled)
+                    {
+                        // success, try again.
+                        Data::AssetCatalogRequestBus::BroadcastResult(assetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, productPath, assetType, AutoGenerateId);
+                    }
+
+                    if (!assetId.IsValid())
+                    {
+                        AZStd::string errorMessage = AZStd::string::format(
+                            "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
+                        AssetUtilsInternal::ReportIssue(reporting, errorMessage.c_str());
+                    }
                 }
 
                 return assetId;

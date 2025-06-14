@@ -383,7 +383,7 @@ void ApplicationManagerBase::ConnectAssetCatalog()
 
 void ApplicationManagerBase::InitRCController()
 {
-    m_rcController = new AssetProcessor::RCController(m_platformConfiguration->GetMinJobs(), m_platformConfiguration->GetMaxJobs());
+    m_rcController = new AssetProcessor::RCController();
 
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetToProcess, m_rcController, &AssetProcessor::RCController::JobSubmitted);
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled, m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssetProcessed, Qt::UniqueConnection);
