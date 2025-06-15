@@ -195,6 +195,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::ExpressionEvaluation.Static
             PRIVATE
                 Legacy::EditorCore
+                Gem::AtomToolsFramework.Static
         RUNTIME_DEPENDENCIES
             Gem::${gem_name}
     )
