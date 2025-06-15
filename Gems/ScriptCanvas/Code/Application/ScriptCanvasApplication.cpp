@@ -8,6 +8,8 @@
 
 #include "ScriptCanvasApplication.h"
 
+#include "Document/ScriptCanvasDocument.h"
+
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <QApplication>
@@ -56,11 +58,19 @@ namespace ScriptCanvas
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
     }
 
+    void ScriptCanvasApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        ScriptCanvasDocument::Reflect(context);
+    }
+
     void ScriptCanvasApplication::StartCommon(AZ::Entity* systemEntity)
     {
         Base::StartCommon(systemEntity);
 
-        InitMainWindow();
+        auto documentTypeInfo = ScriptCanvasDocument::BuildDocumentTypeInfo();
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
 #if defined(ENABLE_REMOTE_TOOLS)
         if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
@@ -69,6 +79,8 @@ namespace ScriptCanvas
                 AzFramework::ScriptCanvasToolsKey, AzFramework::ScriptCanvasToolsName, AzFramework::ScriptCanvasToolsPort);
         }
 #endif
+
+        InitMainWindow();
     }
 
     void ScriptCanvasApplication::Destroy()
@@ -84,7 +96,7 @@ namespace ScriptCanvas
 
     void ScriptCanvasApplication::InitMainWindow()
     {
-        m_window.reset(aznew ScriptCanvasEditor::MainWindow(nullptr));
+        m_window.reset(aznew ScriptCanvasEditor::MainWindow(m_toolId));
         m_window->show();
     }
 

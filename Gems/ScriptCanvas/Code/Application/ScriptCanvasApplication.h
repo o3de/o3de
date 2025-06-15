@@ -31,6 +31,7 @@ namespace ScriptCanvas
         virtual ~ScriptCanvasApplication() override;
 
         // AzFramework::Application overrides
+        void Reflect(AZ::ReflectContext* context) override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
         // ~AzToolsFramework::ToolsApplication
