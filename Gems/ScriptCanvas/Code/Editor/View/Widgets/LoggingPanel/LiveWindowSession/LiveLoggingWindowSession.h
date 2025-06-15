@@ -118,7 +118,6 @@ namespace ScriptCanvasEditor
 
         TargetManagerModel* m_targetManagerModel;
 
-        bool m_startedSession;
         bool m_encodeStaticEntities;
         
         bool m_isCapturing;

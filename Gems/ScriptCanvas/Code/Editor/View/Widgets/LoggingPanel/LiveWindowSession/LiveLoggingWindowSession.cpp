@@ -187,7 +187,6 @@ namespace ScriptCanvasEditor
 
     LiveLoggingWindowSession::LiveLoggingWindowSession(QWidget* parent)
         : LoggingWindowSession(parent)
-        , m_startedSession(false)
         , m_encodeStaticEntities(false)
         , m_isCapturing(false)
     {
