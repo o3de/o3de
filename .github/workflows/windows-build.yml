@@ -6,7 +6,7 @@
 #
 #
 
-name: Windows Build
+name: Android Build
 
 # These jobs are to be triggered by ar.yml
 
@@ -36,9 +36,10 @@ on:
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
 # Activate compiler cache
-env:          
+env: 
   O3DE_ENABLE_COMPILER_CACHE: true
   O3DE_COMPILER_CACHE_PATH: 'C:\ProgramData\Chocolatey\bin\ccache.exe'
+  NDK_VERSION: 25.1.8937393
 
 # Note: All 3P Github Actions use the commit hash for security reasons 
 # Avoid using the tag version, which is vulnerable to supply chain attacks
@@ -49,18 +50,8 @@ jobs:
       fail-fast: false
 
     runs-on: ${{ inputs.image }}
-
+        
     steps:
-      - name: Symlink if workspace is on C drive to D drive
-        run: |
-          if ("${{ github.workspace }}" -like "C:\*") {
-            Move-Item "C:\a" -Destination "D:\" -Force
-            New-Item -Path "C:\a" -ItemType SymbolicLink -Target "D:\a" -Force
-            Write-Host "Created symlink: C:\a -> D:\a"
-          } else {
-            Write-Host "Workspace is on ${{ github.workspace }}. Skipping symlink creation."
-          }
-
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -69,22 +60,32 @@ jobs:
       - name: Git LFS pull
         # Minimal pull for profile builds, otherwise pull all
         run: |
-            git lfs install
-            if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
-          
+          git lfs install
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+
+      - name: Setup DevDrive
+        uses: samypr100/setup-dev-drive@b9079d2711b01ed39de859c79c96484bfd80e078 # v3.4.1
+        with:
+          drive-size: 130GB
+          drive-format: NTFS
+          drive-path: "D:/dev_drive.vhdx"
+          workspace-copy: true
+          trusted-dev-drive: true
+
       - name: Setup 3p, user, and build folders
         # Symlink the .o3de folder to the github workspace to avoid permission issues
         run: |
-          "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
-          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
-          "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
+          "temp" | % {New-Item "${{ env.DEV_DRIVE }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ env.DEV_DRIVE_WORKSPACE }}\$_ -Force}
+          "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
 
       - name: Move Page File to Workspace drive
         # Configure the page file to the workspace drive for the duration of the run
         run: |
           Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
-            -Name "PagingFiles" -Value "${{ runner.temp }}\pagefile.sys 8192 8192"
-          echo "Page file moved to ${{ runner.temp }}\pagefile.sys"
+            -Name "PagingFiles" -Value "${{ env.DEV_DRIVE }}\temp\pagefile.sys 8192 8192"
+          echo "Page file moved to ${{ env.DEV_DRIVE }}\temp\pagefile.sys"
 
       - name: Get drive info
         run: |
@@ -101,10 +102,9 @@ jobs:
           restore_cache: false
           ccache_options: |
             max_size=10G
-            compression_level=5
             inode_cache=true
-            temporary_dir=${{ runner.temp }}
-            cache_dir=${{ github.workspace }}\.ccache
+            temporary_dir=${{ env.DEV_DRIVE }}\temp
+            cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
       
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
@@ -119,7 +119,7 @@ jobs:
           search_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
-    
+
       - name: Set artifact run ID
         # Set the run ID of the artifact to be used for the download step
         id: set-artifact-run-id
@@ -128,7 +128,7 @@ jobs:
           $runId = ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
           echo "artifact_run_id=$runId" >> $env:GITHUB_OUTPUT
           echo "Using artifacts from previous run: $runId"
-    
+      
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
@@ -137,6 +137,7 @@ jobs:
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.DEV_DRIVE_WORKSPACE }}
           run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
 
       - name: Extract artifact
@@ -144,38 +145,51 @@ jobs:
         id: extract-artifact
         continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |        
-          if (Test-Path ${{ github.workspace }}\cache.tar) {          
-            tar -xvpf ${{ github.workspace }}\cache.tar
-            rm ${{ github.workspace }}\cache.tar
+          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
+            tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+            rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
           }
       
       - name: Setup cmake
-        # Pin the version of cmake
+        # Pin the version of cmake  
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
-          cmakeVersion: "~3.30.0" 
+          cmakeVersion: "~3.30.0"
 
       - name: Set MSBuild options
         # Configuire VS environment variables through the developer command prompt for MSVC
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
-
+                
       - name: Configure environment
+        # Install dependencies for gradle and clang builds from the NDK
+        continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           echo "Installing dependencies"
           echo "Getting python..."
           python\get_python.bat
-          echo "Installing additional python dependencies..."
-          python\pip.sh install tempfile2 PyGithub
+
+          echo "Installing NDK ${{ env.NDK_VERSION }}..."
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+          echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV
+          echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
           
       - name: Build ${{ inputs.type }}
-        # Builds with presets in ../scripts/build/Platform/Windows/build_config.json
-        env:
-          LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
-          TEMP: ${{ runner.temp }} # Set temp folders to the workspace drive as the boot drive is slow
-          TMP: ${{ runner.temp }}
-        run: |
-          python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
+        # Builds with presets in ../scripts/build/Platform/Android/build_config.json
+        # Set temp folders to the workspace drive as the boot drive is slow
+        uses: Wandalen/wretry.action@e68c23e6309f2871ca8ae4763e7629b9c258e1ea # v3.8.0
+        with:
+          command: |
+            $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+            $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
+            $env:TMP = "${{ env.DEV_DRIVE }}\temp"
+            cd "${{ env.DEV_DRIVE_WORKSPACE }}"
+            scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
+            python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
@@ -183,9 +197,10 @@ jobs:
         id: compress-artifacts
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           try {
-            tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
+            tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
               .ccache `
               .o3de\python `
               3rdParty\packages `
@@ -203,4 +218,4 @@ jobs:
           compression-level: 1
           overwrite: true
           path: |
-            ${{ github.workspace }}\cache.tar
+            ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
