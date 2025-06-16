@@ -80,6 +80,11 @@ void ScriptCanvasAssetDragDropHandler::DragEnter(QDragEnterEvent* event, AzQtCom
         QFileInfo info(absPath);
         QString extension = info.completeSuffix();
 
+        if (extension.compare("scriptcanvas", Qt::CaseInsensitive) != 0)
+        {
+            break;
+        }
+
         // if it's not an empty folder directory or if it's a file,
         // then allow the drag and drop process.
         // Otherwise, prevent users from dragging and dropping empty folders
