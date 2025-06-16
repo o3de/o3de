@@ -779,6 +779,21 @@ namespace AzToolsFramework
                     WarningDialog("Prefab Path Error", message);
                     return false;
                 }
+
+                // We also check if the prefab template already exists in the Prefabs Database.
+                // This happens if the prefab file having the same name was removed from the disk, 
+                // but the prefab instance still exists in the Editor.
+                TemplateId templateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabRelativeName.c_str());
+                if (templateId != Prefab::InvalidTemplateId)
+                {
+                    const AZStd::string message = AZStd::string::format(                        
+                        "A prefab with the path '%s' already exists in the Asset Database. \r\n\r\n"
+                        "Overriding it will damage instances or cascades of this prefab.",
+                        prefabRelativeName.c_str());
+
+                    WarningDialog("Prefab Path Error", message);
+                    return false;
+                }
             }
 
             AZStd::string saveDir(prefabSaveFileInfo.absoluteDir().absolutePath().toUtf8().constData());
