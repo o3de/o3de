@@ -23,6 +23,7 @@ namespace AzToolsFramework
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         pLayout->setContentsMargins(0,0,0,0);
         m_sliderCombo = new AzQtComponents::SliderDoubleCombo(this);
+        m_sliderCombo->spinbox()->setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
         pLayout->addWidget(m_sliderCombo);
         setFocusProxy(m_sliderCombo);
 
