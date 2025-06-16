@@ -161,12 +161,12 @@ namespace AZ
                         context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, name.c_str());
 
                     Events::ProcessingResult uvMapResults;
-                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, uvMap, newIndex, name);
-                    uvMapResults = Events::Process(dataPopulated);
+                    auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, uvMap, newIndex, name);
+                    uvMapResults = Events::Process(*dataPopulated);
 
                     if (uvMapResults != Events::ProcessingResult::Failure)
                     {
-                        uvMapResults = AddAttributeDataNodeWithContexts(dataPopulated);
+                        uvMapResults = AddAttributeDataNodeWithContexts(*dataPopulated);
                     }
 
                     combinedUvMapResults += uvMapResults;

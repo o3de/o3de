@@ -8,14 +8,16 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <SceneAPI/SDKWrapper/SceneWrapper.h>
+#include <SceneAPI/SceneBuilder/ImportContextRegistryManager.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/ImportContextProvider.h>
+#include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
 #include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
-#include <SceneAPI/SceneBuilder/SceneSystem.h>
-#include <SceneAPI/SDKWrapper/SceneWrapper.h>
 
 namespace AZ
 {
@@ -48,6 +50,8 @@ namespace AZ
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
                 AZStd::shared_ptr<SceneSystem> m_sceneSystem;
+                AZStd::unique_ptr<ImportContextProvider> m_contextProvider {};
+                ImportContextRegistryManager m_contextRegistry;
             };
         } // namespace SceneBuilder
     } // namespace SceneAPI
