@@ -114,6 +114,7 @@ namespace AZ::DocumentPropertyEditor
         using ResetEvent = Event<>;
         using ChangedEvent = Event<const Dom::Patch&>;
         using MessageEvent = Event<const AdapterMessage&, Dom::Value&>;
+        using FilterEvent = Event<const AZStd::string&>;
 
         virtual ~DocumentAdapter() = default;
 
@@ -133,6 +134,9 @@ namespace AZ::DocumentPropertyEditor
         //! Connects a listener for the message event, fired when SendAdapterMessage is called.
         //! is invoked. This can be used to prompt the view for a response, e.g. when asking for a confirmation dialog.
         void ConnectMessageHandler(MessageEvent::Handler& handler);
+        //! Connects a listener for the filter event, fired when the contents of this adapter have been filtered.
+        //! This can be used by widgets to update their linting
+        void ConnectFilterHandler(FilterEvent::Handler& handler);
 
         //! Sets a router responsible for chaining nested adapters, if supported.
         //! \see RoutingAdapter
@@ -192,11 +196,14 @@ namespace AZ::DocumentPropertyEditor
         //! This patch should apply cleanly on the last result GetContents would have returned after any preceding changed
         //! or reset events.
         void NotifyContentsChanged(const Dom::Patch& patch);
+        //! Subclasses may call this to notify the view that this adapter's content has been filtered
+        void NotifyFilterChanged(const AZStd::string& filter);
 
     private:
         ResetEvent m_resetEvent;
         ChangedEvent m_changedEvent;
         MessageEvent m_messageEvent;
+        FilterEvent m_filterEvent;
 
         mutable Dom::Value m_cachedContents;
     };

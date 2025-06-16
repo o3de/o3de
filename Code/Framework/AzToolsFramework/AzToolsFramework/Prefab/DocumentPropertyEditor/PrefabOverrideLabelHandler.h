@@ -36,6 +36,8 @@ namespace AzToolsFramework::Prefab
 
         bool ResetToDefaults() override;
 
+        void SetFilter(const QString& filter) override;
+
         static constexpr const AZStd::string_view GetHandlerName()
         {
             return PrefabPropertyEditorNodes::PrefabOverrideLabel::Name;
