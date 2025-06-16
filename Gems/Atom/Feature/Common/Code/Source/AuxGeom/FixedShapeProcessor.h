@@ -88,9 +88,9 @@ namespace AZ
             //! We store a struct of this type for each fixed object geometry (both shapes and boxes)
             struct ObjectBuffers
             {
-                RHI::GeometryView m_pointGeometryView;
-                RHI::GeometryView m_lineGeometryView;
-                RHI::GeometryView m_triangleGeometryView;
+                RHI::GeometryView m_pointGeometryView{ RHI::MultiDevice::AllDevices };
+                RHI::GeometryView m_lineGeometryView{ RHI::MultiDevice::AllDevices };
+                RHI::GeometryView m_triangleGeometryView{ RHI::MultiDevice::AllDevices };
 
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_pointIndexBuffer;
                 AZ::RHI::Ptr<AZ::RHI::Buffer> m_lineIndexBuffer;
