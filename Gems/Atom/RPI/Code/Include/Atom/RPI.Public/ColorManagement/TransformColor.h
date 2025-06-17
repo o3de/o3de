@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
@@ -25,6 +26,6 @@ namespace AZ
             ColorSpaceIdCount
         };
 
-        Color TransformColor(Color color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace);
+        ATOM_RPI_PUBLIC_API Color TransformColor(Color color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace);
     } // namespace Render
 } // namespace AZ

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Model/ModelExporterContexts.h>
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>

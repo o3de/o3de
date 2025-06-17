@@ -19,7 +19,7 @@
 namespace ScriptCanvas
 {
     constexpr const char* InternalValidationErrorId = "DV-0000";
-    static const AZ::Crc32 InternalValidationErrorCrc = AZ_CRC(InternalValidationErrorId);
+    static const AZ::Crc32 InternalValidationErrorCrc = AZ_CRC_CE(InternalValidationErrorId);
 
 
     //! Base class for all parser validation events, they will all share the same

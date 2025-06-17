@@ -918,7 +918,7 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            int motionIdsIndex = classElement.FindElement(AZ_CRC("motionIds", 0x3a3274c6));
+            int motionIdsIndex = classElement.FindElement(AZ_CRC_CE("motionIds"));
             if (motionIdsIndex < 0)
             {
                 return false;
@@ -972,7 +972,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("MotionSetMotionIdsRandomSelectionWeights", 0xc882da3c), &AnimGraphMotionNode::m_motionRandomSelectionCumulativeWeights, "Motions", "")
+            ->DataElement(AZ_CRC_CE("MotionSetMotionIdsRandomSelectionWeights"), &AnimGraphMotionNode::m_motionRandomSelectionCumulativeWeights, "Motions", "")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphMotionNode::OnMotionIdsChanged)
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)

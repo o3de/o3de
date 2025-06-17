@@ -38,12 +38,12 @@ namespace AutomatedTesting
 
     void AutomatedTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AutomatedTestingService"));
+        provided.push_back(AZ_CRC_CE("AutomatedTestingService"));
     }
 
     void AutomatedTestingSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AutomatedTestingService"));
+        incompatible.push_back(AZ_CRC_CE("AutomatedTestingService"));
     }
 
     void AutomatedTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

@@ -36,7 +36,7 @@ namespace
     {
         if (classElement.GetVersion() <= 3)
         {
-            auto selectorArrayElementIndex = classElement.FindElement(AZ_CRC("Selectors", 0x0e4270a0));
+            auto selectorArrayElementIndex = classElement.FindElement(AZ_CRC_CE("Selectors"));
             if (selectorArrayElementIndex != -1)
             {
                 classElement.RemoveElement(selectorArrayElementIndex);

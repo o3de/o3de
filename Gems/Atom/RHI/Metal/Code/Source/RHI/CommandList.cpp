@@ -60,7 +60,7 @@ namespace AZ
             CommandListBase::FlushEncoder();
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
             CreateEncoder(CommandEncoderType::Blit);
@@ -70,7 +70,7 @@ namespace AZ
             {
                 case RHI::CopyItemType::Buffer:
                 {
-                    const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                    const RHI::DeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                     const auto* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -85,7 +85,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::Image:
                 {
-                    const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                    const RHI::DeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                     const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -116,7 +116,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::BufferToImage:
                 {
-                    const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                    const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                     const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -128,7 +128,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(destinationImage->GetDescriptor().m_format, descriptor.m_destinationSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_sourceFormat, descriptor.m_destinationSubresource.m_aspect);
                     [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
                                    sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
                               sourceBytesPerRow: descriptor.m_sourceBytesPerRow
@@ -145,7 +145,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::ImageToBuffer:
                 {
-                    const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                    const RHI::DeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                     const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -157,7 +157,7 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    MTLBlitOption mtlBlitOption = GetBlitOption(sourceImage->GetDescriptor().m_format, descriptor.m_sourceSubresource.m_aspect);
+                    MTLBlitOption mtlBlitOption = GetBlitOption(descriptor.m_destinationFormat, descriptor.m_sourceSubresource.m_aspect);
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
                                      sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
                                      sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
@@ -179,7 +179,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -202,7 +202,7 @@ namespace AZ
 
         }
 
-        void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -428,7 +428,7 @@ namespace AZ
         }
 
         CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
-                                                                    const RHI::ResourceView* resourceView)
+                                                                    const RHI::DeviceResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
@@ -583,7 +583,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -621,17 +621,17 @@ namespace AZ
                 return;
             }
 
-            SetStreamBuffers(drawItem.m_streamBufferViews, drawItem.m_streamBufferViewCount);
+            SetStreamBuffers(*drawItem.m_geometryView, drawItem.m_streamIndices);
             SetStencilRef(drawItem.m_stencilRef);
 
             MTLPrimitiveType mtlPrimType = pipelineState->GetPipelineTopology();
 
-            switch (drawItem.m_arguments.m_type)
+            switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
                 case RHI::DrawType::Indexed:
                 {
-                    const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
-                    const RHI::IndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
+                    const RHI::DrawIndexed& indexed = drawItem.m_geometryView->GetDrawArguments().m_indexed;
+                    const RHI::DeviceIndexBufferView& indexBuffDescriptor = drawItem.m_geometryView->GetIndexBufferView();
                     const Buffer * buff = static_cast<const Buffer*>(indexBuffDescriptor.GetBuffer());
                     id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
                     MTLIndexType mtlIndexType = (indexBuffDescriptor.GetIndexFormat() == RHI::IndexFormat::Uint16) ?
@@ -645,20 +645,20 @@ namespace AZ
                                                indexType: mtlIndexType
                                              indexBuffer: mtlBuff
                                        indexBufferOffset: indexOffset
-                                           instanceCount: indexed.m_instanceCount
+                                           instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
                                               baseVertex: indexed.m_vertexOffset
-                                            baseInstance: indexed.m_instanceOffset];
+                                            baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
 
                 case RHI::DrawType::Linear:
                 {
-                    const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
+                    const RHI::DrawLinear& linear = drawItem.m_geometryView->GetDrawArguments().m_linear;
                     [renderEncoder drawPrimitives: mtlPrimType
                                       vertexStart: linear.m_vertexOffset
                                       vertexCount: linear.m_vertexCount
-                                    instanceCount: linear.m_instanceCount
-                                     baseInstance: linear.m_instanceOffset];
+                                    instanceCount: drawItem.m_drawInstanceArgs.m_instanceCount
+                                     baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
             }
@@ -741,14 +741,15 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceGeometryView& geometryBufferViews, const RHI::StreamBufferIndices& streamIndices)
         {
+            auto streamIter = geometryBufferViews.CreateStreamIterator(streamIndices);
             bool needsBinding = false;
-            for (uint32_t i = 0; i < count; ++i)
+            for (u8 index = 0; !streamIter.HasEnded(); ++streamIter, ++index)
             {
-                if (m_state.m_streamsHashes[i] != streams[i].GetHash())
+                if (m_state.m_streamsHashes[index] != streamIter->GetHash())
                 {
-                    m_state.m_streamsHashes[i] = streams[i].GetHash();
+                    m_state.m_streamsHashes[index] = streamIter->GetHash();
                     needsBinding = true;
                 }
             }
@@ -758,17 +759,19 @@ namespace AZ
             if (needsBinding)
             {
                 uint16_t bufferArrayLen = 0;
+                streamIter.Reset();
+                u8 count = streamIndices.Size();
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
                 //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
                 for (int i = count-1; i >= 0; --i)
                 {
-                    if (streams[i].GetBuffer())
+                    if (streamIter[i].GetBuffer())
                     {
-                        const Buffer * buff = static_cast<const Buffer*>(streams[i].GetBuffer());
+                        const Buffer * buff = static_cast<const Buffer*>(streamIter[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = static_cast<uint32_t>(streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
+                        uint32_t offset = static_cast<uint32_t>(streamIter[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;
@@ -795,12 +798,12 @@ namespace AZ
             }
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -896,20 +899,34 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::QueryBlasCompactionSizes(
+            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::CompactBottomLevelAccelerationStructure(
+            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

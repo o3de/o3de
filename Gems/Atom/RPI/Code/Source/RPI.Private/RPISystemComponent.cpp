@@ -27,6 +27,8 @@
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/Components/ConsoleBus.h>
 
+#include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
+
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #endif
@@ -66,7 +68,7 @@ namespace AZ
 
         void RPISystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            provided.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void RPISystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -241,6 +243,7 @@ namespace AZ
                     m_gpuPassProfiler->SetGpuTimeMeasurementEnabled(false);
                     // Force disabling timestamp collection in the root pass.
                     AZ::RPI::PassSystemInterface::Get()->GetRootPass()->SetTimestampQueryEnabled(false);
+                    PerformaceCollectionNotificationBus::Broadcast(&PerformaceCollectionNotification::OnPerformanceCollectionJobFinished, m_performanceCollector->GetOutputFilePath().String());
                 }
                 if (r_metricsQuitUponCompletion && (pendingBatches == 0))
                 {
@@ -267,6 +270,5 @@ namespace AZ
             m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(r_metricsWaitTimePerCaptureBatch));
             m_performanceCollector->UpdateNumberOfCaptureBatches(r_metricsNumberOfCaptureBatches);
         }
-
     } // namespace RPI
 } // namespace AZ

@@ -161,7 +161,7 @@ namespace ScriptCanvasEditor
         Workspace(MainWindow* mainWindow)
             : m_mainWindow(mainWindow)
         {
-            auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+            auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
             m_rememberOpenCanvases = (userSettings && userSettings->m_rememberOpenCanvases);
         }
 

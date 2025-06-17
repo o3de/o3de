@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
 {
@@ -70,6 +71,11 @@ namespace AZ
 
             //! Sets all of the the capsule data for the provided LightHandle.
             virtual void SetCapsuleData(LightHandle handle, const CapsuleLightData& data) = 0;
+
+            //! Returns the buffer containing the light data for all capsule lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the number of capsule lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

@@ -46,7 +46,7 @@ class PropertyHandlerSprite
 public:
     AZ_CLASS_ALLOCATOR(PropertyHandlerSprite, AZ::SystemAllocator);
     
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Sprite", 0x351d8f9e); }
+    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC_CE("Sprite"); }
 
     QWidget* CreateGUI(QWidget* pParent) override;
     void ConsumeAttribute(PropertySpriteCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

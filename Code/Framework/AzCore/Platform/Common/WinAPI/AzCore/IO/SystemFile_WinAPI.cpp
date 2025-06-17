@@ -597,12 +597,12 @@ namespace AZ::IO::Internal
     // https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-completion-routines
     struct AsyncPipeData
     {
-        AsyncPipeData(FileDescriptorCapturer& descriptorCapturer)
+        AsyncPipeData(FileDescriptorCapturer* descriptorCapturer)
             : m_descriptorCapturer(descriptorCapturer)
         {}
 
         OVERLAPPED m_asyncIO{};
-        FileDescriptorCapturer& m_descriptorCapturer;
+        FileDescriptorCapturer* m_descriptorCapturer;
         //! Storage buffer for read results of Async ReadFileEx opeastion
         AZStd::array<AZStd::byte, AZ::IO::FileDescriptorCapturer::DefaultPipeSize> m_capturedBytes;
     };
@@ -679,7 +679,7 @@ namespace AZ::IO
 
         // Store the OVERLAPPED IO in the m_pipeData
         // It will be used in the Flush(), to provide the async callback
-        auto asyncPipeData = new Internal::AsyncPipeData{ *this };
+        auto asyncPipeData = new Internal::AsyncPipeData{ this };
 
         constexpr bool eventNeedsToBeManuallyReset = true;
         constexpr bool initialStateIsSignalled = false;
@@ -725,7 +725,7 @@ namespace AZ::IO
             LPOVERLAPPED asyncIO)
         {
             auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(asyncIO);
-            auto& self = asyncPipeData->m_descriptorCapturer;
+            auto& self = *asyncPipeData->m_descriptorCapturer;
             if (self.m_redirectCallback && errorCode == ERROR_SUCCESS && bytesRead > 0)
             {
                 self.m_redirectCallback(AZStd::span(asyncPipeData->m_capturedBytes.data(), bytesRead));

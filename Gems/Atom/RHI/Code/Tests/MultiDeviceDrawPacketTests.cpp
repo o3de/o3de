@@ -11,10 +11,11 @@
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI/DrawListContext.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/MultiDeviceDrawPacket.h>
-#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
-#include <Atom/RHI/MultiDevicePipelineState.h>
-#include <Atom/RHI/MultiDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/GeometryView.h>
+#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/sort.h>
@@ -32,25 +33,20 @@ namespace UnitTest
 
     struct MultiDeviceDrawItemData
     {
-        MultiDeviceDrawItemData(SimpleLcgRandom& random, const RHI::MultiDeviceBuffer* bufferEmpty, const RHI::MultiDevicePipelineState* psoEmpty)
+        MultiDeviceDrawItemData(SimpleLcgRandom& random, const RHI::PipelineState* psoEmpty, const RHI::GeometryView& geometryView)
         {
             m_pipelineState = psoEmpty;
-
-            // Fill with deterministic random data to compare against.
-            for (auto& streamBufferView : m_streamBufferViews)
-            {
-                streamBufferView =
-                    RHI::MultiDeviceStreamBufferView{ *bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() };
-            }
+            m_geometryView = &geometryView;
+            m_streamIndices = geometryView.GetFullStreamBufferIndices();    // Ordered Stream Indices
 
             m_tag = RHI::DrawListTag(random.GetRandom() % RHI::Limits::Pipeline::DrawListTagCountMax);
             m_stencilRef = static_cast<uint8_t>(random.GetRandom());
             m_sortKey = random.GetRandom();
         }
 
-        AZStd::array<RHI::MultiDeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
-
-        const RHI::MultiDevicePipelineState* m_pipelineState;
+        const RHI::GeometryView* m_geometryView = nullptr;
+        RHI::StreamBufferIndices m_streamIndices;
+        const RHI::PipelineState* m_pipelineState;
         RHI::DrawListTag m_tag;
         RHI::DrawItemSortKey m_sortKey;
         uint8_t m_stencilRef;
@@ -63,32 +59,45 @@ namespace UnitTest
         MultiDeviceDrawPacketData(SimpleLcgRandom& random)
         {
             RHI::BufferPoolDescriptor bufferPoolDesc;
-            m_bufferPool = aznew RHI::MultiDeviceBufferPool;
-            m_bufferEmpty = aznew RHI::MultiDeviceBuffer;
-            m_bufferPool->Init(LocalDeviceMask, bufferPoolDesc);
-            RHI::MultiDeviceBufferInitRequest request;
+            bufferPoolDesc.m_deviceMask = LocalDeviceMask;
+            m_bufferPool = aznew RHI::BufferPool;
+            m_bufferEmpty = aznew RHI::Buffer;
+            m_bufferPool->Init(bufferPoolDesc);
+            RHI::BufferInitRequest request;
             request.m_buffer = m_bufferEmpty.get();
             request.m_descriptor = RHI::BufferDescriptor{};
             m_bufferPool->InitBuffer(request);
-            m_psoEmpty = aznew RHI::MultiDevicePipelineState;
+            m_psoEmpty = aznew RHI::PipelineState;
             m_psoEmpty->m_deviceMask = LocalDeviceMask;
             m_psoEmpty->IterateDevices(
                 [this](int deviceIndex)
                 {
                     this->m_psoEmpty->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreatePipelineState();
+
                     return true;
                 });
 
+            if (const auto& name = this->m_psoEmpty->GetName(); !name.IsEmpty())
+            {
+                this->m_psoEmpty->SetName(name);
+            }
+
             for (auto& srg : m_srgs)
             {
-                srg = aznew RHI::MultiDeviceShaderResourceGroup;
+                srg = aznew RHI::ShaderResourceGroup;
                 srg->m_deviceMask = LocalDeviceMask;
                 srg->IterateDevices(
                     [&srg](int deviceIndex)
                     {
                         srg->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreateShaderResourceGroup();
+
                         return true;
                     });
+
+                if (const auto& name = srg->GetName(); !name.IsEmpty())
+                {
+                    srg->SetName(name);
+                }
             }
 
             unsigned int* data = reinterpret_cast<unsigned int*>(m_rootConstants.data());
@@ -97,16 +106,21 @@ namespace UnitTest
                 data[i] = random.GetRandom();
             }
 
-            for (size_t i = 0; i < DrawItemCountMax; ++i)
+            m_geometryView.SetDrawArguments(RHI::DrawIndexed{ random.GetRandom(), random.GetRandom(), random.GetRandom() });
+            m_geometryView.SetIndexBufferView({ *m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16 });
+
+            for (u32 i = 0; i < RHI::Limits::Pipeline::StreamCountMax; ++i)
             {
-                m_drawItemDatas.emplace_back(random, m_bufferEmpty.get(), m_psoEmpty.get());
+                m_geometryView.AddStreamBufferView({ *m_bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() });
             }
 
-            m_indexBufferView =
-                RHI::MultiDeviceIndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
+            for (size_t i = 0; i < DrawItemCountMax; ++i)
+            {
+                m_drawItemDatas.emplace_back(random, m_psoEmpty.get(), m_geometryView);
+            }
         }
 
-        const auto Build(RHI::MultiDeviceDrawPacketBuilder& builder)
+        const auto Build(RHI::DrawPacketBuilder& builder)
         {
             builder.Begin(nullptr);
 
@@ -116,7 +130,7 @@ namespace UnitTest
             }
 
             builder.SetRootConstants(m_rootConstants);
-            builder.SetIndexBufferView(m_indexBufferView);
+            builder.SetGeometryView(&m_geometryView);
 
             RHI::DrawListMask drawListMask;
 
@@ -125,11 +139,11 @@ namespace UnitTest
                 const MultiDeviceDrawItemData& drawItemData = m_drawItemDatas[i];
                 drawListMask[drawItemData.m_tag.GetIndex()] = true;
 
-                RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
+                RHI::DrawPacketBuilder::DrawRequest drawRequest;
+                drawRequest.m_streamIndices = drawItemData.m_streamIndices;
                 drawRequest.m_listTag = drawItemData.m_tag;
                 drawRequest.m_sortKey = drawItemData.m_sortKey;
                 drawRequest.m_stencilRef = drawItemData.m_stencilRef;
-                drawRequest.m_streamBufferViews = drawItemData.m_streamBufferViews;
                 drawRequest.m_pipelineState = drawItemData.m_pipelineState;
                 builder.AddDrawItem(drawRequest);
             }
@@ -143,14 +157,14 @@ namespace UnitTest
             return drawPacket;
         }
 
-        RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
-        RHI::Ptr<RHI::MultiDeviceBuffer> m_bufferEmpty;
-        RHI::Ptr<RHI::MultiDevicePipelineState> m_psoEmpty;
+        RHI::Ptr<RHI::BufferPool> m_bufferPool;
+        RHI::Ptr<RHI::Buffer> m_bufferEmpty;
+        RHI::Ptr<RHI::PipelineState> m_psoEmpty;
 
-        RHI::Ptr<RHI::MultiDeviceShaderResourceGroupPool> m_srgPool;
-        AZStd::array<RHI::Ptr<RHI::MultiDeviceShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
+        RHI::Ptr<RHI::ShaderResourceGroupPool> m_srgPool;
+        AZStd::array<RHI::Ptr<RHI::ShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
         AZStd::array<uint8_t, sizeof(unsigned int) * 4> m_rootConstants;
-        RHI::MultiDeviceIndexBufferView m_indexBufferView;
+        RHI::GeometryView m_geometryView;
 
         AZStd::vector<MultiDeviceDrawItemData> m_drawItemDatas;
     };
@@ -178,7 +192,7 @@ namespace UnitTest
 
         void DrawPacketEmpty()
         {
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
             builder.Begin(nullptr);
 
             const auto drawPacket = builder.End();
@@ -187,13 +201,13 @@ namespace UnitTest
 
         void DrawPacketNullItem()
         {
-            RHI::DrawPacketBuilder builder;
+            RHI::DeviceDrawPacketBuilder builder;
             builder.Begin(nullptr);
 
-            RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            RHI::DeviceDrawPacketBuilder::DeviceDrawRequest drawRequest;
             builder.AddDrawItem(drawRequest);
 
-            const RHI::DrawPacket* drawPacket = builder.End();
+            const RHI::DeviceDrawPacket* drawPacket = builder.End();
             EXPECT_EQ(drawPacket, nullptr);
         }
 
@@ -203,7 +217,7 @@ namespace UnitTest
 
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
 
             const auto drawPacket = drawPacketData.Build(builder);
         }
@@ -213,7 +227,7 @@ namespace UnitTest
             AZ::SimpleLcgRandom random(s_randomSeed);
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
             auto drawPacket = drawPacketData.Build(builder);
 
             // Try to build a 'null' packet. This should result in a null pointer.
@@ -222,19 +236,17 @@ namespace UnitTest
             EXPECT_EQ(drawPacket.get(), nullptr);
         }
 
-        //! Add these tests once DrawListContext takes MultiDeviceDrawPackets
-        /*
         void DrawListContextFilter()
         {
             AZ::SimpleLcgRandom random(s_randomSeed);
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
-            const auto drawPacket = drawPacketData.Build(builder);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
+            auto drawPacket = drawPacketData.Build(builder);
 
             RHI::DrawListContext drawListContext;
             drawListContext.Init(RHI::DrawListMask{}.set());
-            drawListContext.AddDrawPacket(drawPacket);
+            drawListContext.AddDrawPacket(drawPacket.get());
 
             for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
             {
@@ -257,8 +269,6 @@ namespace UnitTest
             size_t tagIndex = 0;
             for (auto& drawList : listsByTag)
             {
-                SortDrawList(drawList, RHI::DrawListSortType::KeyThenDepth);
-
                 RHI::DrawListTag tag(tagIndex);
 
                 RHI::DrawListView drawListView = drawListContext.GetList(tag);
@@ -278,14 +288,14 @@ namespace UnitTest
         void DrawListContextNullFilter()
         {
             AZ::SimpleLcgRandom random(s_randomSeed);
-            DrawPacketData drawPacketData(random);
+            MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::DrawPacketBuilder builder;
-            const RHI::DrawPacket* drawPacket = drawPacketData.Build(builder);
+            RHI::DrawPacketBuilder builder{RHI::MultiDevice::DefaultDevice};
+            auto drawPacket = drawPacketData.Build(builder);
 
             RHI::DrawListContext drawListContext;
             drawListContext.Init(RHI::DrawListMask{}); // Mask set to not contain any draw lists.
-            drawListContext.AddDrawPacket(drawPacket);
+            drawListContext.AddDrawPacket(drawPacket.get());
             drawListContext.FinalizeLists();
 
             for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
@@ -296,10 +306,7 @@ namespace UnitTest
             }
 
             drawListContext.Shutdown();
-
-            delete drawPacket;
         }
-        */
 
         void DrawPacketClone()
         {
@@ -307,10 +314,10 @@ namespace UnitTest
 
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
             const auto drawPacket = drawPacketData.Build(builder);
 
-            RHI::MultiDeviceDrawPacketBuilder builder2(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder2(LocalDeviceMask);
             const auto drawPacketClone = builder2.Clone(drawPacket.get());
 
             for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
@@ -319,7 +326,7 @@ namespace UnitTest
                 auto deviceDrawPacketClone{ drawPacketClone->GetDeviceDrawPacket(deviceIndex) };
 
                 EXPECT_EQ(deviceDrawPacket->m_drawItemCount, deviceDrawPacketClone->m_drawItemCount);
-                EXPECT_EQ(deviceDrawPacket->m_streamBufferViewCount, deviceDrawPacketClone->m_streamBufferViewCount);
+                EXPECT_EQ(deviceDrawPacket->m_geometryView, deviceDrawPacket->m_geometryView);
                 EXPECT_EQ(deviceDrawPacket->m_shaderResourceGroupCount, deviceDrawPacketClone->m_shaderResourceGroupCount);
                 EXPECT_EQ(deviceDrawPacket->m_uniqueShaderResourceGroupCount, deviceDrawPacketClone->m_uniqueShaderResourceGroupCount);
                 EXPECT_EQ(deviceDrawPacket->m_rootConstantSize, deviceDrawPacketClone->m_rootConstantSize);
@@ -336,42 +343,29 @@ namespace UnitTest
                 EXPECT_EQ(drawPacket->GetDrawFilterMask(i), drawPacketClone->GetDrawFilterMask(i));
 
                 const auto* drawItem = drawPacket->GetDrawItem(i);
-                const RHI::MultiDeviceDrawItem* drawItemClone = drawPacketClone->GetDrawItem(i);
+                const RHI::DrawItem* drawItemClone = drawPacketClone->GetDrawItem(i);
 
                 // Check the clone is an actual copy not an identical pointer.
                 EXPECT_NE(drawItem, drawItemClone);
 
                 for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
                 {
-                    auto deviceDrawPacket{ drawPacket->GetDeviceDrawPacket(deviceIndex) };
-                    auto deviceDrawPacketClone{ drawPacketClone->GetDeviceDrawPacket(deviceIndex) };
                     auto& deviceDrawItem{ drawItem->GetDeviceDrawItem(deviceIndex) };
                     auto& deviceDrawItemClone{ drawItemClone->GetDeviceDrawItem(deviceIndex) };
 
-                    EXPECT_EQ(deviceDrawItem.m_arguments.m_type, deviceDrawItemClone.m_arguments.m_type);
                     EXPECT_EQ(deviceDrawItem.m_pipelineState->GetType(), deviceDrawItemClone.m_pipelineState->GetType());
+                    EXPECT_EQ(deviceDrawItem.m_geometryView, deviceDrawItemClone.m_geometryView);
+                    EXPECT_EQ(deviceDrawItem.m_streamIndices, deviceDrawItemClone.m_streamIndices);
                     EXPECT_EQ(deviceDrawItem.m_stencilRef, deviceDrawItemClone.m_stencilRef);
-                    EXPECT_EQ(deviceDrawItem.m_streamBufferViewCount, deviceDrawItemClone.m_streamBufferViewCount);
                     EXPECT_EQ(deviceDrawItem.m_shaderResourceGroupCount, deviceDrawItemClone.m_shaderResourceGroupCount);
                     EXPECT_EQ(deviceDrawItem.m_rootConstantSize, deviceDrawItemClone.m_rootConstantSize);
                     EXPECT_EQ(deviceDrawItem.m_scissorsCount, deviceDrawItemClone.m_scissorsCount);
                     EXPECT_EQ(deviceDrawItem.m_viewportsCount, deviceDrawItemClone.m_viewportsCount);
 
-                    uint8_t streamBufferViewCount = deviceDrawItem.m_streamBufferViewCount;
                     uint8_t shaderResourceGroupCount = deviceDrawItem.m_shaderResourceGroupCount;
                     uint8_t rootConstantSize = deviceDrawItem.m_rootConstantSize;
                     uint8_t scissorsCount = deviceDrawItem.m_scissorsCount;
                     uint8_t viewportsCount = deviceDrawItem.m_viewportsCount;
-
-                    for (uint8_t j = 0; j < streamBufferViewCount; ++j)
-                    {
-                        const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + j;
-                        const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + j;
-                        EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
-                        EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
-                        EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
-                        EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
-                    }
 
                     for (uint8_t j = 0; j < shaderResourceGroupCount; ++j)
                     {
@@ -400,22 +394,11 @@ namespace UnitTest
                 auto deviceDrawPacket{ drawPacket->GetDeviceDrawPacket(deviceIndex) };
                 auto deviceDrawPacketClone{ drawPacketClone->GetDeviceDrawPacket(deviceIndex) };
 
-                uint8_t streamBufferViewCount = deviceDrawPacket->m_streamBufferViewCount;
                 uint8_t shaderResourceGroupCount = deviceDrawPacket->m_shaderResourceGroupCount;
                 uint8_t uniqueShaderResourceGroupCount = deviceDrawPacket->m_uniqueShaderResourceGroupCount;
                 uint8_t rootConstantSize = deviceDrawPacket->m_rootConstantSize;
                 uint8_t scissorsCount = deviceDrawPacket->m_scissorsCount;
                 uint8_t viewportsCount = deviceDrawPacket->m_viewportsCount;
-
-                for (uint8_t i = 0; i < streamBufferViewCount; ++i)
-                {
-                    const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + i;
-                    const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + i;
-                    EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
-                    EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
-                    EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
-                    EXPECT_EQ(streamBufferView->GetHash(), streamBufferViewClone->GetHash());
-                }
 
                 for (uint8_t i = 0; i < shaderResourceGroupCount; ++i)
                 {
@@ -451,9 +434,9 @@ namespace UnitTest
 
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
             const auto drawPacket = drawPacketData.Build(builder);
-            RHI::MultiDeviceDrawPacketBuilder builder2(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder2(LocalDeviceMask);
             auto drawPacketClone = builder2.Clone(drawPacket.get());
 
             const uint8_t drawItemCount =
@@ -464,9 +447,14 @@ namespace UnitTest
             {
                 for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
                 {
+                    // Test default value
+                    const auto& drawItem = drawPacket->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
+                    EXPECT_EQ(drawItem.m_geometryView->GetDrawArguments().m_type, RHI::DrawType::Indexed);
+                    EXPECT_EQ(drawItem.m_drawInstanceArgs.m_instanceCount, 1);
+
+
                     const auto& drawItemClone = drawPacketClone->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
-                    EXPECT_EQ(drawItemClone.m_arguments.m_type, RHI::DrawType::Indexed);
-                    EXPECT_EQ(drawItemClone.m_arguments.m_indexed.m_instanceCount, 1);
+                    EXPECT_EQ(drawItemClone.m_drawInstanceArgs.m_instanceCount, 1);
                 }
             }
 
@@ -477,11 +465,11 @@ namespace UnitTest
                 for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
                 {
                     const auto& drawItemClone = drawPacketClone->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
-                    EXPECT_EQ(drawItemClone.m_arguments.m_indexed.m_instanceCount, 12);
+                    EXPECT_EQ(drawItemClone.m_drawInstanceArgs.m_instanceCount, 12);
 
                     // Check that the original draw packet is not affected
                     const auto& drawItem = drawPacket->m_drawItems[i].GetDeviceDrawItem(deviceIndex);
-                    EXPECT_EQ(drawItem.m_arguments.m_indexed.m_instanceCount, 1);
+                    EXPECT_EQ(drawItem.m_drawInstanceArgs.m_instanceCount, 1);
                 }
             }
         }
@@ -492,10 +480,10 @@ namespace UnitTest
 
             MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
+            RHI::DrawPacketBuilder builder(LocalDeviceMask);
             const auto drawPacket = drawPacketData.Build(builder);
-            RHI::MultiDeviceDrawPacketBuilder builder2(LocalDeviceMask);
-            RHI::Ptr<RHI::MultiDeviceDrawPacket> drawPacketClone = builder2.Clone(drawPacket.get());
+            RHI::DrawPacketBuilder builder2(LocalDeviceMask);
+            RHI::Ptr<RHI::DrawPacket> drawPacketClone = builder2.Clone(drawPacket.get());
 
             AZStd::vector<AZStd::array<uint8_t, sizeof(unsigned int) * 4>> rootConstantOld(LocalDeviceCount);
             for (auto deviceIndex{ 0 }; deviceIndex < LocalDeviceCount; ++deviceIndex)
@@ -580,8 +568,6 @@ namespace UnitTest
         DrawPacketBuildClearBuildNull();
     }
 
-    //! Add these tests once DrawListContext takes MultiDeviceDrawPackets
-    /*
     TEST_F(MultiDeviceDrawPacketTest, DrawListContextFilter)
     {
         DrawListContextFilter();
@@ -591,7 +577,6 @@ namespace UnitTest
     {
         DrawListContextNullFilter();
     }
-    */
 
     TEST_F(MultiDeviceDrawPacketTest, DrawPacketClone)
     {

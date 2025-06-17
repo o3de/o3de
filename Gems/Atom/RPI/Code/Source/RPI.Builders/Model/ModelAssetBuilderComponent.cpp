@@ -1071,7 +1071,8 @@ namespace AZ
                     // Align all the stream buffers to ensure they all padded to SkinnedMeshBufferAlignment byte boundary.
                     // This is done to ensure that we can respect Metal's requirement of having typed buffers aligned to 64.
                     // We also need to align to 16 and 12 byte boundary in order to respect RGB32 and RGBA32 buffer views.
-                    if (hasSkinData)
+                    // If a model only has morph targets, it is still recognized as an actor, so we still have to align it. 
+                    if (hasSkinData || sourceMesh.m_isMorphed)
                     {
                         if (AZ::SceneAPI::Utilities::IsDebugEnabled())
                         {
@@ -1088,24 +1089,31 @@ namespace AZ
                         RPI::ModelAssetHelpers::AlignStreamBuffer(normals, vertexCount, NormalFormat, SkinnedMeshBufferAlignment);
                         RPI::ModelAssetHelpers::AlignStreamBuffer(tangents, vertexCount, TangentFormat, SkinnedMeshBufferAlignment);
                         RPI::ModelAssetHelpers::AlignStreamBuffer(bitangents, vertexCount, BitangentFormat, SkinnedMeshBufferAlignment);
-                        
-                        const size_t totalVertexInfluences = productMesh.m_influencesPerVertex * vertexCount;
-                        RPI::ModelAssetHelpers::AlignStreamBuffer(
-                            skinJointIndices, totalVertexInfluences, SkinIndicesFormat, SkinnedMeshBufferAlignment);
-                        RPI::ModelAssetHelpers::AlignStreamBuffer(
-                            skinWeights, totalVertexInfluences, SkinWeightFormat, SkinnedMeshBufferAlignment);
 
-                        if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                        if (hasSkinData)
                         {
-                            AZ_Info(s_builderName, "  Aligning Buffers for mesh '%s' with vertexCount %zu\n", productMesh.m_name.GetCStr(), vertexCount);
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  After:       %zu positions\n", positions.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu normals\n", normals.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu tangents\n", tangents.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu bitangents\n", bitangents.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinJointIndices\n", skinJointIndices.size());
-                            AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinWeights\n", skinWeights.size());
+                            const size_t totalVertexInfluences = productMesh.m_influencesPerVertex * vertexCount;
+                            RPI::ModelAssetHelpers::AlignStreamBuffer(
+                                skinJointIndices, totalVertexInfluences, SkinIndicesFormat, SkinnedMeshBufferAlignment);
+                            RPI::ModelAssetHelpers::AlignStreamBuffer(
+                                skinWeights, totalVertexInfluences, SkinWeightFormat, SkinnedMeshBufferAlignment);
+
+                            if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                            {
+                                AZ_Info(
+                                    s_builderName,
+                                    "  Aligning Buffers for mesh '%s' with vertexCount %zu\n",
+                                    productMesh.m_name.GetCStr(),
+                                    vertexCount);
+                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "  After:       %zu positions\n", positions.size());
+                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu normals\n", normals.size());
+                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu tangents\n", tangents.size());
+                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu bitangents\n", bitangents.size());
+                                AZ_Info(
+                                    AZ::SceneAPI::Utilities::LogWindow, "               %zu skinJointIndices\n", skinJointIndices.size());
+                                AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "               %zu skinWeights\n", skinWeights.size());
+                            }
                         }
-                        
                     }
 
                     // A morph target that only influenced one source mesh might be split over multiple product meshes
@@ -2293,7 +2301,7 @@ namespace AZ
                 AZ::Aabb subMeshAabb = AZ::Aabb::CreateNull();
                 if (CalculateAABB(positionBufferViewDescriptor, *positionStreamBufferInfo.m_bufferAssetView.GetBufferAsset().Get(), subMeshAabb))
                 {
-                    lodAssetCreator.SetMeshAabb(AZStd::move(subMeshAabb));
+                    lodAssetCreator.SetMeshAabb(subMeshAabb);
                 }
                 else
                 {

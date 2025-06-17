@@ -36,13 +36,13 @@
 #include "Settings.h"
 
 #include "PluginManager.h"
+#include "Util/Variable.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "GameEngine.h"
 
 #include "CryEdit.h"
 #include "Util/PakFile.h"
-#include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
@@ -219,9 +219,6 @@ void CCryEditDoc::DeleteContents()
 
     GetIEditor()->ResetViews();
 
-    // Delete all objects from Object Manager.
-    GetIEditor()->GetObjectManager()->DeleteAllObjects();
-
     // Load scripts data
     SetModifiedFlag(false);
     SetModifiedModules(eModifiedNothing);
@@ -281,7 +278,12 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
     }
 
     GetIEditor()->Notify(eNotify_OnBeginSceneOpen);
-    GetIEditor()->GetMovieSystem()->RemoveAllSequences();
+
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
+    {
+        movieSystem->RemoveAllSequences();
+    }
 
     {
         // Start recording errors

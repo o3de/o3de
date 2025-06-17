@@ -40,12 +40,12 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiCanvasRefService", 0xb4cb5ef4));
+        provided.push_back(AZ_CRC_CE("UiCanvasRefService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiCanvasRefService", 0xb4cb5ef4));
+        incompatible.push_back(AZ_CRC_CE("UiCanvasRefService"));
     }
 
     static void GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

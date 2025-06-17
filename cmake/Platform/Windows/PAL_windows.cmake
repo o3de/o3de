@@ -52,3 +52,7 @@ set(LY_ASSET_DEPLOY_ASSET_TYPE "pc" CACHE STRING "Set the asset type for deploym
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd)
+
+# Compiler flag to export all symbols from a library
+# On Windows this is done directly with the WINDOWS_EXPORT_ALL_SYMBOLS cmake option instead
+ly_set(PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS)

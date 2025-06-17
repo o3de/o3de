@@ -19,28 +19,11 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <Silhouette/SilhouetteFeatureProcessor.h>
 
-void OnSilhouetteActiveChanged(const bool& activate)
-{
-    AzFramework::EntityContextId entityContextId;
-    AzFramework::GameEntityContextRequestBus::BroadcastResult(
-        entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
-
-    if (auto scene = AZ::RPI::Scene::GetSceneForEntityContextId(entityContextId); scene != nullptr)
-    {
-        // avoid unnecessary enable/disable to avoid warning log spam
-        auto featureProcessor = scene->GetFeatureProcessor<AZ::Render::SilhouetteFeatureProcessor>();
-        if (featureProcessor)
-        {
-            featureProcessor->SetPassesEnabled(activate);
-        }
-    }
-}
-
 AZ_CVAR(
     bool,
     r_silhouette,
-    true,
-    &OnSilhouetteActiveChanged,
+    false,
+    nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "Controls if the silhouette rendering feature is active.  0 : Inactive,  1 : Active (default)");
 
@@ -79,32 +62,9 @@ namespace AZ::Render
         }
     }
 
-    void SilhouetteFeatureProcessor::OnEndPrepareRender()
+    void SilhouetteFeatureProcessor::OnRenderEnd()
     {
-        if (auto scene = GetParentScene(); scene != nullptr)
-        {
-            if (m_compositePass && m_rasterPass && m_rasterPass->GetRenderPipeline())
-            {
-                // Get DrawList from the dynamic draw interface and view
-                AZStd::vector<RHI::DrawListView> drawLists = AZ::RPI::DynamicDrawInterface::Get()->GetDrawListsForPass(m_rasterPass);
-                const AZStd::vector<AZ::RPI::ViewPtr>& views = m_rasterPass->GetRenderPipeline()->GetViews(m_rasterPass->GetPipelineViewTag());
-                RHI::DrawListView viewDrawList;
-                if (!views.empty())
-                {
-                    const AZ::RPI::ViewPtr& view = views.front();
-                    viewDrawList = view->GetDrawList(m_rasterPass->GetDrawListTag());
-                }
-
-                if (drawLists.empty() && viewDrawList.empty())
-                {
-                    m_compositePass->SetEnabled(false);
-                }
-                else
-                {
-                    m_compositePass->SetEnabled(true);
-                }
-            }
-        }
+        SetPassesEnabled(r_silhouette);
     }
 
     void SilhouetteFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
@@ -155,6 +115,7 @@ namespace AZ::Render
         RPI::PassRequest gatherPassRequest;
         gatherPassRequest.m_passName = Name("SilhouetteGatherPass");
         gatherPassRequest.m_templateName = gatherTemplateName;
+        gatherPassRequest.m_passEnabled = r_silhouette;
         gatherPassRequest.AddInputConnection(RPI::PassConnection{
             Name("DepthStencilInputOutput"), RPI::PassAttachmentRef{ forwardProcessPassName, Name("DepthStencilInputOutput") } });
 
@@ -169,6 +130,7 @@ namespace AZ::Render
         RPI::PassRequest compositePassRequest;
         compositePassRequest.m_passName = Name("SilhouettePass");
         compositePassRequest.m_templateName = mergeTemplateName;
+        compositePassRequest.m_passEnabled = r_silhouette;
         compositePassRequest.AddInputConnection(
             RPI::PassConnection{ Name("InputOutput"), RPI::PassAttachmentRef{ postProcessPassName, Name("Output") } });
 
@@ -197,6 +159,30 @@ namespace AZ::Render
             }
         }
     }
+
+    bool SilhouetteFeatureProcessor::NeedsCompositePass() const
+    {
+        if (auto scene = GetParentScene(); scene != nullptr)
+        {
+            if (m_rasterPass && m_rasterPass->GetRenderPipeline())
+            {
+                // Get DrawList from the dynamic draw interface and view
+                AZStd::vector<RHI::DrawListView> drawLists = AZ::RPI::DynamicDrawInterface::Get()->GetDrawListsForPass(m_rasterPass);
+                const AZStd::vector<AZ::RPI::ViewPtr>& views =
+                    m_rasterPass->GetRenderPipeline()->GetViews(m_rasterPass->GetPipelineViewTag());
+                RHI::DrawListView viewDrawList;
+                if (!views.empty())
+                {
+                    const AZ::RPI::ViewPtr& view = views.front();
+                    viewDrawList = view->GetDrawList(m_rasterPass->GetDrawListTag());
+                }
+
+                return !(drawLists.empty() && viewDrawList.empty());
+            }
+        }
+        return false;
+    }
+
     void SilhouetteFeatureProcessor::UpdatePasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
         m_compositePass = nullptr;

@@ -125,16 +125,10 @@ namespace O3DE::ProjectManager
 
             if (projectInfo.m_isScriptOnly)
             {
-                auto ninjaVersionQueryResult = FindSupportedNinja(); 
-                if (!ninjaVersionQueryResult.IsSuccess())
+                if (auto ninjaVersionQueryResult = FindSupportedNinja(); !ninjaVersionQueryResult.IsSuccess())
                 {
                     return ninjaVersionQueryResult;
                 }
-                else
-                {
-                    return AZ::Success("A Script Only Project only requires Ninja installation.");
-                }
-    
             }
 
             // Validate that the minimal version of visual studio is installed

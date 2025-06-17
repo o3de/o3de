@@ -482,7 +482,7 @@ namespace UnitTest
         EXPECT_NEAR(param.current.AngleSafe(param.target), param.angle, Constants::SimdTolerance);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Vector3,
         Vector3AngleTestFixture,
         ::testing::Values(
@@ -507,7 +507,7 @@ namespace UnitTest
         EXPECT_NEAR(param.current.AngleSafeDeg(param.target), param.angle, Constants::SimdToleranceAngleDeg);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Vector3,
         Vector3AngleDegTestFixture,
         ::testing::Values(
@@ -532,7 +532,7 @@ namespace UnitTest
         EXPECT_FLOAT_EQ(param.current.AngleSafeDeg(param.target), param.angle);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MATH_Vector3,
         AngleSafeInvalidVector3AngleTestFixture,
         ::testing::Values(

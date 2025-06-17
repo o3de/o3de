@@ -246,7 +246,7 @@ namespace UnitTest
         AZ::PoolAllocator,
         AZ::ThreadPoolAllocator
     >;
-    TYPED_TEST_CASE(AllocatorTypeLeakDetectionTest, AllocatorTypes);
+    TYPED_TEST_SUITE(AllocatorTypeLeakDetectionTest, AllocatorTypes);
 
 #if AZ_TRAIT_DISABLE_FAILED_ALLOCATOR_LEAK_DETECTION_TESTS
     TYPED_TEST(AllocatorTypeLeakDetectionTest, DISABLED_Leak)

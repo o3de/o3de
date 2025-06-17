@@ -30,8 +30,8 @@ namespace AZ
         {
             enum class BufferBindFlags : uint32_t;
         }
-        class BufferView;
-        class ImageView;
+        class DeviceBufferView;
+        class DeviceImageView;
         struct BufferSubresourceRange;
     }
 
@@ -40,6 +40,46 @@ namespace AZ
         using StringList = AZStd::vector<AZStd::string>;
         using RawStringList = AZStd::vector<const char*>;
         using CpuVirtualAddress = uint8_t *;
+
+        struct PipelineAccessFlags
+        {
+            VkPipelineStageFlags m_pipelineStage = 0;
+            VkAccessFlags m_access = 0;
+
+            bool operator==(const PipelineAccessFlags& other) const
+            {
+                return m_pipelineStage == other.m_pipelineStage && m_access == other.m_access;
+            }
+
+            PipelineAccessFlags& operator|=(const PipelineAccessFlags& other)
+            {
+                m_pipelineStage |= other.m_pipelineStage;
+                m_access |= other.m_access;
+                return *this;
+            }
+        };
+
+        //! Flags with the type of barriers used by a Scope.
+        enum class BarrierTypeFlags : uint32_t
+        {
+            None = 0,
+            Memory = AZ_BIT(0), // VkMemoryBarrier
+            Buffer = AZ_BIT(1), // VkBufferMemoryBarrier
+            Image = AZ_BIT(2),  // VkImageMemoryBarrier
+            All = Memory | Buffer | Image
+        };
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Vulkan::BarrierTypeFlags);
+
+        // Type of optimizations for scope barriers.
+        enum class BarrierOptimizationFlags
+        {
+            None = 0,                       // No optimization.
+            UseRenderpassLayout = AZ_BIT(0),// Use renderpass intialLayout and finalLayout for automatic layout transitions.
+            RemoveReadAfterRead = AZ_BIT(1),// Remove read after read barriers.
+            UseGlobal = AZ_BIT(2),          // Use a global memory barrier per scope instead of resource barriers (except when layout transitions are required)
+            All = UseRenderpassLayout | RemoveReadAfterRead | UseGlobal // All optimizations.
+        };
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Vulkan::BarrierOptimizationFlags);
 
         class Device;
 
@@ -117,9 +157,12 @@ namespace AZ
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter);
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs);
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs);
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs);
+
+        /// Returns true if the lhs device completely contains the rhs resource. 
+        bool ResourceViewContains(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs);
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
 
@@ -127,7 +170,16 @@ namespace AZ
 
         bool IsRenderAttachmentUsage(RHI::ScopeAttachmentUsage usage);
 
+        /// Return true if the flags only included read accesses.
+        bool IsReadOnlyAccess(VkAccessFlags access);
+
+        /// Returns a mask for the enabled scope barrier optimizations (CVAR r_vkBarrierOptimizationFlags).
+        BarrierOptimizationFlags GetBarrierOptimizationFlags();
+
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs);
+        bool operator==(const VkMemoryBarrier& lhs, const VkMemoryBarrier& rhs);
+        bool operator==(const VkBufferMemoryBarrier& lhs, const VkBufferMemoryBarrier& rhs);
+        bool operator==(const VkImageMemoryBarrier& lhs, const VkImageMemoryBarrier& rhs);
 
         /// Appends a list of Vulkan structs to end of the "next" chain
         template<class T>

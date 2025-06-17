@@ -32,12 +32,12 @@ CSelectSequenceDialog::OnInitDialog()
 /* virtual */ void
 CSelectSequenceDialog::GetItems(std::vector<SItem>& outItems)
 {
-    IMovieSystem* pMovieSys = GetIEditor()->GetMovieSystem();
-    if (pMovieSys)
+    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+    if (movieSystem)
     {
-        for (int i = 0; i < pMovieSys->GetNumSequences(); ++i)
+        for (int i = 0; i < movieSystem->GetNumSequences(); ++i)
         {
-            IAnimSequence* pSeq = pMovieSys->GetSequence(i);
+            IAnimSequence* pSeq = movieSystem->GetSequence(i);
             SItem item;
             AZStd::string fullname = pSeq->GetName();
             item.name = fullname.c_str();

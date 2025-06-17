@@ -29,7 +29,7 @@ public:
 
     AZ::u32 GetHandlerName(void) const override
     {
-        return AZ_CRC("UI_Property_Handler", 0x29f0eee2);
+        return AZ_CRC_CE("UI_Property_Handler");
     }
 
     bool IsDefaultHandler() const override

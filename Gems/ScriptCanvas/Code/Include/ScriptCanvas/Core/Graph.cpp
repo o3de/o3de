@@ -65,7 +65,7 @@ namespace ScriptCanvas
     {
         if (componentElementNode.GetVersion() < 12)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC("m_uniqueId", 0x52157a7a));
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("m_uniqueId"));
         }
 
         if (componentElementNode.GetVersion() < 13)

@@ -111,7 +111,7 @@ namespace AzToolsFramework
         // AssetEditorWidget
         //////////////////////////////////////////////////////////////////////////
 
-        const AZ::Crc32 k_assetEditorWidgetSettings = AZ_CRC("AssetEditorSettings", 0xfe740dee);
+        const AZ::Crc32 k_assetEditorWidgetSettings = AZ_CRC_CE("AssetEditorSettings");
 
         AssetEditorWidget::AssetEditorWidget(QWidget* parent)
             : QWidget(parent)

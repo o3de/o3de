@@ -191,7 +191,7 @@ namespace LUAEditor
 
     void LUAViewWidget::CreateStyleSheet()
     {
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         auto styleSheet = QString(R"(QPlainTextEdit:focus
                                     {
@@ -1239,7 +1239,7 @@ namespace LUAEditor
 
     void LUAViewWidget::UpdateFont()
     {
-        auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto syntaxSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
         syntaxSettings->SetZoomPercent(m_zoomPercent);
         const auto& font = syntaxSettings->GetFont();
 

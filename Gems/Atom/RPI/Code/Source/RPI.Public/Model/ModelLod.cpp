@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/Material/Material.h>
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -28,7 +29,7 @@ namespace AZ
                 &modelAssetAny);
         }
 
-        AZStd::span<const ModelLod::Mesh> ModelLod::GetMeshes() const
+        AZStd::span<ModelLod::Mesh> ModelLod::GetMeshes()
         {
             return m_meshes;
         }
@@ -82,16 +83,16 @@ namespace AZ
                         return RHI::ResultCode::InvalidOperation;
                     }
 
-                    meshInstance.m_indexBufferView = RHI::IndexBufferView(
-                        *indexBuffer->GetRHIBuffer(),
-                        bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
-                        bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
-                        indexFormat);
+                    meshInstance.SetIndexBufferView(
+                        RHI::IndexBufferView(
+                            *indexBuffer->GetRHIBuffer(),
+                            bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                            bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
+                            indexFormat));
 
                     RHI::DrawIndexed drawIndexed;
                     drawIndexed.m_indexCount = bufferViewDescriptor.m_elementCount;
-                    drawIndexed.m_instanceCount = 1;
-                    meshInstance.m_drawArguments = drawIndexed;
+                    meshInstance.SetDrawArguments(drawIndexed);
 
                     TrackBuffer(indexBuffer);
                 }
@@ -257,20 +258,17 @@ namespace AZ
 
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
-            StreamBufferViewList& streamBufferViewsOut,
+            RHI::StreamBufferIndices& streamIndicesOut,
             UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
             const ShaderInputContract& contract,
             size_t meshIndex,
             const MaterialModelUvOverrideMap& materialModelUvMap,
-            const MaterialUvNameMap& materialUvNameMap) const
+            const MaterialUvNameMap& materialUvNameMap)
         {
-            streamBufferViewsOut.clear();
-
             RHI::InputStreamLayoutBuilder layoutBuilder;
-
-            const Mesh& mesh = m_meshes[meshIndex];
-
+            Mesh& mesh = m_meshes[meshIndex];
             bool success = true;
+            streamIndicesOut.Reset();
 
             // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
             auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
@@ -302,8 +300,13 @@ namespace AZ
 
                         RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
-                        streamBufferViewsOut.push_back(dummyBuffer);
+
+                        if (!mesh.HasDummyStreamBufferView())
+                        {
+                            RHI::StreamBufferView dummyBuffer{ *mesh.GetIndexBufferView().GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
+                            mesh.AddDummyStreamBufferView(dummyBuffer);
+                        }
+                        streamIndicesOut.AddIndex(mesh.GetDummyStreamBufferIndex());
                     }
                     else
                     {
@@ -325,11 +328,11 @@ namespace AZ
                     }
                     else
                     {
+                        size_t iterIndex = iter - mesh.m_streamInfo.begin();
+
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
-
-                        RHI::StreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
-                        streamBufferViewsOut.push_back(bufferView);
+                        streamIndicesOut.AddIndex(static_cast<u8>(iterIndex));
                     }
                 }
             }
@@ -337,8 +340,7 @@ namespace AZ
             if (success)
             {
                 layoutOut = layoutBuilder.End();
-
-                success &= RHI::ValidateStreamBufferViews(layoutOut, streamBufferViewsOut);
+                success &= RHI::ValidateStreamBufferViews(layoutOut, mesh, streamIndicesOut);
             }
 
             return success;
@@ -392,12 +394,14 @@ namespace AZ
             info.m_semantic = streamBufferInfo.m_semantic;
             info.m_customName = streamBufferInfo.m_customName;
             info.m_format = bufferViewDescriptor.m_elementFormat;
-            info.m_byteOffset = bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
-            info.m_byteCount = bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize;
-            info.m_stride = bufferViewDescriptor.m_elementSize;
             info.m_bufferIndex = TrackBuffer(streamBuffer);
-
             meshInstance.m_streamInfo.push_back(info);
+
+            u32 byteOffset = bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
+            u32 byteCount = bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize;
+            u32 byteStride = bufferViewDescriptor.m_elementSize;
+            RHI::StreamBufferView streamBufferView(*streamBuffer->GetRHIBuffer(), byteOffset, byteCount, byteStride);
+            meshInstance.AddStreamBufferView(streamBufferView);
 
             return true;
         }
@@ -428,5 +432,11 @@ namespace AZ
             m_buffers.emplace_back(buffer);
             return static_cast<uint32_t>(m_buffers.size() - 1);
         }
+
+        void ModelLod::ReleaseTrackedBuffers()
+        {
+            m_buffers.clear();
+        }
+
     } // namespace RPI
 } // namespace AZ

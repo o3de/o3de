@@ -31,6 +31,9 @@ class ConfigData:
         self.android_sdk_api_level = self.DEFAULT_API_LEVEL
         self.asset_mode = self.ASSET_MODE_LOOSE
         self.is_meta_quest_project = False
+        # When non-empty, looks like a series of space separated strings like
+        # "-DENABLE_MY_LIB=ON -DENABLE_ANOTHER_GEM=OFF"
+        self.extra_cmake_args = ""
 
 
     def as_dictionary(self) -> dict:
@@ -40,6 +43,7 @@ class ConfigData:
               "android_sdk_api_level" : self.android_sdk_api_level,
               "asset_mode":  self.asset_mode,
               "is_meta_quest_project": self.is_meta_quest_project,
+              "extra_cmake_args": self.extra_cmake_args,
               }
         return d
 
@@ -54,6 +58,7 @@ class ConfigData:
         self.android_sdk_api_level = d.get("android_sdk_api_level", self.DEFAULT_API_LEVEL)
         self.asset_mode = d.get("asset_mode", self.ASSET_MODE_LOOSE)
         self.is_meta_quest_project = d.get("is_meta_quest_project", False)
+        self.extra_cmake_args = d.get("extra_cmake_args", "")
 
 
     def save_to_json_file(self, filePath: str) -> bool:

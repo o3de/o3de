@@ -18,7 +18,7 @@ else()
 endif()
 
 ly_add_target(
-    NAME ${gem_name}.Public STATIC
+    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rpi_reflect_files.cmake
@@ -26,6 +26,10 @@ ly_add_target(
         ../Assets/atom_rpi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${MASKED_OCCLUSION_CULLING_FILES}
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RPI_PUBLIC_EXPORTS
+            ATOM_RPI_REFLECT_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/atom_rpi_public_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -81,10 +85,13 @@ ly_add_source_properties(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME ${gem_name}.Edit STATIC
+        NAME ${gem_name}.Edit ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_edit_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOM_RPI_EDIT_EXPORTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -99,7 +106,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ${gem_name}.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Private.Object OBJECT
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_private_files.cmake
@@ -112,17 +119,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 RPI_EDITOR # Compile RPI Editor module
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::${gem_name}.Public
                 Gem::Atom_RHI.Public
+                Gem::${gem_name}.Public
     )
 
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_editor_files.cmake
@@ -133,12 +139,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
-                AZ::AzCore
                 AZ::AzToolsFramework
-                Gem::${gem_name}.Editor.Static
                 Gem::${gem_name}.Edit
-                Gem::${gem_name}.Public
+                Gem::${gem_name}.Editor.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::Atom_RHI.Private
     )
@@ -159,7 +162,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME ${gem_name}.TestUtils.Static STATIC
+        NAME ${gem_name}.TestUtils STATIC
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_test_utils_files.cmake
@@ -195,11 +198,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Legacy::CryCommon
-                Gem::${gem_name}.Public
                 Gem::Atom_RHI.Public
-                Gem::${gem_name}.Edit
-                Gem::${gem_name}.TestUtils.Static
                 Gem::Atom_Utils.TestUtils.Static
+                Gem::${gem_name}.Edit
+                Gem::${gem_name}.Public
+                Gem::${gem_name}.TestUtils
     )
     ly_add_googletest(
         NAME Gem::${gem_name}.Tests
@@ -224,7 +227,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # Create a stub
         ly_add_target(
             NAME ${gem_name}.Builders GEM_MODULE
-
             NAMESPACE Gem
             FILES_CMAKE
                 atom_rpi_builders_stub_files.cmake
@@ -252,7 +254,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     endif()
     
     ly_add_target(
-        NAME ${gem_name}.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Private.Object OBJECT
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_builders_files.cmake
@@ -263,21 +265,20 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::SceneCore
                 AZ::SceneData
                 AZ::AssetBuilderSDK
+                Gem::Atom_RHI.Public
                 Gem::${gem_name}.Edit
                 Gem::${gem_name}.Public
-                Gem::Atom_RHI.Public
     )
 
     ly_add_target(
         NAME ${gem_name}.Builders GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             atom_rpi_builders_shared_files.cmake
@@ -289,15 +290,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
-                AZ::AzCore
-                AZ::AzFramework
-                AZ::SceneCore
-                AZ::AssetBuilderSDK
-                Gem::Atom_RHI.Public
-                Gem::${gem_name}.Edit
-                Gem::${gem_name}.Public
-                Gem::${gem_name}.Builders.Static
+                Gem::${gem_name}.Builders.Private.Object
     )
 
      # Inject the gem name into the Module source file
@@ -323,17 +316,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                     Source/RPI.Builders
             BUILD_DEPENDENCIES
                 PRIVATE
-                    AZ::AtomCore
                     AZ::AzTest
                     AZ::AzFramework
-                    AZ::AzToolsFramework
-                    AZ::AssetBuilderSDK
-                    AZ::SceneCore
-                    Legacy::CryCommon
-                    Gem::${gem_name}.Public
-                    Gem::Atom_RHI.Public
-                    Gem::${gem_name}.Edit
-                    Gem::${gem_name}.Builders.Static
+                    Gem::${gem_name}.Builders.Private.Object
         )
         ly_add_googletest(
             NAME Gem::${gem_name}.Builders.Tests

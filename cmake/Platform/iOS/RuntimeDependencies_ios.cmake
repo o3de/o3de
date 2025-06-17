@@ -103,21 +103,21 @@ function(ly_delayed_generate_runtime_dependencies)
         endif()
     endforeach()
 
-    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    if(test_runner_dependencies)
         add_dependencies("AzTestRunner" ${test_runner_dependencies})
-        
-        # We still need to add indirect dependencies(eg. 3rdParty)
-        unset(dependencies)
-        o3de_get_filtered_dependencies_for_target(dependencies AzTestRunner)
+    endif()
+ 
+    # We still need to add indirect dependencies(eg. 3rdParty)
+    unset(dependencies)
+    o3de_get_filtered_dependencies_for_target(dependencies AzTestRunner)
 
-        if(dependencies)
-            set_target_properties("AzTestRunner"
-                PROPERTIES
-                XCODE_EMBED_FRAMEWORKS "${dependencies}"
-                XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
-                XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
-            )
-        endif()
+    if(dependencies)
+        set_target_properties("AzTestRunner"
+            PROPERTIES
+            XCODE_EMBED_FRAMEWORKS "${dependencies}"
+            XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY TRUE
+            XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
+        )
     endif()
 
 endfunction()

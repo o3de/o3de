@@ -11,6 +11,10 @@ include(AzFramework/feature_options.cmake)
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
+if(LY_PIX_ENABLED)
+    set(AZ_FRAMEWORK_NATIVEUI_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
+endif()
+
 ly_add_target(
     NAME AzFramework STATIC
     NAMESPACE AZ
@@ -52,6 +56,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            ${AZ_FRAMEWORK_NATIVEUI_PIX_BUILD_DEPENDENCIES}
 )
 
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)

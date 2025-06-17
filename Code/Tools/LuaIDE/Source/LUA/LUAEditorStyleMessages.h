@@ -12,6 +12,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <QColor>
 #include <QFont>
@@ -70,6 +71,7 @@ namespace LUAEditor
         QColor GetFindResultsMatchColor() const { return ToQColor(m_findResultsMatchColor); }
         QColor GetFindResultsLineHighlightColor() const { return ToQColor(m_findResultsLineHighlightColor); }
         const QFont& GetFont() const { return m_font; }
+        bool GetNoAntiAliasing() const { return m_noAntialiasing; }
         int GetTabSize() const { return m_tabSize; }
         bool UseSpacesInsteadOfTabs() const { return m_useSpacesInsteadOfTabs; }
 
@@ -182,6 +184,9 @@ namespace LUAEditor
         int m_fontSize {
             14
         };
+        bool m_noAntialiasing {
+            false
+        };
         // Number of spaces to make a tab
         int m_tabSize {
             4
@@ -192,6 +197,18 @@ namespace LUAEditor
 
         void OnColorChange();
         void OnFontChange();
+
+        // We use this class to ensure that the font is updated when the instance of it got de-serialized.
+        class SerializationEvents : public AZ::SerializeContext::IEventHandler
+        {
+            void OnReadEnd(void* classPtr) override
+            {
+                if(auto* settings = static_cast<SyntaxStyleSettings*>(classPtr))
+                {
+                    settings->OnFontChange();
+                }
+            }
+        };
     };
 
     class HighlightedWords

@@ -85,23 +85,23 @@ namespace EMotionFX
             {
                 const Physics::ColliderConfiguration* colliderConfig = static_cast<Physics::ColliderConfiguration*>(parentDataNode->GetInstance(instanceIndex));
 
-                if (elementData->m_nameCrc == AZ_CRC("CollisionLayer", 0x39931633))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionLayer"))
                 {
                     command->SetOldCollisionLayer(colliderConfig->m_collisionLayer);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("CollisionGroupId", 0x84fe4bbe))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionGroupId"))
                 {
                     command->SetOldCollisionGroupId(colliderConfig->m_collisionGroupId);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Trigger", 0x1a6b0f5d))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Trigger"))
                 {
                     command->SetOldIsTrigger(colliderConfig->m_isTrigger);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Position", 0x462ce4f5))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Position"))
                 {
                     command->SetOldPosition(colliderConfig->m_position);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Rotation", 0x297c98f1))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Rotation"))
                 {
                     command->SetOldRotation(colliderConfig->m_rotation);
                 }
@@ -109,7 +109,7 @@ namespace EMotionFX
                 {
                     command->SetOldMaterialSlots(colliderConfig->m_materialSlots);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
+                if (elementData->m_nameCrc == AZ_CRC_CE("ColliderTag"))
                 {
                     command->SetOldTag(colliderConfig->m_tag);
                 }
@@ -118,7 +118,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::BoxShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::BoxShapeConfiguration* boxShapeConfig = static_cast<Physics::BoxShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Configuration", 0xa5e2a5d7))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Configuration"))
                 {
                     command->SetOldDimensions(boxShapeConfig->m_dimensions);
                 }
@@ -127,11 +127,11 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::CapsuleShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::CapsuleShapeConfiguration* capsuleShapeConfig = static_cast<Physics::CapsuleShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetOldRadius(capsuleShapeConfig->m_radius);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Height", 0xf54de50f))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Height"))
                 {
                     command->SetOldHeight(capsuleShapeConfig->m_height);
                 }
@@ -140,7 +140,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::SphereShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::SphereShapeConfiguration* sphereShapeConfig = static_cast<Physics::SphereShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetOldRadius(sphereShapeConfig->m_radius);
                 }
@@ -188,23 +188,23 @@ namespace EMotionFX
             {
                 const Physics::ColliderConfiguration* colliderConfig = static_cast<Physics::ColliderConfiguration*>(parentDataNode->GetInstance(instanceIndex));
 
-                if (elementData->m_nameCrc == AZ_CRC("CollisionLayer", 0x39931633))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionLayer"))
                 {
                     command->SetCollisionLayer(colliderConfig->m_collisionLayer);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("CollisionGroupId", 0x84fe4bbe))
+                if (elementData->m_nameCrc == AZ_CRC_CE("CollisionGroupId"))
                 {
                     command->SetCollisionGroupId(colliderConfig->m_collisionGroupId);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Trigger", 0x1a6b0f5d))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Trigger"))
                 {
                     command->SetIsTrigger(colliderConfig->m_isTrigger);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Position", 0x462ce4f5))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Position"))
                 {
                     command->SetPosition(colliderConfig->m_position);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Rotation", 0x297c98f1))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Rotation"))
                 {
                     command->SetRotation(colliderConfig->m_rotation);
                 }
@@ -212,7 +212,7 @@ namespace EMotionFX
                 {
                     command->SetMaterialSlots(colliderConfig->m_materialSlots);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
+                if (elementData->m_nameCrc == AZ_CRC_CE("ColliderTag"))
                 {
                     command->SetTag(colliderConfig->m_tag);
                     CommandSimulatedObjectHelpers::ReplaceTag(actor, colliderType, /*oldTag=*/command->GetOldTag().value(), /*newTag=*/colliderConfig->m_tag, m_commandGroup);
@@ -222,7 +222,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::BoxShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::BoxShapeConfiguration* boxShapeConfig = static_cast<Physics::BoxShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Configuration", 0xa5e2a5d7))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Configuration"))
                 {
                     command->SetDimensions(boxShapeConfig->m_dimensions);
                 }
@@ -231,11 +231,11 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::CapsuleShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::CapsuleShapeConfiguration* capsuleShapeConfig = static_cast<Physics::CapsuleShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetRadius(capsuleShapeConfig->m_radius);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("Height", 0xf54de50f))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Height"))
                 {
                     command->SetHeight(capsuleShapeConfig->m_height);
                 }
@@ -244,7 +244,7 @@ namespace EMotionFX
             else if (serializeContext->CanDowncast(classData->m_typeId, azrtti_typeid<Physics::SphereShapeConfiguration>(), classData->m_azRtti, nullptr))
             {
                 const Physics::SphereShapeConfiguration* sphereShapeConfig = static_cast<Physics::SphereShapeConfiguration*>(parentDataNode->GetInstance(instanceIndex));
-                if (elementData->m_nameCrc == AZ_CRC("Radius", 0x3b7c6e5a))
+                if (elementData->m_nameCrc == AZ_CRC_CE("Radius"))
                 {
                     command->SetRadius(sphereShapeConfig->m_radius);
                 }

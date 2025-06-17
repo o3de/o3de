@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
@@ -28,7 +29,7 @@ namespace AZ
             IntegerRange,
         };
 
-        const char* ToString(ShaderOptionType shaderOptionType);
+        ATOM_RPI_REFLECT_API const char* ToString(ShaderOptionType shaderOptionType);
 
     } // namespace RPI
 

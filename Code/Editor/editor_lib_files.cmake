@@ -228,8 +228,6 @@ set(FILES
     res/water.bmp
     res/work_in_progress_icon.ico
     res/MannFileManagerImageList.bmp
-    Plugin.cpp
-    Plugin.h
     PluginManager.cpp
     PluginManager.h
     IEditor.h
@@ -262,17 +260,11 @@ set(FILES
     Include/HitContext.h
     Include/ICommandManager.h
     Include/IDisplayViewport.h
-    Include/IEditorClassFactory.h
-    Include/ILogFile.h
     Include/IKeyTimeSet.h
-    Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/ISourceControl.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
-    Objects/BaseObject.cpp
-    Objects/BaseObject.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -404,17 +396,6 @@ set(FILES
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LogFileImpl.cpp
-    LogFileImpl.h
-    Objects/ClassDesc.h
-    Objects/ObjectLoader.cpp
-    Objects/ObjectLoader.h
-    Objects/ObjectManager.cpp
-    Objects/ObjectManager.h
-    Objects/ObjectManagerLegacyUndo.cpp
-    Objects/ObjectManagerLegacyUndo.h
-    Objects/EntityObject.cpp
-    Objects/EntityObject.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
@@ -422,8 +403,6 @@ set(FILES
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
-    PreferencesStdPages.h
-    PreferencesStdPages.cpp
     EditorPreferencesPageGeneral.h
     EditorPreferencesPageGeneral.cpp
     EditorPreferencesPageFiles.h
@@ -477,8 +456,6 @@ set(FILES
     TrackView/TrackViewPythonFuncs.cpp
     TrackView/TrackViewSequenceManager.cpp
     TrackView/TrackViewSequenceManager.h
-    TrackView/TrackViewUndo.cpp
-    TrackView/TrackViewUndo.h
     TrackView/CommentNodeAnimator.cpp
     TrackView/DirectorNodeAnimator.cpp
     TrackView/CommentNodeAnimator.h
@@ -520,6 +497,7 @@ set(FILES
     TrackView/SelectKeyUIControls.cpp
     TrackView/SequenceKeyUIControls.cpp
     TrackView/SoundKeyUIControls.cpp
+    TrackView/StringKeyUIControls.cpp
     TrackView/TrackEventKeyUIControls.cpp
     TrackView/TrackViewTrackPropsDlg.ui
     TrackView/TVEventsDialog.cpp
@@ -543,6 +521,9 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
+    TrackView/TrackViewMessageBox.cpp
+    TrackView/TrackViewMessageBox.h
+    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
@@ -581,8 +562,6 @@ set(FILES
     WaitProgress.h
     Util/FileUtil_impl.h
     Util/FileUtil_impl.cpp
-    Util/ImageUtil_impl.h
-    Util/ImageUtil_impl.cpp
     Util/ColumnSortProxyModel.h
     Util/ColumnSortProxyModel.cpp
     Util/AbstractGroupProxyModel.h
@@ -603,13 +582,10 @@ set(FILES
     Util/3DConnexionDriver.h
     Util/FileChangeMonitor.cpp
     Util/FileChangeMonitor.h
-    Util/ImageUtil.cpp
-    Util/ImageUtil.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
-    Util/Math.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui

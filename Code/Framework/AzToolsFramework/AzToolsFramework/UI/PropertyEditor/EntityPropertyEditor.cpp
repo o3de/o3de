@@ -1415,86 +1415,7 @@ namespace AzToolsFramework
             RemoveHiddenComponents(componentsOnEntity);
             SortComponentsByOrder(entityId, componentsOnEntity);
             SortComponentsByPriority(componentsOnEntity);
-            SaveComponentOrder(entityId, componentsOnEntity);
         }
-    }
-
-    void EntityPropertyEditor::SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity)
-    {
-        // Create list of components with their current order. AZStd::sort isn't guaranteed to maintain order for equivalent entities.
-
-        AZStd::vector< OrderedSortComponentEntry> sortedComponents;
-        int index = 0;
-        for (AZ::Component* component : componentsOnEntity)
-        {
-            sortedComponents.push_back(OrderedSortComponentEntry(component, index++));
-        }
-
-        // shuffle immovable components back to the front
-        AZStd::sort(
-            sortedComponents.begin(),
-            sortedComponents.end(),
-            [](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
-            {
-                AZStd::optional<int> fixedComponentListIndex1 = GetFixedComponentListIndex(component1.m_component);
-                AZStd::optional<int> fixedComponentListIndex2 = GetFixedComponentListIndex(component2.m_component);
-
-                // If both components have fixed list indices, sort based on those indices
-                if (fixedComponentListIndex1.has_value() && fixedComponentListIndex2.has_value())
-                {
-                    return fixedComponentListIndex1.value() < fixedComponentListIndex2.value();
-                }
-
-                // If component 1 has a fixed list index, sort it first
-                if (fixedComponentListIndex1.has_value())
-                {
-                    return true;
-                }
-
-                // If component 2 has a fixed list index, component 1 should not be sorted before it
-                if (fixedComponentListIndex2.has_value())
-                {
-                    return false;
-                }
-
-                if (!IsComponentRemovable(component1.m_component) && IsComponentRemovable(component2.m_component))
-                {
-                    return true;
-                }
-
-                if (IsComponentRemovable(component1.m_component) && !IsComponentRemovable(component2.m_component))
-                {
-                    return false;
-                }
-
-                //maintain original order if they don't need swapping
-                return component1.m_originalOrder < component2.m_originalOrder;
-            });
-
-        //create new order array from sorted structure
-        componentsOnEntity.clear();
-        for (OrderedSortComponentEntry& component : sortedComponents)
-        {
-            componentsOnEntity.push_back(component.m_component);
-        }
-    }
-
-    void SortComponentsByOrder(const AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity)
-    {
-        // sort by component order, shuffling anything not found in component order to the end
-        ComponentOrderArray componentOrder;
-        EditorInspectorComponentRequestBus::EventResult(
-            componentOrder, entityId, &EditorInspectorComponentRequests::GetComponentOrderArray);
-
-        AZStd::sort(
-            componentsOnEntity.begin(),
-            componentsOnEntity.end(),
-            [&componentOrder](const AZ::Component* component1, const AZ::Component* component2)
-            {
-                return
-                    AZStd::find(componentOrder.begin(), componentOrder.end(), component1->GetId()) <
-                    AZStd::find(componentOrder.begin(), componentOrder.end(), component2->GetId());
-            });
     }
 
     void SaveComponentOrder(const AZ::EntityId entityId, AZStd::span<AZ::Component* const> componentsInOrder)
@@ -1521,42 +1442,7 @@ namespace AzToolsFramework
         return componentClassData && filter(*componentClassData);
     }
 
-    bool EntityPropertyEditor::IsComponentRemovable(const AZ::Component* component)
-    {
-        // Determine if this component can be removed.
-        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
-        if (componentClassData && componentClassData->m_editData)
-        {
-            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::RemoveableByUser))
-                {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
-                    {
-                        return attributeData->Get(nullptr);
-                    }
-                }
-            }
-        }
-
-        if (componentClassData && AppearsInAnyComponentMenu(*componentClassData))
-        {
-            return true;
-        }
-
-        // If this is a GenericComponentWrapper which wraps a nullptr, let the user remove it
-        if (auto genericComponentWrapper = azrtti_cast<const Components::GenericComponentWrapper*>(component))
-        {
-            if (!genericComponentWrapper->GetTemplate())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool EntityPropertyEditor::AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const
+   bool EntityPropertyEditor::AreComponentsRemovable(AZStd::span<AZ::Component* const> components) const
     {
         for (auto component : components)
         {
@@ -1568,35 +1454,12 @@ namespace AzToolsFramework
         return true;
     }
 
-    AZStd::optional<int> EntityPropertyEditor::GetFixedComponentListIndex(const AZ::Component* component)
-    {
-        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
-        if (componentClassData && componentClassData->m_editData)
-        {
-            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-            {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
-                {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
-                    {
-                        return { attributeData->Get(nullptr) };
-                    }
-                }
-            }
-        }
-        return {};
-    }
 
     bool EntityPropertyEditor::AllowAnyComponentModification() const
     {
         const InspectorLayout currentLayout = GetCurrentInspectorLayout();
         return currentLayout != InspectorLayout::ContainerEntityOfFocusedPrefab &&
                currentLayout != InspectorLayout::ContainerEntity;
-    }
-
-    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
-    {
-        return !GetFixedComponentListIndex(component).has_value();
     }
 
     bool EntityPropertyEditor::AreComponentsDraggable(AZStd::span<AZ::Component* const> components) const
@@ -2616,14 +2479,14 @@ namespace AzToolsFramework
             case AddressRootType::RootAtComponentsContainer:
             {
                 // Insert a node to represent the Components container.
-                outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
+                outAddress.push_back(AZ_CRC_CE("Components"));
             }
             break;
             case AddressRootType::RootAtEntity:
             {
                 // Insert a node to represent the Components container, and another to represent the entity root.
-                outAddress.push_back(AZ_CRC("Components", 0xee48f5fd));
-                outAddress.push_back(AZ_CRC("AZ::Entity", 0x1fd61e11));
+                outAddress.push_back(AZ_CRC_CE("Components"));
+                outAddress.push_back(AZ_CRC_CE("AZ::Entity"));
             }
             break;
             }
@@ -5442,6 +5305,11 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnComponentOrderChanged()
     {
+        if (m_isBuildingProperties)
+        {
+            return;
+        }
+
         QueuePropertyRefresh();
         m_shouldScrollToNewComponents = true;
     }

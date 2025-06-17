@@ -35,7 +35,7 @@ namespace AZStd
 
 namespace AZ
 {
-    const static AZ::Crc32 RuntimeEBusAttribute = AZ_CRC("RuntimeEBus", 0x466b899b); ///< Signals that this reflected ebus should only be available at runtime, helps tools filter out data driven ebuses
+    const static AZ::Crc32 RuntimeEBusAttribute = AZ_CRC_CE("RuntimeEBus"); ///< Signals that this reflected ebus should only be available at runtime, helps tools filter out data driven ebuses
 
     constexpr const char* k_PropertyNameGetterSuffix = "::Getter";
     constexpr const char* k_PropertyNameSetterSuffix = "::Setter";
@@ -2931,4 +2931,4 @@ namespace AZ
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 
-DECLARE_EBUS_EXTERN(BehaviorContextEvents);
+DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(BehaviorContextEvents);

@@ -438,6 +438,8 @@ include(${pal_cmake_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL
 
 set(LY_DISABLE_TEST_MODULES FALSE CACHE BOOL "Option to forcibly disable the inclusion of test targets in the build")
 
-if(LY_DISABLE_TEST_MODULES)
+if(LY_DISABLE_TEST_MODULES OR NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+    # AzTest library, which requires google test, is not supported on this platform
+    # so none of the tests can build either.
     ly_set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
 endif()

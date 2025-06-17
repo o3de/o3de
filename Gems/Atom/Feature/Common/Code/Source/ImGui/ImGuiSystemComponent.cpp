@@ -7,8 +7,7 @@
  */
 
 #include <ImGui/ImGuiSystemComponent.h>
-#include <ImGui/ImGuiPass.h>
-
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -31,17 +30,17 @@ namespace AZ
 
         void ImGuiSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+            provided.push_back(AZ_CRC_CE("ImGuiSystemComponent"));
         }
 
         void ImGuiSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void ImGuiSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
         {
-            incompatbile.push_back(AZ_CRC("ImGuiSystemComponent", 0x2f08b9a7));
+            incompatbile.push_back(AZ_CRC_CE("ImGuiSystemComponent"));
         }
 
         ImGuiSystemComponent::ImGuiSystemComponent()

@@ -10,7 +10,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
 // https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
-bool IntersectRayAABB(float3 rayOrigin, float3 rayDirection, float3 aabbMin, float3 aabbMax, out float t, out float3 normal)
+bool IntersectRayAABB(float3 rayOrigin, float3 rayDirection, float3 aabbMin, float3 aabbMax, out float t, out float3 normal, out float2 uv)
 {
     t = 0.f;
     normal = float3(1, 0, 0);
@@ -45,6 +45,7 @@ bool IntersectRayAABB(float3 rayOrigin, float3 rayDirection, float3 aabbMin, flo
         return false;
     }
 
+    int uvAxis = 0;
     for (int i = 0; i < 3; i++)
     {
         if (whichPlane != i)
@@ -54,6 +55,8 @@ bool IntersectRayAABB(float3 rayOrigin, float3 rayDirection, float3 aabbMin, flo
             {
                 return false;
             }
+
+            uv[uvAxis++] = (coord - aabbMin[i]) / (aabbMax[i] - aabbMin[i]);
         }
     }
 
@@ -71,12 +74,13 @@ void ObbIntersection()
 
     float t;
     float3 normal;
-    if (IntersectRayAABB(ObjectRayOrigin(), ObjectRayDirection(), aabbMin, aabbMax, t, normal))
+    float2 uv;
+    if (IntersectRayAABB(ObjectRayOrigin(), ObjectRayDirection(), aabbMin, aabbMax, t, normal, uv))
     {
         ProceduralGeometryIntersectionAttributes attrib;
         attrib.SetPosition(ObjectRayOrigin() + ObjectRayDirection() * t);
         attrib.SetNormal(normal);
-        attrib.SetUv(float2(0, 0));
+        attrib.SetUv(uv);
         attrib.SetTangent(float4(1, 0, 0, 1));
         ReportHit(t, 0, attrib);
     }

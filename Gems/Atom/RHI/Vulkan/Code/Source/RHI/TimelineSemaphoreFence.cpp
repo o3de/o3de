@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/VkAllocator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <RHI/Device.h>
 #include <RHI/TimelineSemaphoreFence.h>
 
@@ -50,6 +51,17 @@ namespace AZ
             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
             timelineCreateInfo.initialValue = 0;
 
+            VkExternalSemaphoreHandleTypeFlags externalHandleTypeFlags = 0;
+            ExternalHandleRequirementBus::Broadcast(
+                &ExternalHandleRequirementBus::Events::CollectSemaphoreExportHandleTypes, externalHandleTypeFlags);
+            VkExportSemaphoreCreateInfoKHR createExport{};
+            if (externalHandleTypeFlags != 0)
+            {
+                createExport.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+                createExport.handleTypes = externalHandleTypeFlags;
+                timelineCreateInfo.pNext = &createExport;
+            }
+
             VkSemaphoreCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             createInfo.pNext = &timelineCreateInfo;
@@ -73,7 +85,6 @@ namespace AZ
                 device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, VkSystemAllocator::Get());
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
-            Base::ShutdownInternal();
         }
 
         void TimelineSemaphoreFence::SignalOnCpuInternal()
@@ -97,7 +108,12 @@ namespace AZ
             waitInfo.flags = 0;
             waitInfo.semaphoreCount = 1;
             waitInfo.pSemaphores = &m_nativeSemaphore;
-            waitInfo.pValues = &m_pendingValue;
+
+            // If another thread resets this Semaphore while we are waiting, m_pendingValue is changed, which might interfere
+            // with the WaitSemaphore here, depending on how this is implemented in the driver.
+            // To avoid this, make a local copy of the pending value
+            auto pendingValue = m_pendingValue;
+            waitInfo.pValues = &pendingValue;
 
             auto& device = static_cast<Device&>(GetDevice());
             device.GetContext().WaitSemaphores(device.GetNativeDevice(), &waitInfo, AZStd::numeric_limits<uint64_t>::max());

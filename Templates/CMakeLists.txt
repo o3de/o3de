@@ -9,6 +9,7 @@
 ly_install_directory(
     DIRECTORIES
         AssetGem
+        AddTestsToProject
         CppToolGem
         DefaultGem
         PrebuiltGem

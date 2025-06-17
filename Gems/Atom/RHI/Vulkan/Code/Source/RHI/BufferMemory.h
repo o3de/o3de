@@ -59,8 +59,13 @@ namespace AZ
 
             const VkBuffer GetNativeBuffer();
             const Descriptor& GetDescriptor() const;
+            VkSharingMode GetSharingMode() const;
 
+            VkDeviceMemory GetNativeDeviceMemory() const;
+            size_t GetMemoryViewOffset() const;
+            size_t GetAllocationSize() const;
             size_t GetSize() const;
+            const MemoryView& GetMemoryView() const;
 
         private:
             BufferMemory() = default;
@@ -78,6 +83,7 @@ namespace AZ
             Descriptor m_descriptor;
             VkBuffer m_vkBuffer = VK_NULL_HANDLE;
             MemoryView m_memoryView;
+            VkSharingMode m_sharingMode = VK_SHARING_MODE_MAX_ENUM;
         };
     }
 }

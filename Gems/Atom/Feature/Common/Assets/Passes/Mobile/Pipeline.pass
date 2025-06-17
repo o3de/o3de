@@ -59,12 +59,13 @@
                         }
                     ]
                 },
+                // First subpass group that contains the Forward, Skybox, Silhoutte gather and Resolve passes
                 {
-                    "Name": "ForwardPass",
-                    "TemplateName": "MobileForwardPassTemplate",
+                    "Name": "Subpass1",
+                    "TemplateName": "MobileSubpass1ParentPassTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DirectionalLightShadowmap",
+                            "LocalSlot": "DirectionalShadowmap",
                             "AttachmentRef": {
                                 "Pass": "Shadows",
                                 "Attachment": "DirectionalShadowmap"
@@ -76,137 +77,6 @@
                                 "Pass": "Shadows",
                                 "Attachment": "ProjectedShadowmap"
                             }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "mobileForward",
-                        "BindViewSrg": true,
-                        "PassSrgShaderAsset": {
-                            "FilePath": "Shaders/ForwardPassSrg.shader"
-                        }
-                    }
-                },
-                {
-                    "Name": "SilhouetteGatherPass",
-                    "TemplateName": "SilhouetteGatherPassTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthStencilInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "SkyBoxPass",
-                    "TemplateName": "MobileSkyBoxTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "SpecularInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "LightingOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SkyBoxDepth",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "MSAAResolvePass",
-                    "TemplateName": "MSAAResolveColorTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "SpecularInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "MobileTransparentPass",
-                    "TemplateName": "MobileTransparentParentTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthStencil",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputOutput",
-                            "AttachmentRef": {
-                                "Pass": "MSAAResolvePass",
-                                "Attachment": "Output"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DeferredFogPass",
-                    "TemplateName": "MobileDeferredFogPassTemplate",
-                    "Enabled": false,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDepthStencil",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "RenderTargetInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "MobileTransparentPass",
-                                "Attachment": "InputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "SilhouettePass",
-                    "TemplateName": "SilhouettePassTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputOutput",
-                            "AttachmentRef": {
-                                "Pass": "MobileTransparentPass",
-                                "Attachment": "InputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "MobilePostProcessPass",
-                    "TemplateName": "MobilePostProcessParentTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "LightingInput",
-                            "AttachmentRef": {
-                                "Pass": "MobileTransparentPass",
-                                "Attachment": "InputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Depth",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
                         },
                         {
                             "LocalSlot": "PipelineOutput",
@@ -216,49 +86,32 @@
                             }
                         }
                     ]
-                },               
-                {
-                    "Name": "AuxGeomPass",
-                    "TemplateName": "AuxGeomPassTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "ColorInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "MobilePostProcessPass",
-                                "Attachment": "Output"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DepthInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ForwardPass",
-                                "Attachment": "DepthStencilOutput"
-                            }
-                        }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "auxgeom",
-                        "BindViewSrg": true
-                    }
                 },
+                // This parent contains two subpass groups plus all the other passes. The subpass groups could be merged into one
+                // if no extra passes between them are enabled.
                 {
-                    "Name": "UIPass",
-                    "TemplateName": "UIParentTemplate",
+                    "Name": "Subpasses",
+                    "TemplateName": "SubpassesParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DepthInputOutput",
+                            "LocalSlot": "LightingInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardPass",
+                                "Pass": "Subpass1",
+                                "Attachment": "LightingOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Subpass1",
                                 "Attachment": "DepthStencilOutput"
                             }
                         },
                         {
-                            "LocalSlot": "InputOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
-                                "Pass": "AuxGeomPass",
-                                "Attachment": "ColorInputOutput"
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -271,8 +124,8 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "UIPass",
-                                "Attachment": "InputOutput"
+                                "Pass": "Subpasses",
+                                "Attachment": "Output"
                             }
                         },
                         {
@@ -283,7 +136,7 @@
                             }
                         }
                     ]
-                }
+                }          
             ]
         }
     }

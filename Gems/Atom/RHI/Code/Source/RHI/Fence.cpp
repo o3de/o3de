@@ -8,12 +8,13 @@
 
 #include <Atom/RHI/Fence.h>
 
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
+
 #include <AzCore/Debug/Profiler.h>
 
 namespace AZ::RHI
 {
-    Fence::~Fence() {}
-
     bool Fence::ValidateIsInitialized() const
     {
         if (Validation::IsEnabled())
@@ -28,7 +29,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode Fence::Init(Device& device, FenceState initialState)
+    ResultCode Fence::Init(MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice)
     {
         if (Validation::IsEnabled())
         {
@@ -39,15 +40,32 @@ namespace AZ::RHI
             }
         }
 
-        const ResultCode resultCode = InitInternal(device, initialState);
+        MultiDeviceObject::Init(deviceMask);
 
-        if (resultCode == ResultCode::Success)
+        ResultCode resultCode = ResultCode::Success;
+
+        IterateDevices(
+            [this, initialState, usedForWaitingOnDevice, &resultCode](int deviceIndex)
+            {
+                auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+
+                resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, usedForWaitingOnDevice);
+
+                return resultCode == ResultCode::Success;
+            });
+
+        if (resultCode != ResultCode::Success)
         {
-            DeviceObject::Init(device);
+            // Reset already initialized device-specific Fences and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
-        else
+
+        if (const auto& name = GetName(); !name.IsEmpty())
         {
-            AZ_Assert(false, "Failed to create a fence");
+            SetName(name);
         }
 
         return resultCode;
@@ -55,16 +73,7 @@ namespace AZ::RHI
 
     void Fence::Shutdown()
     {
-        if (IsInitialized())
-        {
-            if (m_waitThread.joinable())
-            {
-                m_waitThread.join();
-            }
-
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        MultiDeviceObject::Shutdown();
     }
 
     ResultCode Fence::SignalOnCpu()
@@ -74,53 +83,10 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        SignalOnCpuInternal();
-        return ResultCode::Success;
-    }
-
-    ResultCode Fence::WaitOnCpu() const
-    {
-        if (!ValidateIsInitialized())
+        return IterateObjects<DeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
-            return ResultCode::InvalidOperation;
-        }
-
-        AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
-        WaitOnCpuInternal();
-        return ResultCode::Success;
-    }
-
-    ResultCode Fence::WaitOnCpuAsync(SignalCallback callback)
-    {
-        if (!ValidateIsInitialized())
-        {
-            return ResultCode::InvalidOperation;
-        }
-
-        if (!callback)
-        {
-            AZ_Error("Fence", false, "Callback is null.");
-            return ResultCode::InvalidOperation;
-        }
-
-        if (m_waitThread.joinable())
-        {
-            m_waitThread.join();
-        }
-
-        AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
-
-        m_waitThread = AZStd::thread(threadDesc, [this, callback]()
-        {
-            ResultCode resultCode = WaitOnCpu();
-            if (resultCode != ResultCode::Success)
-            {
-                AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
-            }
-            callback();
+            return deviceFence->SignalOnCpu();
         });
-
-        return ResultCode::Success;
     }
 
     ResultCode Fence::Reset()
@@ -130,17 +96,9 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        ResetInternal();
-        return ResultCode::Success;
-    }
-
-    FenceState Fence::GetFenceState() const
-    {
-        if (!ValidateIsInitialized())
+        return IterateObjects<DeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
-            return FenceState::Reset;
-        }
-
-        return GetFenceStateInternal();
+            return deviceFence->Reset();
+        });
     }
-}
+} // namespace AZ::RHI

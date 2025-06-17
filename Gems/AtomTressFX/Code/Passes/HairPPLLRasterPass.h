@@ -47,6 +47,7 @@ namespace AZ
 
                 // Pass behavior overrides
                 void BuildInternal() override;
+                void InitializeInternal() override;                
             };
 
         } // namespace Hair

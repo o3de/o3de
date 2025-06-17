@@ -77,7 +77,7 @@ namespace UnitTest
         AZ::Crc32 GetShapeType() const override
         {
             ++m_count;
-            return AZ_CRC("TestShape", 0x856ca50c);
+            return AZ_CRC_CE("TestShape");
         }
 
         AZ::Aabb m_aabb = AZ::Aabb::CreateNull();

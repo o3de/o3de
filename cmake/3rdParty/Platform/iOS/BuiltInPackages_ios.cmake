@@ -22,7 +22,6 @@ ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-ios       TARGETS Freetyp
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev2-ios TARGETS AWSNativeSDK                PACKAGE_HASH bea50bcade9f322bdc540bdf84dba9103cb993b6e021c8836cc7777ef4a44015)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-ios             TARGETS Lua             PACKAGE_HASH 82f27bf6c745c98395dcea7ec72f82cb5254fd19fca9f5ac7a6246527a30bacb)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-ios          TARGETS mikkelsen       PACKAGE_HASH 976aaa3ccd8582346132a10af253822ccc5d5bcc9ea5ba44d27848f65ee88a8a)
-ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googletest      PACKAGE_HASH 2f121ad9784c0ab73dfaa58e1fee05440a82a07cc556bec162eeb407688111a7)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-ios TARGETS GoogleBenchmark PACKAGE_HASH 05addc0d87e5a3f3b0eed50aea107fdead05da232c4212e8c3662a53f15f8b08)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev3-ios            TARGETS PNG             PACKAGE_HASH b476f7d3686a08c4adaec6a6e889db1138483863ddf7b0c7b4fafb553951e87c)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-ios   TARGETS libsamplerate   PACKAGE_HASH 7656b961697f490d4f9c35d2e61559f6fc38c32102e542a33c212cd618fc2119)

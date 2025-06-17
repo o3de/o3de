@@ -2413,7 +2413,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isTextPixelAligned, "Is text pixel aligned", "When checked, all text will be rounded to the nearest pixel.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCanvasComponent::OnTextPixelAlignmentChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_renderToTexture, "Render to texture", "When checked, the canvas is rendered to a texture instead of the full screen.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_attachmentImageAsset, "Render Target", "The asset for the attachment image that this canvas renders to.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::m_renderToTexture);
 
@@ -2421,7 +2421,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isPositionalInputSupported, "Handle positional", "When checked, positional input (mouse/touch) will automatically be handled.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isConsumingAllInputEvents, "Consume all input", "When checked, all input events will be consumed by this canvas while it is enabled.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::GetIsPositionalInputSupported);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isMultiTouchSupported, "Handle multi-touch", "When checked, multi-touch input will automatically be handled.")

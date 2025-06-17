@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -34,5 +35,8 @@ namespace AZ::RHI
         //! the platform itself may still report out of memory errors. Therefore, it is strongly recommended to assign
         //! a budget to Device pools where virtual memory is not present on most platforms.
         AZ::u64 m_budgetInBytes = 0;
+
+        /// The device mask used to create resources from this pool.
+        MultiDevice::DeviceMask m_deviceMask = MultiDevice::AllDevices;
     };
 }

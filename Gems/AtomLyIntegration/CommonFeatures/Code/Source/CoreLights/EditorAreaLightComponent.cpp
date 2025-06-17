@@ -47,7 +47,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
                             ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AreaLight.svg")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/light/")
                         ;
@@ -169,8 +169,8 @@ namespace AZ
                             Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "ESM exponent",
                             "Exponent used by ESM shadows. "
                             "Larger values increase the sharpness of the border between lit and unlit areas.")
-                            ->Attribute(Edit::Attributes::Min, 50.0f)
-                            ->Attribute(Edit::Attributes::Max, 5000.0f)
+                            ->Attribute(Edit::Attributes::Min, 1.0f)
+                            ->Attribute(Edit::Attributes::Max, 20.0f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 0)
                             ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.05f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)

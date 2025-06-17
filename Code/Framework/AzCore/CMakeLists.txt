@@ -24,7 +24,7 @@ endif()
 # and will ignore all overrides in release builds.
 # This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2, 3 or 4 when generating the build files.
 # The override can be removed by passing -UALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES when generating the build files.
-set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES "" CACHE STRING 
+set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES "" CACHE STRING
 "Forces the Settings Registry development overrides to be used or ignored.
   If unset, development overrides are used in development builds and ignored in release builds.
   0 disables the development overrides in all builds.
@@ -73,12 +73,15 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AzCore STATIC
+    NAME AzCore.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
         AzCore/azcore_files.cmake
         AzCore/std/azstd_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AZCORE_EXPORTS
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -87,6 +90,8 @@ ly_add_target(
             ${pal_dir}
             ${common_dir}
     BUILD_DEPENDENCIES
+        PRIVATE
+            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
         PUBLIC
             3rdParty::Lua
             3rdParty::RapidJSON
@@ -94,9 +99,19 @@ ly_add_target(
             3rdParty::ZLIB
             3rdParty::zstd
             3rdParty::cityhash
-            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
             AZ::O3DEKernel
 )
+
+ly_add_target(
+    NAME AzCore ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzCore/azcoreshared_files.cmake
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore.Static
+)
+
 ly_add_source_properties(
     SOURCES
         AzCore/Script/ScriptSystemComponent.cpp
@@ -137,8 +152,7 @@ endif()
 ################################################################################
 # Tests
 ################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-
+if(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
     ly_add_target(
         NAME AzCoreTestCommon STATIC
         NAMESPACE AZ
@@ -151,7 +165,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${common_dir}
         BUILD_DEPENDENCIES
             PRIVATE
-                3rdParty::googletest::GMock
+                AZ::AzTest
                 3rdParty::GoogleBenchmark
     )
 
@@ -182,52 +196,54 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCore
     )
 
-    o3de_pal_dir(pal_tests_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
-    ly_add_target(
-        NAME AzCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE AZ
-        FILES_CMAKE
-            Tests/azcoretests_files.cmake
-            ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        PLATFORM_INCLUDE_FILES
-            ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-        COMPILE_DEFINITIONS
-            PRIVATE
-                AZ_NUMERICCAST_ENABLED
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-                AZ::AzCoreTestCommon
-                AZ::AzTestShared
-                AZ::AzTest
-        RUNTIME_DEPENDENCIES
-            AZ::AzCoreTestDLL
-    )
-    ly_add_googletest(
-        NAME AZ::AzCore.Tests
-        LABELS REQUIRES_tiaf
-    )
-    ly_add_googletest(
-        NAME AZ::AzCore.Tests
-        TEST_SUITE sandbox
-    )
-    ly_add_googlebenchmark(
-        NAME AZ::AzCore.Benchmarks
-        TARGET AZ::AzCore.Tests
-    )
-    ly_add_source_properties(
-        SOURCES Tests/Debug.cpp
-        PROPERTY COMPILE_DEFINITIONS
-        VALUES AZCORETEST_DLL_NAME=\"$<TARGET_FILE_NAME:AzCore.Tests>\"
-    )
-    ly_add_target_files(
-        TARGETS AzCore.Tests
-        FILES ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Memory/AllocatorBenchmarkRecordings.bin
-        OUTPUT_SUBDIRECTORY Tests/AzCore/Memory
-    )
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        o3de_pal_dir(pal_tests_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+        ly_add_target(
+            NAME AzCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE AZ
+            FILES_CMAKE
+                Tests/azcoretests_files.cmake
+                ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            PLATFORM_INCLUDE_FILES
+                ${pal_tests_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+            COMPILE_DEFINITIONS
+                PRIVATE
+                    AZ_NUMERICCAST_ENABLED
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzCore
+                    AZ::AzCoreTestCommon
+                    AZ::AzTestShared
+                    AZ::AzTest
+            RUNTIME_DEPENDENCIES
+                AZ::AzCoreTestDLL
+        )
+        ly_add_googletest(
+            NAME AZ::AzCore.Tests
+            LABELS REQUIRES_tiaf
+        )
+        ly_add_googletest(
+            NAME AZ::AzCore.Tests
+            TEST_SUITE sandbox
+        )
+        ly_add_googlebenchmark(
+            NAME AZ::AzCore.Benchmarks
+            TARGET AZ::AzCore.Tests
+        )
+        ly_add_source_properties(
+            SOURCES Tests/Debug.cpp
+            PROPERTY COMPILE_DEFINITIONS
+            VALUES AZCORETEST_DLL_NAME=\"$<TARGET_FILE_NAME:AzCore.Tests>\"
+        )
+        ly_add_target_files(
+            TARGETS AzCore.Tests
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Memory/AllocatorBenchmarkRecordings.bin
+            OUTPUT_SUBDIRECTORY Tests/AzCore/Memory
+        )
+    endif()
 
 endif()
 

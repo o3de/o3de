@@ -10,6 +10,8 @@
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/ShaderUtils.h>
+
 namespace AZ
 {
     namespace DX12
@@ -26,7 +28,7 @@ namespace AZ
         }
 #endif
 
-        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::RayTracingPipelineStateDescriptor* descriptor)
+        RHI::ResultCode RayTracingPipelineState::InitInternal([[maybe_unused]]RHI::Device& deviceBase, [[maybe_unused]]const RHI::DeviceRayTracingPipelineStateDescriptor* descriptor)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -53,12 +55,15 @@ namespace AZ
             // add DXIL Libraries
             AZStd::vector<D3D12_DXIL_LIBRARY_DESC> libraryDescs;
             libraryDescs.reserve(dxilLibraryCount);
+            AZStd::vector<ShaderByteCode> patchedShaderCache;
             for (const RHI::RayTracingShaderLibrary& shaderLibrary : descriptor->GetShaderLibraries())
             {
                 const ShaderStageFunction* rayTracingFunction = azrtti_cast<const ShaderStageFunction*>(shaderLibrary.m_descriptor.m_rayTracingFunction.get());
-        
+                ShaderByteCodeView byteCode =
+                    ShaderUtils::PatchShaderFunction(*rayTracingFunction, shaderLibrary.m_descriptor, patchedShaderCache);
+
                 D3D12_DXIL_LIBRARY_DESC libraryDesc = {};
-                libraryDesc.DXILLibrary = D3D12_SHADER_BYTECODE{ rayTracingFunction->GetByteCode().data(), rayTracingFunction->GetByteCode().size() };
+                libraryDesc.DXILLibrary = D3D12_SHADER_BYTECODE{ byteCode.data(), byteCode.size() };
                 libraryDesc.NumExports = 0; // all shaders
                 libraryDesc.pExports = nullptr;
                 libraryDescs.push_back(libraryDesc);

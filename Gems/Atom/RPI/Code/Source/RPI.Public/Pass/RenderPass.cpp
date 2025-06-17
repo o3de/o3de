@@ -14,7 +14,6 @@
 #include <Atom/RHI/RHIUtils.h>
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
-#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
@@ -34,15 +33,20 @@ namespace AZ
         RenderPass::RenderPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
+            m_flags.m_canBecomeASubpass = true;
             // Read view tag from pass data
             const RenderPassData* passData = PassUtils::GetPassData<RenderPassData>(descriptor);
-            if (passData && !passData->m_pipelineViewTag.IsEmpty())
+            if (passData)
             {
-                SetPipelineViewTag(passData->m_pipelineViewTag);
-            }
-            if (passData && passData->m_bindViewSrg)
-            {
-                m_flags.m_bindViewSrg = true;
+                if (!passData->m_pipelineViewTag.IsEmpty())
+                {
+                    SetPipelineViewTag(passData->m_pipelineViewTag);
+                }
+                if (passData->m_bindViewSrg)
+                {
+                    m_flags.m_bindViewSrg = true;
+                }
+                m_flags.m_canBecomeASubpass = passData->m_canBecomeASubpass;
             }
         }
 
@@ -50,12 +54,36 @@ namespace AZ
         {
         }
 
-        RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
+        bool RenderPass::CanBecomeSubpass() const
         {
-            RHI::RenderAttachmentLayoutBuilder builder;
-            auto* layoutBuilder = builder.AddSubpass();
+            return m_flags.m_canBecomeASubpass;
+        }
 
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+        RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration()
+        {
+            AZ_Assert(
+                m_renderAttachmentConfiguration.has_value(), "Null RenderAttachmentConfiguration for pass [%s]", GetPathName().GetCStr());
+            return m_renderAttachmentConfiguration.value();
+        }
+
+        void RenderPass::SetRenderAttachmentConfiguration(
+            const RHI::RenderAttachmentConfiguration& configuration, const AZ::RHI::ScopeGroupId& subpassGroupId)
+        {
+            m_renderAttachmentConfiguration = configuration;
+            m_subpassGroupId = subpassGroupId;
+        }
+
+        bool RenderPass::BuildSubpassLayout(RHI::RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder& subpassLayoutBuilder)
+        {
+            // Replace all subpass inputs as shader inputs if we are the first subpass in the group.
+            // This could happen if we have a subpass group that could be merged with other group(s), but it didn't happen
+            // due to some pass breaking the subpass chaining.
+            if (m_flags.m_hasSubpassInput && subpassLayoutBuilder.GetSubpassIndex() == 0)
+            {
+                ReplaceSubpassInputs(RHI::SubpassInputSupportType::None);
+            }
+
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
@@ -67,41 +95,91 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    layoutBuilder->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    subpassLayoutBuilder.DepthStencilAttachment(
+                        binding.GetAttachment()->m_descriptor.m_image.m_format,
+                        binding.GetAttachment()->GetAttachmentId(),
+                        binding.m_unifiedScopeDesc.m_loadStoreAction,
+                        binding.GetAttachmentAccess(),
+                        binding.m_scopeAttachmentStage);
                     continue;
                 }
 
                 // Handle shading rate attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::ShadingRate)
                 {
-                    layoutBuilder->ShadingRateAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    subpassLayoutBuilder.ShadingRateAttachment(
+                        binding.GetAttachment()->m_descriptor.m_image.m_format, binding.GetAttachment()->GetAttachmentId());
                     continue;
                 }
 
-                // Skip bindings that aren't outputs or inputOutputs
-                if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
+                if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::SubpassInput)
                 {
+                    AZ_Assert(subpassLayoutBuilder.GetSubpassIndex() > 0, "The first subpass can't have attachments used as SubpassInput");
+                    AZ_Assert(
+                        binding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image,
+                        "Only image attachments are allowed as SubpassInput.");
+                    const auto aspectFlags = binding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor.m_aspectFlags;
+                    subpassLayoutBuilder.SubpassInputAttachment(
+                        binding.GetAttachment()->GetAttachmentId(),
+                        aspectFlags,
+                        binding.m_unifiedScopeDesc.m_loadStoreAction);
                     continue;
                 }
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
                     RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
-                    layoutBuilder->RenderTargetAttachment(format);
+                    subpassLayoutBuilder.RenderTargetAttachment(
+                        format,
+                        binding.GetAttachment()->GetAttachmentId(),
+                        binding.m_unifiedScopeDesc.m_loadStoreAction,
+                        false /*resolve*/);
+                    continue;
+                }
+
+                if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::Resolve)
+                {
+                    // A Resolve attachment must be declared immediately after the RenderTarget it is supposed to resolve.
+                    AZ_Assert(slotIndex > 0, "A Resolve attachment can not be in the first slot binding.");
+                    const auto& renderTargetBinding = m_attachmentBindings[slotIndex - 1];
+                    AZ_Assert(renderTargetBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget,
+                        "A Resolve attachment must be declared immediately after a RenderTarget attachment.");
+                    subpassLayoutBuilder.ResolveAttachment(renderTargetBinding.GetAttachment()->GetAttachmentId(), binding.GetAttachment()->GetAttachmentId());
+                    continue;
                 }
             }
 
-            RHI::RenderAttachmentLayout layout;
-            [[maybe_unused]] RHI::ResultCode result = builder.End(layout);
-            AZ_Assert(result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment layout", GetPathName().GetCStr());
-            return RHI::RenderAttachmentConfiguration{ layout, 0 };
+            return true;
+        }
+
+        void RenderPass::BuildRenderAttachmentConfiguration()
+        {
+            if (m_renderAttachmentConfiguration)
+            {
+                // Already has a render attachment configuration. Nothing to do.
+                return;
+            }
+
+            RHI::RenderAttachmentLayoutBuilder builder;
+            auto* layoutBuilder = builder.AddSubpass();
+            BuildSubpassLayout(*layoutBuilder);
+            if (!layoutBuilder->HasAttachments())
+            {
+                return;
+            }
+
+            RHI::RenderAttachmentLayout subpassLayout;
+            [[maybe_unused]] RHI::ResultCode result = builder.End(subpassLayout);
+            AZ_Assert(
+                result == RHI::ResultCode::Success, "RenderPass [%s] failed to create render attachment configuration", GetPathName().GetCStr());
+            m_renderAttachmentConfiguration = RHI::RenderAttachmentConfiguration{ AZStd::move(subpassLayout), 0 };
         }
 
         RHI::MultisampleState RenderPass::GetMultisampleState() const
         {
             RHI::MultisampleState outputMultiSampleState;
             bool wasSet = false;
-            for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
+            for (size_t slotIndex = 0; slotIndex < m_attachmentBindingsSize; ++slotIndex)
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
@@ -184,14 +262,20 @@ namespace AZ
                     }
                 }
             }
+            BuildRenderAttachmentConfiguration();
         }
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
-            m_timestampResult = AZ::RPI::TimestampResult();
-            if (GetScopeId().IsEmpty())
+            if (IsTimestampQueryEnabled())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
+                m_timestampResult = AZ::RPI::TimestampResult();
+            }
+
+            // the pass may potentially migrate between devices dynamically at runtime so the deviceIndex is updated every frame.
+            if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != Pass::GetDeviceIndex()))
+            {
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, Pass::GetDeviceIndex());
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -210,6 +294,12 @@ namespace AZ
             ResetSrgs();
         }
 
+        void RenderPass::ResetInternal()
+        {
+            m_renderAttachmentConfiguration.reset();
+            m_subpassGroupId = RHI::ScopeGroupId();
+        }
+
         void RenderPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             DeclareAttachmentsToFrameGraph(frameGraph);
@@ -222,33 +312,8 @@ namespace AZ
             BeginScopeQuery(context);
             BuildCommandListInternal(context);
             EndScopeQuery(context);
-        }
 
-        void RenderPass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const
-        {
-            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
-            {
-                if (attachmentBinding.GetAttachment() != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
-                {
-                    switch (attachmentBinding.m_unifiedScopeDesc.GetType())
-                    {
-                    case RHI::AttachmentType::Image:
-                    {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsImage(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
-                        break;
-                    }
-                    case RHI::AttachmentType::Buffer:
-                    {
-                        frameGraph.UseAttachment(attachmentBinding.m_unifiedScopeDesc.GetAsBuffer(), attachmentBinding.GetAttachmentAccess(), attachmentBinding.m_scopeAttachmentUsage);
-                        break;
-                    }
-                    default:
-                        AZ_Assert(false, "Error, trying to bind an attachment that is neither an image nor a buffer!");
-                        break;
-                    }
-                }
-            }
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RenderPass::DeclarePassDependenciesToFrameGraph(RHI::FrameGraphInterface frameGraph) const
@@ -269,6 +334,7 @@ namespace AZ
                     frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
+            frameGraph.SetGroupId(GetSubpassGroupId());
         }
 
         void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
@@ -307,7 +373,8 @@ namespace AZ
 
                     if (binding.m_shaderInputIndex != PassAttachmentBinding::ShaderInputNoBind &&
                         binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::RenderTarget &&
-                        binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::DepthStencil)
+                        binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::DepthStencil &&
+                        binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::Resolve)
                     {
                         m_shaderResourceGroup->SetImageView(RHI::ShaderInputImageIndex(inputIndex), imageView, arrayIndex);
                         ++imageIndex;
@@ -410,19 +477,20 @@ namespace AZ
             }
         }
 
-        void RenderPass::SetSrgsForDraw(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDraw(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDraw(*(itr.second));
+                context.GetCommandList()->SetShaderResourceGroupForDraw(*(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
-        void RenderPass::SetSrgsForDispatch(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDispatch(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDispatch(*(itr.second));
+                context.GetCommandList()->SetShaderResourceGroupForDispatch(
+                    *(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
@@ -515,6 +583,11 @@ namespace AZ
             ExecuteOnPipelineStatisticsQuery(addToFrameGraph);
         }
 
+        const AZ::RHI::ScopeGroupId& RenderPass::GetSubpassGroupId() const
+        {
+            return m_subpassGroupId;
+        }
+
         void RenderPass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context)
         {
             const auto beginQuery = [&context, this](RHI::Ptr<Query> query)
@@ -566,13 +639,13 @@ namespace AZ
             {
                 const uint32_t TimestampResultQueryCount = 2u;
                 uint64_t timestampResult[TimestampResultQueryCount] = {0};
-                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
                 m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
             });
 
             ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)
             {
-                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult));
+                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult), m_lastDeviceIndex);
             });
         }
     }   // namespace RPI

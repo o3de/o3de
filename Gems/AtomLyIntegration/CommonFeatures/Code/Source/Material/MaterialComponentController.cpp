@@ -41,6 +41,7 @@ namespace AZ
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
                     ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId) // This function is now redundant but cannot be marked deprecated or removed in case it's still referenced in script
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
+                    ->Event("IsDefaultMaterialAssetReady", &MaterialComponentRequestBus::Events::IsDefaultMaterialAssetReady)
                     ->Event("GetMaterialLabel", &MaterialComponentRequestBus::Events::GetMaterialLabel, "GetMaterialSlotLabel")
                     ->Event("SetMaterialMap", &MaterialComponentRequestBus::Events::SetMaterialMap, "SetMaterialOverrides")
                     ->Event("GetMaterialMap", &MaterialComponentRequestBus::Events::GetMaterialMap, "GetMaterialOverrides")
@@ -57,6 +58,7 @@ namespace AZ
                     ->Event("RepairMaterialsWithRenamedProperties", &MaterialComponentRequestBus::Events::RepairMaterialsWithRenamedProperties, "ApplyAutomaticPropertyUpdates")
                     ->Event("SetMaterialAssetId", &MaterialComponentRequestBus::Events::SetMaterialAssetId, "SetMaterialOverride")
                     ->Event("GetMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId, "GetMaterialOverride")
+                    ->Event("IsMaterialAssetReady", &MaterialComponentRequestBus::Events::IsMaterialAssetReady)
                     ->Event("ClearMaterialAssetId", &MaterialComponentRequestBus::Events::ClearMaterialAssetId, "ClearMaterialOverride")
                     ->Event("IsMaterialAssetIdOverridden", &MaterialComponentRequestBus::Events::IsMaterialAssetIdOverridden)
                     ->Event("HasPropertiesOverridden", &MaterialComponentRequestBus::Events::HasPropertiesOverridden)
@@ -394,6 +396,12 @@ namespace AZ
             return materialIt != m_defaultMaterialMap.end() ? materialIt->second.m_materialAsset.GetId() : AZ::Data::AssetId();
         }
 
+        bool MaterialComponentController::IsDefaultMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const auto materialIt = m_defaultMaterialMap.find(materialAssignmentId);
+            return (materialIt != m_defaultMaterialMap.end()) && materialIt->second.m_materialAsset.IsReady();
+        }
+
         AZStd::string MaterialComponentController::GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const
         {
             MaterialAssignmentLabelMap labels;
@@ -590,6 +598,12 @@ namespace AZ
 
             // Otherwise return the cached default material asset ID
             return GetDefaultMaterialAssetId(materialAssignmentId);
+        }
+
+        bool MaterialComponentController::IsMaterialAssetReady(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
+            return (materialIt != m_configuration.m_materials.end()) && materialIt->second.m_materialAsset.IsReady();
         }
 
         void MaterialComponentController::ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId)
@@ -896,10 +910,7 @@ namespace AZ
             {
                 return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value).GetId());
             }
-            if (value.is<AZ::Data::Instance<AZ::RPI::Image>>())
-            {
-                return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
-            }
+
             return value;
         }
 

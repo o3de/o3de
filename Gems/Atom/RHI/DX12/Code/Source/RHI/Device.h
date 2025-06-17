@@ -173,6 +173,7 @@ namespace AZ
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp(RHI::HardwareQueueClass queueClass) override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             RHI::ResultCode InitializeLimits() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;

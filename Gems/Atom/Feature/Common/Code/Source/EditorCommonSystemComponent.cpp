@@ -7,10 +7,10 @@
  */
 
 #include <EditorCommonSystemComponent.h>
-#include <Source/Material/UseTextureFunctorSourceData.h>
-#include <Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
-#include <Source/Material/Transform2DFunctorSourceData.h>
-#include <Source/Material/ConvertEmissiveUnitFunctorSourceData.h>
+#include <Material/UseTextureFunctorSourceData.h>
+#include <Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
+#include <Material/Transform2DFunctorSourceData.h>
+#include <Material/ConvertEmissiveUnitFunctorSourceData.h>
 
 #include <Atom/Feature/Utils/EditorLightingPreset.h>
 #include <Atom/Feature/Utils/EditorModelPreset.h>
@@ -61,12 +61,12 @@ namespace AZ
 
         void EditorCommonSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EditorCommonService", 0x0b32b422));
+            provided.push_back(AZ_CRC_CE("EditorCommonService"));
         }
 
         void EditorCommonSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EditorCommonService", 0x0b32b422));
+            incompatible.push_back(AZ_CRC_CE("EditorCommonService"));
         }
 
         void EditorCommonSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

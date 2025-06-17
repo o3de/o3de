@@ -5388,7 +5388,7 @@ TEST_F(DuplicateProductsTest, SameSource_MultipleBuilder_DuplicateProductJobs_Em
     ASSERT_TRUE(BlockUntilIdle(5000));
 
     EXPECT_EQ(jobDetails.size(), 1);
-    EXPECT_TRUE(jobDetails.back().m_jobParam.find(AZ_CRC(AutoFailReasonKey)) != jobDetails.back().m_jobParam.end());
+    EXPECT_TRUE(jobDetails.back().m_jobParam.find(AZ_CRC_CE(AutoFailReasonKey)) != jobDetails.back().m_jobParam.end());
 }
 
 TEST_F(DuplicateProductsTest, SameSource_SameBuilder_DuplicateProductJobs_EmitAutoFailJob)
@@ -5412,7 +5412,7 @@ TEST_F(DuplicateProductsTest, SameSource_SameBuilder_DuplicateProductJobs_EmitAu
     ASSERT_TRUE(BlockUntilIdle(5000));
 
     EXPECT_EQ(jobDetails.size(), 1);
-    EXPECT_TRUE(jobDetails.back().m_jobParam.find(AZ_CRC(AutoFailReasonKey)) != jobDetails.back().m_jobParam.end());
+    EXPECT_TRUE(jobDetails.back().m_jobParam.find(AZ_CRC_CE(AutoFailReasonKey)) != jobDetails.back().m_jobParam.end());
 }
 
 TEST_F(DuplicateProductsTest, SameSource_MultipleBuilder_NoDuplicateProductJob_NoWarning)

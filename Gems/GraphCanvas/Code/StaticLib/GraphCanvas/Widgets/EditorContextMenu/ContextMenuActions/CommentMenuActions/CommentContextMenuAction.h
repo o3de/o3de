@@ -37,7 +37,7 @@ namespace GraphCanvas
     
         static ActionGroupId GetCommentContextMenuActionGroupId()
         {
-            return AZ_CRC("CommentActionGroup", 0xa7aef588);
+            return AZ_CRC_CE("CommentActionGroup");
         }
     
         ActionGroupId GetActionGroupId() const override

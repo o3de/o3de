@@ -18,6 +18,7 @@ namespace AzToolsFramework
         class TransformComponent;
     }
 }
+
 namespace Maestro
 {
     class EditorSequenceAgentComponent
@@ -63,7 +64,7 @@ namespace Maestro
         // Optional functions for defining provided and dependent services.
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("TransformService"));
         }
        
         // Override from SequenceAgent
@@ -84,4 +85,5 @@ namespace Maestro
         // set of ids of all unique Entities with SequenceComponent instances connected to this Agent
         AZStd::unordered_set<AZ::EntityId>             m_sequenceEntityIds;
     };
+
 } // namespace Maestro

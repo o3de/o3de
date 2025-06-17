@@ -37,7 +37,7 @@ namespace LmbrCentral
     protected:
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         // AZ::TransformNotificationBus::Handler

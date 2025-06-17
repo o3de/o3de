@@ -71,7 +71,6 @@ namespace AZ
                 device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, VkSystemAllocator::Get());
                 m_nativeFence = VK_NULL_HANDLE;
             }
-            Base::ShutdownInternal();
         }
 
         void BinaryFence::SignalOnCpuInternal()

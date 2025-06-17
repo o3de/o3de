@@ -21,6 +21,7 @@
 #include <AzCore/Math/Color.h>
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -34,7 +35,7 @@ namespace AZ
         //! For convenience, it supports all the types necessary for *both* the runtime data (MaterialAsset) as well as .material file data (MaterialSourceData).
         //! For example, Instance<Image> is exclusive to the runtime data and AZStd::string is primarily for image file paths in .material files. Most other
         //! data types are relevant in both contexts.
-        class MaterialPropertyValue final
+        class ATOM_RPI_REFLECT_API MaterialPropertyValue final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialPropertyValue, "{59815051-BBA2-4C6A-A414-A82834A84CB2}");

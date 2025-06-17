@@ -7,14 +7,14 @@
  */
 #pragma once
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferView.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Metal/Metal.h>
@@ -47,6 +47,7 @@ namespace AZ
         };
 
         MTLPixelFormat ConvertPixelFormat(RHI::Format format);
+        RHI::Format  ConvertPixelFormat(MTLPixelFormat format);
         MTLTextureUsage ConvertTextureUsageFlags(RHI::BufferBindFlags flags, RHI::Format format);
         MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray=false);
         MTLPixelFormat ConvertImageViewFormat( const Image& image, const RHI::ImageViewDescriptor& imageViewDescriptor);

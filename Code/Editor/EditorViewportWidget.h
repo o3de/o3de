@@ -37,7 +37,6 @@
 #endif
 
 // forward declarations.
-class CBaseObject;
 class QMenu;
 class QKeyEvent;
 struct ray_hit;
@@ -130,13 +129,6 @@ public:
 private:
     ////////////////////////////////////////////////////////////////////////
     // Private types ...
-
-    enum class ViewSourceType
-    {
-        None,
-        CameraComponent,
-        ViewSourceTypesCount,
-    };
 
     enum class PlayInEditorState
     {
@@ -245,7 +237,6 @@ private:
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
-    void SetViewTM(const Matrix34& tm, bool bMoveOnly);
     void SetDefaultCameraNearFar();
     void RenderAll();
 
@@ -304,9 +295,6 @@ private:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-
-    CBaseObject* GetCameraObject() const;
-
     void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
     void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;
 
@@ -329,9 +317,6 @@ private:
 
     // The entity ID of the current camera for this viewport, or invalid if the default editor camera
     AZ::EntityId m_viewEntityId;
-
-    // Determines also if the current camera for this viewport is default editor camera
-    ViewSourceType m_viewSourceType = ViewSourceType::None;
 
     // During play game in editor, holds the editor entity ID of the last
     AZ::EntityId m_viewEntityIdCachedForEditMode;

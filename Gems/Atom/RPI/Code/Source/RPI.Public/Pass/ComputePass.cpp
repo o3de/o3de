@@ -12,7 +12,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -24,6 +24,10 @@
 
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+
+using uint = uint32_t;
+using uint4 = uint[4];
+#include "../../../Feature/Common/Assets/ShaderLib/Atom/Features/IndirectRendering.azsli"
 
 namespace AZ
 {
@@ -42,8 +46,10 @@ namespace AZ
 
         ComputePass::ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant)
             : RenderPass(descriptor)
+            , m_dispatchItem(RHI::MultiDevice::AllDevices)
             , m_passDescriptor(descriptor)
         {
+            m_flags.m_canBecomeASubpass = false;
             const ComputePassData* passData = PassUtils::GetPassData<ComputePassData>(m_passDescriptor);
             if (passData == nullptr)
             {
@@ -52,13 +58,26 @@ namespace AZ
                 return;
             }
 
+            m_indirectDispatch = passData->m_indirectDispatch;
+            m_indirectDispatchBufferSlotName = passData->m_indirectDispatchBufferSlotName;
+
+            m_fullscreenDispatch = passData->m_fullscreenDispatch;
+            m_fullscreenSizeSourceSlotName = passData->m_fullscreenSizeSourceSlotName;
+
+            AZ_Assert(
+                !(m_indirectDispatch && m_fullscreenDispatch),
+                "[ComputePass '%s']: Only one of the dispatch options (indirect, fullscreen) can be active.",
+                GetPathName().GetCStr());
+
             RHI::DispatchDirect dispatchArgs;
             dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
             dispatchArgs.m_totalNumberOfThreadsY = passData->m_totalNumberOfThreadsY;
             dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
-            m_dispatchItem.m_arguments = dispatchArgs;
+            m_dispatchItem.SetArguments(dispatchArgs);
 
             LoadShader(supervariant);
+
+            m_defaultShaderAttachmentStage = RHI::ScopeAttachmentStage::ComputeShader;
         }
 
         void ComputePass::LoadShader(AZ::Name supervariant)
@@ -119,9 +138,10 @@ namespace AZ
             const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
             m_drawSrg = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
-            if (m_dispatchItem.m_arguments.m_type == RHI::DispatchType::Direct)
+            if (m_dispatchItem.GetArguments().m_type == RHI::DispatchType::Direct)
             {
-                const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchItem.m_arguments.m_direct);
+                auto arguments = m_dispatchItem.GetArguments();
+                const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), arguments.m_direct);
                 if (!outcome.IsSuccess())
                 {
                     AZ_Error(
@@ -133,15 +153,19 @@ namespace AZ
                         passData->m_shaderReference.m_filePath.data(),
                         outcome.GetError().c_str());
                 }
+                m_dispatchItem.SetArguments(arguments);
             }
-
-            m_isFullscreenPass = passData->m_makeFullscreenPass;
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
+            ShaderOptionGroup options = m_shader->GetDefaultShaderOptions();
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor, options);
 
-            m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && m_shader->GetDefaultVariant().UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(options.GetShaderVariantKeyFallbackValue());
+            }
 
             OnShaderReloadedInternal();
 
@@ -163,48 +187,73 @@ namespace AZ
                 BindSrg(m_drawSrg->GetRHIShaderResourceGroup());
                 m_drawSrg->Compile();
             }
+
+            if (m_indirectDispatch && m_indirectDispatchBufferBinding)
+            {
+                auto& attachment = m_indirectDispatchBufferBinding->GetAttachment();
+                AZ_Assert(
+                    attachment,
+                    "[ComputePass '%s']: Indirect dispatch buffer slot %s has no attachment.",
+                    GetPathName().GetCStr(),
+                    m_indirectDispatchBufferBinding->m_name.GetCStr());
+
+                if (attachment)
+                {
+                    auto buffer = context.GetBuffer(attachment->GetAttachmentId());
+                    AZ_Assert(
+                        buffer,
+                        "[ComputePass '%s']: Attachment connected to Indirect dispatch buffer slot %s has no buffer",
+                        GetPathName().GetCStr(),
+                        m_indirectDispatchBufferBinding->m_name.GetCStr());
+                    m_indirectDispatchBufferView = {
+                        *buffer, *m_indirectDispatchBufferSignature, 0, sizeof(DispatchIndirectCommand), sizeof(DispatchIndirectCommand)
+                    };
+
+                    AZ::RHI::DispatchIndirect dispatchArgs(1, m_indirectDispatchBufferView, 0);
+                    m_dispatchItem.SetArguments(dispatchArgs);
+                }
+            }
+            else if (m_fullscreenDispatch && m_fullscreenSizeSourceBinding)
+            {
+                auto& attachment = m_fullscreenSizeSourceBinding->GetAttachment();
+                AZ_Assert(
+                    attachment,
+                    "[ComputePass '%s']: Slot %s has no attachment for fullscreen size source.",
+                    GetPathName().GetCStr(),
+                    m_fullscreenSizeSourceBinding->m_name.GetCStr());
+                if (attachment)
+                {
+                    AZ_Assert(
+                        attachment->GetAttachmentType() == AZ::RHI::AttachmentType::Image,
+                        "[ComputePass '%s']: Slot %s must be an image for fullscreen size source.",
+                        GetPathName().GetCStr(),
+                        m_fullscreenSizeSourceBinding->m_name.GetCStr());
+
+                    auto imageDescriptor = context.GetImageDescriptor(attachment->GetAttachmentId());
+                    // We are using the ArraySize or the image depth, whichever is bigger.
+                    // Note that this will fail for an array of 3d textures.
+                    auto depth = AZStd::max(imageDescriptor.m_size.m_depth, static_cast<uint32_t>(imageDescriptor.m_arraySize));
+                    SetTargetThreadCounts(imageDescriptor.m_size.m_width, imageDescriptor.m_size.m_height, depth);
+                }
+            }
         }
 
         void ComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
-            commandList->Submit(m_dispatchItem);
-        }
-
-        void ComputePass::MatchDimensionsToOutput()
-        {
-            PassAttachment* outputAttachment = nullptr;
-
-            if (GetOutputCount() > 0)
-            {
-                outputAttachment = GetOutputBinding(0).GetAttachment().get();
-            }
-            else if (GetInputOutputCount() > 0)
-            {
-                outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
-            }
-
-            AZ_Assert(outputAttachment != nullptr, "[ComputePass '%s']: A fullscreen compute pass must have a valid output or input/output.",
-                GetPathName().GetCStr());
-
-            AZ_Assert(outputAttachment->GetAttachmentType() == RHI::AttachmentType::Image,
-                "[ComputePass '%s']: The output of a fullscreen compute pass must be an image.",
-                GetPathName().GetCStr());
-
-            RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
-
-            SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void ComputePass::SetTargetThreadCounts(uint32_t targetThreadCountX, uint32_t targetThreadCountY, uint32_t targetThreadCountZ)
         {
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            arguments.m_totalNumberOfThreadsX = targetThreadCountX;
-            arguments.m_totalNumberOfThreadsY = targetThreadCountY;
-            arguments.m_totalNumberOfThreadsZ = targetThreadCountZ;
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = targetThreadCountX;
+            arguments.m_direct.m_totalNumberOfThreadsY = targetThreadCountY;
+            arguments.m_direct.m_totalNumberOfThreadsZ = targetThreadCountZ;
+            m_dispatchItem.SetArguments(arguments);
         }
 
         Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup() const
@@ -217,14 +266,92 @@ namespace AZ
             return m_shader;
         }
 
-        void ComputePass::FrameBeginInternal(FramePrepareParams params)
+        void ComputePass::BuildInternal()
         {
-            if (m_isFullscreenPass)
-            {
-                MatchDimensionsToOutput();
-            }
+            RenderPass::BuildInternal();
 
-            RenderPass::FrameBeginInternal(params);
+            if (m_indirectDispatch)
+            {
+                m_indirectDispatchBufferBinding = nullptr;
+                if (!m_indirectDispatchBufferSlotName.IsEmpty())
+                {
+                    m_indirectDispatchBufferBinding = FindAttachmentBinding(m_indirectDispatchBufferSlotName);
+                    AZ_Assert(m_indirectDispatchBufferBinding,
+                            "[ComputePass '%s']: Indirect dispatch buffer slot %s not found.",
+                            GetPathName().GetCStr(),
+                            m_indirectDispatchBufferSlotName.GetCStr());
+                    if (m_indirectDispatchBufferBinding)
+                    {
+                        AZ_Assert(
+                            m_indirectDispatchBufferBinding->m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect,
+                            "[ComputePass '%s']: Indirect dispatch buffer slot %s needs ScopeAttachmentUsage::Indirect.",
+                            GetPathName().GetCStr(),
+                            m_indirectDispatchBufferSlotName.GetCStr())
+                    }
+                }
+                else
+                {
+                    for (auto& binding : m_attachmentBindings)
+                    {
+                        if (binding.m_scopeAttachmentUsage == AZ::RHI::ScopeAttachmentUsage::Indirect)
+                        {
+                            m_indirectDispatchBufferBinding = &binding;
+                            break;
+                        }
+                    }
+                    AZ_Assert(
+                        m_indirectDispatchBufferBinding,
+                        "[ComputePass '%s']: No valid indirect dispatch buffer slot found.",
+                        GetPathName().GetCStr());
+                }
+
+                AZ::RHI::IndirectBufferLayout indirectDispatchBufferLayout;
+                indirectDispatchBufferLayout.AddIndirectCommand(AZ::RHI::IndirectCommandDescriptor(AZ::RHI::IndirectCommandType::Dispatch));
+
+                if (!indirectDispatchBufferLayout.Finalize())
+                {
+                    AZ_Assert(false, "[ComputePass '%s']: Failed to finalize Indirect Layout", GetPathName().GetCStr());
+                }
+
+                m_indirectDispatchBufferSignature = aznew AZ::RHI::IndirectBufferSignature;
+                AZ::RHI::IndirectBufferSignatureDescriptor signatureDescriptor{};
+                signatureDescriptor.m_layout = indirectDispatchBufferLayout;
+                [[maybe_unused]] auto result =
+                    m_indirectDispatchBufferSignature->Init(AZ::RHI::MultiDevice::AllDevices, signatureDescriptor);
+
+                AZ_Assert(
+                    result == AZ::RHI::ResultCode::Success,
+                    "[ComputePass '%s']: Failed to initialize Indirect Buffer Signature",
+                    GetPathName().GetCStr());
+            }
+            else if (m_fullscreenDispatch)
+            {
+                m_fullscreenSizeSourceBinding = nullptr;
+                if (!m_fullscreenSizeSourceSlotName.IsEmpty())
+                {
+                    m_fullscreenSizeSourceBinding = FindAttachmentBinding(m_fullscreenSizeSourceSlotName);
+                    AZ_Assert(
+                        m_fullscreenSizeSourceBinding,
+                        "[ComputePass '%s']: Fullscreen size source slot %s not found.",
+                        GetPathName().GetCStr(),
+                        m_fullscreenSizeSourceSlotName.GetCStr());
+                }
+                else
+                {
+                    if (GetOutputCount() > 0)
+                    {
+                        m_fullscreenSizeSourceBinding = &GetOutputBinding(0);
+                    }
+                    else if (!m_fullscreenSizeSourceBinding && GetInputOutputCount() > 0)
+                    {
+                        m_fullscreenSizeSourceBinding = &GetInputOutputBinding(0);
+                    }
+                    AZ_Assert(
+                        m_fullscreenSizeSourceBinding,
+                        "[ComputePass '%s']: No valid Output or InputOutput slot as a fullscreen size source found.",
+                        GetPathName().GetCStr());
+                }
+            }
         }
 
         void ComputePass::OnShaderReinitialized(const Shader& shader)
@@ -247,6 +374,19 @@ namespace AZ
         void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
         {
             m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::UpdateShaderOptions(const ShaderVariantId& shaderVariantId)
+        {
+            const ShaderVariant& shaderVariant = m_shader->GetVariant(shaderVariantId);
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderVariantId);
+
+            m_dispatchItem.SetPipelineState(m_shader->AcquirePipelineState(pipelineStateDescriptor));
+            if (m_drawSrg && shaderVariant.UseKeyFallback())
+            {
+                m_drawSrg->SetShaderVariantKeyFallbackValue(shaderVariantId.m_key);
+            }
         }
 
         void ComputePass::OnShaderReloadedInternal()

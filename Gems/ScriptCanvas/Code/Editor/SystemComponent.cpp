@@ -85,7 +85,7 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasEditorService", 0x4fe2af98));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasEditorService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -95,9 +95,9 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
         required.push_back(GraphCanvas::GraphCanvasRequestsServiceId);
-        required.push_back(AZ_CRC("ScriptCanvasReflectService", 0xb3bfe139));
+        required.push_back(AZ_CRC_CE("ScriptCanvasReflectService"));
     }
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -143,7 +143,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
-        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
         {
             if (userSettings->m_showUpgradeDialog)

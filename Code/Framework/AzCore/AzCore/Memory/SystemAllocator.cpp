@@ -27,6 +27,9 @@
 
 // HPHA uses the high performance heap allocator for system allocations
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
+
+// malloc uses basic OS malloc for system allocations.  This is useful when using ASAN or other memory checking such as the CRT debug heap.
+// when ASAN is enabled by CMake, this is set by default.  See AZCORE_SYSTEM_ALLOCATOR_MALLOC in AzCore's CMakeLists.txt
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
 #if !defined(AZCORE_SYSTEM_ALLOCATOR)
@@ -121,7 +124,8 @@ namespace AZ
         {
             return AllocateAddress{};
         }
-        AZ_Assert(byteSize > 0, "You can not allocate 0 bytes!");
+
+        AZ_Assert(byteSize > 0, "You can not allocate 0 or negative bytes!");
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
 #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
@@ -147,7 +151,7 @@ namespace AZ
         {
             byteSize = MemorySizeAdjustedDown(byteSize); // restore original size
         }
-
+#endif
         AZ_Assert(
             address != nullptr, "SystemAllocator: Failed to allocate %zu bytes aligned on %zu!", byteSize,
             alignment);
@@ -162,8 +166,15 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    auto SystemAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment) -> size_type
+    auto SystemAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
     {
+        // It is valid to call "free" on a nullptr and it should produce no action.
+        // Early out here to avoid calling something like AZ_OS_MSIZE, which may not be valid on nullptr.
+        if (!ptr)
+        {
+            return 0;
+        }
+
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             byteSize = byteSize == 0 ? AZ_OS_MSIZE(ptr, alignment) : byteSize;
@@ -205,7 +216,6 @@ namespace AZ
 
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
-#endif
 
         return newAddress;
     }
@@ -216,8 +226,12 @@ namespace AZ
     //=========================================================================
     auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
-        size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
-        return allocSize;
+        #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+            return AZ_OS_MSIZE(ptr, alignment);
+        #else
+            size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
+            return allocSize;
+        #endif
     }
 
 } // namespace AZ

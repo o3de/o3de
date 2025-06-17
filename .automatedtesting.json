@@ -15,7 +15,7 @@
         {
             "NAME": "o3de-extras",
             "URL": "https://github.com/o3de/o3de-extras.git",
-            "BRANCH": "stabilization/2409"
+            "BRANCH": "development"
         }
     ]
 }

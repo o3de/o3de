@@ -65,7 +65,7 @@ namespace AZ::SerializeContextAttributes
 {
     // Attribute used to set an override function on a SerializeContext::ClassData attribute array
     // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
-    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
+    static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC_CE("ObjectStreamWriteElementOverride");
 }
 namespace AZ
 {
@@ -1122,7 +1122,7 @@ namespace AZ::Serialize
         /// Return default element generic name (used by most containers).
         static inline const char* GetDefaultElementName() { return "element"; }
         /// Return default element generic name crc (used by most containers).
-        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC("element", 0x41405e39); }
+        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC_CE("element"); }
 
         // Returns default element generic name unless overridden by an IDataContainer
         virtual const char* GetElementName([[maybe_unused]] int index = 0) { return GetDefaultElementName(); }
@@ -1191,27 +1191,53 @@ namespace AZ::Serialize
 
     /**
      * Serialize class events.
+     * These can be used to hook certain events that occur when reading/writing objects using the Serialize Reflection Context
+     * Note that these events will NOT be called if you have installed a custom serializer for your custom class, since
+     * in that case, your class will be entirely handled by that custom serializer installed.  This is true for both the ObjectStream (XML, binary)
+     * and JSON serializers - using a custom serializer skips this part, so if you do need to do anything special, do it in the custom serializer.
      * IMPORTANT: Serialize events can be called from serialization thread(s). So all functions should be thread safe.
+     *
+     *  Important note:
+     * OnReadBegin and OnReadEnd are not called when using the Json serializer, because the Json serializer's API assumes that
+     * reading from C++ objects into JSON has no side effects on the objects being serialized, and thus will not call a non-const
+     * callback such as these.
+     *
+     * The ObjectStream serializer has no problem with this and will in fact const-cast the const ptr fed into it, just so that it can
+     * invoke OnReadBegin and OnReadEnd.
+     * 
+     * OnReadBegin and OnReadEnd are called during serialization - that is, when reading FROM a C++ object INTO an ObjectStream stream,
+     * and the purpose of which is to fixup data in the c++ object before / after saving it to a data stream.
+     * If you want to fix up data after LOADING it into a C++ object, use OnWriteEnd, not OnReadEnd.
+     *
+     * Additional Caveat:  It is possible to tell the serialize context to walk a tree of reflected C++ objects and invoke a callback
+     * for each element on them - this is, in fact, how serializing works (it walks the tree of reflected objects and serializes them).
+     * If you are using this feature, you should be aware that OnReadBegin and OnReadEnd will be called for each element in the tree,
+     * since it is "reading from" the objects.  However, if you pass the ENUM_ACCESS_FOR_WRITE flag, it will INSTEAD call OnWriteBegin
+     * and OnWriteEnd for the c++ objects it is visiting, despite the fact that you are technically enumerating them.
      */
     class IEventHandler
     {
     public:
         virtual ~IEventHandler() {}
 
+        /// the Read**** functions are called when SERIALIZING.  Do not use them to do post-load fixups.
         /// Called right before we start reading from the instance pointed by classPtr.
         virtual void OnReadBegin(void* classPtr) { (void)classPtr; }
         /// Called after we are done reading from the instance pointed by classPtr.
         virtual void OnReadEnd(void* classPtr) { (void)classPtr; }
 
+        /// The Write**** functions are called when DESERIALIZING.  You can use these to do post-load fixups.
         /// Called right before we start writing to the instance pointed by classPtr.
         virtual void OnWriteBegin(void* classPtr) { (void)classPtr; }
         /// Called after we are done writing to the instance pointed by classPtr.
         /// NOTE: Care must be taken when using this callback. It is called when ID remapping occurs,
-        /// an instance is clone or an instance is loaded from an objectstream.
+        /// an instance is cloned or an instance is loaded from an ObjectStream.
         /// This means that this function can be invoked multiple times in the course of serializing a new instance from an ObjectStream
         /// or cloning an object.
         virtual void OnWriteEnd(void* classPtr) { (void)classPtr; }
 
+        /// PATCHING
+        /// These functions will not be called when using the Json serializer, as patching operates entirely differently.
         /// Called right before we start data patching the instance pointed by classPtr.
         virtual void OnPatchBegin(void* classPtr, const DataPatchNodeInfo& patchInfo) { (void)classPtr; (void)patchInfo; }
         /// Called after we are done data patching the instance pointed by classPtr.

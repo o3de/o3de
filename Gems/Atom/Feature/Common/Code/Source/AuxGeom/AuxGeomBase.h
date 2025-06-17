@@ -13,6 +13,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Color.h>
 
+#include <Atom/RHI/GeometryView.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 
 namespace AZ
@@ -116,15 +117,16 @@ namespace AZ
         //! Each dynamic primitive drawn through the AuxGeom draw interface is stored in the scene data as an instance of this struct
         struct PrimitiveBufferEntry
         {
-            AZ::Vector3             m_center;       // used for depth sorting blended draws
-            AuxGeomPrimitiveType    m_primitiveType;
-            AuxGeomDepthReadType    m_depthReadType;
-            AuxGeomDepthWriteType   m_depthWriteType;
-            AuxGeomFaceCullMode     m_faceCullMode;
-            AuxGeomBlendMode        m_blendMode;
-            AuxGeomIndex            m_indexOffset;  // The index into the shared index buffer for all primitives
-            AuxGeomIndex            m_indexCount;   // The number of indices (a primitive can be a list of lines rather than one line for example)
-            AZ::u8                  m_width;        // for points and lines
+            RHI::GeometryView           m_geometryView;
+            AZ::Vector3                 m_center;       // used for depth sorting blended draws
+            AuxGeomPrimitiveType        m_primitiveType;
+            AuxGeomDepthReadType        m_depthReadType;
+            AuxGeomDepthWriteType       m_depthWriteType;
+            AuxGeomFaceCullMode         m_faceCullMode;
+            AuxGeomBlendMode            m_blendMode;
+            AuxGeomIndex                m_indexOffset;  // The index into the shared index buffer for all primitives
+            AuxGeomIndex                m_indexCount;   // The number of indices (a primitive can be a list of lines rather than one line for example)
+            AZ::u8                      m_width;        // for points and lines
         
             //if < 0, then will render using the View's view and proj matrices, otherwise this indexes into AuxGeomBufferData::m_viewProjOverrides
             int32_t                 m_viewProjOverrideIndex = -1;

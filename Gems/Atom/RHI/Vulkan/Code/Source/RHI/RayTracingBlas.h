@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -18,10 +18,11 @@ namespace AZ
     namespace Vulkan
     {
         class Buffer;
+        class RayTracingAccelerationStructure;
 
         //! This class builds and contains the Vulkan RayTracing BLAS buffers.
         class RayTracingBlas final
-            : public RHI::RayTracingBlas
+            : public RHI::DeviceRayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
@@ -30,10 +31,10 @@ namespace AZ
 
             struct BlasBuffers
             {
-                RHI::Ptr<RHI::Buffer> m_blasBuffer;
-                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
-                RHI::Ptr<RHI::Buffer> m_aabbBuffer;
-                VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
+                RHI::Ptr<RHI::DeviceBuffer> m_blasBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_scratchBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_aabbBuffer;
+                RHI::Ptr<RayTracingAccelerationStructure> m_accelerationStructure;
 
                 AZStd::vector<VkAccelerationStructureGeometryKHR> m_geometryDescs;
                 AZStd::vector<VkAccelerationStructureBuildRangeInfoKHR> m_rangeInfos;
@@ -42,14 +43,21 @@ namespace AZ
 
             const BlasBuffers& GetBuffers() const { return m_buffers.GetCurrentElement(); }
 
-            // RHI::RayTracingBlas overrides...
+            // RHI::DeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return GetBuffers().m_accelerationStructure != VK_NULL_HANDLE; }
+
+            uint64_t GetAccelerationStructureByteSize() override;
 
         private:
             RayTracingBlas() = default;
 
-            // RHI::RayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::DeviceRayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::DeviceRayTracingBlasDescriptor* descriptor, const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateCompactedBuffersInternal(
+                RHI::Device& device,
+                RHI::Ptr<RHI::DeviceRayTracingBlas> sourceBlas,
+                uint64_t compactedBufferSize,
+                const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 

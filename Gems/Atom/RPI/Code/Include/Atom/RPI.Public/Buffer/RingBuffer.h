@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/FrameCountMaxRingBuffer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/string/string.h>
 
@@ -20,7 +21,7 @@ namespace AZ::RPI
     //! A class which manages a FrameCountMax number of RPI buffers and manages them in a ring buffer structure, meaning that whenever data
     //! needs to be updated, the current buffer index is incremented (mod FrameCountMax) and the data is then written to the new current
     //! buffer, such that the other buffers stay valid.
-    class RingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<Buffer>>
+    class ATOM_RPI_PUBLIC_API RingBuffer : public RHI::FrameCountMaxRingBuffer<Data::Instance<Buffer>>
     {
         AZStd::string m_bufferName;
         CommonBufferPoolType m_bufferPoolType{ CommonBufferPoolType::ReadOnly };
@@ -62,6 +63,32 @@ namespace AZ::RPI
             AdvanceCurrentBufferAndUpdateData<typename T::value_type>(data);
         }
 
+        //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
+        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)
+        void AdvanceCurrentBufferAndUpdateData(const AZStd::unordered_map<int, const void*>& data, u64 dataSizeInBytes);
+
+        //! Increments the current buffer index, potentially resized the current buffer and updates the data of the current data. This is a
+        //! convenience function which calls AdvanceCurrentBuffer(), CreateOrResizeCurrentBuffer(...) and UpdateCurrentBufferData(...)
+        template<typename T>
+        void AdvanceCurrentBufferAndUpdateData(AZStd::unordered_map<int, AZStd::span<const T>> data)
+        {
+            AZStd::unordered_map<int, const void*> rawData;
+
+            for (auto& [deviceIndex, d] : data)
+            {
+                rawData[deviceIndex] = d.data();
+            }
+
+            AdvanceCurrentBufferAndUpdateData(rawData, data.begin()->second.size() * sizeof(T));
+        }
+
+        //! Convenience function which allows automatic conversion from vector/array to span
+        template<typename T>
+        void AdvanceCurrentBufferAndUpdateData(const AZStd::unordered_map<int, T>& data)
+        {
+            AdvanceCurrentBufferAndUpdateData<typename T::value_type>(data);
+        }
+
         //! Creates or resizes the current buffer to fit the given number of bytes.
         void CreateOrResizeCurrentBuffer(u64 bufferSizeInBytes);
 
@@ -87,6 +114,37 @@ namespace AZ::RPI
         void UpdateCurrentBufferData(const T& data, u64 bufferElementOffset = 0)
         {
             UpdateCurrentBufferData<typename T::value_type>(data, bufferElementOffset);
+        }
+
+        //! Updates the data of the current buffer.
+        void UpdateCurrentBufferData(const AZStd::unordered_map<int, const void*>& data, u64 dataSizeInBytes, u64 bufferOffsetInBytes);
+
+        //! Updates the data of the current buffer.
+        template<typename T>
+        void UpdateCurrentBufferData(AZStd::unordered_map<int, AZStd::span<const T>> data, u64 bufferElementOffset = 0)
+        {
+            AZStd::unordered_map<int, const void*> rawData;
+
+            for (auto& [deviceIndex, d] : data)
+            {
+                rawData[deviceIndex] = d.data();
+            }
+
+            UpdateCurrentBufferData(rawData, data.begin()->second.size() * sizeof(T), bufferElementOffset * sizeof(T));
+        }
+
+        //! Convenience function which allows automatic conversion from vector/array to span
+        template<typename T>
+        void UpdateCurrentBufferData(const AZStd::unordered_map<int, T>& data, u64 bufferElementOffset = 0)
+        {
+            AZStd::unordered_map<int, const void*> rawData;
+
+            for (auto& [deviceIndex, d] : data)
+            {
+                rawData[deviceIndex] = d.data();
+            }
+
+            UpdateCurrentBufferData(rawData, data.begin()->second.size() * sizeof(typename T::value_type), bufferElementOffset * sizeof(typename T::value_type));
         }
     };
 } // namespace AZ::RPI

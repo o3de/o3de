@@ -22,7 +22,7 @@ PIPELINE_TIMEOUT = 60
 EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
-ENGINE_DEVELOPMENT_BRANCH = 'point-release/24092'
+ENGINE_DEVELOPMENT_BRANCH = 'development'
 ENGINE_URL = "https://github.com/o3de/o3de.git"
 
 COMMIT_DOMAIN_NAME = ''

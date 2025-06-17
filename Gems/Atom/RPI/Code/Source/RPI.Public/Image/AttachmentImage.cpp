@@ -104,7 +104,9 @@ namespace AZ
 
             return nullptr;
         }
-        
+
+        AttachmentImage::AttachmentImage() = default;
+
         AttachmentImage::~AttachmentImage()
         {
             Shutdown(); 
@@ -139,7 +141,7 @@ namespace AZ
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_imagePool = pool;
-                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
+                m_imageView = m_image->BuildImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                     AZ_Error("AttachmentImage", false, "AttachmentImage::Init() failed to initialize RHI image view.");

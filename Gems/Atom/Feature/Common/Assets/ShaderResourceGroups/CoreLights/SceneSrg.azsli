@@ -12,17 +12,6 @@
 
 partial ShaderResourceGroup SceneSrg
 { 
-    struct DirectionalLight
-    {
-        float3 m_direction;
-        float m_angularRadius;
-        float3 m_rgbIntensityLux;
-        float m_affectsGIFactor;
-        bool m_affectsGI;
-        uint m_lightingChannelMask;
-        float2 m_padding;
-    };
-
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     

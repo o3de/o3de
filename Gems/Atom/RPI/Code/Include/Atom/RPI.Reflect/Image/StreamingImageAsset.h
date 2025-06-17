@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
@@ -45,7 +46,7 @@ namespace AZ
         //! and streaming controller.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using StreamingImageAssetCreator.
         //! See RPI::StreamingImage for runtime features based on this asset.
-        class StreamingImageAsset final
+        class ATOM_RPI_REFLECT_API StreamingImageAsset final
             : public ImageAsset
         {
             friend class StreamingImageAssetCreator;
@@ -53,12 +54,14 @@ namespace AZ
             friend class StreamingImageAssetHandler;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "StreamingImage" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "streamingimage" };
+
+            using Allocator = StreamingImageAssetAllocator_for_std_t;
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
-            AZ_CLASS_ALLOCATOR(StreamingImageAsset , AZ::SystemAllocator)
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(ReflectContext* context);
 
@@ -107,7 +110,8 @@ namespace AZ
             bool HasFullMipChainAssets() const;
 
             //! Returns the image tags
-            const AZStd::vector<AZ::Name>& GetTags() const;
+            using TagList = AZStd::vector<AZ::Name, Allocator>;
+            const TagList& GetTags() const;
 
             //! Removes up to `mipChainLevel` mipchains, reducing quality (used by the image tag system).
             //! The last mipchain won't be removed
@@ -153,7 +157,7 @@ namespace AZ
             //! that resides in the tail mip chain.
             const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
 
-            AZStd::vector<AZ::Name> m_tags;
+            TagList m_tags;
         };
     }
 }

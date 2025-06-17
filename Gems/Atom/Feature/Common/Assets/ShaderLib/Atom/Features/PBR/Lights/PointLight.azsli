@@ -50,14 +50,14 @@ int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos
 
 // PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
 // This function returns the proper uint16_t value given an input face in the range 0-5
-int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int face)
+int UnpackPointLightShadowIndex(const PointLight light, const int face)
 {
     const int index = face >> 1;
     const int shiftAmount = (face & 1) * 16;
     return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
 } 
 
-uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
+uint ComputeShadowIndex(const PointLight light, const Surface surface)
 {
     // shadow map size and bias are the same across all shadowmaps used by a specific point light, so just grab the first one
     const uint lightIndex0 = UnpackPointLightShadowIndex(light, 0);
@@ -73,7 +73,7 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
 
 #endif // ENABLE_SHADOWS
 
-void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
+void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData)
 {
     real3 posToLight = real3(light.m_position) - real3(surface.position);
     real posToLightDist = length(posToLight);
@@ -160,7 +160,7 @@ real3 SampleSphere(real2 randomPoint)
     return real3(sinTheta * cos(angle), sinTheta * sin(angle), cosTheta);
 }
 
-void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
+void ValidatePointLight(PointLight light, Surface surface, inout LightingData lightingData)
 {
     const uint sampleCount = 512;
 
@@ -194,7 +194,7 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
 {
     if (o_enableSphereLights)
     {
-        ViewSrg::PointLight light = ViewSrg::m_pointLights[lightIndex];
+        PointLight light = ViewSrg::m_pointLights[lightIndex];
         if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
         {
             return;

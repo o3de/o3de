@@ -80,13 +80,13 @@ namespace Vegetation
     void MeshBlockerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         AreaComponentBase::GetIncompatibleServices(services);
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
     }
 
     void MeshBlockerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         AreaComponentBase::GetRequiredServices(services);
-        services.push_back(AZ_CRC("MeshService", 0x71d8a455));
+        services.push_back(AZ_CRC_CE("MeshService"));
     }
 
     void MeshBlockerComponent::Reflect(AZ::ReflectContext* context)

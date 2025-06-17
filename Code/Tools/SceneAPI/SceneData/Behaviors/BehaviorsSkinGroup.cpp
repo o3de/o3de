@@ -28,9 +28,6 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const char* SkinGroup::s_skinVirtualTypeName = "Skin";
-            Crc32 SkinGroup::s_skinVirtualType = AZ_CRC(SkinGroup::s_skinVirtualTypeName, 0x0279681e);
-
             void SkinGroup::Activate()
             {
             }

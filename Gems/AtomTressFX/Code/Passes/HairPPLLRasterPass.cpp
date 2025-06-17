@@ -8,8 +8,7 @@
 
 //#include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -52,20 +51,24 @@ namespace AZ
             //! Once supported, this will be done via data driven code and the method can be removed.
             void HairPPLLRasterPass::BuildInternal()
             {
-                RasterPass::BuildInternal();    // change this to call parent if the method exists
+                HairGeometryRasterPass::BuildInternal(); // change this to call parent if the method exists
 
                 if (!AcquireFeatureProcessor())
                 {
                     return;
                 }
 
+                // Output
+                AttachBufferToSlot(Name{ "PerPixelLinkedList" }, m_featureProcessor->GetPerPixelListBuffer());
+            }
+
+            void HairPPLLRasterPass::InitializeInternal()
+            {
                 if (!LoadShaderAndPipelineState())
                 {
                     return;
                 }
-
-                // Output
-                AttachBufferToSlot(Name{ "PerPixelLinkedList" }, m_featureProcessor->GetPerPixelListBuffer());
+                HairGeometryRasterPass::InitializeInternal();
             }
 
         } // namespace Hair

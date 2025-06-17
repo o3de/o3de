@@ -77,7 +77,7 @@ namespace EMStudio
 
     void EventDataEditor::Init()
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_eventDataSelectionMenu = new QMenu(this);
@@ -97,7 +97,7 @@ namespace EMStudio
                 {
                     if (element.m_elementId == AZ::Edit::ClassElements::EditorData)
                     {
-                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC("Creatable", 0x47bff8c4), element.m_attributes);
+                        const AZ::Attribute* attribute = AZ::FindAttribute(AZ_CRC_CE("Creatable"), element.m_attributes);
                         if (!attribute)
                         {
                             continue;
@@ -263,7 +263,7 @@ namespace EMStudio
 
     void EventDataEditor::AppendEventData(const AZ::Uuid& newTypeId)
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         const AZ::SerializeContext::ClassData* classData = context->FindClassData(newTypeId);

@@ -104,12 +104,12 @@ namespace ScriptCanvas
         //! GraphCanvas nodes adding a reference to the ScriptCanvas node in it's user data field
         if (classElement.GetVersion() <= 1)
         {
-            if (!classElement.RemoveElementByName(AZ_CRC("m_id", 0x7108ece0)))
+            if (!classElement.RemoveElementByName(AZ_CRC_CE("m_id")))
             {
                 return false;
             }
 
-            if (classElement.RemoveElementByName(AZ_CRC("m_name", 0xc08c4427)))
+            if (classElement.RemoveElementByName(AZ_CRC_CE("m_name")))
             {
                 return false;
             }
@@ -197,6 +197,7 @@ namespace ScriptCanvas
         , m_id(source.Id())
         , m_relativePath(source.m_relativePath)
         , m_absolutePath(source.m_absolutePath)
+        , m_suggestedFileName(source.m_suggestedFileName)
     {
         SanitizePath();
     }
@@ -236,6 +237,16 @@ namespace ScriptCanvas
     const AZ::IO::Path& SourceHandle::AbsolutePath() const
     {
         return m_absolutePath;
+    }
+
+    void SourceHandle::SetSuggestedFileName(const AZStd::string_view suggestedFileName)
+    {
+        m_suggestedFileName = suggestedFileName;
+    }
+
+    AZStd::string SourceHandle::GetSuggestedFileName() const
+    {
+        return m_suggestedFileName;
     }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const

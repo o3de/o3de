@@ -850,6 +850,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnTreeItemDoubleClicked(const QModelIndex& index)
     {
+        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
             entityUiHandler->OnOutlinerItemDoubleClick(index);

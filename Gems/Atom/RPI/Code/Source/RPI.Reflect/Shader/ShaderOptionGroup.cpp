@@ -14,8 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderOptionGroup::DebugCategory = "ShaderOption";
-
         ShaderOptionGroup::ShaderOptionGroup(const ShaderOptionGroup& rhs)
             : m_layout(rhs.m_layout)
             , m_id{rhs.m_id}

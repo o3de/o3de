@@ -96,7 +96,7 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+            provided.push_back(AZ_CRC_CE("MemoryAllocators"));
         }
 
         static void Reflect(AZ::ReflectContext* context)
@@ -130,7 +130,7 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
+            provided.push_back(AZ_CRC_CE("MemoryAllocators"));
         }
 
         static void Reflect(AZ::ReflectContext* context)
@@ -139,7 +139,7 @@ namespace LmbrCentral
             if (serializeContext)
             {
                 serializeContext->Class<LmbrCentralAssetBuilderAllocatorComponent, LmbrCentralAllocatorComponent>()->Version(1)
-                    ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }));
+                    ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }));
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
@@ -281,23 +281,23 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        provided.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void LmbrCentralSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LmbrCentralService", 0xc3a02410));
+        incompatible.push_back(AZ_CRC_CE("LmbrCentralService"));
     }
 
     void LmbrCentralSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     void LmbrCentralSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("MemoryAllocators", 0xd59acbcc));
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("MemoryAllocators"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void LmbrCentralSystemComponent::Activate()
