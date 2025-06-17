@@ -1321,7 +1321,7 @@ namespace AzQtComponents
         bool isLeftButton = (m_queuedMouseEvent->button() == Qt::LeftButton);
         if (!isLeftButton)
         {
-            // we don't support right-drgging
+            // we don't support right-dragging
             return;
         }
 
