@@ -66,7 +66,18 @@ namespace AZ::RHI
 
     AZ::HashValue64 BufferDescriptor::GetHash(AZ::HashValue64 seed /* = 0 */) const
     {
-        return TypeHash64(*this, seed);
+        // We can't just call TypeHash64 here as in most other classes:
+        // The m_ownerDeviceIndex member is an optional. The value held by the optional is in a union which is not zero-initialized.
+        // TypeHash64 just hashes the bytes of this struct, including the uninitialized bytes of the optional.
+        auto hash = TypeHash64(m_byteCount);
+        hash = TypeHash64(m_alignment, hash);
+        hash = TypeHash64(m_bindFlags, hash);
+        hash = TypeHash64(m_sharedQueueMask, hash);
+        if (m_ownerDeviceIndex)
+        {
+            hash = TypeHash64(m_ownerDeviceIndex, hash);
+        }
+        return hash;
     }
 
     void BufferDescriptor::Reflect(AZ::ReflectContext* context)
