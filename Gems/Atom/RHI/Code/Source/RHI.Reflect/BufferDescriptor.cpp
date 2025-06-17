@@ -78,7 +78,7 @@ namespace AZ::RHI
                 ->Field("m_bindFlags", &BufferDescriptor::m_bindFlags)
                 ->Field("m_byteCount", &BufferDescriptor::m_byteCount)
                 ->Field("m_alignment", &BufferDescriptor::m_alignment)
-                ;
+                ->Field("m_ownerDeviceIndex", &BufferDescriptor::m_ownerDeviceIndex);
         }
     }
 }
