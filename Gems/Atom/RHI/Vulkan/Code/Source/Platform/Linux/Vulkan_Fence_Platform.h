@@ -12,9 +12,11 @@
 
 namespace AZ::Vulkan
 {
-#define AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED 1
+    static constexpr bool CrossDeviceFencesSupported = true;
+    static constexpr auto ExternalSemaphoreHandleTypeBit = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+    static constexpr const char* ExternalSemaphoreExtensionName = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME;
 
-    [[maybe_unused]] static VkResult ImportCrossDeviceSemaphore(
+    [[maybe_unused]] static RHI::ResultCode ImportCrossDeviceSemaphore(
         const Device& originalDevice, VkSemaphore originalSemaphore, const Device& destinationDevice, VkSemaphore destinationSemaphore)
     {
         int fd;
@@ -34,10 +36,7 @@ namespace AZ::Vulkan
         importInfo.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
         importInfo.fd = fd;
         auto result = destinationDevice.GetContext().ImportSemaphoreFdKHR(destinationDevice.GetNativeDevice(), &importInfo);
-        return result;
+        return ConvertResult(result);
     }
-
-    static constexpr auto ExternalSemaphoreHandleTypeBit = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
-    static constexpr const char* ExternalSemaphoreExtensionName = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME;
 
 } // namespace AZ::Vulkan

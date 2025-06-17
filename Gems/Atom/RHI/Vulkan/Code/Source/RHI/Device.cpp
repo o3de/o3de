@@ -1363,8 +1363,7 @@ namespace AZ
 #else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 #endif
-#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
-            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
+            if (CrossDeviceFencesSupported && physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
             {
                 VkExternalSemaphoreProperties externalSemaphoreProperties{};
                 externalSemaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES;
@@ -1389,7 +1388,6 @@ namespace AZ
                 m_features.m_crossDeviceFences =
                     m_features.m_crossDeviceFences && physicalDevice.GetDescriptor().m_vendorId == RHI::VendorId::nVidia;
             }
-#endif
             m_features.m_crossDeviceHostMemory =
                 physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalMemoryHost);
 

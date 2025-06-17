@@ -12,7 +12,14 @@
 
 namespace AZ::Vulkan
 {
-#define AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED 0
-
+    static constexpr bool CrossDeviceFencesSupported = false;
     static constexpr const char* ExternalSemaphoreExtensionName = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME;
+    static constexpr auto ExternalSemaphoreHandleTypeBit = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+    [[maybe_unused]] static RHI::ResultCode ImportCrossDeviceSemaphore(
+        const Device& originalDevice, VkSemaphore originalSemaphore, const Device& destinationDevice, VkSemaphore destinationSemaphore)
+    {
+        AZ_Assert(false, "Cross Device Fences are not supported on this platform");
+        return RHI::ResultCode::Fail;
+    }
 } // namespace AZ::Vulkan

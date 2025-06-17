@@ -57,12 +57,11 @@ namespace AZ
             VkExternalSemaphoreHandleTypeFlags externalHandleTypeFlags = 0;
             ExternalHandleRequirementBus::Broadcast(
                 &ExternalHandleRequirementBus::Events::CollectSemaphoreExportHandleTypes, externalHandleTypeFlags);
-#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
             if (usedForCrossDevice)
             {
+                AZ_Assert(CrossDeviceFencesSupported, "Cross device fences are not supported on this platform");
                 externalHandleTypeFlags |= ExternalSemaphoreHandleTypeBit;
             }
-#endif
             VkExportSemaphoreCreateInfoKHR createExport{};
             if (externalHandleTypeFlags != 0)
             {
@@ -90,7 +89,6 @@ namespace AZ
         RHI::ResultCode TimelineSemaphoreFence::InitCrossDeviceInternal(
             [[maybe_unused]] RHI::Device& baseDevice, [[maybe_unused]] RHI::Ptr<Fence> originalDeviceFence)
         {
-#if AZ_VULKAN_CROSS_DEVICE_SEMAPHORES_SUPPORTED
             auto originalTimelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(&originalDeviceFence->GetFenceBase());
             if (originalTimelineSemaphoreFence == nullptr)
             {
@@ -114,12 +112,8 @@ namespace AZ
 
             auto result =
                 ImportCrossDeviceSemaphore(originalDevice, originalTimelineSemaphoreFence->GetNativeSemaphore(), device, m_nativeSemaphore);
-            AZ_Assert(result == VK_SUCCESS, "Importing semaphore failed");
-            return ConvertResult(result);
-#else
-            AZ_Assert(false, "Cross Device Fences are not supported on this platform");
-            return RHI::ResultCode::Fail;
-#endif
+            AZ_Assert(result == RHI::ResultCode::Success, "Importing semaphore failed");
+            return result;
         }
 
         void TimelineSemaphoreFence::ShutdownInternal()
