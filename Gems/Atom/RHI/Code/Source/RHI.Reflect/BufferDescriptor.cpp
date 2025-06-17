@@ -69,7 +69,7 @@ namespace AZ::RHI
         // We can't just call TypeHash64 here as in most other classes:
         // The m_ownerDeviceIndex member is an optional. The value held by the optional is in a union which is not zero-initialized.
         // TypeHash64 just hashes the bytes of this struct, including the uninitialized bytes of the optional.
-        auto hash = TypeHash64(m_byteCount);
+        auto hash = TypeHash64(m_byteCount, seed);
         hash = TypeHash64(m_alignment, hash);
         hash = TypeHash64(m_bindFlags, hash);
         hash = TypeHash64(m_sharedQueueMask, hash);
