@@ -24,7 +24,7 @@
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/ApplicationServer.h>
 #include <native/utilities/AssetServerHandler.h>
-#include <native/utilities/AssetUtils.h>
+#include <native/utilities/assetUtils.h>
 #include <native/InternalBuilders/SettingsRegistryBuilder.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
