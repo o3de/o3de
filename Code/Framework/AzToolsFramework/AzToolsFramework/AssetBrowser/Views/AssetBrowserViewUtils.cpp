@@ -840,8 +840,34 @@ namespace AzToolsFramework
             return {};
         }
 
-        Qt::DropAction AssetBrowserViewUtils::SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)
+        Qt::DropAction AssetBrowserViewUtils::SelectDropActionForEntries(const AssetBrowserEntry* parent, const AZStd::vector<const AssetBrowserEntry*>& entries)
         {
+            bool hasSameParent = false;
+            // we only drop if all the entries are being dropped into a different folder.
+            for (auto entry : entries)
+            {
+                const AssetBrowserEntry* entryParent = entryParent = entry->GetParent();
+                if (entryParent)
+                {
+                    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                    {
+                        // the parent of a product is the source that produced it.  We want the parent of the source.
+                        entryParent = entryParent->GetParent();
+                    }
+
+                    if (entryParent == parent) // this also takes care of nullptr check, its a ptr compare.
+                    {
+                        // we are attempting to drop an item into a folder it is already located
+                        hasSameParent = true;
+                    }
+                }
+            }
+            if (hasSameParent)
+            {
+                // we don't currently allow you to copy or move an item into the folder you're already in.
+                return Qt::IgnoreAction;
+            }
+
             QSettings settings;
 
             QVariant defaultDropMethod = settings.value("AssetBrowserDropAction", Qt::CopyAction);
