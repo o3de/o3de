@@ -237,7 +237,7 @@ namespace EMStudio
         return false;
     }
 
-    void FileManager::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::TypeId sourceTypeId)
+    void FileManager::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::TypeId sourceTypeId)
     {
         AZStd::string filename;
         AZStd::string assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");

@@ -55,7 +55,7 @@ namespace UnitTest
             UiAnimationNotificationBus::Handler::BusDisconnect(m_busId);
         }
 
-        void OnUiAnimationEvent([[maybe_unused]] IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, AZStd::string animSequenceName) {};
+        void OnUiAnimationEvent([[maybe_unused]] IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, [[maybe_unused]] AZStd::string animSequenceName) {};
         void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, AZStd::string animSequenceName)
         {
             m_recievedEvents.push_back(EventInfo{ eventName, valueName, animSequenceName });

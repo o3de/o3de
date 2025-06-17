@@ -39,7 +39,7 @@ namespace AZ
             }
         }
 
-        void ReflectionProbe::OnAssetError(Data::Asset<Data::AssetData> asset)
+        void ReflectionProbe::OnAssetError([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             AZ_Error("ReflectionProbe", false, "Failed to load ReflectionProbe dependency asset %s", asset.ToString<AZStd::string>().c_str());
             Data::AssetBus::Handler::BusDisconnect();
@@ -60,7 +60,7 @@ namespace AZ
             // We don't have to pre-load this asset before passing it to MeshFeatureProcessor, because the MeshFeatureProcessor will handle the async-load for us.
             m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
                 "Models/ReflectionProbeSphere.fbx.azmodel",
-                AZ::RPI::AssetUtils::TraceLevel::Assert);
+                AZ::RPI::AssetUtils::TraceLevel::Assert);   
 
             MeshHandleDescriptor visualizationMeshDescriptor;
             visualizationMeshDescriptor.m_modelAsset = m_visualizationModelAsset;
