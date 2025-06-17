@@ -8,61 +8,55 @@
 
 #define FORCE_OPAQUE 1
 
-#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
-
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include "AutoBrick_Common.azsli"  // MaterialSrg
+#include <Atom/Features/InstancedTransforms.azsli>
+#include "AutoBrick_Common.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // intentionally empty, needed for GetParallaxOffset()
 struct MaterialParameters {};
 
-// Control which fields we get in the VsInput and VsOutput
-#define UvSetCount 1
-#define MATERIAL_USES_VERTEX_POSITION 1
-#define MATERIAL_USES_VERTEX_POSITIONWS 1
-// #define MATERIAL_USES_VERTEX_LOCALPOSITION 1
-// #define MATERIAL_USES_VERTEX_PREV_POSITION 1
-#define MATERIAL_USES_VERTEX_NORMAL 1
-#define MATERIAL_USES_VERTEX_TANGENT 1
-// #define MATERIAL_USES_VERTEX_BITANGENT 1
-#define MATERIAL_USES_VERTEX_UV 1
-// #define MATERIAL_USES_VERTEX_DETAIL_UV 1
-// #define MATERIAL_USES_VERTEX_COLOR 1
-// #define MATERIAL_USES_VERTEX_BLENDMASK 1
-
-#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
-
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-
-VsOutput AutoBrick_ForwardPassVS(VsInput IN, uint instanceId : SV_InstanceID)
+struct VSInput
 {
-    VsOutput OUT;
- 
-    VsSystemValues SV;
-    SV.m_instanceId = instanceId;
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT;
+    float2 m_uv : UV0;
+};
 
-    float3 worldPosition = mul(GetObjectToWorldMatrix(SV), float4(IN.position, 1.0)).xyz;
- 
-    OUT.uvs[0] = IN.uv0;
+struct VSOutput
+{
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT;
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+    uint m_instanceId : SV_InstanceID;
+};
 
-    OUT.worldPosition = worldPosition;
-    OUT.position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.worldPosition, 1.0));
-    OUT.normal = IN.normal;
-    OUT.tangent = IN.tangent;
-    
-    OUT.m_instanceId = SV.m_instanceId;
-    
+VSOutput AutoBrick_ForwardPassVS(VSInput IN, uint instanceId : SV_InstanceID)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
+ 
+    OUT.m_uv = IN.m_uv;
+
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
+    OUT.m_instanceId = instanceId;
     return OUT;
 }
 
@@ -139,19 +133,16 @@ DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampl
     return DepthResultNormalized(depth);
 }
 
-ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
+ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
     float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
-    VsSystemValues SV;
-    SV.m_instanceId = IN.m_instanceId;
-
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
     float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     float3x3 identityUvMatrix = 
         { 1,0,0,
@@ -160,28 +151,27 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
           
     float depthOffset = 0.0;
 
-    // empty MaterialParameters struct; GetParallaxOffset() expects it but just passes it through to GetDepth() unchange
+    // the texture and sampler don't matter here, since they are passed to the GetDepth function, where they are ignored
     MaterialParameters params;
 
-    // the texture and sampler don't matter here, since they are passed to the GetDepth function, where they are ignored
-    ParallaxOffset tangentOffset = GetParallaxOffset( params,
+    ParallaxOffset tangentOffset = GetParallaxOffset( params, 
                                                       AutoBrickSrg::m_noise,
                                                       AutoBrickSrg::m_sampler,
                                                       AutoBrickSrg::m_lineDepth,
                                                       depthOffset,
-                                                      IN.uvs[0],
-                                                      ViewSrg::m_worldPosition.xyz - IN.worldPosition, 
+                                                      IN.m_uv,
+                                                      ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
                                                       tangentWS,
                                                       bitangentWS,
                                                       normalWS,
                                                       identityUvMatrix);
     
-    IN.uvs[0] += tangentOffset.m_offsetTS.xy;
+    IN.m_uv += tangentOffset.m_offsetTS.xy;
  
     float3 baseColor = float3(1,1,1);
-    const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.uvs[0]).r;
+    const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;
 
-    float distanceFromBrick = GetNormalizedDistanceFromBrick(IN.uvs[0]);
+    float distanceFromBrick = GetNormalizedDistanceFromBrick(IN.m_uv);
     if(distanceFromBrick > AutoBrickSrg::m_brickColorBleed) 
     {
         baseColor = AutoBrickSrg::m_lineColor * lerp(1.0, noise, AutoBrickSrg::m_lineNoiseFactor);
@@ -193,7 +183,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
 
     float surfaceDepth;
     float3 surfaceNormal;
-    GetSurfaceShape(IN.uvs[0], surfaceDepth, surfaceNormal);
+    GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
     const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, normalWS, tangentWS, bitangentWS);
     
     // ------- Surface -------
@@ -201,7 +191,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
     Surface surface;
     
     // Position, Normal, Roughness
-    surface.position = IN.worldPosition.xyz;
+    surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(surfaceNormalWorld);
     surface.vertexNormal = surfaceNormal;
     surface.roughnessLinear = 1.0f;
@@ -220,7 +210,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
     LightingData lightingData;
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
     // Shadow
@@ -238,7 +228,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VsOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, IN.position);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIblForward(surface, lightingData);
