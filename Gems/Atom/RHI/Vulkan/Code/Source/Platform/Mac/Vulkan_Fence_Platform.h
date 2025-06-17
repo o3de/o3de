@@ -17,7 +17,10 @@ namespace AZ::Vulkan
     static constexpr auto ExternalSemaphoreHandleTypeBit = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
 
     [[maybe_unused]] static RHI::ResultCode ImportCrossDeviceSemaphore(
-        const Device& originalDevice, VkSemaphore originalSemaphore, const Device& destinationDevice, VkSemaphore destinationSemaphore)
+        [[maybe_unused]] const Device& originalDevice,
+        [[maybe_unused]] VkSemaphore originalSemaphore,
+        [[maybe_unused]] const Device& destinationDevice,
+        [[maybe_unused]] VkSemaphore destinationSemaphore)
     {
         AZ_Assert(false, "Cross Device Fences are not supported on this platform");
         return RHI::ResultCode::Fail;
