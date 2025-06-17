@@ -1363,30 +1363,37 @@ namespace AZ
 #else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 #endif
-            if (CrossDeviceFencesSupported && physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
+            // These are two nested ifs instead of one because MSVC complains about a missing contexpr otherwise
+            // The warning is C4127, but we can't add a constexpr when doing (constexpr && non-constexpr)
+            // The two ifs can be combined into a single one once MSVC fixes this warning
+            // See https://developercommunity.visualstudio.com/t/C4127-provides-advice-that-breaks-code/10497946?sort=newest&q=ICE
+            if constexpr (CrossDeviceFencesSupported)
             {
-                VkExternalSemaphoreProperties externalSemaphoreProperties{};
-                externalSemaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES;
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
+                {
+                    VkExternalSemaphoreProperties externalSemaphoreProperties{};
+                    externalSemaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES;
 
-                VkPhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo{};
-                externalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO;
-                externalSemaphoreInfo.handleType = ExternalSemaphoreHandleTypeBit;
+                    VkPhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo{};
+                    externalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO;
+                    externalSemaphoreInfo.handleType = ExternalSemaphoreHandleTypeBit;
 
-                VkSemaphoreTypeCreateInfo semaphoreCreateInfo{};
-                semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
-                semaphoreCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-                externalSemaphoreInfo.pNext = &semaphoreCreateInfo;
-                GetContext().GetPhysicalDeviceExternalSemaphoreProperties(
-                    physicalDevice.GetNativePhysicalDevice(), &externalSemaphoreInfo, &externalSemaphoreProperties);
+                    VkSemaphoreTypeCreateInfo semaphoreCreateInfo{};
+                    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                    semaphoreCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+                    externalSemaphoreInfo.pNext = &semaphoreCreateInfo;
+                    GetContext().GetPhysicalDeviceExternalSemaphoreProperties(
+                        physicalDevice.GetNativePhysicalDevice(), &externalSemaphoreInfo, &externalSemaphoreProperties);
 
-                m_features.m_crossDeviceFences = RHI::CheckBitsAll<VkExternalSemaphoreFeatureFlags>(
-                    externalSemaphoreProperties.externalSemaphoreFeatures,
-                    VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT);
+                    m_features.m_crossDeviceFences = RHI::CheckBitsAll<VkExternalSemaphoreFeatureFlags>(
+                        externalSemaphoreProperties.externalSemaphoreFeatures,
+                        VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT);
 
-                // This feature was only tested on Nvidia and it's not clear if it work for other Vendors
-                // We disable it for other vendors for the time being
-                m_features.m_crossDeviceFences =
-                    m_features.m_crossDeviceFences && physicalDevice.GetDescriptor().m_vendorId == RHI::VendorId::nVidia;
+                    // This feature was only tested on Nvidia and it's not clear if it work for other Vendors
+                    // We disable it for other vendors for the time being
+                    m_features.m_crossDeviceFences =
+                        m_features.m_crossDeviceFences && physicalDevice.GetDescriptor().m_vendorId == RHI::VendorId::nVidia;
+                }
             }
             m_features.m_crossDeviceHostMemory =
                 physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalMemoryHost);
