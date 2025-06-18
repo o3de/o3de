@@ -547,8 +547,7 @@ namespace AzToolsFramework
 
         enum StatusType
         {
-            StatusStartActive,
-            StatusStartInactive,
+            StatusUniversal,
             StatusEditorOnly,
             StatusItems
         };
@@ -556,6 +555,7 @@ namespace AzToolsFramework
         QStringList m_itemNames;
 
         void UpdateStatusComboBox();
+        void UpdateStartsActiveCheckbox();
         size_t StatusTypeToIndex(StatusType statusType) const;
         StatusType IndexToStatusType(size_t index) const;
 
@@ -675,6 +675,7 @@ namespace AzToolsFramework
         void ScrollToNewComponent();
         void QueueScrollToNewComponent();
         void OnStatusChanged(int index);
+        void OnStartActiveStateChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
         void OnComponentOverrideContextMenu(const QPoint& position);

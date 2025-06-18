@@ -1180,6 +1180,18 @@ namespace AzToolsFramework
         emit EnableSelectionUpdates(true);
     }
 
+    void EntityOutlinerListModel::OnEntityStartStatusChanged(const AZ::EntityId& entityId)
+    {
+        QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+        if (!changedIndex.isValid())
+        {
+            return;
+        }
+
+        emit dataChanged(changedIndex, changedIndex, { Qt::DecorationRole });
+    }
+
     void EntityOutlinerListModel::OnEntityInfoUpdatedAddChildBegin(AZ::EntityId parentId, AZ::EntityId childId)
     {
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
