@@ -212,6 +212,7 @@ namespace AzToolsFramework
 
         void OnEntityInitialized(const AZ::EntityId& entityId) override;
         void AfterEntitySelectionChanged(const EntityIdList&, const EntityIdList&) override;
+        void OnEntityStartStatusChanged(const AZ::EntityId& entityId) override;
 
         //! EditorEntityInfoNotificationBus::Handler
         //! Get notifications when the EditorEntityInfo changes so we can update our model

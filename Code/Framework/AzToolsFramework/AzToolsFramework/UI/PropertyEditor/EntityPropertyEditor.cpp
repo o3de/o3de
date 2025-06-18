@@ -31,6 +31,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -584,7 +585,7 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
-        m_itemNames = QStringList{"Universal", "Editor only"};
+        m_itemNames = QStringList{tr("Universal"), tr("Editor only")};
         int itemNameCount = m_itemNames.size();
         QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
         for (int row = 0; row < itemNameCount; ++row)
@@ -595,6 +596,7 @@ namespace AzToolsFramework
         }
         m_gui->m_statusComboBox->setModel(model);
         AzQtComponents::ComboBox::addCustomCheckStateStyle(m_gui->m_statusComboBox);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_gui->m_activeOnStartCheckbox);
         EnableEditor(true);
         m_sceneIsNew = true;
 
@@ -642,7 +644,8 @@ namespace AzToolsFramework
         m_isBuildingProperties = false;
 
         setTabOrder(m_gui->m_entityNameEditor, m_gui->m_statusComboBox);
-        setTabOrder(m_gui->m_statusComboBox, m_gui->m_addComponentButton);
+        setTabOrder(m_gui->m_statusComboBox, m_gui->m_activeOnStartCheckbox);
+        setTabOrder(m_gui->m_activeOnStartCheckbox, m_gui->m_addComponentButton);
 
         // the world editor has a fixed id:
 
@@ -655,6 +658,8 @@ namespace AzToolsFramework
             SIGNAL(currentIndexChanged(int)),
             this,
             SLOT(OnStatusChanged(int)));
+
+        connect(m_gui->m_activeOnStartCheckbox, SIGNAL(stateChanged(int)), this, SLOT(OnStartActiveStateChanged(int)));
 
         CreateActions();
         UpdateContents();
@@ -941,6 +946,7 @@ namespace AzToolsFramework
         if (IsEntitySelected(entityId))
         {
             UpdateStatusComboBox();
+            UpdateStartsActiveCheckbox();
         }
     }
 
@@ -1077,6 +1083,7 @@ namespace AzToolsFramework
     void EntityPropertyEditor::UpdateEntityDisplay()
     {
         UpdateStatusComboBox();
+        UpdateStartsActiveCheckbox();
 
         if (m_selectedEntityIds.size() > 1)
         {
@@ -2609,8 +2616,61 @@ namespace AzToolsFramework
         return false;
     }
 
+    void EntityPropertyEditor::UpdateStartsActiveCheckbox()
+    {
+        QSignalBlocker noSignals(m_gui->m_activeOnStartCheckbox);
+        if (m_selectedEntityIds.empty() || m_isLevelEntityEditor)
+        {
+            m_gui->m_activeOnStartCheckbox->setVisible(false);
+            return;
+        }
+
+        bool allActive = true;
+        bool anyActive = false;
+        for (AZ::EntityId id : m_selectedEntityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+            if (entity)
+            {
+                const bool entityIsInitiallyActive = entity->IsRuntimeActiveByDefault();
+                allActive = allActive && entityIsInitiallyActive;
+                anyActive = anyActive || entityIsInitiallyActive;
+            }
+        }
+
+        if (allActive)
+        {
+            // every selected entity is active.
+            m_gui->m_activeOnStartCheckbox->setCheckState(Qt::Checked);
+        }
+        else
+        {
+            if (anyActive)
+            {
+                // SOME selected entitiers are active
+                m_gui->m_activeOnStartCheckbox->setCheckState(Qt::PartiallyChecked);
+
+            }
+            else
+            {
+                // no selected entities are active
+                m_gui->m_activeOnStartCheckbox->setCheckState(Qt::Unchecked);
+            }
+        }
+
+        m_gui->m_activeOnStartCheckbox->setDisabled(m_selectionContainsReadOnlyEntity);
+        m_gui->m_activeOnStartCheckbox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
+        m_gui->m_activeOnStartCheckbox->style()->unpolish(m_gui->m_activeOnStartCheckbox);
+        m_gui->m_activeOnStartCheckbox->style()->polish(m_gui->m_activeOnStartCheckbox);
+        m_gui->m_activeOnStartCheckbox->setTristate(false);
+    }
+
     void EntityPropertyEditor::UpdateStatusComboBox()
     {
+        // As of the removal of "slice" from the world editor, entity combo box only contains
+        // two options - "Editor only" and "Universal"
+        // And it only controls whether they are exported at all, or not at all
         QSignalBlocker noSignals(m_gui->m_statusComboBox);
 
         if (m_selectedEntityIds.empty() || m_isLevelEntityEditor)
@@ -2625,93 +2685,52 @@ namespace AzToolsFramework
             m_comboItems[i]->setCheckState(Qt::Unchecked);
         }
 
-        bool allActive = true;
-        bool allInactive = true;
+        bool allUniversal = true;
         bool allEditorOnly = true;
-        bool someActive = false;
-        bool someInactive = false;
+        bool someUniversal = false;
         bool someEditorOnly = false;
 
         for (AZ::EntityId id : m_selectedEntityIds)
         {
             bool isEditorOnly = false;
             EditorOnlyEntityComponentRequestBus::EventResult(isEditorOnly, id, &EditorOnlyEntityComponentRequests::IsEditorOnlyEntity);
+            bool isUniversal = !isEditorOnly;
 
-            if (isEditorOnly)
-            {
-                bool isSliceRoot = false;
-                EditorEntityInfoRequestBus::EventResult(isSliceRoot, id, &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsSliceRoot);
-
-                allEditorOnly &= true;
-                someEditorOnly = true;
-                allActive = false;
-                allInactive = false;
-            }
-            else
-            {
-
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
-
-                const bool isInitiallyActive = entity ? entity->IsRuntimeActiveByDefault() : true;
-                allActive &= isInitiallyActive;
-                allInactive &= !isInitiallyActive;
-                allEditorOnly = false;
-                someActive |= isInitiallyActive;
-                someInactive |= !isInitiallyActive;
-            }
-        }
-
-        if (allInactive)
-        {
-            AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
-            allInactive = false;
-            allEditorOnly = true;
-        }
-        if (someInactive)
-        {
-            AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
-            someInactive = false;
+            allEditorOnly  = allEditorOnly  && isEditorOnly;
+			someEditorOnly = someEditorOnly || isEditorOnly;
+            allUniversal   = allUniversal   && isUniversal;
+            someUniversal  = someUniversal  || isUniversal;
         }
 
         m_gui->m_statusComboBox->setItalic(false);
-        if (allActive)
+        if (allUniversal)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartActive))]);
-            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartActive)));
-            m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::Checked);
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusUniversal))]);
+            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusUniversal)));
+            m_comboItems[StatusTypeToIndex(StatusType::StatusUniversal)]->setCheckState(Qt::Checked);
         }
         else
-            if (allInactive)
+        {
+            if (allEditorOnly)
             {
-                m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive))]);
-                m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive)));
-                m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::Checked);
+                m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly))]);
+                m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly)));
+                m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
             }
-            else
-                if (allEditorOnly)
+            else // Some marked active, some not
+            {
+                m_gui->m_statusComboBox->setItalic(true);
+                m_gui->m_statusComboBox->setHeaderOverride("- Multiple selected -");
+                if (someUniversal)
                 {
-                    m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly))]);
-                    m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly)));
-                    m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
+                    m_comboItems[StatusTypeToIndex(StatusType::StatusUniversal)]->setCheckState(Qt::PartiallyChecked);
                 }
-                else // Some marked active, some not
+                if (someEditorOnly)
                 {
-                    m_gui->m_statusComboBox->setItalic(true);
-                    m_gui->m_statusComboBox->setHeaderOverride("- Multiple selected -");
-                    if (someActive)
-                    {
-                        m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::PartiallyChecked);
-                    }
-                    if (someInactive)
-                    {
-                        m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::PartiallyChecked);
-                    }
-                    if (someEditorOnly)
-                    {
-                        m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::PartiallyChecked);
-                    }
+                    m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::PartiallyChecked);
                 }
+            }
+        }
 
         m_gui->m_statusComboBox->setDisabled(m_selectionContainsReadOnlyEntity);
         m_gui->m_statusComboBox->setVisible(!m_isSystemEntityEditor && !m_isLevelEntityEditor);
@@ -2723,10 +2742,7 @@ namespace AzToolsFramework
     {
         switch (statusType)
         {
-        case StatusStartActive:
-            return 0;
-        case StatusStartInactive:
-            AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
+        case StatusUniversal:
             return 0;
         case StatusEditorOnly:
             return 1;
@@ -2743,7 +2759,7 @@ namespace AzToolsFramework
         switch (index)
         {
         case 0:
-            return StatusStartActive;
+            return StatusUniversal;
         case 1:
             return StatusEditorOnly;
         default:
@@ -3962,51 +3978,39 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnStatusChanged(int index)
     {
+        for (AZ::EntityId entityId : m_selectedEntityIds)
         {
             ScopedUndoBatch undo("Change Status");
-
             switch (IndexToStatusType(index))
             {
-                case StatusType::StatusStartActive:
-                case StatusType::StatusStartInactive:
-                {
-                    bool entityIsStartingActive = index == StatusTypeToIndex(StatusType::StatusStartActive);
-
-                    for (AZ::EntityId entityId : m_selectedEntityIds)
-                    {
-                        AZ::Entity* entity = nullptr;
-                        AZ::ComponentApplicationBus::BroadcastResult(
-                            entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-
-                        EditorOnlyEntityComponentRequestBus::Event(
-                            entityId, &EditorOnlyEntityComponentRequests::SetIsEditorOnlyEntity,
-                            false);
-                        if (entity)
-                        {
-                            EditorEntityRuntimeActivationChangeNotificationBus::Broadcast(
-                                &EditorEntityRuntimeActivationChangeNotificationBus::Events::
-                                OnEntityRuntimeActivationChanged,
-                                entityId, entityIsStartingActive);
-
-                            entity->SetRuntimeActiveByDefault(entityIsStartingActive);
-                            undo.MarkEntityDirty(entityId);
-                        }
-                    }
-                    break;
-                }
-                case StatusType::StatusEditorOnly:
-                    for (AZ::EntityId entityId : m_selectedEntityIds)
-                    {
-                        EditorOnlyEntityComponentRequestBus::Event(entityId, &EditorOnlyEntityComponentRequests::SetIsEditorOnlyEntity, true);
-                    }
-                    break;
+            case StatusType::StatusUniversal:
+                EditorOnlyEntityComponentRequestBus::Event(entityId, &EditorOnlyEntityComponentRequests::SetIsEditorOnlyEntity, false);
+                break;
+            case StatusType::StatusEditorOnly:
+                EditorOnlyEntityComponentRequestBus::Event(entityId, &EditorOnlyEntityComponentRequests::SetIsEditorOnlyEntity, true);
+                break;
             }
+            AZ::EntitySystemBus::Broadcast(&AZ::EntitySystemBus::Events::OnEntityStartStatusChanged, entityId);
         }
+    }
 
+    void EntityPropertyEditor::OnStartActiveStateChanged(int index)
+    {
+        ScopedUndoBatch undo("Change Start Active State");
+
+        bool startsActive = (index == Qt::Checked);
         // This notification will trigger the update of the actual combo box, so no need to call that explicitly
         for (AZ::EntityId entityId : m_selectedEntityIds)
         {
-            AZ::EntitySystemBus::Broadcast(&AZ::EntitySystemBus::Events::OnEntityStartStatusChanged, entityId);
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                entity->SetRuntimeActiveByDefault(startsActive);
+                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, entityId);
+                AZ::EntitySystemBus::Broadcast(&AZ::EntitySystemBus::Events::OnEntityStartStatusChanged, entityId);
+
+            }
         }
     }
 
