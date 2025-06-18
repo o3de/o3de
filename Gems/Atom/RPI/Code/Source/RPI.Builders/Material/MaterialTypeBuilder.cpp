@@ -256,18 +256,6 @@ namespace AZ
                     return true;
                 });
 
-            materialTypeSourceData.EnumerateProperties(
-                [&outputJobDescriptor, &materialTypeSourcePath](const MaterialPropertySourceData* property, const MaterialNameContext&)
-                {
-                    if (property->m_dataType == MaterialPropertyDataType::Image &&
-                        MaterialUtils::LooksLikeImageFileReference(property->m_value))
-                    {
-                        MaterialBuilderUtils::AddPossibleImageDependencies(
-                            materialTypeSourcePath, property->m_value.GetValue<AZStd::string>(), outputJobDescriptor);
-                    }
-                    return true;
-                });
-
             for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
             {
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
@@ -897,6 +885,8 @@ namespace AZ
                     AZ_Error(MaterialTypeBuilderName, false, "Failed to output product dependencies.");
                     return;
                 }
+
+                MaterialBuilderUtils::AddImageAssetDependenciesToProduct(materialTypeAsset.Get(), jobProduct);
 
                 response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
             }

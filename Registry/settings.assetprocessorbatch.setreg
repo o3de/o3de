@@ -1,0 +1,19 @@
+{
+    // This file is only loaded by the AssetProcessorBatch executable.
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Jobs": {
+                    // maxJobs 0 means use an automatic amount of CPU cores, detected from hardware.
+                    "maxJobs" : 0,  
+
+                    // AlwaysUseMaxJobs: true means always use maxJobs CPUs at all time.
+                    // The default behavior for AP is to reserve half CPUs for background work
+                    // and half CPUs for escalated (user requested) and critical work.
+                    // Batch is usually used in CLI or automated builds,  so no need.
+                    "AlwaysUseMaxJobs": true
+                }
+            }
+        }
+    }
+}

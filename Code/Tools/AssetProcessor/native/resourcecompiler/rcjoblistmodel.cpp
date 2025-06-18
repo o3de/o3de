@@ -95,15 +95,42 @@ namespace AssetProcessor
         return m_finishedJobsNotInCatalog.count();
     }
 
-    void RCJobListModel::UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobEscalation)
+    void RCJobListModel::UpdateJobEscalation(const QueueElementID& toEscalate, int valueToEscalateTo)
+    {
+        for (auto foundInQueue = m_jobsInQueueLookup.find(toEscalate); foundInQueue != m_jobsInQueueLookup.end(); ++foundInQueue)
+        {
+            RCJob* job = foundInQueue.value();
+
+            // this is a multi-map, so we have to keep going until it no longer matches.
+            if (!job)
+            {
+                continue;
+            }
+
+            if (job->GetElementID() != toEscalate)
+            {
+                break;
+            }
+
+            if (job->JobEscalation() != valueToEscalateTo)
+            {
+                UpdateJobEscalation(job, valueToEscalateTo);
+            }
+        }
+    }
+
+    void RCJobListModel::UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int valueToEscalateTo)
     {
         for (int idx = 0; idx < rowCount(); ++idx)
         {
             RCJob* job = getItem(idx);
             if (job == rcJob)
             {
-                rcJob->SetJobEscalation(jobEscalation);
-                Q_EMIT dataChanged(index(idx, 0), index(idx, columnCount() - 1));
+                if (job->JobEscalation() != valueToEscalateTo)
+                {
+                    job->SetJobEscalation(valueToEscalateTo);
+                    Q_EMIT dataChanged(index(idx, 0), index(idx, columnCount() - 1));
+                }
                 break;
             }
         }

@@ -12,8 +12,6 @@
 #include "RCCommon.h"
 
 #include <QObject>
-#include <QProcess>
-#include <QDir>
 #include <QList>
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -45,8 +43,7 @@ namespace AssetProcessor
             cmdExecute,
             cmdTerminate
         };
-        RCController() = default;
-        explicit RCController(int minJobs, int maxJobs, QObject* parent = 0);
+        explicit RCController(QObject* parent = 0);
         virtual ~RCController();
 
         AssetProcessor::RCJobListModel* GetQueueModel();
@@ -105,13 +102,17 @@ namespace AssetProcessor
         void OnJobComplete(JobEntry completeEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnAddedToCatalog(JobEntry jobEntry);
 
+        //! The config about # of jobs and slots may have changed, recompute it.
+        void UpdateAndComputeJobSlots();
+
     protected:
         AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
 
     private:
         void FinishJob(AssetProcessor::RCJob* rcJob);
 
-        unsigned int m_maxJobs;
+        unsigned int m_maxJobs = 0; //<! 0 means autocompute, read from registry key
+        bool m_alwaysUseMaxJobs = false; //<! normally, it only uses maxJobs cpu cores when critical or escalated work is present to save CPU usage
 
         bool m_dispatchingJobs = false;
         bool m_shuttingDown = false;

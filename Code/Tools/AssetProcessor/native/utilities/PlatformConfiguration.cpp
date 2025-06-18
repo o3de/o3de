@@ -627,8 +627,6 @@ namespace AssetProcessor
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
-        , m_minJobs(1)
-        , m_maxJobs(8)
     {
     }
 
@@ -1132,19 +1130,7 @@ namespace AssetProcessor
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
         settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         engineRoot = engineRoot.LexicallyNormal(); // Normalize the path to use posix slashes
-
-        AZ::s64 jobCount = m_minJobs;
-        if (settingsRegistry->Get(jobCount, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/Jobs/minJobs"))
-        {
-            m_minJobs = aznumeric_cast<int>(jobCount);
-        }
-
-        jobCount = m_maxJobs;
-        if (settingsRegistry->Get(jobCount, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/Jobs/maxJobs"))
-        {
-            m_maxJobs = aznumeric_cast<int>(jobCount);
-        }
-
+       
         if (!skipScanFolders)
         {
             AZStd::unordered_map<AZStd::string, AZ::IO::Path> gemNameToPathMap;
@@ -1840,16 +1826,6 @@ namespace AssetProcessor
             {
                 return scanFolder.ScanPath() == scanFolderPath;
             });
-    }
-
-    int PlatformConfiguration::GetMinJobs() const
-    {
-        return m_minJobs;
-    }
-
-    int PlatformConfiguration::GetMaxJobs() const
-    {
-        return m_maxJobs;
     }
 
     void PlatformConfiguration::EnableCommonPlatform()

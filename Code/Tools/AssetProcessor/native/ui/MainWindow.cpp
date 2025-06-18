@@ -599,65 +599,59 @@ void MainWindow::Activate()
     AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
     AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
     AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->verboseLoggingCheckbox);
 
     const auto apm = m_guiApplicationManager->GetAssetProcessorManager();
 
-    // Note: the settings can't be used in ::MainWindow(), because the application name
-    // hasn't been set up and therefore the settings will load from somewhere different than later
-    // on.
-    // Read the current settings to give command line options a chance to override the default
-    QSettings settings;
-    settings.beginGroup("Options");
-    bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool() || apm->GetModtimeSkippingFeatureEnabled();
-    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool() || apm->GetBuilderDebugFlag();
-    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool() || apm->GetInitialScanSkippingFeatureEnabled();
-    settings.endGroup();
-
+    // Zero Analysis mode ("Fast scan mode") is enabled by default in the gui (running this mainwindow file), false in batch mode.
+    bool zeroAnalysisMode = AssetUtilities::GetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, true);
+    bool enableBuilderDebugFlag = AssetUtilities::GetUserSetting(AssetUtilities::EnableBuilderDebugFlagOptionName, apm->GetBuilderDebugFlag());
+    bool initialScanSkippingEnabled = AssetUtilities::GetUserSetting(AssetUtilities::SkipInitialScanOptionName, apm->GetInitialScanSkippingFeatureEnabled());
+    bool verboseLogDump = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
     // zero analysis flag
-    apm->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
-    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
 
-    // Connect after updating settings to avoid saving a command line override
+    apm->SetEnableModtimeSkippingFeature(zeroAnalysisMode);
+    apm->SetBuilderDebugFlag(enableBuilderDebugFlag);
+    apm->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+
+    // first, update the visual checkboxes, and then connect to the "changed" notify
+    // so that we don't save settings applied by the apm command line
+    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisMode ? Qt::Checked : Qt::Unchecked);
+    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
+    ui->verboseLoggingCheckbox->setCheckState(verboseLogDump ? Qt::Checked : Qt::Unchecked);
+
     QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
-    {
-        bool newOption = newCheckState == Qt::Checked ? true : false;
-        m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(newOption);
-        QSettings settingsInCallback;
-        settingsInCallback.beginGroup("Options");
-        settingsInCallback.setValue("EnableZeroAnalysis", QVariant(newOption));
-        settingsInCallback.endGroup();
-    });
-
-    // output debug flag
-    apm->SetBuilderDebugFlag(enableBuilderDebugFlag);
-    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+        {
+            bool newOption = newCheckState == Qt::Checked ? true : false;
+            m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(newOption);
+            AssetUtilities::SetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, newOption);
+        });
 
     QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
-            QSettings settingsInCallback;
-            settingsInCallback.beginGroup("Options");
-            settingsInCallback.setValue("EnableBuilderDebugFlag", QVariant(newOption));
-            settingsInCallback.endGroup();
+            AssetUtilities::SetUserSetting(AssetUtilities::EnableBuilderDebugFlagOptionName, newOption);
         });
 
-    apm->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
-    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
     QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
         [](int newCheckState)
-    {
-        bool newOption = newCheckState == Qt::Checked ? true : false;
-        // don't change initial scan skipping feature value, as it's only relevant on the first scan
-        // save the value for the next run
-        QSettings settingsInCallback;
-        settingsInCallback.beginGroup("Options");
-        settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
-        settingsInCallback.endGroup();
-    });
+        {
+            // this is not something that we change while running, so just set it for next time.
+            bool newOption = newCheckState == Qt::Checked ? true : false;
+            AssetUtilities::SetUserSetting(AssetUtilities::SkipInitialScanOptionName, newOption);
+        });
+
+     QObject::connect(ui->verboseLoggingCheckbox, &QCheckBox::stateChanged, this,
+        [](int newCheckState)
+        {
+            bool newOption = newCheckState == Qt::Checked ? true : false;
+            AssetUtilities::SetUserSetting(AssetUtilities::VerboseLoggingOptionName, newOption);
+        });
 
     // Shared Cache tab:
     SetupAssetServerTab();
@@ -1850,7 +1844,6 @@ void MainWindow::ResetLoggingPanel()
 {
     if (m_loggingPanel)
     {
-        m_loggingPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Debug", "", ""));
         m_loggingPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Messages", "", "", true, true, true, false));
         m_loggingPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Warnings/Errors Only", "", "", false, true, true, false));
     }
