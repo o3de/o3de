@@ -20,6 +20,7 @@ namespace GraphCanvas
     {
         m_editActionGroup.PopulateMenu(this);
         m_nodeGroupActionGroup.PopulateMenu(this);
+        m_breakpointActionGroup.PopulateMenu(this);
         m_disableActionGroup.PopulateMenu(this);
         m_alignmentActionGroup.PopulateMenu(this);
 

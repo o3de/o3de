@@ -13,14 +13,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
 
 #include <ScriptCanvas/Core/NodeBus.h>
 
-#include "Messages/Request.h"
-#include "Messages/Notify.h"
 #include "APIArguments.h"
+#include "Messages/Notify.h"
+#include "Messages/Request.h"
 
 namespace ScriptCanvas
 {
@@ -28,13 +28,13 @@ namespace ScriptCanvas
     {
         //! The ScriptCanvas debugger component, this is the runtime debugger code that directly controls the execution
         //! and provides insight into a running ScriptCanvas graph.
-        class ServiceComponent 
+        class ServiceComponent
             : public AZ::Component
             , public Message::RequestVisitor
             , public ExecutionNotificationsBus::Handler
             , public AZ::SystemTickBus::Handler
         {
-           using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
+            using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
 
         public:
             AZ_COMPONENT(ServiceComponent, "{794B1BA5-DE13-46C7-9149-74FFB02CB51B}");
@@ -83,7 +83,7 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
 
             bool IsAssetObserved(const AZ::Data::AssetId& assetId) const;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Message processing
             void Visit(Message::AddBreakpointRequest& request) override;
@@ -129,14 +129,14 @@ namespace ScriptCanvas
                 else if (m_state == SCDebugState_Attached)
                 {
                     const Signal& asSignal(nodeSignal);
-                    Breakpoint breakpoint(asSignal);
+                    Breakpoint breakpoint(asSignal.m_endpoint.GetNodeId());
 
                     if (m_breakpoints.find(breakpoint) != m_breakpoints.end())
                     {
                         SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Hit breakpoint: %s", nodeSignal.ToString().data());
                         if (remoteToolsInterface)
                         {
-                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointHit(nodeSignal));
+                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointHit(breakpoint));
                         }
                         m_state = SCDebugState_Interactive;
                         Interact();
@@ -161,7 +161,7 @@ namespace ScriptCanvas
             void Interact();
             bool IsAttached() const;
             void ProcessMessages();
-            
+
         private:
             enum eSCDebugState
             {
@@ -186,16 +186,16 @@ namespace ScriptCanvas
             AZStd::atomic_uint m_state;
             AZStd::unordered_set<Breakpoint> m_breakpoints;
 
-            bool                    m_activeGraphStatusDirty;
-            ActiveGraphStatusMap    m_activeGraphs;
+            bool m_activeGraphStatusDirty;
+            ActiveGraphStatusMap m_activeGraphs;
 
-            bool                    m_activeEntityStatusDirty;
-            ActiveEntityStatusMap   m_activeEntities;
+            bool m_activeEntityStatusDirty;
+            ActiveEntityStatusMap m_activeEntities;
 
             AZStd::recursive_mutex m_msgMutex;
             AzFramework::RemoteToolsMessageQueue m_msgQueue;
             AzFramework::IRemoteTools* m_remoteTools = nullptr;
             AzFramework::RemoteToolsEndpointStatusEvent::Handler m_endpointLeftEventHandler;
         };
-    }
-}
+    } // namespace Debugger
+} // namespace ScriptCanvas

@@ -486,7 +486,7 @@ namespace Terrain
 
                 sector.m_geometryView.ClearStreamBufferViews();
 
-                AZStd::vector<AZ::RHI::StreamBufferView>& streamBufferViews = sector.m_geometryView.GetStreamBufferViews();
+                AZStd::vector<AZ::RHI::StreamBufferView> streamBufferViews;
                 streamBufferViews.resize(StreamIndex::Count);
                 streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
                 streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
@@ -503,6 +503,7 @@ namespace Terrain
                     streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
                     streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
+                sector.m_geometryView.SetStreamBufferViews(streamBufferViews);
 
                 BuildDrawPacket(sector);
 

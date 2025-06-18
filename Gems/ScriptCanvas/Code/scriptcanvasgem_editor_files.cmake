@@ -130,6 +130,8 @@ set(FILES
     Editor/Utilities/RecentFiles.cpp
     Editor/Utilities/RecentAssetPath.h
     Editor/Utilities/RecentAssetPath.cpp
+    Editor/Utilities/ViewportDragDropHandler.h
+    Editor/Utilities/ViewportDragDropHandler.cpp
     Editor/View/Dialogs/SettingsDialog.h
     Editor/View/Dialogs/SettingsDialog.cpp
     Editor/View/Dialogs/SettingsDialog.ui

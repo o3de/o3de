@@ -180,7 +180,13 @@
                                 "translateXProperty": "offsetU",
                                 "translateYProperty": "offsetV",
                                 "rotateDegreesProperty": "rotateDegrees",
-                                "float3x3ShaderInput": "m_uvMatrix"
+                                "float3x3ShaderInput": "m_uvMatrix",
+                                "shaderParameters": [
+                                    {
+                                        "name": "m_uvMatrix",
+                                        "type": "float3x3"
+                                    }
+                                ]
                             }
                         }
                     ]

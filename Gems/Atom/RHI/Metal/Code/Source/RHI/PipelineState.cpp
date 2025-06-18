@@ -100,7 +100,14 @@ namespace AZ
                 {
                     //In case byte code was not generated try to create the lib with source code
                     MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+#if defined(__IPHONE_18_0) || defined(__MAC_15_0)
+                    if(@available(iOS 18.0, macOS 15.0, *))
+                    {
+                        compileOptions.mathMode = MTLMathModeFast;
+                    }
+#else
                     compileOptions.fastMathEnabled = YES;
+#endif
                     compileOptions.languageVersion = MTLLanguageVersion2_2;
                     lib = [mtlDevice newLibraryWithSource:source
                                                   options:compileOptions
@@ -412,6 +419,14 @@ namespace AZ
         {
             if (m_graphicsPipelineState)
             {
+                if (m_renderPipelineDesc.vertexFunction)
+                {
+                    [m_renderPipelineDesc.vertexFunction release];
+                }
+                if (m_renderPipelineDesc.fragmentFunction)
+                {
+                    [m_renderPipelineDesc.fragmentFunction release];
+                }
                 [m_renderPipelineDesc release];
                 m_renderPipelineDesc = nil;
                 [m_graphicsPipelineState release];
@@ -420,6 +435,10 @@ namespace AZ
             
             if (m_computePipelineState)
             {
+                if (m_computePipelineDesc.computeFunction)
+                {
+                    [m_computePipelineDesc.computeFunction release];
+                }
                 [m_computePipelineDesc release];
                 m_computePipelineDesc = nil;
                 [m_computePipelineState release];

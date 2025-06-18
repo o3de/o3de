@@ -15,8 +15,6 @@ namespace AZ::RHI
 {
     struct DeviceCopyBufferDescriptor
     {
-        DeviceCopyBufferDescriptor() = default;
-
         const DeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
         const DeviceBuffer* m_destinationBuffer = nullptr;
@@ -26,8 +24,6 @@ namespace AZ::RHI
 
     struct DeviceCopyImageDescriptor
     {
-        DeviceCopyImageDescriptor() = default;
-
         const DeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
         Origin m_sourceOrigin;
@@ -39,8 +35,6 @@ namespace AZ::RHI
 
     struct DeviceCopyBufferToImageDescriptor
     {
-        DeviceCopyBufferToImageDescriptor() = default;
-
         const DeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
         uint32_t m_sourceBytesPerRow = 0;
@@ -56,8 +50,6 @@ namespace AZ::RHI
 
     struct DeviceCopyImageToBufferDescriptor
     {
-        DeviceCopyImageToBufferDescriptor() = default;
-
         const DeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
         Origin m_sourceOrigin;
@@ -73,8 +65,6 @@ namespace AZ::RHI
 
     struct DeviceCopyQueryToBufferDescriptor
     {
-        DeviceCopyQueryToBufferDescriptor() = default;
-
         const DeviceQueryPool* m_sourceQueryPool = nullptr;
         QueryHandle m_firstQuery = QueryHandle(0);
         uint32_t m_queryCount = 0;

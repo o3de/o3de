@@ -322,8 +322,8 @@ namespace AZ
             //! Returns the DrawSrg from the first DrawItem that matches @drawListTag
             //! and its material pipeline matches @materialPipelineMask.
             //! The search is done only within the DrawItems of the subMesh identifiable by the tuple (@meshHandle, @lodIndex, @subMeshIndex). 
-            virtual Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
-                RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) = 0;
+            virtual const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
+                RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const = 0;
 
         };
     } // namespace Render

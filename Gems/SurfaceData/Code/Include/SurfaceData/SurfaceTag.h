@@ -72,11 +72,11 @@ namespace SurfaceData
 
     AZ_INLINE SurfaceTag::operator AZ::Crc32() const
     {
-        return m_surfaceTagCrc;
+        return static_cast<AZ::Crc32>(m_surfaceTagCrc);
     }
 
     AZ_INLINE SurfaceTag::operator AZ::u32() const
     {
-        return static_cast<AZ::u32>(m_surfaceTagCrc);
+        return m_surfaceTagCrc;
     }
 }

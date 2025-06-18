@@ -33,16 +33,18 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UserSettings/UserSettings.h>
+
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <SourceControl/SourceControlAPI.h>
@@ -50,7 +52,6 @@ AZ_POP_DISABLE_WARNING
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
-#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
@@ -68,50 +69,92 @@ namespace AzToolsFramework
         // AssetEditorWidgetUserSettings
         //////////////////////////////////
 
+        static constexpr const char* k_assetEditorSettingsPath = "/O3DE/Preferences/AssetEditor/Settings";
+
         void AssetEditorWidgetUserSettings::Reflect(AZ::ReflectContext* context)
         {
-            AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serialize)
+            if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serialize->Class<AssetEditorWidgetUserSettings>()
-                    ->Version(0)
-                    ->Field("m_showPreviewMessage", &AssetEditorWidgetUserSettings::m_lastSavePath)
-                    ->Field("m_snapDistance", &AssetEditorWidgetUserSettings::m_recentPaths);
+                    ->Version(1)
+                    ->Field("m_recentFiles", &AssetEditorWidgetUserSettings::m_recentFiles)
+                    ->Field("m_recentPathPerAssetType", &AssetEditorWidgetUserSettings::m_recentPathPerAssetType)
+                    ;
             }
         }
 
         AssetEditorWidgetUserSettings::AssetEditorWidgetUserSettings()
         {
-            char assetRoot[AZ_MAX_PATH_LEN] = { 0 };
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", assetRoot, AZ_MAX_PATH_LEN);
-
-            m_lastSavePath = assetRoot;
+           
         }
 
-        void AssetEditorWidgetUserSettings::AddRecentPath(const AZStd::string& recentPath)
+        void AssetEditorWidgetUserSettings::AddRecentPath(AZ::Data::AssetType assetType, const AZStd::string& recentPath)
         {
-            AZStd::string lowerCasePath = recentPath;
-            AZStd::to_lower(lowerCasePath.begin(), lowerCasePath.end());
+            char projectPath[AZ_MAX_PATH_LEN];
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
-            auto item = AZStd::find(m_recentPaths.begin(), m_recentPaths.end(), lowerCasePath);
-            if (item != m_recentPaths.end())
+            AZStd::string folderPath = recentPath;
+            AZ::StringFunc::Path::GetFolderPath(recentPath.c_str(), folderPath);
+
+            AZStd::string absolutePath = recentPath;
+            if (AZ::StringFunc::Path::IsRelative(absolutePath.c_str()))
             {
-                m_recentPaths.erase(item);
+                absolutePath = AZStd::string::format("%s/%s", projectPath, recentPath.c_str());
             }
 
-            m_recentPaths.emplace(m_recentPaths.begin(), lowerCasePath);
-
-            while (m_recentPaths.size() > 10)
+            const auto& it = m_recentPathPerAssetType.find(assetType);
+            if (it != m_recentPathPerAssetType.end())
             {
-                m_recentPaths.pop_back();
+                // Case insensitive compare, the asset path passed in may come from the asset hint which is lowercase
+                if (!AZ::StringFunc::Equal(folderPath, it->second, false))
+                {
+                    m_recentPathPerAssetType.insert_or_assign(assetType, folderPath.c_str());
+                }
             }
+            else
+            {
+                m_recentPathPerAssetType.insert_or_assign(assetType, folderPath);
+            }
+
+            auto item = AZStd::find_if(m_recentFiles.begin(), m_recentFiles.end(), [&absolutePath](const AZStd::string& path)
+            {
+                return AZ::StringFunc::Equal(absolutePath, path, false);
+            });
+
+            // Only add it to recent files if it's not already there
+            if (item == m_recentFiles.end())
+            {
+                m_recentFiles.emplace(m_recentFiles.begin(), absolutePath);
+            }
+
+            while (m_recentFiles.size() > 10)
+            {
+                m_recentFiles.pop_back();
+            }
+
+
+        }
+
+        void AssetEditorWidgetUserSettings::Clear()
+        {
+            m_recentFiles.clear();
+            m_recentPathPerAssetType.clear();
+        }
+
+        const AZStd::string AssetEditorWidgetUserSettings::GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
+        {
+            if (m_recentPathPerAssetType.contains(assetType))
+            {
+                return m_recentPathPerAssetType.find(assetType)->second;
+            }
+            return {};
         }
 
         //////////////////////////////////////////////////////////////////////////
         // AssetEditorWidget
         //////////////////////////////////////////////////////////////////////////
 
-        const AZ::Crc32 k_assetEditorWidgetSettings = AZ_CRC_CE("AssetEditorSettings");
+        
 
         AssetEditorWidget::AssetEditorWidget(QWidget* parent)
             : QWidget(parent)
@@ -208,16 +251,37 @@ namespace AzToolsFramework
 
             setLayout(mainLayout);
 
-            m_userSettings =
-                AZ::UserSettings::CreateFind<AssetEditorWidgetUserSettings>(k_assetEditorWidgetSettings, AZ::UserSettings::CT_LOCAL);
-
-            UpdateRecentFileListState();
-
             QObject::connect(m_recentFileMenu, &QMenu::aboutToShow, this, &AssetEditorWidget::PopulateRecentMenu);
+
+            // Load settings
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                if (settingsRegistry->GetObject(m_userSettings, k_assetEditorSettingsPath))
+                {
+                    UpdateRecentFileListState();
+                }
+            }
+
         }
+
 
         AssetEditorWidget::~AssetEditorWidget()
         {
+            SaveSettings();
+        }
+
+        void AssetEditorWidget::SaveSettings()
+        {
+            // Save all of the graph view configuration settings to the settings registry.
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                if (!settingsRegistry->SetObject(k_assetEditorSettingsPath, m_userSettings))
+                {
+                    AZ_Printf("AssetEditorWidget", "Failed to set registry object");
+                }
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            }
         }
 
         void AssetEditorWidget::SaveAll()
@@ -322,7 +386,7 @@ namespace AzToolsFramework
                 AzFramework::StringFunc::Path::StripPath(fileName);
             }
 
-            AddRecentPath(fullPath.c_str());
+            AddRecentPath(asset.GetType(), fullPath.c_str());
 
             AssetEditorTab* tab = FindTabForAsset(asset.GetId());
             if (tab)
@@ -357,7 +421,7 @@ namespace AzToolsFramework
                     newTab->LoadAsset(product->GetAssetId(), product->GetAssetType(), product->GetName().c_str());
                 }
 
-                AddRecentPath(product->GetFullPath());
+                AddRecentPath(product->GetAssetType(), product->GetFullPath());
             }
         }
 
@@ -397,7 +461,7 @@ namespace AzToolsFramework
                     AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
                     newTab->LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType, fileName.c_str());
                 }
-                AddRecentPath(assetPath.c_str());
+                
             }
         }
 
@@ -621,14 +685,11 @@ namespace AzToolsFramework
             m_tabs->setTabText(index, assetName);
         }
 
-        void AssetEditorWidget::SetLastSavePath(const AZStd::string& savePath)
+        const QString AssetEditorWidget::GetRecentPathForAssetType(AZ::Data::AssetType assetType) const
         {
-            m_userSettings->m_lastSavePath = savePath;
-        }
+            auto& it = m_userSettings.GetRecentPathForAssetType(assetType);
 
-        const QString AssetEditorWidget::GetLastSavePath() const
-        {
-            return m_userSettings->m_lastSavePath.c_str();
+            return QString(it.c_str());
         }
 
         void AssetEditorWidget::SetStatusText(const QString& assetStatus)
@@ -636,17 +697,18 @@ namespace AzToolsFramework
             m_statusBar->textEdit->setText(assetStatus);
         }
 
-        void AssetEditorWidget::AddRecentPath(const AZStd::string& recentPath)
+        void AssetEditorWidget::AddRecentPath(AZ::Data::AssetType assetType, const AZStd::string& recentPath)
         {
-            m_userSettings->AddRecentPath(recentPath);
+            m_userSettings.AddRecentPath(assetType, recentPath);
             UpdateRecentFileListState();
+            SaveSettings();
         }
 
         void AssetEditorWidget::PopulateRecentMenu()
         {
             m_recentFileMenu->clear();
 
-            if (m_userSettings->m_recentPaths.empty())
+            if (m_userSettings.GetRecentFiles().empty())
             {
                 m_recentFileMenu->setEnabled(false);
             }
@@ -654,7 +716,7 @@ namespace AzToolsFramework
             {
                 m_recentFileMenu->setEnabled(true);
 
-                for (const AZStd::string& recentFile : m_userSettings->m_recentPaths)
+                for (const AZStd::string& recentFile : m_userSettings.GetRecentFiles())
                 {
                     bool hasResult = false;
                     AZStd::string relativePath;
@@ -731,7 +793,7 @@ namespace AzToolsFramework
         {
             if (m_recentFileMenu)
             {
-                if (!m_userSettings || m_userSettings->m_recentPaths.empty())
+                if (m_userSettings.GetRecentFiles().empty())
                 {
                     m_recentFileMenu->setEnabled(false);
                 }

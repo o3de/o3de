@@ -1139,7 +1139,7 @@ namespace ScriptCanvasEditor
 
         {
             QAction* duplicateAction = new QAction(this);
-            duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+            duplicateAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_D));
 
             QObject::connect(duplicateAction, &QAction::triggered, this, &GraphVariablesTableView::OnDuplicate);
 

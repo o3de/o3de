@@ -1,0 +1,84 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once 
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#define SCENE_MATERIALS_MAX_SAMPLERS 8
+
+ShaderResourceGroup SceneMaterialSrg : SRG_PerMaterial
+{
+    ByteAddressBuffer m_materialTypeBufferIndices;
+#ifdef AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+    // sampler 0 is the default linear wrap sampler, the others are initialized by the MaterialSystem as needed
+    Sampler m_samplers[SCENE_MATERIALS_MAX_SAMPLERS];
+#else
+    Sampler m_defaultSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+#endif
+}
+
+// If we are using the SceneMaterialSrg, we implicitly need BindlessSRG support 
+#include <Atom/Features/Bindless.azsli>
+
+Texture2D GetMaterialTexture(const int readIndex)
+{
+    int localReadIndex = readIndex; 
+    if (localReadIndex < 0)
+    {
+        // TODO: choose a suitable fallback texture here.
+        localReadIndex = 0;
+    }
+    return Bindless::GetTexture2D(readIndex);
+}
+
+const MaterialParameters GetMaterialParameters()
+{
+    // The ByteAddressBuffers referenced in the SceneMaterialSrg hold the MaterialParameters for all MaterialTypes
+    // but any given material-shader knows only it's MaterialParameter - struct.
+    // The first two integers in the MaterialParameter struct are the MaterialType-Id and the MaterialInstanceId:
+    // Load only those and compare the values to the DrawSrg to make sure we are converting the contents of the ByteAddresBuffer
+    // to the correct MaterialParameter struct
+    int materialTypeBufferIndex = int(SceneMaterialSrg::m_materialTypeBufferIndices.Load(ObjectSrg::m_materialTypeId * 4 /* sizeof(int)*/));
+    ByteAddressBuffer materialInstances = Bindless::GetByteAddressBuffer(materialTypeBufferIndex);
+    uint baseOffset = sizeof(MaterialParameters) * ObjectSrg::m_materialInstanceId;
+    uint2 loadedId = materialInstances.Load2(baseOffset);
+    if (loadedId.x != ObjectSrg::m_materialTypeId || loadedId.y != ObjectSrg::m_materialInstanceId)
+    {
+        return (MaterialParameters)0;
+    }
+
+    return materialInstances.Load<MaterialParameters>(sizeof(MaterialParameters) * ObjectSrg::m_materialInstanceId);
+}
+
+// All MaterialProperties with the type TextureSampler are collected from all active Materials and stored in the SceneMaterialSrg::m_samplers array.
+// The Shader - Parameter (in the Srg or the Parameter-Buffer) is then the sampler-index.
+// Note that the size of m_samplers is limited to SCENE_MATERIALS_MAX_SAMPLERS, but samplers are deduplicated based on their settings, so this should
+// be enough.
+// Sampler-Index 0 is always the default Wrap - sampler with linear filtering.
+sampler GetMaterialTextureSampler(const int samplerIndex = 0)
+{
+#ifdef AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
+    int localIndex = samplerIndex;
+    if (samplerIndex >= SCENE_MATERIALS_MAX_SAMPLERS)
+    {
+        localIndex = 0;
+    }
+    return SceneMaterialSrg::m_samplers[localIndex];
+#else
+    return SceneMaterialSrg::m_defaultSampler;
+#endif
+}

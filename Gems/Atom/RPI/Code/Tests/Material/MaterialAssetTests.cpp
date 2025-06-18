@@ -58,6 +58,7 @@ namespace UnitTest
             materialTypeCreator.SetPropertyValue(Name{ "MyImage" }, m_testImageAsset);
             materialTypeCreator.SetPropertyValue(Name{ "MyEnum" }, 1u);
             materialTypeCreator.SetPropertyValue(Name{ "MyAttachmentImage" }, m_testAttachmentImageAsset);
+            materialTypeCreator.SetPropertyValue(Name{ "MySamplerState" }, GetDefaultSamplerState());
             EXPECT_TRUE(materialTypeCreator.End(m_testMaterialTypeAsset));
         }
 
@@ -74,7 +75,7 @@ namespace UnitTest
         auto validate = [this](Data::Asset<MaterialAsset> materialAsset)
         {
             EXPECT_EQ(m_testMaterialTypeAsset, materialAsset->GetMaterialTypeAsset());
-            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
+            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 12);
             EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
             EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
             EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
@@ -86,6 +87,7 @@ namespace UnitTest
             EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
             EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
             EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
+            EXPECT_EQ(materialAsset->GetPropertyValues()[11].GetValue<RHI::SamplerState>(), GetClampSamplerState());
         };
 
         // Test basic process of creating a valid asset...
@@ -104,7 +106,8 @@ namespace UnitTest
         creator.SetPropertyValue(Name{ "MyBool"   }, true);
         creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
         creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
-        creator.SetPropertyValue(Name{ "MyAttachmentImage"  }, m_testAttachmentImageAsset);
+        creator.SetPropertyValue(Name{ "MySamplerState" }, GetClampSamplerState());
+        creator.SetPropertyValue(Name{ "MyAttachmentImage" }, m_testAttachmentImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
@@ -147,7 +150,7 @@ namespace UnitTest
         ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
         materialAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
 
-        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 12);
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
         EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), 1);
         EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 2);
@@ -159,6 +162,7 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
         EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[11].GetValue<RHI::SamplerState>(), GetDefaultSamplerState());
     }
 
     TEST_F(MaterialAssetTests, MaterialWithNoSRGOrProperties)

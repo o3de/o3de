@@ -141,7 +141,7 @@ namespace ImageProcessingAtom
                 return m_pitch * m_rowCount * m_depth;
             }
 
-            bool operator==(const MipLevel& other)
+            bool operator==(const MipLevel& other) const
             {
                 if (m_width == other.m_width && m_height == other.m_height && m_depth == other.m_depth
                     && m_rowCount == other.m_rowCount && m_pitch == other.m_pitch)

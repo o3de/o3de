@@ -144,7 +144,7 @@ namespace AZ
             ShaderData m_shaderData;
 
             // Buffers for all primitives
-            RHI::GeometryView m_geometryView;
+            RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
             // Flags to see if stream buffer views have been validated for a prim type's layout
             bool m_streamBufferViewsValidatedForLayout[PrimitiveType_Count];

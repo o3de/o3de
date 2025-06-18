@@ -33,16 +33,16 @@ enum class HairLightingModel {GGX, Marschner, Kajiya};
 option HairLightingModel o_hairLightingModel = HairLightingModel::Marschner;
 
 //==============================================================================
-float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+float3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight, uint viewIndex)
 {
     float3 specular = float3(1, 0, 1);  // purple - error color
     if (o_hairLightingModel == HairLightingModel::GGX)
     {
-        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
+        specular = SpecularGGX(lightingData.dirToCamera[viewIndex], dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(viewIndex), surface.roughnessA2, lightingData.multiScatterCompensation);
     }
     else if(o_hairLightingModel == HairLightingModel::Marschner)
     {
-        specular = HairMarschnerBSDF(surface, lightingData, dirToLight);
+        specular = HairMarschnerBSDF(surface, lightingData, dirToLight, viewIndex);
     }
     // [To Do] - add the Kajiya-Kay lighting model option here in order to connect to Atom lighting loop
 
@@ -105,32 +105,36 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
 
 void UpdateLightingParameters(
     inout LightingData lightingData, 
-    float3 positionWS, float3 normal, float roughnessLinear)
+    float3 positionWS, float3 normal, float roughnessLinear, const float3 views[MAX_SHADING_VIEWS])
 {
-    lightingData.dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
 
-    // sample BRDF map (indexed by smoothness values rather than roughness)
-    lightingData.NdotV = saturate(dot(normal, lightingData.dirToCamera));
+    [unroll]
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
+    {
+        lightingData.dirToCamera[i] = normalize(views[i] - positionWS);
 
-    float2 brdfUV = float2(lightingData.GetSpecularNdotV(), (1.0f - roughnessLinear));
-
-    lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+        // sample BRDF map (indexed by smoothness values rather than roughness)
+        lightingData.NdotV[i] = saturate(dot(normal, lightingData.dirToCamera[i]));
+        
+        float2 brdfUV = float2(lightingData.GetSpecularNdotV(i), (1.0f - roughnessLinear));
+        lightingData.brdf[i] = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+    }
 }
 
 void SetNormalAndUpdateLightingParams(
-    in float3 tangent, in float3 dirToLight, 
+    in float3 tangent, in float3 dirToLight, in const float3 views[MAX_SHADING_VIEWS],
     inout Surface surface, 
     inout LightingData lightingData)
 {
     float3 biNormal;
     if (o_hairLightingModel == HairLightingModel::GGX)
     {   // Towards half vector but never cross fully (more weight to camera direction)
-        float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
+        float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera[0]);
         biNormal = normalize(cross(tangent, halfDir));
     }
     else
     {   // Face forward towards the camera
-        biNormal = normalize(cross(tangent, lightingData.dirToCamera));   
+        biNormal = normalize(cross(tangent, lightingData.dirToCamera[0]));   
     }
 
     float3 projectedNormal = cross(biNormal, tangent);
@@ -138,7 +142,7 @@ void SetNormalAndUpdateLightingParams(
     surface.vertexNormal = surface.normal; // [To Do] - support proper vertex normals in the hair shader.
 
     // Next is important in order to set NdotV and other PBR settings - needs to be set once per light
-    UpdateLightingParameters(lightingData, surface.position, surface.GetSpecularNormal(), surface.roughnessLinear);
+    UpdateLightingParameters(lightingData, surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
@@ -154,7 +158,7 @@ void SetNormalAndUpdateLightingParams(
 //==============================================================================
 //                         Simple Point Light 
 //==============================================================================
-void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData)
+void ApplySimplePointLight(SimplePointLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {  
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -172,13 +176,15 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, surface, lightingData);
+        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, views, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight);
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight, viewIndex);
     }
 }
 
@@ -187,7 +193,7 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
 // and once done, all light types can use the culling. 
 // Not that the current culling scheme assumes light types lists order and is bogus if 
 // some light types are not used or out of order (Atom's To Do list)
-void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData)
+void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     lightingData.tileIterator.LoadAdvance();
 
@@ -198,24 +204,24 @@ void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingDa
         lightingData.tileIterator.LoadAdvance();
 
         SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
-        ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLight(light, surface, lightingData, views);
         ++lightCount;
     }
 }
 
-void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
+void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
     {
         SimplePointLight light = ViewSrg::m_simplePointLights[l];
-        ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLight(light, surface, lightingData, views);
     }
 }
 
 //==============================================================================
 //                           Simple Spot Light 
 //==============================================================================
-void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData)
+void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     float3 posToLight = light.m_position - surface.position;
     float3 dirToLight = normalize(posToLight);
@@ -252,7 +258,7 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
             lightIntensity *= penumbraMask;
         }
 
-        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, surface, lightingData);
+        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, views, surface, lightingData);
 
         // Tranmission contribution
         lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, lightIntensity, dirToLight, 1.0);
@@ -261,22 +267,24 @@ void ApplySimpleSpotLight(SimpleSpotLight light, Surface surface, inout Lighting
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight);
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight, viewIndex);
     }
 }
 
-void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
+void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_simpleSpotLightCount; ++l)
     {
         SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
-        ApplySimpleSpotLight(light, surface, lightingData);
+        ApplySimpleSpotLight(light, surface, lightingData, views);
     }
 }
 //==============================================================================
 //                              Point Light 
 //==============================================================================
-void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData)
+void ApplyPointLight(PointLight light, Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -294,7 +302,7 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, surface, lightingData);
+        SetNormalAndUpdateLightingParams(surface.tangent, dirToLight, views, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -305,7 +313,7 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
         // Adjust the light direcion for specular based on bulb size
 
         // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
+        float3 reflectionDir = reflect(-lightingData.dirToCamera[0], surface.GetSpecularNormal());
 
         // Calculate a vector from the reflection vector to the light
         float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
@@ -317,16 +325,18 @@ void ApplyPointLight(PointLight light, Surface surface, inout LightingData light
         float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
 
         // Specular contribution
-        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight), viewIndex);
     }
 }
 
-void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
+void ApplyAllPointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
     for (int l = 0; l < ViewSrg::m_pointLightCount; ++l)
     {
         PointLight light = ViewSrg::m_pointLights[l];
-        ApplyPointLight(light, surface, lightingData);
+        ApplyPointLight(light, surface, lightingData, views);
     }
 }
 
@@ -335,9 +345,9 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
 
-void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
+void ApplyAllDiskLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {    
-    SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera, surface, lightingData);
+    SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera[0], views, surface, lightingData);
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
         DiskLight light = ViewSrg::m_diskLights[l];
@@ -348,14 +358,14 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv, const float3 views[MAX_SHADING_VIEWS])
 {
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
     float backShadowRatio = 0.0f;
 
-    SetNormalAndUpdateLightingParams(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
+    SetNormalAndUpdateLightingParams(surface.tangent, -lightingData.dirToCamera[0], views, surface, lightingData);
 
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
@@ -373,7 +383,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         float3 dirToLight = normalize(-light.m_direction);
 
         // Adjust the direction of the light based on its angular diameter.
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
+        float3 reflectionDir = reflect(-lightingData.dirToCamera[0], surface.GetSpecularNormal());
         float3 lightDirToReflectionDir = reflectionDir - dirToLight;
         float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
         lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
@@ -395,8 +405,11 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         }
 
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.translucentBackLighting += GetHairBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
+
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, viewIndex) * currentLitRatio;
     }
 }
 
@@ -415,16 +428,16 @@ float3 ApplyIblDiffuse(Surface surface, LightingData lightingData)
     float3 irradianceDir = MultiplyVectorQuaternion(surface.GetDiffuseNormal(), SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-//    float3 diffuseLighting = HairDiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera) * lightingData.diffuseResponse * diffuseSample;
+//    float3 diffuseLighting = HairDiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera[0]) * lightingData.diffuseResponse * diffuseSample;
 //    float3 diffuseLighting = GetDiffuseLighting(surface, lightingData, diffuseSample, surface.GetDiffuseNormal());
 
     // Notice the multiplication with inverse thickness used as a measure of occlusion
     return lightingData.diffuseResponse * surface.albedo * diffuseSample * (1.0f - surface.thickness);
 }
 
-float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
+float3 ApplyIblSpecular(Surface surface, LightingData lightingData, const uint viewIndex)
 {
-    float3 reflectDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
+    float3 reflectDir = reflect(-lightingData.dirToCamera[0], surface.GetSpecularNormal());
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
 
     // global
@@ -432,24 +445,29 @@ float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
         SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), 
         GetRoughnessMip(surface.roughnessLinear)).rgb;
 
-    float3 specularLighting = GetSpecularLighting(surface, lightingData, specularSample, reflectDir);
+    float3 specularLighting = GetSpecularLighting(surface, lightingData, specularSample, reflectDir, viewIndex);
     return specularLighting;
 }
 
 // Remark: IBL is still WIP and this part will change in the near future
-void ApplyIBL(Surface surface, inout LightingData lightingData)
+void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {
 //    float3 normal = normalize(float3(surface.tangent.z, -surface.tangent.x, surface.tangent.y));
 //    SetNormalAndUpdateLightingParams(surface.tangent, normal, surface, lightingData);
-    SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera, surface, lightingData);
+    SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera[0], views, surface, lightingData);
 
     float3 iblDiffuse = ApplyIblDiffuse(surface, lightingData);
-    float3 iblSpecular = ApplyIblSpecular(surface, lightingData);
 
     // Adjust IBL lighting by exposure.
     float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
     lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
-    lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+
+    [unroll]
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
+        float3 iblSpecular = ApplyIblSpecular(surface, lightingData, viewIndex);
+        lightingData.specularLighting[viewIndex] += (iblSpecular * iblExposureFactor);
+    }
 }
 
 
@@ -458,11 +476,10 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 //                       Light Types Application
 // 
 //==============================================================================
-void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords)
+void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords, const float3 views[MAX_SHADING_VIEWS])
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-
 
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 
@@ -470,23 +487,23 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData, float
 
     if (o_enableDirectionalLights)
     {
-        ApplyDirectionalLights(surface, lightingData, screenCoords);
+        ApplyDirectionalLights(surface, lightingData, screenCoords, views);
     }
 
     if (o_enablePunctualLights)
     {
-        ApplyAllSimplePointLights(surface, lightingData);
-        ApplyAllSimpleSpotLights(surface, lightingData);
+        ApplyAllSimplePointLights(surface, lightingData, views);
+        ApplyAllSimpleSpotLights(surface, lightingData, views);
     }
 
     if (o_enableAreaLights)
     {
-        ApplyAllPointLights(surface, lightingData);
-        ApplyAllDiskLights(surface, lightingData);
+        ApplyAllPointLights(surface, lightingData, views);
+        ApplyAllDiskLights(surface, lightingData, views);
     }
 
     if (o_enableIBL)
     {
-        ApplyIBL(surface, lightingData); 
+        ApplyIBL(surface, lightingData, views); 
     }
 }

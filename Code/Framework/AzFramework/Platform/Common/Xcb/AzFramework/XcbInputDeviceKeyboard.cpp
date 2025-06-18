@@ -41,15 +41,15 @@ namespace AzFramework
             return;
         }
 
-        auto* connection = interface->GetXcbConnection();
-        if (!connection)
+        m_connection = interface->GetXcbConnection();
+        if (!m_connection)
         {
             AZ_Warning("ApplicationLinux", false, "XCB connection not available");
             return;
         }
 
         int initializeXkbExtensionSuccess = xkb_x11_setup_xkb_extension(
-            connection,
+            m_connection,
             1,
             0,
             XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS,
@@ -65,11 +65,11 @@ namespace AzFramework
             return;
         }
 
-        m_coreDeviceId = xkb_x11_get_core_keyboard_device_id(connection);
+        m_coreDeviceId = xkb_x11_get_core_keyboard_device_id(m_connection);
 
         m_xkbContext.reset(xkb_context_new(XKB_CONTEXT_NO_FLAGS));
-        m_xkbKeymap.reset(xkb_x11_keymap_new_from_device(m_xkbContext.get(), connection, m_coreDeviceId, XKB_KEYMAP_COMPILE_NO_FLAGS));
-        m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), connection, m_coreDeviceId));
+        m_xkbKeymap.reset(xkb_x11_keymap_new_from_device(m_xkbContext.get(), m_connection, m_coreDeviceId, XKB_KEYMAP_COMPILE_NO_FLAGS));
+        m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), m_connection, m_coreDeviceId));
 
         const uint16_t affectMap =
             XCB_XKB_MAP_PART_KEY_TYPES
@@ -89,9 +89,9 @@ namespace AzFramework
             ;
 
         XcbStdFreePtr<xcb_generic_error_t> error{xcb_request_check(
-            connection,
+            m_connection,
             xcb_xkb_select_events(
-                connection,
+                m_connection,
                 /* deviceSpec = */ XCB_XKB_ID_USE_CORE_KBD,
                 /* affectWhich = */ selectedEvents,
                 /* clear = */ 0,
@@ -108,7 +108,12 @@ namespace AzFramework
             return;
         }
 
+        m_lastKeysStates.fill(0);
         m_initialized = true;
+    }
+
+    XcbInputDeviceKeyboard::~XcbInputDeviceKeyboard()
+    {
     }
 
     bool XcbInputDeviceKeyboard::IsConnected() const
@@ -137,6 +142,11 @@ namespace AzFramework
         ProcessRawEventQueues();
     }
 
+    void XcbInputDeviceKeyboard::ResetStoredInputStates()
+    {
+        m_lastKeysStates.fill(0);
+    }
+
     void XcbInputDeviceKeyboard::HandleXcbEvent(xcb_generic_event_t* event)
     {
         if (!m_initialized)
@@ -145,9 +155,10 @@ namespace AzFramework
         }
 
         const auto responseType = event->response_type & ~0x80;
-        if (responseType == XCB_KEY_PRESS)
+        if ( (responseType == XCB_KEY_PRESS) || (responseType == XCB_KEY_RELEASE))
         {
             const auto* keyPress = reinterpret_cast<xcb_key_press_event_t*>(event);
+            if ((responseType == XCB_KEY_PRESS))
             {
                 auto text = TextFromKeycode(m_xkbState.get(), keyPress->detail);
                 if (!text.empty())
@@ -156,19 +167,35 @@ namespace AzFramework
                 }
             }
 
-            if (const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail))
+            const xcb_query_keymap_cookie_t cookie = xcb_query_keymap(m_connection);
+            if (xcb_query_keymap_reply_t* const reply = xcb_query_keymap_reply(m_connection, cookie, nullptr))
             {
-                QueueRawKeyEvent(*key, true);
-            }
-        }
-        else if (responseType == XCB_KEY_RELEASE)
-        {
-            const auto* keyRelease = reinterpret_cast<xcb_key_release_event_t*>(event);
+                const AZ::u8 keycode = keyPress->detail;
+                const AZ::u8 byte = keycode / 8;
+                const AZ::u8 bit = keycode % 8;
+                const AZ::u8 keyMask = 1 << bit;
+                const bool keyState = (reply->keys[byte] & keyMask) != 0;
+                const AZ::u8 lastByte = m_lastKeysStates[byte];
+                const bool lastState = (lastByte & keyMask) != 0;
 
-            const InputChannelId* key = InputChannelFromKeyEvent(keyRelease->detail);
-            if (key)
+                if (keyState != lastState)
+                {
+                    if (const InputChannelId* key = InputChannelFromKeyEvent(keycode))
+                    {
+                        QueueRawKeyEvent(*key, keyState);
+                    }
+
+                    keyState ? m_lastKeysStates[byte] |= keyMask : m_lastKeysStates[byte] &= ~keyMask;
+                }
+
+                free(reply);
+            }
+            else
             {
-                QueueRawKeyEvent(*key, false);
+                if (const InputChannelId* key = InputChannelFromKeyEvent(keyPress->detail))
+                {
+                    QueueRawKeyEvent(*key, responseType == XCB_KEY_PRESS);
+                }
             }
         }
         else if (responseType == m_xkbEventCode)
@@ -176,12 +203,12 @@ namespace AzFramework
             const auto* xkbEvent = reinterpret_cast<XcbXkbGenericEventT*>(event);
             switch (xkbEvent->xkbType)
             {
-            case XCB_XKB_STATE_NOTIFY:
-            {
-                const auto* stateNotifyEvent = reinterpret_cast<xcb_xkb_state_notify_event_t*>(event);
-                UpdateState(stateNotifyEvent);
-                break;
-            }
+                case XCB_XKB_STATE_NOTIFY:
+                {
+                    const auto* stateNotifyEvent = reinterpret_cast<xcb_xkb_state_notify_event_t*>(event);
+                    UpdateState(stateNotifyEvent);
+                    break;
+                }
             }
         }
     }

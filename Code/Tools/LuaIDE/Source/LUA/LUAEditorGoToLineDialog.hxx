@@ -32,23 +32,22 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        LUAEditorGoToLineDialog(QWidget *parent = 0);
-        ~LUAEditorGoToLineDialog();
+        explicit LUAEditorGoToLineDialog(QWidget *parent = nullptr);
+        ~LUAEditorGoToLineDialog() override;
         
-        int getLineNumber() { return m_lineNumber; }
+        int getLineNumber() const { return m_lineNumber; }
+        int getColumnNumber() const { return m_columnNumber; }
     
-    signals:
-        void lineNumberChanged(int newNumber);        
-
     public slots:
-        void setLineNumber(int number);
+
+        void setLineNumber(int line, int column) const;
+        void handleLineNumberInput(const QString& input);
+        void validateAndAccept();
 
     private:
         Ui::goToLineDlg* m_gui;
-        int m_lineNumber;
-    private slots:
-        void spinBoxLineNumberChanged(int newNumber);
-        
+        int m_lineNumber = 0;
+        int m_columnNumber = 0;
     };
 
 }

@@ -77,6 +77,11 @@ namespace AzToolsFramework::Prefab
         return true;
     }
 
+    void PrefabOverrideLabelHandler::SetFilter(const QString& filter)
+    {
+        m_textLabel->SetFilter(filter);
+    }
+
     void PrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
     {
         if (!m_overridden)

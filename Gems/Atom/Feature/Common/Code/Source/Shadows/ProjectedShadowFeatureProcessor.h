@@ -156,7 +156,7 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
         RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };
 
-        RHI::GeometryView m_geometryView;
+        RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
         bool m_deviceBufferNeedsUpdate = false;
         bool m_shadowmapPassNeedsUpdate = true;

@@ -17,6 +17,7 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
@@ -121,7 +122,7 @@ void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
 }
 
 // Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float depth;
     float3 normal;
@@ -131,6 +132,9 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
     real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
@@ -144,7 +148,10 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
           
     float depthOffset = 0.0;
 
-    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_lineDepth,
+    // the texture and sampler don't matter here, since they are passed to the GetDepth function, where they are ignored
+    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_noise,
+                                                      AutoBrickSrg::m_sampler,
+                                                      AutoBrickSrg::m_lineDepth,
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
@@ -198,13 +205,13 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     // Light iterator
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
     // Shadow
     lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
 
     // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     const float alpha = 1.0f;

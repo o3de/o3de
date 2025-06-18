@@ -379,7 +379,7 @@ namespace Terrain
     void TerrainClipmapManager::InitializeMacroClipmapBounds(const AZ::Vector2& center)
     {
         m_macroClipmapBounds.resize(m_macroClipmapStackSize);
-        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / aznumeric_cast<float>(m_config.m_clipmapSize);
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             ClipmapBoundsDescriptor desc;
@@ -397,7 +397,7 @@ namespace Terrain
     void TerrainClipmapManager::InitializeDetailClipmapBounds(const AZ::Vector2& center)
     {
         m_detailClipmapBounds.resize(m_detailClipmapStackSize);
-        float clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        float clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / aznumeric_cast<float>(m_config.m_clipmapSize);
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             ClipmapBoundsDescriptor desc;
@@ -426,7 +426,7 @@ namespace Terrain
         m_clipmapData.m_validMacroClipmapRadius =
             m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_macroClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
 
-        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / aznumeric_cast<float>(m_config.m_clipmapSize);
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             m_clipmapData.m_clipmapToWorldScale[clipmapIndex].m_macro = clipmapToWorldScale;
@@ -451,7 +451,7 @@ namespace Terrain
         m_clipmapData.m_validDetailClipmapRadius =
             m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_detailClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
 
-        float clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        float clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / aznumeric_cast<float>(m_config.m_clipmapSize);
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             m_clipmapData.m_clipmapToWorldScale[clipmapIndex].m_detail = clipmapToWorldScale;

@@ -339,11 +339,12 @@ set_property(TARGET ${NAME_PLACEHOLDER}
 
     set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
     file(GENERATE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    cmake_path(SET destination_path NORMALIZE "${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
 
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
         ly_install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_${conf}.cmake"
-            DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+            DESTINATION "${destination_path}"
             COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             CONFIGURATIONS ${conf}
         )
@@ -449,7 +450,7 @@ endfunction()
 function(ly_setup_3p_dependencies)
 
     # 3p dependency generation is only relevant to installer builds, which is expected to happen only if no project is being built
-    # prevent this code from running in non-instlaler-builds, otherwise it will try to hang these commands off a non-existant generic
+    # prevent this code from running in non-installer-builds, otherwise it will try to hang these commands off a non-existant generic
     # game launcher target (which itself is also only relevant to installer builds for script-only mode.)
     if (LY_PROJECTS)
         return()
@@ -532,8 +533,9 @@ endif()
     set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
     file(WRITE "${target_install_source_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
+    cmake_path(SET relative_target_source_dir NORMALIZE "${relative_target_source_dir}")
     ly_install(FILES "${target_install_source_dir}/CMakeLists.txt"
-        DESTINATION ${relative_target_source_dir}
+        DESTINATION "${relative_target_source_dir}"
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -547,8 +549,9 @@ else()
     include(Platform/${PAL_PLATFORM_NAME}/Default/permutation.cmake)
 endif()
 ]])
+    cmake_path(SET destination_path NORMALIZE "${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}")
     ly_install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake"
-        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}
+        DESTINATION "${destination_path}"
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -572,8 +575,9 @@ endif()
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
+    cmake_path(SET destination_path NORMALIZE "${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
     ly_install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
-        DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+        DESTINATION "${destination_path}"
         COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}
     )
 
@@ -581,9 +585,9 @@ endfunction()
 
 #! ly_setup_cmake_install: install the "cmake" folder
 function(ly_setup_cmake_install)
-
+    cmake_path(SET current_folder_normalized NORMALIZE ".")
     ly_install(DIRECTORY "${LY_ROOT_FOLDER}/cmake"
-        DESTINATION .
+        DESTINATION "${current_folder_normalized}"
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
         PATTERN "Findo3de.cmake" EXCLUDE
@@ -678,10 +682,11 @@ function(ly_setup_cmake_install)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
+    cmake_path(SET current_folder_normalized NORMALIZE ".")
     ly_install(FILES
             "${LY_ROOT_FOLDER}/CMakeLists.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
-        DESTINATION .
+        DESTINATION "${current_folder_normalized}"
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -1160,19 +1165,21 @@ function(ly_setup_o3de_install)
     ly_setup_3p_dependencies()
 
     # Misc
+    cmake_path(SET current_folder_normalized NORMALIZE ".")
+
     ly_install(FILES
         ${LY_ROOT_FOLDER}/pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
         ${LY_ROOT_FOLDER}/CMakePresets.json
-        DESTINATION .
+        DESTINATION "${current_folder_normalized}"
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
     if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         ly_install(FILES
             ${LY_ROOT_FOLDER}/Code/Tools/ProjectManager/Resources/o3de_desktop.svg
-            DESTINATION .
+            DESTINATION "${current_folder_normalized}"
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
     endif()

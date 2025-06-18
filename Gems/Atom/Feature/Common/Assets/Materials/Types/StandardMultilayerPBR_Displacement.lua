@@ -148,8 +148,8 @@ end
 
 function Process(context)
     local heightMinMax = CalcOverallHeightRange(context)
-    context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
-    context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
+    context:SetShaderParameterValue_float("m_displacementMin", heightMinMax[0])
+    context:SetShaderParameterValue_float("m_displacementMax", heightMinMax[1])
     
     local parallaxFeatureEnabled = context:GetMaterialPropertyValue_bool("parallax.enable")
     if parallaxFeatureEnabled then

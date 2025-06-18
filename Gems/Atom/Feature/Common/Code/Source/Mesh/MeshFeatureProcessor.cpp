@@ -675,9 +675,10 @@ namespace AZ
 
                     addVisibleObjectsToBucketsTG.AddTask(
                         addVisibleObjectsToBucketsTaskDescriptor,
-                        [this, view, viewIndex, batchStart, currentBatchCount]()
+                        // Don't capture the shared_ptr because that causes incorrect ref counting when copying/moving the lambda
+                        [this, viewPtr = view.get(), viewIndex, batchStart, currentBatchCount]()
                         {
-                            RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
+                            RPI::VisibleObjectListView visibilityList = viewPtr->GetVisibleObjectList();
                             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
                             for (size_t i = batchStart; i < batchStart + currentBatchCount; ++i)
                             {
@@ -1683,9 +1684,9 @@ namespace AZ
             }
         }
 
-        Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
+        const Data::Instance<RPI::ShaderResourceGroup>& MeshFeatureProcessor::GetDrawSrg(const MeshHandle& meshHandle,
             uint32_t lodIndex, uint32_t subMeshIndex,
-            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask)
+            RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const
         {
             if (!meshHandle.IsValid())
             {
@@ -2110,12 +2111,19 @@ namespace AZ
 
                 Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg;
 
-                // See if the object SRG for this mesh is already in our list of object SRGs
-                for (auto& objectSrgIter : m_objectSrgList)
+                // Note: If the material uses the SceneMaterialSrg, the ObjectSRG holds the
+                // materialType and Instance-ID, and needs to be unique for each submesh.
+                // TODO: We can avoid a separate ObjectSRG for each submesh if we move the data from the SceneMaterialSrg to the SceneSrg,
+                // and create a MaterialSrg again that only holds the materialType and Instance-ID
+                if (!material->UsesSceneMaterialSrg())
                 {
-                    if (objectSrgIter->GetLayout()->GetHash() == objectSrgLayout->GetHash())
+                    // See if the object SRG for this mesh is already in our list of object SRGs
+                    for (auto& objectSrgIter : m_objectSrgList)
                     {
-                        meshObjectSrg = objectSrgIter;
+                        if (objectSrgIter->GetLayout()->GetHash() == objectSrgLayout->GetHash())
+                        {
+                            meshObjectSrg = objectSrgIter;
+                        }
                     }
                 }
 
@@ -2129,6 +2137,19 @@ namespace AZ
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
                         continue;
                     }
+                    // Set the material-Id and materialInstance-Id
+                    if (material->UsesSceneMaterialSrg())
+                    {
+                        {
+                            RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialTypeId"));
+                            meshObjectSrg->SetConstant(nameIndex, material->GetMaterialTypeId());
+                        }
+                        {
+                            RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_materialInstanceId"));
+                            meshObjectSrg->SetConstant(nameIndex, material->GetMaterialInstanceId());
+                        }
+                    }
+
                     m_objectSrgCreatedEvent.Signal(meshObjectSrg);
                     m_objectSrgList.push_back(meshObjectSrg);
                 }

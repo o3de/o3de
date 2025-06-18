@@ -496,7 +496,8 @@ namespace AZStd::chrono
 
     // [time.cal.last](http://eel.is/c++draft/time#cal.last), class last_­spec
 #if __cpp_lib_chrono >= 201907L
-    using std::chrono::last_spec using std::chrono::last;
+    using std::chrono::last_spec;
+    using std::chrono::last;
 #else
     struct last_spec
     {
@@ -1395,7 +1396,6 @@ namespace AZStd::chrono
     // [time.cal.ymd](http://eel.is/c++draft/time#cal.ymd), class year_­month_­day
 #if __cpp_lib_chrono >= 201907L
     using std::chrono::year_month_day;
-    using std::chrono::year_month_last;
 #else
     namespace Internal
     {
@@ -2459,21 +2459,19 @@ namespace AZStd
         {
             using namespace std::literals::chrono_literals;
 
+            // Note that C++20 defines ""d and ""y string literals, but they are reserved and thus can't be defined by user
+
             // [time.cal.day.nonmembers](http://eel.is/c++draft/time#cal.day.nonmembers), non-member functions
-    #if __cpp_lib_chrono < 201907L
             constexpr chrono::day operator""_d(unsigned long long d) noexcept
             {
                 return chrono::day{ static_cast<unsigned int>(d) };
             }
-    #endif
 
             // [time.cal.year.nonmembers](http://eel.is/c++draft/time#cal.year.nonmembers), non-member functions
-    #if __cpp_lib_chrono < 201907L
             constexpr chrono::year operator""_y(unsigned long long y) noexcept
             {
                 return chrono::year{ static_cast<int>(y) };
             }
-    #endif
         }
     } // namespace literals
 

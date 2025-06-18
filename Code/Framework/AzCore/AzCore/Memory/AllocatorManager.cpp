@@ -215,7 +215,7 @@ namespace AZ
             auto durationInMilliseconds = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
             auto durationInSeconds = AZStd::chrono::ceil<AZStd::chrono::seconds>(durationInMilliseconds);
 
-            AllocationString allocationsPerSecond = u8"\u221e";
+            AllocationString allocationsPerSecond = reinterpret_cast<const char*>(u8"\u221e");
             if (durationInSeconds.count() != 0)
             {
                 // Use a double for the seconds duration in order to allow decimal values

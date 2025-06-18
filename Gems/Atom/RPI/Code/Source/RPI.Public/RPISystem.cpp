@@ -359,6 +359,7 @@ namespace AZ
                     {
                         scenePtr->UpdateSrgs();
                     }
+                    m_materialSystem.Compile();
                 });
 
             {

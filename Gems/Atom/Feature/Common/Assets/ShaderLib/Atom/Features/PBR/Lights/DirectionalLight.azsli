@@ -28,15 +28,15 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 
 #if ENABLE_SHADOWS
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
-    {           
+    {
 #if ENABLE_TRANSMISSION
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
             real2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThickTransmission(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
             litRatio = visibilityAndThickness.x;
             transmissionDistance = visibilityAndThickness.y;
-        } 
-        else if (o_transmission_mode == TransmissionMode::ThinObject) 
+        }
+        else if (o_transmission_mode == TransmissionMode::ThinObject)
         {
             real2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
                                                 shadowIndex, real3(surface.position), surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());
@@ -48,7 +48,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         {
             litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, real3(surface.position), surface.vertexNormal, screenUv);
         }
-#else 
+#else
         litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
 #endif // ENABLE_TRANSMISSION
 
@@ -63,15 +63,6 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         {
             continue;
         }
-        real3 dirToLight = normalize(real3(-light.m_direction));
-
-        // Adjust the direction of the light based on its angular diameter.
-        real3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
-        real3 lightDirToReflectionDir = reflectionDir - dirToLight;
-        real lightDirToReflectionDirLen = length(lightDirToReflectionDir);
-        lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
-        lightDirToReflectionDirLen = min(real(light.m_angularRadius), lightDirToReflectionDirLen);
-        dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
 
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
@@ -89,11 +80,28 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 
         // Transmission contribution
 #if ENABLE_TRANSMISSION
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight, real(currentTransmissionDistance), camToSurfDist);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, real3(light.m_rgbIntensityLux), normalize(real3(-light.m_direction)), real(currentTransmissionDistance), camToSurfDist);
 #endif
-        
+
+        // Calculate diffuse lighting (same for all views)
+        real3 dirToLight = normalize(real3(-light.m_direction));
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight) * currentLitRatio;
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight) * currentLitRatio;
+
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Adjust the direction of the light based on its angular diameter for this view
+            real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
+            real3 lightDirToReflectionDir = reflectionDir - dirToLight;
+            real lightDirToReflectionDirLen = length(lightDirToReflectionDir);
+            lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
+            lightDirToReflectionDirLen = min(real(light.m_angularRadius), lightDirToReflectionDirLen);
+            real3 viewDirToLight = dirToLight + lightDirToReflectionDir * lightDirToReflectionDirLen;
+
+            // Add specular lighting for this view
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, real3(light.m_rgbIntensityLux), viewDirToLight, viewIndex) * currentLitRatio;
+        }
 
 #if ENABLE_SHADER_DEBUGGING
         if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
@@ -103,11 +111,16 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
 #endif
     }
 
-#if ENABLE_SHADOWS    
+#if ENABLE_SHADOWS
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
-        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, real3(surface.position), surface.vertexNormal);
+        // Apply debug coloring to all views
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            lightingData.specularLighting[viewIndex] = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting[viewIndex], shadowIndex, real3(surface.position), surface.vertexNormal);
+        }
     }
 #endif
 }

@@ -115,6 +115,11 @@ namespace AZ::RHI
         DispatchRaysItem(MultiDevice::DeviceMask deviceMask)
             : m_deviceMask{ deviceMask }
         {
+            if (deviceMask == MultiDevice::NoDevices)
+            {
+                return;
+            }
+
             MultiDeviceObject::IterateDevices(
                 m_deviceMask,
                 [this](int deviceIndex)

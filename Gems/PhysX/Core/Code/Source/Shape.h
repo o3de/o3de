@@ -12,6 +12,7 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
@@ -66,6 +67,7 @@ namespace PhysX
         AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) override;
         AZ::Aabb GetAabb(const AZ::Transform& worldTransform) const override;
         AZ::Aabb GetAabbLocal() const override;
+        AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
         void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
             const AZ::Aabb* optionalBounds = nullptr) const override;
 
@@ -90,6 +92,7 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<PhysX::Material>> m_materials;
         AzPhysics::CollisionLayer m_collisionLayer;
         AzPhysics::CollisionGroup m_collisionGroup;
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
         physx::PxActor* m_attachedActor = nullptr;
     };

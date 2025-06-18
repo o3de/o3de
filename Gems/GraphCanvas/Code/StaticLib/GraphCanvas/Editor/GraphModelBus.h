@@ -213,7 +213,16 @@ namespace GraphCanvas
         {
         }
         ////
-        
+
+        //////////////////////////////////////
+        // Breakpoint handling
+
+        virtual void AddBreakpoints([[maybe_unused]] const AZStd::unordered_set<NodeId>& nodeIds)
+        {
+        }
+
+        //////////////////////////////////////
+
         //////////////////////////////////////
         // Node Wrapper Optional Overrides
 

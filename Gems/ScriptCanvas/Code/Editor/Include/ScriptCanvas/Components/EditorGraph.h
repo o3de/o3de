@@ -205,6 +205,8 @@ namespace ScriptCanvasEditor
         void ExtensionCancelled(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId) override;
         void FinalizeExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId) override;
 
+        void AddBreakpoints(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
+
         bool ShouldWrapperAcceptDrop(const GraphCanvas::NodeId& wrapperNode, const QMimeData* mimeData) const override;
 
         void AddWrapperDropTarget(const GraphCanvas::NodeId& wrapperNode) override;

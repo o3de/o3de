@@ -8,9 +8,10 @@
 
 #include <Mesh/EditorMeshComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace AZ
@@ -133,6 +134,11 @@ namespace AZ
 
         void EditorMeshComponent::Activate()
         {
+            using EditorVisibilityRequestBus = AzToolsFramework::EditorVisibilityRequestBus;
+            bool isVisible = true;
+            EditorVisibilityRequestBus::EventResult(isVisible, GetEntityId(), &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
+            m_controller.SetVisibility(isVisible);
+
             m_controller.m_configuration.m_editorRayIntersection = true;
             BaseClass::Activate();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());

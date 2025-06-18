@@ -16,7 +16,7 @@
 #endif
 
 #ifndef GetSpecularLighting
-#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_BasePBR(surface, lightingData, lightIntensity, dirToLight)
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight, viewIndex)      GetSpecularLighting_BasePBR(surface, lightingData, lightIntensity, dirToLight, viewIndex)
 #endif
 
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
@@ -36,12 +36,12 @@ real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, rea
     return diffuse;
 }
 
-real3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
+real3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight, uint viewIndex)
 {
-#if ENABLE_MOBILEBRDF    
-    real3 specular = SpecularGGXMobile(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear); 
+#if ENABLE_MOBILEBRDF
+    real3 specular = SpecularGGXMobile(lightingData.dirToCamera[viewIndex], dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessA2, surface.roughnessA, surface.roughnessLinear);
 #else
-    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera[viewIndex], dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(viewIndex), surface.roughnessA2, lightingData.multiScatterCompensation);
 #endif
     specular *= lightIntensity;
     return specular;

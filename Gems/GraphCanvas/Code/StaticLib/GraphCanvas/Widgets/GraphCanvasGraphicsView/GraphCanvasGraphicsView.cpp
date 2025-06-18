@@ -74,7 +74,7 @@ namespace GraphCanvas
         if (registerShortcuts)
         {
             QAction* centerAction = new QAction(this);
-            centerAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::DownArrow));
+            centerAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::DownArrow));
 
             connect(centerAction, &QAction::triggered, [this]()
             {
@@ -95,7 +95,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllInputAction = new QAction(this);
-                selectAllInputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left));
+                selectAllInputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Left));
 
                 connect(selectAllInputAction, &QAction::triggered, [this]()
                 {
@@ -107,7 +107,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllOutputAction = new QAction(this);
-                selectAllOutputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right));
+                selectAllOutputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Right));
 
                 connect(selectAllOutputAction, &QAction::triggered, [this]()
                 {
@@ -119,7 +119,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllOutputAction = new QAction(this);
-                selectAllOutputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Up));
+                selectAllOutputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Up));
 
                 connect(selectAllOutputAction, &QAction::triggered, [this]()
                 {
@@ -134,7 +134,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Left));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -144,7 +144,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Right));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Right));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -154,7 +154,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Up));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Up));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -165,7 +165,7 @@ namespace GraphCanvas
             // Ctrl+"0" overview shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_0));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -184,8 +184,8 @@ namespace GraphCanvas
             // Ctrl+"+" zoom-in shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus),
-                    QKeySequence(Qt::CTRL + Qt::Key_Equal) });
+                keyAction->setShortcuts({ QKeySequence(0x0 | Qt::CTRL | Qt::Key_Plus),
+                    QKeySequence(0x0 | Qt::CTRL | Qt::Key_Equal) });
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -197,7 +197,7 @@ namespace GraphCanvas
             // Ctrl+"-" zoom-out shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Minus));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Minus));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -210,7 +210,7 @@ namespace GraphCanvas
             // Ctrl+shift+'p' screenshot graph shortcut
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_P));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -229,7 +229,7 @@ namespace GraphCanvas
                 // ctrl+k, ctrl+u enable selection
                 {
                     QAction* keyAction = new QAction(this);
-                    keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_U));
+                    keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_K, 0x0 | Qt::CTRL | Qt::Key_U));
 
                     connect(keyAction, &QAction::triggered, [this]()
                     {
@@ -240,7 +240,7 @@ namespace GraphCanvas
                 // Ctrl+k, ctrl+c disable selection
                 {
                     QAction* keyAction = new QAction(this);
-                    keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_C));
+                    keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_K, 0x0 | Qt::CTRL | Qt::Key_C));
 
                     connect(keyAction, &QAction::triggered, [this]()
                     {
@@ -259,7 +259,7 @@ namespace GraphCanvas
             Qt::Key currentKey = keyIndexes[i];
 
             QAction* createBookmarkKeyAction = new QAction(this);
-            createBookmarkKeyAction->setShortcut(QKeySequence(Qt::CTRL + currentKey));
+            createBookmarkKeyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | currentKey));
 
             connect(createBookmarkKeyAction, &QAction::triggered, [this, i]()
                 {

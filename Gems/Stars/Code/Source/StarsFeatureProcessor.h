@@ -70,7 +70,7 @@ namespace AZ::Render
         RHI::ConstPtr<RHI::DrawPacket> BuildDrawPacket();
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
-        RHI::GeometryView m_geometryView;
+        RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
         Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;

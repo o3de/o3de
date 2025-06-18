@@ -26,7 +26,7 @@ real3 TransmissionKernel(real t, real3 s)
 // [specific profile for human skin]
 // Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
 // From d'Eon and Luebke (https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-14-advanced-techniques-realistic-real-time-skin, section 14.4.7)
-float3 T(float s) 
+float3 T(float s)
 {
     // dipoles and multipoles are approximated with sums of a small number of Gaussians with variable weights and variances
     return float3(0.233, 0.455, 0.649) * exp(-s*s/0.0064) +
@@ -43,7 +43,7 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
 
 #if ENABLE_TRANSMISSION
 
-    real thickness = 0.0; 
+    real thickness = 0.0;
     TransmissionSurfaceData transmission = surface.transmission;
 
     switch(o_transmission_mode)
@@ -51,13 +51,13 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
         case TransmissionMode::None:
             break;
 
-        case TransmissionMode::ThickObject: 
+        case TransmissionMode::ThickObject:
             // Thick object mode, using back lighting approximation proposed by Brisebois B. C. and Bouchard M. 2011
             // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
 
             {
                 thickness = max(transmissionDistance, transmission.thickness);
-                real transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.GetVertexNormal() * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
+                real transmittance = pow( saturate( dot( lightingData.dirToCamera[0], -normalize( dirToLight + surface.GetVertexNormal() * transmission.GetDistortion() ) ) ), transmission.GetPower() ) * transmission.GetScale();
                 real lamberAttenuation = exp(-thickness * transmission.GetAttenuationCoefficient()) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
             }
@@ -66,7 +66,7 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
         case TransmissionMode::ThinObject:
             // Thin object mode, based on Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
-            
+
             {
                 // transmissionDistance < 0.0f means shadows are not enabled --> avoid unnecessary computation
                 if (transmissionDistance < 0.0)
@@ -74,20 +74,20 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
                     break;
                 }
 
-                // Irradiance arround surface point. 
-                // Albedo at front (surface point) is used to approximate irradiance at the back of the 
+                // Irradiance arround surface point.
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the
                 // object (observation 4 in [Jimenez J. et al, 2010])
                 // Increase angle of influence to avoid dark transition regions
                 real3 E = surface.albedo * saturate(transmission.GetTransmissionNdLBias() + dot(-surface.GetVertexNormal(), dirToLight));
 
-                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter 
+                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter
                 // (in this case modulating the distance traversed by the light inside the object)
                 const real C = 300.0;
                 real s = transmissionDistance * C * transmission.thickness;
-                
+
                 // Use scattering color to weight thin object transmission color
                 const real3 invScattering = rcp(max(transmission.scatterDistance, real(0.00001)));
-                
+
 #if !USE_HUMAN_SKIN_PROFILE
                 // Generic profile based on scatter color
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();
@@ -106,4 +106,3 @@ real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightInt
 
     return result;
 }
-

@@ -28,6 +28,7 @@
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
 #include <Editor/Include/ScriptCanvas/Components/NodeReplacementSystem.h>
+#include <Utilities/ViewportDragDropHandler.h>
 
 namespace ScriptCanvasEditor
 {
@@ -131,5 +132,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasBuilder::DataSystem m_dataSystem;
         NodeReplacementSystem m_nodeReplacementSystem;
+
+        AZStd::unique_ptr<ScriptCanvasAssetDragDropHandler> m_viewportDragDropHandler;
     };
 }

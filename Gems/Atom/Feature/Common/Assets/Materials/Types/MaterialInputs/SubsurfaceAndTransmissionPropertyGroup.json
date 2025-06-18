@@ -226,7 +226,21 @@
                 "scatterDistanceIntensity": "scatterDistance",
                 "scatterDistanceShaderInput": "m_scatterDistance",
                 "parametersShaderInput": "m_transmissionParams",
-                "tintThickenssShaderInput": "m_transmissionTintThickness"
+                "tintThickenssShaderInput": "m_transmissionTintThickness",
+                "shaderParameters": [
+                    {
+                        "name": "m_scatterDistance",
+                        "type": "float3"
+                    },
+                    {
+                        "name": "m_transmissionParams",
+                        "type": "float4"
+                    },
+                    {
+                        "name": "m_transmissionTintThickness",
+                        "type": "float4"
+                    }
+                ]
             }
         },
         {

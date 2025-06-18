@@ -95,6 +95,30 @@ namespace AZ::RHI
         float m_mipLodMax = static_cast<float>(Limits::Image::MipCountMax);
         float m_mipLodBias = 0.0f;
         BorderColor m_borderColor = BorderColor::TransparentBlack;
+
+        bool operator==(const SamplerState& other) const;
+        bool operator!=(const SamplerState& other) const;
+
+    private:
+        // used for the comparison operators
+        auto tie() const
+        {
+            return AZStd::tie(
+                m_anisotropyMax,
+                m_anisotropyEnable,
+                m_filterMin,
+                m_filterMag,
+                m_filterMip,
+                m_reductionType,
+                m_comparisonFunc,
+                m_addressU,
+                m_addressV,
+                m_addressW,
+                m_mipLodMin,
+                m_mipLodMax,
+                m_mipLodBias,
+                m_borderColor);
+        }
     };
 
     AZ_TYPE_INFO_SPECIALIZE(FilterMode, "{CFAE2156-0293-4D71-87D5-68F5C9F98884}");
@@ -104,3 +128,16 @@ namespace AZ::RHI
     AZ_TYPE_INFO_SPECIALIZE(BorderColor, "{8A6739E8-538D-47FC-9068-45BCA5B7E5C4}");
 }
 
+namespace AZStd
+{
+    // hash specialization
+    template<>
+    struct hash<AZ::RHI::SamplerState>
+    {
+        size_t operator()(const AZ::RHI::SamplerState& sampler) const
+        {
+            return static_cast<size_t>(sampler.GetHash());
+        }
+    };
+
+} // namespace AZStd

@@ -42,6 +42,28 @@ namespace AZ
             return loadSuccess;
         }
 
+        template<>
+        bool JsonMaterialPropertyValueSourceDataSerializer::LoadAny(
+            MaterialPropertyValueSourceData& propertyValue,
+            const RHI::SamplerState& defaultValue,
+            const rapidjson::Value& inputValue,
+            JsonDeserializerContext& context)
+        {
+            RHI::SamplerState value = defaultValue;
+            JSR::ResultCode result = ContinueLoading(&value, azrtti_typeid<RHI::SamplerState>(), inputValue, context);
+
+            auto outcome = result.GetOutcome();
+
+            bool loadSuccess = outcome == JSR::Outcomes::Success;
+            loadSuccess |= outcome == JSR::Outcomes::PartialDefaults;
+            loadSuccess |= outcome == JSR::Outcomes::DefaultsUsed;
+            if (loadSuccess)
+            {
+                propertyValue.m_possibleValues[azrtti_typeid<RHI::SamplerState>()] = value;
+            }
+            return loadSuccess;
+        }
+
         JsonSerializationResult::Result JsonMaterialPropertyValueSourceDataSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
@@ -72,6 +94,7 @@ namespace AZ
             atLeastOneSuccess |= LoadAny<uint32_t>(*materialPropertyValue, 0u, inputValue, context);
             atLeastOneSuccess |= LoadAny<float>(*materialPropertyValue, 0.0f, inputValue, context);
             atLeastOneSuccess |= LoadAny<AZStd::string>(*materialPropertyValue, AZStd::string(), inputValue, context);
+            atLeastOneSuccess |= LoadAny<RHI::SamplerState>(*materialPropertyValue, RHI::SamplerState{}, inputValue, context);
             // Vectors/Colors can only be read from arrays or objects. If none of the basic types (+ string) are successfully loaded, the data should be an array.
             if (!atLeastOneSuccess)
             {
@@ -158,6 +181,11 @@ namespace AZ
             else if (valueToDeserialize.Is<AZStd::string>())
             {
                 result.Combine(ContinueStoring(outputValue, &valueToDeserialize.GetValue<AZStd::string>(), nullptr, azrtti_typeid<AZStd::string>(), context));
+            }
+            else if (valueToDeserialize.Is<RHI::SamplerState>())
+            {
+                result.Combine(ContinueStoring(
+                    outputValue, &valueToDeserialize.GetValue<RHI::SamplerState>(), nullptr, azrtti_typeid<RHI::SamplerState>(), context));
             }
             else
             {

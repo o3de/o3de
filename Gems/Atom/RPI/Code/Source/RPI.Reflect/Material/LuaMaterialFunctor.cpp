@@ -328,30 +328,47 @@ namespace AZ
         void LuaMaterialFunctorAPI::RuntimeContext::Reflect(BehaviorContext* behaviorContext)
         {
             auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::RuntimeContext>();
-            builder
-                ->Method("SetShaderConstant_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<bool>)
-                ->Method("SetShaderConstant_int", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<int32_t>)
-                ->Method("SetShaderConstant_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<uint32_t>)
-                ->Method("SetShaderConstant_float", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<float>)
-                ->Method("SetShaderConstant_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector2>)
-                ->Method("SetShaderConstant_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector3>)
-                ->Method("SetShaderConstant_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector4>)
-                ->Method("SetShaderConstant_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Color>)
-                ->Method("SetShaderConstant_Matrix3x3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Matrix3x3>)
-                ->Method("SetShaderConstant_Matrix4x4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Matrix4x4>)
-                ->Method("SetInternalMaterialPropertyValue_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<bool>)
-                ->Method("SetInternalMaterialPropertyValue_int", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<int32_t>)
-                ->Method("SetInternalMaterialPropertyValue_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
-                ->Method("SetInternalMaterialPropertyValue_enum", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
-                ->Method("SetInternalMaterialPropertyValue_float", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<float>)
-                // I'm not really sure what use case there might be for passing these data types to the material pipeline, but we might as well provide
-                // them to remain consistent with the types that are supported by the GetMaterialPropertyValue function above.
-                ->Method("SetInternalMaterialPropertyValue_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector2>)
-                ->Method("SetInternalMaterialPropertyValue_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector3>)
-                ->Method("SetInternalMaterialPropertyValue_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector4>)
-                ->Method("SetInternalMaterialPropertyValue_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Color>)
-                ->Method("SetInternalMaterialPropertyValue_Image", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Image*>)
-                ;
+            builder->Method("SetShaderParameterValue_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<bool>)
+                ->Method("SetShaderParameterValue_int", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<int32_t>)
+                ->Method("SetShaderParameterValue_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<uint32_t>)
+                ->Method("SetShaderParameterValue_float", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<float>)
+                ->Method("SetShaderParameterValue_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector2>)
+                ->Method("SetShaderParameterValue_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector3>)
+                ->Method("SetShaderParameterValue_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector4>)
+                ->Method("SetShaderParameterValue_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Color>)
+                ->Method("SetShaderParameterValue_Matrix3x3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix3x3>)
+                ->Method("SetShaderParameterValue_Matrix4x4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix4x4>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<bool>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_int",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<int32_t>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_uint",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_enum",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_float",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<float>)
+                // I'm not really sure what use case there might be for passing these data types to the material pipeline, but we might as
+                // well provide them to remain consistent with the types that are supported by the GetMaterialPropertyValue function above.
+                ->Method(
+                    "SetInternalMaterialPropertyValue_Vector2",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector2>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_Vector3",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector3>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_Vector4",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector4>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_Color",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Color>)
+                ->Method(
+                    "SetInternalMaterialPropertyValue_Image",
+                    &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Image*>);
 
             LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(&builder);
             LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(&builder);
@@ -406,31 +423,12 @@ namespace AZ
             return m_underlyingApi->SetShaderOptionValue(optionName, ShaderOptionValue{value});
         }
 
-        RHI::ShaderInputConstantIndex LuaMaterialFunctorAPI::RuntimeContext::GetShaderInputConstantIndex(const char* name, const char* functionName) const
-        {
-            Name fullInputName{name};
-            m_materialNameContext->ContextualizeSrgInput(fullInputName);
-
-            RHI::ShaderInputConstantIndex index = m_runtimeContextImpl->GetShaderResourceGroup()->FindShaderInputConstantIndex(fullInputName);
-
-            if (!index.IsValid())
-            {
-                LuaScriptUtilities::Error(AZStd::string::format("%s() could not find shader input '%s'", functionName, fullInputName.GetCStr()));
-            }
-
-            return index;
-        }
-
         template<typename Type>
-        bool LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue(const char* name, Type value)
         {
-            RHI::ShaderInputConstantIndex index = GetShaderInputConstantIndex(name, "SetShaderConstant");
-            if (index.IsValid())
-            {
-                return m_runtimeContextImpl->GetShaderResourceGroup()->SetConstant(index, value);
-            }
-
-            return false;
+            AZ::Name optionName{ name };
+            m_materialNameContext->ContextualizeSrgInput(optionName);
+            return m_runtimeContextImpl->GetMaterialShaderParameter()->SetParameter(optionName, value);
         }
 
         AZStd::size_t LuaMaterialFunctorAPI::ConfigureShaders::GetShaderCount() const

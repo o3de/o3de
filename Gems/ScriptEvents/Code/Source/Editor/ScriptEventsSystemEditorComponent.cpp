@@ -166,7 +166,7 @@ namespace ScriptEventsEditor
         scriptEventAsset->m_definition.IncreaseVersion();
     }
 
-    void ScriptEventAssetHandler::BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventAssetHandler::BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, [[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         ScriptEventData::VersionedProperty* property = nullptr;
         AzToolsFramework::InstanceDataNode* parent = node;

@@ -103,9 +103,10 @@ function(ly_delayed_generate_runtime_dependencies)
         endif()
     endforeach()
 
-
-    add_dependencies("AzTestRunner" ${test_runner_dependencies})
-    
+    if(test_runner_dependencies)
+        add_dependencies("AzTestRunner" ${test_runner_dependencies})
+    endif()
+ 
     # We still need to add indirect dependencies(eg. 3rdParty)
     unset(dependencies)
     o3de_get_filtered_dependencies_for_target(dependencies AzTestRunner)

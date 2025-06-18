@@ -51,7 +51,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignLeft.svg"),
             FromStdString(AnimGraphPlugin::s_alignLeftShortcutName),
             this);
-        m_actions[SELECTION_ALIGNLEFT]->setShortcut(Qt::Key_L | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNLEFT]->setShortcut(0x0 | Qt::Key_L | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNLEFT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNLEFT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignLeft);
 
@@ -59,7 +59,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignRight.svg"),
             FromStdString(AnimGraphPlugin::s_alignRightShortcutName),
             this);
-        m_actions[SELECTION_ALIGNRIGHT]->setShortcut(Qt::Key_R | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNRIGHT]->setShortcut(0x0 | Qt::Key_R | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNRIGHT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNRIGHT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignRight);
 
@@ -67,7 +67,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignTop.svg"),
             FromStdString(AnimGraphPlugin::s_alignTopShortcutName),
             this);
-        m_actions[SELECTION_ALIGNTOP]->setShortcut(Qt::Key_T | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNTOP]->setShortcut(0x0 | Qt::Key_T | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNTOP], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNTOP], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignTop);
 
@@ -75,7 +75,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignBottom.svg"),
             FromStdString(AnimGraphPlugin::s_alignBottomShortcutName),
             this);
-        m_actions[SELECTION_ALIGNBOTTOM]->setShortcut(Qt::Key_B | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNBOTTOM]->setShortcut(0x0 | Qt::Key_B | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNBOTTOM], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNBOTTOM], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignBottom);
 
@@ -83,7 +83,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_selectAllShortcutName),
             this
         );
-        m_actions[SELECTION_SELECTALL]->setShortcut(Qt::Key_A | Qt::ControlModifier);
+        m_actions[SELECTION_SELECTALL]->setShortcut(0x0 | Qt::Key_A | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_SELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_SELECTALL], &QAction::triggered, [this]
         {
@@ -98,7 +98,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_unselectAllShortcutName),
             this
         );
-        m_actions[SELECTION_UNSELECTALL]->setShortcut(Qt::Key_D | Qt::ControlModifier);
+        m_actions[SELECTION_UNSELECTALL]->setShortcut(0x0 | Qt::Key_D | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_UNSELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_UNSELECTALL], &QAction::triggered, [this]
         {
@@ -241,7 +241,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_cutShortcutName),
             this
         );
-        m_actions[EDIT_CUT]->setShortcut(Qt::Key_X | Qt::ControlModifier);
+        m_actions[EDIT_CUT]->setShortcut(0x0 | Qt::Key_X | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_CUT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_CUT], &QAction::triggered, this, [this]
         {
@@ -252,7 +252,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_copyShortcutName),
             this
         );
-        m_actions[EDIT_COPY]->setShortcut(Qt::Key_C | Qt::ControlModifier);
+        m_actions[EDIT_COPY]->setShortcut(0x0 | Qt::Key_C | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_COPY], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_COPY], &QAction::triggered, this, [this]
         {
@@ -263,7 +263,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_pasteShortcutName),
             this
         );
-        m_actions[EDIT_PASTE]->setShortcut(Qt::Key_V | Qt::ControlModifier);
+        m_actions[EDIT_PASTE]->setShortcut(0x0 | Qt::Key_V | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_PASTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_PASTE], &QAction::triggered, this, [this]
         {

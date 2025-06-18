@@ -144,7 +144,7 @@
                 "defaultDataType": "float4x4",
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE SLOTNAME = float4x4(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3, MaterialSrg::inRow4);"
+                        "SLOTTYPE SLOTNAME = float4x4(params.inRow1, params.inRow2, params.inRow3, params.inRow4);"
                     ]
                 }
             }

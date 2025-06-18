@@ -248,7 +248,9 @@ void UiInteractableStateAlpha::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement("ComboBox", &UiInteractableStateAlpha::m_targetEntity, "Target", "The target element.")
                 ->Attribute("EnumValues", &UiInteractableStateAlpha::PopulateTargetEntityList);
-            editInfo->DataElement("Slider", &UiInteractableStateAlpha::m_alpha, "Alpha", "The opacity.");
+            editInfo->DataElement("Slider", &UiInteractableStateAlpha::m_alpha, "Alpha", "The opacity.")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
         }
     }
 }

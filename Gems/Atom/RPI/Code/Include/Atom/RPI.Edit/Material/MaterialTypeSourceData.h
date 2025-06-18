@@ -290,8 +290,13 @@ namespace AZ
             //! Returns a MaterialNameContext for a specific path through the property group hierarchy.
             static MaterialNameContext MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack);
 
-            //! Create a MaterialTypeAsset for use at runtime. This is only valid for material types with the "direct" format (see GetFormat()).
-            Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
+            //! Create a MaterialShaderParameterLayout from the Material Properties with relevance for a shader
+            MaterialShaderParameterLayout CreateMaterialShaderParameterLayout() const;
+
+            //! Create a MaterialTypeAsset for use at runtime. This is only valid for material types with the "direct" format (see
+            //! GetFormat()).
+            Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(
+                Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
             //! If the data was loaded from the legacy format file (i.e. where "groups" and "properties" were separate sections),
             //! this converts to the new format where properties are listed inside property groups.

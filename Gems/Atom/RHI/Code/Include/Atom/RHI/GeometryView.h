@@ -37,24 +37,24 @@ namespace AZ::RHI
     public:
         friend class StreamIterator<GeometryView, StreamBufferView>;
 
+        GeometryView(MultiDevice::DeviceMask deviceMask)
+        {
+            MultiDeviceObject::IterateDevices(
+                deviceMask,
+                [&](int deviceIndex)
+                {
+                    m_geometryViews.emplace(deviceIndex, DeviceGeometryView{});
+                    return true;
+                });
+        }
+
         inline DeviceGeometryView* GetDeviceGeometryView(int deviceIndex)
         {
             auto iter = m_geometryViews.find(deviceIndex);
             if (iter == m_geometryViews.end())
             {
-                DeviceGeometryView newGeometryView;
-                newGeometryView.SetDrawArguments( m_drawArguments.GetDeviceDrawArguments(deviceIndex) );
-                if (m_indexBufferView.IsValid())
-                {
-                    newGeometryView.SetIndexBufferView(m_indexBufferView.GetDeviceIndexBufferView(deviceIndex));
-                }
-                for (StreamBufferView& stream : m_streamBufferViews)
-                {
-                    newGeometryView.AddStreamBufferView(stream.GetDeviceStreamBufferView(deviceIndex));
-                }
-                newGeometryView.m_dummyStreamBufferIndex = m_dummyStreamBufferIndex;
-                m_geometryViews.emplace(deviceIndex, std::move(newGeometryView));
-                return &m_geometryViews[deviceIndex];
+                AZ_Error("GeometryView", false, "No DeviceGeometryView found for device index %d\n", deviceIndex);
+                return nullptr;
             }
             else
             {
@@ -103,7 +103,6 @@ namespace AZ::RHI
         // --- Stream Buffer Views ---
 
         const StreamBufferView& GetStreamBufferView(u8 idx) const { return m_streamBufferViews[idx]; }
-        AZStd::vector<StreamBufferView>& GetStreamBufferViews() { return m_streamBufferViews; }
         const AZStd::vector<StreamBufferView>& GetStreamBufferViews() const { return m_streamBufferViews; }
 
         inline void SetStreamBufferView(u8 idx, StreamBufferView streamBufferView)

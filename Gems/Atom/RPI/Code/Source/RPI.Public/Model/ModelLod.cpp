@@ -56,7 +56,7 @@ namespace AZ
 
             for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
-                Mesh meshInstance;
+                Mesh meshInstance{ RHI::MultiDevice::AllDevices };
 
                 const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();

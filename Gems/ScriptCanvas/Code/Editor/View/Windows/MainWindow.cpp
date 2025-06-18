@@ -161,8 +161,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using namespace AzToolsFramework;
-
     namespace
     {
         template <typename T>
@@ -1983,8 +1981,8 @@ namespace ScriptCanvasEditor
         ui->action_AlignLeft->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         ui->action_AlignRight->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-        ui->action_ZoomIn->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus),
-                                          QKeySequence(Qt::CTRL + Qt::Key_Equal)
+        ui->action_ZoomIn->setShortcuts({ QKeySequence(0x0 | Qt::CTRL | Qt::Key_Plus),
+                                          QKeySequence(0x0 | Qt::CTRL | Qt::Key_Equal)
                                         });
 
         // View Menu
@@ -4072,6 +4070,8 @@ namespace ScriptCanvasEditor
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
     {
+        using namespace AzToolsFramework;
+
         EditorScriptCanvasComponentRequests* firstRequestBus = nullptr;
         EditorScriptCanvasComponentRequests* firstEmptyRequestBus = nullptr;
 
@@ -4515,4 +4515,4 @@ namespace ScriptCanvasEditor
 
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>
-}
+} // namespace ScriptCanvasEditor

@@ -27,12 +27,12 @@ MenuPage::MenuPage(QWidget* parent)
     menu->addSeparator();
 
     auto shortcutAction = menu->addAction(actionText);
-    shortcutAction->setShortcut(Qt::CTRL + Qt::Key_O);
+    shortcutAction->setShortcut(0x0 | Qt::CTRL | Qt::Key_O);
     shortcutAction->setShortcutVisibleInContextMenu(true);
 
     auto disabledShortcutAction = menu->addAction(QStringLiteral("Disabled"));
     disabledShortcutAction->setEnabled(false);
-    disabledShortcutAction->setShortcut(Qt::CTRL + Qt::Key_D);
+    disabledShortcutAction->setShortcut(0x0 | Qt::CTRL | Qt::Key_D);
     disabledShortcutAction->setShortcutVisibleInContextMenu(true);
 
     auto submenu = menu->addMenu(QStringLiteral("Submenu"));
@@ -67,7 +67,7 @@ QMenu* radioButton;
 
 // To add an action with a shortcut:
 auto shortcutAction = menu->addAction("Menu text");
-shortcutAction->setShortcut(Qt::CTRL + Qt::Key_O);
+shortcutAction->setShortcut(0x0 | Qt::CTRL | Qt::Key_O);
 shortcutAction->setShortcutVisibleInContextMenu(true);
 
 // To add a checkable action:

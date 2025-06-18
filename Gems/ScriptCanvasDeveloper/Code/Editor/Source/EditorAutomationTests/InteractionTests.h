@@ -34,6 +34,8 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(AltClickDeleteTest, AZ::SystemAllocator)
+
         AltClickDeleteTest();
         ~AltClickDeleteTest() override = default;
     };

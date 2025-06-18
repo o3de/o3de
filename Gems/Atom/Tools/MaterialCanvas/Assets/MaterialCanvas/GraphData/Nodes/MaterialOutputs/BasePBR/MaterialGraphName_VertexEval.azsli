@@ -19,6 +19,7 @@
 #include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(
+    const MaterialParameters params,
     float3 position,
     real3 normal,
     real4 tangent,
@@ -47,8 +48,8 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     const float4 O3DE_MC_COLOR = color0;
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
 
-    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
-    const bool placeHolder = MaterialSrg::m_placeHolder;
+    // placeholder to keep MaterialParams from being compiled out when iterating on graphs
+    const int materialType = params.m_materialType;
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
@@ -77,7 +78,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV, const MaterialParameters params)
 {
 #if ENABLE_VERTEX_COLOR
     float4 color0 = IN.m_optional_color0;
@@ -87,6 +88,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
     bool useVertexColor = false;
 #endif
     return EvaluateVertexGeometry_MaterialGraphName(
+        params,
         IN.position,
         real3(IN.normal),
         real4(IN.tangent),

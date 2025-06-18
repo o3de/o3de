@@ -73,7 +73,7 @@ namespace ScriptCanvas
             }
         }
 
-        void CheckConversionStringPre(Writer& writer, Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
+        void CheckConversionStringPre(Writer& writer, [[maybe_unused]] Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
         {
             auto iter = conversions.find(index);
             if (iter == conversions.end())

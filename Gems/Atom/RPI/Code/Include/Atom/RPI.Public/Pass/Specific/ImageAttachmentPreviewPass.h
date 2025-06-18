@@ -142,7 +142,7 @@ namespace AZ
                 RHI::DrawItem m_item{RHI::MultiDevice::AllDevices};
 
                 // Holds the geometry info for the draw call
-                RHI::GeometryView m_geometryView;
+                RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

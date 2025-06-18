@@ -348,7 +348,7 @@ AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 
     // Queue a load for the font per viewport dynamic draw context shader, and wait for it to load
     static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
+    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
     shaderAsset.QueueLoad();
     Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
 
@@ -822,6 +822,11 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
 {
     outputFullPath = fontFamilyName;
     outputDirectory = PathUtil::GetPath(fontFamilyName);
+
+    // Fonts will fail engine load if not fully compiled, so ensure that its present if possible.
+    // This should never actually go wrong unless the AP cannot be run at all or all assets are missing.
+    // This is essentally a no-op in release builds.
+    AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
     XmlNodeRef root = SafeLoadXmlFromFile(outputFullPath);
 
     // When parsing a <font> tag in markup, only the font name is given and 
@@ -839,6 +844,7 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
         // Try: "fonts/fontName.fontfamily"
         outputDirectory = AZStd::string("fonts/");
         outputFullPath = outputDirectory + fileNoExtension + fileExtension;
+        AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
         root = SafeLoadXmlFromFile(outputFullPath);
 
         // Finally, try: "fonts/fontName/fontName.fontfamily"
@@ -846,6 +852,7 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
         {
             outputDirectory = AZStd::string("fonts/") + fileNoExtension + "/";
             outputFullPath = outputDirectory + fileNoExtension + fileExtension;
+            AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
             root = SafeLoadXmlFromFile(outputFullPath);
         }
     }

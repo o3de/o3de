@@ -21,6 +21,7 @@
 #include <Atom/Features/Debug.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
+    const MaterialParameters params,
     inout float4 positionSV,
     float3 positionWS,
     real3 normalWS,
@@ -31,7 +32,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     bool isFrontFace,
     real4x4 objectToWorld)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // ------- Detail UVs -------
 
@@ -44,7 +45,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 #if ENABLE_PARALLAX
     if(ShouldHandleParallax())
     {
-        SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+        SetPixelDepth(params, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                       geoData.uvs, geoData.detailUvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 #endif
@@ -52,7 +53,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace, const MaterialParameters params)
 {
     real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
     real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
@@ -61,6 +62,7 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFr
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_EnhancedPBR(
+        params,
         IN.position,
         IN.worldPosition,
         normalWS,

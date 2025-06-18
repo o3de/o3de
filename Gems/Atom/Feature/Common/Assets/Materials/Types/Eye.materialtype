@@ -4,11 +4,35 @@
     "propertyLayout": {
         "propertyGroups": [
             {
+                "name": "TextureSampler",
+                "displayName": "Texture Sampler",
+                "description": "Configuration for the Texture sampler",
+                "properties": [
+                    {
+                        "name": "ClampSampler",
+                        "displayName": "Clamp Texture Sampler",
+                        "description": "The texture Sampler configuration used for all material textures.",
+                        "type": "SamplerState",
+                        "defaultValue": {
+                            "m_filterMin": "Linear",
+                            "m_filterMag": "Linear",
+                            "m_filterMip": "Linear",
+                            "m_addressU": "Clamp",
+                            "m_addressV": "Clamp"
+                        },
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_clampSampler"
+                        }
+                    }
+                ]
+            },
+            {
                 "name": "iris",
                 "shaderInputsPrefix": "m_iris_",
                 "shaderOptionsPrefix": "o_iris_",
-                "displayName":  "Iris",
-                "description":  "Material properties for the iris.",
+                "displayName": "Iris",
+                "description": "Material properties for the iris.",
                 "propertyGroups": [
                     {
                         "$import": "MaterialInputs/BaseColorPropertyGroup.json"
@@ -25,8 +49,8 @@
                 "name": "sclera",
                 "shaderInputsPrefix": "m_sclera_",
                 "shaderOptionsPrefix": "o_sclera_",
-                "displayName":  "Sclera",
-                "description":  "Material properties for the sclera.",
+                "displayName": "Sclera",
+                "description": "Material properties for the sclera.",
                 "propertyGroups": [
                     {
                         "$import": "MaterialInputs/BaseColorPropertyGroup.json"

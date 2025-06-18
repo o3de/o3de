@@ -73,10 +73,6 @@ namespace AZ
                 {
                     result.Combine(ContinueLoading(instance, functorTypeId, inputValue[ArgsField], context));
                 }
-                else
-                {
-                    result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
-                }
                 functorHolder->m_actualSourceData = reinterpret_cast<MaterialFunctorSourceData*>(instance);
             }
             else
@@ -118,7 +114,8 @@ namespace AZ
 
             const AZStd::string emptyString;
             result.Combine(ContinueStoringToJsonObjectField(outputValue, TypeField, &functorName, &emptyString, azrtti_typeid<AZStd::string>(), context));
-            result.Combine(ContinueStoringToJsonObjectField(outputValue, ArgsField, functorHolder->m_actualSourceData.get(), nullptr, functorTypeId, context));
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue, ArgsField, functorHolder->m_actualSourceData.get(), nullptr, functorTypeId, context));
 
             return context.Report(result, "Successfully processed MaterialFunctorSourceData.");
         }

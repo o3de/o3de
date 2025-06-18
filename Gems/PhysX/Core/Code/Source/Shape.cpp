@@ -10,6 +10,7 @@
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
@@ -68,6 +69,7 @@ namespace PhysX
     Shape::Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration)
         : m_collisionLayer(colliderConfiguration.m_collisionLayer)
     {
+        m_shapeConfiguration = shapeConfiguration.Clone();
         if (physx::PxShape* newShape = Utils::CreatePxShapeFromConfig(colliderConfiguration, shapeConfiguration, m_collisionGroup))
         {
             m_pxShape = PxShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleasePxShape, this, newShape));
@@ -440,8 +442,12 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
-        const AZ::Aabb* optionalBounds) const
+    AZStd::shared_ptr<Physics::ShapeConfiguration> Shape::GetShapeConfiguration() const
+    {
+        return m_shapeConfiguration;
+    }
+
+    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds) const
     {
         if (!m_pxShape)
         {

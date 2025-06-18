@@ -638,7 +638,7 @@ namespace AZ
                             }
                         }
 
-                        RHI::GeometryView geometryView;
+                        RHI::GeometryView geometryView{ RHI::MultiDevice::AllDevices };
                         geometryView.SetDrawArguments(RHI::DrawIndexed(vertexOffset, drawCmd.ElemCount, indexOffset));
                         geometryView.SetIndexBufferView(m_indexBufferView);
                         geometryView.AddStreamBufferView(m_vertexBufferView[0]);

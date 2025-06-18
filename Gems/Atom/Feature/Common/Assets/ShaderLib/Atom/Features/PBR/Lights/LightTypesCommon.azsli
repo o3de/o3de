@@ -29,7 +29,7 @@ void AddSampleContribution(
     in real3 lightSampleDirection,
     in real bothDirectionsFactor,
     inout real3 diffuseAcc,
-    inout real3 specularAcc,
+    inout real3 specularAcc[MAX_SHADING_VIEWS],
     inout real3 translucentAcc)
 {
     real3 posToLightSample = lightSamplePoint - real3(surface.position);
@@ -38,8 +38,10 @@ void AddSampleContribution(
 
     // Lambertian emitter
     real intensity = dot(-lightSampleDirection, posToLightSampleDir);
+
     // Handle if the light emits from both sides
     intensity = abs(clamp(intensity, bothDirectionsFactor, 1.0));
+
     // Attenuate with distance
     intensity /= distanceToLight2;
 
@@ -51,13 +53,19 @@ void AddSampleContribution(
     // We cannot compute the actual transmission distance so we want to:
     // - If transmission mode is thick object -> use transmission thickness parameter instead
     // - If transmission mode is thin object -> ignore back lighting
-    // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
+    // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance
     const real transmissionDistance = -1.0;
+
     // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
     const real attenuationDistance = 0.0;
     translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, transmissionDistance, attenuationDistance);
 
-    specularAcc += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
+    // Calculate specular lighting for each view
+    [unroll]
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+    {
+        specularAcc[viewIndex] += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir, viewIndex);
+    }
 }
 
 bool IsSameLightChannel(uint channelA, uint channelB)

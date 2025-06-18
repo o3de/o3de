@@ -63,7 +63,7 @@ namespace AZ
                 rootTransform /= m_unitSizeInMeters;
             }
             // for FBX, root transform is not converted where there are no meshes in the scene.
-            if ((assImpScene->GetAssImpScene()->mFlags | AI_SCENE_FLAGS_INCOMPLETE)
+            if ((assImpScene->GetAssImpScene()->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
                 && assImpScene->GetAssImpScene()->mMetaData->HasKey("UpAxis"))
             {
                 readRootTransform = false;

@@ -94,7 +94,16 @@
                 "ev100Index": 0,
                 "nitIndex" : 1,
                 "ev100MinMax": [-10, 20],
-                "nitMinMax": [0.001, 100000.0]
+                "nitMinMax": [
+                    0.001,
+                    100000.0
+                ],
+                "shaderParameters": [
+                    {
+                        "name": "m_emissiveIntensity",
+                        "type": "float"
+                    }
+                ]
             }
         },
         {

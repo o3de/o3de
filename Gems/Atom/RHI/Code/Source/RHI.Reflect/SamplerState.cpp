@@ -44,6 +44,15 @@ namespace AZ::RHI
         }
     }
 
+    bool SamplerState::operator==(const SamplerState& other) const
+    {
+        return tie() == other.tie();
+    }
+    bool SamplerState::operator!=(const SamplerState& other) const
+    {
+        return tie() != other.tie();
+    }
+
     void SamplerState::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context))

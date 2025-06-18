@@ -76,10 +76,7 @@ namespace MCore
         StorageType m_x, m_y, m_z, m_w; /**< The compressed/packed quaternion components values. */
 
         // the number of steps within the specified range
-        enum
-        {
-            CONVERT_VALUE = ((1 << (sizeof(StorageType) << 3)) >> 1) - 1
-        };
+        static constexpr const int CONVERT_VALUE = ((1 << (sizeof(StorageType) << 3)) >> 1) - 1;
     };
 
     // include the inline code
