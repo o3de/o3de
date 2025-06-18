@@ -846,7 +846,7 @@ namespace AzToolsFramework
             // we only drop if all the entries are being dropped into a different folder.
             for (auto entry : entries)
             {
-                const AssetBrowserEntry* entryParent = entryParent = entry->GetParent();
+                const AssetBrowserEntry* entryParent = entry->GetParent();
                 if (entryParent)
                 {
                     if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
