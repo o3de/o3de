@@ -43,14 +43,10 @@ set(FILES
     Source/CoreLights/CascadedShadowmapsPass.cpp
     Source/CoreLights/CoreLightsSystemComponent.h
     Source/CoreLights/CoreLightsSystemComponent.cpp
-    Source/CoreLights/DepthExponentiationPass.h
-    Source/CoreLights/DepthExponentiationPass.cpp
     Source/CoreLights/DirectionalLightFeatureProcessor.h
     Source/CoreLights/DirectionalLightFeatureProcessor.cpp
     Source/CoreLights/DiskLightFeatureProcessor.h
     Source/CoreLights/DiskLightFeatureProcessor.cpp
-    Source/CoreLights/EsmShadowmapsPass.h
-    Source/CoreLights/EsmShadowmapsPass.cpp
     Source/CoreLights/LightCullingPass.cpp
     Source/CoreLights/LightCullingPass.h
     Source/CoreLights/LightCullingTilePreparePass.cpp
@@ -64,8 +60,6 @@ set(FILES
     Source/CoreLights/PointLightFeatureProcessor.cpp
     Source/CoreLights/PolygonLightFeatureProcessor.h
     Source/CoreLights/PolygonLightFeatureProcessor.cpp
-    Source/CoreLights/ProjectedShadowmapsPass.h
-    Source/CoreLights/ProjectedShadowmapsPass.cpp
     Source/CoreLights/QuadLightFeatureProcessor.h
     Source/CoreLights/QuadLightFeatureProcessor.cpp
     Source/CoreLights/SimplePointLightFeatureProcessor.h
@@ -74,10 +68,6 @@ set(FILES
     Source/CoreLights/SimpleSpotLightFeatureProcessor.cpp
     Source/CoreLights/Shadow.h
     Source/CoreLights/Shadow.cpp
-    Source/CoreLights/ShadowmapAtlas.h
-    Source/CoreLights/ShadowmapAtlas.cpp
-    Source/CoreLights/ShadowmapPass.h
-    Source/CoreLights/ShadowmapPass.cpp
     Source/CoreLights/SpotLightUtils.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h

@@ -6,7 +6,7 @@
  *
  */
 
-#include <CoreLights/ProjectedShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/ProjectedShadowmapsPass.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>

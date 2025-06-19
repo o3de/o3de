@@ -86,5 +86,10 @@ namespace AZ::Render
         virtual void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) = 0;
         //! Gets the current shadow properties. Useful for updating several properties at once in SetShadowProperties() without having to set every property.
         virtual const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) = 0;
+
+        //! Gets the internally stored/cached atlas image
+        virtual AZ::Data::Instance<RPI::AttachmentImage> GetAtlasImage() = 0;
+        //! Gets the internally stored/cached esm atlas image
+        virtual AZ::Data::Instance<RPI::AttachmentImage> GetEsmAtlasImage() = 0;
     };
 }

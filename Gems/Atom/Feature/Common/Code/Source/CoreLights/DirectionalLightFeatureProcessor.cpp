@@ -8,7 +8,7 @@
 
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/CascadedShadowmapsPass.h>
-#include <CoreLights/EsmShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/Shadow.h>
 #include <Math/GaussianMathFilter.h>
 

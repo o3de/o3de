@@ -8,16 +8,15 @@
 #pragma once
 
 #include <Atom/Feature/CoreLights/ShadowmapAtlas.h>
-
-#include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RPI.Public/Pass/ParentPass.h>
-#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <AtomCore/Instance/Instance.h>
-#include <AzCore/std/containers/span.h>
-#include <AzCore/std/containers/array.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {

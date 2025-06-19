@@ -6,7 +6,7 @@
  *
  */
 
-#include <CoreLights/ShadowmapAtlas.h>
+#include <Atom/Feature/CoreLights/ShadowmapAtlas.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <AzCore/std/sort.h>
 

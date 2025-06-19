@@ -24,15 +24,15 @@
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/DepthExponentiationPass.h>
+#include <Atom/Feature/CoreLights/DepthExponentiationPass.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
 #include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/EsmShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/PointLightFeatureProcessor.h>
 #include <CoreLights/PolygonLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
-#include <CoreLights/ShadowmapPass.h>
-#include <CoreLights/ProjectedShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
+#include <Atom/Feature/CoreLights/ProjectedShadowmapsPass.h>
 
 namespace AZ
 {
