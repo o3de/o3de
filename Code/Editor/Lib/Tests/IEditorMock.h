@@ -74,7 +74,6 @@ public:
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());
-    MOCK_METHOD1(GetColorByName, const QColor& (const QString&));
     MOCK_METHOD0(GetMovieSystem, struct IMovieSystem* ());
     MOCK_METHOD0(GetPluginManager, class CPluginManager*());
     MOCK_METHOD0(GetViewManager, class CViewManager* ());

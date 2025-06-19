@@ -428,7 +428,6 @@ struct IEditor
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
-    virtual const QColor& GetColorByName(const QString& name) = 0;
 
     virtual class CPluginManager* GetPluginManager() = 0;
     virtual class CViewManager* GetViewManager() = 0;

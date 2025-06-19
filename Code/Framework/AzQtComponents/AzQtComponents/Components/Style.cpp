@@ -5,45 +5,46 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <QtGlobal>
 
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
+#include <AzQtComponents/Components/StyledBusyLabel.h>
+#include <AzQtComponents/Components/Titlebar.h>
+#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
+#include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/PaletteView.h>
+#include <AzQtComponents/Components/Widgets/ComboBox.h>
 #include <AzQtComponents/Components/Widgets/DialogButtonBox.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
-#include <AzQtComponents/Components/Widgets/PushButton.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzQtComponents/Components/Widgets/RadioButton.h>
-#include <AzQtComponents/Components/Widgets/ProgressBar.h>
-#include <AzQtComponents/Components/Widgets/Slider.h>
-#include <AzQtComponents/Components/Widgets/Card.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/PaletteView.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
-#include <AzQtComponents/Components/Widgets/ComboBox.h>
-#include <AzQtComponents/Components/Widgets/BrowseEdit.h>
-#include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <AzQtComponents/Components/Widgets/ScrollBar.h>
-#include <AzQtComponents/Components/Widgets/StatusBar.h>
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-#include <AzQtComponents/Components/Widgets/TableView.h>
-#include <AzQtComponents/Components/Widgets/TreeView.h>
 #include <AzQtComponents/Components/Widgets/Menu.h>
+#include <AzQtComponents/Components/Widgets/ProgressBar.h>
+#include <AzQtComponents/Components/Widgets/PushButton.h>
+#include <AzQtComponents/Components/Widgets/RadioButton.h>
+#include <AzQtComponents/Components/Widgets/ScrollBar.h>
+#include <AzQtComponents/Components/Widgets/Slider.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/Widgets/StatusBar.h>
+#include <AzQtComponents/Components/Widgets/TableView.h>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzQtComponents/Components/Widgets/ToolButton.h>
+#include <AzQtComponents/Components/Widgets/TreeView.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
-#include <AzQtComponents/Components/FilteredSearchWidget.h>
-#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
-#include <AzQtComponents/Components/Titlebar.h>
-#include <AzQtComponents/Components/StyledBusyLabel.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/TextUtilities.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
+#include <QtGlobal>
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
@@ -95,7 +96,6 @@ namespace AzQtComponents
     {
         QPalette palette;
 
-        PushButton::Config pushButtonConfig;
         RadioButton::Config radioButtonConfig;
         CheckBox::Config checkBoxConfig;
         ProgressBar::Config progressBarConfig;
@@ -107,7 +107,6 @@ namespace AzQtComponents
         LineEdit::Config lineEditConfig;
         ComboBox::Config comboBoxConfig;
         BrowseEdit::Config browseEditConfig;
-        BreadCrumbs::Config breadCrumbsConfig;
         SpinBox::Config spinBoxConfig;
         ScrollBar::Config scrollBarConfig;
         TabWidget::Config tabWidgetConfig;
@@ -117,9 +116,7 @@ namespace AzQtComponents
         AssetFolderThumbnailView::Config assetFolderThumbnailViewConfig;
         TitleBar::Config titleBarConfig;
         Menu::Config menuConfig;
-        ToolButton::Config toolButtonConfig;
         DockBarButton::Config dockBarButtonConfig;
-        StatusBar::Config statusBarConfig;
         DragAndDrop::Config dragAndDropConfig;
         ToolBar::Config toolBarConfig;
         TreeView::Config treeViewConfig;
@@ -166,7 +163,6 @@ namespace AzQtComponents
         TreeView::initializeWatcher();
 
         // set up settings watchers
-        loadConfig<PushButton::Config, PushButton>(this, &m_data->watcher, &m_data->pushButtonConfig, "PushButtonConfig.ini");
         loadConfig<RadioButton::Config, RadioButton>(this, &m_data->watcher, &m_data->radioButtonConfig, "RadioButtonConfig.ini");
         loadConfig<CheckBox::Config, CheckBox>(this, &m_data->watcher, &m_data->checkBoxConfig, "CheckBoxConfig.ini");
         loadConfig<ProgressBar::Config, ProgressBar>(this, &m_data->watcher, &m_data->progressBarConfig, "ProgressBarConfig.ini");
@@ -178,7 +174,6 @@ namespace AzQtComponents
         loadConfig<LineEdit::Config, LineEdit>(this, &m_data->watcher, &m_data->lineEditConfig, "LineEditConfig.ini");
         loadConfig<ComboBox::Config, ComboBox>(this, &m_data->watcher, &m_data->comboBoxConfig, "ComboBoxConfig.ini");
         loadConfig<BrowseEdit::Config, BrowseEdit>(this, &m_data->watcher, &m_data->browseEditConfig, "BrowseEditConfig.ini");
-        loadConfig<BreadCrumbs::Config, BreadCrumbs>(this, &m_data->watcher, &m_data->breadCrumbsConfig, "BreadCrumbsConfig.ini");
         loadConfig<SpinBox::Config, SpinBox>(this, &m_data->watcher, &m_data->spinBoxConfig, "SpinBoxConfig.ini");
         loadConfig<ScrollBar::Config, ScrollBar>(this, &m_data->watcher, &m_data->scrollBarConfig, "ScrollBarConfig.ini");
         loadConfig<TabWidget::Config, TabWidget>(this, &m_data->watcher, &m_data->tabWidgetConfig, "TabWidgetConfig.ini");
@@ -188,12 +183,15 @@ namespace AzQtComponents
         loadConfig<AssetFolderThumbnailView::Config, AssetFolderThumbnailView>(this, &m_data->watcher, &m_data->assetFolderThumbnailViewConfig, "AssetFolderThumbnailViewConfig.ini");
         loadConfig<TitleBar::Config, TitleBar>(this, &m_data->watcher, &m_data->titleBarConfig, "TitleBarConfig.ini");
         loadConfig<Menu::Config, Menu>(this, &m_data->watcher, &m_data->menuConfig, "MenuConfig.ini");
-        loadConfig<ToolButton::Config, ToolButton>(this, &m_data->watcher, &m_data->toolButtonConfig, "ToolButtonConfig.ini");
         loadConfig<DockBarButton::Config, DockBarButton>(this, &m_data->watcher, &m_data->dockBarButtonConfig, "DockBarButtonConfig.ini");
-        loadConfig<StatusBar::Config, StatusBar>(this, &m_data->watcher, &m_data->statusBarConfig, "StatusBarConfig.ini");
         loadConfig<DragAndDrop::Config, DragAndDrop>(this, &m_data->watcher, &m_data->dragAndDropConfig, "DragAndDropConfig.ini");
         loadConfig<ToolBar::Config, ToolBar>(this, &m_data->watcher, &m_data->toolBarConfig, "ToolBarConfig.ini");
         loadConfig<TreeView::Config, TreeView>(this, &m_data->watcher, &m_data->treeViewConfig, "TreeViewConfig.ini");
+
+        BreadCrumbs::initialize();
+        PushButton::initialize();
+        StatusBar::initialize();
+        ToolButton::initialize();
 
         VectorElement::initStaticVars(m_data->spinBoxConfig.labelSize);
         Slider::initStaticVars(m_data->sliderConfig.verticalToolTipOffset, m_data->sliderConfig.horizontalToolTipOffset);
@@ -238,14 +236,14 @@ namespace AzQtComponents
             case QStyle::CT_PushButton:
                 if (qobject_cast<const QPushButton*>(widget))
                 {
-                    return PushButton::sizeFromContents(this, type, option, size, widget, m_data->pushButtonConfig);
+                    return PushButton::sizeFromContents(this, type, option, size, widget);
                 }
                 break;
 
             case QStyle::CT_ToolButton:
                 if (qobject_cast<const QToolButton*>(widget))
                 {
-                    return ToolButton::sizeFromContents(this, type, option, size, widget, m_data->toolButtonConfig);
+                    return ToolButton::sizeFromContents(this, type, option, size, widget);
                 }
                 break;
 
@@ -326,7 +324,7 @@ namespace AzQtComponents
             {
                 if (qobject_cast<const QPushButton*>(widget))
                 {
-                    if (PushButton::drawPushButtonBevel(this, option, painter, widget, m_data->pushButtonConfig))
+                    if (PushButton::drawPushButtonBevel(this, option, painter, widget))
                     {
                         return;
                     }
@@ -576,7 +574,7 @@ namespace AzQtComponents
                 }
                 else if (qobject_cast<const QPushButton*>(widget) || qobject_cast<const QToolButton*>(widget))
                 {
-                    if (PushButton::drawPushButtonFocusRect(this, option, painter, widget, m_data->pushButtonConfig))
+                    if (PushButton::drawPushButtonFocusRect(this, option, painter, widget))
                     {
                         return;
                     }
@@ -586,7 +584,7 @@ namespace AzQtComponents
 
             case PE_PanelButtonTool:
             {
-                if (PushButton::drawPushButtonBevel(this, option, painter, widget, m_data->pushButtonConfig))
+                if (PushButton::drawPushButtonBevel(this, option, painter, widget))
                 {
                     return;
                 }
@@ -599,11 +597,11 @@ namespace AzQtComponents
                 {
                     return;
                 }
-                else if (PushButton::drawIndicatorArrowDown(this, option, painter, widget, m_data->pushButtonConfig))
+                else if (PushButton::drawIndicatorArrowDown(this, option, painter, widget))
                 {
                     return;
                 }
-                else if (ToolButton::drawIndicatorArrowDown(this, option, painter, widget, m_data->toolButtonConfig))
+                else if (ToolButton::drawIndicatorArrowDown(this, option, painter, widget))
                 {
                     return;
                 }
@@ -677,7 +675,7 @@ namespace AzQtComponents
 
             case PE_PanelStatusBar:
             {
-                if (StatusBar::drawPanelStatusBar(this, option, painter, widget, m_data->statusBarConfig))
+                if (StatusBar::drawPanelStatusBar(this, option, painter, widget))
                 {
                     return;
                 }
@@ -750,7 +748,7 @@ namespace AzQtComponents
                 {
                     return;
                 }
-                if (ToolButton::drawToolButton(this, option, painter, widget, m_data->toolButtonConfig))
+                if (ToolButton::drawToolButton(this, option, painter, widget))
                 {
                     return;
                 }
@@ -803,7 +801,7 @@ namespace AzQtComponents
             return generatedPixmap;
         }
 
-        generatedPixmap = PushButton::generatedIconPixmap(iconMode, pixmap, option, m_data->pushButtonConfig);
+        generatedPixmap = PushButton::generatedIconPixmap(iconMode, pixmap, option);
         if (!generatedPixmap.isNull())
         {
             return generatedPixmap;
@@ -911,7 +909,7 @@ namespace AzQtComponents
 
             case CC_ToolButton:
             {
-                return ToolButton::subControlRect(this, option, subControl, widget, m_data->toolButtonConfig);
+                return ToolButton::subControlRect(this, option, subControl, widget);
             }
         }
 
@@ -979,13 +977,13 @@ namespace AzQtComponents
         {
             case QStyle::PM_ButtonMargin:
             {
-                int margin = ToolButton::buttonMargin(this, option, widget, m_data->toolButtonConfig);
+                int margin = ToolButton::buttonMargin(this, option, widget);
                 if (margin != -1)
                 {
                     return margin;
                 }
 
-                margin = PushButton::buttonMargin(this, option, widget, m_data->pushButtonConfig);
+                margin = PushButton::buttonMargin(this, option, widget);
                 if (margin != -1)
                 {
                     return margin;
@@ -1022,7 +1020,7 @@ namespace AzQtComponents
 
             case QStyle::PM_ButtonIconSize:
             {
-                int size = ToolButton::buttonIconSize(this, option, widget, m_data->toolButtonConfig);
+                int size = ToolButton::buttonIconSize(this, option, widget);
                 if (size != -1)
                 {
                     return size;
@@ -1125,12 +1123,12 @@ namespace AzQtComponents
 
             case QStyle::PM_MenuButtonIndicator:
             {
-                int size = ToolButton::menuButtonIndicatorWidth(this, option, widget, m_data->toolButtonConfig);
+                int size = ToolButton::menuButtonIndicatorWidth(this, option, widget);
                 if (size != -1)
                 {
                     return size;
                 }
-                size = PushButton::menuButtonIndicatorWidth(this, option, widget, m_data->pushButtonConfig);
+                size = PushButton::menuButtonIndicatorWidth(this, option, widget);
                 if (size != -1)
                 {
                     return size;
@@ -1195,14 +1193,14 @@ namespace AzQtComponents
         {
             bool polishedAlready = false;
 
-            polishedAlready = polishedAlready || PushButton::polish(this, widget, m_data->pushButtonConfig);
+            polishedAlready = polishedAlready || PushButton::polish(this, widget);
             polishedAlready = polishedAlready || CheckBox::polish(this, widget, m_data->checkBoxConfig);
             polishedAlready = polishedAlready || RadioButton::polish(this, widget, m_data->radioButtonConfig);
             polishedAlready = polishedAlready || Slider::polish(this, widget, m_data->sliderConfig);
             polishedAlready = polishedAlready || Card::polish(this, widget, m_data->cardConfig);
             polishedAlready = polishedAlready || ColorPicker::polish(this, widget, m_data->colorPickerConfig);
             polishedAlready = polishedAlready || Eyedropper::polish(this, widget, m_data->eyedropperConfig);
-            polishedAlready = polishedAlready || BreadCrumbs::polish(this, widget, m_data->breadCrumbsConfig);
+            polishedAlready = polishedAlready || BreadCrumbs::polish(this, widget);
             polishedAlready = polishedAlready || PaletteView::polish(this, widget, m_data->paletteViewConfig);
             polishedAlready = polishedAlready || VectorElement::polish(this, widget, m_data->spinBoxConfig);
             polishedAlready = polishedAlready || SpinBox::polish(this, widget, m_data->spinBoxConfig);
@@ -1216,7 +1214,7 @@ namespace AzQtComponents
             polishedAlready = polishedAlready || TabBar::polish(this, widget, m_data->tabWidgetConfig);
             polishedAlready = polishedAlready || TabWidget::polish(this, widget, m_data->tabWidgetConfig);
             polishedAlready = polishedAlready || Menu::polish(this, widget, m_data->menuConfig);
-            polishedAlready = polishedAlready || ToolButton::polish(this, widget, m_data->toolButtonConfig);
+            polishedAlready = polishedAlready || ToolButton::polish(this, widget);
             polishedAlready = polishedAlready || StyledBusyLabel::polish(this, widget);
             polishedAlready = polishedAlready || ToolBar::polish(this, widget, m_data->toolBarConfig);
             polishedAlready = polishedAlready || TreeView::polish(this, widget, m_data->scrollBarConfig, m_data->treeViewConfig);

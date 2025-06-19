@@ -23,27 +23,15 @@ namespace AzQtComponents
     class AZ_QT_COMPONENTS_API StatusBar
     {
     public:
-
-        struct Config
-        {
-            QColor backgroundColor;
-            QColor borderColor;
-            qreal borderWidth;
-        };
-
-        /*!
-        * Loads the status bar config data from a settings object.
-        */
-        static Config loadConfig(QSettings& settings);
-
-        /*!
-        * Returns default status bar config data.
-        */
-        static Config defaultConfig();
+        static void initialize();
 
     private:
         friend class Style;
 
-        static bool drawPanelStatusBar(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
+        static bool drawPanelStatusBar(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget);
+
+        inline static QColor s_backgroundColor = QColor(QStringLiteral("#444444"));
+        inline static QColor s_borderColor = QColor(QStringLiteral("#111111"));
+        inline static qreal s_borderWidth = 2;
     };
 } // namespace AzQtComponents
