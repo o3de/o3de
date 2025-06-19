@@ -6,7 +6,7 @@
 #
 #
 
-name: Linux Build
+name: Android Build
 
 # These jobs are to be triggered by ar.yml
 
@@ -32,11 +32,14 @@ on:
       last_artifact: 
         required: false
         type: boolean
-      desktop:
-        required: false
-        type: boolean
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
+
+# Activate compiler cache
+env: 
+  O3DE_ENABLE_COMPILER_CACHE: true
+  O3DE_COMPILER_CACHE_PATH: 'C:\ProgramData\Chocolatey\bin\ccache.exe'
+  NDK_VERSION: 25.1.8937393
 
 # Note: All 3P Github Actions use the commit hash for security reasons 
 # Avoid using the tag version, which is vulnerable to supply chain attacks
@@ -47,19 +50,8 @@ jobs:
       fail-fast: false
 
     runs-on: ${{ inputs.image }}
-
+        
     steps:
-      - name: Maximize build space
-        # Resize and combine disks as LVM in order to maximize the amount of space for builds
-        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
-        with:
-          root-reserve-mb: 8000
-          swap-size-mb: 200
-          remove-dotnet: true
-          remove-haskell: true
-          remove-codeql: true
-          remove-docker-images: true
-            
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -69,24 +61,51 @@ jobs:
         # Minimal pull for profile builds, otherwise pull all
         run: |
           git lfs install
-          [[ "${{ inputs.type }}" == "profile" ]] && git lfs pull --include "*.ico,*.bmp" || git lfs pull
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+
+      - name: Setup DevDrive
+        uses: samypr100/setup-dev-drive@b9079d2711b01ed39de859c79c96484bfd80e078 # v3.4.1
+        with:
+          drive-size: 130GB
+          drive-format: NTFS
+          drive-path: "D:/dev_drive.vhdx"
+          workspace-copy: true
+          trusted-dev-drive: true
 
       - name: Setup 3p, user, and build folders
+        # Symlink the .o3de folder to the github workspace to avoid permission issues
         run: |
-          mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
+          "temp" | % {New-Item "${{ env.DEV_DRIVE }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ env.DEV_DRIVE_WORKSPACE }}\$_ -Force}
+          "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
+
+      - name: Move Page File to Workspace drive
+        # Configure the page file to the workspace drive for the duration of the run
+        run: |
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
+            -Name "PagingFiles" -Value "${{ env.DEV_DRIVE }}\temp\pagefile.sys 8192 8192"
+          echo "Page file moved to ${{ env.DEV_DRIVE }}\temp\pagefile.sys"
+
+      - name: Get drive info
+        run: |
+          Get-PSDrive
 
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
         continue-on-error: true
         if: always()
         with:
+          windows_compile_environment: msvc
           prepend_symlinks_to_path: false
           store_cache: false
           restore_cache: false
           ccache_options: |
             max_size=10G
-            cache_dir=${{ github.workspace }}/.ccache
-
+            inode_cache=true
+            temporary_dir=${{ env.DEV_DRIVE }}\temp
+            cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
+      
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
         uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
@@ -100,24 +119,25 @@ jobs:
           search_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
-                  
+
       - name: Set artifact run ID
         # Set the run ID of the artifact to be used for the download step
         id: set-artifact-run-id
         if: steps.last-run-id.outcome == 'success' && inputs.last_artifact == true
         run: |
-          runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
-          echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
+          $runId = ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+          echo "artifact_run_id=$runId" >> $env:GITHUB_OUTPUT
           echo "Using artifacts from previous run: $runId"
       
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
-        id: restore-artifact-cache
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        id: restore-artifact-cache
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.DEV_DRIVE_WORKSPACE }}
           run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
 
       - name: Extract artifact
@@ -125,69 +145,67 @@ jobs:
         id: extract-artifact
         continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
-        run: |
-          if [ -f ${{ github.workspace }}/cache.tar ]; then          
-            tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
-            rm ${{ github.workspace }}/cache.tar
-          fi
-
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
+        run: |        
+          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
+            tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+            rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+          }
+      
       - name: Setup cmake
-        # Pin the version of cmake
+        # Pin the version of cmake  
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
           cmakeVersion: "~3.30.0"
 
+      - name: Set MSBuild options
+        # Configuire VS environment variables through the developer command prompt for MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+                
       - name: Configure environment
-        # Install dependencies. The desktop packages are for tests and assetprocessor
+        # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           echo "Installing dependencies"
-          pushd ./scripts/build/build_node/Platform/Linux
-          sudo ./install-ubuntu.sh
-          popd
           echo "Getting python..."
-          ./python/get_python.sh
-          echo "Installing additional python dependencies..."
-          ./python/pip.sh install tempfile2 PyGithub
+          python\get_python.bat
 
-          # If desktop is true, install desktop and x11 packages, otherwise install base packages
-          [[ "${{ inputs.desktop }}" == "true" ]] && \
-           sudo apt-get install -qq ubuntu-desktop libreoffice- thunderbird- xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
-           sudo apt-get install -qq libevdev-dev libevdev2 -y
-          sudo apt -y autoremove --purge
-          sudo apt -y autoclean
-          sudo apt clean
-          df -h
+          echo "Installing NDK ${{ env.NDK_VERSION }}..."
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+          echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV
+          echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
+          echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
           
       - name: Build ${{ inputs.type }}
-        # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
-        uses: Wandalen/wretry.action@e68c23e6309f2871ca8ae4763e7629b9c258e1ea # v3.8.0
-        with:
-          command: |
-            export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
-            export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
-            export CXX=${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
-            export CMAKE_C_COMPILER_LAUNCHER=ccache
-            export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-            export DISPLAY=:0
-            export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-            if [ "${{ inputs.desktop }}" == "true" ]; then 
-              Xvfb :0 -screen 0 1400x1050x16 & # Start X virtual framebuffer for tests
-            fi
-            python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
-
+        # Builds with presets in ../scripts/build/Platform/Android/build_config.json
+        # Set temp folders to the workspace drive as the boot drive is slow
+        working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
+        run: |
+          $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+          $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
+          $env:TMP = "${{ env.DEV_DRIVE }}\temp"
+          scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
+          python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
+      
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
         # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
         id: compress-artifacts
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
-          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
-            .ccache \
-            .o3de/python \
-            3rdParty/packages \
-            AutomatedTesting/Cache
+          try {
+            tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
+              .ccache `
+              .o3de\python `
+              3rdParty\packages `
+              AutomatedTesting\Cache
+          } catch {
+            echo "Warning: Error during tar compression"
+          }
   
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -198,4 +216,4 @@ jobs:
           compression-level: 1
           overwrite: true
           path: |
-            ${{ github.workspace }}/cache.tar
+            ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
