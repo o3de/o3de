@@ -52,7 +52,6 @@
 #include "Unhandled/UI/UICanvasAssetTypeInfo.h"
 
 // Asset types
-#include <AzCore/Slice/SliceAsset.h>
 #include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Scriptable Ebus Registration

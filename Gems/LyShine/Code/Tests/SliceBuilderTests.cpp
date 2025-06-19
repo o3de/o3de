@@ -17,11 +17,11 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <Builders/SliceBuilder/SliceBuilderWorker.h>
+#include <Pipeline/SliceBuilder/SliceBuilderWorker.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <Builders/SliceBuilder/SliceBuilderComponent.h>
+#include <Pipeline/SliceBuilder/SliceBuilderComponent.h>
 
 #include "AzFramework/Asset/SimpleAsset.h"
 #include "Tests/AZTestShared/Utils/Utils.h"

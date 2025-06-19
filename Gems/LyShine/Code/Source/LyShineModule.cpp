@@ -53,6 +53,7 @@
 
 #if defined(LYSHINE_BUILDER)
 #include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
+#include "Pipeline/SliceBuilder/SliceBuilderComponent.h"
 #endif // LYSHINE_BUILDER
 
 #include <CryCommon/LoadScreenBus.h>
@@ -107,6 +108,7 @@ namespace LyShine
     #if defined(LYSHINE_BUILDER)
                 // Builder
                 LyShineBuilder::LyShineBuilderComponent::CreateDescriptor(),
+                SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
     #endif
     #if AZ_LOADSCREENCOMPONENT_ENABLED
                 LyShineLoadScreenComponent::CreateDescriptor(),

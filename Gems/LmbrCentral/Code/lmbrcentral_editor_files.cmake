@@ -98,10 +98,6 @@ set(FILES
     Source/Builders/LevelBuilder/LevelBuilderComponent.h
     Source/Builders/LevelBuilder/LevelBuilderWorker.cpp
     Source/Builders/LevelBuilder/LevelBuilderWorker.h
-    Source/Builders/SliceBuilder/SliceBuilderComponent.cpp
-    Source/Builders/SliceBuilder/SliceBuilderComponent.h
-    Source/Builders/SliceBuilder/SliceBuilderWorker.cpp
-    Source/Builders/SliceBuilder/SliceBuilderWorker.h
     Source/Builders/TranslationBuilder/TranslationBuilderComponent.cpp
     Source/Builders/TranslationBuilder/TranslationBuilderComponent.h
     Source/Builders/LuaBuilder/LuaBuilderComponent.h

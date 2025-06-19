@@ -8,4 +8,5 @@
 
 set(FILES
     Tests/LyShineEditorTest.cpp
+    Tests/SliceBuilderTests.cpp
 )
