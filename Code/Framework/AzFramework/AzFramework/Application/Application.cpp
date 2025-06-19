@@ -247,12 +247,19 @@ namespace AzFramework
                 using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
+
 #if defined(ENABLE_REMOTE_TOOLS)
-            IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsEditor() || appType.IsGame())
             {
-                remoteTools->RegisterToolingServiceClient(
-                    AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+                if (IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+                {
+                    remoteTools->RegisterToolingServiceClient(
+                        AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+                    remoteTools->RegisterToolingServiceClient(
+                        AzFramework::ScriptCanvasToolsKey, AzFramework::ScriptCanvasToolsName, AzFramework::ScriptCanvasToolsPort);
+                }
             }
 #endif
         }

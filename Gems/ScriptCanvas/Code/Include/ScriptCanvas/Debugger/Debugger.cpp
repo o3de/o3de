@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 
 #include "Debugger.h"
 #include "Messages/Notify.h"
@@ -14,7 +15,6 @@
 
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvas
 {
@@ -57,7 +57,7 @@ namespace ScriptCanvas
         Message::Request* ServiceComponent::FilterMessage(AzFramework::RemoteToolsMessagePointer& msg)
         {
             AzFramework::RemoteToolsEndpointInfo client =
-                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(ScriptCanvas::RemoteToolsKey, msg->GetSenderTargetId());
+                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::ScriptCanvasToolsKey, msg->GetSenderTargetId());
 
             // cull messages without a target match
             if (!m_client.m_info.IsIdentityEqualTo(client))
@@ -150,14 +150,15 @@ namespace ScriptCanvas
             AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
             if (remoteTools)
             {
-                const AzFramework::ReceivedRemoteToolsMessages* messages = remoteTools->GetReceivedMessages(ScriptCanvas::RemoteToolsKey);
+                const AzFramework::ReceivedRemoteToolsMessages* messages =
+                    remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
                 if (messages)
                 {
                     for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
                     {
                         OnReceivedMsg(msg);
                     }
-                    remoteTools->ClearReceivedMessagesForNextTick(ScriptCanvas::RemoteToolsKey);
+                    remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
                 }
             }
         }
@@ -221,10 +222,10 @@ namespace ScriptCanvas
                 {
                     this->RemoteToolsEndpointLeft(info);
                 });
-            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(ScriptCanvas::RemoteToolsKey, m_endpointLeftEventHandler);
+            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(AzFramework::ScriptCanvasToolsKey, m_endpointLeftEventHandler);
 
             AzFramework::RemoteToolsEndpointContainer targets;
-            m_remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+            m_remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
             for (auto& idAndInfo : targets)
             {
                 if (idAndInfo.second.IsSelf())

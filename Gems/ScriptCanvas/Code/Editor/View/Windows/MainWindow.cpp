@@ -33,6 +33,8 @@
 #include <QProgressDialog>
 #include <QToolButton>
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+
 #include <ScriptEvents/ScriptEventsAsset.h>
 
 #include <Editor/GraphCanvas/Components/MappingComponent.h>
@@ -359,7 +361,7 @@ namespace ScriptCanvasEditor
     // MainWindow
     ////////////////
 
-    MainWindow::MainWindow(QWidget* parent)
+    MainWindow::MainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : QMainWindow(parent, Qt::Widget | Qt::WindowMinMaxButtonsHint)
         , ui(new Ui::MainWindow)
         , m_loadingNewlySavedFile(false)
@@ -375,8 +377,11 @@ namespace ScriptCanvasEditor
         , m_systemTickActions(0)
         , m_closeCurrentGraphAfterSave(false)
         , m_styleManager(ScriptCanvasEditor::AssetEditorId, "ScriptCanvas/StyleSheet/graphcanvas_style.json")
+        , m_toolId(toolId)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
 
         VariablePaletteRequestBus::Handler::BusConnect();
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
@@ -683,6 +688,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusDisconnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
 
         if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
@@ -1031,6 +1037,14 @@ namespace ScriptCanvasEditor
 
         delete m_slotTypeSelector;
         return output;
+    }
+
+    void MainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        AZStd::string result;
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        OpenFile(result.c_str());
     }
 
     void MainWindow::OpenValidationPanel()

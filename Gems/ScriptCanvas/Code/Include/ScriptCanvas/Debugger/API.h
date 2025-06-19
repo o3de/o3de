@@ -43,7 +43,6 @@ namespace ScriptCanvas
         extern const AZ::u64 k_serviceNotificationsMsgSlotId;
         extern const AZ::u64 k_clientRequestsMsgSlotId;
 
-        AZ::Outcome<void, AZStd::string> IsTargetConnectable(const AzFramework::RemoteToolsEndpointInfo& target);
         void ReflectArguments(AZ::ReflectContext* context);
         void ReflectNotifications(AZ::ReflectContext* context);
         void ReflectRequests(AZ::ReflectContext* context);

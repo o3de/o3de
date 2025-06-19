@@ -17,10 +17,13 @@
 #include <QToolButton>
 #include <QWidget>
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Math/Crc.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -228,6 +231,7 @@ namespace ScriptCanvasEditor
         , private VariablePaletteRequestBus::Handler
         , private ScriptCanvas::BatchOperationNotificationBus::Handler
         , private AssetGraphSceneBus::Handler
+        , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
 #if SCRIPTCANVAS_EDITOR
         //, public IEditorNotifyListener
 #endif
@@ -256,7 +260,7 @@ namespace ScriptCanvasEditor
 
     public:
 
-        explicit MainWindow(QWidget* parent = nullptr);
+        MainWindow(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MainWindow() override;
 
     private:
@@ -282,6 +286,10 @@ namespace ScriptCanvasEditor
         VariablePaletteRequests::VariableConfigurationOutput ShowVariableConfigurationWidget(
             const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition) override;
         ////
+
+        // AtomToolsDocumentNotificationBus
+        void OnDocumentOpened(const AZ::Uuid& documentId) override;
+        // ~AtomToolsDocumentNotificationBus
 
         // GraphCanvas::AssetEditorRequestBus
         void OnSelectionManipulationBegin() override;
@@ -769,5 +777,7 @@ namespace ScriptCanvasEditor
         void MarkRecentSave(const SourceHandle& handle);
         AZStd::recursive_mutex m_mutex;
         AZStd::unordered_map <AZStd::string, AZStd::chrono::steady_clock::time_point> m_saves;
+
+        const AZ::Crc32 m_toolId = {};
     };
 }

@@ -31,7 +31,7 @@ namespace ScriptCanvasEditor
 
         TargetManagerModel();
 
-        // QAbstarctItemModel
+        // QAbstractItemModel
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         ////
@@ -43,7 +43,6 @@ namespace ScriptCanvasEditor
         int GetRowForTarget(AZ::u32 targetId);
 
     private:
-
         void ScrapeTargetInfo();
 
         AZStd::vector<AzFramework::RemoteToolsEndpointInfo> m_targetInfo;
@@ -76,7 +75,6 @@ namespace ScriptCanvasEditor
     
     class LiveLoggingWindowSession
         : public LoggingWindowSession
-        , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public ScriptCanvas::Debugger::ServiceNotificationsBus::Handler
     {
         Q_OBJECT
@@ -94,11 +92,6 @@ namespace ScriptCanvasEditor
         void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
         ////
 
-        // AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        void OnStartPlayInEditorBegin() override;
-        void OnStopPlayInEditor() override;
-        ////
-
         // ScriptCavnas::Debugger::ServiceNotificationsBus
         void Connected(ScriptCanvas::Debugger::Target& target) override;
         ////
@@ -108,9 +101,9 @@ namespace ScriptCanvasEditor
         void OnCaptureButtonPressed() override;
         void OnPlaybackButtonPressed() override;
         void OnOptionsButtonPressed() override;
-    
+
         void OnTargetChanged(int currentIndex) override;
-        
+
     private:
 
         void OnAutoCaptureToggled(bool checked);
@@ -125,7 +118,6 @@ namespace ScriptCanvasEditor
 
         TargetManagerModel* m_targetManagerModel;
 
-        bool m_startedSession;
         bool m_encodeStaticEntities;
         
         bool m_isCapturing;
