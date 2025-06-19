@@ -17,12 +17,12 @@ namespace AZ
             return aznew Buffer();
         }
 
-        const MemoryView& Buffer::GetMemoryView() const
+        const BufferMemoryView& Buffer::GetMemoryView() const
         {
             return m_memoryView;
         }
 
-        MemoryView& Buffer::GetMemoryView()
+        BufferMemoryView& Buffer::GetMemoryView()
         {
             return m_memoryView;
         }

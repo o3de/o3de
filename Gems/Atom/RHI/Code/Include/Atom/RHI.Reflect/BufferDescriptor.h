@@ -101,6 +101,13 @@ namespace AZ::RHI
 
         /// The mask of queue classes supporting shared access of this resource.
         HardwareQueueClassMask m_sharedQueueMask = HardwareQueueClassMask::All;
+
+        /// Settings for enabling cross device buffers
+        /// If set the Buffer will only be allocated on the owner device
+        /// On all other devices the Buffer from the owner device will be exported and the import again on their own devices
+        /// Check DeviceFeatures::m_crossDeviceDeviceMemory and DeviceFeatures::m_crossDeviceHostMemory before setting the owner device
+        /// All devices the buffer will be created for must have the respective device feature
+        AZStd::optional<int> m_ownerDeviceIndex;
     };
 
     // Bind enums with uuids. Required for named enum support.

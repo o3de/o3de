@@ -28,7 +28,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode DeviceFence::Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice)
+    ResultCode DeviceFence::Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice)
     {
         if (Validation::IsEnabled())
         {
@@ -39,7 +39,32 @@ namespace AZ::RHI
             }
         }
 
-        const ResultCode resultCode = InitInternal(device, initialState, usedForWaitingOnDevice);
+        const ResultCode resultCode = InitInternal(device, initialState, usedForWaitingOnDevice, usedForCrossDevice);
+
+        if (resultCode == ResultCode::Success)
+        {
+            DeviceObject::Init(device);
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to create a fence");
+        }
+
+        return resultCode;
+    }
+
+    ResultCode DeviceFence::InitCrossDevice(Device& device, RHI::Ptr<DeviceFence> originalDeviceFence)
+    {
+        if (Validation::IsEnabled())
+        {
+            if (IsInitialized())
+            {
+                AZ_Error("DeviceFence", false, "DeviceFence is already initialized!");
+                return ResultCode::InvalidOperation;
+            }
+        }
+
+        const ResultCode resultCode = InitCrossDeviceInternal(device, originalDeviceFence);
 
         if (resultCode == ResultCode::Success)
         {

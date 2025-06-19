@@ -33,8 +33,8 @@ namespace AZ
             static RHI::Ptr<Buffer> Create();
 
             // Returns the memory view allocated to this buffer.
-            const MemoryView& GetMemoryView() const;
-            MemoryView& GetMemoryView();
+            const BufferMemoryView& GetMemoryView() const;
+            BufferMemoryView& GetMemoryView();
 
             // The initial state for the graph compiler to use when compiling the resource transition chain.
             D3D12_RESOURCE_STATES m_initialAttachmentState = D3D12_RESOURCE_STATE_COMMON;

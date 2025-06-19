@@ -10,4 +10,5 @@ set(FILES
     RHI/WSISurface_Linux.cpp
     Vulkan_Traits_Linux.h
     Vulkan_Traits_Platform.h
+    Vulkan_Fence_Platform.h
 )

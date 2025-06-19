@@ -59,7 +59,11 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
+        AZ::RHI::ResultCode InitBufferInternal(
+            AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor, bool usedForCrossDevice) override;
+
+        AZ::RHI::ResultCode InitBufferCrossDeviceInternal(
+            AZ::RHI::DeviceBuffer& bufferBase, AZ::RHI::DeviceBuffer& originalDeviceBuffer) override;
 
         void ShutdownResourceInternal(AZ::RHI::DeviceResource&) override;
 

@@ -79,14 +79,15 @@ namespace AZ
 
 #ifdef USE_AMD_D3D12MA
             MemoryView CreateD3d12maBuffer(
-                const RHI::BufferDescriptor& bufferDescriptor,
-                D3D12_RESOURCE_STATES initialState,
-                D3D12_HEAP_TYPE heapType);
+                const RHI::BufferDescriptor& bufferDescriptor, D3D12_RESOURCE_STATES initialState, D3D12_HEAP_TYPE heapType);
 #endif
             MemoryView CreateBufferCommitted(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
                 D3D12_HEAP_TYPE heapType);
+
+            MemoryView CreateCrossDeviceCapableBuffer(
+                const RHI::BufferDescriptor& bufferDescriptor, D3D12_RESOURCE_STATES initialState, D3D12_HEAP_TYPE heapType);
 
             MemoryView CreateImageCommitted(
                 const RHI::ImageDescriptor& imageDescriptor,
@@ -98,7 +99,8 @@ namespace AZ
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
                 ID3D12Heap* heap,
-                size_t heapByteOffset);
+                size_t heapByteOffset,
+                bool importedFromCrossDevice);
 
             MemoryView CreateImagePlaced(
                 const RHI::ImageDescriptor& imageDescriptor,

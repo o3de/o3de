@@ -10,4 +10,5 @@ set(FILES
     RHI/WSISurface_Android.cpp
     Vulkan_Traits_Android.h
     Vulkan_Traits_Platform.h
+    Vulkan_Fence_Platform.h
 )

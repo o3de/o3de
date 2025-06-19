@@ -44,7 +44,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////
             // FenceBase
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForCrossDevice) override;
+            RHI::ResultCode InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<Fence> originalDeviceFence) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;

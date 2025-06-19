@@ -70,7 +70,7 @@ namespace AZ
                 uploadRequest.m_buffer = buffer;
                 uploadRequest.m_memory              = buffer->GetMemoryView().GetMemory();
                 uploadRequest.m_memoryByteOffset    = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
-                uploadRequest.m_sourceMemory        = stagingMemory;
+                uploadRequest.m_sourceMemory = AZStd::move(stagingMemory);
 
                 auto address = uploadRequest.m_sourceMemory.Map(RHI::HostMemoryAccess::Write);
 
@@ -249,7 +249,8 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(
+            RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor, bool usedForCrossDevice)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -259,7 +260,7 @@ namespace AZ
 
             size_t overrideAlignment = useBufferAlignment? bufferDescriptor.m_alignment : 0;
 
-            BufferMemoryView memoryView = m_allocator.Allocate(bufferDescriptor.m_byteCount, overrideAlignment);
+            BufferMemoryView memoryView = m_allocator.Allocate(bufferDescriptor.m_byteCount, overrideAlignment, usedForCrossDevice);
             if (memoryView.IsValid())
             {
                 // Unique memoryView can inherit the name of the buffer.
@@ -271,6 +272,78 @@ namespace AZ
                 Buffer& buffer = static_cast<Buffer&>(bufferBase);
                 buffer.m_memoryView = AZStd::move(memoryView);
                 buffer.m_initialAttachmentState = ConvertInitialResourceState(GetDescriptor().m_heapMemoryLevel, GetDescriptor().m_hostMemoryAccess);
+                return RHI::ResultCode::Success;
+            }
+            return RHI::ResultCode::OutOfMemory;
+        }
+
+        RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
+        {
+            auto& originalDX12Buffer = static_cast<Buffer&>(originalDeviceBuffer);
+            auto& originalMemoryView = originalDX12Buffer.GetMemoryView();
+            auto& originalDx12Device = static_cast<Device&>(originalDeviceBuffer.GetDevice());
+            MemoryView memoryView;
+            HANDLE heapHandle = nullptr;
+            auto& dx12Device = static_cast<Device&>(GetDevice());
+            if (originalMemoryView.GetHeap())
+            {
+                if (!AssertSuccess(originalDx12Device.GetDevice()->CreateSharedHandle(
+                        originalMemoryView.GetHeap(), nullptr, GENERIC_ALL, nullptr, &heapHandle)))
+                {
+                    return RHI::ResultCode::Fail;
+                }
+                Microsoft::WRL::ComPtr<ID3D12Heap> heap;
+                if (!AssertSuccess(dx12Device.GetDevice()->OpenSharedHandle(heapHandle, IID_PPV_ARGS(&heap))))
+                {
+                    AZ_Error("Buffer", false, "Failed to create Buffer from handle.");
+                    CloseHandle(heapHandle);
+                    return RHI::ResultCode::Fail;
+                }
+
+                CloseHandle(heapHandle);
+
+                Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+                D3D12_RESOURCE_STATES initialResourceState =
+                    ConvertInitialResourceState(GetDescriptor().m_heapMemoryLevel, GetDescriptor().m_hostMemoryAccess);
+                memoryView = dx12Device.CreateBufferPlaced(originalDeviceBuffer.GetDescriptor(), initialResourceState, heap.Get(), 0, true);
+            }
+            else
+            {
+                if (!AssertSuccess(originalDx12Device.GetDevice()->CreateSharedHandle(
+                        originalMemoryView.GetMemory(), nullptr, GENERIC_ALL, nullptr, &heapHandle)))
+                {
+                    return RHI::ResultCode::Fail;
+                }
+                Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+                if (!AssertSuccess(dx12Device.GetDevice()->OpenSharedHandle(heapHandle, IID_PPV_ARGS(&resource))))
+                {
+                    AZ_Error("Buffer", false, "Failed to create Buffer from handle.");
+                    CloseHandle(heapHandle);
+                    return RHI::ResultCode::Fail;
+                }
+
+                CloseHandle(heapHandle);
+
+                memoryView = MemoryView(
+                    resource.Get(),
+                    originalMemoryView.GetOffset(),
+                    originalMemoryView.GetSize(),
+                    originalMemoryView.GetAlignment(),
+                    MemoryViewType::Buffer);
+            }
+            auto bufferMemoryView = BufferMemoryView(AZStd::move(memoryView), originalMemoryView.GetType());
+            if (bufferMemoryView.IsValid())
+            {
+                // Unique memoryView can inherit the name of the buffer.
+                if (bufferMemoryView.GetType() == BufferMemoryType::Unique && !bufferBase.GetName().IsEmpty())
+                {
+                    bufferMemoryView.SetName(bufferBase.GetName().GetStringView());
+                }
+
+                Buffer& buffer = static_cast<Buffer&>(bufferBase);
+                buffer.m_memoryView = AZStd::move(bufferMemoryView);
+                buffer.m_initialAttachmentState =
+                    ConvertInitialResourceState(GetDescriptor().m_heapMemoryLevel, GetDescriptor().m_hostMemoryAccess);
                 return RHI::ResultCode::Success;
             }
             return RHI::ResultCode::OutOfMemory;

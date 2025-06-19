@@ -39,6 +39,8 @@ namespace AZ
 
             FenceBase& GetFenceBase() const;
 
+            bool IsCrossDevice() const;
+
         private:
             Fence() = default;
 
@@ -49,7 +51,9 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
+            RHI::ResultCode InitInternal(
+                RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice) override;
+            RHI::ResultCode InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<RHI::DeviceFence> originalDeviceFence) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;
@@ -59,6 +63,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////
 
             RHI::Ptr<FenceBase> m_fenceImpl;
+
+            bool m_isCrossDevice = false;
         };
     } // namespace Vulkan
 } // namespace AZ

@@ -43,7 +43,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////
             // Interface
-            virtual RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState);
+            virtual RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForCrossDevice);
+            virtual RHI::ResultCode InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<Fence> originalDeviceFence) = 0;
             virtual void ShutdownInternal() = 0;
             virtual void Shutdown();
             virtual void SignalOnCpuInternal() = 0;

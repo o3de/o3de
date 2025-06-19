@@ -68,6 +68,8 @@ namespace AZ
             LoadStoreOpNone,
             SubpassMergeFeedback,
             CalibratedTimestamps,
+            ExternalMemoryHost,
+            ExternalSemaphore,
             Count
         };
 
@@ -112,6 +114,7 @@ namespace AZ
             const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
             const VkPhysicalDeviceTimelineSemaphoreFeatures& GetPhysicalDeviceTimelineSemaphoreFeatures() const;
             const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& GetPhysicalSubpassMergeFeedbackFeatures() const;
+            const VkPhysicalDeviceExternalMemoryHostPropertiesEXT& GetExternalMemoryHostProperties() const;
 
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
@@ -161,6 +164,7 @@ namespace AZ
             VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
             VkPhysicalDeviceTimelineSemaphoreFeatures m_timelineSemaphoreFeatures{};
             VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT m_subpassMergeFeedbackFeatures{};
+            VkPhysicalDeviceExternalMemoryHostPropertiesEXT m_externalHostMemoryFeatures{};
             uint32_t m_vulkanVersion = 0;
         };
     }

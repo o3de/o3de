@@ -31,7 +31,13 @@ namespace AZ
             RHI::ResultCode InitInternal(
                 [[maybe_unused]] RHI::Device& device,
                 [[maybe_unused]] RHI::FenceState initialState,
-                [[maybe_unused]] bool usedForWaitingOnDevice) override
+                [[maybe_unused]] bool usedForWaitingOnDevice,
+                [[maybe_unused]] bool usedForCrossDevice) override
+            {
+                return RHI::ResultCode::Success;
+            }
+            RHI::ResultCode InitCrossDeviceInternal(
+                [[maybe_unused]] RHI::Device& device, [[maybe_unused]] RHI::Ptr<RHI::DeviceFence> originalDeviceFence) override
             {
                 return RHI::ResultCode::Success;
             }

@@ -150,15 +150,28 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
+        auto ownerDeviceIndex = initRequest.m_descriptor.m_ownerDeviceIndex;
+        if (ownerDeviceIndex)
+        {
+            initRequest.m_buffer->m_deviceObjects[ownerDeviceIndex.value()] = Factory::Get().CreateBuffer();
+            auto bufferInitRequest = DeviceBufferInitRequest(
+                *initRequest.m_buffer->GetDeviceBuffer(ownerDeviceIndex.value()), initRequest.m_descriptor, initRequest.m_initialData);
+            auto resultCode = GetDeviceBufferPool(ownerDeviceIndex.value())->InitBuffer(bufferInitRequest);
+            if (resultCode != ResultCode::Success)
+            {
+                return resultCode;
+            }
+        }
+
         ResultCode resultCode = InitBuffer(
             initRequest.m_buffer,
             initRequest.m_descriptor,
-            [this, &initRequest]()
+            [this, &initRequest, &ownerDeviceIndex]()
             {
                 initRequest.m_buffer->Init(GetDeviceMask() & initRequest.m_deviceMask);
 
                 return IterateObjects<DeviceBufferPool>(
-                    [&initRequest](auto deviceIndex, auto deviceBufferPool)
+                    [&initRequest, &ownerDeviceIndex](auto deviceIndex, auto deviceBufferPool) -> RHI::ResultCode
                     {
                         if (CheckBit(initRequest.m_buffer->GetDeviceMask(), deviceIndex))
                         {
@@ -167,9 +180,23 @@ namespace AZ::RHI
                                 initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
                             }
 
-                            DeviceBufferInitRequest bufferInitRequest(
-                                *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
-                            return deviceBufferPool->InitBuffer(bufferInitRequest);
+                            if (ownerDeviceIndex)
+                            {
+                                if (deviceIndex != ownerDeviceIndex.value())
+                                {
+                                    return deviceBufferPool->InitBufferCrossDevice(
+                                        *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
+                                        *initRequest.m_buffer->GetDeviceBuffer(ownerDeviceIndex.value()));
+                                }
+                            }
+                            else
+                            {
+                                DeviceBufferInitRequest bufferInitRequest(
+                                    *initRequest.m_buffer->GetDeviceBuffer(deviceIndex),
+                                    initRequest.m_descriptor,
+                                    initRequest.m_initialData);
+                                return deviceBufferPool->InitBuffer(bufferInitRequest);
+                            }
                         }
                         else
                         {

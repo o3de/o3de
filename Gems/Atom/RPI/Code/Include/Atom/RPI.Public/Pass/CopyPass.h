@@ -66,6 +66,29 @@ namespace AZ
             // Retrieves the copy item type based on the input and output attachment type
             RHI::CopyItemType GetCopyItemType();
 
+            // Cross device copy strategy
+            // The strategy chosen based on device capabilities
+            enum class CrossDeviceStrategy
+            {
+                // No cross device resources are used
+                // The synchronization is done through a CPU callback, which performs a memcpy between mapped host buffers
+                // The semaphore of the destination device is signalled from the host
+                IntermediateHost,
+                // Only cross device host memory is used, but no cross device semaphores
+                // The synchronization is done through a CPU callback
+                // The semaphore of the destination device is signalled from the host
+                IntermediateHostCrossDeviceMemory,
+                // Cross device fences and cross device host memory is used
+                // No CPU callback is involved
+                CrossDeviceDeviceMemory,
+                // Cross device fences and cross device device memory is used
+                // No CPU callback is involved
+                CrossDeviceHostMemory
+            };
+            CrossDeviceStrategy GetCrossDeviceStrategy();
+            bool UseCrossDeviceFence();
+            bool UseCrossDeviceMemory();
+
             // The copy item submitted to the command list
             RHI::CopyItem m_copyItemSameDevice;
 
@@ -81,7 +104,7 @@ namespace AZ
             enum class CopyMode
             {
                 SameDevice,
-                DifferentDevicesIntermediateHost,
+                DifferentDevices,
                 Invalid
             };
             CopyMode m_copyMode = CopyMode::Invalid;
