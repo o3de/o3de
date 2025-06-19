@@ -298,7 +298,12 @@ class AndroidGradlePluginRequirements(object):
 # Note: This map needs to be updated in conjunction with newer versions of the Android Gradle plugins.
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-
+    '8.10': AndroidGradlePluginRequirements(agp_version='8.10',
+                                           gradle_version='8.11',
+                                           sdk_build_tools_version='35.0.0',
+                                           jdk_version='17',
+                                           release_note_url='https://developer.android.com/build/releases/gradle-plugin'),
+    
     '8.1': AndroidGradlePluginRequirements(agp_version='8.1',
                                            gradle_version='8.0',
                                            sdk_build_tools_version='33.0.1',
