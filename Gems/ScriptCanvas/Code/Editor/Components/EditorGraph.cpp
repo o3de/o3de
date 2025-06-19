@@ -1142,8 +1142,132 @@ namespace ScriptCanvasEditor
         return scConnected;
     }
 
+    void EditorGraph::UpdateImplicitRoot(const ScriptCanvas::Slot* slot)
+    {
+        // Count the number of non-reference connections to the data input slots of this node
+        AZStd::vector <const ScriptCanvas::Slot*> dataInSlots = slot->GetNode()->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataIn());
+        int numConnections = 0;
+        for (const ScriptCanvas::Slot* dataInSlot : dataInSlots)
+        {
+            if (dataInSlot->IsConnected() && !dataInSlot->IsVariableReference())
+            {
+                numConnections++;
+            }
+        }
+
+        // If there are no connections, disconnect all of the implicit slot's connections so that we can update it accordingly
+        if (numConnections == 0)
+        {
+            auto connections = slot->GetNode()->GetConnectedNodes(*slot);
+            for (auto connection : connections)
+            {
+                DisconnectByEndpoint(connection.second->GetEndpoint(), slot->GetEndpoint());
+            }
+            ScriptCanvas::Slot* modSlot = slot->GetNode()->GetSlot(slot->GetId());
+            modSlot->SetHasRootConnection(false);
+        }
+        // If there are existing connections, make sure to disconnect any root connections if they exist and then skip making a root connection
+        else
+        {
+            if (slot->GetHasRootConnection())
+            {
+                auto connections = slot->GetNode()->GetConnectedNodes(*slot);
+                for (auto connection : connections)
+                {
+                    DisconnectByEndpoint(connection.second->GetEndpoint(), slot->GetEndpoint());
+                }
+                ScriptCanvas::Slot* modSlot = slot->GetNode()->GetSlot(slot->GetId());
+                modSlot->SetHasRootConnection(false);
+            }
+            return;
+        }
+        
+        // Find the next connected node from the output data slot that does not create implicit connections
+        const ScriptCanvas::Node* currentNode = slot->GetNode();
+        const ScriptCanvas::Slot* currentDataInputSlot = currentNode->GetCorrespondingDataSlots(slot)[0];
+        const ScriptCanvas::Slot* currentExecutionInputSlot = nullptr;
+        do
+        {
+            AZStd::vector<const ScriptCanvas::Slot*> dataOutSlots = currentNode->GetOppositeSlots(currentDataInputSlot);
+            if (!dataOutSlots.empty())
+            {
+                ScriptCanvas::EndpointsResolved connectedNodes = currentNode->GetConnectedNodes(*dataOutSlots[0]);
+                if (!connectedNodes.empty())
+                {
+                    currentDataInputSlot = connectedNodes[0].second;
+                    currentNode = currentDataInputSlot->GetNode();
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+            currentExecutionInputSlot = currentNode->GetCorrespondingExecutionSlot(currentDataInputSlot);
+
+        } while (currentExecutionInputSlot->CreatesImplicitConnections());
+
+        // Now we begin checking each connected node from the input execution slot backwards until we hit a node with no input execution slot, or a fork in the execution path
+        ScriptCanvas::EndpointsResolved connectedNodes = currentNode->GetConnectedNodes(*currentExecutionInputSlot);
+        const ScriptCanvas::Slot* currentExecutionOutputSlot = nullptr;
+
+        // We need some special handling for an immediate fork in the path for compact nodes to work when connected to a node right after the path splits
+        if (connectedNodes.size() > 1)
+        {
+            for (auto connectedNode : connectedNodes)
+            {
+                ConnectByEndpoint(connectedNode.second->GetEndpoint(), slot->GetEndpoint());
+                ScriptCanvas::Slot* modSlot = slot->GetNode()->GetSlot(slot->GetId());
+                modSlot->SetHasRootConnection(true);
+            }
+            return;
+        }
+
+        while (connectedNodes.size() == 1)
+        {
+            currentNode = connectedNodes[0].first;
+            currentExecutionOutputSlot = connectedNodes[0].second;
+            AZStd::vector<const ScriptCanvas::Slot*> currentExecutionInputSlots =
+                currentNode->GetOppositeSlots(currentExecutionOutputSlot);
+            if (currentExecutionInputSlots.size() == 1)
+            {
+                currentExecutionInputSlot = currentExecutionInputSlots[0];
+                connectedNodes = currentNode->GetConnectedNodes(*currentExecutionInputSlot);
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        // Now we should have an appropriate execution output slot to connect to our node
+        if (currentExecutionOutputSlot)
+        {
+            ConnectByEndpoint(currentExecutionOutputSlot->GetEndpoint(), slot->GetEndpoint());
+            ScriptCanvas::Slot* modSlot = slot->GetNode()->GetSlot(slot->GetId());
+            modSlot->SetHasRootConnection(true);
+        }
+    }
+
     void EditorGraph::UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint)
     {
+        // Go through each slot in each node to make sure that implicit connections each have their root connection updated
+        for (auto nodeMappingPair : GetNodeMapping())
+        {
+            AZStd::vector<const ScriptCanvas::Slot*> slotsInNode = nodeMappingPair.second->
+                GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn());
+            for (const ScriptCanvas::Slot* slot : slotsInNode)
+            {
+                if (slot->CreatesImplicitConnections())
+                {
+                    UpdateImplicitRoot(slot);
+                }
+            }
+        }
+        
         auto sourceSlot = FindSlot(sourceEndpoint);
         auto targetSlot = FindSlot(targetEndpoint);
         if (!sourceSlot || !targetSlot)
