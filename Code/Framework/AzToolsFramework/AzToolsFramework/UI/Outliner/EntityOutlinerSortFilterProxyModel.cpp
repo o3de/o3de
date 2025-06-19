@@ -13,7 +13,7 @@
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 
-#include "EntityOutlinerListModel.hxx"
+#include "EntityOutlinerListModelFromPrefab.hxx"
 
 namespace AzToolsFramework
 {
@@ -36,7 +36,7 @@ namespace AzToolsFramework
     {
         QSortFilterProxyModel::setSourceModel(sourceModel);
 
-        m_listModel = qobject_cast<EntityOutlinerListModel*>(sourceModel);
+        m_listModel = qobject_cast<EntityOutlinerListModelFromPrefab*>(sourceModel);
         AZ_Assert(m_listModel != nullptr, "EntityOutlinerContainerProxyModel requires an EntityOutlinerListModel as its source .");
     }
 
