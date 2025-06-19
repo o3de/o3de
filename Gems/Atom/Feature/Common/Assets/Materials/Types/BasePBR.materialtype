@@ -45,6 +45,7 @@
         ]
     },
     "lightingModel": "Base",
+    "materialShaderDefines": "BasePBR_Defines.azsli",
     "materialShaderCode": "BasePBR.azsli",
     "functors": [
     ],

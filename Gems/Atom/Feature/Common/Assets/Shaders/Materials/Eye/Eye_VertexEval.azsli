@@ -15,9 +15,6 @@
 #define EvaluateVertexGeometry EvaluateVertexGeometry_Eye
 #endif
 
-#include <Atom/RPI/TangentSpace.azsli>
-#include <Atom/Features/InstancedTransforms.azsli>
-
 VsOutput EvaluateVertexGeometry_Eye(
     const MaterialParameters params,
     float3 position,
@@ -26,28 +23,42 @@ VsOutput EvaluateVertexGeometry_Eye(
     float3 bitangent,
     float2 uv0,
     float2 uv1,
-    uint instanceId)
+    VsSystemValues SV)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+#if MATERIAL_USES_VERTEX_POSITION
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
-    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
+#if MATERIAL_USES_VERTEX_POSITIONWS
+    float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+    output.position = mul(viewProjectionMatrix, worldPosition);
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+#endif // MATERIAL_USES_VERTEX_POSITION
+
+#if MATERIAL_USES_VERTEX_UV
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;
+#endif // MATERIAL_USES_VERTEX_UV
 
+#if MATERIAL_USES_VERTEX_NORMAL
     output.normal = normal;
+#endif // MATERIAL_USES_VERTEX_NORMAL
+
+#if MATERIAL_USES_VERTEX_TANGENT
     output.tangent = tangent;
+#endif // MATERIAL_USES_VERTEX_TANGENT
+    
+#if MATERIAL_USES_VERTEX_BITANGENT
     // Bitangent is temporarily added back to fix the eye material screenshot test.
     output.bitangent = bitangent;
+#endif // MATERIAL_USES_VERTEX_BITANGENT
 
+#if MATERIAL_USES_VERTEX_LOCALPOSITION
     output.localPosition = position.xyz;
-    
-    // Set the instanceId on the output so the pixel shader can use it
-    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
-    output.m_instanceId = instanceId;
+#endif // MATERIAL_USES_VERTEX_LOCALPOSITION
 
     return output;
 }
@@ -64,8 +75,10 @@ VsOutput EvaluateVertexGeometry_Eye(
     float2 uv1,
     uint instanceId)
 {
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
     const float3 bitangent = float3(0, 0, 0);
-    return EvaluateVertexGeometry_Eye(params, position, normal, tangent, bitangent, uv0, uv1, instanceId);
+    return EvaluateVertexGeometry_Eye(params, position, normal, tangent, bitangent, uv0, uv1, SV);
 }
 
 VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV, const MaterialParameters params)
@@ -78,5 +91,5 @@ VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV, const Materia
         IN.bitangent,
         IN.uv0,
         IN.uv1,
-        SV.m_instanceId);
+        SV);
 }

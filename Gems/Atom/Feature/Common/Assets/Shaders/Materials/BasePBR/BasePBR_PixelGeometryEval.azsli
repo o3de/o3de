@@ -16,9 +16,9 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
+    VsSystemValues SV,
     const MaterialParameters params,
     float3 positionWS,
     real3 normalWS,
@@ -39,7 +39,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
-            EvaluateTangentFrame(geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
+            EvaluateTangentFrame(SV, geoData.vertexNormal, positionWS, isFrontFace, uvs[i], i,
                 tangentWS, bitangentWS, geoData.tangents[i], geoData.bitangents[i]);
         }
     }
@@ -47,15 +47,16 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace, const MaterialParameters params)
+PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
 {
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
 
     real3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_BasePBR(
+        SV,
         params,
         IN.worldPosition,
         normalWS,

@@ -35,6 +35,7 @@
     AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, float(params.m_parallax_pdo_shadowFactor));
 
     GetParallaxInput(
+        params,
         GetMaterialTexture(params.m_heightmap), GetMaterialTextureSampler(), normal, tangents[params.m_parallaxUvIndex], bitangents[params.m_parallaxUvIndex],
         heightmapScale, heightmapOffset,
         objectToWorld, uvMatrix, uvMatrixInverse,

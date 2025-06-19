@@ -19,11 +19,11 @@
 #if ENABLE_PARALLAX
 #include "../MaterialFunctions/ParallaxDepth.azsli"
 #endif
-#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_StandardPBR(
+    VsSystemValues SV,
     const MaterialParameters params,
     inout float4 positionSV,
     float3 positionWS,
@@ -34,7 +34,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     bool isFrontFace,
     real4x4 objectToWorld)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(SV, params, positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // ------- Parallax -------
 
@@ -51,15 +51,16 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace, const MaterialParameters params)
+PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
 {
-    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
-    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(SV));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(SV));
 
     real3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_StandardPBR(
+        SV,
         params,
         IN.position,
         IN.worldPosition,

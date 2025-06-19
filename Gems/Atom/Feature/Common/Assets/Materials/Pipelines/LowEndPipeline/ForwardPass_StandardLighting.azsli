@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 
 // TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
@@ -21,13 +24,26 @@
 #define ENABLE_SHADER_DEBUGGING 1
 #define ENABLE_CLEAR_COAT 1
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 // TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
 // called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspicious like

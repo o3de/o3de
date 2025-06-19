@@ -107,6 +107,7 @@
         ]
     },
     "lightingModel": "Standard",
+    "materialShaderDefines": "Materials/Types/StandardPBR_Defines.azsli",
     "materialShaderCode": "Materials/Types/StandardPBR.azsli",
     "functors": [
     ],

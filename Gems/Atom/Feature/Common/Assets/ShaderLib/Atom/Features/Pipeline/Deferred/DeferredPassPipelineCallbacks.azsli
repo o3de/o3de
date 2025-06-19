@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef VsSystemValues
+#error "VsSystemValues needs to be declared"
+#endif
+
+// ViewSrg and SceneSrg need to be defined fully before this file. We don't really have an ObjectSrg nor a DrawSrg
+
+#if PIPELINE_HAS_OBJECT_SRG
+#error "Deferred Pipelines don't support an ObjectSrg"
+#endif
+
+#if PIPELINE_HAS_DRAW_SRG
+#error "Deferred Pipelines don't support a DrawSrg"
+#endif
+
+#include <Atom/Features/GoboTexture.azsli>
+#include <Atom/Features/LightingChannels.azsli>
+#include <Atom/Features/StreamTangentBitmask.azsli>
+#include <Atom/Features/SampleBrdfMap.azsli>
+
+option bool o_meshInstancingIsEnabled = false;
+rootconstant uint m_rootConstantInstanceDataOffset;
+
+float4x4 GetObjectToWorldMatrix(VsSystemValues SV)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldMatrix(SV.m_objectId);
+    }
+}
+
+float3x3 GetObjectToWorldMatrixInverseTranspose(VsSystemValues SV)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(SV.m_objectId);
+    }
+}
+
+float4x4 GetViewProjectionMatrix(VsSystemValues SV)
+{
+    return ViewSrg::m_viewProjectionMatrix;
+}
+
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+float4x4 GetObjectToWorldMatrixPrev(VsSystemValues SV)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + SV.m_instanceId]);
+    }
+    else
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(SV.m_objectId);
+    }
+}
+
+float4x4 GetViewProjectionPrevMatrix(VsSystemValues SV)
+{
+    return ViewSrg::m_viewProjectionPrevMatrix;
+}
+#endif // MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+
+
+
+
