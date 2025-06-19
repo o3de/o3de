@@ -18,6 +18,7 @@
 #include "UiCanvasComponent.h"
 #include "LyShineDebug.h"
 #include "UiElementComponent.h"
+#include "UiElementGroupComponent.h"
 #include "UiTransform2dComponent.h"
 #include "UiImageComponent.h"
 #include "UiImageSequenceComponent.h"
@@ -159,6 +160,7 @@ namespace LyShine
         // These are registered in the order we want them to appear in the Add Component menu
         RegisterComponentTypeForMenuOrdering(UiCanvasComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiElementComponent::RTTI_Type());
+        RegisterComponentTypeForMenuOrdering(UiElementGroupComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiTransform2dComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiImageComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiImageSequenceComponent::RTTI_Type());

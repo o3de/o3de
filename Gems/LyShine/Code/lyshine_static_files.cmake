@@ -38,6 +38,7 @@ set(FILES
     Include/LyShine/Bus/UiEditorCanvasBus.h
     Include/LyShine/Bus/UiEditorChangeNotificationBus.h
     Include/LyShine/Bus/UiElementBus.h
+    Include/LyShine/Bus/UiElementGroupBus.h
     Include/LyShine/Bus/UiEntityContextBus.h
     Include/LyShine/Bus/UiFaderBus.h
     Include/LyShine/Bus/UiFlipbookAnimationBus.h
@@ -140,6 +141,8 @@ set(FILES
     Source/UiDynamicScrollBoxComponent.h
     Source/UiElementComponent.cpp
     Source/UiElementComponent.h
+    Source/UiElementGroupComponent.cpp
+    Source/UiElementGroupComponent.h
     Source/UiFaderComponent.cpp
     Source/UiFaderComponent.h
     Source/UiFlipbookAnimationComponent.cpp
