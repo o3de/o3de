@@ -29,7 +29,7 @@ partial ShaderResourceGroup ViewSrg
 
         [[pad_to(16)]]
     };
-     
+
     DepthOfFieldData m_dof;
     
     struct ExposureControlParameters

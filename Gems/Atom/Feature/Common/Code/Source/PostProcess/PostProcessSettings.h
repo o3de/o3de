@@ -19,6 +19,7 @@
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
+#include <PostProcess/MotionBlur/MotionBlurSettings.h>
 #include <PostProcess/PaniniProjection/PaniniProjectionSettings.h>
 #include <PostProcess/FilmGrain/FilmGrainSettings.h>
 #include <PostProcess/WhiteBalance/WhiteBalanceSettings.h>

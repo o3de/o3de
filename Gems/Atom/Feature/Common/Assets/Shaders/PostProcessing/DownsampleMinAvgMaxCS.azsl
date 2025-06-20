@@ -21,15 +21,15 @@ void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
 {
     // Get input and output texture dimensions
     uint2 inputDimensions;
-    uint2 outputDimenstions;
+    uint2 outputDimensions;
     
     PassSrg::m_inputTexture.GetDimensions(inputDimensions.x, inputDimensions.y);
-    PassSrg::m_outputTexture.GetDimensions(outputDimenstions.x, outputDimenstions.y);
+    PassSrg::m_outputTexture.GetDimensions(outputDimensions.x, outputDimensions.y);
 
     uint2 outPixel = dispatch_id.xy;
 
     // Early out if thread is outside of the target image
-    if(outPixel.x >= outputDimenstions.x || outPixel.y >= outputDimenstions.y)
+    if(outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
     {
         return;
     }
@@ -48,11 +48,11 @@ void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
     uint yLoopCount = 2;
     
     // If we're at the output border pixel, adjust the amount we sample to extend to the input border
-    if(outPixel.x == (outputDimenstions.x - 1))
+    if(outPixel.x == (outputDimensions.x - 1))
     {
         xLoopCount = inputDimensions.x - inPixel.x;
     }
-    if(outPixel.y == (outputDimenstions.y - 1))
+    if(outPixel.y == (outputDimensions.y - 1))
     {
         yLoopCount = inputDimensions.y - inPixel.y;
     }

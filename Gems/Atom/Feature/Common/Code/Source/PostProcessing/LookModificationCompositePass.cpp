@@ -37,7 +37,7 @@ namespace AZ
                         LookModificationCompositePass* lookModPass = azrtti_cast<LookModificationCompositePass*>(pass);
                         lookModPass->SetSampleQuality(LookModificationCompositePass::SampleQuality(value));
 
-                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                        return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                     });
             },
             ConsoleFunctorFlags::Null,
