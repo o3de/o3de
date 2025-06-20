@@ -127,7 +127,7 @@ namespace AZ
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::fixed_vector<Data::Asset<ModelLodAsset>, ModelLodAsset::LodCountMax> m_lodAssets;
 #if defined(CARBONATED) && defined(AZ_LOD_REMOVAL)
-            int m_numLodsToRemove;
+            int m_numLodsToRemove = 0;
 #endif
 
             // mutable method
