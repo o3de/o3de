@@ -27,6 +27,7 @@ from o3de import manifest, repo, utils, register
 
 logger = logging.getLogger('o3de.download')
 logging.basicConfig(format=utils.LOG_FORMAT)
+logger.setLevel(logging.INFO)
 
 
 def unzip_manifest_json_data(download_zip_path: pathlib.Path, zip_file_name: str) -> dict:
