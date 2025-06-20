@@ -22,6 +22,7 @@ from typing import Tuple
 from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger('o3de.engine_template')
+logging.basicConfig(format=utils.LOG_FORMAT)
 logger.setLevel(logging.INFO)
 
 binary_file_ext = {
