@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AZ
 {
     namespace Render
