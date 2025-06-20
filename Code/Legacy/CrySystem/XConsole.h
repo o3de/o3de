@@ -388,7 +388,6 @@ private: // ----------------------------------------------------------
 #endif // ALLOW_AUDIT_CVARS
     friend void Command_DumpCommandsVars(IConsoleCmdArgs* Cmd);
     friend void Command_DumpVars(IConsoleCmdArgs* Cmd);
-    friend class CConsoleHelpGen;
 };
 
 #endif // CRYINCLUDE_CRYSYSTEM_XCONSOLE_H
