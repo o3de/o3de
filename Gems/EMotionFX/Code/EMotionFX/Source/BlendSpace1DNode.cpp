@@ -582,6 +582,10 @@ namespace EMotionFX
             motion.SetXCoordinate(computedMotionCoords.GetX());
             motion.MarkXCoordinateSetByUser(false);
         }
+        else
+        {
+            motion.MarkXCoordinateSetByUser(true);
+        }
     }
 
 
