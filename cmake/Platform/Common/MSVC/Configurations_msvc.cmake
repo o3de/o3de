@@ -116,7 +116,6 @@ ly_append_configurations_options(
         /OPT:REF            # Eliminates functions and data that are never referenced
         /OPT:ICF            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO
-        /DEBUG              # Generate pdbs
     LINK_NON_STATIC_RELEASE
         /OPT:REF # Eliminates functions and data that are never referenced
         /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
@@ -150,9 +149,12 @@ if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "t
         "TrackFileAccess=false"
     )
 else()
+    #if there is no compiler cache, turn on PDB generation for profile config.
     ly_append_configurations_options(
         COMPILATION_PROFILE
             /Zi             # Generate debugging information (no Edit/Continue)
+        LINK_NON_STATIC_PROFILE
+            /DEBUG              # Generate pdbs
     )
 endif()
 
