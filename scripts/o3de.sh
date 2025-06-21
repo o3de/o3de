@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
@@ -8,9 +8,18 @@
 #
 #
 
-#Use $(cd dirname $0) to get the absolute path of this scripts folder
-#Note this does not actually change the working directory
-SCRIPT_DIR=$(cd `dirname $0` && pwd)
+# This script must search for the o3de python script in a sibling python
+# directory.  In order to do this, it needs to de-symlink itself to find out
+# where it is truly located.  (deb installers symlink it to a bin folder).
+SOURCE="${BASH_SOURCE[0]}"
+# While $SOURCE is a symlink, resolve it
+while [[ -h "$SOURCE" ]]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$( readlink "$SOURCE" )"
+    # If $SOURCE was a relative symlink (so no "/" as prefix, need to resolve it relative to the symlink base directory
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 #python should be in the base path
 BASE_PATH=$(dirname "$SCRIPT_DIR")
