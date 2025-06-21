@@ -672,11 +672,19 @@ namespace EMotionFX
             motion.SetXCoordinate(computedMotionCoords.GetX());
             motion.MarkXCoordinateSetByUser(false);
         }
+        else
+        {
+            motion.MarkXCoordinateSetByUser(true);
+        }
 
         if (m_calculationMethodY == ECalculationMethod::AUTO)
         {
             motion.SetYCoordinate(computedMotionCoords.GetY());
             motion.MarkYCoordinateSetByUser(false);
+        }
+        else
+        {
+            motion.MarkYCoordinateSetByUser(true);
         }
     }
 
