@@ -1194,6 +1194,11 @@ void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::A
                 }
                 // bind a callback such that when the menu item is clicked, it sets that as the opener to use.
                 menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, [switchToOpener, details = &openerDetails] { return switchToOpener(details); });
+                // Stop looking for openers after finding a prioritized one, as this should be the only one displayed
+                if (openerDetails.m_isPrioritized)
+                {
+                    break;
+                }
             }
         }
 
