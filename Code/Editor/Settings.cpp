@@ -478,11 +478,11 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    SaveValue("Settings\\Editor", "TextEditorScript", textEditorForScript);
-    SaveValue("Settings\\Editor", "TextEditorShaders", textEditorForShaders);
-    SaveValue("Settings\\Editor", "TextEditorBSpaces", textEditorForBspaces);
-    SaveValue("Settings\\Editor", "TextureEditor", textureEditor);
-    SaveValue("Settings\\Editor", "AnimationEditor", animEditor);
+    SaveValue("Settings/Editor", "TextEditorScript", textEditorForScript);
+    SaveValue("Settings/Editor", "TextEditorShaders", textEditorForShaders);
+    SaveValue("Settings/Editor", "TextEditorBSpaces", textEditorForBspaces);
+    SaveValue("Settings/Editor", "TextureEditor", textureEditor);
+    SaveValue("Settings/Editor", "AnimationEditor", animEditor);
 
     SaveEnableSourceControlFlag(true);
 
@@ -654,11 +654,11 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    LoadValue("Settings\\Editor", "TextEditorScript", textEditorForScript);
-    LoadValue("Settings\\Editor", "TextEditorShaders", textEditorForShaders);
-    LoadValue("Settings\\Editor", "TextEditorBSpaces", textEditorForBspaces);
-    LoadValue("Settings\\Editor", "TextureEditor", textureEditor);
-    LoadValue("Settings\\Editor", "AnimationEditor", animEditor);
+    LoadValue("Settings/Editor", "TextEditorScript", textEditorForScript);
+    LoadValue("Settings/Editor", "TextEditorShaders", textEditorForShaders);
+    LoadValue("Settings/Editor", "TextEditorBSpaces", textEditorForBspaces);
+    LoadValue("Settings/Editor", "TextureEditor", textureEditor);
+    LoadValue("Settings/Editor", "AnimationEditor", animEditor);
 
     LoadEnableSourceControlFlag();
 

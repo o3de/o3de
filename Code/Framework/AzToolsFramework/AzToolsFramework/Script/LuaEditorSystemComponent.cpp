@@ -139,7 +139,7 @@ namespace AzToolsFramework
                 AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                     textEditorScriptSettings,
                     &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
-                    "Settings\\Editor|TextEditorScript");
+                    "Settings/Editor|TextEditorScript");
                 AZStd::any textEditorScriptSettingsValue = textEditorScriptSettings.GetValue<AZStd::any>();
                 AZStd::string textEditorScriptSettingsString = AZStd::any_cast<AZStd::string>(textEditorScriptSettingsValue);
 
