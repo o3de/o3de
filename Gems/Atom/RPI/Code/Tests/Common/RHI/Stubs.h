@@ -262,8 +262,7 @@ namespace UnitTest
             AZ::RHI::ResultCode InitInternal(
                 [[maybe_unused]] AZ::RHI::Device& device,
                 [[maybe_unused]] AZ::RHI::FenceState initialState,
-                [[maybe_unused]] bool usedForWaitingOnDevice,
-                [[maybe_unused]] bool usedForCrossDevice) override
+                [[maybe_unused]] AZ::RHI::FenceFlags flags) override
             {
                 return AZ::RHI::ResultCode::Success;
             }

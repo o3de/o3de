@@ -45,16 +45,22 @@ namespace AZ::RHI
 
         ResultCode resultCode = ResultCode::Success;
 
+        auto flags = FenceFlags::None;
+        if (usedForWaitingOnDevice)
+        {
+            flags |= FenceFlags::WaitOnDevice;
+        }
         if (ownerDeviceIndex)
         {
             auto* device = RHISystemInterface::Get()->GetDevice(ownerDeviceIndex.value());
             m_deviceObjects[ownerDeviceIndex.value()] = Factory::Get().CreateFence();
-            resultCode = GetDeviceFence(ownerDeviceIndex.value())->Init(*device, initialState, usedForWaitingOnDevice, true);
+            flags |= FenceFlags::CrossDevice;
+            resultCode = GetDeviceFence(ownerDeviceIndex.value())->Init(*device, initialState, flags);
         }
         m_ownerDeviceIndex = ownerDeviceIndex;
 
         IterateDevices(
-            [this, initialState, usedForWaitingOnDevice, ownerDeviceIndex, &resultCode](int deviceIndex)
+            [this, initialState, ownerDeviceIndex, flags, &resultCode](int deviceIndex)
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
@@ -70,7 +76,7 @@ namespace AZ::RHI
                 {
                     m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
 
-                    resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, usedForWaitingOnDevice);
+                    resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, flags);
                 }
 
                 return resultCode == ResultCode::Success;

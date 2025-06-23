@@ -277,52 +277,60 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
+        // Exports a DX12 resource on one device and imports it on another device
+        template<class ResourceType>
+        static RHI::ResultCode ImportCrossDeviceResource(
+            ResourceType* inputResource,
+            ID3D12DeviceX* inputDevice,
+            Microsoft::WRL::ComPtr<ResourceType>& outputResource,
+            ID3D12DeviceX* outputDevice)
+        {
+            HANDLE heapHandle = nullptr;
+            if (!AssertSuccess(inputDevice->CreateSharedHandle(inputResource, nullptr, GENERIC_ALL, nullptr, &heapHandle)))
+            {
+                return RHI::ResultCode::Fail;
+            }
+            if (!AssertSuccess(outputDevice->OpenSharedHandle(heapHandle, IID_PPV_ARGS(&outputResource))))
+            {
+                AZ_Error("Buffer", false, "Failed to create Buffer from handle.");
+                CloseHandle(heapHandle);
+                return RHI::ResultCode::Fail;
+            }
+
+            CloseHandle(heapHandle);
+            return RHI::ResultCode::Success;
+        }
+
         RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
         {
             auto& originalDX12Buffer = static_cast<Buffer&>(originalDeviceBuffer);
             auto& originalMemoryView = originalDX12Buffer.GetMemoryView();
             auto& originalDx12Device = static_cast<Device&>(originalDeviceBuffer.GetDevice());
             MemoryView memoryView;
-            HANDLE heapHandle = nullptr;
             auto& dx12Device = static_cast<Device&>(GetDevice());
             if (originalMemoryView.GetHeap())
             {
-                if (!AssertSuccess(originalDx12Device.GetDevice()->CreateSharedHandle(
-                        originalMemoryView.GetHeap(), nullptr, GENERIC_ALL, nullptr, &heapHandle)))
-                {
-                    return RHI::ResultCode::Fail;
-                }
                 Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-                if (!AssertSuccess(dx12Device.GetDevice()->OpenSharedHandle(heapHandle, IID_PPV_ARGS(&heap))))
+                auto result =
+                    ImportCrossDeviceResource(originalMemoryView.GetHeap(), originalDx12Device.GetDevice(), heap, dx12Device.GetDevice());
+                if (result != RHI::ResultCode::Success)
                 {
-                    AZ_Error("Buffer", false, "Failed to create Buffer from handle.");
-                    CloseHandle(heapHandle);
-                    return RHI::ResultCode::Fail;
+                    return result;
                 }
 
-                CloseHandle(heapHandle);
-
-                Microsoft::WRL::ComPtr<ID3D12Resource> resource;
                 D3D12_RESOURCE_STATES initialResourceState =
                     ConvertInitialResourceState(GetDescriptor().m_heapMemoryLevel, GetDescriptor().m_hostMemoryAccess);
                 memoryView = dx12Device.CreateBufferPlaced(originalDeviceBuffer.GetDescriptor(), initialResourceState, heap.Get(), 0, true);
             }
             else
             {
-                if (!AssertSuccess(originalDx12Device.GetDevice()->CreateSharedHandle(
-                        originalMemoryView.GetMemory(), nullptr, GENERIC_ALL, nullptr, &heapHandle)))
-                {
-                    return RHI::ResultCode::Fail;
-                }
                 Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-                if (!AssertSuccess(dx12Device.GetDevice()->OpenSharedHandle(heapHandle, IID_PPV_ARGS(&resource))))
+                auto result = ImportCrossDeviceResource(
+                    originalMemoryView.GetMemory(), originalDx12Device.GetDevice(), resource, dx12Device.GetDevice());
+                if (result != RHI::ResultCode::Success)
                 {
-                    AZ_Error("Buffer", false, "Failed to create Buffer from handle.");
-                    CloseHandle(heapHandle);
-                    return RHI::ResultCode::Fail;
+                    return result;
                 }
-
-                CloseHandle(heapHandle);
 
                 memoryView = MemoryView(
                     resource.Get(),

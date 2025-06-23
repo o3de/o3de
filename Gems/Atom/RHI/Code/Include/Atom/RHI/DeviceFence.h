@@ -17,6 +17,18 @@ namespace AZ::RHI
         Signaled
     };
 
+    /// Fence capability flags
+    enum class FenceFlags : uint32_t
+    {
+        None = 0,
+        /// Set this if the Fence is signalled on the CPU and waited for on the device
+        WaitOnDevice = AZ_BIT(0),
+        /// Set this if the fence is signalled on one device and waited for on another device
+        /// This is only supported if DeviceFeatures::m_crossDeviceFences is true for both devices
+        CrossDevice = AZ_BIT(1),
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(FenceFlags);
+
     class DeviceFence
         : public DeviceObject
     {
@@ -25,9 +37,11 @@ namespace AZ::RHI
         virtual ~DeviceFence() = 0;
 
         /// Initializes the fence using the provided device and initial state.
-        /// Set usedForWaitingOnDevice to true if the Fence shoud be signaled on the CPU and waited for on the device.
-        ResultCode Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice = false, bool usedForCrossDevice = false);
+        ResultCode Init(Device& device, FenceState initialState, FenceFlags flags = FenceFlags::None);
 
+        /// Initializes the fence from another fence on another device
+        /// This fence will share a state with the originalDeviceFence
+        /// The usedForCrossDevice flag must have been set for the initialization of the originalDeviceFence
         ResultCode InitCrossDevice(Device& device, RHI::Ptr<DeviceFence> originalDeviceFence);
 
         /// Shuts down the fence.
@@ -62,7 +76,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when the fence is being initialized.
-        virtual ResultCode InitInternal(Device& device, FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice) = 0;
+        virtual ResultCode InitInternal(Device& device, FenceState initialState, FenceFlags flags) = 0;
 
         virtual ResultCode InitCrossDeviceInternal(Device& device, RHI::Ptr<DeviceFence> originalDeviceFence) = 0;
 

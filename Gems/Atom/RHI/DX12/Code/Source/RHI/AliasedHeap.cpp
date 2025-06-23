@@ -106,8 +106,9 @@ namespace AZ
             const RHI::BufferDescriptor& descriptor = request.m_descriptor;
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
 
-            MemoryView memoryView =
-                GetDX12RHIDevice().CreateBufferPlaced(descriptor, D3D12_RESOURCE_STATE_COMMON, m_heap.get(), heapOffset, false);
+            constexpr bool importedFromCrossDevice = false;
+            MemoryView memoryView = GetDX12RHIDevice().CreateBufferPlaced(
+                descriptor, D3D12_RESOURCE_STATE_COMMON, m_heap.get(), heapOffset, importedFromCrossDevice);
 
             if (!memoryView.IsValid())
             {

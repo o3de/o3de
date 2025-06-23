@@ -57,11 +57,11 @@ namespace AZ
             m_fenceImpl->SetNameInternal(name);
         }
 
-        RHI::ResultCode Fence::InitInternal(
-            RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice)
+        RHI::ResultCode Fence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, RHI::FenceFlags flags)
         {
-            m_isCrossDevice = usedForCrossDevice;
-            if (usedForWaitingOnDevice || usedForCrossDevice)
+            m_isCrossDevice = RHI::CheckBitsAny(flags, RHI::FenceFlags::CrossDevice);
+            bool usedForWaitingOnDevice = RHI::CheckBitsAny(flags, RHI::FenceFlags::WaitOnDevice);
+            if (usedForWaitingOnDevice || m_isCrossDevice)
             {
                 AZ_Assert(baseDevice.GetFeatures().m_signalFenceFromCPU, "Fences cannot be waited for on the GPU.");
                 m_fenceImpl = TimelineSemaphoreFence::Create();
@@ -71,7 +71,7 @@ namespace AZ
                 m_fenceImpl = BinaryFence::Create(*this);
             }
 
-            return m_fenceImpl->InitInternal(baseDevice, initialState, usedForCrossDevice);
+            return m_fenceImpl->InitInternal(baseDevice, initialState, m_isCrossDevice);
         }
 
         RHI::ResultCode Fence::InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<DeviceFence> originalDeviceFence)

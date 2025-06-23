@@ -28,7 +28,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode DeviceFence::Init(Device& device, FenceState initialState, bool usedForWaitingOnDevice, bool usedForCrossDevice)
+    ResultCode DeviceFence::Init(Device& device, FenceState initialState, FenceFlags flags)
     {
         if (Validation::IsEnabled())
         {
@@ -39,7 +39,7 @@ namespace AZ::RHI
             }
         }
 
-        const ResultCode resultCode = InitInternal(device, initialState, usedForWaitingOnDevice, usedForCrossDevice);
+        const ResultCode resultCode = InitInternal(device, initialState, flags);
 
         if (resultCode == ResultCode::Success)
         {

@@ -176,10 +176,10 @@ namespace AZ
             return aznew FenceImpl();
         }
 
-        RHI::ResultCode FenceImpl::InitInternal(
-            RHI::Device& deviceBase, RHI::FenceState initialState, [[maybe_unused]] bool usedForWaitingOnDevice, bool usedForCrossDevice)
+        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState, RHI::FenceFlags flags)
         {
-            return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState, usedForCrossDevice);
+            return m_fence.Init(
+                static_cast<Device&>(deviceBase).GetDevice(), initialState, RHI::CheckBitsAny(flags, RHI::FenceFlags::CrossDevice));
         }
 
         RHI::ResultCode FenceImpl::InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<RHI::DeviceFence> originalDeviceFence)
