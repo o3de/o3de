@@ -42,7 +42,6 @@ namespace AzFramework
         bool CanToggleFullScreenState() const override { return true; }
         float GetDpiScaleFactor() const override;
         uint32_t GetDisplayRefreshRate() const override;
-        WindowSize GetClientAreaSize() const override;
 
     private:
         RECT GetMonitorRect() const;
@@ -57,7 +56,6 @@ namespace AzFramework
 
         void EnterBorderlessWindowFullScreen();
         void ExitBorderlessWindowFullScreen();
-        void SetMinimized(bool minimized) { m_isMinimized = minimized; }
 
         HWND m_win32Handle = nullptr;
         RECT m_windowRectToRestoreOnFullScreenExit{};          //!< The position and size of the window to restore when exiting full screen.
@@ -70,8 +68,7 @@ namespace AzFramework
         using GetDpiForWindowType = UINT(*)(HWND hwnd);
         GetDpiForWindowType m_getDpiFunction = nullptr;
         uint32_t m_mainDisplayRefreshRate = 0;
-        static constexpr uint32_t MIN_WINDOW_WIDTH  = 600;
-        static constexpr uint32_t MIN_WINDOW_HEIGHT = 400;
-        bool m_isMinimized = false;
+        static constexpr uint32_t MIN_WINDOW_WIDTH  = 320;
+        static constexpr uint32_t MIN_WINDOW_HEIGHT = 180;
     };
 } // namespace AzFramework

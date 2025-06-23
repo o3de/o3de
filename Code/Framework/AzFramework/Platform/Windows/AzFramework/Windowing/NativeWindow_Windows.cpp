@@ -286,22 +286,17 @@ namespace AzFramework
 
             if (wParam == SIZE_MINIMIZED)
             {
-                nativeWindowImpl->SetMinimized(true);
                 WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowMinimized);
             }
             else if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
             {
-                nativeWindowImpl->SetMinimized(false);
                 WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowRestored);
                 nativeWindowImpl->WindowSizeChanged(m_width, m_height);
                 WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowResized, m_width, m_height);
-
-                RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
             }
             else if(m_width > 0 && m_height > 0)
             {
                 nativeWindowImpl->WindowSizeChanged(m_width, m_height);
-                WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowResized, m_width, m_height);
             }
             break;
         }
@@ -554,13 +549,6 @@ namespace AzFramework
     uint32_t NativeWindowImpl_Win32::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
-    }
-
-    WindowSize NativeWindowImpl_Win32::GetClientAreaSize() const
-    {
-        RECT clientRect;
-        GetClientRect(m_win32Handle, &clientRect);
-        return WindowSize(clientRect.right, clientRect.bottom);
     }
 
     void NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen()
