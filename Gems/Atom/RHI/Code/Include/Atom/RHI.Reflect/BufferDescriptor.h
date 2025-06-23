@@ -104,7 +104,7 @@ namespace AZ::RHI
 
         /// Settings for enabling cross device buffers
         /// If set the Buffer will only be allocated on the owner device
-        /// On all other devices the Buffer from the owner device will be exported and the import again on their own devices
+        /// On all other devices the Buffer from the owner device will be exported and then imported again on their own devices
         /// Check DeviceFeatures::m_crossDeviceDeviceMemory and DeviceFeatures::m_crossDeviceHostMemory before setting the owner device
         /// All devices the buffer will be created for must have the respective device feature
         AZStd::optional<int> m_ownerDeviceIndex;
