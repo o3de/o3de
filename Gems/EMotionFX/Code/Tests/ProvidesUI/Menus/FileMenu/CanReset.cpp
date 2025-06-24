@@ -54,7 +54,7 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActorInstances(), 0) << "Expected to see no actor instances";
         ASSERT_EQ(GetAnimGraphManager().GetNumAnimGraphs(), 0) << "Anim graph manager should contain 0 anim graphs.";
         const size_t oldNumMotionSets = GetMotionManager().GetNumMotionSets();
-        ASSERT_EQ(oldNumMotionSets, 1) << "Expected only the default motion set";
+        ASSERT_EQ(oldNumMotionSets, 0) << "Expected no motion set";
         ASSERT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected exactly zero motions";
 
         // Create Actor, AnimGraph, MotionSet and Motion
@@ -73,7 +73,7 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 1) << "Expected to see one actor";
         ASSERT_EQ(GetActorManager().GetNumActorInstances(), 1) << "Expected to see one actor instance";
         ASSERT_EQ(GetAnimGraphManager().GetNumAnimGraphs(), 1) << "Anim graph manager should contain 1 anim graph.";
-        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "Expected the default and the newly created motion set";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "Expected the newly created motion set";
         ASSERT_EQ(GetMotionManager().GetNumMotions(), 1) << "Expected exactly one motion";
 
         // Trigger reset from menu
