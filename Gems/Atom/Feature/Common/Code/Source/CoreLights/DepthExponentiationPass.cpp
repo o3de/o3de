@@ -6,8 +6,7 @@
  *
  */
 
-#include <CoreLights/DepthExponentiationPass.h>
-
+#include <Atom/Feature/CoreLights/DepthExponentiationPass.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 

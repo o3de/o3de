@@ -11,8 +11,8 @@
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/fixed_vector.h>
-#include <CoreLights/ShadowmapAtlas.h>
-#include <CoreLights/ShadowmapPass.h>
+#include <Atom/Feature/CoreLights/ShadowmapAtlas.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
 
 namespace AZ
 {

@@ -15,9 +15,9 @@
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
-#include <CoreLights/EsmShadowmapsPass.h>
-#include <CoreLights/ProjectedShadowmapsPass.h>
-#include <CoreLights/ShadowmapPass.h>
+#include <Atom/Feature/CoreLights/EsmShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/ProjectedShadowmapsPass.h>
+#include <Atom/Feature/CoreLights/ShadowmapPass.h>
 
 namespace AZ::Render
 {
@@ -62,6 +62,9 @@ namespace AZ::Render
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
 
         void SetEsmExponent(ShadowId id, float exponent);
+
+        AZ::Data::Instance<RPI::AttachmentImage> GetAtlasImage() override;
+        AZ::Data::Instance<RPI::AttachmentImage> GetEsmAtlasImage() override;
 
     private:
 

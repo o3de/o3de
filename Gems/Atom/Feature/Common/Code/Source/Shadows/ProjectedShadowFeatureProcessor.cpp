@@ -223,6 +223,16 @@ namespace AZ::Render
         m_filterParameterNeedsUpdate = true;
     }
 
+    AZ::Data::Instance<RPI::AttachmentImage> ProjectedShadowFeatureProcessor::GetAtlasImage()
+    {
+        return m_atlasImage;
+    }
+
+    AZ::Data::Instance<RPI::AttachmentImage> ProjectedShadowFeatureProcessor::GetEsmAtlasImage()
+    {
+        return m_esmAtlasImage;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowFilterMethod().");
@@ -443,7 +453,10 @@ namespace AZ::Render
                 if (m_projectedShadowmapsPasses.contains(renderPipeline))
                 {
                     AZ_Error("ProjectedShadowFeatureProcessor", false, "Found multiple projected shadowmap passes in pipeline.");
-                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    ProjectedShadowmapsPass* shadowmapPass = static_cast<ProjectedShadowmapsPass*>(pass);
+                    shadowmapPass->SetAtlasAttachmentImage(m_atlasImage);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses; // continue to check for multiple (error case)
+                    // return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 }
                 ProjectedShadowmapsPass* shadowmapPass = static_cast<ProjectedShadowmapsPass*>(pass);
                 shadowmapPass->SetAtlasAttachmentImage(m_atlasImage);
@@ -464,7 +477,9 @@ namespace AZ::Render
                     if (m_esmShadowmapsPasses.contains(renderPipeline))
                     {
                         AZ_Error("ProjectedShadowFeatureProcessor", false, "Found multiple esm shadowmap passes for projected shadows in pipeline.");
-                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                        esmShadowmapsPass->SetAtlasAttachmentImage(m_esmAtlasImage);
+                        return RPI::PassFilterExecutionFlow::ContinueVisitingPasses; // continue to check for multiple (error case)
+                        // return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                     }
                     m_esmShadowmapsPasses[renderPipeline] = esmShadowmapsPass;
                     if (esmShadowmapsPass != m_primaryEsmShadowmapsPass)
