@@ -15,9 +15,6 @@
 
 namespace EMotionFX
 {
-    /**
-     *
-     */
     class EMFX_API BlendTreeRotationDecomposeNode
         : public AnimGraphNode
     {
