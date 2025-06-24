@@ -37,7 +37,7 @@ namespace AZ::RHI
     public:
         friend class StreamIterator<GeometryView, StreamBufferView>;
 
-        GeometryView(MultiDevice::DeviceMask deviceMask)
+        explicit GeometryView(MultiDevice::DeviceMask deviceMask)
         {
             MultiDeviceObject::IterateDevices(
                 deviceMask,
