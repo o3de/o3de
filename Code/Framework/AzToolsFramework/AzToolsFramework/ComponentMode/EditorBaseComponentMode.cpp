@@ -27,7 +27,7 @@ namespace AzToolsFramework
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             AZ_Assert(entityId.IsValid(), "Attempting to create a Component Mode with an invalid EntityId");
 
-            if (const AZ::Entity* entity = AzToolsFramework::GetEntity(entityId))
+            if ([[maybe_unused]] const AZ::Entity* entity = AzToolsFramework::GetEntity(entityId))
             {
                 AZ_Assert(entity->GetState() == AZ::Entity::State::Active,
                     "Attempting to create a Component Mode for an Entity which is not currently active. "
