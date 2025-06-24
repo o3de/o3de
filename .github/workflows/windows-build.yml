@@ -90,21 +90,6 @@ jobs:
       - name: Get drive info
         run: |
           Get-PSDrive
-
-      - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
-        continue-on-error: true
-        if: always()
-        with:
-          windows_compile_environment: msvc
-          prepend_symlinks_to_path: false
-          store_cache: false
-          restore_cache: false
-          ccache_options: |
-            max_size=10G
-            inode_cache=true
-            temporary_dir=${{ env.DEV_DRIVE }}\temp
-            cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
       
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
@@ -151,7 +136,21 @@ jobs:
             tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
             rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
           }
-      
+
+      - name: Setup ccache
+        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        continue-on-error: true
+        if: always()
+        with:
+          windows_compile_environment: msvc
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            max_size=10G
+            inode_cache=true
+            temporary_dir=${{ env.DEV_DRIVE }}\temp
+            cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
       - name: Setup cmake
         # Pin the version of cmake  
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
