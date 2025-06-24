@@ -1588,10 +1588,6 @@ bool CCryEditApp::InitInstance()
         {
             gEnv->pLog->LogError("Game can not be initialized, InitGame() failed.");
         }
-        if (!cmdInfo.m_bExport)
-        {
-            QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Game can not be initialized, please refer to the editor log file"));
-        }
         return false;
     }
 
@@ -3359,7 +3355,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
         {
             CEditCommandLineInfo cmdInfo;
-            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExportTexture &&
                 !cmdInfo.m_bNullRenderer && !cmdInfo.m_bTest)
             {
                 if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
