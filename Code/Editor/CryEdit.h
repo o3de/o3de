@@ -355,9 +355,6 @@ private:
 
     // @param files: A list of file paths, separated by '|';
     void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
-
-public:
-    static bool Command_ExportToEngine();
 };
 
 //////////////////////////////////////////////////////////////////////////

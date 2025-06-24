@@ -377,10 +377,6 @@ public:
     bool m_bTest = false;
     bool m_bAutoLoadLevel = false;
 
-    // Legacy, will not be used.
-    bool m_bExport = false;
-    bool m_bExportTexture = false;
-
     bool m_bConsoleMode = false;
     bool m_bNullRenderer = false;
     bool m_bDeveloperMode = false;
@@ -415,9 +411,7 @@ public:
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
-        const std::vector<std::pair<QString, bool&>> options = {
-            { "export", m_bExport },
-            { "exportTexture", m_bExportTexture },
+        const std::vector<std::pair<QString, bool&> > options = {
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
             { "BatchMode", m_bConsoleMode },
@@ -3090,12 +3084,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     }
 }
 
-bool CCryEditApp::Command_ExportToEngine()
-{
-    // Legacy, does nothing.
-    return false;
-}
-
 CMainFrame * CCryEditApp::GetMainFrame() const
 {
     return MainWindow::instance()->GetOldMainFrame();
@@ -3362,7 +3350,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
         {
             CEditCommandLineInfo cmdInfo;
-            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExportTexture &&
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode &&
                 !cmdInfo.m_bNullRenderer && !cmdInfo.m_bTest)
             {
                 if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
