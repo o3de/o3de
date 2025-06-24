@@ -496,6 +496,13 @@ public:
         {
             option.second = parser.value(option.first.valueName);
         }
+
+        const QStringList positionalArgs = parser.positionalArguments();
+
+        if (!positionalArgs.isEmpty())
+        {
+            m_strFileName = positionalArgs.first();
+        }
     }
 };
 
