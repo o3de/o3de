@@ -19,9 +19,7 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Math/Plane.h>
 #include <Cry_Math.h>
-#include <Cry_Geo.h>
 #include <Cry_Color.h>
 
 inline AZ::Vector2 LYVec2ToAZVec2(const Vec2& source)
@@ -52,16 +50,6 @@ inline AZ::Vector4 LYVec4ToAZVec4(const Vec4& source)
 inline Vec4 AZVec4ToLYVec4(const AZ::Vector4& source)
 {
     return Vec4(source.GetX(), source.GetY(), source.GetZ(), source.GetW());
-}
-
-inline AZ::Color LYVec3ToAZColor(const Vec3& source)
-{
-    return AZ::Color(source.x, source.y, source.z, 1.0f);
-}
-
-inline Vec3 AZColorToLYVec3(const AZ::Color& source)
-{
-    return Vec3(source.GetR(), source.GetG(), source.GetB());
 }
 
 inline Vec4 AZColorToLYVec4(const AZ::Color& source)
@@ -151,46 +139,4 @@ inline AZ::Transform LYTransformToAZTransform(const Matrix34& source)
 inline AZ::Matrix3x4 LYTransformToAZMatrix3x4(const Matrix34& source)
 {
     return AZ::Matrix3x4::CreateFromRowMajorFloat12(source.GetData());
-}
-
-inline AABB AZAabbToLyAABB(const AZ::Aabb& source)
-{
-    return AABB(AZVec3ToLYVec3(source.GetMin()), AZVec3ToLYVec3(source.GetMax()));
-}
-
-inline AZ::Aabb LyAABBToAZAabb(const AABB& source)
-{
-    return AZ::Aabb::CreateFromMinMax(LYVec3ToAZVec3(source.min), LYVec3ToAZVec3(source.max));
-}
-
-inline AZ::Obb LyOBBtoAZObb(const OBB& source)
-{
-    const AZ::Vector3 position = LYVec3ToAZVec3(source.c);
-    const AZ::Quaternion rotation = AZ::Quaternion::CreateFromMatrix3x3(LyMatrix3x3ToAzMatrix3x3(source.m33));
-    const AZ::Vector3 halfLengths(source.h.x, source.h.y, source.h.z);
-    return AZ::Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
-}
-
-inline OBB AZObbToLyOBB(const AZ::Obb& source)
-{
-    return OBB::CreateOBB(
-        Matrix33::CreateFromVectors(
-            AZVec3ToLYVec3(source.GetAxisX()),
-            AZVec3ToLYVec3(source.GetAxisY()),
-            AZVec3ToLYVec3(source.GetAxisZ())),
-        Vec3(source.GetHalfLengthX(), source.GetHalfLengthY(), source.GetHalfLengthZ()),
-        AZVec3ToLYVec3(source.GetPosition()));
-}
-
-inline AZ::Plane LyPlaneToAZPlane(const ::Plane& source)
-{
-    return AZ::Plane::CreateFromNormalAndDistance(LYVec3ToAZVec3(source.n), source.d);
-}
-
-inline ::Plane AZPlaneToLyPlane(const AZ::Plane& source)
-{
-    ::Plane resultPlane;
-    resultPlane.Set(AZVec3ToLYVec3(source.GetNormal()), source.GetDistance());
-
-    return resultPlane;
 }
