@@ -42,7 +42,7 @@ namespace EMotionFX
 
         // Check if only the default motion set is there.
         const size_t numOldMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        EXPECT_EQ(numOldMotionSets, 1);
+        EXPECT_EQ(numOldMotionSets, 0);
 
         // Find the action to create a new motion set and press it.
         QWidget* addMotionSetButton = GetWidgetWithNameFromNamedToolbar(managementWindow, "MotionSetManagementWindow.ToolBar", "MotionSetManagementWindow.ToolBar.AddNewMotionSet");

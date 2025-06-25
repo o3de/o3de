@@ -44,6 +44,7 @@ namespace EMotionFX
         const EMStudio::MotionSetWindow* motionSetWindow = motionSetPlugin->GetMotionSetWindow();
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
+        CommandSystem::CreateDefaultMotionSet();
         // Check there aren't any motion sets yet.
         const size_t oldNumMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
 

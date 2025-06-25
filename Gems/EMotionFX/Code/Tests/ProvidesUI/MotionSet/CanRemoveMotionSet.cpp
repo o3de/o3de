@@ -26,6 +26,7 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C24255735");
 
+        CommandSystem::CreateDefaultMotionSet();
         const size_t oldNumMotionSets = GetMotionManager().GetNumMotionSets();
 
         // Select the motion set.
@@ -62,7 +63,7 @@ namespace EMotionFX
             removeSelectedAction->trigger();
         }
 
-        motionSetWindow->ReInit();       
+        motionSetWindow->ReInit();
 
         // Data verification.
         EXPECT_EQ(GetMotionManager().GetNumMotionSets(), oldNumMotionSets - 1);

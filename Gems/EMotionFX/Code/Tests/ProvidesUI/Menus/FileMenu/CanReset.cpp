@@ -96,7 +96,7 @@ namespace EMotionFX
         EXPECT_EQ(GetActorManager().GetNumActors(), 0) << "Expected to see no actors";
         EXPECT_EQ(GetActorManager().GetNumActorInstances(), 0) << "Expected to see no actor instances";
         EXPECT_EQ(EMotionFX::GetAnimGraphManager().GetNumAnimGraphs(), 0) << "Anim graph manager should contain 0 anim graphs.";
-        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 1) << "Expected only the default motion set";
+        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "Expected exactly zero motion sets";
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected exactly zero motions";
 
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);

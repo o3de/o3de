@@ -45,6 +45,7 @@ namespace EMotionFX
         EMStudio::MotionSetTableWidget* tableWidget = motionSetWindow->GetTableWidget();
         ASSERT_TRUE(tableWidget) << "Could not find the motion set table widget.";
 
+        CommandSystem::CreateDefaultMotionSet();
         // Make sure no motions exists yet
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected to have no motions for the Manager";
         EXPECT_EQ(tableWidget->rowCount(), 0) << "Expected the table to have no rows yet";
