@@ -35,7 +35,8 @@ namespace AFR
         m_afrPipelineName = AZ::RHI::GetCommandLineValue("afr");
         if (m_afrPipelineName.empty())
         {
-            return;
+            if (!AZ::RHI::QueryCommandLineOption("afr"))
+                return;
         }
 
         m_deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
@@ -65,12 +66,27 @@ namespace AFR
                 {
                     if(m_afrRenderPipeline.second)
                     {
-                        AZ_Assert(false, "AFR Pipeline had already been set, reset to this pipeline");
+                        AZ_Assert(!m_afrPipelineName.empty(), "AFR Pipeline had already been set, reset to this pipeline");
                         m_afrRenderPipeline = { "", nullptr };
                         m_afrCopyPasses.clear();
                     }
 
+                    AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("CopyToSwapChain"), renderPipeline);
+
+                    AZ::RPI::Pass* copyToSwapchainPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+
+                    if (!copyToSwapchainPass)
+                    {
+                        // Sanity check, can only setup AFR in a pipeline that copies to the SwapChain in the end
+                        AZ_Error(
+                            "AFRFeatureProcessor",
+                            m_afrPipelineName.empty(),
+                            "The given RenderPipeline does not have a CopyToSwapChain pass!");
+                        return;
+                    }
+
                     // Remember this pipeline as the one AFR is running on
+                    m_afrPipelineName = renderPipeline->GetId().GetStringView();
                     m_afrRenderPipeline = { renderPipeline->GetId(), renderPipeline };
                     CollectPassesToSchedule(renderPipeline);
                 }
@@ -94,13 +110,14 @@ namespace AFR
             }
         case RenderPipelineChangeType::Removed:
             {
-                if (renderPipeline->GetId().GetStringView().contains(m_afrPipelineName))
+                if (renderPipeline->GetId() == m_afrRenderPipeline.first)
                 {
                     // Clear CopyPasses
                     m_afrRenderPipeline = { "", nullptr };
                     m_afrCopyPasses.clear();
                     m_scheduledPasses.clear();
                     m_afrSetupState = AFRSetupState::NOT_INITIALIZED;
+                    m_afrPipelineName = "";
                 }
 
                 return;
