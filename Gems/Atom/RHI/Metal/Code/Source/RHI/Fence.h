@@ -103,7 +103,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence overrides ...
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, RHI::FenceFlags flags) override;
+            RHI::ResultCode InitCrossDeviceInternal(Device& device, RHI::Ptr<RHI::DeviceFence> originalDeviceFence) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;

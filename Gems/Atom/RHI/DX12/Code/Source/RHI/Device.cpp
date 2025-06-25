@@ -233,6 +233,8 @@ namespace AZ
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
             m_features.m_signalFenceFromCPU = true;
+            m_features.m_crossDeviceFences = true;
+            m_features.m_crossDeviceDeviceMemory = true;
 
             // DXGI_SCALING_ASPECT_RATIO_STRETCH is only compatible with CreateSwapChainForCoreWindow or CreateSwapChainForComposition,
             // not Win32 window handles and associated methods (cannot find an MSDN source for that)
@@ -577,9 +579,7 @@ namespace AZ
 
 #ifdef USE_AMD_D3D12MA
         MemoryView Device::CreateD3d12maBuffer(
-            const RHI::BufferDescriptor& bufferDescriptor,
-            D3D12_RESOURCE_STATES initialState,
-            D3D12_HEAP_TYPE heapType)
+            const RHI::BufferDescriptor& bufferDescriptor, D3D12_RESOURCE_STATES initialState, D3D12_HEAP_TYPE heapType)
         {
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertBufferDescriptorToResourceDesc(bufferDescriptor, initialState, resourceDesc);
@@ -627,14 +627,51 @@ namespace AZ
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer, nullptr, 0);
         }
 
+        MemoryView Device::CreateCrossDeviceCapableBuffer(
+            const RHI::BufferDescriptor& bufferDescriptor, D3D12_RESOURCE_STATES initialState, D3D12_HEAP_TYPE heapType)
+        {
+            // We cannot create a committed resource for cross device buffers as this is not allowed in DX12:
+            // https://learn.microsoft.com/en-us/windows/win32/direct3d12/shared-heaps#sharing-heaps-across-adapters
+            // Instead we create a heap that can be shared cross adapter and a placed resource
+            D3D12_RESOURCE_DESC resourceDesc;
+            ConvertBufferDescriptorToResourceDesc(bufferDescriptor, initialState, resourceDesc);
+            resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER;
+
+            D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE;
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectAllocatorExtraHeapFlags, heapFlags, heapType);
+            heapFlags |= D3D12_HEAP_FLAG_SHARED | D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER;
+
+            D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
+            allocationInfo.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+            allocationInfo.SizeInBytes = RHI::AlignUp(resourceDesc.Width, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
+
+            CD3DX12_HEAP_PROPERTIES heapProperties(heapType);
+            D3D12_HEAP_DESC heapDesc{};
+            heapDesc.Properties = heapProperties;
+            heapDesc.Alignment = allocationInfo.Alignment;
+            heapDesc.Flags = heapFlags;
+            heapDesc.SizeInBytes = allocationInfo.SizeInBytes;
+            ID3D12Heap* heap = nullptr;
+            m_dx12Device->CreateHeap1(&heapDesc, nullptr, IID_GRAPHICS_PPV_ARGS(&heap));
+
+            auto memoryView = CreateBufferPlaced(bufferDescriptor, initialState, heap, 0, true);
+            memoryView.MarkHeapAsOwnedByMemoryView();
+            return memoryView;
+        }
+
         MemoryView Device::CreateBufferPlaced(
             const RHI::BufferDescriptor& bufferDescriptor,
             D3D12_RESOURCE_STATES initialState,
             ID3D12Heap* heap,
-            size_t heapByteOffset)
+            size_t heapByteOffset,
+            bool importedFromCrossDevice)
         {
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertBufferDescriptor(bufferDescriptor, resourceDesc);
+            if (importedFromCrossDevice)
+            {
+                resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER;
+            }
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             allocationInfo.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
@@ -806,6 +843,10 @@ namespace AZ
             {
 #endif
                 m_releaseQueue.QueueForCollect(memoryView.GetMemory());
+                if (memoryView.IsHeapOwnedByMemoryView())
+                {
+                    m_releaseQueue.QueueForCollect(memoryView.GetHeap());
+                }
 #ifdef USE_AMD_D3D12MA
             }
 #endif
