@@ -102,6 +102,7 @@ jobs:
           ccache_options: |
             max_size=10G
             inode_cache=true
+            hash_dir=false
             temporary_dir=${{ env.DEV_DRIVE }}\temp
             cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
       
@@ -149,6 +150,7 @@ jobs:
           if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
             tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
             rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+            ${{ env.O3DE_COMPILER_CACHE_PATH }} --zero-stats --cleanup
           }
       
       - name: Setup cmake
@@ -174,6 +176,7 @@ jobs:
         # Builds with presets in ../scripts/build/Platform/Windows/build_config.json
         # Set temp folders to the workspace drive as the boot drive is slow
         working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
+        timeout-minutes: 100
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp"
