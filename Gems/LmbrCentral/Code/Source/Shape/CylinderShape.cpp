@@ -19,7 +19,6 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Shape/ShapeDisplay.h>
 
-#include "Cry_GeoDistance.h"
 #include <random>
 
 namespace LmbrCentral
@@ -260,10 +259,58 @@ namespace LmbrCentral
             AZ::Vector3 diff = m_intersectionDataCache.m_baseCenterPoint - point;
             return diff.GetLengthSq();
         }
-        return Distance::Point_CylinderSq(
-            point, m_intersectionDataCache.m_baseCenterPoint,
-            m_intersectionDataCache.m_baseCenterPoint + m_intersectionDataCache.m_axisVector,
-            m_intersectionDataCache.m_radius);
+        // Use the cylinder axis' center point to determine distance by
+        // splitting into Voronoi regions and using symmetry.
+        // The regions are:
+        // - Inside
+        // - Beyond cylinder radius but between two disc ends.
+        // - Within cylinder radius but beyond two disc ends.
+        // - Beyond cylinder radius and beyond two disc ends.
+        float radius = m_intersectionDataCache.m_radius;
+
+        const AZ::Vector3 cylinderAxis = m_intersectionDataCache.m_axisVector;
+        float halfLength = cylinderAxis.GetLength() * 0.5f;
+        const AZ::Vector3 cylinderAxisUnit = cylinderAxis.GetNormalized();
+
+        // get the center of the axis and the vector from center to the test point
+        const AZ::Vector3 centerPoint = (cylinderAxis * 0.5) + m_intersectionDataCache.m_baseCenterPoint;
+        const AZ::Vector3 pointToCenter = point - centerPoint;
+
+        // distance point is from center (projected onto axis)
+        // the abs here takes advantage of symmetry.
+        float x = AZ::Abs(pointToCenter.Dot(cylinderAxisUnit));
+
+        // squared distance from point to center (hypotenuse)
+        float n2 = pointToCenter.GetLengthSq();
+
+        // squared distance from point to center perpendicular to axis (pythagorean)
+        float y2 = n2 - x * x;
+
+        float distanceSquared = 0.f;
+
+        if (x < halfLength) // point is between the two ends
+        {
+            if (y2 > radius * radius)   // point is outside of radius
+            {
+                distanceSquared = (AZ::Sqrt(y2) - radius) * (AZ::Sqrt(y2) - radius);
+            }
+            // else point is inside cylinder, distance is zero.
+        }
+        else if (y2 < radius * radius)
+        {
+            // point is within radius
+            // point projects into a disc at either end, grab the "parallel" distance only
+            distanceSquared = (x - halfLength) * (x - halfLength);
+        }
+        else
+        {
+            // point is outside of radius
+            // point projects onto the edge of the disc, grab distance in two directions,
+            // combine "parallel" and "perpendicular" distances.
+            distanceSquared = (AZ::Sqrt(y2) - radius) * (AZ::Sqrt(y2) - radius) + (x - halfLength) * (x - halfLength);
+        }
+
+        return distanceSquared;
     }
 
     bool CylinderShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
