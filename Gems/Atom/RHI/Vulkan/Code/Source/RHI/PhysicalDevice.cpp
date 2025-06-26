@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
+#include <Vulkan_Fence_Platform.h>
 #include <Vulkan_Traits_Platform.h>
 
 namespace AZ
@@ -101,9 +102,9 @@ namespace AZ
             return m_dephClipEnableFeatures;
         }
 
-        const VkPhysicalDeviceRobustness2FeaturesEXT& PhysicalDevice::GetPhysicalDeviceRobutness2Features() const
+        const VkPhysicalDeviceRobustness2FeaturesEXT& PhysicalDevice::GetPhysicalDeviceRobustness2Features() const
         {
-            return m_robutness2Features;
+            return m_robustness2Features;
         }
 
         const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& PhysicalDevice::GetPhysicalDeviceSeparateDepthStencilFeatures() const
@@ -189,6 +190,11 @@ namespace AZ
         const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& PhysicalDevice::GetPhysicalSubpassMergeFeedbackFeatures() const
         {
             return m_subpassMergeFeedbackFeatures;
+        }
+
+        const VkPhysicalDeviceExternalMemoryHostPropertiesEXT& PhysicalDevice::GetExternalMemoryHostProperties() const
+        {
+            return m_externalHostMemoryFeatures;
         }
 
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
@@ -292,7 +298,7 @@ namespace AZ
             m_features.set(static_cast<size_t>(DeviceFeature::ConservativeRaster), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_conservative_rasterization));
             m_features.set(static_cast<size_t>(DeviceFeature::DepthClipEnable), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_depth_clip_enable) && m_dephClipEnableFeatures.depthClipEnable);
             m_features.set(static_cast<size_t>(DeviceFeature::DrawIndirectCount), (majorVersion >= 1 && minorVersion >= 2 && m_vulkan12Features.drawIndirectCount) || VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_draw_indirect_count));
-            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robutness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_robustness2));
+            m_features.set(static_cast<size_t>(DeviceFeature::NullDescriptor), m_robustness2Features.nullDescriptor && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_robustness2));
             m_features.set(static_cast<size_t>(DeviceFeature::SeparateDepthStencil),
                 (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_separate_depth_stencil_layouts)) ||
                 (m_vulkan12Features.separateDepthStencilLayouts));
@@ -341,7 +347,9 @@ namespace AZ
                                                    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
                                                    VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
                                                    VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
-                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME } };
+                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+                                                   VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
+                                                   ExternalSemaphoreExtensionName } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
@@ -407,7 +415,7 @@ namespace AZ
                 m_shaderAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
                 m_shaderImageAtomicInt64Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT;
                 m_rayQueryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
-                m_robutness2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+                m_robustness2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
                 m_float16Int8Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
                 m_separateDepthStencilFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
                 m_vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
@@ -428,7 +436,7 @@ namespace AZ
                       &m_shaderAtomicInt64Features,
                       &m_shaderImageAtomicInt64Features,
                       &m_rayQueryFeatures,
-                      &m_robutness2Features,
+                      &m_robustness2Features,
                       &m_float16Int8Features,
                       &m_separateDepthStencilFeatures,
                       &m_vulkan12Features,
@@ -448,7 +456,8 @@ namespace AZ
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
                 m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
                 m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-                
+                m_externalHostMemoryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
+
                 VkPhysicalDeviceProperties2 deviceProps2 = {};
                 deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
                 AppendVkStruct(
@@ -457,7 +466,8 @@ namespace AZ
                       &m_rayTracingPipelineProperties,
                       &m_accelerationStructureProperties,
                       &m_fragmentDensityMapProperties,
-                      &m_fragmentShadingRateProperties });
+                      &m_fragmentShadingRateProperties,
+                      &m_externalHostMemoryFeatures });
 
                 context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;

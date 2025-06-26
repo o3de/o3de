@@ -309,6 +309,13 @@ namespace AZ::Render
         //! This is used to determine if the RayTracingShaderTable needs to be rebuilt.
         virtual uint32_t GetRevision() const = 0;
 
+        //! Retrieves the revision that was last built on the given device
+        virtual uint32_t GetBuiltRevision(int deviceIndex) const = 0;
+
+        //! Sets the last built revision on the device to the given value
+        //! This should be called by the RaytracingAccelerationStructurePass when the acceleration structures are built
+        virtual void SetBuiltRevision(int deviceIndex, uint32_t revision) = 0;
+
         //! Retrieves the revision number of the procedural geometry data of the ray tracing data.
         //! This is used to determine if the RayTracingPipelineState needs to be recreated.
         virtual uint32_t GetProceduralGeometryTypeRevision() const = 0;
@@ -345,7 +352,7 @@ namespace AZ::Render
 
         //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
         //! RayTracingAccelerationStructurePass.
-        virtual void BeginFrame() = 0;
+        virtual void BeginFrame(int deviceIndex) = 0;
 
         //! Updates the RayTracingSceneSrg and RayTracingMaterialSrg, called after the TLAS is allocated in the
         //! RayTracingAccelerationStructurePass

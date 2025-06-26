@@ -291,6 +291,12 @@ def register_o3de_object_path(json_data: dict,
                               dry_run: bool = False) -> int:
     # save_path variable is used to save the changes to the store the path to the file to save
     # if the registration is for the project or engine
+
+    if remove:
+        logger.info(f'Removing `{o3de_object_path}` from key `{o3de_object_key}` in the manifest.')
+    else:
+        logger.info(f'Adding `{o3de_object_path}` to key `{o3de_object_key}` in the manifest.')
+
     save_path = None
 
     if not o3de_object_path:
@@ -926,6 +932,10 @@ def register(engine_path: pathlib.Path = None,
 
 
 def _run_register(args: argparse) -> int:
+    # at least inform the user where the file is so that they can poke at it if something goes wrong.
+    manifest_file = manifest.get_o3de_manifest()
+    logger.info(f"O3DE Manifest file location: `{manifest_file}`")
+    
     if args.update:
         remove_invalid_o3de_objects()
         return repo.refresh_repos()

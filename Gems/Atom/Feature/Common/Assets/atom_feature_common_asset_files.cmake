@@ -50,18 +50,22 @@ set(FILES
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
     Materials/Types/BasePBR.azsli
+    Materials/Types/BasePBR_Defines.azsli
     Materials/Types/BasePBR.materialtype
     Materials/Types/BasePBR_VertexColorEnableFeature.lua
     Materials/Types/EnhancedPBR.azsli
+    Materials/Types/EnhancedPBR_Defines.azsli
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Anisotropy.lua
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Eye.azsli
+    Materials/Types/Eye_Defines.azsli
     Materials/Types/Eye.materialtype
     Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua
     Materials/Types/Silhouette.materialtype
     Materials/Types/Silhouette_DepthState.lua
     Materials/Types/Skin.azsli
+    Materials/Types/Skin_Defines.azsli
     Materials/Types/Skin.materialtype
     Materials/Types/Skin_SpecularF0.lua
     Materials/Types/Skin_WrinkleMaps.lua
@@ -71,6 +75,7 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_Displacement.lua
     Materials/Types/StandardMultilayerPBR_LayerEnable.lua
     Materials/Types/StandardPBR.azsli
+    Materials/Types/StandardPBR_Defines.azsli
     Materials/Types/StandardPBR.materialtype
     Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardPBR_ClearCoatState.lua
@@ -253,6 +258,15 @@ set(FILES
     ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli
     ShaderLib/Atom/Features/Bindless.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
+    ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/IndirectRendering.azsli
+    ShaderLib/Atom/Features/InstancedTransforms.azsli
+    ShaderLib/Atom/Features/MatrixUtility.azsli
+    ShaderLib/Atom/Features/ParallaxMapping.azsli
+    ShaderLib/Atom/Features/ShaderQualityOptions.azsli
+    ShaderLib/Atom/Features/SphericalHarmonicsUtility.azsli
+    ShaderLib/Atom/Features/SrgSemantics.azsli
+    ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCg_To_LinearSrgb.azsli
@@ -265,6 +279,10 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/LightingChannels.azsli
+    ShaderLib/Atom/Features/SampleBrdfMap.azsli
+    ShaderLib/Atom/Features/GoboTexture.azsli
+    ShaderLib/Atom/Features/WrinkleMask.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/InstancedTransforms.azsli
@@ -351,7 +369,6 @@ set(FILES
     ShaderLib/Atom/Features/Skin/SkinObjectSrg.azsli
     ShaderLib/Atom/Features/SphericalHarmonicsUtility.azsli
     ShaderLib/Atom/Features/SrgSemantics.azsli
-    ShaderLib/Atom/Features/VertexUtility.azsli
     ShaderResourceGroups/CoreLights/SceneSrg.azsli
     ShaderResourceGroups/CoreLights/ViewSrg.azsli
     ShaderResourceGroups/Decals/ViewSrg.azsli
@@ -450,11 +467,12 @@ set(FILES
     Shaders/Materials/MaterialInputs/SubsurfaceInput.azsli
     Shaders/Materials/MaterialInputs/TransmissionInput.azsli
     Shaders/Materials/MaterialInputs/UvSetCount.azsli
-    Shaders/Materials/MaterialInputs/VertexColorInput.azsli
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_DepthPass_WithPS.azsl
-    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Shadowmap_WithPS.azsl
-    Shaders/Materials/Silhouette/SilhouetteGather_MaterialSrg.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_Common.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryData.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_SurfaceEval.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexData.azsli
+    Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexEval.azsli
     Shaders/Materials/Skin/Skin_LightingBrdf.azsli
     Shaders/Materials/Skin/Skin_LightingEval.azsli
     Shaders/Materials/Skin/Skin_MaterialInputs.azsli

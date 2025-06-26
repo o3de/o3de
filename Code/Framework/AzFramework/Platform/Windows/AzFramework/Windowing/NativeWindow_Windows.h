@@ -68,5 +68,7 @@ namespace AzFramework
         using GetDpiForWindowType = UINT(*)(HWND hwnd);
         GetDpiForWindowType m_getDpiFunction = nullptr;
         uint32_t m_mainDisplayRefreshRate = 0;
+        static constexpr uint32_t MIN_WINDOW_WIDTH  = 320;
+        static constexpr uint32_t MIN_WINDOW_HEIGHT = 180;
     };
 } // namespace AzFramework

@@ -14,6 +14,8 @@
 #include <RHI/Device.h>
 #include <RHI/MemoryView.h>
 
+#include <cstdlib>
+
 namespace AZ
 {
     namespace Vulkan
@@ -48,7 +50,27 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(
+            RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor, bool usedForCrossDevice)
+        {
+            return InitBufferInternal(bufferBase, bufferDescriptor, usedForCrossDevice, nullptr, 0);
+        }
+
+        RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
+        {
+            auto& originalBuffer = static_cast<Buffer&>(originalDeviceBuffer);
+            auto originalAllocation = originalBuffer.GetBufferMemoryView()->GetAllocation();
+            auto originalHostMemory = originalAllocation->GetAllocatedHostMemory();
+            auto originlaHostMemorySize = originalAllocation->GetAllocatedHostMemorySize();
+            return InitBufferInternal(bufferBase, originalBuffer.GetDescriptor(), true, originalHostMemory, originlaHostMemorySize);
+        }
+
+        RHI::ResultCode BufferPool::InitBufferInternal(
+            RHI::DeviceBuffer& bufferBase,
+            const RHI::BufferDescriptor& bufferDescriptor,
+            bool usedForCrossDevice,
+            void* originalBufferHostMemory,
+            size_t originalBufferHostMemorySize)
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -67,10 +89,33 @@ namespace AZ
             descriptor.m_bindFlags |= RHI::BufferBindFlags::CopyWrite;
 
             RHI::Ptr<BufferMemory> memory = BufferMemory::Create();
-            auto result = memory->Init(device, BufferMemory::Descriptor(descriptor, heapMemoryLevel));
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            if (usedForCrossDevice)
+            {
+                AZ_Assert(
+                    GetDescriptor().m_heapMemoryLevel == RHI::HeapMemoryLevel::Host,
+                    "Only Host buffers are allowed for cross device usage in Vulkan");
+                if (originalBufferHostMemory == nullptr)
+                {
+                    auto result = memory->InitWithExternalHostMemory(device, BufferMemory::Descriptor(descriptor, heapMemoryLevel));
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+                else
+                {
+                    auto result = memory->InitWithExternalHostMemory(
+                        device,
+                        BufferMemory::Descriptor(descriptor, heapMemoryLevel),
+                        originalBufferHostMemory,
+                        originalBufferHostMemorySize);
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+            }
+            else
+            {
+                auto result = memory->Init(device, BufferMemory::Descriptor(descriptor, heapMemoryLevel));
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
 
-            result = buffer.Init(device, descriptor, BufferMemoryView(memory));
+            auto result = buffer.Init(device, descriptor, BufferMemoryView(memory));
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             heapMemoryUsage.m_usedResidentInBytes += requirements.size;
@@ -114,7 +159,7 @@ namespace AZ
             buffer.m_memoryView = BufferMemoryView();
             buffer.Invalidate();
 
-            auto result  = InitBufferInternal(bufferBase, bufferBase.GetDescriptor());
+            auto result = InitBufferInternal(bufferBase, bufferBase.GetDescriptor(), false);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             buffer.InvalidateViews();

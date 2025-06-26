@@ -15,13 +15,9 @@
 #define EvaluateVertexGeometry EvaluateVertexGeometry_Skin
 #endif
 
-#include <Atom/Features/InstancedTransforms.azsli>
-
-// Indicates whether the vertex input struct's "m_optional_blendMask" is bound. If false, it is not safe to read from m_optional_blendMask.
-// This option gets set automatically by the system at runtime; there is a soft naming convention that associates it with m_optional_blendMask.
-// (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
-// [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
-option bool o_blendMask_isBound;
+#if MATERIAL_USES_VERTEX_DETAIL_UV
+#include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
+#endif
 
 VsOutput EvaluateVertexGeometry_Skin(
     const MaterialParameters params,
@@ -31,15 +27,23 @@ VsOutput EvaluateVertexGeometry_Skin(
     float2 uv0_tiled,
     float2 uv1_unwrapped,
     float4 optionalBlendMask,
-    uint instanceId)
+    VsSystemValues SV)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+#if MATERIAL_USES_VERTEX_POSITION
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
-    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
+#if MATERIAL_USES_VERTEX_POSITIONWS
+    float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+    output.position = mul(viewProjectionMatrix, worldPosition);
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+
+#endif // MATERIAL_USES_VERTEX_POSITION
+
+#if MATERIAL_USES_VERTEX_UV  
     // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
     // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
     // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
@@ -48,30 +52,40 @@ VsOutput EvaluateVertexGeometry_Skin(
     // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
     // use the "tiled" stream, and need better quality tangents because of the high frequency.
     output.uvs[0] = uv0_tiled;
-
     // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
     output.uvs[1] = uv1_unwrapped;
     
+    
+#endif
+
+#if MATERIAL_USES_VERTEX_DETAIL_UV    
+    // Detail UVs
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
-    output.detailUv = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
-    output.detailUv = mul(params.m_detailUvMatrix, float3(output.detailUv, 1.0)).xy;
-    
+    output.detailUvs[0] = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
+    output.detailUvs[0] = mul(params.m_detailUvMatrix, float3(output.detailUvs[0], 1.0)).xy;
+    output.detailUvs[1] = output.detailUvs[0];
+
+#endif // MATERIAL_USES_VERTEX_DETAIL_UV
+
+#if MATERIAL_USES_VERTEX_BLENDMASK
     if(o_blendMask_isBound)
     {
-        output.wrinkleBlendFactors = optionalBlendMask;
+        output.blendFactors = optionalBlendMask;
     }
     else
     {
-        output.wrinkleBlendFactors = float4(0,0,0,0);
+        output.blendFactors = float4(0,0,0,0);
     }
+#endif // MATERIAL_USES_VERTEX_BLENDMASK
 
+#if MATERIAL_USES_VERTEX_NORMAL
     output.normal = normal;
-    output.tangent = tangent;
+#endif // MATERIAL_USES_VERTEX_NORMAL
 
-    // Set the instanceId on the output so the pixel shader can use it
-    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
-    output.m_instanceId = instanceId;
+#if MATERIAL_USES_VERTEX_TANGENT
+    output.tangent = tangent;
+#endif // MATERIAL_USES_VERTEX_TANGENT
     
     return output;
 }
@@ -88,7 +102,9 @@ VsOutput EvaluateVertexGeometry_Skin(
     float2 uv1_unwrapped,
     uint instanceId)
 {
-    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), instanceId);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), SV);
 }
 
 VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV, const MaterialParameters params)
@@ -98,8 +114,8 @@ VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV, const Materi
         IN.position,
         IN.normal,
         IN.tangent,
-        IN.uv0_tiled,
-        IN.uv1_unwrapped,
+        IN.uv0,
+        IN.uv1,
         IN.m_optional_blendMask,
-        SV.m_instanceId);
+        SV);
 }

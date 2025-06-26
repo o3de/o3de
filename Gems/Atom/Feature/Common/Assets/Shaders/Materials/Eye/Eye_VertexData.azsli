@@ -8,24 +8,12 @@
 
 #pragma once
 
-#ifndef VsOutput
-#define VsOutput        VSOutput_Eye
-#endif
-
-#include "../BasePBR/BasePBR_VertexData.azsli"
-
-struct VSOutput_Eye
-{
-    // Base fields (required by the template azsli file)...
-    precise linear centroid
-    float4 position : SV_Position;
-    float3 normal: NORMAL;
-    float4 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
-    float3 worldPosition : UV0;
-    float2 uvs[UvSetCount] : UV1;
-
-    // Used for eye refraction
-    float3 localPosition : UV3;
-    uint m_instanceId : SV_InstanceID;
-};
+// by default the Vertex-Data is empty, so enable the parts we need
+#define MATERIAL_USES_VERTEX_POSITION 1
+#define MATERIAL_USES_VERTEX_POSITIONWS 1
+#define MATERIAL_USES_VERTEX_LOCALPOSITION 1 // used for eye refraction
+#define MATERIAL_USES_VERTEX_NORMAL 1
+#define MATERIAL_USES_VERTEX_TANGENT 1
+#define MATERIAL_USES_VERTEX_BITANGENT 1
+#define MATERIAL_USES_VERTEX_UV 1
+#define MATERIAL_USES_VERTEX_COLOR 1

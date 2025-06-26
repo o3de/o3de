@@ -99,7 +99,7 @@ namespace AssetProcessor
 
         void Activate() override
         {
-            if (auto* registry = AZ::SettingsRegistry::Get())
+            if (AZ::SettingsRegistry::Get())
             {
                 m_verboseMode = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
             }
