@@ -193,7 +193,7 @@ namespace AFR
             if(m_afrSetupState == AFRSetupState::NOT_INITIALIZED)
             {
                 // Add CopyPasses for all devices (except for the first, which is the display GPU)
-                for(auto deviceIndex{1u}; deviceIndex < m_deviceCount; ++deviceIndex)
+                for(auto deviceIndex{1}; deviceIndex < m_deviceCount; ++deviceIndex)
                 {
                     addAFRCopyPass(renderPipeline, deviceIndex);
                 }
