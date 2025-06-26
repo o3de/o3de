@@ -15,14 +15,9 @@
 #include <TerrainDetailHelpers.azsli>
 #include <TerrainMacroHelpers.azsli>
 #include <ClipmapComputeHelpers.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
-#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
-#include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
 
 option bool o_debugTerrainLodLevels = false;
 
@@ -32,6 +27,17 @@ struct VSOutput
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
 };
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+
+#include <Atom/Features/SampleBrdfMap.azsli>
+#include <Atom/Features/GoboTexture.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+
 
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
 {

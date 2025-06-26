@@ -21,6 +21,9 @@
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 
 
+#include <Atom/Features/SampleBrdfMap.azsli>
+#include <Atom/Features/GoboTexture.azsli>
+
 // Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {

@@ -2,6 +2,7 @@
     "description": "MaterialGraphName Material Type Template.",
     "version": 1,
     "lightingModel": "Base",
+    "materialShaderDefines": "MaterialGraphName_Defines.azsli",
     "materialShaderCode": "MaterialGraphName_Common.azsli",
     "functors": [
         {

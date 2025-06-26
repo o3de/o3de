@@ -149,7 +149,6 @@ namespace AZ::RPI
         if (materialTypeData.m_useSceneMaterialSrg)
         {
             registry = &m_sceneTextureSamplers;
-            m_bufferReadIndicesDirty = true;
         }
         else
         {
@@ -157,7 +156,12 @@ namespace AZ::RPI
             registry = materialInstanceData.m_textureSamplers.get();
         }
 
-        return registry->RegisterTextureSampler(samplerState);
+        auto [sharedSamplerState, registered] = registry->RegisterTextureSampler(samplerState);
+        if (materialTypeData.m_useSceneMaterialSrg && registered)
+        {
+            m_sharedSamplerStatesDirty = true;
+        }
+        return sharedSamplerState;
     }
 
     const RHI::SamplerState MaterialSystem::GetRegisteredTextureSampler(
@@ -551,6 +555,24 @@ namespace AZ::RPI
         }
     }
 
+    bool MaterialSystem::UpdateSharedSamplerStates()
+    {
+        if (m_sceneMaterialSrg)
+        {
+            auto samplerIndex = m_sceneMaterialSrg->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
+            if (samplerIndex.IsValid())
+            {
+                auto samplerStates = m_sceneTextureSamplers.CollectSamplerStates();
+                if (!samplerStates.empty())
+                {
+                    m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void MaterialSystem::UpdateSceneMaterialSrg()
     {
         auto createBuffer = [](const size_t numElements)
@@ -608,25 +630,20 @@ namespace AZ::RPI
             // upload the GPU data, with different data for each device
             m_materialTypeBufferIndicesBuffer->UpdateData(constDeviceBufferData, indicesBufferSize, 0);
 
-            auto samplerIndex = m_sceneMaterialSrg->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
-
-            if (samplerIndex.IsValid())
-            {
-                auto samplerStates = m_sceneTextureSamplers.CollectSamplerStates();
-                if (!samplerStates.empty())
-                {
-                    m_sceneMaterialSrg->SetSamplerArray(samplerIndex, { samplerStates.begin(), samplerStates.end() });
-                }
-            }
-
             // register the buffer in the SRG and compile it
             m_sceneMaterialSrg->SetBuffer(m_materialTypeBufferInputIndex, m_materialTypeBufferIndicesBuffer);
-            m_sceneMaterialSrg->Compile();
         }
     }
 
     void MaterialSystem::Compile()
     {
+        bool compileSceneMaterialSrg = false;
+        if (m_sharedSamplerStatesDirty)
+        {
+            m_sharedSamplerStatesDirty = false;
+            compileSceneMaterialSrg = UpdateSharedSamplerStates();
+        }
+
         if (m_bufferReadIndicesDirty)
         {
             PrepareMaterialParameterBuffers();
@@ -635,8 +652,13 @@ namespace AZ::RPI
 #ifdef DEBUG_MATERIALINSTANCES
             DebugPrintMaterialInstances();
 #endif
+            compileSceneMaterialSrg = true;
         }
         UpdateChangedMaterialParameters();
+        if (m_sceneMaterialSrg && compileSceneMaterialSrg)
+        {
+            m_sceneMaterialSrg->Compile();
+        }
     }
 
     void MaterialSystem::Init()

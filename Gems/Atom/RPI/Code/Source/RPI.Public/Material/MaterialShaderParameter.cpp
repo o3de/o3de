@@ -382,8 +382,8 @@ namespace AZ::RPI
                 auto sharedSampler = instanceHandler->RegisterTextureSampler(m_materialTypeIndex, m_materialInstanceIndex, samplerState);
                 if (sharedSampler)
                 {
-                    m_sharedSamplerStates[index] = sharedSampler;
                     samplerIndex = sharedSampler->m_samplerIndex;
+                    m_sharedSamplerStates[index] = AZStd::move(sharedSampler);
                 }
             }
             return TypedParameterHelper{ this }.SetBasicParameter(index, samplerIndex);
