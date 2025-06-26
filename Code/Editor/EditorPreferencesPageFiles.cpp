@@ -69,7 +69,8 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "UI Slice Save location", "Specify the default location to save new UI slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor (Default to O3DE internal tool when empty)")
+            ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Default to O3DE internal tool when empty")
             ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
             ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
             ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
