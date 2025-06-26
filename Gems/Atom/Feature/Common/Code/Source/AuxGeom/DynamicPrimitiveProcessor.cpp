@@ -44,9 +44,6 @@ namespace AZ
                 m_streamBufferViewsValidatedForLayout[primitiveType] = false;
             }
 
-            // We have a single stream (position and color are interleaved in the vertex buffer)
-            m_geometryView.GetStreamBufferViews().resize(1);
-
             m_scene = scene;
             InitShader();
 
@@ -218,7 +215,14 @@ namespace AZ
                 return false;
             }
             dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
-            m_geometryView.GetStreamBufferViews()[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
+            if (m_geometryView.GetStreamBufferViews().empty())
+            {
+                m_geometryView.AddStreamBufferView(dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex)));
+            }
+            else
+            {
+                m_geometryView.SetStreamBufferView(0, dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex)));
+            }
             return true;
         }
 

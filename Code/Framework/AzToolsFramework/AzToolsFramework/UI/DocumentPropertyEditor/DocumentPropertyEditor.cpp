@@ -16,13 +16,14 @@
 #include <QVBoxLayout>
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
 
 AZ_CVAR(
     bool,
@@ -290,6 +291,11 @@ namespace AzToolsFramework
         // Loop through all items one by one.
         auto* myRow = GetRow();
         const int itemCount = count();
+        if (itemCount == 0)
+        {
+            return;
+        }
+
         for (int itemIndex = 0; itemIndex < itemCount; ++itemIndex)
         {
             auto* currentItem = itemAt(itemIndex);
@@ -1345,6 +1351,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectMessageHandler(m_domMessageHandler);
 
+        m_filterHandler = AZ::DocumentPropertyEditor::DocumentAdapter::FilterEvent::Handler(
+            [this](const AZStd::string& filter)
+            {
+                this->SetFilterString(filter);
+            });
+        m_adapter->ConnectFilterHandler(m_filterHandler);
+
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
@@ -1435,6 +1448,44 @@ namespace AzToolsFramework
     {
         m_dpeSettings.reset();
         Clear();
+    }
+
+    void DocumentPropertyEditor::SetFilterString(AZStd::string str)
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        const QString filter = str.c_str();
+
+        auto applyFilterRecursively = [&filter](DPERowWidget* currRow, auto&& applyFilterRecursively) -> void
+        {
+            const size_t numChildren = currRow->m_domOrderedChildren.size();
+            for (size_t childIndex = 0; childIndex < numChildren; ++childIndex)
+            {
+                QWidget* widget = currRow->m_domOrderedChildren[childIndex];
+                if (!widget)
+                    continue;
+
+                auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(widget);
+                if (!handlerInfo.IsNull())
+                {
+                    handlerInfo.handlerInterface->SetFilter(filter);
+                }
+                else if (auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(widget))
+                {
+                    label->SetFilter(filter);
+                }
+                else if (auto* row = qobject_cast<DPERowWidget*>(widget))
+                {
+                    applyFilterRecursively(row, applyFilterRecursively);
+                }
+            }
+        };
+
+        if (m_rootNode)
+        {
+            applyFilterRecursively(m_rootNode, applyFilterRecursively);
+            update(); // Need to redraw for the linting to be applied
+        }
     }
 
     void DocumentPropertyEditor::SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
@@ -1635,6 +1686,8 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
     {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
         if (m_isBeingCleared)
         {
             AZ_Assert(false, "DocumentPropertyEditor::HandleDomChange called while being cleared.  check the callstack.  Suppress your signals during cleanup and destruction of widgets!");

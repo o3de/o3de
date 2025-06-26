@@ -146,12 +146,12 @@ float3 N_TRT(Surface surface, float cos_O, float3 cos_Ld, float f0)
 //------------------------------------------------------------------------------
 //                    The BSDF lighting function used by Hair
 //------------------------------------------------------------------------------
-float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float3 dirToLight)
+float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float3 dirToLight, uint viewIndex)
 {
     //-------------- Lighting Parameters Calculations ---------------
     // Incoming and outgoing light directions
     float3 Wi = normalize(dirToLight);                 // Incident light direction
-    float3 Wr = normalize(lightingData.dirToCamera);   // Reflected light measurement direction AKA reflection                                        
+    float3 Wr = normalize(lightingData.dirToCamera[viewIndex]);   // Reflected light measurement direction AKA reflection                                        
     float3 T = normalize(surface.tangent);             // Hair tangent
 
     // Incident light and reflection direction projected along the tangent

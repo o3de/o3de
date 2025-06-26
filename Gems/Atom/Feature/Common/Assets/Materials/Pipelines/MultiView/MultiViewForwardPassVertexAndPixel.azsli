@@ -28,19 +28,22 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 #endif
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+    
     // ------- Geometry -> Surface -> Lighting -------
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, GetMaterialParameters());
 
     Surface surface = EvaluateSurface(IN, geoData, GetMaterialParameters());
 
-    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, views);
 
     // ------- Output -------
 
     ForwardPassOutput OUT;
 
-    real3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+    real3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting[0].rgb + lightingData.emissiveLighting.rgb;
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
@@ -51,6 +54,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // We could add other forms of tonemapping in future via shader options.
     color = TonemapFilmic(color);
+
 #endif
 
     OUT.m_color.rgb = color;
@@ -62,4 +66,3 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     return OUT;
 }
-

@@ -44,13 +44,16 @@ float GetSubsurfaceScatteringFactorAndQuality(Surface surface)
 
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     // ------- Geometry -> Surface -> Lighting -------
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, GetMaterialParameters());
 
     Surface surface = EvaluateSurface(IN, geoData, GetMaterialParameters());
 
-    LightingData lightingData = EvaluateLighting(surface, IN.position, ViewSrg::m_worldPosition.xyz);
+    LightingData lightingData = EvaluateLighting(surface, IN.position, views);
 
     // ------- Output -------
 
@@ -63,7 +66,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Specular Lighting ---
 
-    OUT.m_specularColor.rgb = lightingData.specularLighting.rgb;
+    OUT.m_specularColor.rgb = lightingData.specularLighting[0].rgb;
     OUT.m_specularColor.a = 1.0;
 
     // --- Roughness and Specular ---

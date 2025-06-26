@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
+#include <Vulkan_Fence_Platform.h>
 #include <Vulkan_Traits_Platform.h>
 
 namespace AZ
@@ -191,6 +192,11 @@ namespace AZ
             return m_subpassMergeFeedbackFeatures;
         }
 
+        const VkPhysicalDeviceExternalMemoryHostPropertiesEXT& PhysicalDevice::GetExternalMemoryHostProperties() const
+        {
+            return m_externalHostMemoryFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -341,7 +347,9 @@ namespace AZ
                                                    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
                                                    VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME,
                                                    VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
-                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME } };
+                                                   VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+                                                   VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
+                                                   ExternalSemaphoreExtensionName } };
 
             [[maybe_unused]] uint32_t optionalExtensionCount = aznumeric_cast<uint32_t>(optionalExtensions.size());
 
@@ -448,7 +456,8 @@ namespace AZ
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
                 m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
                 m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-                
+                m_externalHostMemoryFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
+
                 VkPhysicalDeviceProperties2 deviceProps2 = {};
                 deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
                 AppendVkStruct(
@@ -457,7 +466,8 @@ namespace AZ
                       &m_rayTracingPipelineProperties,
                       &m_accelerationStructureProperties,
                       &m_fragmentDensityMapProperties,
-                      &m_fragmentShadingRateProperties });
+                      &m_fragmentShadingRateProperties,
+                      &m_externalHostMemoryFeatures });
 
                 context.GetPhysicalDeviceProperties2KHR(vkPhysicalDevice, &deviceProps2);
                 m_deviceProperties = deviceProps2.properties;

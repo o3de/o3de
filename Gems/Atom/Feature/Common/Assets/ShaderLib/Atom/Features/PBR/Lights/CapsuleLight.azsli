@@ -12,47 +12,6 @@
 #include <Atom/Features/PBR/Lights/PointLight.azsli>
 
 #if ENABLE_CAPSULE_LIGHTS
-// Get a uniformly distributed point on the surface of a capsule from the provided uniformly distributed 2d point. Uses
-// capsRatio to determine if the point should be on the caps or cylinder to ensure an even distribution. 
-void SampleCapsule(float2 randomPoint, CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
-{
-    float3 startToEnd = light.m_direction * light.m_length;
-    float3 endPoint = light.m_startPoint + startToEnd;
-    if (randomPoint.x < capToCylinderAreaRatio)
-    {
-        // Sample on cap
-        float2 spherePoint = randomPoint;
-        spherePoint.x /= capToCylinderAreaRatio; // normalize to 0.0 -> 1.0
-
-        float3 pointDirection = SampleSphere(spherePoint);
-        if (dot(pointDirection, light.m_direction) < 0.0)
-        {
-            // start point cap
-            outPosition = light.m_startPoint + pointDirection * light.m_radius;
-        }
-        else
-        {
-            // end point cap
-            outPosition = endPoint + pointDirection * light.m_radius;
-        }
-        outDirection = pointDirection;
-    }
-    else
-    {
-        // Sample on cylinder
-        float angle = randomPoint.y * PI * 2.0;
-        outDirection.x = 0.0;
-        outDirection.y = sin(angle);
-        outDirection.z = cos(angle);
-        outDirection = mul(outDirection, localToWorld);
-
-        float positionAlongCylinder = (randomPoint.x - capToCylinderAreaRatio) / (1.0 - capToCylinderAreaRatio); // normalize to 0.0 -> 1.0
-        positionAlongCylinder *= light.m_length;
-        
-        float3 positionInCylinder = light.m_startPoint + light.m_direction * positionAlongCylinder;
-        outPosition = positionInCylinder + outDirection * light.m_radius;
-    }
-}
 
 void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData lightingData)
 {
@@ -60,7 +19,7 @@ void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData l
     float3 startPoint = light.m_startPoint;
     float3 startToEnd = light.m_direction * lightLength;
     float3 endPoint = startPoint + startToEnd;
-    
+
     // Do simple distance check to line for falloff and tight culling.
     float3 surfaceToStart = startPoint - surface.position;
     float closestPointDistance = dot(-surfaceToStart, light.m_direction);
@@ -113,7 +72,7 @@ void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData l
         float distanceToStart = length(surfaceToStart);
         float3 surfaceToEnd = endPoint - surface.position;
         float distanceToEnd = length(surfaceToEnd);
-        
+
         // Integration of lambert reflectance of a line segment to get diffuse intensity
         // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
         float NdotStart = dot(surface.GetDiffuseNormal(), surfaceToStart) / distanceToStart;
@@ -124,59 +83,99 @@ void ApplyCapsuleLight(CapsuleLight light, Surface surface, inout LightingData l
         float3 lightIntensity = (intensity * radiusAttenuation * ratioVisible) * light.m_rgbIntensityCandelas;
         lightingData.diffuseLighting += max(0.0, surface.albedo * lightIntensity);
 
-        // Calculate the reflection of the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
-
-        // Find closest point on light to reflection vector.
-        // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
-        float reflDotStartToEnd = dot(reflectionDir, startToEnd);
-        float closestT = (dot(reflectionDir, surfaceToStart) * reflDotStartToEnd - dot(surfaceToStart, startToEnd)) / (dot(startToEnd, startToEnd) - reflDotStartToEnd * reflDotStartToEnd);
-        closestT = saturate(closestT);
-
-        float3 closestIntersectionPoint = startPoint + closestT * startToEnd;
-        float3 posToLight = closestIntersectionPoint - surface.position;
-
         // Transmission contribution
         // We cannot compute the actual transmission distance so we want to:
         // - If transmission mode is thick object -> use transmission thickness parameter instead
         // - If transmission mode is thin object -> ignore back lighting
-        // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
+        // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance
         const float transmissionDistance = -1.0f;
         // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
         const float attenuationDistance = 0.0f;
 
 #if ENABLE_TRANSMISSION
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, attenuationDistance);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(dirToClosestPoint), transmissionDistance, attenuationDistance);
 #endif
 
-        // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
-        float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;
-        float3 lightReflectionOffset = posToLight - posToClosestPointAlongReflection;
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Calculate the reflection of the normal from the view direction
+            float3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
 
-        // Adjust the direction to light based on the capsule radius
-        posToLight -= lightReflectionOffset * saturate(light.m_radius / length(lightReflectionOffset));
-        d2 = dot(posToLight, posToLight);
-        d2 = max(light.m_radius * light.m_radius, d2);
+            // Find closest point on light to reflection vector.
+            // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+            float reflDotStartToEnd = dot(reflectionDir, startToEnd);
+            float closestT = (dot(reflectionDir, surfaceToStart) * reflDotStartToEnd - dot(surfaceToStart, startToEnd)) / (dot(startToEnd, startToEnd) - reflDotStartToEnd * reflDotStartToEnd);
+            closestT = saturate(closestT);
 
-        // Adjust the intensity of the light based on the capsule radius to conserve energy
-        float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_radius, d2);
+            float3 closestIntersectionPoint = startPoint + closestT * startToEnd;
+            float3 posToLight = closestIntersectionPoint - surface.position;
 
-        // Capsule specular is done just like spherical specular, we just move the position of the sphere along the capsule depending
-        // on the point being shaded. However this means that the intensity needs to be reduced by the ratio of the capsule surface
-        // area to a sphere of the same radius.
-        //capsArea = 4.0 * PI * light.m_radius * light.m_radius;
-        //cylinderArea = 2.0 * PI * light.m_radius * light.m_length;
-        //sphereToCapsuleAreaRatio 
-        //    = capsArea / (capsArea + cylinderArea);
-        //    = 4.0 * PI * radius * radius / (4.0 * PI * radius * radius + 2.0 * PI * radius * length )
-        //    = 2.0 * radius / (2.0 * radius + length)
-        
-        float sphereToCapsuleAreaRatio = 2.0 * light.m_radius / max(2.0 * light.m_radius + light.m_length, EPSILON);
+            // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
+            float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;
+            float3 lightReflectionOffset = posToLight - posToClosestPointAlongReflection;
 
-        // Specular contribution
-        lightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / d2;
-        lightIntensity *= light.m_rgbIntensityCandelas;
-        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+            // Adjust the direction to light based on the capsule radius
+            posToLight -= lightReflectionOffset * saturate(light.m_radius / length(lightReflectionOffset));
+            d2 = dot(posToLight, posToLight);
+            d2 = max(light.m_radius * light.m_radius, d2);
+
+            // Adjust the intensity of the light based on the capsule radius to conserve energy
+            float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_radius, d2);
+
+            // Capsule specular is done just like spherical specular, we just move the position of the sphere along the capsule depending
+            // on the point being shaded. However this means that the intensity needs to be reduced by the ratio of the capsule surface
+            // area to a sphere of the same radius.
+            float sphereToCapsuleAreaRatio = 2.0 * light.m_radius / max(2.0 * light.m_radius + light.m_length, EPSILON);
+
+            // Specular contribution
+            float3 viewLightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / d2;
+            viewLightIntensity *= light.m_rgbIntensityCandelas;
+            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, viewLightIntensity, normalize(posToLight), viewIndex);
+        }
+    }
+}
+
+// Get a uniformly distributed point on the surface of a capsule from the provided uniformly distributed 2d point. Uses
+// capsRatio to determine if the point should be on the caps or cylinder to ensure an even distribution.
+void SampleCapsule(float2 randomPoint, CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
+{
+    float3 startToEnd = light.m_direction * light.m_length;
+    float3 endPoint = light.m_startPoint + startToEnd;
+    if (randomPoint.x < capToCylinderAreaRatio)
+    {
+        // Sample on cap
+        float2 spherePoint = randomPoint;
+        spherePoint.x /= capToCylinderAreaRatio; // normalize to 0.0 -> 1.0
+
+        float3 pointDirection = SampleSphere(spherePoint);
+        if (dot(pointDirection, light.m_direction) < 0.0)
+        {
+            // start point cap
+            outPosition = light.m_startPoint + pointDirection * light.m_radius;
+        }
+        else
+        {
+            // end point cap
+            outPosition = endPoint + pointDirection * light.m_radius;
+        }
+        outDirection = pointDirection;
+    }
+    else
+    {
+        // Sample on cylinder
+        float angle = randomPoint.y * PI * 2.0;
+        outDirection.x = 0.0;
+        outDirection.y = sin(angle);
+        outDirection.z = cos(angle);
+        outDirection = mul(outDirection, localToWorld);
+
+        float positionAlongCylinder = (randomPoint.x - capToCylinderAreaRatio) / (1.0 - capToCylinderAreaRatio); // normalize to 0.0 -> 1.0
+        positionAlongCylinder *= light.m_length;
+
+        float3 positionInCylinder = light.m_startPoint + light.m_direction * positionAlongCylinder;
+        outPosition = positionInCylinder + outDirection * light.m_radius;
     }
 }
 
@@ -187,7 +186,7 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
     float capArea =  4.0 * PI * light.m_radius * light.m_radius;
     float cylinderArea = 2.0 * PI * light.m_radius * light.m_length;
     float capToCylinderAreaRatio = capArea / (capArea + cylinderArea);
-    
+
     // Construct local to world matrix for transforming sample points.
     float3x3 localToWorld;
     localToWorld[0] = light.m_direction;
@@ -202,9 +201,13 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
     }
     localToWorld[1]= cross(localToWorld[0], localToWorld[2]);
 
-    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
-    float3 specularAcc = float3(0.0, 0.0, 0.0);
-    float3 translucentAcc = float3(0.0, 0.0, 0.0);
+    real3 diffuseAcc = float3(0.0, 0.0, 0.0);
+    real3 translucentAcc = float3(0.0, 0.0, 0.0);
+    real3 specularAcc[MAX_SHADING_VIEWS]; 
+
+    [unroll]
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
 
     for (uint i = 0; i < sampleCount; ++i)
     {
@@ -217,12 +220,17 @@ void ValidateCapsuleLight(CapsuleLight light, Surface surface, inout LightingDat
 
     // Lighting value is in Candela, convert to Lumen for total light output of the light
     float3 intensityLumens = light.m_rgbIntensityCandelas * 4.0 * PI;
+
     // Each of the N samples will contribute intensity / N lumens. However it will radiate in
     // equal directions across the hemisphere, so we need to account for that
     float3 intensity = intensityLumens * INV_PI;
-    
+
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
+
+    [unroll]
+    for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / float(sampleCount)) * intensity;
+
 #if ENABLE_TRANSMISSION
     lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
 #endif
@@ -252,15 +260,15 @@ void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingD
 }
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
-{    
+{
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
-                
+
     while(!lightingData.tileIterator.IsDone())
     {
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
-        
+
         ApplyCapsuleLightInternal(currLightIndex, surface, lightingData);
     }
 #else
@@ -270,10 +278,12 @@ void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
-#else
+
+#else   // ENABLE_CAPSULE_LIGHTS
+
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
-{    
+{
     //Not Enabled
 }
-#endif
 
+#endif  // ENABLE_CAPSULE_LIGHTS

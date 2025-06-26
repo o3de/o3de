@@ -15,14 +15,14 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
     real3 posToLight = real3(light.m_position - surface.position);
     real d2 = dot(posToLight, posToLight); // light distance squared
     real falloff = d2 * real(light.m_invAttenuationRadiusSquared);
-    
+
     // Only calculate shading if light is in range
     if (falloff < 1.0f)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
         real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
-        
+
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
@@ -31,8 +31,13 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 
-        // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Specular contribution
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir, viewIndex);
+        }
     }
 }
 
@@ -52,12 +57,12 @@ void ApplySimplePointLightInternal(uint lightIndex, Surface surface, inout Light
 void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
 #if ENABLE_LIGHT_CULLING
-    lightingData.tileIterator.LoadAdvance();    
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+    lightingData.tileIterator.LoadAdvance();
+    while( !lightingData.tileIterator.IsDone() )
+    {
+        uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
-    
+
         ApplySimplePointLightInternal(currLightIndex, surface, lightingData);
     }
 #else
@@ -65,7 +70,7 @@ void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
     // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
     // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
     #ifndef ENABLE_SIMPLE_POINTLIGHTS_CAP
-        #define ENABLE_SIMPLE_POINTLIGHTS_CAP 20 
+        #define ENABLE_SIMPLE_POINTLIGHTS_CAP 20
     #endif
 
     // Since there's no GPU culling for simple point lights, we rely on culling done by CPU

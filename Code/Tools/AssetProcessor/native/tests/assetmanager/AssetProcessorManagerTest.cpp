@@ -5544,7 +5544,7 @@ void ChainJobDependencyTest::SetUp()
 
     m_data = AZStd::make_unique<StaticData>();
 
-    m_data->m_rcController.reset(new RCController(/*minJobs*/1, /*maxJobs*/1));
+    m_data->m_rcController.reset(new RCController());
     m_data->m_rcController->SetDispatchPaused(false);
 
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own

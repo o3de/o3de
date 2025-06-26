@@ -20,6 +20,7 @@ libxkbcommon-dev                        # For xcb keyboard input
 libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
 libxcb-randr0-dev                       # For xcb display info
+libxcb-keysyms1-dev                     # For xcb query keymap
 zlib1g-dev
 mesa-common-dev
 ros-jazzy-ackermann-msgs               # ROS2 development tools

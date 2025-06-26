@@ -11,10 +11,10 @@
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/set.h>
@@ -32,6 +32,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
 #include <RHI/WindowSurfaceBus.h>
+#include <Vulkan_Fence_Platform.h>
 #include <Vulkan_Traits_Platform.h>
 
 namespace AZ
@@ -327,9 +328,9 @@ namespace AZ
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
                 vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorIndexing;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingVariableDescriptorCount;
                 // We use the "VkPhysicalDeviceBufferDeviceAddressFeatures" instead of the "VkPhysicalDeviceVulkan12Features" for buffer device address
                 // because some drivers (e.g. Intel) don't report any features of buffer device address through the "PhysicalDeviceVulkan12Features" but they do
                 // through the "VK_EXT_buffer_device_address" extension.
@@ -1362,6 +1363,40 @@ namespace AZ
 #else
             m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 #endif
+            // These are two nested ifs instead of one because MSVC complains about a missing contexpr otherwise
+            // The warning is C4127, but we can't add a constexpr when doing (constexpr && non-constexpr)
+            // The two ifs can be combined into a single one once MSVC fixes this warning
+            // See https://developercommunity.visualstudio.com/t/C4127-provides-advice-that-breaks-code/10497946?sort=newest&q=ICE
+            if constexpr (CrossDeviceFencesSupported)
+            {
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalSemaphore))
+                {
+                    VkExternalSemaphoreProperties externalSemaphoreProperties{};
+                    externalSemaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES;
+
+                    VkPhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo{};
+                    externalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO;
+                    externalSemaphoreInfo.handleType = ExternalSemaphoreHandleTypeBit;
+
+                    VkSemaphoreTypeCreateInfo semaphoreCreateInfo{};
+                    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                    semaphoreCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+                    externalSemaphoreInfo.pNext = &semaphoreCreateInfo;
+                    GetContext().GetPhysicalDeviceExternalSemaphoreProperties(
+                        physicalDevice.GetNativePhysicalDevice(), &externalSemaphoreInfo, &externalSemaphoreProperties);
+
+                    m_features.m_crossDeviceFences = RHI::CheckBitsAll<VkExternalSemaphoreFeatureFlags>(
+                        externalSemaphoreProperties.externalSemaphoreFeatures,
+                        VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT);
+
+                    // This feature was only tested on Nvidia and it's not clear if it work for other Vendors
+                    // We disable it for other vendors for the time being
+                    m_features.m_crossDeviceFences =
+                        m_features.m_crossDeviceFences && physicalDevice.GetDescriptor().m_vendorId == RHI::VendorId::nVidia;
+                }
+            }
+            m_features.m_crossDeviceHostMemory =
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ExternalMemoryHost);
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

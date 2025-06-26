@@ -188,6 +188,16 @@ namespace AZ
             result.first = static_cast<AssImpSceneWrapper::AxisVector>(frontVectorRead);
             return result;
         }
+
+        AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetRightVectorAndSign() const
+        {
+            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::X, 1);
+            int32_t rightVectorRead(static_cast<int32_t>(result.first));
+            m_assImpScene->mMetaData->Get("CoordAxis", rightVectorRead);
+            m_assImpScene->mMetaData->Get("CoordAxisSign", result.second);
+            result.first = static_cast<AssImpSceneWrapper::AxisVector>(rightVectorRead);
+            return result;
+        }
     }//namespace AssImpSDKWrapper
 
 } // namespace AZ

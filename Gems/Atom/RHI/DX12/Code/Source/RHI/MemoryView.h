@@ -59,10 +59,11 @@ namespace AZ
             MemoryView(
                 const MemoryAllocation& memAllocation, MemoryViewType viewType, ID3D12Heap* heap = nullptr, size_t heapOffset = 0ull);
 
-            /// Supports copy and move construction / assignment.
-            MemoryView(const MemoryView& rhs) = default;
+            /// Supports only move construction / assignment.
+            /// Copying is disallowed as it may lead to double frees of device allocations
+            MemoryView(const MemoryView& rhs) = delete;
             MemoryView(MemoryView&& rhs) = default;
-            MemoryView& operator=(const MemoryView& rhs) = default;
+            MemoryView& operator=(const MemoryView& rhs) = delete;
             MemoryView& operator=(MemoryView&& rhs) = default;
 
             bool IsValid() const;
@@ -98,10 +99,16 @@ namespace AZ
             void SetName(const AZStd::wstring_view& name);
 
             // Heap the Memory was allocated in. Will be nullptr for committed resources
-            ID3D12Heap* GetHeap();
+            ID3D12Heap* GetHeap() const;
 
             // Offset in the heap that the Memory is allocated in. Will be zero for committed resources
             size_t GetHeapOffset();
+
+            // Marks the heap owned by this MemoryView
+            void MarkHeapAsOwnedByMemoryView();
+
+            // Returns true if this MemoryView owns the heap and it should be destroyed when this MemoryView is destroyed
+            bool IsHeapOwnedByMemoryView() const;
 
         private:
             void Construct();
@@ -115,6 +122,7 @@ namespace AZ
 
             ID3D12Heap* m_heap = nullptr;
             size_t m_heapOffset = 0;
+            bool m_heapOwnedByMemoryView = false;
 
             D3D12MA::Allocation* m_d3d12maAllocation = nullptr; //filled in for allocations created through D3D12MA
         };

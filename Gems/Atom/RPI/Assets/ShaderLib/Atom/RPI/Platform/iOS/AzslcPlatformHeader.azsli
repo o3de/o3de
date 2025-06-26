@@ -23,11 +23,24 @@
 // disable using the bindless SRG for material textures in the SingleMaterialSrg
 #define AZ_TRAIT_SINGLE_MATERIAL_USE_TEXTURE_ARRAY
 
-// use half float for ios
-#define real half
-#define real2 half2
-#define real3 half3
-#define real4 half4
-#define real3x3 half3x3
-#define real3x4 half3x4
-#define real4x4 half4x4
+// use half float for iOS
+#define USE_HALF_FLOATS_FOR_IOS 1
+
+
+#if USE_HALF_FLOATS_FOR_IOS
+    #define real half
+    #define real2 half2
+    #define real3 half3
+    #define real4 half4
+    #define real3x3 half3x3
+    #define real3x4 half3x4
+    #define real4x4 half4x4
+#else
+    #define real float
+    #define real2 float2
+    #define real3 float3
+    #define real4 float4
+    #define real3x3 float3x3
+    #define real3x4 float3x4
+    #define real4x4 float4x4
+#endif

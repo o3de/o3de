@@ -427,16 +427,8 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // StatDatabaseEntry
-        class AZTF_API StatDatabaseEntry
+        struct AZTF_API StatDatabaseEntry
         {
-        public:
-            StatDatabaseEntry() = default;
-
-            StatDatabaseEntry(const StatDatabaseEntry& other) = default;
-            StatDatabaseEntry(StatDatabaseEntry&& other) = default;
-
-            StatDatabaseEntry& operator=(StatDatabaseEntry&& other) = default;
-            StatDatabaseEntry& operator=(const StatDatabaseEntry& other) = default;
             bool operator==(const StatDatabaseEntry& other) const;
             bool operator!=(const StatDatabaseEntry& other) const;
 

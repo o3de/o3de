@@ -47,14 +47,21 @@ namespace AZ
             return *m_fenceImpl;
         }
 
+        bool Fence::IsCrossDevice() const
+        {
+            return m_isCrossDevice;
+        }
+
         void Fence::SetNameInternal(const AZStd::string_view& name)
         {
             m_fenceImpl->SetNameInternal(name);
         }
 
-        RHI::ResultCode Fence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, bool usedForWaitingOnDevice)
+        RHI::ResultCode Fence::InitInternal(RHI::Device& baseDevice, RHI::FenceState initialState, RHI::FenceFlags flags)
         {
-            if (usedForWaitingOnDevice)
+            m_isCrossDevice = RHI::CheckBitsAny(flags, RHI::FenceFlags::CrossDevice);
+            bool usedForWaitingOnDevice = RHI::CheckBitsAny(flags, RHI::FenceFlags::WaitOnDevice);
+            if (usedForWaitingOnDevice || m_isCrossDevice)
             {
                 AZ_Assert(baseDevice.GetFeatures().m_signalFenceFromCPU, "Fences cannot be waited for on the GPU.");
                 m_fenceImpl = TimelineSemaphoreFence::Create();
@@ -64,7 +71,23 @@ namespace AZ
                 m_fenceImpl = BinaryFence::Create(*this);
             }
 
-            return m_fenceImpl->InitInternal(baseDevice, initialState);
+            return m_fenceImpl->InitInternal(baseDevice, initialState, m_isCrossDevice);
+        }
+
+        RHI::ResultCode Fence::InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<DeviceFence> originalDeviceFence)
+        {
+            m_isCrossDevice = true;
+            auto originalVulkanFence = static_cast<Fence*>(originalDeviceFence.get());
+            if (auto originalTimelineSemaphoreFence = azrtti_cast<TimelineSemaphoreFence*>(originalVulkanFence->m_fenceImpl))
+            {
+                m_fenceImpl = TimelineSemaphoreFence::Create();
+            }
+            else
+            {
+                m_fenceImpl = BinaryFence::Create(*this);
+            }
+
+            return m_fenceImpl->InitCrossDeviceInternal(device, originalVulkanFence);
         }
 
         void Fence::ShutdownInternal()

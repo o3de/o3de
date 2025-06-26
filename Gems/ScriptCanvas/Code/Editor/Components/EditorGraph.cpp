@@ -34,8 +34,10 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/ConnectionBus.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
 #include <ScriptCanvas/Core/NodeBus.h>
+#include <ScriptCanvas/Debugger/Bus.h>
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
@@ -2586,6 +2588,19 @@ namespace ScriptCanvasEditor
             if (canvasNode)
             {
                 canvasNode->FinalizeExtension(extenderId);
+            }
+        }
+    }
+
+    void EditorGraph::AddBreakpoints(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
+    {
+        for (const GraphCanvas::NodeId& nodeId : nodeIds)
+        {
+            AZ::EntityId scNodeId = ConvertToScriptCanvasNodeId(nodeId);
+            if (scNodeId.IsValid())
+            {
+                ScriptCanvas::Breakpoint breakpoint(scNodeId);
+                ScriptCanvas::Debugger::ClientRequestsBus::Broadcast(&ScriptCanvas::Debugger::ClientRequests::AddBreakpoint, breakpoint);
             }
         }
     }

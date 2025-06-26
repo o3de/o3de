@@ -83,6 +83,48 @@ namespace AZ
             return copyType;
         }
 
+        CopyPass::CrossDeviceStrategy CopyPass::GetCrossDeviceStrategy()
+        {
+            bool supportsCrossDeviceDeviceMemory = true;
+            bool supportsCrossDeviceHostMemory = true;
+            bool supportsCrossDeviceFences = true;
+            for (auto deviceIndex : { m_data.m_sourceDeviceIndex, m_data.m_destinationDeviceIndex })
+            {
+                const auto& device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+                supportsCrossDeviceDeviceMemory &= device->GetFeatures().m_crossDeviceDeviceMemory;
+                supportsCrossDeviceHostMemory &= device->GetFeatures().m_crossDeviceHostMemory;
+                supportsCrossDeviceFences &= device->GetFeatures().m_crossDeviceFences;
+            }
+            if (supportsCrossDeviceDeviceMemory && supportsCrossDeviceFences)
+            {
+                return CrossDeviceStrategy::CrossDeviceDeviceMemory;
+            }
+            else if (supportsCrossDeviceHostMemory && supportsCrossDeviceFences)
+            {
+                return CrossDeviceStrategy::CrossDeviceHostMemory;
+            }
+            else if (supportsCrossDeviceHostMemory)
+            {
+                return CrossDeviceStrategy::IntermediateHostCrossDeviceMemory;
+            }
+            else
+            {
+                return CrossDeviceStrategy::IntermediateHost;
+            }
+        }
+
+        bool CopyPass::UseCrossDeviceFence()
+        {
+            auto strategy = GetCrossDeviceStrategy();
+            return strategy == CrossDeviceStrategy::CrossDeviceHostMemory || strategy == CrossDeviceStrategy::CrossDeviceDeviceMemory;
+        }
+
+        bool CopyPass::UseCrossDeviceMemory()
+        {
+            auto strategy = GetCrossDeviceStrategy();
+            return strategy != CrossDeviceStrategy::IntermediateHost;
+        }
+
         // --- Pass behavior overrides ---
 
         void CopyPass::BuildInternal()
@@ -107,7 +149,7 @@ namespace AZ
                 sameDevice || (m_data.m_sourceDeviceIndex != -1 && m_data.m_destinationDeviceIndex != -1),
                 "CopyPass: Either source and destination device indices must be invalid, or both must be valid");
 
-            m_copyMode = sameDevice ? CopyMode::SameDevice : CopyMode::DifferentDevicesIntermediateHost;
+            m_copyMode = sameDevice ? CopyMode::SameDevice : CopyMode::DifferentDevices;
 
             if (m_copyMode == CopyMode::SameDevice)
             {
@@ -119,7 +161,7 @@ namespace AZ
                     m_hardwareQueueClass,
                     m_data.m_sourceDeviceIndex);
             }
-            else if (m_copyMode == CopyMode::DifferentDevicesIntermediateHost)
+            else if (m_copyMode == CopyMode::DifferentDevices)
             {
                 [[maybe_unused]] auto* device1 =
                     RHI::RHISystemInterface::Get()->GetDevice(m_data.m_sourceDeviceIndex != RHI::MultiDevice::InvalidDeviceIndex ? m_data.m_sourceDeviceIndex : RHI::MultiDevice::DefaultDeviceIndex);
@@ -137,17 +179,26 @@ namespace AZ
                 {
                     fence = new RHI::Fence();
                     AZ_Assert(fence != nullptr, "CopyPass failed to create a fence");
-                    [[maybe_unused]] RHI::ResultCode result = fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled);
+                    AZStd::optional<int> ownerDevice;
+                    if (UseCrossDeviceFence())
+                    {
+                        ownerDevice = m_data.m_sourceDeviceIndex;
+                    }
+                    [[maybe_unused]] RHI::ResultCode result =
+                        fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled, false, ownerDevice);
                     AZ_Assert(result == RHI::ResultCode::Success, "CopyPass failed to init fence");
                 }
 
-                // Initialize #MaxFrames fences that can be waited for on device 2 before data is uploaded to device 2
-                for (auto& fence : m_device2WaitFence)
+                if (!UseCrossDeviceFence())
                 {
-                    fence = new RHI::Fence();
-                    AZ_Assert(fence != nullptr, "CopyPass failed to create a fence");
-                    [[maybe_unused]] auto result = fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled, true);
-                    AZ_Assert(result == RHI::ResultCode::Success, "CopyPass failed to init fence");
+                    // Initialize #MaxFrames fences that can be waited for on device 2 before data is uploaded to device 2
+                    for (auto& fence : m_device2WaitFence)
+                    {
+                        fence = new RHI::Fence();
+                        AZ_Assert(fence != nullptr, "CopyPass failed to create a fence");
+                        [[maybe_unused]] auto result = fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Signaled, true);
+                        AZ_Assert(result == RHI::ResultCode::Success, "CopyPass failed to init fence");
+                    }
                 }
 
                 m_copyScopeProducerDeviceToHost = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
@@ -213,7 +264,7 @@ namespace AZ
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerSameDevice);
                 ReadbackScopeQueryResults(CopyIndex::SameDevice);
             }
-            else if (m_copyMode == CopyMode::DifferentDevicesIntermediateHost)
+            else if (m_copyMode == CopyMode::DifferentDevices)
             {
                 if (IsTimestampQueryEnabled())
                 {
@@ -225,7 +276,10 @@ namespace AZ
                 params.m_frameGraphBuilder->ImportScopeProducer(*m_copyScopeProducerHostToDevice);
                 m_currentBufferIndex = (m_currentBufferIndex + 1) % MaxFrames;
                 m_device1SignalFence[m_currentBufferIndex]->Reset();
-                m_device2WaitFence[m_currentBufferIndex]->Reset();
+                if (m_device2WaitFence[m_currentBufferIndex])
+                {
+                    m_device2WaitFence[m_currentBufferIndex]->Reset();
+                }
 
                 ReadbackScopeQueryResults(CopyIndex::DeviceToHost);
                 ReadbackScopeQueryResults(CopyIndex::HostToDevice);
@@ -235,7 +289,7 @@ namespace AZ
         void CopyPass::ResetInternal()
         {
             Pass::ResetInternal();
-            if (m_copyMode == CopyMode::DifferentDevicesIntermediateHost)
+            if (m_copyMode == CopyMode::DifferentDevices)
             {
                 for (auto& fence : m_device1SignalFence)
                 {
@@ -247,11 +301,15 @@ namespace AZ
                 }
                 for (auto& fence : m_device2WaitFence)
                 {
-                    fence
-                        ->GetDeviceFence(
-                            m_data.m_destinationDeviceIndex != RHI::MultiDevice::InvalidDeviceIndex ? m_data.m_destinationDeviceIndex
-                                                                                                    : RHI::MultiDevice::DefaultDeviceIndex)
-                        ->WaitOnCpu();
+                    if (fence)
+                    {
+                        fence
+                            ->GetDeviceFence(
+                                m_data.m_destinationDeviceIndex != RHI::MultiDevice::InvalidDeviceIndex
+                                    ? m_data.m_destinationDeviceIndex
+                                    : RHI::MultiDevice::DefaultDeviceIndex)
+                            ->WaitOnCpu();
+                    }
                 }
             }
         }
@@ -359,23 +417,50 @@ namespace AZ
                             ->GetSubresourceLayouts(sourceRange, sourceImageSubResourcesLayouts.data(), &sourceTotalSizeInBytes);
                         AZ::u64 sourceByteCount = sourceTotalSizeInBytes;
 
-                        if (perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != sourceByteCount)
+                        if (UseCrossDeviceMemory())
                         {
-                            perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = sourceByteCount;
+                            if (perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != sourceByteCount)
+                            {
+                                perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = sourceByteCount;
 
-                            RPI::CommonBufferDescriptor desc;
-                            desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                            desc.m_bufferName =
-                                AZStd::string(GetPathName().GetStringView()) + "_hostbuffer_" + AZStd::to_string(aspectIndex);
-                            desc.m_byteCount = sourceByteCount;
-                            perAspectInfo.m_device1HostBuffer[m_currentBufferIndex] =
-                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                                RPI::CommonBufferDescriptor desc;
+                                if (GetCrossDeviceStrategy() == CrossDeviceStrategy::CrossDeviceHostMemory ||
+                                    GetCrossDeviceStrategy() == CrossDeviceStrategy::IntermediateHostCrossDeviceMemory)
+                                {
+                                    desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                                }
+                                else
+                                {
+                                    desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+                                }
+                                desc.m_bufferName =
+                                    AZStd::string(GetPathName().GetStringView()) + "_crossdevicebuffer_" + AZStd::to_string(aspectIndex);
+                                desc.m_byteCount = sourceByteCount;
+                                desc.m_ownerDeviceIndex = m_data.m_sourceDeviceIndex;
+                                perAspectInfo.m_device1HostBuffer[m_currentBufferIndex] =
+                                    BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                            }
+                        }
+                        else
+                        {
+                            if (perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != sourceByteCount)
+                            {
+                                perAspectInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = sourceByteCount;
 
-                            desc.m_bufferName =
-                                AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2_" + AZStd::to_string(aspectIndex);
-                            desc.m_poolType = RPI::CommonBufferPoolType::Staging;
-                            perAspectInfo.m_device2HostBuffer[m_currentBufferIndex] =
-                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                                RPI::CommonBufferDescriptor desc;
+                                desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                                desc.m_bufferName =
+                                    AZStd::string(GetPathName().GetStringView()) + "_hostbuffer_" + AZStd::to_string(aspectIndex);
+                                desc.m_byteCount = sourceByteCount;
+                                perAspectInfo.m_device1HostBuffer[m_currentBufferIndex] =
+                                    BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                                desc.m_bufferName =
+                                    AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2_" + AZStd::to_string(aspectIndex);
+                                desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                                perAspectInfo.m_device2HostBuffer[m_currentBufferIndex] =
+                                    BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                            }
                         }
 
                         // copy descriptor for copying image to buffer
@@ -408,21 +493,47 @@ namespace AZ
                     m_perAspectCopyInfos.resize(1);
                     auto& perAspectCopyInfo{ m_perAspectCopyInfos[0] };
 
-                    if (perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
+                    if (UseCrossDeviceMemory())
                     {
-                        perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
+                        if (perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
+                        {
+                            perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
 
-                        RPI::CommonBufferDescriptor desc;
-                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
-                        desc.m_byteCount = perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex];
+                            RPI::CommonBufferDescriptor desc;
+                            if (GetCrossDeviceStrategy() == CrossDeviceStrategy::CrossDeviceHostMemory ||
+                                GetCrossDeviceStrategy() == CrossDeviceStrategy::IntermediateHostCrossDeviceMemory)
+                            {
+                                desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                            }
+                            else
+                            {
+                                desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+                            }
+                            desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_crossdevicebuffer_";
+                            desc.m_byteCount = perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex];
+                            desc.m_ownerDeviceIndex = m_data.m_sourceDeviceIndex;
+                            perAspectCopyInfo.m_device1HostBuffer[m_currentBufferIndex] =
+                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        }
+                    }
+                    else
+                    {
+                        if (perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] != buffer->GetDescriptor().m_byteCount)
+                        {
+                            perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex] = buffer->GetDescriptor().m_byteCount;
 
-                        perAspectCopyInfo.m_device1HostBuffer[m_currentBufferIndex] =
-                            BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-                        desc.m_poolType = RPI::CommonBufferPoolType::Staging;
-                        desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
-                        perAspectCopyInfo.m_device2HostBuffer[m_currentBufferIndex] =
-                            BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                            RPI::CommonBufferDescriptor desc;
+                            desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                            desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer";
+                            desc.m_byteCount = perAspectCopyInfo.m_deviceHostBufferByteCount[m_currentBufferIndex];
+
+                            perAspectCopyInfo.m_device1HostBuffer[m_currentBufferIndex] =
+                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                            desc.m_poolType = RPI::CommonBufferPoolType::Staging;
+                            desc.m_bufferName = AZStd::string(GetPathName().GetStringView()) + "_hostbuffer2";
+                            perAspectCopyInfo.m_device2HostBuffer[m_currentBufferIndex] =
+                                BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                        }
                     }
 
                     // copy buffer
@@ -454,26 +565,33 @@ namespace AZ
             }
             EndScopeQuery(context, CopyIndex::DeviceToHost);
 
-            // Once signaled on device 1, we can map the host staging buffers on device 1 and 2 and copy data from 1 -> 2 and then signal the upload on device 2
-            m_device1SignalFence[m_currentBufferIndex]
-                ->GetDeviceFence(context.GetDeviceIndex())
-                ->WaitOnCpuAsync(
-                    [this, bufferIndex = m_currentBufferIndex]()
-                    {
-                        for (const auto& perAspectCopyInfo : m_perAspectCopyInfos)
+            if (!UseCrossDeviceFence())
+            {
+                // Once signaled on device 1, we can map the host staging buffers on device 1 and 2 and copy data from 1 -> 2 and then
+                // signal the upload on device 2
+                m_device1SignalFence[m_currentBufferIndex]
+                    ->GetDeviceFence(context.GetDeviceIndex())
+                    ->WaitOnCpuAsync(
+                        [this, bufferIndex = m_currentBufferIndex]()
                         {
-                            auto bufferSize = perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->GetBufferSize();
-                            void* data1 =
-                                perAspectCopyInfo.m_device1HostBuffer[bufferIndex]->Map(bufferSize, 0)[m_data.m_sourceDeviceIndex];
-                            void* data2 =
-                                perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->Map(bufferSize, 0)[m_data.m_destinationDeviceIndex];
-                            memcpy(data2, data1, bufferSize);
-                            perAspectCopyInfo.m_device1HostBuffer[bufferIndex]->Unmap();
-                            perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->Unmap();
-                        }
+                            if (GetCrossDeviceStrategy() == CrossDeviceStrategy::IntermediateHost)
+                            {
+                                for (const auto& perAspectCopyInfo : m_perAspectCopyInfos)
+                                {
+                                    auto bufferSize = perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->GetBufferSize();
+                                    void* data1 =
+                                        perAspectCopyInfo.m_device1HostBuffer[bufferIndex]->Map(bufferSize, 0)[m_data.m_sourceDeviceIndex];
+                                    void* data2 = perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->Map(
+                                        bufferSize, 0)[m_data.m_destinationDeviceIndex];
+                                    memcpy(data2, data1, bufferSize);
+                                    perAspectCopyInfo.m_device1HostBuffer[bufferIndex]->Unmap();
+                                    perAspectCopyInfo.m_device2HostBuffer[bufferIndex]->Unmap();
+                                }
+                            }
 
-                        m_device2WaitFence[bufferIndex]->GetDeviceFence(m_data.m_destinationDeviceIndex)->SignalOnCpu();
-                    });
+                            m_device2WaitFence[bufferIndex]->GetDeviceFence(m_data.m_destinationDeviceIndex)->SignalOnCpu();
+                        });
+            }
         }
 
         void CopyPass::SetupFrameGraphDependenciesHostToDevice(RHI::FrameGraphInterface frameGraph)
@@ -492,7 +610,14 @@ namespace AZ
             frameGraph.SetEstimatedItemCount(2);
             AddScopeQueryToFrameGraph(frameGraph, CopyIndex::HostToDevice);
 
-            frameGraph.WaitFence(*m_device2WaitFence[m_currentBufferIndex]);
+            if (UseCrossDeviceFence())
+            {
+                frameGraph.WaitFence(*m_device1SignalFence[m_currentBufferIndex]);
+            }
+            else
+            {
+                frameGraph.WaitFence(*m_device2WaitFence[m_currentBufferIndex]);
+            }
         }
 
         void CopyPass::CompileResourcesHostToDevice(const RHI::FrameGraphCompileContext& context)
@@ -511,10 +636,17 @@ namespace AZ
 
                     const auto* buffer = context.GetBuffer(outputId);
                     RHI::CopyBufferDescriptor copyBuffer;
-                    copyBuffer.m_sourceBuffer = perAspectCopyInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                    if (UseCrossDeviceMemory())
+                    {
+                        copyBuffer.m_sourceBuffer = perAspectCopyInfo.m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                    }
+                    else
+                    {
+                        copyBuffer.m_sourceBuffer = perAspectCopyInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                    }
                     copyBuffer.m_destinationBuffer = buffer;
                     copyBuffer.m_size =
-                        aznumeric_cast<uint32_t>(perAspectCopyInfo.m_device2HostBuffer[m_currentBufferIndex]->GetBufferSize());
+                        aznumeric_cast<uint32_t>(perAspectCopyInfo.m_device1HostBuffer[m_currentBufferIndex]->GetBufferSize());
 
                     perAspectCopyInfo.m_copyItemHostToDevice = copyBuffer;
                 }
@@ -580,7 +712,15 @@ namespace AZ
                             copyDesc.m_sourceFormat = FindFormatForAspect(m_sourceFormat, static_cast<RHI::ImageAspect>(sourceImageAspect));
                         }
 
-                        const auto* sourceBuffer = perAspectInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                        const RHI::Buffer* sourceBuffer = nullptr;
+                        if (UseCrossDeviceMemory())
+                        {
+                            sourceBuffer = perAspectInfo.m_device1HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                        }
+                        else
+                        {
+                            sourceBuffer = perAspectInfo.m_device2HostBuffer[m_currentBufferIndex]->GetRHIBuffer();
+                        }
                         copyDesc.m_sourceBuffer = sourceBuffer;
                         copyDesc.m_destinationSubresource.m_aspect = static_cast<RHI::ImageAspect>(destImageAspect);
 

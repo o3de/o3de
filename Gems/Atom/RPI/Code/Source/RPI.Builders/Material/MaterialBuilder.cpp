@@ -183,18 +183,6 @@ namespace AZ
                 }
             }
 
-            // Assign dependencies from image properties
-            for (const auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
-            {
-                AZ_UNUSED(propertyId);
-
-                if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
-                {
-                    MaterialBuilderUtils::AddPossibleImageDependencies(
-                        materialSourcePath, propertyValue.GetValue<AZStd::string>(), outputJobDescriptor);
-                }
-            }
-
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
@@ -285,6 +273,8 @@ namespace AZ
                 return;
             }
 
+            MaterialBuilderUtils::AddImageAssetDependenciesToProduct(materialAsset.Get(), jobProduct);
+           
             response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;

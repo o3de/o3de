@@ -19,6 +19,17 @@
 #define ENABLE_SHADER_DEBUGGING     1
 #endif
 
+// Named colors for easier debugging
+#define Debug_Red           real3(1.0, 0.0, 0.0)
+#define Debug_Green         real3(0.0, 1.0, 0.0)
+#define Debug_Blue          real3(0.0, 0.0, 1.0)
+#define Debug_Yellow        real3(1.0, 1.0, 0.0)
+#define Debug_Magenta       real3(1.0, 0.0, 1.0)
+#define Debug_Turquoise     real3(0.0, 1.0, 1.0)
+#define Debug_White         real3(1.0, 1.0, 1.0)
+#define Debug_Black         real3(0.0, 0.0, 0.0)
+
+
 #if ENABLE_SHADER_DEBUGGING
     option bool o_shader_debugging_enabled = true;
 
@@ -204,3 +215,95 @@ bool OverrideMetallicEnabled()
 real3 GetBaseColorOverride() { return real3(SceneSrg::m_debugOverrideBaseColor); }
 real GetRoughnessOverride() { return real(SceneSrg::m_debugOverrideRoughness); }
 real GetMetallicOverride() { return real(SceneSrg::m_debugOverrideMetallic); }
+
+// --- Color Value Debugging ---
+
+#ifndef ENABLE_VALUE_DEBUGGING
+#define ENABLE_VALUE_DEBUGGING ENABLE_SHADER_DEBUGGING
+#endif
+
+
+// If any values are NaN (not a number), sets the input color to the provided debug color and returns true
+bool Debug_NaN(inout real3 color, in real3 debug_color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(isnan(color.r) || isnan(color.g) || isnan(color.b))
+    {
+        color.rgb = debug_color;
+        return true;
+    }
+    return false;
+}
+
+// If any values are INF (infinite value), sets the input color to the provided debug color and returns true
+bool Debug_INF(inout real3 color, in real3 debug_color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(isinf(color.r) || isinf(color.g) || isinf(color.b))
+    {
+        color.rgb = debug_color;
+        return true;
+    }
+    return false;
+}
+
+// If any values are negative, sets the input color to the provided debug color and returns true
+bool Debug_Neg(inout real3 color, in real3 debug_color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(color.r < 0.0 || color.g < 0.0 || color.b < 0.0)
+    {
+        color.rgb = debug_color;
+        return true;
+    }
+    return false;
+}
+
+// If all values are zero, sets the input color to the provided debug color and returns true
+bool Debug_Zero(inout real3 color, in real3 debug_color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(!any(color))
+    {
+        color.rgb = debug_color;
+        return true;
+    }
+    return false;
+}
+
+// Returns true if there are NaN, INF, Negative values
+bool Debug_NaN_INF_Neg(inout real3 color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(!Debug_NaN (color, Debug_Magenta))
+    if(!Debug_INF (color, Debug_Red))
+    if(!Debug_Neg (color, Debug_Blue))
+        return false;
+
+    return true;
+}
+
+// Returns true if there are NaN, INF, Negative values, or if all values are zero
+bool Debug_NaN_INF_Neg_Zero(inout real3 color)
+{
+    if(!ENABLE_VALUE_DEBUGGING)
+        return false;
+
+    if(!Debug_NaN (color, Debug_Magenta))
+    if(!Debug_INF (color, Debug_Red))
+    if(!Debug_Neg (color, Debug_Blue))
+    if(!Debug_Zero(color, Debug_Turquoise))
+        return false;
+
+    return true;
+}

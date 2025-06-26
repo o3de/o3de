@@ -179,11 +179,11 @@ namespace AtomToolsFramework
 
         m_actionPreviousTab = CreateActionAtPosition(m_menuView, insertPostion, "&Previous Tab", [this]() {
             SelectPrevDocumentTab();
-        }, Qt::CTRL | Qt::SHIFT | Qt::Key_Tab); //QKeySequence::PreviousChild is mapped incorrectly in Qt
+        }, 0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Tab); //QKeySequence::PreviousChild is mapped incorrectly in Qt
 
         m_actionNextTab = CreateActionAtPosition(m_menuView, insertPostion, "&Next Tab", [this]() {
             SelectNextDocumentTab();
-        }, Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
+        }, 0x0 | Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
         m_menuView->insertSeparator(insertPostion);
     }
 

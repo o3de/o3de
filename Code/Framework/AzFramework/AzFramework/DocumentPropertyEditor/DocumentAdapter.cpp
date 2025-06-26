@@ -65,6 +65,11 @@ namespace AZ::DocumentPropertyEditor
         handler.Connect(m_messageEvent);
     }
 
+    void DocumentAdapter::ConnectFilterHandler(FilterEvent::Handler& handler)
+    {
+        handler.Connect(m_filterEvent);
+    }
+
     void DocumentAdapter::SetRouter(RoutingAdapter* /*router*/, const Dom::Path& /*route*/)
     {
         // By default, setting a router is a no-op, this only matters for nested routing adapters
@@ -184,6 +189,11 @@ namespace AZ::DocumentPropertyEditor
             }
         }
         m_changedEvent.Signal(*appliedPatch);
+    }
+
+    void DocumentAdapter::NotifyFilterChanged(const AZStd::string& filter)
+    {
+        m_filterEvent.Signal(filter);
     }
 
     Dom::Value DocumentAdapter::SendAdapterMessage(const AdapterMessage& message)

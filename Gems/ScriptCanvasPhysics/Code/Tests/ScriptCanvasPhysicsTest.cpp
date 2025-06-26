@@ -186,6 +186,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD0(DetachedFromActor, void());
         MOCK_METHOD2(RayCast, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform));
         MOCK_METHOD1(RayCastLocal, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest& localSpaceRequest));
+        MOCK_CONST_METHOD0(GetShapeConfiguration, AZStd::shared_ptr<Physics::ShapeConfiguration> ());
         MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb(const AZ::Transform& worldTransform));
         MOCK_CONST_METHOD0(GetAabbLocal, AZ::Aabb());

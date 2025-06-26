@@ -39,7 +39,7 @@ namespace AZ
             }
         }
 
-        void ReflectionProbe::OnAssetError(Data::Asset<Data::AssetData> asset)
+        void ReflectionProbe::OnAssetError([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             AZ_Error("ReflectionProbe", false, "Failed to load ReflectionProbe dependency asset %s", asset.ToString<AZStd::string>().c_str());
             Data::AssetBus::Handler::BusDisconnect();

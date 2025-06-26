@@ -90,7 +90,7 @@ namespace AzFramework
         }
     }
 
-    void SpawnableMonitor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void SpawnableMonitor::OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ_Assert(!m_isLoaded, "Trying to load spawnable %s (%s) for a second time.",
             asset.GetHint().c_str(), asset.GetId().ToString<AZStd::string>().c_str());

@@ -8,6 +8,8 @@
   
 #pragma once
 
+#include <viewsrg_all.srgi>
+
 // Functions to support getting object transforms via an instance buffer, which use
 // the ObjectSrg as a fallback if instancing is not enabled.
 // Including this header in a shader indicates that the shader itself will use these

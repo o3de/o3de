@@ -3767,18 +3767,18 @@ namespace AssetProcessor
         int maxPerIteration = 50;
 
         // Burn through all pending files
-        const FileEntry* firstEntry = &m_activeFiles.front();
         while (m_filesToExamine.size() < maxPerIteration)
         {
-            m_alreadyActiveFiles.remove(firstEntry->m_fileName);
-            CheckSource(*firstEntry);
+            // CheckSource modifies m_activeFiles, so we need to work with a copy of the current entry
+            FileEntry firstEntry = m_activeFiles.front();
+            m_alreadyActiveFiles.remove(firstEntry.m_fileName);
+            CheckSource(firstEntry);
             m_activeFiles.pop_front();
 
             if (m_activeFiles.size() == 0)
             {
                 break;
             }
-            firstEntry = &m_activeFiles.front();
         }
 
         if (!m_alreadyScheduledUpdate)

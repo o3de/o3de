@@ -1393,16 +1393,16 @@ namespace LUAEditor
 
         LUAEditorGoToLineDialog dlg(this);
 
-        int lineNumber = 0, cursorColumn = 0;
-        currentView->GetCursorPosition(lineNumber, cursorColumn);
-        dlg.setLineNumber(lineNumber + 1);
+        int lineNumber = 0, lineColumn = 0;
+        currentView->GetCursorPosition(lineNumber, lineColumn);
+        dlg.setLineNumber(lineNumber, lineColumn);
 
         if (dlg.exec() != QDialog::Rejected)
         {
-            // go to that line of the selected file.
             lineNumber = dlg.getLineNumber();
+            lineColumn = dlg.getColumnNumber();
 
-            currentView->SetCursorPosition(lineNumber, 0);
+            currentView->SetCursorPosition(lineNumber, lineColumn);
         }
     }
 
