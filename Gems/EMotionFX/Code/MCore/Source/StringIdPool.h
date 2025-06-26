@@ -85,6 +85,7 @@ namespace MCore
         AZ::u32 m_index{};
 
         operator AZ::u32() const { return m_index; }
+        bool operator==(const StringIdPoolIndex &rhs) const { return m_index == rhs.m_index; }
         bool operator==(AZ::u32 rhs) const { return m_index == rhs; }
 
         static void Reflect(AZ::ReflectContext* context);

@@ -63,12 +63,33 @@ jobs:
           git lfs install
           if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
+      - name: Setup DevDrive
+        uses: samypr100/setup-dev-drive@b9079d2711b01ed39de859c79c96484bfd80e078 # v3.4.1
+        with:
+          drive-size: 130GB
+          drive-format: NTFS
+          drive-path: "D:/dev_drive.vhdx"
+          workspace-copy: true
+          trusted-dev-drive: true
+
       - name: Setup 3p, user, and build folders
         # Symlink the .o3de folder to the github workspace to avoid permission issues
         run: |
-          "3rdParty", "build", ".o3de" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
-          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ github.workspace }}\$_ -Force}
-          "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ github.workspace }}\$_" -ItemType 'Directory' -Force}
+          "3rdParty", "build", ".o3de" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
+          "temp" | % {New-Item "${{ env.DEV_DRIVE }}\$_" -ItemType 'Directory' -Force}
+          ".o3de" | % {New-Item -Path $env:USERPROFILE\$_ -ItemType SymbolicLink -Target ${{ env.DEV_DRIVE_WORKSPACE }}\$_ -Force}
+          "AutomatedTesting\Cache", "AutomatedTesting\user" | % {New-Item "${{ env.DEV_DRIVE_WORKSPACE }}\$_" -ItemType 'Directory' -Force}
+
+      - name: Move Page File to Workspace drive
+        # Configure the page file to the workspace drive for the duration of the run
+        run: |
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
+            -Name "PagingFiles" -Value "${{ env.DEV_DRIVE }}\temp\pagefile.sys 8192 8192"
+          echo "Page file moved to ${{ env.DEV_DRIVE }}\temp\pagefile.sys"
+
+      - name: Get drive info
+        run: |
+          Get-PSDrive
 
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
@@ -80,8 +101,10 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=15G
-            cache_dir=${{ github.workspace }}\.ccache
+            max_size=10G
+            inode_cache=true
+            temporary_dir=${{ env.DEV_DRIVE }}\temp
+            cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
       
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
@@ -114,17 +137,19 @@ jobs:
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.DEV_DRIVE_WORKSPACE }}
           run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
 
       - name: Extract artifact
         # Extract the tar file from the artifact
         id: extract-artifact
-        if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         continue-on-error: true
+        if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |        
-          if (Test-Path ${{ github.workspace }}\cache.tar) {          
-            tar -xvpf ${{ github.workspace }}\cache.tar
-            rm ${{ github.workspace }}\cache.tar
+          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
+            tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+            rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
           }
       
       - name: Setup cmake
@@ -140,6 +165,7 @@ jobs:
       - name: Configure environment
         # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           echo "Installing dependencies"
           echo "Getting python..."
@@ -154,30 +180,29 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json
-        env:
-          LY_3RDPARTY_PATH: ${{ github.workspace }}\3rdParty
-          USE_CCACHE: 1
-          NDK_CCACHE: ${{ env.O3DE_COMPILER_CACHE_PATH }}
-          CMAKE_C_COMPILER_LAUNCHER: ${{ env.O3DE_COMPILER_CACHE_PATH }}
-          CMAKE_CXX_COMPILER_LAUNCHER: ${{ env.O3DE_COMPILER_CACHE_PATH }}
-
+        # Set temp folders to the workspace drive as the boot drive is slow
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
+          $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+          $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
+          $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
       
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
+        # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
         id: compress-artifacts
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           try {
-            tar --format=posix -cvpf ${{ github.workspace }}\cache.tar `
-              python `
+            tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
+              .ccache `
+              .o3de\python `
               3rdParty\packages `
-              AutomatedTesting\Cache `
-              AutomatedTesting\user `
-              .ccache
+              AutomatedTesting\Cache
           } catch {
             echo "Warning: Error during tar compression"
           }
@@ -191,4 +216,4 @@ jobs:
           compression-level: 1
           overwrite: true
           path: |
-            ${{ github.workspace }}\cache.tar
+            ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar

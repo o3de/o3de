@@ -82,7 +82,8 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(
+            RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor, bool usedForCrossDevice)
         {
             BufferMemoryView memoryView = m_allocator.Allocate(bufferDescriptor.m_byteCount);
             if (memoryView.IsValid())
@@ -97,6 +98,12 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
             return RHI::ResultCode::OutOfMemory;
+        }
+
+        RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
+        {
+            AZ_Assert(false, "Not implemented");
+            return RHI::ResultCode::Fail;
         }
 
         void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)

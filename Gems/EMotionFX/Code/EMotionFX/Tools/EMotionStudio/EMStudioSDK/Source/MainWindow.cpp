@@ -325,7 +325,7 @@ namespace EMStudio
         // actor file actions
         QAction* openAction = menu->addAction(tr("&Open Actor"), this, &MainWindow::OnFileOpenActor, QKeySequence::Open);
         openAction->setObjectName("EMFX.MainWindow.OpenActorAction");
-        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, Qt::CTRL + Qt::Key_I);
+        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, 0x0 | Qt::CTRL | Qt::Key_I);
         m_mergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
         m_saveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
         m_saveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
@@ -453,7 +453,7 @@ namespace EMStudio
         QAction* animGraphLayoutAction = new QAction(
             "AnimGraph",
             this);
-        animGraphLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
+        animGraphLayoutAction->setShortcut(0x0 | Qt::Key_1 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
         connect(animGraphLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(0); });
         addAction(animGraphLayoutAction);
@@ -461,7 +461,7 @@ namespace EMStudio
         QAction* animationLayoutAction = new QAction(
             "Animation",
             this);
-        animationLayoutAction->setShortcut(Qt::Key_2 | Qt::AltModifier);
+        animationLayoutAction->setShortcut(0x0 | Qt::Key_2 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
         connect(animationLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(1); });
         addAction(animationLayoutAction);
@@ -469,7 +469,7 @@ namespace EMStudio
         QAction* characterLayoutAction = new QAction(
             "Character",
             this);
-        characterLayoutAction->setShortcut(Qt::Key_3 | Qt::AltModifier);
+        characterLayoutAction->setShortcut(0x0 | Qt::Key_3 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
         connect(characterLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(2); });
         addAction(characterLayoutAction);

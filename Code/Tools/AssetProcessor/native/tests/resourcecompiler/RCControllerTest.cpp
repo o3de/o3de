@@ -163,7 +163,7 @@ public:
     {
         RCcontrollerTest::SetUp();
         using namespace AssetProcessor;
-        m_rcController.reset(new RCController(/*minJobs*/1, /*maxJobs*/1));
+        m_rcController.reset(new RCController());
         m_rcController->SetDispatchPaused(false);
         m_rcJobListModel = m_rcController->GetQueueModel();
 

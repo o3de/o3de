@@ -82,7 +82,7 @@ namespace AZ
             RHI::DrawItem m_item;
 
             // Holds the geometry info for the draw call
-            RHI::GeometryView m_geometryView;
+            RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
             // The stencil reference value for the draw item
             uint32_t m_stencilRef;

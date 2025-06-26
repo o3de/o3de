@@ -18,6 +18,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -265,13 +266,13 @@ bool GUIApplicationManager::Run()
 #endif
 
     QAction* quitAction = new QAction(QObject::tr("Quit"), m_mainWindow);
-    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    quitAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
     m_mainWindow->addAction(quitAction);
     m_mainWindow->connect(quitAction, SIGNAL(triggered()), this, SLOT(QuitRequested()));
 
     QAction* refreshAction = new QAction(QObject::tr("Refresh Stylesheet"), m_mainWindow);
-    refreshAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+    refreshAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_R));
     m_mainWindow->addAction(refreshAction);
     m_mainWindow->connect(refreshAction, &QAction::triggered, this, refreshStyleSheets);
 

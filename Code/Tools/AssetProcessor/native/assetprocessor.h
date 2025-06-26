@@ -32,6 +32,9 @@
 
 namespace AssetProcessor
 {
+    // global settings for Asset Processor, they usually come from the engine config file
+    // but individual gems, projects, and users can override them.
+    constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
     constexpr const char* DebugChannel = "Debug"; //Use this channel name if you want to write the message to the log file only.
     constexpr const char* ConsoleChannel = "AssetProcessor";// Use this channel name if you want to write the message to both the console and the log file.
     constexpr const char* FENCE_FILE_EXTENSION = "fence"; //fence file extension
@@ -75,10 +78,11 @@ namespace AssetProcessor
     //! This enum stores all the different job escalation values
     enum JobEscalation
     {
-        ProcessAssetRequestSyncEscalation = 200,
-        ProcessAssetRequestStatusEscalation = 150,
-        AssetJobRequestEscalation = 100,
-        Default = 0
+        ProcessAssetRequestSyncEscalation = 200,     //!< Used when the Sync Compile Asset (blocking compile) is requested
+        ProcessAssetRequestStatusEscalation = 150,   //!< Used when the Get Status is called on a specific asset, but not sync compile.
+        AssetJobRequestEscalation = 100,             //!< Used when the user is asking about a specific job, but not syncing
+        CriticalDependencyEscalation = 50,           //!< Used when it is discovered that a critical job depends on this job.
+        DefaultEscalation = 0
     };
     //! This enum stores all the different asset processor status values
     enum AssetProcessorStatus

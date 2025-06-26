@@ -11,6 +11,7 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/VertexUtility.azsli>
 
+#include "../../Shaders/Materials/MaterialInputs/UvSetCount.azsli"
 
 
 struct MaterialParameters {};
@@ -52,10 +53,26 @@ const MaterialParameters GetMaterialParameters()
         output.normal = IN.normal;
         return output;
     }
-        
+
+    VsOutput EvaluateVertexGeometry(
+        float3 position,
+        float3 normal,
+        float4 tangent,
+        float2 uv0,
+        float2 uv1,
+        uint instanceId)
+    {
+        VsOutput output;
+        output.worldPosition = LocalSpaceToWorldSpace(position, instanceId);
+        output.position = WorldSpaceToClipSpace(output.worldPosition);
+        output.normal = normal;
+        return output;
+    }
+
     class PixelGeometryData
     {
         float3 positionWS;
+        float2 uvs[UvSetCount];
         float3 vertexNormal;
     };
 
@@ -64,6 +81,13 @@ const MaterialParameters GetMaterialParameters()
         PixelGeometryData geoData;
         geoData.positionWS = IN.worldPosition;
         geoData.vertexNormal = normalize(IN.normal);
+
+        [unroll]
+        for(uint i = 0; i < UvSetCount; ++i)
+        {
+            geoData.uvs[i] = float2(0, 0);
+        }
+
         return geoData;
     }
 

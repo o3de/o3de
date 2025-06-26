@@ -23,6 +23,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetCollisionGroup, AzPhysics::CollisionGroup ());
         MOCK_CONST_METHOD0(GetCollisionLayer, AzPhysics::CollisionLayer ());
         MOCK_CONST_METHOD0(GetContactOffset, float ());
+        MOCK_CONST_METHOD0(GetShapeConfiguration, AZStd::shared_ptr<Physics::ShapeConfiguration> ());
         MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion> ());
         MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());

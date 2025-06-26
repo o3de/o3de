@@ -97,6 +97,13 @@ namespace AssetProcessor
 
     void RCJob::Init(JobDetails& details)
     {
+        // jobs for the "Common" platform exist to emit additional source files, which themselves could be critical
+        // so they are automatically critical as well.
+        if (GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName)
+        {
+            details.m_critical = true;
+        }
+
         m_jobDetails = AZStd::move(details);
         m_queueElementID = QueueElementID(GetJobEntry().m_sourceAssetReference, GetPlatformInfo().m_identifier.c_str(), GetJobKey());
     }

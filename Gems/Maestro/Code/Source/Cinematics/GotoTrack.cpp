@@ -125,7 +125,7 @@ namespace Maestro
         static char str[64];
         description = str;
         const float& k = m_keys[keyIndex].m_fValue;
-        azsprintf(str, "%.2f", k);
+        azsnprintf(str, AZ_ARRAY_SIZE(str), "%.2f", k);
     }
 
     void CGotoTrack::SetKeyAtTime(float time, IKey* key)

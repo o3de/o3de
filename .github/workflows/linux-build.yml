@@ -53,7 +53,7 @@ jobs:
         # Resize and combine disks as LVM in order to maximize the amount of space for builds
         uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
         with:
-          root-reserve-mb: 6000
+          root-reserve-mb: 8000
           swap-size-mb: 200
           remove-dotnet: true
           remove-haskell: true
@@ -84,7 +84,7 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=15G
+            max_size=10G
             cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
@@ -161,14 +161,14 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
-        env:
-          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
-          CC:  ${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
-          CXX: ${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
-          CMAKE_C_COMPILER_LAUNCHER: ccache
-          CMAKE_CXX_COMPILER_LAUNCHER: ccache
-          DISPLAY: :0
+        working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
         run: |
+          export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
+          export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
+          export CXX=${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
+          export CMAKE_C_COMPILER_LAUNCHER=ccache
+          export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+          export DISPLAY=:0
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           if [ "${{ inputs.desktop }}" == "true" ]; then 
             Xvfb :0 -screen 0 1400x1050x16 & # Start X virtual framebuffer for tests
@@ -183,11 +183,10 @@ jobs:
         continue-on-error: true
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
-            python \
+            .ccache \
+            .o3de/python \
             3rdParty/packages \
-            AutomatedTesting/Cache \
-            AutomatedTesting/user \
-            .ccache
+            AutomatedTesting/Cache
   
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

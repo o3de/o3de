@@ -96,7 +96,7 @@ protected:
             , pDirectorNode(nullptr)
             , disableDebugInfo(false)
             , bCreateVideo(false) {}
-        bool operator==(const SRenderItem& item)
+        bool operator==(const SRenderItem& item) const
         {
             if (pSequence == item.pSequence
                 && pDirectorNode == item.pDirectorNode

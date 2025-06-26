@@ -8,6 +8,8 @@
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/ValueStringFilter.h>
 
+#include <QTimer>
+
 namespace AZ::DocumentPropertyEditor
 {
     ValueStringFilter::ValueStringFilter()
@@ -37,6 +39,13 @@ namespace AZ::DocumentPropertyEditor
             {
                 SetFilterActive(true);
             }
+
+             QTimer::singleShot(
+                0,
+                [this]()
+                {
+                    NotifyFilterChanged(m_filterString);
+                });
         }
     }
 

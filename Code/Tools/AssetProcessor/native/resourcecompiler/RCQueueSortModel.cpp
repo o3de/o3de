@@ -38,6 +38,46 @@ namespace AssetProcessor
         }
     }
 
+    void PrintJob(RCJob* actualJob, int idx)
+    {
+        if (actualJob)
+        {
+            AZ_Printf(
+                AssetProcessor::DebugChannel,
+                "    Job %04i: (Escalation: %i) (Priority: %3i) (Status: %10s) (Crit? %s) (Plat: %s) (MissingDeps? %s) - %s\n",
+                idx,
+                actualJob->JobEscalation(),
+                actualJob->GetPriority(),
+                RCJob::GetStateDescription(actualJob->GetState()).toUtf8().constData(),
+                actualJob->IsCritical() ? "Y" : "N",
+                actualJob->GetPlatformInfo().m_identifier.c_str(),
+                actualJob->HasMissingSourceDependency() ? "Y" : "N",
+                actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
+
+            for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
+            {
+                AZ_Printf(AssetProcessor::DebugChannel, "        Depends on: %s\n",
+                    jobDependencyInternal.ToString().c_str());
+            }
+        }
+    }
+
+    void RCQueueSortModel::DumpJobListInSortOrder()
+    {
+        AZ_Printf(AssetProcessor::DebugChannel, "------------------------------------------------------------\n");
+        AZ_Printf(AssetProcessor::DebugChannel, "RCQueueSortModel: Printing Job list in sorted order:\n");
+        for (int idx = 0; idx < rowCount(); ++idx)
+        {
+            QModelIndex parentIndex = mapToSource(index(idx, 0));
+            RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
+            PrintJob(actualJob, idx);
+        }
+
+        RCJob* nextJob = GetNextPendingJob();
+        AZ_Printf(AssetProcessor::DebugChannel, "Next job:\n")
+        PrintJob(nextJob, 0);
+    }
+
     RCJob* RCQueueSortModel::GetNextPendingJob()
     {
         if (m_dirtyNeedsResort)
@@ -109,6 +149,12 @@ namespace AssetProcessor
 
                         if (m_sourceModel->isInFlight(elementId) || m_sourceModel->isInQueue(elementId))
                         {
+                            // escalate the job we depend on, if we're critical or escalated ourselves.
+                            if ((actualJob->JobEscalation() != AssetProcessor::DefaultEscalation) || (actualJob->IsCritical()))
+                            {
+                                m_sourceModel->UpdateJobEscalation(elementId, AssetProcessor::CriticalDependencyEscalation);
+                            }
+
                             canProcessJob = false;
                             if (!anyPendingJob || (anyPendingJob->HasMissingSourceDependency() && !actualJob->HasMissingSourceDependency()))
                             {
@@ -169,16 +215,9 @@ namespace AssetProcessor
         // auto fail jobs always take priority to give user feedback asap.
         bool autoFailLeft = leftJob->IsAutoFail();
         bool autoFailRight = rightJob->IsAutoFail();
-        if (autoFailLeft)
+        if (autoFailLeft != autoFailRight)
         {
-            if (!autoFailRight)
-            {
-                return true; // left before right
-            }
-        }
-        else if (autoFailRight)
-        {
-            return false; // right before left.
+            return autoFailLeft;
         }
 
         // Check if either job was marked as having a missing source dependency.
@@ -200,18 +239,10 @@ namespace AssetProcessor
         // Critical jobs should run first, so skip the comparison here if either job is critical, to allow criticality to come in first.
         bool platformsMatch = leftJob->GetPlatformInfo().m_identifier == rightJob->GetPlatformInfo().m_identifier;
 
-        // first thing to check is in platform.
+        // first thing to check is in platform.  If you're currently connected to the editor or other tool on a given platform
+        // you should prioritize those assets.
         if (!platformsMatch)
         {
-            if (leftJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName)
-            {
-                return true;
-            }
-            if (rightJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName)
-            {
-                return false;
-            }
-
             bool leftActive = m_currentlyConnectedPlatforms.contains(leftJob->GetPlatformInfo().m_identifier.c_str());
             bool rightActive = m_currentlyConnectedPlatforms.contains(rightJob->GetPlatformInfo().m_identifier.c_str());
 
@@ -229,30 +260,21 @@ namespace AssetProcessor
         }
 
         // critical jobs take priority
-        if (leftJob->IsCritical())
+        if (leftJob->IsCritical() != rightJob->IsCritical())
         {
-            if (!rightJob->IsCritical())
-            {
-                return true; // left wins.
-            }
-        }
-        else if (rightJob->IsCritical())
-        {
-            return false; // right wins
+            // one of the two is critical.
+            return leftJob->IsCritical();
         }
 
         int leftJobEscalation = leftJob->JobEscalation();
         int rightJobEscalation = rightJob->JobEscalation();
-
-        // This function, even though its called lessThan(), really is asking, does LEFT come before RIGHT
-        // The higher the escalation, the more important the request, and thus the sooner we want to process the job
-        // Which means if left has a higher escalation number than right, its LESS THAN right.
         if (leftJobEscalation != rightJobEscalation)
         {
             return leftJobEscalation > rightJobEscalation;
         }
 
-        // arbitrarily, lets have PC get done first since pc-format assets are what the editor uses.
+        // arbitrarily, lets prioritize assets for the tools host platform, ie, if you're on a PC, process PC assets before
+        // you process android assets, so that the editor and other tools start quicker.
         if (!platformsMatch)
         {
             if (leftJob->GetPlatformInfo().m_identifier == AzToolsFramework::AssetSystem::GetHostAssetPlatform())

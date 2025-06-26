@@ -40,6 +40,12 @@ namespace AzToolsFramework
         {
             return false;
         }
+
+        //! Allow the widget to lint its matching text to outline the current search
+        virtual void SetFilter([[maybe_unused]] const QString& filter)
+        {
+        }
+
         //! Returns the first widget in the tab order for this property editor, i.e. the widget that should be selected
         //! when the user hits tab on the widget immediately prior to this.
         //! By default, this returns GetWidget, a single widget tab order.

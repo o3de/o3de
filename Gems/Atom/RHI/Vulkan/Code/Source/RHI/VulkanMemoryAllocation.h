@@ -26,8 +26,11 @@ namespace AZ
             //! Creates a memory allocation object
             static RHI::Ptr<VulkanMemoryAllocation> Create();
 
-            //! Initialize a memmory allocation from a VMA allocation.
+            //! Initialize a memory allocation from a VMA allocation.
             void Init(Device& device, const VmaAllocation& alloc);
+
+            //! Initializes a memory allocation from VkDeviceMemory
+            void Init(Device& device, const VkDeviceMemory memory, size_t size);
 
             //! Returns the offset relative to the base memory address in bytes.
             size_t GetOffset() const;
@@ -66,6 +69,7 @@ namespace AZ
             VmaAllocationInfo GetAllocationInfo() const;
 
             VmaAllocation m_vmaAllocation = VK_NULL_HANDLE;
+            VkDeviceMemory m_memory = VK_NULL_HANDLE;
             size_t m_size = 0;
         };
     }

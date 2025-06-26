@@ -16,6 +16,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>

@@ -62,21 +62,31 @@ namespace AZ
                 m_unitSizeInMeters = rootTransform.ExtractScale().GetMaxElement();
                 rootTransform /= m_unitSizeInMeters;
             }
-            // for FBX, root transform is not converted where there are no meshes in the scene.
-            if ((assImpScene->GetAssImpScene()->mFlags | AI_SCENE_FLAGS_INCOMPLETE)
-                && assImpScene->GetAssImpScene()->mMetaData->HasKey("UpAxis"))
-            {
-                readRootTransform = false;
-            }
-
             if (readRootTransform)
             {
-                // AssImp SDK internally uses a Y-up coordinate system, so we need to adjust the coordinate system to match the O3DE coordinate system (Z-up).
-                AZ::Matrix3x4 adjustmatrix = AZ::Matrix3x4::CreateFromRows(
-                    AZ::Vector4(1, 0, 0, 0),
-                    AZ::Vector4(0, 0, -1, 0),
-                    AZ::Vector4(0, 1, 0, 0)
-                );
+                AZ::Matrix3x4 adjustmatrix = AZ::Matrix3x4::CreateZero();
+                // for FBX, root transform is not converted where there are no meshes in the scene.
+                if ((assImpScene->GetAssImpScene()->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
+                    && assImpScene->GetAssImpScene()->mMetaData->HasKey("UpAxis"))
+                {
+                    auto upAxisAndSign = assImpScene->GetUpVectorAndSign();
+                    auto frontAxisAndSign = assImpScene->GetFrontVectorAndSign();
+                    auto rightAxisAndSign = assImpScene->GetRightVectorAndSign();
+
+                    // Set transform matrix with basis vector (-right, front, up)
+                    adjustmatrix.SetElement(0, (int)rightAxisAndSign.first, -(float)rightAxisAndSign.second);
+                    adjustmatrix.SetElement(1, (int)frontAxisAndSign.first, (float)frontAxisAndSign.second);
+                    adjustmatrix.SetElement(2, (int)upAxisAndSign.first, (float)upAxisAndSign.second);
+                }
+                else
+                {
+                    // AssImp SDK internally uses a Y-up coordinate system, so we need to adjust the coordinate system to match the O3DE coordinate system (Z-up).
+                    adjustmatrix = AZ::Matrix3x4::CreateFromRows(
+                        AZ::Vector4(-1, 0, 0, 0),
+                        AZ::Vector4(0, 0, 1, 0),
+                        AZ::Vector4(0, 1, 0, 0)
+                    );
+                }
                 m_adjustTransform.reset(new DataTypes::MatrixType(adjustmatrix * rootTransform));
                 m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));
                 return;

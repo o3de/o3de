@@ -496,8 +496,8 @@ void EditorWindow::AddMenu_View()
         {
             QAction* action = new QAction("&Fit Canvas", this);
             {
-                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL + Qt::Key_0),
-                                                         QKeySequence(Qt::META + Qt::Key_0)});
+                action->setShortcuts(QList<QKeySequence>{QKeySequence(0x0 | Qt::CTRL | Qt::Key_0),
+                                                         QKeySequence(0x0 | Qt::META | Qt::Key_0)});
             }
             action->setEnabled(canvasLoaded);
             QObject::connect(action,
@@ -515,8 +515,8 @@ void EditorWindow::AddMenu_View()
         {
             QAction* action = new QAction("Actual &Size", this);
             {
-                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL + Qt::Key_1),
-                                                         QKeySequence(Qt::META + Qt::Key_1)});
+                action->setShortcuts(QList<QKeySequence>{QKeySequence(0x0 | Qt::CTRL | Qt::Key_1),
+                                                         QKeySequence(0x0 | Qt::META | Qt::Key_1)});
             }
             action->setEnabled(canvasLoaded);
             QObject::connect(action,
@@ -569,7 +569,7 @@ void EditorWindow::AddMenu_View()
         QAction* action = new QAction("&Rulers", this);
         action->setCheckable(true);
         action->setChecked(GetViewport() ? GetViewport()->AreRulersShown() : false);
-        action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+        action->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_R));
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
             &QAction::triggered,
@@ -587,7 +587,7 @@ void EditorWindow::AddMenu_View()
         QAction* action = new QAction("&Guides", this);
         action->setCheckable(true);
         action->setChecked(GetViewport() ? GetViewport()->AreGuidesShown() : false);
-        action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Semicolon));
+        action->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Semicolon));
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
             &QAction::triggered,
@@ -720,8 +720,8 @@ void EditorWindow::AddMenu_View()
     {
         QAction* action = new QAction("Reload All Fonts", this);
         {
-            action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL + Qt::Key_L),
-                QKeySequence(Qt::META + Qt::Key_L)});
+            action->setShortcuts(QList<QKeySequence>{QKeySequence(0x0 | Qt::CTRL | Qt::Key_L),
+                QKeySequence(0x0 | Qt::META | Qt::Key_L)});
         }
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
@@ -844,7 +844,7 @@ void EditorWindow::AddMenu_Preview()
         }
 
         QAction* action = new QAction(menuItemName, this);
-        action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
+        action->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_P));
         action->setEnabled(GetCanvas().IsValid());
         QObject::connect(action,
             &QAction::triggered,

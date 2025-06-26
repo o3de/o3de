@@ -326,6 +326,8 @@ class MultiTestSuite(object):
     # When this object is inherited, add any custom attributes as needed.
     # Extra cmdline arguments to supply for every executable instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
+    # Extra commandline arguments to supply to the asset-processor for this test suite
+    global_assetprocessor_extra_cmdline_args = None
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
@@ -747,7 +749,7 @@ class MultiTestSuite(object):
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.prepare_asset_processor(workspace, collected_test_data, extra_params=self.global_assetprocessor_extra_cmdline_args)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         self.executable.configure_settings()
 

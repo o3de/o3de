@@ -117,7 +117,7 @@ namespace AZ
         //! Each dynamic primitive drawn through the AuxGeom draw interface is stored in the scene data as an instance of this struct
         struct PrimitiveBufferEntry
         {
-            RHI::GeometryView           m_geometryView;
+            RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
             AZ::Vector3                 m_center;       // used for depth sorting blended draws
             AuxGeomPrimitiveType        m_primitiveType;
             AuxGeomDepthReadType        m_depthReadType;

@@ -11,7 +11,6 @@ set(FILES
     CmdLine.cpp
     CmdLineArg.cpp
     ConsoleBatchFile.cpp
-    ConsoleHelpGen.cpp
     DebugCallStack.cpp
     IDebugCallStack.cpp
     Log.cpp
@@ -27,7 +26,6 @@ set(FILES
     CmdLine.h
     CmdLineArg.h
     ConsoleBatchFile.h
-    ConsoleHelpGen.h
     DebugCallStack.h
     IDebugCallStack.h
     Log.h

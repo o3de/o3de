@@ -78,9 +78,8 @@ namespace UnitTests
         : public AssetProcessor::RCController
     {
     public:
-        TestingRCController() = default;
-        explicit TestingRCController(int minJobs, int maxJobs, QObject* parent = 0)
-            : AssetProcessor::RCController(minJobs, maxJobs, parent)
+        explicit TestingRCController(QObject* parent = 0)
+            : AssetProcessor::RCController(parent)
         {
 
         }

@@ -7,34 +7,23 @@
  */
 
 #include "rccontroller.h"
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/thread.h>
 #include <native/resourcecompiler/RCCommon.h>
-#include <QTimer>
+#include <QMetaObject>
 #include <QThreadPool>
-
-
+#include <QTimer>
 
 namespace AssetProcessor
 {
-    RCController::RCController(int cfg_minJobs, int cfg_maxJobs, QObject* parent)
+    RCController::RCController(QObject* parent)
         : QObject(parent)
         , m_dispatchingJobs(false)
         , m_shuttingDown(false)
     {
         AssetProcessorPlatformBus::Handler::BusConnect();
 
-        // Determine a good starting value for max jobs
-        int maxJobs = QThread::idealThreadCount();
-        if (maxJobs == -1)
-        {
-            maxJobs = 3;
-        }
-
-        maxJobs = qMax<int>(maxJobs - 1, 1);
-
-        // if the user has specified max jobs in the cfg file, then we obey their request
-        // regardless of whether they have chosen something bad or not - they would have had to explicitly
-        // pick this value (we ship with default 0 meaning auto), so if they've changed it, they intend it that way
-        m_maxJobs = cfg_maxJobs ? qMax(cfg_minJobs, cfg_maxJobs) :  maxJobs;
+        UpdateAndComputeJobSlots();
 
         m_RCQueueSortModel.AttachToModel(&m_RCJobListModel);
 
@@ -47,6 +36,76 @@ namespace AssetProcessor
 
         QObject::connect(this, &RCController::EscalateJobs, &m_RCQueueSortModel, &AssetProcessor::RCQueueSortModel::OnEscalateJobs);
     }
+
+    void RCController::UpdateAndComputeJobSlots()
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            auto settingsRoot = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey);
+            AZ::s64 valueFromRegistry = 0;
+            if (settingsRegistry->Get(valueFromRegistry, settingsRoot + "/Jobs/maxJobs"))
+            {
+                m_maxJobs = aznumeric_cast<int>(valueFromRegistry);
+            }
+
+            settingsRegistry->Get(m_alwaysUseMaxJobs, settingsRoot + "/Jobs/AlwaysUseMaxJobs");
+        }
+
+        bool isDefaultJobCount = m_maxJobs <= 1;
+
+        if (isDefaultJobCount)
+        {
+            // Determine a good starting value for max jobs, we want to use hand tuned numbers for 2, 4, 8, 12, 16, etc
+            unsigned int cpuConcurrency = AZStd::thread::hardware_concurrency();
+            if (cpuConcurrency <= 1)
+            {
+                AZ_Printf(
+                    ConsoleChannel,
+                    "Unable to determine the number of hardware threads supported on this platform, assuming 4.\n",
+                    cpuConcurrency);
+                cpuConcurrency = 4; // we can't query it on this platform, set a reasonable default that gets some work done
+            }
+            AZ_Printf(ConsoleChannel, "Auto (0) selected for maxJobs - auto-configuring based on %u available CPU cores.\n", cpuConcurrency)
+
+                // for very low numbers of cores, hand-tune the values, these might be logical cores (hyperthread) and not real ones.
+                // we will reserve about half of this for "backround processing" and then the other half will be reserved for on-demand
+                // (critical or escalated) processing when we actually dispatch jobs.
+                if (cpuConcurrency <= 4)
+            {
+                m_maxJobs = 3;
+            }
+            else if (cpuConcurrency <= 6)
+            {
+                m_maxJobs = 5;
+            }
+            else
+            {
+                // for larger number of cores, 8, 16, 24, we want a few extra cores free
+                m_maxJobs = (cpuConcurrency - 2);
+            }
+        }
+
+        // final fail-safe
+        if (m_maxJobs < 2)
+        {
+            m_maxJobs = 2;
+        }
+        AZ_Printf(ConsoleChannel, "Asset Processor CPU Usage: (settings registry 'Jobs' section):\n");
+        AZ_Printf(ConsoleChannel, "    - Process up to %u jobs in parallel\n", m_maxJobs);
+        if (m_alwaysUseMaxJobs)
+        {
+            AZ_Printf(ConsoleChannel, "    - use all %u jobs whenever possible\n", m_maxJobs);
+        }
+        else
+        {
+            AZ_Printf(
+                ConsoleChannel,
+                "    - only use %u jobs when critical work is waiting, %u otherwise.\n",
+                m_maxJobs,
+                AZStd::GetMax(m_maxJobs / 2u, 1u));
+        }
+    }
+
 
     RCController::~RCController()
     {
@@ -61,7 +120,12 @@ namespace AssetProcessor
 
     void RCController::StartJob(RCJob* rcJob)
     {
-        Q_ASSERT(rcJob);
+        AZ_Assert(rcJob, "StartJob(nullptr) invoked, programmer error.");
+        if (!rcJob)
+        {
+            return;
+        }
+
         // request to be notified when job is done
         QObject::connect(rcJob, &RCJob::Finished, this, [this, rcJob]()
         {
@@ -331,30 +395,51 @@ namespace AssetProcessor
     void RCController::DispatchJobsImpl()
     {
         m_dispatchJobsQueued = false;
-        if (!m_dispatchingJobs)
+        if (m_dispatchingJobs)
         {
-            m_dispatchingJobs = true;
+            return;
+        }
+        m_dispatchingJobs = true;
+
+        do
+        {
             RCJob* rcJob = m_RCQueueSortModel.GetNextPendingJob();
 
-            while (m_RCJobListModel.jobsInFlight() < m_maxJobs && rcJob && !m_shuttingDown)
+            if (!rcJob)
             {
-                if (m_dispatchingPaused)
-                {
-                    // note, even if dispatching is "paused" we start all "auto fail jobs" so that user gets instant feedback on failure.
-                    if (!rcJob->IsAutoFail())
-                    {
-                        break;
-                    }
-                }
-                StartJob(rcJob);
-                rcJob = m_RCQueueSortModel.GetNextPendingJob();
+                // there aren't any jobs remaining to dispatch.
+                break;
             }
-            m_dispatchingJobs = false;
-        }
+
+            // note that critical jobs and escalated jobs will always be at the top of the list
+            const bool criticalOrEscalated = rcJob->IsCritical() || (rcJob->JobEscalation() > AssetProcessor::DefaultEscalation);
+
+            // do we have an open slot for this job?
+            const unsigned int numJobsInFlight = m_RCJobListModel.jobsInFlight();
+            const unsigned int regularJobLimit = m_alwaysUseMaxJobs ? m_maxJobs : AZStd::GetMax(m_maxJobs / 2, 1u);
+            const unsigned int maxJobsToStart = criticalOrEscalated ? m_maxJobs : regularJobLimit;
+
+            // note that "auto fail jobs" oimmediately return as failed without doing any processing
+            // so they get to skip the line (they don't use up a thread
+            const bool isAutoJob = rcJob->IsAutoFail();
+            const bool tooManyJobs = numJobsInFlight >= maxJobsToStart;
+
+            if (!isAutoJob)
+            {
+                if ((tooManyJobs) || (m_dispatchingPaused))
+                {
+                    // already using too much slots.
+                    break;
+                }
+            }
+            StartJob(rcJob);
+        } while (true);
+            
+        m_dispatchingJobs = false;
     }
     void RCController::DispatchJobs()
     {
-        if (!m_dispatchJobsQueued)
+        if ((!m_dispatchJobsQueued) && (!m_dispatchingPaused))
         {
             m_dispatchJobsQueued = true;
             QMetaObject::invokeMethod(this, "DispatchJobsImpl", Qt::QueuedConnection);
@@ -423,8 +508,9 @@ namespace AssetProcessor
             // PerformHeursticSearch already prints out the results.
             m_RCQueueSortModel.OnEscalateJobs(escalationList);
         }
-        // do not print a warning out when this fails, its fine for things to escalate jobs as a matter of course just to "make sure" they are escalated
-        // and its fine if none are in the build queue.
+
+        // escalating a job could free up an idle cpu thats dedicated to critical or escalated jobs.
+        DispatchJobs();
     }
 
     void RCController::OnEscalateJobsBySourceUUID(QString platform, AZ::Uuid sourceUuid)
@@ -445,6 +531,10 @@ namespace AssetProcessor
         }
         // do not print a warning out when this fails, its fine for things to escalate jobs as a matter of course just to "make sure" they are escalated
         // and its fine if none are in the build queue.
+
+        
+        // escalating a job could free up an idle cpu thats dedicated to critical or escalated jobs.
+        DispatchJobs();
     }
 
     void RCController::OnJobComplete(JobEntry completeEntry, AzToolsFramework::AssetSystem::JobStatus state)

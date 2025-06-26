@@ -13,6 +13,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/AzFrameworkAPI.h>
 
@@ -62,6 +64,7 @@ namespace Physics
         explicit ShapeConfiguration(const AZ::Vector3& scale = ShapeConstants::DefaultScale);
         virtual ~ShapeConfiguration() = default;
         virtual ShapeType GetShapeType() const = 0;
+        virtual AZStd::shared_ptr<ShapeConfiguration> Clone() const = 0;
 
         AZ::Vector3 m_scale = ShapeConstants::DefaultScale;
     };
@@ -76,6 +79,10 @@ namespace Physics
             float radius = ShapeConstants::DefaultSphereRadius, const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<SphereShapeConfiguration>(*this);
+        }
         AZ::Sphere ToSphere(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         float m_radius = ShapeConstants::DefaultSphereRadius;
@@ -92,6 +99,10 @@ namespace Physics
             const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<BoxShapeConfiguration>(*this);
+        }
         AZ::Obb ToObb(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
@@ -109,6 +120,10 @@ namespace Physics
             const AZ::Vector3& scale = ShapeConstants::DefaultScale);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<CapsuleShapeConfiguration>(*this);
+        }
         AZ::Capsule ToCapsule(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         float m_height = ShapeConstants::DefaultCapsuleHeight; //!< Total height, including hemispherical caps, oriented along z-axis.
@@ -125,6 +140,10 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(ConvexHullShapeConfiguration, AZ::SystemAllocator);
 
         ShapeType GetShapeType() const override { return ShapeType::ConvexHull; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<ConvexHullShapeConfiguration>(*this);
+        }
 
         const void* m_vertexData = nullptr;
         AZ::u32 m_vertexCount = 0;
@@ -147,6 +166,10 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(TriangleMeshShapeConfiguration, AZ::SystemAllocator);
 
         ShapeType GetShapeType() const override { return ShapeType::TriangleMesh; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<TriangleMeshShapeConfiguration>(*this);
+        }
 
         const void* m_vertexData = nullptr;
         AZ::u32 m_vertexCount = 0;
@@ -168,6 +191,10 @@ namespace Physics
         AZ_RTTI(PhysicsAssetShapeConfiguration, "{1C0046D9-BC9E-4F93-9F0E-D62654FB18EA}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
         ShapeType GetShapeType() const override;
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<PhysicsAssetShapeConfiguration>(*this);
+        }
 
         AZ::Data::Asset<AZ::Data::AssetData> m_asset{ AZ::Data::AssetLoadBehavior::PreLoad };
         AZ::Vector3 m_assetScale = AZ::Vector3::CreateOne();
@@ -183,6 +210,10 @@ namespace Physics
         static void Reflect(AZ::ReflectContext* context);
 
         ShapeType GetShapeType() const override { return ShapeType::Native; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<NativeShapeConfiguration>(*this);
+        }
 
         void* m_nativeShapePtr = nullptr; ///< Native shape ptr. This will not be serialised
         AZ::Vector3 m_nativeShapeScale = AZ::Vector3::CreateOne(); ///< Native shape scale. This will be serialised
@@ -208,6 +239,10 @@ namespace Physics
         ~CookedMeshShapeConfiguration();
 
         ShapeType GetShapeType() const override;
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<CookedMeshShapeConfiguration>(*this);
+        }
 
         //! Sets the cooked data. This will release the cached mesh.
         //! Input data has to be in the physics engine specific format.
@@ -246,6 +281,10 @@ namespace Physics
         ShapeType GetShapeType() const override
         {
             return ShapeType::Heightfield;
+        }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<HeightfieldShapeConfiguration>(*this);
         }
 
         const void* GetCachedNativeHeightfield() const;
