@@ -7,7 +7,7 @@
     "origin": "The name of the originator or creator",
     "origin_url": "The website for this Gem",
     "type": "Code",
-    "summary": "This gem enables alternate frame rendering (AFR) by alterating rendering tasks over the GPUs",
+    "summary": "This gem enables alternate frame rendering (AFR) by alterating rendering tasks over the GPUs. The Gem is enabled by passing --afr <pipelinename> (as well as --device-count <#gpus> with the number of GPUs to use) to the executable on the command line. <pipelinename> should be a (at least partial) match for a RenderPipeline name, for which AFR should execute. This RenderPipeline needs to have a CopyToSwapChain pass at the end. If no <pipelinename> is passed, AFR is applied to the first pipeline that posses such a CopyToSwapChain pass.",
     "canonical_tags": [
         "Gem"
     ],

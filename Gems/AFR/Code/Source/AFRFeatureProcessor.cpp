@@ -195,7 +195,7 @@ namespace AFR
                 // Add CopyPasses for all devices (except for the first, which is the display GPU)
                 for(auto deviceIndex{1}; deviceIndex < m_deviceCount; ++deviceIndex)
                 {
-                    addAFRCopyPass(renderPipeline, deviceIndex);
+                    AddAFRCopyPass(renderPipeline, deviceIndex);
                 }
                 m_afrSetupState = AFRSetupState::INITIALIZING;
                 // This will trigger a "OnRenderPipelineChanged::PassChanged" event
@@ -222,7 +222,7 @@ namespace AFR
 
         ++frameNumber;
     }
-    void AFRFeatureProcessor::addAFRCopyPass(AZ::RPI::RenderPipeline* renderPipeline, int deviceIndex)
+    void AFRFeatureProcessor::AddAFRCopyPass(AZ::RPI::RenderPipeline* renderPipeline, int deviceIndex)
     {
         if (m_afrCopyPasses.contains(deviceIndex))
         {
