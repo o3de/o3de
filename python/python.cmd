@@ -24,7 +24,7 @@ REM so that the venv will not collide with any other versions of O3DE installed 
 
 REM Run the custom cmake command script to calculate the ID based on %CMD_DIR%\.. 
 SET CALC_PATH=%CMD_DIR%\..\cmake\CalculateEnginePathId.cmake
-FOR /F %%g IN ('cmake -P %CALC_PATH% %CMD_DIR%\..') DO SET ENGINE_ID=%%g
+FOR /F %%g IN ('cmake -P "%CALC_PATH%" "%CMD_DIR%\.."') DO SET ENGINE_ID=%%g
 IF NOT "%ENGINE_ID%" == "" GOTO ENGINE_ID_CALCULATED
 echo
 echo Unable to calculate engine ID
@@ -59,7 +59,7 @@ exit /b 1
 
 REM If python venv exists, we still need to validate that it is the current version by getting the 
 REM package current package hash from 3rd Party
-FOR /F %%g IN ('cmake -P %CMD_DIR%\get_python_package_hash.cmake %CMD_DIR%\.. Windows') DO SET CURRENT_PACKAGE_HASH=%%g
+FOR /F %%g IN ('cmake -P "%CMD_DIR%\get_python_package_hash.cmake" "%CMD_DIR%\.." Windows') DO SET CURRENT_PACKAGE_HASH=%%g
 IF NOT "%CURRENT_PACKAGE_HASH%" == "" GOTO PACKAGE_HASH_READ
 echo
 echo Unable to get current python package hash
