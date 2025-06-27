@@ -12,7 +12,7 @@
 
 namespace AzFramework
 {
-    class AzFrameworkNativeUIModule
+    class AZF_API AzFrameworkNativeUIModule
         : public AZ::Module
     {
     public:
