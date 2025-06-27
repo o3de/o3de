@@ -15,11 +15,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        class ScopeProducer;
-    }
-
     namespace RPI
     {
         class Pass;
@@ -65,8 +60,7 @@ namespace AFR
         };
 
         //! AFR Methods
-        void addAFRCopyPass(AZ::RPI::RenderPipeline* renderPipeline, int deviceIndex);
-        void scheduleRTASP(AZ::RPI::RenderPipeline* renderPipeline);
+        void AddAFRCopyPass(AZ::RPI::RenderPipeline* renderPipeline, int deviceIndex);
         void CollectPassesToSchedule(AZ::RPI::RenderPipeline* renderPipeline);
 
         //! AFR members
