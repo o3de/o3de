@@ -42,7 +42,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AzFramework.NativeUI ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAME AzFramework.NativeUI STATIC
     NAMESPACE AZ
     FILES_CMAKE
         AzFramework/azframework_nativeui_files.cmake
