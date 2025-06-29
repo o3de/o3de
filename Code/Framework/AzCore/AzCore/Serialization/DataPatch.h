@@ -20,6 +20,9 @@ namespace AZ
     inline namespace DataPatchInternal
     {
         class AddressTypeSerializer;
+
+        static constexpr const char PathDelimiter[] = "/";
+        static constexpr const char VersionDelimiter[] = u8"\u00B7"; // utf-8 for <middledot>
         
         // Class to store information used in determining version, typeId and location in patch hierarchy for each class element examined between patch target (root) and patched element (leaf)
         class AZCORE_API AddressTypeElement
@@ -51,9 +54,6 @@ namespace AZ
             const AZ::u64 GetAddressElement() const { return m_addressElement; }
             const AZ::u32 GetElementVersion() const { return m_addressClassVersion; }
             bool IsValid() const { return m_isValid; }
-
-            static constexpr const char PathDelimiter[] = "/";
-            static constexpr const char VersionDelimiter[] = u8"\u00B7"; // utf-8 for <middledot>
 
             void SetAddressClassTypeId(const AZ::TypeId& id) { m_addressClassTypeId = id; }
             void SetPathElement(const AZStd::string& path) { m_pathElement = path; }
