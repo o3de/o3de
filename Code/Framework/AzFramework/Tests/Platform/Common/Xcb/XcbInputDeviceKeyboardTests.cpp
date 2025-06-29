@@ -146,7 +146,7 @@ namespace AzFramework
     // out the xcp related code to its own static library and create a test module for that in order 
     // to be able to mock the xcb function.
 
-    TEST_F(XcbInputDeviceKeyboardTests, DISABLED_InputChannelsUpdateStateFromXcbEvents)
+    TEST_F(XcbInputDeviceKeyboardTests, InputChannelsUpdateStateFromXcbEvents)
     {
         using testing::DoAll;
         using testing::Eq;
@@ -224,7 +224,7 @@ namespace AzFramework
         EXPECT_THAT(inputChannel->GetState(), Eq(InputChannel::State::Ended));
     }
 
-    TEST_F(XcbInputDeviceKeyboardTests, DISABLED_TextEnteredFromXcbKeyPressEvents)
+    TEST_F(XcbInputDeviceKeyboardTests, TextEnteredFromXcbKeyPressEvents)
     {
         using testing::DoAll;
         using testing::Eq;
