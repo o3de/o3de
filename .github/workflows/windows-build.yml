@@ -59,8 +59,8 @@ jobs:
       - name: Git LFS pull
         # Minimal pull for profile builds, otherwise pull all
         run: |
-            git lfs install
-            if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
+          git lfs install
+          if ("${{ inputs.type }}" -eq "profile") { git lfs pull --include "*.ico,*.bmp" } else { git lfs pull }
 
       - name: Setup DevDrive
         uses: samypr100/setup-dev-drive@b9079d2711b01ed39de859c79c96484bfd80e078 # v3.4.1
