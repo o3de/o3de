@@ -27,6 +27,7 @@ namespace AZ
                 AZ_RTTI(AssImpImportContextProvider, "{6c263adb-e73c-4017-955a-9c212ded3637}");
 
                 AssImpImportContextProvider() = default;
+                ~AssImpImportContextProvider() override = default;
 
                 AZStd::shared_ptr<NodeEncounteredContext> CreateNodeEncounteredContext(
                     Containers::Scene& scene,

@@ -39,6 +39,11 @@ namespace AZ
             {
             }
 
+            void SceneBuilderSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+            {
+                provided.push_back(AZ_CRC_CE("ImportContextRegistryService"));
+            }
+
             void SceneBuilderSystemComponent::Reflect(ReflectContext* context)
             {
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);

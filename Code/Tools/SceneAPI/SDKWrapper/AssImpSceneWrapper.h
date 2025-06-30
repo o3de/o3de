@@ -26,7 +26,6 @@ namespace AZ
             ~AssImpSceneWrapper() override = default;
 
             bool LoadSceneFromFile(const char* fileName, const AZ::SceneAPI::SceneImportSettings& importSettings) override;
-            bool LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
