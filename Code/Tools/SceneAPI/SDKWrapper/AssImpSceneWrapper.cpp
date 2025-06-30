@@ -114,11 +114,6 @@ namespace AZ
             return true;
         }
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
-        {
-            return LoadSceneFromFile(fileName.c_str(), importSettings);
-        }
-
         const std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode() const
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
@@ -172,7 +167,7 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const
         {
-            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Z, 1);
+            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Y, 1);
             int32_t upVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("UpAxis", upVectorRead);
             m_assImpScene->mMetaData->Get("UpAxisSign", result.second);
@@ -182,7 +177,7 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetFrontVectorAndSign() const
         {
-            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Y, 1);
+            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Z, 1);
             int32_t frontVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("FrontAxis", frontVectorRead);
             m_assImpScene->mMetaData->Get("FrontAxisSign", result.second);
@@ -201,6 +196,13 @@ namespace AZ
         }
         AZStd::optional<SceneAPI::DataTypes::MatrixType> AssImpSceneWrapper::UseForcedRootTransform() const
         {
+            // AssImp automatically converts all incoming scenes to Y-up coordinate system internally, regardless of their original orientation.
+            // It does this by either applying an identity matrix (if the scene was already Y-up) or a space-transforming root matrix.
+            // This means all AssImp data can be assumed to be Y-up.
+            // 
+            // Previously, O3DE ignored this root transform and assumed source data was Z-up, leading to incorrect orientations.
+            // The AssImpReadRootTransform flag was added to handle this properly for new projects while maintaining compatibility
+            // with existing projects that had manually counter-rotated assets to compensate for the incorrect behavior.
             static constexpr const char* s_ReadRootTransformKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
             bool readRootTransform = false;
             if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())

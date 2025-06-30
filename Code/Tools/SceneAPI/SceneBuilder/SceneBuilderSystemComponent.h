@@ -18,9 +18,6 @@ namespace AZ
     {
         namespace SceneBuilder
         {
-            // Scene system components are components that can be used to create system components
-            //      in situations where the full initialization and/or construction of regular
-            //      system components don't apply such as in the ResourceCompilerScene.
             class SceneBuilderSystemComponent
                 : public AZ::Component
             {
@@ -31,6 +28,8 @@ namespace AZ
 
                 void Activate() override;
                 void Deactivate() override;
+
+                static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
                 static void Reflect(ReflectContext* context);
             private:
