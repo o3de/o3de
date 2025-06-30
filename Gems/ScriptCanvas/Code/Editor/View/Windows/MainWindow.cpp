@@ -378,14 +378,32 @@ namespace ScriptCanvasEditor
         , m_styleManager(ScriptCanvasEditor::AssetEditorId, "ScriptCanvas/StyleSheet/graphcanvas_style.json")
         , m_toolId(toolId)
     {
-        AZ_PROFILE_FUNCTION(ScriptCanvas);
-
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-
         VariablePaletteRequestBus::Handler::BusConnect();
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
-
         AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+        bool isReady = false;
+        AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(
+            isReady, &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::AreEntriesReady);
+        if (isReady)
+        {
+            InitMainWindow(); // Will be init during OnAssetBrowserComponentReady() otherwise
+        }
+    }
+
+    void MainWindow::InitMainWindow()
+    {
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
+
+        static bool alreadyInit = false;
+        if (alreadyInit)
+        {
+            assert(false && "ScriptCanvas InitMainWindow() called twice, this shouldn't happen");
+            return;
+        }
+
+        alreadyInit = true;
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
@@ -4001,7 +4019,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnAssetBrowserComponentReady()
     {
-        m_nodePaletteModel.RepopulateModel();
+        InitMainWindow();
     }
 
     void MainWindow::PrepareActiveAssetForSave()

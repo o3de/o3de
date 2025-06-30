@@ -266,6 +266,8 @@ namespace ScriptCanvasEditor
         ~MainWindow() override;
 
     private:
+        void InitMainWindow();
+
         // UIRequestBus
         QMainWindow* GetMainWindow() override { return qobject_cast<QMainWindow*>(this); }
         void OpenValidationPanel() override;
