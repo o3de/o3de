@@ -1117,7 +1117,7 @@ namespace AZ
                         break;
                     }
                 }
-                for (auto toRemove : toRemoveFromCreateList)
+                for (auto& toRemove : toRemoveFromCreateList)
                 {
                     m_blasToCreate.erase(toRemove);
                 }
@@ -1175,7 +1175,7 @@ namespace AZ
                         toDelete.insert(assetId);
                     }
                 }
-                for (auto assetId : toDelete)
+                for (auto& assetId : toDelete)
                 {
                     blasEnqueuedForCompact.erase(assetId);
                 }
@@ -1210,7 +1210,7 @@ namespace AZ
                         toDelete.insert(assetId);
                     }
                 }
-                for (auto assetId : toDelete)
+                for (auto& assetId : toDelete)
                 {
                     uncompactedBlasEnqueuedForDeletion.erase(assetId);
                 }
@@ -1523,11 +1523,11 @@ namespace AZ
             {
                 entries.erase(id);
             }
-            for (auto [deviceIndex, blasEnqueuedForCompact] : m_blasEnqueuedForCompact)
+            for (auto& [deviceIndex, blasEnqueuedForCompact] : m_blasEnqueuedForCompact)
             {
                 blasEnqueuedForCompact.erase(id);
             }
-            for (auto [deviceIndex, uncompactedBlasEnqueuedForDeletion] : m_uncompactedBlasEnqueuedForDeletion)
+            for (auto& [deviceIndex, uncompactedBlasEnqueuedForDeletion] : m_uncompactedBlasEnqueuedForDeletion)
             {
                 uncompactedBlasEnqueuedForDeletion.erase(id);
             }
