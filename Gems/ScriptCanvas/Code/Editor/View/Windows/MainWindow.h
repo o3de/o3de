@@ -27,6 +27,7 @@
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -232,6 +233,7 @@ namespace ScriptCanvasEditor
         , private ScriptCanvas::BatchOperationNotificationBus::Handler
         , private AssetGraphSceneBus::Handler
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+        , private AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler
 #if SCRIPTCANVAS_EDITOR
         //, public IEditorNotifyListener
 #endif
@@ -329,6 +331,10 @@ namespace ScriptCanvasEditor
         //! ScriptCanvas::BatchOperationsNotificationBus
         void OnCommandStarted(AZ::Crc32 commandTag) override;
         void OnCommandFinished(AZ::Crc32 commandTag) override;
+
+        //! AssetBrowserComponentNotificationBus
+        void OnAssetBrowserComponentReady() override;
+        ////
 
         // File menu
         void OnFileNew();

@@ -85,7 +85,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -386,6 +385,8 @@ namespace ScriptCanvasEditor
         VariablePaletteRequestBus::Handler::BusConnect();
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
 
+        AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
 
@@ -680,6 +681,7 @@ namespace ScriptCanvasEditor
     {
         m_workspace->Save();
 
+        AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::BatchOperationNotificationBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorRequestBus::Handler::BusDisconnect();
         UndoNotificationBus::Handler::BusDisconnect();
@@ -3995,6 +3997,11 @@ namespace ScriptCanvasEditor
     void MainWindow::OnCommandFinished(AZ::Crc32)
     {
         PopPreventUndoStateUpdate();
+    }
+
+    void MainWindow::OnAssetBrowserComponentReady()
+    {
+        m_nodePaletteModel.RepopulateModel();
     }
 
     void MainWindow::PrepareActiveAssetForSave()
