@@ -126,7 +126,7 @@ ly_append_configurations_options(
 # Look for O3DE_ENABLE_COMPILER_CACHE as a CMake flag or environment variable, then sets the appropriate compatible flags for caching
 # More details about the compiler cache can be found in CompilerCache.cmake
 
-if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true"))
+if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true") AND NOT O3DE_SCRIPT_ONLY)
     o3de_compiler_cache_activation() # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
