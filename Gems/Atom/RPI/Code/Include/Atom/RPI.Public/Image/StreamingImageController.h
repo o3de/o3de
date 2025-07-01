@@ -103,7 +103,7 @@ namespace AZ
             size_t GetPoolMemoryUsage();
 
             // Insert image to expandable and evictable lists
-            void ReinsertImageToLists(StreamingImage* image);
+            void ReinsertImageToLists(StreamingImage* image, AZStd::optional<size_t> updatedTimestamp = {});
 
             // Called when the expanding of an image is finished or canceled
             void EndExpandImage(StreamingImage* image);
