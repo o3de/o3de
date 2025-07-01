@@ -164,7 +164,10 @@ namespace AssetProcessorMessagesTests
             m_batchApplicationManager->InitAssetRequestHandler(m_assetRequestHandler);
             m_batchApplicationManager->ConnectAssetCatalog();
 
-            QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ConnectionError, [](unsigned /*connId*/, QString error)
+            QObject::connect(
+                m_batchApplicationManager->m_connectionManager,
+                &ConnectionManager::ConnectionError,
+                [](unsigned /*connId*/, [[maybe_unused]] QString error)
                 {
                     AZ_Error("ConnectionManager", false, "%s", error.toUtf8().constData());
                 });
