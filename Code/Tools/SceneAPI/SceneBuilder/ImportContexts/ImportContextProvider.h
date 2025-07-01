@@ -45,12 +45,11 @@ namespace AZ
             struct SceneNodeAddedAttributesContextBase;
             struct SceneNodeFinalizeContextBase;
             struct FinalizeSceneContextBase;
-            // ImportContextProvider realizes factory pattern and provides classes specialized for particular Scene Import library.
 
             //! @brief Abstract Factory Pattern interface for scene import context providers.
             //!
             //! The ImportContextProvider allows different scene import libraries to be integrated as Gems
-            //! by providing a standard interface for creating import contexts @see{ImportContexts.h}, scene wrappers, and handling
+            //! by providing a standard interface for creating scene wrapper, import contexts (@see ImportContexts.h) and handling
             //! file extensions. This enables the Scene API pipeline to work with multiple import libraries
             //! while maintaining a consistent interface.
             //!
@@ -59,21 +58,22 @@ namespace AZ
             //! - Provides the list of handled file extensions
             //! - Offers abstraction layer between SceneAPI and import library implementations
             //!
-            //! Usage:
-            //!     Implement this interface in your custom import library Gem
-            //!     Ensure your Gem's EditorSystemComponent reflection contains:
-            //!     ->Attribute(
-            //!         AZ::Edit::Attributes::SystemComponentTags, AssetBuilderSDK::ComponentTags::AssetBuilder)
-            //!     Register into ImportContextRegistry in the activate:
+            //! @par Usage
+            //! Implement this interface in your custom import library Gem and register with:
+            //! @code{.cpp}
+            //! if (auto* registry = AZ::SceneAPI::SceneBuilder::ImportContextRegistryInterface::Get())
+            //! {
+            //!     // Create and register the new Context Provider
+            //!     auto contextProvider = aznew AZ::SceneAPI::SceneBuilder::AwesomeLibImportContextProvider();
+            //!     registry->RegisterContextProvider(contextProvider);
+            //!     AZ_Printf("AwesomeLibImporter", "Awesome Lib import context provider registered.\n");
+            //! }
+            //! @endcode
             //!
-            //!     if (auto* registry = AZ::SceneAPI::SceneBuilder::ImportContextRegistryInterface::Get())
-            //!     {
-            //!         // Create and register the new Context Provider
-            //!         auto contextProvider = aznew AZ::SceneAPI::SceneBuilder::AwesomeLibImportContextProvider();
-            //!         registry->RegisterContextProvider(contextProvider);
-            //!         AZ_Printf("AwesomeLibImporter", "Awesome Lib import context provider registered.\n");
-            //!     }
-            //! See AssImpImportContextProvider for reference implementation.
+            //! @note Ensure your Component inherits from SceneCore::SceneSystemComponent.
+            //!       This is a different hierarchy than regular SystemComponents.
+            //!
+            //! @see AssImpImportContextProvider.h for reference implementation.
             struct ImportContextProvider
             {
                 AZ_RTTI(ImportContextProvider, "{5df22f6c-8a43-417d-b735-9d9d7d069efc}");
@@ -124,7 +124,7 @@ namespace AZ
                 virtual bool CanHandleExtension(AZStd::string_view fileExtension) const = 0;
 
                 //! Get a descriptive name for Context Provider
-                virtual AZStd::string_view GetImporterName() const { return "Unknown Importer"; }
+                virtual AZStd::string GetImporterName() const { return "Unknown Importer"; }
             };
         } // namespace SceneBuilder
     } // namespace SceneAPI

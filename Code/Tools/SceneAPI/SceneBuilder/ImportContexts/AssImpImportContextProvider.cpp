@@ -16,6 +16,8 @@ namespace AZ
     {
         namespace SceneBuilder
         {
+            AssImpImportContextProvider::~AssImpImportContextProvider() = default;
+
             AZStd::shared_ptr<NodeEncounteredContext> AssImpImportContextProvider::CreateNodeEncounteredContext(
                 Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,

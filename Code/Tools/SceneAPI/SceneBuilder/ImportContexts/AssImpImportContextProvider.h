@@ -27,7 +27,7 @@ namespace AZ
                 AZ_RTTI(AssImpImportContextProvider, "{6c263adb-e73c-4017-955a-9c212ded3637}");
 
                 AssImpImportContextProvider() = default;
-                ~AssImpImportContextProvider() override = default;
+                ~AssImpImportContextProvider() override;
 
                 AZStd::shared_ptr<NodeEncounteredContext> CreateNodeEncounteredContext(
                     Containers::Scene& scene,
@@ -77,7 +77,7 @@ namespace AZ
                     return AZStd::make_unique<AZ::AssImpSDKWrapper::AssImpSceneWrapper>();
                 }
 
-                AZStd::string_view GetImporterName() const override
+                AZStd::string GetImporterName() const override
                 {
                     return "AssImp";
                 }

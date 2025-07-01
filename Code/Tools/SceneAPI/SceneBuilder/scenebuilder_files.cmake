@@ -14,9 +14,9 @@ set(FILES
     SceneImporter.cpp
     SceneSystem.h
     SceneSystem.cpp
-    SceneBuilderSystemComponent.h
-    SceneBuilderSystemComponent.cpp
     ImportContextRegistry.h
+    ImportContextRegistryComponent.h
+    ImportContextRegistryComponent.cpp
     ImportContextRegistryManager.h
     ImportContextRegistryManager.cpp
     ImportContexts/ImportContexts.h

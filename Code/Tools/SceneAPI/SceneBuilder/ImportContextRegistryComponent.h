@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
 #include <SceneAPI/SceneBuilder/ImportContextRegistryManager.h>
-#include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
+#include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 
 namespace AZ
 {
@@ -18,13 +17,13 @@ namespace AZ
     {
         namespace SceneBuilder
         {
-            class SceneBuilderSystemComponent
-                : public AZ::Component
+            class ImportContextRegistryComponent
+                : public AZ::SceneAPI::SceneCore::SceneSystemComponent
             {
             public:
-                AZ_COMPONENT(SceneBuilderSystemComponent, "{9453ddf4-882c-4675-86eb-834f1d1dc5ef}");
+                AZ_COMPONENT(ImportContextRegistryComponent, "{9453ddf4-882c-4675-86eb-834f1d1dc5ef}", SceneCore::SceneSystemComponent);
 
-                ~SceneBuilderSystemComponent() override = default;
+                ~ImportContextRegistryComponent() override = default;
 
                 void Activate() override;
                 void Deactivate() override;
