@@ -88,11 +88,17 @@ namespace AZ
             image->m_streamingContext = nullptr;
         }
 
-        void StreamingImageController::ReinsertImageToLists(StreamingImage* image)
+        void StreamingImageController::ReinsertImageToLists(StreamingImage* image, AZStd::optional<size_t> updatedTimestamp)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             m_expandableImages.erase(image);
             m_evictableImages.erase(image);
+
+            if (updatedTimestamp)
+            {
+                StreamingImageContext* context = image->m_streamingContext.get();
+                context->m_lastAccessTimestamp = updatedTimestamp.value();
+            }
 
             if (!image->IsExpanding())
             {
@@ -218,7 +224,6 @@ namespace AZ
             StreamingImageContext* context = image->m_streamingContext.get();
 
             context->m_mipLevelTarget = mipLevelTarget;
-            context->m_lastAccessTimestamp = m_timestamp;
 
             // update image priority and re-insert the image
             if (!context->m_queuedForMipExpand)
@@ -227,7 +232,7 @@ namespace AZ
             }
 
             // reinsert the image since the priority might be changed after mip target changed
-            ReinsertImageToLists(image);
+            ReinsertImageToLists(image, m_timestamp);
         }
 
         bool StreamingImageController::ExpandPriorityComparator::operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
