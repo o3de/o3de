@@ -60,7 +60,7 @@ namespace AZ::RPI
     private:
         bool LoadMaterialSrgShaderAsset();
         void CreateSceneMaterialSrg();
-        void UpdateSceneMaterialSrg();
+        bool UpdateSceneMaterialSrg();
         bool UpdateSharedSamplerStates();
         void PrepareMaterialParameterBuffers();
         void UpdateChangedMaterialParameters();
