@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 
