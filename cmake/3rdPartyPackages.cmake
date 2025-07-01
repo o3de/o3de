@@ -737,7 +737,8 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
 endif()
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
     include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
     # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
     ly_parse_third_party_dependencies(3rdParty::Qt)
