@@ -147,7 +147,6 @@ if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "t
     set(CMAKE_VS_GLOBALS
         "CLToolExe=cl.exe"
         "CLToolPath=${CMAKE_BINARY_DIR}"
-        "TrackFileAccess=false"
     )
 else()
     ly_append_configurations_options(
