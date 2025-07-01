@@ -85,6 +85,7 @@ namespace AZ::RPI
                     "SceneMaterialSrg::m_samplers[] has size %d, expected size is AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS (%d)",
                     maxTextureSamplerStates,
                     AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS);
+                m_sharedSamplerStatesDirty = true;
             }
         }
     }
@@ -573,7 +574,7 @@ namespace AZ::RPI
         return false;
     }
 
-    void MaterialSystem::UpdateSceneMaterialSrg()
+    bool MaterialSystem::UpdateSceneMaterialSrg()
     {
         auto createBuffer = [](const size_t numElements)
         {
@@ -632,7 +633,9 @@ namespace AZ::RPI
 
             // register the buffer in the SRG and compile it
             m_sceneMaterialSrg->SetBuffer(m_materialTypeBufferInputIndex, m_materialTypeBufferIndicesBuffer);
+            return true;
         }
+        return false;
     }
 
     void MaterialSystem::Compile()
@@ -640,19 +643,26 @@ namespace AZ::RPI
         bool compileSceneMaterialSrg = false;
         if (m_sharedSamplerStatesDirty)
         {
-            m_sharedSamplerStatesDirty = false;
-            compileSceneMaterialSrg = UpdateSharedSamplerStates();
+            if (UpdateSharedSamplerStates())
+            {
+                // make sure we try again if we didn't update the samplers successfully
+                m_sharedSamplerStatesDirty = false;
+                compileSceneMaterialSrg = true;
+            }
         }
 
         if (m_bufferReadIndicesDirty)
         {
             PrepareMaterialParameterBuffers();
-            UpdateSceneMaterialSrg();
-            m_bufferReadIndicesDirty = false;
+            if (UpdateSceneMaterialSrg())
+            {
+                // make sure we try again if we didn't update the SceneMaterialSrg successfully
+                m_bufferReadIndicesDirty = false;
+                compileSceneMaterialSrg = true;
+            }
 #ifdef DEBUG_MATERIALINSTANCES
             DebugPrintMaterialInstances();
 #endif
-            compileSceneMaterialSrg = true;
         }
         UpdateChangedMaterialParameters();
         if (m_sceneMaterialSrg && compileSceneMaterialSrg)
