@@ -40,8 +40,8 @@ namespace AZ
             struct ImportContextProvider;
             class RenamedNodesMap;
 
-            //  ImportContext
-            //  Base structure containing common data needed for all import contexts
+            //!  ImportContext
+            //!  Base structure containing common data needed for all import contexts
             struct ImportContext
                 : public Events::ICallContext
             {
@@ -57,12 +57,12 @@ namespace AZ
                 ImportContextProvider* m_contextProvider; // The provider that created this context.
             };
 
-            //  NodeEncounteredContext
-            //  Context pushed to indicate that a new Node has been found and any
-            //  importers that have means to process the contained data should do so
-            //  Member Variables:
-            //      m_createdData - out container that importers must add their created data
-            //          to.
+            //!  NodeEncounteredContext
+            //!  Context pushed to indicate that a new Node has been found and any
+            //!  importers that have means to process the contained data should do so
+            //!  Member Variables:
+            //!      m_createdData - out container that importers must add their created data
+            //!          to.
             struct NodeEncounteredContext
                 : public ImportContext
             {
@@ -79,14 +79,14 @@ namespace AZ
                 AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>> m_createdData;
             };
 
-            //  SceneDataPopulatedContextBase
-            //  Context pushed to indicate that a piece of scene data has been fully 
-            //  processed and any importers that wish to place it within the scene graph
-            //  may now do so.
-            //  Member Variables:
-            //      m_graphData - the piece of data that should be inserted in the graph
-            //      m_dataName - the name that should be used as the basis for the scene node
-            //          name
+            //!  SceneDataPopulatedContextBase
+            //!  Context pushed to indicate that a piece of scene data has been fully
+            //!  processed and any importers that wish to place it within the scene graph
+            //!  may now do so.
+            //!  Member Variables:
+            //!      m_graphData - the piece of data that should be inserted in the graph
+            //!      m_dataName - the name that should be used as the basis for the scene node
+            //!          name
             struct SceneDataPopulatedContextBase
                 : public ImportContext
             {
@@ -105,10 +105,10 @@ namespace AZ
                 const AZStd::string m_dataName;
             };
 
-            //  SceneNodeAppendedContextBase
-            //  Context pushed to indicate that data has been added to the scene graph. 
-            //  Generally created due to the insertion of a node during SceneDataPopulatedContextBase
-            //  processing.
+            //!  SceneNodeAppendedContextBase
+            //!  Context pushed to indicate that data has been added to the scene graph.
+            //!  Generally created due to the insertion of a node during SceneDataPopulatedContextBase
+            //!  processing.
             struct SceneNodeAppendedContextBase
                 : public ImportContext
             {
@@ -119,8 +119,8 @@ namespace AZ
                     Containers::SceneGraph::NodeIndex currentGraphPosition, RenamedNodesMap& nodeNameMap);
             };
 
-            // SceneAttributeDataPopulatedContextBase
-            // Context pushed to indicate that attribute data has been found and processed
+            //! SceneAttributeDataPopulatedContextBase
+            //! Context pushed to indicate that attribute data has been found and processed
             struct SceneAttributeDataPopulatedContextBase
                 : public ImportContext
             {
@@ -134,8 +134,8 @@ namespace AZ
                 const AZStd::string m_dataName;
             };
 
-            // SceneAttributeNodeAppendedContextBase
-            // Context pushed to indicate that an attribute node has been added to the scene graph
+            //! SceneAttributeNodeAppendedContextBase
+            //! Context pushed to indicate that an attribute node has been added to the scene graph
             struct SceneAttributeNodeAppendedContextBase
                 : public ImportContext
             {
@@ -145,9 +145,9 @@ namespace AZ
                     Containers::SceneGraph::NodeIndex newIndex);
             };
 
-            //  SceneNodeAddedAttributesContextBase
-            //  Context pushed to indicate that all attribute processors have completed their
-            //  work for a specific data node.
+            //!  SceneNodeAddedAttributesContextBase
+            //!  Context pushed to indicate that all attribute processors have completed their
+            //!  work for a specific data node.
             struct SceneNodeAddedAttributesContextBase
                 : public ImportContext
             {
@@ -156,9 +156,9 @@ namespace AZ
                 SceneNodeAddedAttributesContextBase(SceneNodeAppendedContextBase& parent);
             };
 
-            //  SceneNodeFinalizeContextBase
-            //  Context pushed last after all other contexts for a scene node to allow any
-            //  post-processing needed for an importer.
+            //!  SceneNodeFinalizeContextBase
+            //!  Context pushed last after all other contexts for a scene node to allow any
+            //!  post-processing needed for an importer.
             struct SceneNodeFinalizeContextBase
                 : public ImportContext
             {
@@ -167,9 +167,9 @@ namespace AZ
                 SceneNodeFinalizeContextBase(SceneNodeAddedAttributesContextBase& parent);
             };
 
-            //  FinalizeSceneContextBase
-            //  Context pushed after the scene has been fully created. This can be used to finalize pending work
-            //  such as resolving named links.
+            //!  FinalizeSceneContextBase
+            //!  Context pushed after the scene has been fully created. This can be used to finalize pending work
+            //!  such as resolving named links.
             struct FinalizeSceneContextBase
                 : public ImportContext
             {

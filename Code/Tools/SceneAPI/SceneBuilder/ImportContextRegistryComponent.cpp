@@ -6,11 +6,10 @@
  *
  */
 
-#include "SceneBuilderSystemComponent.h"
+#include "ImportContextRegistryComponent.h"
 #include "ImportContexts/AssImpImportContextProvider.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.h>
 
 namespace AZ
 {
@@ -18,8 +17,9 @@ namespace AZ
     {
         namespace SceneBuilder
         {
-            void SceneBuilderSystemComponent::Activate()
+            void ImportContextRegistryComponent::Activate()
             {
+                AZ_Info("SceneAPI", "Activate SceneBuilderSystemComponent.\n");
                 // Get the import context registy
                 if (auto* registry = ImportContextRegistryInterface::Get())
                 {
@@ -35,21 +35,21 @@ namespace AZ
                 }
             }
 
-            void SceneBuilderSystemComponent::Deactivate()
+            void ImportContextRegistryComponent::Deactivate()
             {
             }
 
-            void SceneBuilderSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+            void ImportContextRegistryComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
                 provided.push_back(AZ_CRC_CE("ImportContextRegistryService"));
             }
 
-            void SceneBuilderSystemComponent::Reflect(ReflectContext* context)
+            void ImportContextRegistryComponent::Reflect(ReflectContext* context)
             {
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<SceneBuilderSystemComponent, AZ::Component>()->Version(1);
+                    serializeContext->Class<ImportContextRegistryComponent, SceneCore::SceneSystemComponent>()->Version(1);
                 }
             }
         } // namespace SceneBuilder

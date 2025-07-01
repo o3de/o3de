@@ -20,13 +20,12 @@ namespace AZ
         {
             struct ImportContextProvider;
 
-            // ImportContextRegistry realizes Abstract Factory Pattern.
-            // It provides a family of objects related to a particular Import Context.
-            // Those include ImportContext specializations for different stages of the Import pipeline
-            // as well as Scene and Node wrappers.
-            // To add a new library for importing scene assets:
-            // - specialize and implement the ImportContextProvider
-            // - register specialization with this interface
+            //! @brief ImportContextRegistry realizes ImportContextProvider's Abstract Factory Pattern.
+            //!
+            //! ImportContextRegistry provides a family of objects related to the Import Context of a particular Asset Import library.
+            //! Those include ImportContexts for different stages of the Import pipeline as well as Scene and Node wrappers.
+            //! ImportContexts are typically aware of their provider, so they could issue additional contexts in the same family,
+            //! e.g., SceneNodeAppendedContext can be used to issue corresponding SceneAttributeDataPopulatedContext...
             class ImportContextRegistry
             {
             public:

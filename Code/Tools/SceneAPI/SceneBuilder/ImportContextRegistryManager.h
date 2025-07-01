@@ -26,16 +26,17 @@ namespace AZ
                 AZ_CLASS_ALLOCATOR(ImportContextRegistryManager, AZ::SystemAllocator, 0);
 
                 ImportContextRegistryManager();
+                ~ImportContextRegistryManager() override;
+
                 ImportContextRegistryManager(const ImportContextRegistryManager&) = delete;
                 ImportContextRegistryManager& operator=(const ImportContextRegistryManager&) = delete;
-
-                ~ImportContextRegistryManager() override = default;
+                ImportContextRegistryManager(ImportContextRegistryManager&& other) = delete;
+                ImportContextRegistryManager& operator=(ImportContextRegistryManager&& other) = delete;
 
                 void RegisterContextProvider(ImportContextProvider* provider) override;
                 void UnregisterContextProvider(ImportContextProvider* provider) override;
                 ImportContextProvider* SelectImportProvider(AZStd::string_view fileExtension) const override;
 
-                static ImportContextRegistryManager& GetInstance();
             private:
                 AZStd::vector<AZStd::unique_ptr<ImportContextProvider>> m_importContextProviders;
             };

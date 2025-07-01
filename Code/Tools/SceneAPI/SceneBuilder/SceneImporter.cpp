@@ -113,7 +113,7 @@ namespace AZ
                 auto* registry = ImportContextRegistryInterface::Get();
                 if (registry)
                 {
-                    m_contextProvider.reset(registry->SelectImportProvider(extension));
+                    m_contextProvider = registry->SelectImportProvider(extension);
                 }
                 else
                 {

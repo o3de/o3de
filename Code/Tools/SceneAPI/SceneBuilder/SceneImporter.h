@@ -50,8 +50,9 @@ namespace AZ
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
                 AZStd::shared_ptr<SceneSystem> m_sceneSystem;
-                AZStd::unique_ptr<ImportContextProvider> m_contextProvider {};
-                ImportContextRegistryManager m_contextRegistry;
+                //! pointer to ImportContextProvider
+                //! a raw pointer is enough, since the ImportContextRegistryManager maintains the ownership
+                ImportContextProvider* m_contextProvider = nullptr;
             };
         } // namespace SceneBuilder
     } // namespace SceneAPI

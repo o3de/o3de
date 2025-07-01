@@ -16,12 +16,9 @@ namespace AZ
     {
         namespace SceneBuilder
         {
-            ImportContextRegistryManager::ImportContextRegistryManager()
-            {
-                // register AssImp default provider
-                auto assimpContextProvider = aznew AssImpImportContextProvider();
-                m_importContextProviders.push_back(AZStd::unique_ptr<ImportContextProvider>(assimpContextProvider));
-            };
+            ImportContextRegistryManager::ImportContextRegistryManager() = default;
+
+            ImportContextRegistryManager::~ImportContextRegistryManager() = default;
 
             void ImportContextRegistryManager::RegisterContextProvider(ImportContextProvider* provider)
             {
@@ -48,7 +45,7 @@ namespace AZ
             {
                 AZ_TracePrintf(
                     "SceneAPI",
-                    "Finding ImportContextProvider (registered %d) suitable for extension: %.*s",
+                    "Matching ImportContextProvider (registered %d) suitable for extension: %.*s",
                     m_importContextProviders.size(),
                     static_cast<int>(fileExtension.length()),
                     fileExtension.data());
@@ -59,24 +56,15 @@ namespace AZ
                     {
                         return it->get();
                     }
-                    else
-                    {
-                        AZ_TracePrintf(
-                            "SceneAPI",
-                            "Importer %s cannot handle %.*s",
-                            it->get()->GetImporterName().data(),
-                            static_cast<int>(fileExtension.length()),
-                            fileExtension.data());
-                    }
+                    AZ_TracePrintf(
+                        "SceneAPI",
+                        "Importer %s cannot handle %.*s, skipping",
+                        it->get()->GetImporterName().data(),
+                        static_cast<int>(fileExtension.length()),
+                        fileExtension.data());
                 }
                 return nullptr; // No provider found
             }
-            ImportContextRegistryManager& ImportContextRegistryManager::GetInstance()
-            {
-                static ImportContextRegistryManager instance;
-                return instance;
-            }
-
         } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
