@@ -176,6 +176,10 @@ set(FILES
     Passes/Mobile/TransparentParent.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
+    Passes/MotionBlur.pass
+    Passes/MotionBlurTileFilter.pass
+    Passes/MotionBlurTileMaxHor.pass
+    Passes/MotionBlurTileMaxVer.pass
     Passes/MotionVectorParent.pass
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
@@ -568,6 +572,15 @@ set(FILES
     Shaders/PostProcessing/LuminanceHistogramGenerator.shader
     Shaders/PostProcessing/ModulateTexture.azsl
     Shaders/PostProcessing/ModulateTexture.shader
+    Shaders/PostProcessing/MotionBlur.azsli
+    Shaders/PostProcessing/MotionBlur.azsl
+    Shaders/PostProcessing/MotionBlur.shader
+    Shaders/PostProcessing/MotionBlurTileMaxHor.azsl
+    Shaders/PostProcessing/MotionBlurTileMaxHor.shader
+    Shaders/PostProcessing/MotionBlurTileMaxVer.azsl
+    Shaders/PostProcessing/MotionBlurTileMaxVer.shader
+    Shaders/PostProcessing/MotionBlurTileFilter.azsl
+    Shaders/PostProcessing/MotionBlurTileFilter.shader
     Shaders/PostProcessing/MSAAResolveCustom.azsl
     Shaders/PostProcessing/MSAAResolveCustom.shader
     Shaders/PostProcessing/MSAAResolveDepth.azsl
