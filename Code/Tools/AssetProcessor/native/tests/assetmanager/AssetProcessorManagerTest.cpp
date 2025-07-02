@@ -4743,7 +4743,7 @@ TEST_F(AssetProcessorManagerTest, JobDependency_WrongPlatformEmitted_FailsJob)
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
     ASSERT_TRUE(BlockUntilIdle(5000));
 
-	// the job should auto fail.
+    // the job should auto fail.
     EXPECT_EQ(jobDetails.size(), 2);
     EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
     EXPECT_EQ(jobDetails[0].m_autoFail, true); // the job should be auto-failed because the dependency is for a different platform
