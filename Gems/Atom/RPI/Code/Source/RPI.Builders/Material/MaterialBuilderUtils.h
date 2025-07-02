@@ -34,7 +34,8 @@ namespace AZ
                 const AZStd::string& jobKey,
                 const AZStd::string& platformId = {},
                 const AZStd::vector<AZ::u32>& subIds = {},
-                const bool updateFingerprint = true);
+                const bool updateFingerprint = true,
+                const bool orderOnce = false);
 
             //! Given a material asset that has been fully built and prepared,
             //! add any image dependencies as pre-load dependencies, to the job being emitted.

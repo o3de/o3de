@@ -34,7 +34,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-
 namespace AZ
 {
     namespace RPI
@@ -86,12 +85,19 @@ namespace AZ
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
 
+                bool orderOnce = false;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(orderOnce, "/O3DE/Atom/RPI/MaterialBuilder/SkipModelRebuildAfterMaterialTypeChange");
+                }
+
                 AssetBuilderSDK::JobDependency jobDependency;
                 jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
                 jobDependency.m_productSubIds.push_back(0);
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                jobDependency.m_type =
+                    orderOnce ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order;
 
                 jobDependencyList.push_back(jobDependency);
             }
