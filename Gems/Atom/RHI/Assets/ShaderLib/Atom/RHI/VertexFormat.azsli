@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#if !defined(VertexFormatEnumType)
+#define VertexFormatEnumType
+#endif
+
+enum class VertexFormat VertexFormatEnumType
+{
+    Unknown = 0,
+
+    R32G32B32A32_FLOAT,
+    R16G16B16A16_FLOAT,
+
+    R32G32B32_FLOAT,
+    R16G16B16_FLOAT,
+
+    R32G32_FLOAT,
+    R16G16_FLOAT,
+    R8G8_UNORM,
+
+    N32_OCT, // 32 bit octahedron-encoded normal (15-15-1)
+    N16_OCT, // 16 bit octahedron-encoded normal (7-7-1)
+    N8_OCT, // 8 bit octahedron-encoded normal (3-3-1)
+
+    T32_OCT, // 32 bit octahedron-encoded tangent (15-15-1-1)
+    T16_OCT, // 16 bit octahedron-encoded tangent (7-7-1-1)
+    T8_OCT, // 8 bit octahedron-encoded tangent (3-3-1-1)
+};
+
+inline uint GetVertexFormatSize(VertexFormat format)
+{
+    switch (format)
+    {
+    case VertexFormat::R32G32B32A32_FLOAT:
+        return 16;
+
+    case VertexFormat::R32G32B32_FLOAT:
+        return 12;
+
+    case VertexFormat::R32G32_FLOAT:
+    case VertexFormat::R16G16B16A16_FLOAT:
+        return 8;
+
+    case VertexFormat::R16G16B16_FLOAT:
+        return 6;
+
+    case VertexFormat::R16G16_FLOAT:
+    case VertexFormat::N32_OCT:
+    case VertexFormat::T32_OCT:
+        return 4;
+
+    case VertexFormat::R8G8_UNORM:
+    case VertexFormat::N16_OCT:
+    case VertexFormat::T16_OCT:
+        return 2;
+
+    case VertexFormat::N8_OCT:
+    case VertexFormat::T8_OCT:
+        return 1;
+
+    default:
+        return 0;
+    }
+}

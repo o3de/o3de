@@ -406,10 +406,10 @@ namespace Terrain
             meshGroup.m_submeshVector.clear();
             AZ::Render::RayTracingFeatureProcessorInterface::SubMesh& subMesh = meshGroup.m_submeshVector.emplace_back();
 
-            subMesh.m_positionFormat = positionsBufferFormat;
+            subMesh.m_positionFormat = AZ::RHI::ConvertToVertexFormat(positionsBufferFormat);
             subMesh.m_positionVertexBufferView = positionsVertexBufferView;
             subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
-            subMesh.m_normalFormat = normalsBufferFormat;
+            subMesh.m_normalFormat = AZ::RHI::ConvertToVertexFormat(normalsBufferFormat);
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
             subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
             subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);

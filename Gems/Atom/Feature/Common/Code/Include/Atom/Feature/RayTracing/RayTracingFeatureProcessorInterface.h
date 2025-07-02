@@ -11,6 +11,7 @@
 #include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingCompactionQueryPool.h>
+#include <Atom/RHI.Reflect/VertexFormat.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/GpuQuery/Query.h>
@@ -32,7 +33,8 @@ namespace AZ::Render
 
         Tangent = AZ_BIT(0),
         Bitangent = AZ_BIT(1),
-        UV = AZ_BIT(2)
+        UV = AZ_BIT(2),
+        Uint16Index = AZ_BIT(3),
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Render::RayTracingSubMeshBufferFlags);
 
@@ -82,24 +84,23 @@ namespace AZ::Render
         struct SubMesh
         {
             // vertex streams
-            RHI::Format m_positionFormat = RHI::Format::Unknown;
-
+            RHI::VertexFormat m_positionFormat = RHI::VertexFormat::Unknown;
             RHI::StreamBufferView m_positionVertexBufferView;
             RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
 
-            RHI::Format m_normalFormat = RHI::Format::Unknown;
+            RHI::VertexFormat m_normalFormat = RHI::VertexFormat::Unknown;
             RHI::StreamBufferView m_normalVertexBufferView;
             RHI::Ptr<RHI::BufferView> m_normalShaderBufferView;
 
-            RHI::Format m_tangentFormat = RHI::Format::Unknown;
+            RHI::VertexFormat m_tangentFormat = RHI::VertexFormat::Unknown;
             RHI::StreamBufferView m_tangentVertexBufferView;
             RHI::Ptr<RHI::BufferView> m_tangentShaderBufferView;
 
-            RHI::Format m_bitangentFormat = RHI::Format::Unknown;
+            RHI::VertexFormat m_bitangentFormat = RHI::VertexFormat::Unknown;
             RHI::StreamBufferView m_bitangentVertexBufferView;
             RHI::Ptr<RHI::BufferView> m_bitangentShaderBufferView;
 
-            RHI::Format m_uvFormat = RHI::Format::Unknown;
+            RHI::VertexFormat m_uvFormat = RHI::VertexFormat::Unknown;
             RHI::StreamBufferView m_uvVertexBufferView;
             RHI::Ptr<RHI::BufferView> m_uvShaderBufferView;
 

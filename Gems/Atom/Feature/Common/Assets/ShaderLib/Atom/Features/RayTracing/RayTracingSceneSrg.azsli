@@ -60,15 +60,25 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     // mesh info structured buffer containing offsets into the mesh buffers, irradiance color, and transform for each mesh
     struct MeshInfo
     {
-        uint     m_indexOffset;
-        uint     m_positionOffset;
-        uint     m_normalOffset;
-        uint     m_tangentOffset;
-        uint     m_bitangentOffset;
-        uint     m_uvOffset;
+        uint m_indexOffset;
+        uint m_positionOffset;
+        uint m_normalOffset;
+        uint m_tangentOffset;
+        uint m_bitangentOffset;
+        uint m_uvOffset;
+
+        uint m_positionFormat;
+        uint m_normalFormat;
+        uint m_uvFormat;
+        uint m_tangentFormat;
+        uint m_bitangentFormat;
         
-        uint     m_bufferFlags;
-        uint     m_bufferStartIndex;
+        uint m_bufferFlags;
+        uint m_bufferStartIndex;
+
+        uint _padding1;
+        uint _padding2;
+        uint _padding3;
 
         float3x4 m_worldInvTranspose;
     };
@@ -100,6 +110,7 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_BUFFER_FLAG_TANGENT        (1 << 0)
     #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
     #define MESH_BUFFER_FLAG_UV             (1 << 2)
+    #define MESH_BUFFER_UINT16_INDEX        (1 << 3)
 
     // Specifies which debug visualization to use (value must be from RayTracingDebugViewMode enum)
     uint m_debugViewMode;

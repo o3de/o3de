@@ -192,8 +192,18 @@ namespace AZ
                 uint32_t m_bitangentByteOffset = 0;
                 uint32_t m_uvByteOffset = 0;
 
+                RHI::VertexFormat m_positionFormat;
+                RHI::VertexFormat m_normalFormat;
+                RHI::VertexFormat m_uvFormat;
+                RHI::VertexFormat m_tangentFormat;
+                RHI::VertexFormat m_bitangentFormat;
+
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
                 uint32_t m_bufferStartIndex = 0;
+
+                uint32_t _padding1;
+                uint32_t _padding2;
+                uint32_t _padding3;
 
                 AZStd::array<float, 12> m_worldInvTranspose; // float3x4
             };

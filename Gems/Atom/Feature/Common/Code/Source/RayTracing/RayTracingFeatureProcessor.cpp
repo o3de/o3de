@@ -462,6 +462,12 @@ namespace AZ
                         subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
                     meshInfo.m_uvByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
 
+                    meshInfo.m_positionFormat = subMesh.m_positionFormat;
+                    meshInfo.m_normalFormat = subMesh.m_normalFormat;
+                    meshInfo.m_uvFormat = subMesh.m_uvFormat;
+                    meshInfo.m_tangentFormat = subMesh.m_tangentFormat;
+                    meshInfo.m_bitangentFormat = subMesh.m_bitangentFormat;
+
                     auto& materialInfos{ m_materialInfos[deviceIndex] };
                     MaterialInfo& materialInfo = materialInfos[subMesh.m_globalIndex];
                     ConvertMaterial(materialInfo, subMesh.m_material, deviceIndex);
