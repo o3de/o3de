@@ -5205,7 +5205,7 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrdered_CausesReprocessingIfDepen
     ASSERT_EQ(jobDetails.size(), 1);
     EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
 
-    // Ack processing to return to idle state.  This should alto trigger processing of the original file with the dep.
+    // Ack processing to return to idle state.  This should also trigger processing of the original file with the dep.
     responseB.m_outputProducts[0].m_productSubID = 0;
     m_isIdling = false;
     QMetaObject::invokeMethod(
@@ -5218,9 +5218,6 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrdered_CausesReprocessingIfDepen
     ASSERT_TRUE(BlockUntilIdle(5000));
     ASSERT_EQ(jobDetails.size(), 1);
     EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
-
-    // now have B run again but this time have it output a subid 0.
-    // A should auto trigger.
 }
 
 
