@@ -21,6 +21,7 @@ namespace AZ
         PLATFORM_APPLE_IOS,
         PLATFORM_APPLE_MAC,
         PLATFORM_ANDROID_64,    // ARMv8 / 64-bit
+        PLATFORM_EMSCRIPTEN,    // WebAssembly
         #if defined(AZ_EXPAND_FOR_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
         PLATFORM_##PUBLICNAME,

@@ -6,4 +6,72 @@
 #
 #
 
-set(FILES)
+set(FILES
+    AzCore/AzCore_Traits_Platform.h
+    AzCore/AzCore_Traits_Emscripten.h
+    AzCore/base_Platform.h
+    AzCore/base_Emscripten.h
+    AzCore/PlatformId/PlatformId_Platform.h
+    AzCore/PlatformId/PlatformId_Emscripten.h
+    ../Common/UnixLike/AzCore/std/parallel/internal/condition_variable_UnixLike.h
+    ../Common/UnixLike/AzCore/std/parallel/internal/mutex_UnixLike.h
+    ../Common/UnixLike/AzCore/std/parallel/internal/semaphore_UnixLike.h
+    ../Common/UnixLike/AzCore/std/parallel/internal/thread_UnixLike.cpp
+    ../Common/UnixLike/AzCore/std/parallel/internal/thread_UnixLike.h
+    ../Common/UnixLike/AzCore/std/parallel/internal/time_UnixLike.h
+    AzCore/std/parallel/internal/condition_variable_Platform.h
+    AzCore/std/parallel/internal/mutex_Platform.h
+    AzCore/std/parallel/internal/semaphore_Platform.h
+    AzCore/std/parallel/internal/thread_Emscripten.cpp
+    AzCore/std/parallel/internal/thread_Platform.h
+    AzCore/std/parallel/config_Emscripten.h
+    AzCore/std/parallel/config_Platform.h
+    AzCore/std/string/fixed_string_Platform.inl
+    ../Common/Clang/AzCore/std/string/fixed_string_Clang.inl
+    ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Debug/StackTracer_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp
+    AzCore/Debug/Trace_Emscripten.cpp
+    ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
+    ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
+    ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/FileIO_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.h
+    ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
+    ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp
+    ../Common/UnixLikeDefault/AzCore/IO/SystemFile_UnixLikeDefault.cpp
+    AzCore/IO/SystemFile_Emscripten.cpp
+    AzCore/IO/SystemFile_Platform.h
+    AzCore/IPC/SharedMemory_Platform.h
+    ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
+    AzCore/Memory/OSAllocator_Platform.h
+    AzCore/Module/Internal/ModuleManagerSearchPathTool_Emscripten.cpp
+    AzCore/Math/Internal/MathTypes_Emscripten.h
+    AzCore/Math/Random_Platform.h
+    ../Common/UnixLike/AzCore/Math/Random_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Math/Random_UnixLike.h
+    ../Common/UnixLike/AzCore/Module/DynamicModuleHandle_UnixLike.cpp
+    AzCore/Module/DynamicModuleHandle_Emscripten.cpp
+    ../Common/Unimplemented/AzCore/NativeUI/NativeUISystemComponent_Unimplemented.cpp
+    ../Common/UnixLike/AzCore/PlatformIncl_UnixLike.h
+    ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
+    AzCore/PlatformIncl_Platform.h
+    AzCore/Serialization/Locale_Platform.h
+    AzCore/Settings/CommandLineParser_Platform.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.h
+    ../Common/UnixLike/AzCore/Serialization/Locale_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.h
+    ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
+    ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
+    ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h
+    AzCore/Socket/AzSocket_fwd_Platform.h
+    AzCore/Socket/AzSocket_Platform.h
+    ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
+    AzCore/Utils/Utils_Emscripten.cpp
+    ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp
+    AzCore/Debug/Profiler_Platform.inl
+    ../Common/Unimplemented/AzCore/Debug/Profiler_Unimplemented.inl
+)
