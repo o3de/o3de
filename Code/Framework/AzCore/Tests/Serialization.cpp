@@ -1178,7 +1178,7 @@ namespace AZ {
 
         static ClassInfoType* GetGenericInfo()
         {
-            return static_cast<ClassInfoType*>(GetCurrentSerializeContextModule().CreateGenericClassInfo<GenericClass>());
+            return static_cast<ClassInfoType*>(GetGlobalSerializeContextModule().CreateGenericClassInfo<GenericClass>());
         }
 
         static AZ::TypeId GetClassTypeId()
@@ -1242,7 +1242,7 @@ namespace AZ {
 
         static ClassInfoType* GetGenericInfo()
         {
-            return static_cast<ClassInfoType*>(GetCurrentSerializeContextModule().CreateGenericClassInfo<GenericChild>());
+            return static_cast<ClassInfoType*>(GetGlobalSerializeContextModule().CreateGenericClassInfo<GenericChild>());
         }
 
         static AZ::TypeId GetClassTypeId()

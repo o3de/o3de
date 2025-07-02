@@ -11,11 +11,6 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-extern "C" AZ_DLL_EXPORT void CleanUpRpiPublicGenericClassInfo()
-{
-    AZ::GetCurrentSerializeContextModule().Cleanup();
-}
-
 #endif
 
 #include <Atom/RPI.Public/SceneBus.h>

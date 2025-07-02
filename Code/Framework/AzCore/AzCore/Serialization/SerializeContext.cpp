@@ -501,7 +501,7 @@ namespace AZ
     {
         DestroyEditContext();
         auto moduleSet = AZStd::move(m_perModuleSet);
-        for(PerModuleGenericClassInfo* module : moduleSet)
+        for(GlobalGenericClassInfo* module : moduleSet)
         {
             module->UnregisterSerializeContext(this);
         }
@@ -509,7 +509,7 @@ namespace AZ
 
     void SerializeContext::CleanupModuleGenericClassInfo()
     {
-        GetCurrentSerializeContextModule().UnregisterSerializeContext(this);
+        GetGlobalSerializeContextModule().UnregisterSerializeContext(this);
     }
 
     //=========================================================================
@@ -754,7 +754,7 @@ namespace AZ
         else
         {
             // Make sure that the ModuleCleanup structure has the serializeContext set on it.
-            GetCurrentSerializeContextModule().RegisterSerializeContext(this);
+            GetGlobalSerializeContextModule().RegisterSerializeContext(this);
             // Find the module GenericClassInfo in the SerializeContext GenericClassInfo multimap and add if it is not part of the SerializeContext multimap
             auto scGenericClassInfoRange = m_uuidGenericMap.equal_range(classId);
             auto scGenericInfoFoundIt = AZStd::find_if(scGenericClassInfoRange.first, scGenericClassInfoRange.second, [genericClassInfo](const AZStd::pair<AZ::Uuid, GenericClassInfo*>& genericPair)
@@ -2306,12 +2306,12 @@ namespace AZ
         return (reflectedClassData != nullptr);
     }
 
-    SerializeContext::PerModuleGenericClassInfo::~PerModuleGenericClassInfo()
+    SerializeContext::GlobalGenericClassInfo::~GlobalGenericClassInfo()
     {
         Cleanup();
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::Cleanup()
+    void SerializeContext::GlobalGenericClassInfo::Cleanup()
     {
         auto genericClassInfoContainer = AZStd::move(m_moduleLocalGenericClassInfos);
         auto serializeContextSet = AZStd::move(m_serializeContextSet);
@@ -2333,13 +2333,13 @@ namespace AZ
         }
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::RegisterSerializeContext(AZ::SerializeContext* serializeContext)
+    void SerializeContext::GlobalGenericClassInfo::RegisterSerializeContext(AZ::SerializeContext* serializeContext)
     {
         m_serializeContextSet.emplace(serializeContext);
         serializeContext->m_perModuleSet.emplace(this);
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::UnregisterSerializeContext(AZ::SerializeContext* serializeContext)
+    void SerializeContext::GlobalGenericClassInfo::UnregisterSerializeContext(AZ::SerializeContext* serializeContext)
     {
         m_serializeContextSet.erase(serializeContext);
         serializeContext->m_perModuleSet.erase(this);
@@ -2349,7 +2349,7 @@ namespace AZ
         }
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo)
+    void SerializeContext::GlobalGenericClassInfo::AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo)
     {
         if (!genericClassInfo)
         {
@@ -2360,7 +2360,7 @@ namespace AZ
         m_moduleLocalGenericClassInfos.emplace(genericClassInfo->GetSpecializedTypeId(), genericClassInfo);
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::RemoveGenericClassInfo(const AZ::TypeId& genericTypeId)
+    void SerializeContext::GlobalGenericClassInfo::RemoveGenericClassInfo(const AZ::TypeId& genericTypeId)
     {
         if (genericTypeId.IsNull())
         {
@@ -2375,16 +2375,16 @@ namespace AZ
         }
     }
 
-    AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo(const AZ::TypeId& genericTypeId) const
+    AZ::GenericClassInfo* SerializeContext::GlobalGenericClassInfo::FindGenericClassInfo(const AZ::TypeId& genericTypeId) const
     {
         auto genericClassInfoFoundIt = m_moduleLocalGenericClassInfos.find(genericTypeId);
         return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
     }
 
     // Take advantage of static variables being unique per dll module to clean up module specific registered classes when the module unloads
-    SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule()
+    SerializeContext::GlobalGenericClassInfo& GetGlobalSerializeContextModule()
     {
-        static SerializeContext::PerModuleGenericClassInfo s_ModuleCleanupInstance;
+        static SerializeContext::GlobalGenericClassInfo s_ModuleCleanupInstance;
         return s_ModuleCleanupInstance;
     }
 } // namespace AZ

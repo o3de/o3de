@@ -131,7 +131,7 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext * context)
 
 extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo()
 {
-    AZ::GetCurrentSerializeContextModule().Cleanup();
+    AZ::GetGlobalSerializeContextModule().Cleanup();
 }
 
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
