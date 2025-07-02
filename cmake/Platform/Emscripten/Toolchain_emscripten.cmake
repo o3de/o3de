@@ -5,6 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-ly_set(LY_PLATFORM_DETECTION_Emscripten Emscripten)
-ly_set(LY_HOST_PLATFORM_DETECTION_Emscripten ${CMAKE_HOST_SYSTEM_NAME})

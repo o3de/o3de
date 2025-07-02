@@ -5,3 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(LY_RUNTIME_DEPENDENCIES_TEMPLATE ${LY_ROOT_FOLDER}/cmake/Platform/Common/runtime_dependencies_common.cmake.in)
+include(cmake/Platform/Common/RuntimeDependencies_common.cmake)
