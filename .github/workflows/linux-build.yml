@@ -163,6 +163,7 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
+        timeout-minutes: 320
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
@@ -185,10 +186,10 @@ jobs:
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
             .ccache \
-            .o3de/python \
-            3rdParty/packages \
+            .o3de/python/downloaded_packages \
+            3rdParty/downloaded_packages \
             AutomatedTesting/Cache
-  
+
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}

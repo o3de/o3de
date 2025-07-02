@@ -184,7 +184,7 @@ jobs:
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json
         # Set temp folders to the workspace drive as the boot drive is slow
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
-        timeout-minutes: 310
+        timeout-minutes: 320
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
@@ -203,8 +203,8 @@ jobs:
           try {
             tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
               .ccache `
-              .o3de\python `
-              3rdParty\packages `
+              .o3de\python\downloaded_packages `
+              3rdParty\downloaded_packages `
               AutomatedTesting\Cache
           } catch {
             echo "Warning: Error during tar compression"
