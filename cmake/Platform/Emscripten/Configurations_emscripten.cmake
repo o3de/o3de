@@ -7,7 +7,7 @@
 #
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+    include(cmake/Platform/Common/Emscripten/Configurations_emscripten.cmake)
 else()
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
 endif()
