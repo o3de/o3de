@@ -195,7 +195,7 @@ jobs:
             tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
               .ccache `
               .o3de\python `
-              3rdParty\packages `
+              3rdParty\downloaded_packages `
               AutomatedTesting\Cache
           } catch {
             echo "Warning: Error during tar compression"
