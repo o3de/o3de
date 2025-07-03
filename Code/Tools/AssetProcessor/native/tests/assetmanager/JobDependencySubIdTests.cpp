@@ -12,6 +12,19 @@
 
 namespace UnitTests
 {
+    // sets up data such that:
+
+    // SOURCE FILES DATABASE TABLE
+    //    source1 = parent.txt
+    //    source2 = child.txt
+    // JOB DATABASE TABLE
+    //    job1 "Mock Job" (completed)
+    // PRODUCT DATABASE TABLE
+    //    product.txt (subid 0) for job1       - sets hash to input "hashA"
+    //    procuct777.txt (subid 77) for job1   - sets hash to input "HashB"
+    // SOURCE FILE DEPENDENCY TABLE
+    //    JobToJob Dependency - child.txt DEPENDS ON parent.txt - SUBID is either empty, or 777
+
     void JobDependencySubIdTest::CreateTestData(AZ::u64 hashA, AZ::u64 hashB, bool useSubId)
     {
         using namespace AzToolsFramework::AssetDatabase;

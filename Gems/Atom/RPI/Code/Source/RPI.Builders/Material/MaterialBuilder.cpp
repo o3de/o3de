@@ -190,7 +190,12 @@ namespace AZ
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
                 {
-                    if (jobDependency.m_platformIdentifier.empty())
+                    // we pre-populated these dependencies without any platform to depend on, ie, its blank.
+                    // Jobs depend on other jobs via a unique triplicate, which is (platform, job key, source file)
+                    // e.g. ("android", "Material Type Builder", "blah/whatever/foo.materialtype")
+                    // Anything can depend on the common platform (used for intermediate assets) but other platforms
+                    // should only depend on other assets from the same platform
+                    if (jobDependency.m_platformIdentifier.compare(AssetBuilderSDK::CommonPlatformName) != 0)
                     {
                         jobDependency.m_platformIdentifier = platformInfo.m_identifier;
                     }
