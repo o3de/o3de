@@ -2079,9 +2079,9 @@ namespace UnitTest
 
         AZ_TEST_START_ASSERTTEST;
         creator.AddShader(shaderB);
-        AZ_TEST_STOP_ASSERTTEST(1);
+        AZ_TEST_STOP_ASSERTTEST(2);
 
-        EXPECT_EQ(1, creator.GetErrorCount());
+        EXPECT_EQ(2, creator.GetErrorCount());
     }
 
     TEST_F(MaterialTypeAssetTests, Error_ShaderInputNotFound)
