@@ -1,6 +1,6 @@
 ### Glossary
 
-- **Rendering Pipeline**: Sequence of Rendering-Passes, declared in e.g. `MainRenderPipeline.azasset` and `MainPipeline.pass`, or `LowEndRenderPipeline.azasset` and `LowEndPipeline.pass`
+- **Render Pipeline**: Sequence of Render-Passes, declared in e.g. `MainRenderPipeline.azasset` and `MainPipeline.pass`, or `LowEndRenderPipeline.azasset` and `LowEndPipeline.pass`
 - **Materialtype**: A list of material properties, material functors and rasterpass shaders needed to render a mesh with that material, e.g. `AutoBrick.materialtype`, or `basepbr_generated.materialtype`  
 - **Abstract Materialtype**: A list of material properties and material-functors and several shader functions, but no actual shaders. Also specifies a lighting model needed for the material pipeline. E.g. `BasePBR.materialtype`
 - **Material**: An instance of a MaterialType with specific property values, assigned to a mesh and rendered.
@@ -8,24 +8,24 @@
 - **Material Property**: A generic property value for a material, either directly used by the shaders (e.g. `baseColor`, `baseColorMap`, and `baseColorFactor`), as shader-option (e.g. `enableShadows` or `enableIBL`), or as rasterizer setting (e.g. `doubleSided`) 
 - **Material Shader Parameters**: Specific set of property values (e.g. a texture, or a color) used by shaders during rendering. 
 - **Material Functors**: Generic Lua scripts or C++ functions that are executed when material properties are modified, e.g. `UseTexture` sets a shader-option and a texture-map - index when a texture is selected.
-- **Material Pipeline**: A list of shader templates that are compatible with a Rendering Pipeline and that use the material-shadercode from the abstract materialtype. A material-pipeline generates a non-abstract materialtype and shaders, so that an abstract material can be rendered with a specific rendering pipeline, e.g (`MainPipeline.materialpipeline` or `LowEndPipeline.materialpipelin`).
+- **Material Pipeline**: A list of shader templates that are compatible with a Render Pipeline and that use the material-shadercode from the abstract materialtype. A material-pipeline generates a non-abstract materialtype and shaders, so that an abstract material can be rendered with a specific render pipeline, e.g (`MainPipeline.materialpipeline` or `LowEndPipeline.materialpipelin`).
 - **Material Pipeline Script**: A lua script that filters the shader templates of the material pipeline based on the lighting model of the abstract materialtype, e.g. `MainPipelineScript.lua` or `LowEndPipelineScript.lua`
 - **Material Pipeline Functors**: Similar to material functors, but specified in the material pipeline: Generic lua scripts that are executed when a material property is modified: e.g. `ShaderEnable.lua` enables or disables transparency - shaders based on the `isTransparent` - property of the material. 
 - **Material Canvas**: A graphical node-based editor used to create custom shader code for material types. The graph is converted into shader code for abstract material-types, which in turn use materialpipelines to create shaders for specific render pipelines.
 
 ### MaterialPipeline basics
 
-At the most basic level a (non-abstract) material in O3DE provides a set of shaders that are executed by the matching raster passes for each mesh using that material. This means that the material shaders and the rendering pipeline have to be closely linked: In order to render a mesh in a Forward+ pipeline, the material has to provide at least a depth pre-pass shader and an opaque shader, and all shaders have to use the same render attachments as the corresponding raster passes. Furthermore, the opaque shader for the Forward+ pipeline expects a view-based tiled light assignment, and a cascaded shadowmap for the directional lights, which consequently also forces the rendering pipeline to provide these things.
+At the most basic level a (non-abstract) material in O3DE provides a set of shaders that are executed by the matching raster passes for each mesh using that material. This means that the material shaders and the render pipeline have to be closely linked: In order to render a mesh in a Forward+ pipeline, the material has to provide at least a depth pre-pass shader and an opaque shader, and all shaders have to use the same render attachments as the corresponding raster passes. Furthermore, the opaque shader for the Forward+ pipeline expects a view-based tiled light assignment, and a cascaded shadowmap for the directional lights, which consequently also forces the render pipeline to provide these things.
 
-In O3DE, the rendering pipeline is very configurable. It is reasonably easy to set up a deferred rendering pipeline or a fully path-traced rendering pipeline. But since the material shaders are closely linked to the rendering pipeline, they cannot be reused across different configurations. For example, in a deferred rendering pipeline, the opaque pass is executed as a fullscreen shader per material type---as opposed to a raster pass, which is executed per mesh. As a different example, the default opaque shader expects a cascaded shadowmap for the directional light, but that shadowmap is only valid in the view frustum of the camera. This becomes problematic for features like ray traced reflections, where a mesh outside of the frustum still needs a valid shadow value. 
+In O3DE, the render pipeline is very configurable. It is reasonably easy to set up a deferred render pipeline or a fully path-traced render pipeline. But since the material shaders are closely linked to the render pipeline, they cannot be reused across different configurations. For example, in a deferred render pipeline, the opaque pass is executed as a fullscreen shader per material type---as opposed to a raster pass, which is executed per mesh. As a different example, the default opaque shader expects a cascaded shadowmap for the directional light, but that shadowmap is only valid in the view frustum of the camera. This becomes problematic for features like ray traced reflections, where a mesh outside of the frustum still needs a valid shadow value. 
 
-While a material type could theoretically provide shaders for both, Forward+ and deferred rendering pipelines, doing so would require adapting shaders each time a pipeline is modified or a new one is introduced. This means that every change to the rendering pipeline—such as adding or removing a render target in the opaque pass of the MainPipeline—necessitates updates to every opaque shader, for every material, in every project, including user-generated materials—or existing projects would break.
+While a material type could theoretically provide shaders for both, Forward+ and deferred render pipelines, doing so would require adapting shaders each time a pipeline is modified or a new one is introduced. This means that every change to the render pipeline—such as adding or removing a render target in the opaque pass of the MainPipeline—necessitates updates to every opaque shader, for every material, in every project, including user-generated materials—or existing projects would break.
 
-To solve this issue, O3DE uses material pipelines (e.g., `MainPipeline.materialpipeline`) and abstract material types to separate the material shaders from the rendering pipeline to some extend. The paterial pipeline is strictly related to the rendering pipeline, and defines a list of template shaders that are compatible with the render passes of the rendering pipeline. Each of these shaders call specific material functions at specific locations, and the abstract material has to provide these functions. This allows O3DE to generate the actual material shaders needed to render a mesh with any rendering pipeline.
+To solve this issue, O3DE uses material pipelines (e.g., `MainPipeline.materialpipeline`) and abstract material types to separate the material shaders from the render pipeline to some extend. The paterial pipeline is strictly related to the render pipeline, and defines a list of template shaders that are compatible with the render passes of the render pipeline. Each of these shaders call specific material functions at specific locations, and the abstract material has to provide these functions. This allows O3DE to generate the actual material shaders needed to render a mesh with any render pipeline.
 
 _Note:_ Material pipelines do not explicitly specifiy the material functions or the shader structure, and the formal requirements to both the shaders and the abstract materials are fairly minimal: The abstract material type specifies two `.azsli` files in the `materialShaderDefines` and `materialShaderCode` fields. These are provided to the shader template via `MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH` and `MATERIAL_TYPE_AZSLI_FILE_PATH`, respectively. For additional background information: The define file referenced in `MATERIAL_PARAMETERS_AZSLI_FILE_PATH` contains a `struct MaterialParameters`, which is generated from the material shader parameters.
 
-That being said, the abstract material types provided by the engine (namely `BasePBR`, `StandardPBR`, etc.) and the shader templates of the material pipelines (namely `MainPipeline`, `LowEndPipeline`, `MobilePipeline`, etc.) do follow a fairly strict interface, which is described below. In order to integrate custom material types into existing rendering pipelines, or to create a new rendering pipeline that uses the existing materials, it is suggested to stick to something very close to this.
+That being said, the abstract material types provided by the engine (namely `BasePBR`, `StandardPBR`, etc.) and the shader templates of the material pipelines (namely `MainPipeline`, `LowEndPipeline`, `MobilePipeline`, etc.) do follow a fairly strict interface, which is described below. In order to integrate custom material types into existing render pipelines, or to create a new render pipeline that uses the existing materials, it is suggested to stick to something very close to this.
 
 **Example:**
 - `MainPipeline.materialpipeline` defines the shader template `ForwardPass_BaseLighting` and the `pipelineScript` `MainPipelineScript.lua`
@@ -37,12 +37,12 @@ That being said, the abstract material types provided by the engine (namely `Bas
 
 - `VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params);`
   - Generally called in the vertex shader, and is supposed to provide the vertices in normalized device coordinates.
-  - The structs `VsInput` and `VsOutput` are defined by the shader template, but can be controlled with various defines, e.g., `PIPELINE_VERTEX_POSITION` or `PIPELINE_VERTEX_NORMAL`.
+  - The structs `VsInput` and `VsOutput` are defined by the shader template, but can be controlled with various defines, e.g., `MATERIAL_USES_VERTEX_POSITION` or `MATERIAL_USES_VERTEX_NORMAL`.
   - The struct `MaterialParameters` is defined by the material.
   - The struct `VsSystemValues` is defined by the shader template, and should be treated as opaque by the material.
 - `PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params);`
   - Generally called in the pixel shader, forwards values from the `VsOutput` struct, and constructs the per-pixel tangent frame. 
-  - Used to decouple the pipeline-specific vertex data from the more generic --------------> TODO? <------------ be used to procedurally generate geometry, or to prepare input for a more generic `EvaluateSurface`.
+  - Can be used to procedurally generate geometry, or to prepare input for a more generic `EvaluateSurface`.
   - The struct `PixelGeometryData` is defined by the material, and opaque to the shader template.
 - `Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData);`
   - Generally called in the pixel shader. It mostly samples textures.
@@ -131,12 +131,12 @@ In the rest of the shader code, `EvaluateVertexGeometry()` can be called in an a
 // These are usually not fully defined by the material, but are instead controlled by several defines: See 'BasePBR_VertexData.azsli' in conjunction with 'ForwardPassVertexData.azsli'.
 // struct VsInput{};            // Inputs to the vertex shader
 // struct VsOutput{};           // Output of the vertex shader, input to the pixel shader
-// struct VsSystemValues{};     // Values specific to the rendering pipeline (e.g. `instanceId` for Forward+), usually treated as an opaque struct that is passed to various utility functions, and never declared by the material directly.
-//   How everything fits together can become conplex. E.g., the InstanceId needs to be passed from the vertex shader to the pixel shader and therefore, needs to be part of the VsOutput struct in a Forward+ pipeline only.
+// struct VsSystemValues{};     // Values specific to the render pipeline (e.g. `instanceId` for Forward+), usually treated as an opaque struct that is passed to various utility functions, and never declared by the material directly.
+//   How everything fits together can become complex. E.g., the InstanceId needs to be passed from the vertex shader to the pixel shader and therefore, needs to be part of the VsOutput struct in a Forward+ pipeline only.
 
 // struct PixelGeometryData{}; // Converts the VsOutput to input for the surface data; 
                                // Ideally, this does parallax handling and alpha clipping, so that the custom z pass can stop after this.
-                               // In practice, alpha clipping happens with the surface. ----------------> TODO! <---------------
+                               // In practice, alpha clipping currently happens with the surface.
 // See 'BasePBR_PixelGeometryData.azsli' 
 
 // struct SurfaceData{};       // Contains all the surface data needed to evaluate the lighting on a pixel. 
@@ -145,7 +145,7 @@ In the rest of the shader code, `EvaluateVertexGeometry()` can be called in an a
 
 // struct LightingData{};      // Contains input and output for the actual lighting evaluation.
                                // The lighting evaluation functions use this during the evaluation of the separate light types.
-                               // The shader converts this to the actual output of the pixel shader (which depends on the rendering pipeline).
+                               // The shader converts this to the actual output of the pixel shader (which depends on the render pipeline).
                                // This means the struct needs to have least the members which are expected by these functions and shaders.
 // See 'BasePBR_LightingData.azsli'
 
@@ -184,7 +184,6 @@ In the rest of the shader code, `EvaluateVertexGeometry()` can be called in an a
 // 
 // - 'PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params);'
 //     This is called in the pixel shader, and converts VsOutput IN into PixelGeometryData.
-//     --------> TODO: <----------- make alpha-clipping part of this, so we only need to call this for the custom z passes. Otherwise, this can be folded into the surface
 //
 // - 'Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params);'
 //     Called in the pixel shader. It converts PixelGeometryData to surface data. 
