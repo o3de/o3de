@@ -18,6 +18,8 @@ class Surface
     TransmissionSurfaceData transmission;
 #endif
 
+    uint lightingChannels;     //!< Lightingchannel of the object
+
     // ------- BasePbrSurfaceData -------
     float3 position;            //!< Position in world-space
     float3 normal;              //!< Normal in world-space
