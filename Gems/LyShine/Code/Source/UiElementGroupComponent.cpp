@@ -1,5 +1,11 @@
-
-#include <UiElementGroupComponent.h>
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#include "UiElementGroupComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -10,21 +16,20 @@
 
 AZ_COMPONENT_IMPL(UiElementGroupComponent, "UiElementGroupComponent", "{B8C5A864-1A98-48B9-BEBB-1FDE06E6D463}");
 
-/*===========*/
-/*== Start ==*/
-/*===========*/
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::Activate()
 {
     UiElementGroupBus::Handler::BusConnect(GetEntityId());
     UiInitializationBus::Handler::BusConnect(GetEntityId());
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::Deactivate()
 {
     UiElementGroupBus::Handler::BusDisconnect();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::InGamePostActivate()
 {
     UiInitializationBus::Handler::BusDisconnect();
@@ -33,10 +38,7 @@ void UiElementGroupComponent::InGamePostActivate()
     if(!m_isRenderingLocallyEnabled) { SetRendering(false); }
 }
 
-/*============================*/
-/*== Interactivity Handling ==*/
-/*============================*/
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiElementGroupComponent::SetInteractivity(bool enabled)
 {
     m_isInteractionLocallyEnabled = enabled;
@@ -44,6 +46,7 @@ bool UiElementGroupComponent::SetInteractivity(bool enabled)
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiElementGroupComponent::SetParentInteractivity(bool parentEnabled)
 {
     m_isInteractionParentEnabled = parentEnabled;
@@ -51,6 +54,7 @@ bool UiElementGroupComponent::SetParentInteractivity(bool parentEnabled)
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::UpdateInteractiveState()
 {
     const bool effectiveState = GetInteractiveState();
@@ -59,10 +63,11 @@ void UiElementGroupComponent::UpdateInteractiveState()
     UiInteractableBus::Event(GetEntityId(), &UiInteractableInterface::SetIsHandlingEvents, effectiveState);
     UiInteractableBus::Event(GetEntityId(), &UiInteractableInterface::SetIsHandlingMultiTouchEvents, effectiveState);
     
-    PropagateInteractivityToChildren(GetEntityId(), effectiveState);
+    DoRecursiveSetInteractivityToChildren(GetEntityId(), effectiveState);
 }
 
-void UiElementGroupComponent::PropagateInteractivityToChildren(const AZ::EntityId& parentId, bool parentState)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiElementGroupComponent::DoRecursiveSetInteractivityToChildren(const AZ::EntityId& parentId, bool parentState)
 {
     AZStd::vector<AZ::EntityId> children;
     UiElementBus::EventResult(children, parentId, &UiElementInterface::GetChildEntityIds);
@@ -81,15 +86,12 @@ void UiElementGroupComponent::PropagateInteractivityToChildren(const AZ::EntityI
             UiInteractableBus::Event(child, &UiInteractableInterface::SetIsHandlingMultiTouchEvents, parentState);
             
             // Recurse into this child's children
-            PropagateInteractivityToChildren(child, parentState);
+            DoRecursiveSetInteractivityToChildren(child, parentState);
         }
     }
 }
 
-/*========================*/
-/*== Rendering Handling ==*/
-/*========================*/
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiElementGroupComponent::SetRendering(bool enabled)
 {
     UiElementBus::Event(GetEntityId(), &UiElementInterface::SetIsRenderEnabled, enabled);
@@ -97,10 +99,7 @@ bool UiElementGroupComponent::SetRendering(bool enabled)
     return true;
 }
 
-/*=============*/
-/*== Utility ==*/
-/*=============*/
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiElementGroupComponent::GetRenderingState()
 {
     UiElementBus::EventResult(m_isRenderingLocallyEnabled, GetEntityId(), &UiElementInterface::IsRenderEnabled);
@@ -108,10 +107,7 @@ bool UiElementGroupComponent::GetRenderingState()
     return m_isRenderingLocallyEnabled; 
 }
 
-/*============*/
-/*== System ==*/
-/*============*/
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::Reflect(AZ::ReflectContext* context)
 {
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -129,8 +125,8 @@ void UiElementGroupComponent::Reflect(AZ::ReflectContext* context)
             ->Attribute(AZ::Edit::Attributes::Category, "UI")
             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
-            ->DataElement(AZ::Edit::UIHandlers::Default, &UiElementGroupComponent::m_isInteractionLocallyEnabled, "Local Interaction", "Whether this group and children will be interactable.")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &UiElementGroupComponent::m_isRenderingLocallyEnabled, "Local Rendering", "Whether this group and children will be rendered.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &UiElementGroupComponent::m_isInteractionLocallyEnabled, "Is Interactive", "Whether this group and children will be interactable.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &UiElementGroupComponent::m_isRenderingLocallyEnabled, "Is Visible", "Whether this group and children will be rendered.")
             ;
         }
     }
@@ -138,26 +134,33 @@ void UiElementGroupComponent::Reflect(AZ::ReflectContext* context)
     if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
     {
         behaviorContext->EBus<UiElementGroupBus>("UiElementGroupBus")
-        ->Event("SetInteractivity", &UiElementGroupInterface::SetInteractivity)
-        ->Event("SetRendering", &UiElementGroupInterface::SetRendering)
+        ->Event("Set Interactive State", &UiElementGroupInterface::SetInteractivity)
+        ->Event("Get Interactive State", &UiElementGroupInterface::GetInteractiveState)
+        ->Event("Set Rendering State", &UiElementGroupInterface::SetRendering)
+        ->Event("Get Rendering State", &UiElementGroupInterface::GetRenderingState)
         ;
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
 {
     provided.push_back(AZ_CRC_CE("UiElementGroupComponentService"));
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
 {
     incompatible.push_back(AZ_CRC_CE("UiElementGroupComponentService"));
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
 {
+    required.push_back(AZ_CRC_CE("UiElementService"));
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiElementGroupComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
 {
 }
