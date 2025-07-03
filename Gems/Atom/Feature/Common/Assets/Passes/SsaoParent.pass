@@ -13,6 +13,11 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "Output",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
@@ -36,7 +41,7 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "DepthLinear"
                             }
                         }
@@ -84,7 +89,7 @@
                         {
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
-                                "Pass": "PipelineGlobal",
+                                "Pass": "Parent",
                                 "Attachment": "DepthLinear"
                             }
                         },
