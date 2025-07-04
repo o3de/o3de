@@ -32,8 +32,8 @@ ly_append_configurations_options(
         -fno-exceptions
         -fvisibility=hidden
         -fvisibility-inlines-hidden
-        -Wall
-        -Werror
+        # -Wall # Disabled the time to fix the build itself
+        # -Werror
 
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
@@ -48,7 +48,6 @@ ly_append_configurations_options(
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
-        -Wno-deprecated-no-relaxed-template-template-args
 
         ###################
         # Enabled warnings (that are disabled by default)

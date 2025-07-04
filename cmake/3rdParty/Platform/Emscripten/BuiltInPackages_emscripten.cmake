@@ -16,7 +16,6 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                       
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                    PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-emscripten                       TARGETS expat                   PACKAGE_HASH 1a1e4bb25ccaa6033082e4e6562c837ebb274938b01ff368c2c2546c87707047)
-ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-emscripten                         TARGETS Lua                     PACKAGE_HASH cbead8f644a4906326a9f5437a5941da1b5fed8bb76cb3e2d41812176a20e6ef)
-ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-emscripten                       TARGETS ZLIB                    PACKAGE_HASH 2f6a82fe4a193d8eb51e92ef4a6de15ec222dc9b4a1802a631f4cdc149bb6a72)
-ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-emscripten                         TARGETS lz4                     PACKAGE_HASH 1231052cba13575d4f41fc88f227e8169e86bc287b918176cd3226b4da4b4d48)
+
+# Required packages to add :
+# expat, Lua, zlib, lz4, tiff, png, openssl, freetype, samplerate
