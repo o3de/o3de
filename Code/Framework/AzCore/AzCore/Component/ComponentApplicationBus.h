@@ -57,6 +57,9 @@ namespace AZ
         //! Signals if the application is running in console mode where the native client window is not created but still (optionally) supports graphics rendering.
         bool IsConsoleMode() const;
 
+        //! Signals if the application is the AssetProcessor tool application.
+        bool IsAssetProcessor() const;
+
         enum class Masks
         {
             Invalid = 0,
@@ -65,6 +68,7 @@ namespace AZ
             Game = 1 << 2,
             Headless = 1 << 3,
             ConsoleMode = 1 << 4,
+            AssetProcessor = 1 << 5
         };
         Masks m_maskValue = Masks::Invalid;
     };
@@ -76,6 +80,7 @@ namespace AZ
     inline bool ApplicationTypeQuery::IsGame() const { return (m_maskValue & Masks::Game) == Masks::Game; }
     inline bool ApplicationTypeQuery::IsHeadless() const { return (m_maskValue & Masks::Headless) == Masks::Headless; }
     inline bool ApplicationTypeQuery::IsConsoleMode() const { return (m_maskValue & Masks::ConsoleMode) == Masks::ConsoleMode; }
+    inline bool ApplicationTypeQuery::IsAssetProcessor() const { return (m_maskValue & Masks::AssetProcessor) == Masks::AssetProcessor; }
     inline bool ApplicationTypeQuery::IsValid() const { return m_maskValue != Masks::Invalid; }
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;

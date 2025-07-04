@@ -25,7 +25,7 @@ namespace ScriptCanvas
     namespace Debugger
     {
         /**
-         * ClientTransceiver 
+         * ClientTransceiver - Editor/Tooling side only
          * listens to debugger service messages on the target manager bus, and translates them
          * to ServiceNotifications
          *
@@ -51,12 +51,9 @@ namespace ScriptCanvas
             
             //////////////////////////////////////////////////////////////////////////
             // ClientRequests
-            AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() override;
-
-            bool HasValidConnection() const override;
-            bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const override;
-            bool IsConnectedToSelf() const override;
-            AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() override;
+            AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() const override;
+            void SetNetworkTarget(AzFramework::RemoteToolsEndpointInfo target) override;
+            AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() const override;
 
             void AddBreakpoint(const Breakpoint&) override;
             void AddVariableChangeBreakpoint(const VariableChangeBreakpoint&) override;
@@ -72,12 +69,6 @@ namespace ScriptCanvas
             void GetActiveEntities() override;
             void GetActiveGraphs() override;
             void GetVariableValue() override;
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // TODO : Must be implemented via IRemoteTools handlers
-            void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
-            void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
 
             void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
@@ -107,9 +98,6 @@ namespace ScriptCanvas
 
             //////////////////////////////////////////////////////////////////////////
             // ClientUIRequestBus
-            void StartEditorSession() override;
-            void StopEditorSession() override;
-
             void StartLogging(ScriptTarget& initialTargets) override;
             void StopLogging() override;
 
@@ -120,35 +108,27 @@ namespace ScriptCanvas
             void RemoveGraphLoggingTarget(const AZ::Data::AssetId& assetId) override;
             //////////////////////////////////////////////////////////////////////////
 
-        protected:
-            void DiscoverNetworkTargets();
+        private:
+            void OnRemoteToolsEndpointListChanged();
+            void ConnectToFirstTargetIfNotConnected();
+
             void BreakpointAdded(const Breakpoint& breakpoint);
             void ClearMessages();
             void ProcessMessages();
-            
-        private:
-            void DesiredTargetConnected(bool connected);
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
-            void DisconnectFromTarget();
-            void CleanupConnection();
 
+        private:
             Mutex m_mutex;
 
-            AzFramework::RemoteToolsEndpointInfo m_selfTarget;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointJoinedHandler;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointLeftHandler;
 
-            bool m_resetDesiredTarget = false;
-            AzFramework::RemoteToolsEndpointInfo m_previousDesiredInfo;
-
-            AzFramework::RemoteToolsEndpointInfo m_currentTarget;
             ScriptTarget m_connectionState;
+            ScriptTarget m_addCache;
+            ScriptTarget m_removeCache;
 
-            AzFramework::RemoteToolsEndpointContainer m_networkTargets;
             AZStd::unordered_set<Breakpoint> m_breakpointsActive;
             AZStd::unordered_set<Breakpoint> m_breakpointsInactive;
 
-            ScriptTarget m_addCache;
-            ScriptTarget m_removeCache;
-            
             Mutex m_msgMutex;
             AzFramework::RemoteToolsMessageQueue m_msgQueue;
         };
