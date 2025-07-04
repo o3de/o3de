@@ -74,6 +74,7 @@
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
 #include <PostProcessing/ChromaticAberrationPass.h>
+#include <PostProcessing/MotionBlurPass.h>
 #include <PostProcessing/PaniniProjectionPass.h>
 #include <PostProcessing/FilmGrainPass.h>
 #include <PostProcessing/WhiteBalancePass.h>
@@ -296,6 +297,9 @@ namespace AZ
 
             // Add Chromatic Aberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
+
+            // Add Motion Blur
+            passSystem->AddPassCreator(Name("MotionBlurPass"), &MotionBlurPass::Create);
 
             // Add Panini Projection
             passSystem->AddPassCreator(Name("PaniniProjectionPass"), &PaniniProjectionPass::Create);

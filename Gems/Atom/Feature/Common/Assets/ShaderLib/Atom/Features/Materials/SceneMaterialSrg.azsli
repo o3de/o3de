@@ -45,24 +45,34 @@ Texture2D GetMaterialTexture(const int readIndex)
     return Bindless::GetTexture2D(readIndex);
 }
 
-const MaterialParameters GetMaterialParameters()
+const MaterialParameters GetMaterialParameters(const int materialTypeId, const int materialInstanceId)
 {
     // The ByteAddressBuffers referenced in the SceneMaterialSrg hold the MaterialParameters for all MaterialTypes
     // but any given material-shader knows only it's MaterialParameter - struct.
     // The first two integers in the MaterialParameter struct are the MaterialType-Id and the MaterialInstanceId:
     // Load only those and compare the values to the DrawSrg to make sure we are converting the contents of the ByteAddresBuffer
     // to the correct MaterialParameter struct
-    int materialTypeBufferIndex = int(SceneMaterialSrg::m_materialTypeBufferIndices.Load(ObjectSrg::m_materialTypeId * 4 /* sizeof(int)*/));
+    int materialTypeBufferIndex = int(SceneMaterialSrg::m_materialTypeBufferIndices.Load(materialTypeId * 4 /* sizeof(int)*/));
+    if (materialTypeBufferIndex < 0)
+    {
+        return (MaterialParameters)0;
+    }
     ByteAddressBuffer materialInstances = Bindless::GetByteAddressBuffer(materialTypeBufferIndex);
-    uint baseOffset = sizeof(MaterialParameters) * ObjectSrg::m_materialInstanceId;
+    uint baseOffset = sizeof(MaterialParameters) * materialInstanceId;
     uint2 loadedId = materialInstances.Load2(baseOffset);
-    if (loadedId.x != ObjectSrg::m_materialTypeId || loadedId.y != ObjectSrg::m_materialInstanceId)
+    if (loadedId.x != materialTypeId || loadedId.y != materialInstanceId)
     {
         return (MaterialParameters)0;
     }
 
-    return materialInstances.Load<MaterialParameters>(sizeof(MaterialParameters) * ObjectSrg::m_materialInstanceId);
+    return materialInstances.Load<MaterialParameters>(sizeof(MaterialParameters) * materialInstanceId);
 }
+#if PIPELINE_HAS_OBJECT_SRG
+const MaterialParameters GetMaterialParameters()
+{
+    return GetMaterialParameters(ObjectSrg::m_materialTypeId, ObjectSrg::m_materialInstanceId);
+}
+#endif // PIPELINE_HAS_OBJECT_SRG
 
 // All MaterialProperties with the type TextureSampler are collected from all active Materials and stored in the SceneMaterialSrg::m_samplers array.
 // The Shader - Parameter (in the Srg or the Parameter-Buffer) is then the sampler-index.

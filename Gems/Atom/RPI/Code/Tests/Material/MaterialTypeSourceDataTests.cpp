@@ -2169,7 +2169,8 @@ namespace UnitTest
                     ]
                 },
                 "lightingModel": "standard",
-                "materialShaderCode": "TestMaterial.azsli"
+                "materialShaderCode": "TestMaterial.azsli",
+                "materialShaderDefines": "TestMaterialDefines.azsli"
             }
         )";
 
@@ -2185,6 +2186,7 @@ namespace UnitTest
         EXPECT_EQ(material.FindProperty("settings.baseColor")->m_dataType, MaterialPropertyDataType::Color);
 
         EXPECT_EQ(material.m_lightingModel, "standard");
+        EXPECT_EQ(material.m_materialShaderDefines, "TestMaterialDefines.azsli");
         EXPECT_EQ(material.m_materialShaderCode, "TestMaterial.azsli");
 
         EXPECT_EQ(material.m_shaderCollection.size(), 0);

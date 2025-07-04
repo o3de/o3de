@@ -42,7 +42,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
-#include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
@@ -78,7 +77,6 @@ namespace LmbrCentral
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
-            LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
             LuaBuilder::BuilderPluginComponent::CreateDescriptor(),

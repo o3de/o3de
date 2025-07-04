@@ -19,7 +19,7 @@ namespace AZ::RPI
     public:
         // The first sampler will be the default sampler state, and will not be released
         void Init(const uint32_t maxSamplerStates, RHI::SamplerState defaultSamplerState);
-        AZStd::shared_ptr<SharedSamplerState> RegisterTextureSampler(const RHI::SamplerState& samplerState);
+        AZStd::pair<AZStd::shared_ptr<SharedSamplerState>, bool> RegisterTextureSampler(const RHI::SamplerState& samplerState);
         AZStd::shared_ptr<SharedSamplerState> GetSharedSamplerState(const uint32_t index);
         AZStd::vector<RHI::SamplerState> CollectSamplerStates();
         const uint32_t GetMaxNumSamplerStates() const

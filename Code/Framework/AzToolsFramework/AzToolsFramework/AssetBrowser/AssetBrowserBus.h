@@ -123,14 +123,19 @@ namespace AzToolsFramework
             //! This is the function to call.  If you fill a nullptr in here, then the default operating system behavior will be suppressed
             //! but no opener will be opened.  This will also cause the 'open' option in context menus to disappear if the only openers
             //! are nullptr ones.
-            SourceFileOpenerFunctionType m_opener; 
+            SourceFileOpenerFunctionType m_opener;
+
+            //! Indicates whether this opener should be prioritized when multiple openers are available
+            //! If set to true, this opener will take precedence over others
+            bool m_isPrioritized = false;
 
             SourceFileOpenerDetails() = default;
-            SourceFileOpenerDetails(const char* identifier, const char* displayText, QIcon icon, SourceFileOpenerFunctionType functionToCall)
+            SourceFileOpenerDetails(const char* identifier, const char* displayText, QIcon icon, SourceFileOpenerFunctionType functionToCall, bool isPrioritized = false)
                 : m_identifier(identifier)
                 , m_displayText(displayText)
                 , m_iconToUse(icon)
-                , m_opener(functionToCall) {}
+                , m_opener(functionToCall)
+                , m_isPrioritized(isPrioritized) {}
         };
 
         typedef AZStd::vector<SourceFileOpenerDetails> SourceFileOpenerList;

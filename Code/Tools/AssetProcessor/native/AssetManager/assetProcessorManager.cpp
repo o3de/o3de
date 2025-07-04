@@ -1348,17 +1348,25 @@ namespace AssetProcessor
                 newLegacySubIDs.push_back(product.m_legacySubIDs);
             }
 
-            // To find the set of products that were either new, or updated, this code starts with the new products, and erases
-            // the prior products that are exactly the same from that list.
-            // Note that because it uses operator==, it includes comparing the hash.  This means that if the file data has changed
-            // it won't count as being the same, and will not remove it from the list.  This results in 'updatedProducts' containing
-            // the list of new products that were EITHER literally new, or, had data that was new/changed.
+            // if we take the original list of new products
+            // and we subtract priorProducts from it, we end up with the list of new products that were EITHER literally new,
+            // or, had data that was new/changed.  This is because newProducts is the list of ALL emitted stuff from this job
+            // note that it uses operator== to compare products, which means it compares the full product entry, including the hash of the product file.
+            // flags.
             auto updatedProducts = newProducts;
-            if(!updatedProducts.empty())
+            if (!updatedProducts.empty())
             {
                 for (const auto& priorProductEntry : priorProducts)
                 {
-                    updatedProducts.erase(AZStd::remove_if(updatedProducts.begin(), updatedProducts.end(), [&priorProductEntry](const auto& pair){ return pair.first == priorProductEntry; }), updatedProducts.end());
+                    updatedProducts.erase(
+                        AZStd::remove_if(
+                            updatedProducts.begin(),
+                            updatedProducts.end(),
+                            [&priorProductEntry](const auto& pair)
+                            {
+                                return pair.first == priorProductEntry;
+                            }),
+                        updatedProducts.end());
                 }
             }
 
@@ -1381,6 +1389,7 @@ namespace AssetProcessor
                     priorProducts.erase(AZStd::remove_if(priorProducts.begin(), priorProducts.end(), logicalCompare), priorProducts.end());
                 }
             }
+
 
             // we need to delete these product files from the disk as they no longer exist and inform everyone we did so
             for (const auto& priorProduct : priorProducts)
@@ -4249,7 +4258,7 @@ namespace AssetProcessor
             }
             else
             {
-                // if we get here, we succeeded.
+                // if we get here, we succeeded (as in, the job was at least emitted without the builder crashing).
                 {
                     // if we succeeded, we can erase any jobs that had failed createjobs last time for this builder:
                     AzToolsFramework::AssetSystem::JobInfo jobInfo;
@@ -4269,6 +4278,7 @@ namespace AssetProcessor
 
                     const AssetBuilderSDK::PlatformInfo* const infoForPlatform = m_platformConfig->GetPlatformByIdentifier(jobDescriptor.GetPlatformIdentifier().c_str());
 
+                    // do some basic validation
                     if (!infoForPlatform)
                     {
                         AZ_Warning(AssetProcessor::ConsoleChannel, infoForPlatform,
@@ -4276,6 +4286,45 @@ namespace AssetProcessor
                             "discarded.  Builders should check the input list of platforms and only emit jobs for platforms "
                             "in that list", builderInfo.m_name.c_str(), jobDescriptor.GetPlatformIdentifier().c_str());
                         continue;
+                    }
+
+                    bool jobPlatformValidationFailed = false;
+                    for (auto& jobDependency : jobDescriptor.m_jobDependencyList)
+                    {
+                        if (jobDependency.m_platformIdentifier.compare(AssetBuilderSDK::CommonPlatformName) != 0)
+                        {
+                            // you can only depend on the common platform, or other jobs of the same platform.
+                            if (jobDescriptor.GetPlatformIdentifier() != jobDependency.m_platformIdentifier)
+                            {
+                                AZStd::string failureMessage = AZStd::string::format(
+                                    "Invalid Job Dependency emitted for %s.\n"
+                                    "    The builder (%s, %s) emitted a job for one platform that depends on a job for a different "
+                                    "platform\n"
+                                    "    Jobs can only depend on the \"%s\" platform or other jobs for the same platform.\n"
+                                    "    This is a code error, not a problem with the assets - please modify the builder to emit job\n"
+                                    "    dependencies correctly.\n"
+                                    "      Source Job: (platform \"%s\", job Key: \"%s\")\n"
+                                    "      Depends on: (platform \"%s\", job Key: \"%s\", source file: \"%s\")",
+                                    sourceAsset.AbsolutePath().c_str(),
+                                    builderInfo.m_name.c_str(),
+                                    builderInfo.m_busId.ToString<AZStd::string>().c_str(),
+                                    AssetBuilderSDK::CommonPlatformName,
+                                    jobDescriptor.GetPlatformIdentifier().c_str(),
+                                    jobDescriptor.m_jobKey.c_str(),
+                                    jobDependency.m_platformIdentifier.c_str(),
+                                    jobDependency.m_jobKey.c_str(),
+                                    jobDependency.m_sourceFile.ToString().c_str());
+
+                                jobPlatformValidationFailed = true;
+                                JobEntry failingJob(sourceAsset, builderInfo.m_busId, *infoForPlatform, jobDescriptor.m_jobKey.c_str(), 0, GenerateNewJobRunKey(),sourceUUID);
+                                AutoFailJob(AZStd::string::format("Invalid Job Dependency: %s.\n", sourceAsset.AbsolutePath().c_str()), failureMessage, failingJob, "");
+                                break;
+                            }
+                        }
+                    }
+                    if (jobPlatformValidationFailed)
+                    {
+                        continue; // discard the job, its already been added as an auto-fail job.
                     }
 
                     {
@@ -4357,7 +4406,12 @@ namespace AssetProcessor
                 {
                     if ((builderInfo.m_flags & AssetBuilderSDK::AssetBuilderDesc::BF_EmitsNoDependencies) != 0)
                     {
-                        AZ_WarningOnce(ConsoleChannel, false, "Asset builder '%s' registered itself using BF_EmitsNoDependencies flag, but actually emitted dependencies.  This will cause rebuilds to be inconsistent.\n", builderInfo.m_name.c_str());
+                        AZ_WarningOnce(
+                            ConsoleChannel,
+                            false,
+                            "Asset builder '%s' registered itself using BF_EmitsNoDependencies flag, but actually emitted dependencies.  "
+                            "This will cause rebuilds to be inconsistent.\n",
+                            builderInfo.m_name.c_str());
                     }
 
                     // remember which builder emitted each dependency:

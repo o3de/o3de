@@ -18,6 +18,9 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
+// intentionally empty, needed for GetParallaxOffset()
+struct MaterialParameters {};
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
@@ -122,7 +125,7 @@ void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
 }
 
 // Callback function for ParallaxMapping.azsli
-DepthResult GetDepth(Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float depth;
     float3 normal;
@@ -149,7 +152,10 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float depthOffset = 0.0;
 
     // the texture and sampler don't matter here, since they are passed to the GetDepth function, where they are ignored
-    ParallaxOffset tangentOffset = GetParallaxOffset( AutoBrickSrg::m_noise,
+    MaterialParameters params;
+
+    ParallaxOffset tangentOffset = GetParallaxOffset( params, 
+                                                      AutoBrickSrg::m_noise,
                                                       AutoBrickSrg::m_sampler,
                                                       AutoBrickSrg::m_lineDepth,
                                                       depthOffset,

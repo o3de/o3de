@@ -85,6 +85,7 @@ jobs:
           restore_cache: false
           ccache_options: |
             max_size=10G
+            hash_dir=false
             cache_dir=${{ github.workspace }}/.ccache
 
       - name: Get last run
@@ -129,6 +130,7 @@ jobs:
           if [ -f ${{ github.workspace }}/cache.tar ]; then          
             tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
             rm ${{ github.workspace }}/cache.tar
+            ccache --zero-stats --cleanup
           fi
 
       - name: Setup cmake
@@ -161,7 +163,6 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
-        working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}

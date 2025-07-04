@@ -10,6 +10,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+// Note: Since we define the parameters as members of the SRG, we can't use this material in a deferred or raytracing pipeline.
+// But since the AutoBrick.materialtype specifies only the AutoBrick_ForwardPass.shader, that wouldn't have worked anyway
 ShaderResourceGroup AutoBrickSrg : SRG_PerMaterial
 {
     // Shape...
@@ -28,7 +30,7 @@ ShaderResourceGroup AutoBrickSrg : SRG_PerMaterial
     float m_aoFactor;
     float m_debugValue;
     float m_debugValueScale;
-    
+
     Sampler m_sampler
     {
        AddressU = Wrap;

@@ -159,6 +159,12 @@ namespace AzFramework
         //! This is called when the window's desired render resolution is changed.
         virtual void OnResolutionChanged(uint32_t width, uint32_t height) { AZ_UNUSED(width); AZ_UNUSED(height); };
 
+        //! This is called when the window is minimized.
+        virtual void OnWindowMinimized() {};
+
+        //! This is called when the window is restored from minimized.
+        virtual void OnWindowRestored() {};
+
         //! This is called if the window's underyling DPI scaling factor changes.
         virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }
 
