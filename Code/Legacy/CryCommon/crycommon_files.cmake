@@ -62,8 +62,6 @@ set(FILES
     Cry_Vector4.h
     Cry_Color.h
     Cry_Geo.h
-    Cry_GeoDistance.h
-    Cry_GeoIntersect.h
     Cry_Math.h
     Cry_Quat.h
     Cry_ValidNumber.h
