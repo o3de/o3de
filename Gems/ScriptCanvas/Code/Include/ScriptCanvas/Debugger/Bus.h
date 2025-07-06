@@ -69,12 +69,9 @@ namespace ScriptCanvas
             virtual ~ClientRequests() = default;
 
             // Target Management Methods
-            virtual AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() { return AzFramework::RemoteToolsEndpointContainer(); }
-
-            virtual bool HasValidConnection() const { return false; }
-            virtual bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const { return false; }
-            virtual bool IsConnectedToSelf() const { return false; }
-            virtual AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() { return AzFramework::RemoteToolsEndpointInfo(); }
+            virtual AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() const { return AzFramework::RemoteToolsEndpointContainer(); }
+            virtual void SetNetworkTarget([[maybe_unused]] AzFramework::RemoteToolsEndpointInfo target) {}
+            virtual AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() const { return AzFramework::RemoteToolsEndpointInfo(); }
 
             // Control Methods
             virtual void AddBreakpoint(const Breakpoint&) {}
@@ -101,10 +98,6 @@ namespace ScriptCanvas
         class ClientUIRequests : public AZ::EBusTraits
         {
         public:
-
-            virtual void StartEditorSession() = 0;
-            virtual void StopEditorSession() = 0;
-
             virtual void StartLogging(ScriptTarget& initialTargets) = 0;
             virtual void StopLogging() = 0;
 
