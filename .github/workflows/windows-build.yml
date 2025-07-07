@@ -105,7 +105,7 @@ jobs:
             hash_dir=false
             temporary_dir=${{ env.DEV_DRIVE }}\temp
             cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
-      
+
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
         uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
@@ -117,6 +117,7 @@ jobs:
           workflow_conclusion: ""
           branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
           search_artifacts: true
+          check_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
     

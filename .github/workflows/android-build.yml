@@ -118,6 +118,7 @@ jobs:
           workflow_conclusion: ""
           branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
           search_artifacts: true
+          check_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
 
