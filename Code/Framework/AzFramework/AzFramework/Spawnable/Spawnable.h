@@ -58,7 +58,7 @@ namespace AzFramework
             bool HasLowerIndex(const EntityAlias& other) const;
 
             AZ::Data::Asset<Spawnable> m_spawnable; //!< The spawnable containing the target entity to spawn.
-            uint32_t m_tag{ 0 }; //!< A unique tag to identify this alias with.
+            AZ::Crc32 m_tag{ 0 }; //!< A unique tag to identify this alias with.
             uint32_t m_sourceIndex{ 0 }; //!< The index of the entity in the original spawnable that will be replaced.
             uint32_t m_targetIndex{ 0 }; //!< The index of the entity in the target spawnable that will be used to replace the original.
             EntityAliasType m_aliasType{ EntityAliasType::Original }; //!< The kind of replacement.

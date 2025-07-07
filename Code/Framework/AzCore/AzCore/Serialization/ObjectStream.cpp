@@ -1037,7 +1037,7 @@ namespace AZ
             AZ_Assert(element.m_stream != nullptr, "You must provide a stream to store the values!");
             element.m_version = 0;
             element.m_name = nullptr;
-            element.m_nameCrc = 0;
+            element.m_nameCrc = Crc32();
             element.m_dataSize = 0;
             element.m_buffer.clear();
             element.m_stream->Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
@@ -1312,7 +1312,7 @@ namespace AZ
                     nBytesRead = m_stream->Read(sizeof(nameCrc), &nameCrc);
                     AZ_Assert(nBytesRead == sizeof(nameCrc), "Failed trying to read binary element nameCrc!");
                     AZStd::endian_swap(nameCrc);
-                    element.m_nameCrc = nameCrc;
+                    element.m_nameCrc = Crc32(nameCrc);
                 }
 
                 // Read version

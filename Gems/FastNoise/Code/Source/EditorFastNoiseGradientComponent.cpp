@@ -55,6 +55,6 @@ namespace FastNoiseGem
         // The random seed has to be at least 1 to be valid on all platforms for this gradient type
         m_configuration.m_seed = AZ::GetMax(rand(), 1);
 
-        return ConfigurationChanged();
+        return AZ::Crc32(ConfigurationChanged());
     }
 } //namespace FastNoiseGem

@@ -75,7 +75,7 @@ namespace LmbrCentral
         {
             // Use defaults.
             outData->m_channel.SetInvalid();
-            outData->m_actionNameCrc = 0;
+            outData->m_actionNameCrc = AZ::Crc32();
             outData->m_payloadTypeId = AZ::Uuid::CreateNull();
         }
         else if (dc.GetNumArguments() == s_deprecatedConstructorArgCount 

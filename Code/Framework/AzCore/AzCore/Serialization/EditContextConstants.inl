@@ -249,7 +249,7 @@ namespace AZ
         {
             //! Helper for explicitly designating the default UI handler.
             //! i.e. DataElement(DefaultHandler, field, ...)
-            const static AZ::Crc32 Default = 0;
+            const static AZ::Crc32 Default;
 
             const static AZ::Crc32 Button = AZ_CRC_CE("Button");
             const static AZ::Crc32 CheckBox = AZ_CRC_CE("CheckBox");

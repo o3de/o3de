@@ -49,7 +49,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AzToolsFramework::Prefab::AliasPathView entity,
             AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
             AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-            uint32_t tag,
+            const AZ::Crc32& tag,
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
 
         // Where possible, prefer functions directly on the PrefabDocument Instead of using the Instance.

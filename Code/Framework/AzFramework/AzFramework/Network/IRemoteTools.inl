@@ -89,7 +89,7 @@ namespace AzFramework
         return m_displayName.c_str();
     }
 
-    inline AZ::u32 RemoteToolsEndpointInfo::GetPersistentId() const
+    inline AZ::Crc32 RemoteToolsEndpointInfo::GetPersistentId() const
     {
         return m_persistentId;
     }
@@ -116,7 +116,7 @@ namespace AzFramework
         }
     }
 
-    inline void RemoteToolsEndpointInfo::SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId)
+    inline void RemoteToolsEndpointInfo::SetInfo(AZStd::string displayName, AZ::Crc32 persistentId, AZ::u32 networkId)
     {
         m_displayName = AZStd::move(displayName);
         m_persistentId = persistentId;

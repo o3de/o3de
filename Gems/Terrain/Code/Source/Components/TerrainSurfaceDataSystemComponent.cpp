@@ -189,8 +189,8 @@ namespace Terrain
     SurfaceData::SurfaceTagVector TerrainSurfaceDataSystemComponent::GetSurfaceTags() const
     {
         SurfaceData::SurfaceTagVector tags;
-        tags.push_back(Constants::s_terrainHoleTagCrc);
-        tags.push_back(Constants::s_terrainTagCrc);
+        tags.emplace_back(Constants::s_terrainHoleTagCrc);
+        tags.emplace_back(Constants::s_terrainTagCrc);
         return tags;
     }
 

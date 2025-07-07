@@ -78,13 +78,13 @@ namespace AZ::RHI
         AZ_DISABLE_COPY_MOVE(Factory);
 
         //! Returns the component service name CRC used by the platform RHI system component.
-        static uint32_t GetComponentService();
+        static Crc32 GetComponentService();
 
         //! Returns the component service name CRC used by the Factory manager component.
-        static uint32_t GetManagerComponentService();
+        static Crc32 GetManagerComponentService();
 
         //! Returns the component service name CRC used by the platform RHI system component.
-        static uint32_t GetPlatformService();
+        static Crc32 GetPlatformService();
 
         //! Registers the global factory instance.
         static void Register(Factory* instance);

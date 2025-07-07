@@ -251,7 +251,7 @@ namespace AzToolsFramework
             if (reader.Read<AZ::u32>(valueCrc))
             {
                 // Assume crc returned as u32.
-                visibility = valueCrc;
+                visibility = AZ::Crc32(valueCrc);
 
                 // Support 0|1 return values.
                 if (valueCrc == 0)

@@ -178,7 +178,7 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnViewportContextRemoved(AzFramework::ViewportId viewportId)
         {
-            AZ_Assert(viewportId != AzFramework::g_defaultSceneEntityDebugDisplayId, "Error trying to remove the default scene draw instance");
+            AZ_Assert(viewportId != static_cast<AzFramework::ViewportId>(AzFramework::g_defaultSceneEntityDebugDisplayId), "Error trying to remove the default scene draw instance");
             m_activeViewportsList.erase(viewportId);
         }
 
