@@ -92,13 +92,13 @@ jobs:
         id: check-rerun
         run: |
           # GitHub sets GITHUB_RUN_ATTEMPT to track reruns
-          if ($env:GITHUB_RUN_ATTEMPT -gt 1) {
-            echo "is_rerun=true" >> $env:GITHUB_OUTPUT
-            echo "This is rerun attempt #$env:GITHUB_RUN_ATTEMPT"
-          } else {
-            echo "is_rerun=false" >> $env:GITHUB_OUTPUT
+          if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
+            echo "is_rerun=true" >> $GITHUB_OUTPUT
+            echo "This is rerun attempt #$GITHUB_RUN_ATTEMPT"
+          else
+            echo "is_rerun=false" >> $GITHUB_OUTPUT
             echo "This is the first run attempt"
-          }
+          fi
 
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
