@@ -163,25 +163,6 @@ inline AZ::Aabb LyAABBToAZAabb(const AABB& source)
     return AZ::Aabb::CreateFromMinMax(LYVec3ToAZVec3(source.min), LYVec3ToAZVec3(source.max));
 }
 
-inline AZ::Obb LyOBBtoAZObb(const OBB& source)
-{
-    const AZ::Vector3 position = LYVec3ToAZVec3(source.c);
-    const AZ::Quaternion rotation = AZ::Quaternion::CreateFromMatrix3x3(LyMatrix3x3ToAzMatrix3x3(source.m33));
-    const AZ::Vector3 halfLengths(source.h.x, source.h.y, source.h.z);
-    return AZ::Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
-}
-
-inline OBB AZObbToLyOBB(const AZ::Obb& source)
-{
-    return OBB::CreateOBB(
-        Matrix33::CreateFromVectors(
-            AZVec3ToLYVec3(source.GetAxisX()),
-            AZVec3ToLYVec3(source.GetAxisY()),
-            AZVec3ToLYVec3(source.GetAxisZ())),
-        Vec3(source.GetHalfLengthX(), source.GetHalfLengthY(), source.GetHalfLengthZ()),
-        AZVec3ToLYVec3(source.GetPosition()));
-}
-
 inline AZ::Plane LyPlaneToAZPlane(const ::Plane& source)
 {
     return AZ::Plane::CreateFromNormalAndDistance(LYVec3ToAZVec3(source.n), source.d);
