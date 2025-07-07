@@ -177,7 +177,7 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
-        timeout-minutes: 320
+        timeout-minutes: 330
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}

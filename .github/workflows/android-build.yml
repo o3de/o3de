@@ -198,7 +198,7 @@ jobs:
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json
         # Set temp folders to the workspace drive as the boot drive is slow
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
-        timeout-minutes: 320
+        timeout-minutes: 330
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
