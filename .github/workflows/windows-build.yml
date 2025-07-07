@@ -106,11 +106,24 @@ jobs:
             temporary_dir=${{ env.DEV_DRIVE }}\temp
             cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
 
+      - name: Check for rerun
+        id: check-rerun
+        run: |
+          # GitHub sets GITHUB_RUN_ATTEMPT to track reruns
+          if ($env:GITHUB_RUN_ATTEMPT -gt 1) {
+            echo "is_rerun=true" >> $env:GITHUB_OUTPUT
+            echo "This is rerun attempt #$env:GITHUB_RUN_ATTEMPT"
+          } else {
+            echo "is_rerun=false" >> $env:GITHUB_OUTPUT
+            echo "This is the first run attempt"
+          }
+
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
+        # Skip if this is a rerun to either freshly build or get artifacts from existing run
         uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         id: last-run-id
-        if: ${{ inputs.last_artifact }}
+        if: ${{ inputs.last_artifact && steps.check-rerun.outputs.is_rerun != 'true' }}
         continue-on-error: true
         with:
           workflow_search: true
