@@ -20,6 +20,7 @@ add_subdirectory(metadata_relocation_tests)
         NAME AssetPipelineTests.Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
         TEST_SUITE periodic
+        PYTEST_MARKS "SUITE_periodic"
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AutomatedTesting.Assets
@@ -33,6 +34,7 @@ add_subdirectory(metadata_relocation_tests)
         PATH ${CMAKE_CURRENT_LIST_DIR}/wwise_bank_dependency_tests/bank_info_parser_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
+        PYTEST_MARKS "SUITE_periodic"
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
     )
