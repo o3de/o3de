@@ -105,7 +105,7 @@ namespace AzToolsFramework
             ConstructDisplayTargetString(displayTargetString, info);
             
             QAction *targetAction = new QAction(isOnline ? QIcon(":/general/target_connected") : QIcon(":/general/target_disconnected"), displayTargetString, this);
-            targetAction->setProperty("targetID", info.GetPersistentId());
+            targetAction->setProperty("targetID", info.GetPersistentId().GetValue());
             menu.addAction(targetAction);
         }
         

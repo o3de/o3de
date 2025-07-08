@@ -3331,7 +3331,7 @@ namespace LandscapeCanvasEditor
         AZStd::vector<AZStd::pair<GraphModel::SlotId, AZ::EntityId>> shapeSlotEntityPairs;
         if (previewEntityId.IsValid())
         {
-            shapeSlotEntityPairs.push_back(AZStd::make_pair(LandscapeCanvas::PREVIEW_BOUNDS_SLOT_ID, previewEntityId));
+            shapeSlotEntityPairs.emplace_back(LandscapeCanvas::PREVIEW_BOUNDS_SLOT_ID, previewEntityId);
         }
 
         // Connect any inbound shape slots to the corresponding shape bounds
@@ -3375,7 +3375,7 @@ namespace LandscapeCanvasEditor
                         placementBoundsEntityId = AZStd::any_cast<AZ::EntityId>(placementBounds.GetValue());
                         if (placementBoundsEntityId.IsValid())
                         {
-                            shapeSlotEntityPairs.push_back(AZStd::make_pair(LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID, placementBoundsEntityId));
+                            shapeSlotEntityPairs.emplace_back(LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID, placementBoundsEntityId);
                         }
                     }
                 }
@@ -3392,7 +3392,7 @@ namespace LandscapeCanvasEditor
                         auto baseShapeNodePtr = static_cast<LandscapeCanvas::BaseNode*>(shapeNode.get());
                         if (baseShapeNodePtr->GetComponent())
                         {
-                            shapeSlotEntityPairs.push_back(AZStd::make_pair(LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID, entityId));
+                            shapeSlotEntityPairs.emplace_back(LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID, entityId);
                         }
                     }
                 }
