@@ -58,7 +58,7 @@ namespace EMotionFX
 
     bool ObjectId::IsValid() const
     {
-        return m_id != InvalidId;
+        return *this != InvalidId;
     }
 
     void ObjectId::SetInvalid()

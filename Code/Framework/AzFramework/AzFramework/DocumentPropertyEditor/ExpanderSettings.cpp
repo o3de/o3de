@@ -41,9 +41,9 @@ namespace AZ::DocumentPropertyEditor
                     const auto& rootValue = m_adapter->GetContents();
                     auto numErased = AZStd::erase_if(
                         storedStates,
-                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
+                        [&rootValue](const AZStd::pair<PathType, bool>& statePair)
                         {
-                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
+                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first.Native()));
                         });
                     return numErased > 0;
                 });

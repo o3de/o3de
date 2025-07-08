@@ -958,14 +958,14 @@ namespace UnitTest
 
     TEST_F(Atomics, ValidateMemoryOrder)
     {
-        EXPECT_TRUE(AZStd::memory_order_relaxed == 0);
-        EXPECT_TRUE(AZStd::memory_order_consume == 1);
-        EXPECT_TRUE(AZStd::memory_order_acquire == 2);
-        EXPECT_TRUE(AZStd::memory_order_release == 3);
-        EXPECT_TRUE(AZStd::memory_order_acq_rel == 4);
-        EXPECT_TRUE(AZStd::memory_order_seq_cst == 5);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_relaxed) == 0);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_consume) == 1);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_acquire) == 2);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_release) == 3);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_acq_rel) == 4);
+        EXPECT_TRUE(AZStd::to_underlying(AZStd::memory_order_seq_cst) == 5);
         AZStd::memory_order o = AZStd::memory_order_seq_cst;
-        EXPECT_TRUE(o == 5);
+        EXPECT_TRUE(AZStd::to_underlying(o) == 5);
     }
 
     template <class A, class T>

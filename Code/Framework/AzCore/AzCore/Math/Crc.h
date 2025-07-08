@@ -89,6 +89,7 @@ namespace AZ
         constexpr void Add(AZStd::span<const AZStd::byte> inputSpan);
 
         constexpr operator u32() const               { return m_value; }
+        constexpr u32 GetValue() const               { return m_value; }
 
         constexpr bool operator==(Crc32 rhs) const   { return (m_value == rhs.m_value); }
         constexpr bool operator!=(Crc32 rhs) const   { return (m_value != rhs.m_value); }
