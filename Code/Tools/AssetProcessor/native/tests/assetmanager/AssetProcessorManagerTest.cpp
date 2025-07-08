@@ -5245,9 +5245,9 @@ TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Job_OK)
     const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
     ASSERT_NE(scanFolder, nullptr);
 
-    QString folderPath(m_assetRootDir.absoluteFilePath(u8"subfolder1/Test\u2133")); // u+2133 -> "Script Capital M" unicode character
+    QString folderPath(m_assetRootDir.absoluteFilePath(reinterpret_cast<const char*>(u8"subfolder1/Test\u2133"))); // u+2133 -> "Script Capital M" unicode character
     QDir folderPathDir(folderPath);
-    QString absPath(folderPathDir.absoluteFilePath(u8"Test\u21334.txt"));
+    QString absPath(folderPathDir.absoluteFilePath(reinterpret_cast<const char*>(u8"Test\u21334.txt")));
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absPath, QString("test\n")));
 
     m_assetProcessorManager.get()->AssessAddedFile(absPath);
