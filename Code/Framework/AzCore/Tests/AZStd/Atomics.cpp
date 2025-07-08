@@ -145,7 +145,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(AZStd::atomic_compare_exchange_strong(&a, &t, TypeParam(2)));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -157,7 +157,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             volatile A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(AZStd::atomic_compare_exchange_strong(&a, &t, TypeParam(2)));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -173,7 +173,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(AZStd::atomic_compare_exchange_strong_explicit(&a, &t, TypeParam(2), AZStd::memory_order_seq_cst, AZStd::memory_order_seq_cst));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -185,7 +185,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             volatile A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(AZStd::atomic_compare_exchange_strong_explicit(&a, &t, TypeParam(2), AZStd::memory_order_seq_cst, AZStd::memory_order_seq_cst));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -201,7 +201,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(c_cmpxchg_weak_loop(&a, &t, TypeParam(2)));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -213,7 +213,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             volatile A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(c_cmpxchg_weak_loop(&a, &t, TypeParam(2)));
             EXPECT_TRUE(TypeParam(2) == a);
             EXPECT_TRUE(TypeParam(1) == t);
@@ -229,7 +229,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(c_cmpxchg_weak_loop(&a, &t, TypeParam(2), AZStd::memory_order_seq_cst, AZStd::memory_order_seq_cst));
             EXPECT_TRUE(a == TypeParam(2));
             EXPECT_TRUE(t == TypeParam(1));
@@ -241,7 +241,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             volatile A a;
             TypeParam t(TypeParam(1));
-            AZStd::atomic_init(&a, t);
+            AZStd::atomic_store(&a, t);
             EXPECT_TRUE(c_cmpxchg_weak_loop(&a, &t, TypeParam(2), AZStd::memory_order_seq_cst, AZStd::memory_order_seq_cst));
             EXPECT_TRUE(a == TypeParam(2));
             EXPECT_TRUE(t == TypeParam(1));
@@ -255,11 +255,11 @@ namespace UnitTest
     {
         typedef AZStd::atomic<TypeParam> A;
         A t;
-        AZStd::atomic_init(&t, TypeParam(1));
+        AZStd::atomic_store(&t, TypeParam(1));
         EXPECT_TRUE(AZStd::atomic_exchange(&t, TypeParam(2)) == TypeParam(1));
         EXPECT_TRUE(t == TypeParam(2));
         volatile A vt;
-        AZStd::atomic_init(&vt, TypeParam(3));
+        AZStd::atomic_store(&vt, TypeParam(3));
         EXPECT_TRUE(AZStd::atomic_exchange(&vt, TypeParam(4)) == TypeParam(3));
         EXPECT_TRUE(vt == TypeParam(4));
     }
@@ -268,11 +268,11 @@ namespace UnitTest
     {
         typedef AZStd::atomic<TypeParam> A;
         A t;
-        AZStd::atomic_init(&t, TypeParam(1));
+        AZStd::atomic_store(&t, TypeParam(1));
         EXPECT_TRUE(AZStd::atomic_exchange_explicit(&t, TypeParam(2), AZStd::memory_order_seq_cst) == TypeParam(1));
         EXPECT_TRUE(t == TypeParam(2));
         volatile A vt;
-        AZStd::atomic_init(&vt, TypeParam(3));
+        AZStd::atomic_store(&vt, TypeParam(3));
         EXPECT_TRUE(AZStd::atomic_exchange_explicit(&vt, TypeParam(4), AZStd::memory_order_seq_cst) == TypeParam(3));
         EXPECT_TRUE(vt == TypeParam(4));
     }
@@ -282,14 +282,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_add(&t, TypeParam(2)) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_add(&t, TypeParam(2)) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
@@ -301,7 +301,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             typedef typename AZStd::remove_pointer<TypeParam>::type X;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1 * sizeof(X)));
+            AZStd::atomic_store(&t, TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(AZStd::atomic_fetch_add(&t, 2) == TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(t == TypeParam(3 * sizeof(X)));
         }
@@ -309,7 +309,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             typedef typename AZStd::remove_pointer<TypeParam>::type X;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(1 * sizeof(X)));
+            AZStd::atomic_store(&t, TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(AZStd::atomic_fetch_add(&t, 2) == TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(t == TypeParam(3 * sizeof(X)));
         }
@@ -320,14 +320,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_add_explicit(&t, TypeParam(2), AZStd::memory_order_seq_cst) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_add_explicit(&t, TypeParam(2), AZStd::memory_order_seq_cst) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
@@ -339,7 +339,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             typedef typename AZStd::remove_pointer<TypeParam>::type X;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1 * sizeof(X)));
+            AZStd::atomic_store(&t, TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(AZStd::atomic_fetch_add_explicit(&t, 2, AZStd::memory_order_seq_cst) == TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(t == TypeParam(3 * sizeof(X)));
         }
@@ -347,7 +347,7 @@ namespace UnitTest
             typedef AZStd::atomic<TypeParam> A;
             typedef typename AZStd::remove_pointer<TypeParam>::type X;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(1 * sizeof(X)));
+            AZStd::atomic_store(&t, TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(AZStd::atomic_fetch_add_explicit(&t, 2, AZStd::memory_order_seq_cst) == TypeParam(1 * sizeof(X)));
             EXPECT_TRUE(t == TypeParam(3 * sizeof(X)));
         }
@@ -358,14 +358,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_and(&t, TypeParam(2)) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(0));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_and(&t, TypeParam(2)) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(2));
         }
@@ -376,7 +376,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_and_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(0));
@@ -384,7 +384,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_and_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(2));
@@ -396,14 +396,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_or(&t, TypeParam(2)) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_or(&t, TypeParam(2)) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(3));
         }
@@ -414,7 +414,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_or_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
@@ -422,7 +422,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_or_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(3));
@@ -434,14 +434,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_sub(&t, TypeParam(2)) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_sub(&t, TypeParam(2)) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
         }
@@ -452,7 +452,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_sub_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
@@ -460,7 +460,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_sub_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
@@ -472,14 +472,14 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_xor(&t, TypeParam(2)) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
         }
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_xor(&t, TypeParam(2)) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
         }
@@ -490,7 +490,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             A t;
-            AZStd::atomic_init(&t, TypeParam(1));
+            AZStd::atomic_store(&t, TypeParam(1));
             EXPECT_TRUE(AZStd::atomic_fetch_xor_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(1));
             EXPECT_TRUE(t == TypeParam(3));
@@ -498,7 +498,7 @@ namespace UnitTest
         {
             typedef AZStd::atomic<TypeParam> A;
             volatile A t;
-            AZStd::atomic_init(&t, TypeParam(3));
+            AZStd::atomic_store(&t, TypeParam(3));
             EXPECT_TRUE(AZStd::atomic_fetch_xor_explicit(&t, TypeParam(2),
                 AZStd::memory_order_seq_cst) == TypeParam(3));
             EXPECT_TRUE(t == TypeParam(1));
@@ -509,10 +509,10 @@ namespace UnitTest
     {
         typedef AZStd::atomic<TypeParam> A;
         A t;
-        AZStd::atomic_init(&t, TypeParam(1));
+        AZStd::atomic_store(&t, TypeParam(1));
         EXPECT_TRUE(t == TypeParam(1));
         volatile A vt;
-        AZStd::atomic_init(&vt, TypeParam(2));
+        AZStd::atomic_store(&vt, TypeParam(2));
         EXPECT_TRUE(vt == TypeParam(2));
     }
 
@@ -530,10 +530,10 @@ namespace UnitTest
     {
         typedef AZStd::atomic<TypeParam> A;
         A t;
-        AZStd::atomic_init(&t, TypeParam(1));
+        AZStd::atomic_store(&t, TypeParam(1));
         EXPECT_TRUE(AZStd::atomic_load(&t) == TypeParam(1));
         volatile A vt;
-        AZStd::atomic_init(&vt, TypeParam(2));
+        AZStd::atomic_store(&vt, TypeParam(2));
         EXPECT_TRUE(AZStd::atomic_load(&vt) == TypeParam(2));
     }
 
@@ -541,10 +541,10 @@ namespace UnitTest
     {
         typedef AZStd::atomic<TypeParam> A;
         A t;
-        AZStd::atomic_init(&t, TypeParam(1));
+        AZStd::atomic_store(&t, TypeParam(1));
         EXPECT_TRUE(AZStd::atomic_load_explicit(&t, AZStd::memory_order_seq_cst) == TypeParam(1));
         volatile A vt;
-        AZStd::atomic_init(&vt, TypeParam(2));
+        AZStd::atomic_store(&vt, TypeParam(2));
         EXPECT_TRUE(AZStd::atomic_load_explicit(&vt, AZStd::memory_order_seq_cst) == TypeParam(2));
     }
 
@@ -976,9 +976,9 @@ namespace UnitTest
         bool b0 = obj.is_lock_free();
         ((void)b0); // mark as unused
         EXPECT_TRUE(obj == T(nullptr));
-        AZStd::atomic_init(&obj, T(1));
+        AZStd::atomic_store(&obj, T(1));
         EXPECT_TRUE(obj == T(1));
-        AZStd::atomic_init(&obj, T(2));
+        AZStd::atomic_store(&obj, T(2));
         EXPECT_TRUE(obj == T(2));
         obj.store(T(0));
         EXPECT_TRUE(obj == T(nullptr));
@@ -1037,9 +1037,9 @@ namespace UnitTest
         {
             volatile AZStd::atomic<bool> obj(true);
             EXPECT_TRUE(obj == true);
-            AZStd::atomic_init(&obj, false);
+            AZStd::atomic_store(&obj, false);
             EXPECT_TRUE(obj == false);
-            AZStd::atomic_init(&obj, true);
+            AZStd::atomic_store(&obj, true);
             EXPECT_TRUE(obj == true);
             bool b0 = obj.is_lock_free();
             (void)b0; // to placate scan-build
@@ -1092,9 +1092,9 @@ namespace UnitTest
         {
             AZStd::atomic<bool> obj(true);
             EXPECT_TRUE(obj == true);
-            AZStd::atomic_init(&obj, false);
+            AZStd::atomic_store(&obj, false);
             EXPECT_TRUE(obj == false);
-            AZStd::atomic_init(&obj, true);
+            AZStd::atomic_store(&obj, true);
             EXPECT_TRUE(obj == true);
             bool b0 = obj.is_lock_free();
             (void)b0; // to placate scan-build
@@ -1147,9 +1147,9 @@ namespace UnitTest
         {
             AZStd::atomic_bool obj(true);
             EXPECT_TRUE(obj == true);
-            AZStd::atomic_init(&obj, false);
+            AZStd::atomic_store(&obj, false);
             EXPECT_TRUE(obj == false);
-            AZStd::atomic_init(&obj, true);
+            AZStd::atomic_store(&obj, true);
             EXPECT_TRUE(obj == true);
             bool b0 = obj.is_lock_free();
             (void)b0; // to placate scan-build
@@ -1213,9 +1213,9 @@ namespace UnitTest
     {
         A obj(T(0));
         EXPECT_TRUE(obj == T(0));
-        AZStd::atomic_init(&obj, T(1));
+        AZStd::atomic_store(&obj, T(1));
         EXPECT_TRUE(obj == T(1));
-        AZStd::atomic_init(&obj, T(2));
+        AZStd::atomic_store(&obj, T(2));
         EXPECT_TRUE(obj == T(2));
         bool b0 = obj.is_lock_free();
         ((void)b0); // mark as unused
