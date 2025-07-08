@@ -24,7 +24,8 @@ namespace AZ::RPI::MaterialBuilderUtils
         const AZStd::string& jobKey,
         const AZStd::string& platformId,
         const AZStd::vector<AZ::u32>& subIds,
-        const bool updateFingerprint)
+        const bool updateFingerprint,
+        const bool orderOnce)
     {
         if (updateFingerprint)
         {
@@ -34,7 +35,7 @@ namespace AZ::RPI::MaterialBuilderUtils
         AssetBuilderSDK::JobDependency jobDependency(
             jobKey,
             platformId,
-            AssetBuilderSDK::JobDependencyType::Order,
+            orderOnce ? AssetBuilderSDK::JobDependencyType::OrderOnce : AssetBuilderSDK::JobDependencyType::Order,
             AssetBuilderSDK::SourceFileDependency(
                 path, AZ::Uuid{}, AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute));
         jobDependency.m_productSubIds = subIds;

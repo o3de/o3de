@@ -1,0 +1,12 @@
+{
+    "O3DE": {
+        "Atom": {
+            "RPI": {
+                "MaterialBuilder": {
+                    "SkipMaterialRebuildAfterMaterialTypeChange": false,
+                    "SkipModelRebuildAfterMaterialTypeChange": false
+                }
+            }
+        }
+    }
+}
