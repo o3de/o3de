@@ -88,17 +88,31 @@ jobs:
             hash_dir=false
             cache_dir=${{ github.workspace }}/.ccache
 
+      - name: Check for rerun
+        id: check-rerun
+        run: |
+          # GitHub sets GITHUB_RUN_ATTEMPT to track reruns
+          if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
+            echo "is_rerun=true" >> $GITHUB_OUTPUT
+            echo "This is rerun attempt #$GITHUB_RUN_ATTEMPT"
+          else
+            echo "is_rerun=false" >> $GITHUB_OUTPUT
+            echo "This is the first run attempt"
+          fi
+
       - name: Get last run
         # Get the last runid of the target branch of a PR or the current branch
+        # Skip if this is a rerun to either freshly build or get artifacts from existing run
         uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         id: last-run-id
-        if: ${{ inputs.last_artifact }}
+        if: ${{ inputs.last_artifact && steps.check-rerun.outputs.is_rerun != 'true' }}
         continue-on-error: true
         with:
           workflow_search: true
           workflow_conclusion: ""
           branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
           search_artifacts: true
+          check_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
                   
@@ -163,6 +177,7 @@ jobs:
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
+        timeout-minutes: 330
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
@@ -185,10 +200,10 @@ jobs:
         run: |
           tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
             .ccache \
-            .o3de/python \
-            3rdParty/packages \
+            .o3de/python/downloaded_packages \
+            3rdParty/downloaded_packages \
             AutomatedTesting/Cache
-  
+
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
