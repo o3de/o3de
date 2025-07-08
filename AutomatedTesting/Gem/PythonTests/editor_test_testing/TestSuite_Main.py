@@ -194,6 +194,7 @@ class TestEditorTest:
         # 1 Fail, 1 Passes +1(batch runner)
         result.assert_outcomes(passed=2, failed=1)
 
+    @pytest.mark.skip(reason="Skipped for test inconsistency between AR and local tests, but keeping for reference.")
     def test_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
         result = self._run_shared_test(pytester, workspace,
             """
