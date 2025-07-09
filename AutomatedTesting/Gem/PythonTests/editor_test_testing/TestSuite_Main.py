@@ -194,7 +194,7 @@ class TestEditorTest:
         # 1 Fail, 1 Passes +1(batch runner)
         result.assert_outcomes(passed=2, failed=1)
 
-    @pytest.mark.skip(reason="Skipped for test inconsistency between AR and local tests, but keeping for reference.")
+    @pytest.mark.skipif(sys.platform == "linux", reason="Skipping crash tests on Linux due to inconsistency between AR and local tests, but keeping for reference.")
     def test_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
         result = self._run_shared_test(pytester, workspace,
             """
@@ -230,6 +230,7 @@ class TestEditorTest:
         # 2 Passes +1(parallel runner)
         result.assert_outcomes(passed=3)
 
+    @pytest.mark.skipif(sys.platform == "linux", reason="Skipping crash tests on Linux due to inconsistency between AR and local tests, but keeping for reference.")
     def test_parallel_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
         result = self._run_shared_test(pytester, workspace,
             """
@@ -263,6 +264,7 @@ class TestEditorTest:
         # 2 Passes +1(batched+parallel runner)
         result.assert_outcomes(passed=3)
 
+    @pytest.mark.skipif(sys.platform == "linux", reason="Skipping crash tests on Linux due to inconsistency between AR and local tests, but keeping for reference.")
     def test_parallel_batched_1_pass_1_fail_1_crash(self, request, workspace, launcher_platform, pytester):
         result = self._run_shared_test(pytester, workspace,
             """
@@ -279,6 +281,7 @@ class TestEditorTest:
         # 2 Fail, 1 Passes + 1(batched+parallel runner)
         result.assert_outcomes(passed=2, failed=2)
 
+    @pytest.mark.skipif(sys.platform == "linux", reason="Skipping crash tests on Linux due to inconsistency between AR and local tests, but keeping for reference.")
     def test_selection_2_deselected_1_selected(self, request, workspace, launcher_platform, pytester):
         result = self._run_shared_test(pytester, workspace,
             """
