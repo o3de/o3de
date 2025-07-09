@@ -474,7 +474,7 @@ namespace AZ
                     AZ_Error(
                         "MeshDrawPacket",
                         (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
-                        (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
+                            (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
                         "Shader %s has mis-matched root constant layout in material %s. "
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.",
@@ -525,7 +525,7 @@ namespace AZ
             m_material->ForAllShaderItems(
                 [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
-                    if (shaderItem.IsEnabled())
+                    if (shaderItem.IsEnabled() && shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster)
                     {
                         if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                         {

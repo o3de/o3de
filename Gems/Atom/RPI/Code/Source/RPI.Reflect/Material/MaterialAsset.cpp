@@ -93,19 +93,22 @@ namespace AZ
             return m_materialTypeAsset->GetMaterialSrgLayout();
         }
 
-        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(
+            const ShaderCollection::Item::DrawItemType drawItemType, const SupervariantIndex& supervariantIndex) const
         {
-            return m_materialTypeAsset->GetObjectSrgLayout(supervariantIndex);
+            return m_materialTypeAsset->GetObjectSrgLayout(drawItemType, supervariantIndex);
         }
 
-        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(
+            const ShaderCollection::Item::DrawItemType drawItemType, const AZ::Name& supervariantName) const
         {
-            return m_materialTypeAsset->GetObjectSrgLayout(supervariantName);
+            return m_materialTypeAsset->GetObjectSrgLayout(drawItemType, supervariantName);
         }
 
-        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(
+            const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            return m_materialTypeAsset->GetObjectSrgLayout();
+            return m_materialTypeAsset->GetObjectSrgLayout(drawItemType);
         }
 
         const MaterialPropertiesLayout* MaterialAsset::GetMaterialPropertiesLayout() const

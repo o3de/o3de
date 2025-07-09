@@ -25,7 +25,7 @@ namespace AZ
                     ->Field("shader", &ShaderTemplate::m_shader)
                     ->Field("azsli", &ShaderTemplate::m_azsli)
                     ->Field("tag", &ShaderTemplate::m_shaderTag)
-                    ;
+                    ->Field("type", &ShaderTemplate::m_drawItemType);
 
                 serializeContext->Class<RuntimeControls>()
                     ->Version(1)
