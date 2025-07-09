@@ -253,8 +253,12 @@ real3 GetBlendWeights(const MaterialParameters params, LayerBlendSource blendSou
         bool useBlendMask = 
            LayerBlendSource::Displacement_With_BlendMaskTexture == blendSource || 
            LayerBlendSource::Displacement_With_BlendMaskVertexColors == blendSource;
-           
+
+#ifdef CS_SAMPLERS
+        layerDepthValues = real3(GetLayerDepthValues(params, uv, float2(0, 0), float2(0, 0)));
+#else
         layerDepthValues = real3(GetLayerDepthValues(params, uv, ddx_fine(uv), ddy_fine(uv)));
+#endif
 
         if(useBlendMask)
         {

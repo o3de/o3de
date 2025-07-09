@@ -20,7 +20,11 @@ real4 GeTransmissionInput(Texture2D map, sampler mapSampler, float2 uv, real4 tr
         }
         else
         {
+            #ifdef CS_SAMPLERS
+            transmissionTintThickness.w *= real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
             transmissionTintThickness.w *= real(map.Sample(mapSampler, uv).r);
+            #endif
         }
     }
     return transmissionTintThickness;
