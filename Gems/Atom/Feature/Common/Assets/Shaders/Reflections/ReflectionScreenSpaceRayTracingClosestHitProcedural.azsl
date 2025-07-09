@@ -13,12 +13,12 @@
 [shader("closesthit")]
 void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersectionAttributes attrib)
 {
-    VertexData vertexData;
-    vertexData.m_position = attrib.GetPosition();
-    vertexData.m_normal = attrib.GetNormal();
-    vertexData.m_uv = attrib.GetUv();
-    vertexData.m_tangent = attrib.GetTangent();
-    vertexData.m_bitangent = cross(vertexData.m_normal, vertexData.m_tangent.xyz) * vertexData.m_tangent.w;
+    VsInput vertexData;
+    vertexData.position = attrib.GetPosition();
+    vertexData.normal = attrib.GetNormal();
+    vertexData.uv0 = attrib.GetUv();
+    vertexData.tangent = attrib.GetTangent();
+    vertexData.bitangent = cross(vertexData.normal, vertexData.tangent.xyz) * vertexData.tangent.w;
 
     ScreenSpaceClosestHitImpl(payload, vertexData, transpose(ObjectToWorld4x3()));
 }

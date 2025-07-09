@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/RayTracing/RayTracingIndexList.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingCompactionQueryPool.h>
@@ -22,7 +23,6 @@ namespace AZ::Render
 {
     static const uint32_t RayTracingGlobalSrgBindingSlot = 0;
     static const uint32_t RayTracingSceneSrgBindingSlot = 1;
-    static const uint32_t RayTracingMaterialSrgBindingSlot = 2;
 
     static const uint32_t RayTracingTlasInstanceElementSize = 64;
 
@@ -81,40 +81,14 @@ namespace AZ::Render
         //! Contains data for a single subMesh
         struct SubMesh
         {
-            // vertex streams
-            RHI::Format m_positionFormat = RHI::Format::Unknown;
-
-            RHI::StreamBufferView m_positionVertexBufferView;
-            RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
-
-            RHI::Format m_normalFormat = RHI::Format::Unknown;
-            RHI::StreamBufferView m_normalVertexBufferView;
-            RHI::Ptr<RHI::BufferView> m_normalShaderBufferView;
-
-            RHI::Format m_tangentFormat = RHI::Format::Unknown;
-            RHI::StreamBufferView m_tangentVertexBufferView;
-            RHI::Ptr<RHI::BufferView> m_tangentShaderBufferView;
-
-            RHI::Format m_bitangentFormat = RHI::Format::Unknown;
-            RHI::StreamBufferView m_bitangentVertexBufferView;
-            RHI::Ptr<RHI::BufferView> m_bitangentShaderBufferView;
-
-            RHI::Format m_uvFormat = RHI::Format::Unknown;
-            RHI::StreamBufferView m_uvVertexBufferView;
-            RHI::Ptr<RHI::BufferView> m_uvShaderBufferView;
-
-            // index buffer
-            RHI::IndexBufferView m_indexBufferView;
-            RHI::Ptr<RHI::BufferView> m_indexShaderBufferView;
-
-            // vertex buffer usage flags
-            RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
-
+            // Index of this mesh in the MeshInfo - array of the MeshFeatureProcessor
+            MeshInfoHandle m_meshInfoHandle;
             // id for accessing the blas instance (assetId, subMeshIdx)
             AZStd::pair<Data::AssetId, int> m_blasInstanceId;
 
-            // submesh material
-            SubMeshMaterial m_material;
+            AZ::Data::Instance<AZ::RPI::Material> m_material;
+            Data::Instance<RPI::ModelLod> m_modelLod;
+            size_t m_modelLodMeshIndex;
 
             // parent mesh
             Mesh* m_mesh = nullptr;
@@ -122,7 +96,8 @@ namespace AZ::Render
         private:
             friend class RayTracingFeatureProcessor;
 
-            // index of this mesh in the subMesh list, also applies to the MeshInfo and MaterialInfo entries
+            // index of this mesh in the subMesh list, also applies to the MaterialInfo entries.
+            // this can be different than the meshInfoIndex, since not each mesh needs to be in the raytracing scene
             uint32_t m_globalIndex = InvalidIndex;
 
             // index of this mesh in the parent Mesh's subMesh list
@@ -149,20 +124,6 @@ namespace AZ::Render
             uint32_t m_instanceMask = 0;
 
             bool m_isSkinnedMesh = false;
-
-            // reflection probe
-            struct ReflectionProbe
-            {
-                AZ::Transform m_modelToWorld;
-                AZ::Vector3 m_outerObbHalfLengths;
-                AZ::Vector3 m_innerObbHalfLengths;
-                bool m_useParallaxCorrection = false;
-                float m_exposure = 0.0f;
-
-                Data::Instance<RPI::Image> m_reflectionProbeCubeMap;
-            };
-
-            ReflectionProbe m_reflectionProbe;
 
             // indices of subMeshes in the subMesh list
             IndexVector m_subMeshIndices;
@@ -253,11 +214,6 @@ namespace AZ::Render
         //! used together with `GetBindlessBufferIndex()` to access per-instance geometry data.
         virtual void SetProceduralGeometryLocalInstanceIndex(const Uuid& uuid, uint32_t localInstanceIndex) = 0;
 
-        //! Sets the material of a procedural geometry instance.
-        //! \param uuid The Uuid of the procedural geometry which must have been added with `AddProceduralGeometry` before.
-        //! \param material The material of the procedural geometry instance.
-        virtual void SetProceduralGeometryMaterial(const Uuid& uuid, const SubMeshMaterial& material) = 0;
-
         //! Removes a procedural geometry instance from the ray tracing scene.
         //! \param uuid The Uuid of the procedrual geometry which must have been added with `AddProceduralGeometry` before.
         virtual void RemoveProceduralGeometry(const Uuid& uuid) = 0;
@@ -280,12 +236,6 @@ namespace AZ::Render
         //! This will cause an update to the RayTracing acceleration structure on the next frame
         virtual void SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale) = 0;
 
-        //! Sets the reflection probe for a mesh
-        virtual void SetMeshReflectionProbe(const AZ::Uuid& uuid, const Mesh::ReflectionProbe& reflectionProbe) = 0;
-
-        //! Sets the material for a mesh
-        virtual void SetMeshMaterials(const AZ::Uuid& uuid, const SubMeshMaterialVector& subMeshMaterials) = 0;
-
         //! Retrieves the map of all subMeshes in the scene
         virtual const SubMeshVector& GetSubMeshes() const = 0;
         virtual SubMeshVector& GetSubMeshes() = 0;
@@ -297,9 +247,6 @@ namespace AZ::Render
 
         //! Retrieves the RayTracingSceneSrg
         virtual Data::Instance<RPI::ShaderResourceGroup> GetRayTracingSceneSrg() const = 0;
-
-        //! Retrieves the RayTracingMaterialSrg
-        virtual Data::Instance<RPI::ShaderResourceGroup> GetRayTracingMaterialSrg() const = 0;
 
         //! Retrieves the RayTracingTlas
         virtual const RHI::Ptr<RHI::RayTracingTlas>& GetTlas() const = 0;
@@ -343,12 +290,6 @@ namespace AZ::Render
 
         //! Retrieves the attachmentId of the Tlas for this scene
         virtual RHI::AttachmentId GetTlasAttachmentId() const = 0;
-
-        //! Retrieves the GPU buffer containing information for all ray tracing meshes.
-        virtual const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const = 0;
-
-        //! Retrieves the GPU buffer containing information for all ray tracing materials.
-        virtual const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const = 0;
 
         //! If necessary recreates TLAS buffers and updates the ray tracing SRGs. Should only be called by the
         //! RayTracingAccelerationStructurePass.

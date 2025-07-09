@@ -15,6 +15,5 @@
 #include <viewsrg_all.srgi>
 #include <scenesrg_all.srgi>
 #include <Atom/Features/RayTracing/RayTracingSceneSrg.azsli>
-#include <Atom/Features/RayTracing/RayTracingMaterialSrg.azsli>
 #include <Atom/Features/RayTracing/RayTracingGlobalSrg.azsli>
 #include <Atom/Features/Bindless.azsli>

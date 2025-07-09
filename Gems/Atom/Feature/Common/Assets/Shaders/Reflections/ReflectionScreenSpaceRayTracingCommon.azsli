@@ -18,7 +18,6 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
 #include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
-#include <Atom/Features/RayTracing/RayTracingMaterialUtils.azsli>
 #include "ReflectionCommon.azsli"
 
 struct PayloadData
