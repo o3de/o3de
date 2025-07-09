@@ -45,7 +45,7 @@ namespace AssetProcessor
             }
         }
 
-        QRegExp filter(filterRegExp());
+        QRegularExpression filter(filterRegExp());
         if (filter.isEmpty())
         {
             return true;
@@ -70,7 +70,7 @@ namespace AssetProcessor
         return DescendantMatchesFilter(*assetTreeItem, filter, filterAsUuid);
     }
 
-    bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegExp& filter, const AZ::Uuid& filterAsUuid) const
+    bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegularExpression& filter, const AZ::Uuid& filterAsUuid) const
     {
         if (filter.isEmpty())
         {

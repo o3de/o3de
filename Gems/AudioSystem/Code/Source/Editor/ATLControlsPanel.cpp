@@ -82,7 +82,7 @@ namespace AudioControls
         emit clicked(m_checked);
     }
 
-    void QFilterButton::enterEvent(QEvent* /*event*/)
+    void QFilterButton::enterEvent(QEnterEvent* /*event*/)
     {
         setStyleSheet("background-color: #444444;");
     }

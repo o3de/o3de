@@ -96,7 +96,7 @@ namespace O3DE::ProjectManager
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->addWidget(scrollArea);
         setLayout(mainLayout);
     }

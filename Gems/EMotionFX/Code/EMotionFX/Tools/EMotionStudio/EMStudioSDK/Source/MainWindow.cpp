@@ -108,7 +108,7 @@ namespace EMStudio
         : QDialog(parent)
     {
         QHBoxLayout* mainLayout = new QHBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
 
         m_textEdit = new QTextEdit();
         m_textEdit->setTextInteractionFlags(Qt::NoTextInteraction | Qt::TextSelectableByMouse);
@@ -293,7 +293,7 @@ namespace EMStudio
         menuWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
         QHBoxLayout* menuLayout = new QHBoxLayout(menuWidget);
-        menuLayout->setMargin(0);
+        menuLayout->setContentsMargins(0, 0, 0, 0);
         menuLayout->setSpacing(0);
 
         QMenuBar* menuBar = new QMenuBar(menuWidget);

@@ -20,7 +20,7 @@
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
 #include <native/AssetManager/SourceAssetReference.h>
 
-class QStringList;
+
 
 namespace AssetProcessor
 {

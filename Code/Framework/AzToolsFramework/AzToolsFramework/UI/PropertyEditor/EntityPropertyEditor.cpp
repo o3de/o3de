@@ -245,7 +245,7 @@ namespace AzToolsFramework
                     if (rowWidget == dragRowWidget)
                     {
                         QStyleOption opt;
-                        opt.init(this);
+                        opt.initFrom(this);
                         opt.rect = currRect;
                         qobject_cast <AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                     }
@@ -265,7 +265,7 @@ namespace AzToolsFramework
                         dropRect.setHeight(0);
 
                         QStyleOption opt;
-                        opt.init(this);
+                        opt.initFrom(this);
                         opt.rect = dropRect;
                         style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
                     }
@@ -317,7 +317,7 @@ namespace AzToolsFramework
 
                 painter.setOpacity(alpha);
                 QStyleOption lineOpt;
-                lineOpt.init(this);
+                lineOpt.initFrom(this);
                 lineOpt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &lineOpt, &painter, this);
                 painter.setOpacity(1.0f);
@@ -350,7 +350,7 @@ namespace AzToolsFramework
                 if (componentEditor->IsDragged())
                 {
                     QStyleOption opt;
-                    opt.init(this);
+                    opt.initFrom(this);
                     opt.rect = currRect;
                     static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                     drag = true;
@@ -363,7 +363,7 @@ namespace AzToolsFramework
                     dropRect.setHeight(0);
 
                     QStyleOption opt;
-                    opt.init(this);
+                    opt.initFrom(this);
                     opt.rect = dropRect;
                     style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
 
@@ -378,7 +378,7 @@ namespace AzToolsFramework
                 dropRect.setHeight(0);
 
                 QStyleOption opt;
-                opt.init(this);
+                opt.initFrom(this);
                 opt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
             }
@@ -465,11 +465,11 @@ namespace AzToolsFramework
                     // the widget under the mouse gets properly detected, otherwise, "this" will get returned by childAt()
                     AttributeSetterSentinel attributeSetterSentinel(this, Qt::WA_TransparentForMouseEvents);
 
-                    QWidget* newWidget = m_editor->childAt(m_editor->mapFromGlobal(originalMouseEvent->globalPos()));
+                    QWidget* newWidget = m_editor->childAt(m_editor->mapFromGlobal(originalMouseEvent->globalPosition()));
 
                     if ((newWidget != this) && (newWidget != nullptr))
                     {
-                        QPoint newLocal = newWidget->mapFromGlobal(originalMouseEvent->globalPos());
+                        QPoint newLocal = newWidget->mapFromGlobal(originalMouseEvent->globalPosition());
                         QMouseEvent newMouseEvent(
                             ev->type(),
                             newLocal,
@@ -4026,7 +4026,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::contextMenuEvent(QContextMenuEvent* event)
     {
-        OnDisplayComponentEditorMenu(event->globalPos());
+        OnDisplayComponentEditorMenu(event->globalPosition());
         event->accept();
     }
 
@@ -4096,7 +4096,7 @@ namespace AzToolsFramework
     {
         ResetDrag(event);
 
-        PropertyRowWidget* rowWidget = FindPropertyRowWidgetAt(event->globalPos());
+        PropertyRowWidget* rowWidget = FindPropertyRowWidgetAt(event->globalPosition());
         if (rowWidget && rowWidget->CanBeReordered() && event->buttons() & Qt::LeftButton)
         {
             QApplication::setOverrideCursor(m_dragCursor);
@@ -4239,7 +4239,7 @@ namespace AzToolsFramework
             return false; // also get out of here without eating this specific event.
         }
 
-        const QRect globalRect(mouseEvent->globalPos(), mouseEvent->globalPos());
+        const QRect globalRect(mouseEvent->globalPosition(), mouseEvent->globalPosition());
 
         //reject input outside of the inspector's component list
         if (!DoesOwnFocus() ||
@@ -4514,7 +4514,7 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::ResetDrag(QMouseEvent* event)
     {
-        const QPoint globalPos(event->globalPos());
+        const QPoint globalPos(event->globalPosition());
         const QRect globalRect(globalPos, globalPos);
 
         //additional checks since handling is done in event filter
@@ -4700,7 +4700,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        const QPoint globalPos(event->globalPos());
+        const QPoint globalPos(event->globalPosition());
         const QRect globalRect(globalPos, globalPos);
 
         //additional checks since handling is done in event filter

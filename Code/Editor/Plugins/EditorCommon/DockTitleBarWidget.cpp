@@ -34,7 +34,7 @@ public:
     QSize minimumSizeHint() const override { return sizeHint(); }
 
 protected:
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(QEnterEvent* ev) override;
     void leaveEvent(QEvent* ev) override;
     void paintEvent(QPaintEvent* ev) override;
 };
@@ -96,7 +96,7 @@ QSize CDockWidgetTitleButton::sizeHint() const
     return QSize(size, size);
 }
 
-void CDockWidgetTitleButton::enterEvent(QEvent* ev)
+void CDockWidgetTitleButton::enterEvent(QEnterEvent* ev)
 {
     if (isEnabled())
     {
@@ -120,7 +120,7 @@ void CDockWidgetTitleButton::paintEvent([[maybe_unused]] QPaintEvent* ev)
 
     QStyleOptionToolButton opt;
     opt.state = QStyle::State_AutoRaise;
-    opt.init(this);
+    opt.initFrom(this);
     opt.state |= QStyle::State_AutoRaise;
 
     if (isEnabled() && underMouse() && !isChecked() && !isDown())

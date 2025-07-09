@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
         m_proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
@@ -87,7 +87,7 @@ namespace O3DE::ProjectManager
         }
 
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->addLayout(hLayout);
 
         m_rightPanelStack = new QStackedWidget(this);
@@ -111,7 +111,7 @@ namespace O3DE::ProjectManager
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);
         m_filterWidgetLayout = new QVBoxLayout();
-        m_filterWidgetLayout->setMargin(0);
+        m_filterWidgetLayout->setContentsMargins(0, 0, 0, 0);
         m_filterWidgetLayout->setSpacing(0);
         filterWidget->setLayout(m_filterWidgetLayout);
 
@@ -146,14 +146,14 @@ namespace O3DE::ProjectManager
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, m_readOnly, this);
 
         QHBoxLayout* listHeaderLayout = new QHBoxLayout();
-        listHeaderLayout->setMargin(0);
+        listHeaderLayout->setContentsMargins(0, 0, 0, 0);
         listHeaderLayout->setSpacing(0);
         listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.left());
         listHeaderLayout->addWidget(listHeaderWidget);
         listHeaderLayout->addSpacing(GemItemDelegate::s_itemMargins.right() + verticalScrollBarWidth);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
-        middleVLayout->setMargin(0);
+        middleVLayout->setContentsMargins(0, 0, 0, 0);
         middleVLayout->setSpacing(0);
         middleVLayout->addWidget(catalogHeaderWidget);
         middleVLayout->addLayout(listHeaderLayout);

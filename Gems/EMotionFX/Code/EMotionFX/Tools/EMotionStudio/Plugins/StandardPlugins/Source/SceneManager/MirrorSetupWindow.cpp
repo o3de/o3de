@@ -66,10 +66,10 @@ namespace EMStudio
 
         // create the layout that contains the two listboxes next to each other, and in the middle the link button
         QHBoxLayout* topPartLayout = new QHBoxLayout();
-        topPartLayout->setMargin(0);
+        topPartLayout->setContentsMargins(0, 0, 0, 0);
 
         QHBoxLayout* toolBarLayout = new QHBoxLayout();
-        toolBarLayout->setMargin(0);
+        toolBarLayout->setContentsMargins(0, 0, 0, 0);
         toolBarLayout->setSpacing(0);
         mainLayout->addLayout(toolBarLayout);
         m_buttonOpen = new QPushButton();
@@ -103,7 +103,7 @@ namespace EMStudio
         leftRightLayout->addWidget(m_rightEdit, 0, Qt::AlignRight);
         leftRightLayout->addWidget(m_buttonGuess, 0, Qt::AlignRight);
         leftRightLayout->setSpacing(6);
-        leftRightLayout->setMargin(0);
+        leftRightLayout->setContentsMargins(0, 0, 0, 0);
 
         toolBarLayout->addLayout(leftRightLayout);
         /*  QWidget* spacerWidget = new QWidget();
@@ -121,7 +121,7 @@ namespace EMStudio
 
         // left listbox part
         QVBoxLayout* leftListLayout = new QVBoxLayout();
-        leftListLayout->setMargin(0);
+        leftListLayout->setContentsMargins(0, 0, 0, 0);
         leftListLayout->setSpacing(1);
         topPartLayout->addLayout(leftListLayout);
 
@@ -138,7 +138,7 @@ namespace EMStudio
         connect(m_searchWidgetCurrent, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &MirrorSetupWindow::OnCurrentTextFilterChanged);
         curSearchLayout->addWidget(m_searchWidgetCurrent);
         curSearchLayout->setSpacing(6);
-        curSearchLayout->setMargin(0);
+        curSearchLayout->setContentsMargins(0, 0, 0, 0);
 
         m_currentList = new QTableWidget();
         m_currentList->setAlternatingRowColors(true);
@@ -172,7 +172,7 @@ namespace EMStudio
 
         // add link button middle part
         QVBoxLayout* middleLayout = new QVBoxLayout();
-        middleLayout->setMargin(0);
+        middleLayout->setContentsMargins(0, 0, 0, 0);
         topPartLayout->addLayout(middleLayout);
         QPushButton* linkButton = new QPushButton("link");
         connect(linkButton, &QPushButton::clicked, this, &MirrorSetupWindow::OnLinkPressed);
@@ -180,7 +180,7 @@ namespace EMStudio
 
         // right listbox part
         QVBoxLayout* rightListLayout = new QVBoxLayout();
-        rightListLayout->setMargin(0);
+        rightListLayout->setContentsMargins(0, 0, 0, 0);
         rightListLayout->setSpacing(1);
         topPartLayout->addLayout(rightListLayout);
 
@@ -201,7 +201,7 @@ namespace EMStudio
         connect(m_searchWidgetSource, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &MirrorSetupWindow::OnSourceTextFilterChanged);
         sourceSearchLayout->addWidget(m_searchWidgetSource);
         sourceSearchLayout->setSpacing(6);
-        sourceSearchLayout->setMargin(0);
+        sourceSearchLayout->setContentsMargins(0, 0, 0, 0);
 
         m_sourceList = new QTableWidget();
         m_sourceList->setAlternatingRowColors(true);
@@ -234,12 +234,12 @@ namespace EMStudio
 
         // create the mapping table
         QVBoxLayout* lowerLayout = new QVBoxLayout();
-        lowerLayout->setMargin(0);
+        lowerLayout->setContentsMargins(0, 0, 0, 0);
         lowerLayout->setSpacing(3);
         lowerWidget->setLayout(lowerLayout);
 
         QHBoxLayout* mappingLayout = new QHBoxLayout();
-        mappingLayout->setMargin(0);
+        mappingLayout->setContentsMargins(0, 0, 0, 0);
         lowerLayout->addLayout(mappingLayout);
         mappingLayout->addWidget(new QLabel("Mapping:"), 0, Qt::AlignLeft | Qt::AlignVCenter);
         spacerWidget = new QWidget();

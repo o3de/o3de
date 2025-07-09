@@ -211,7 +211,7 @@ namespace EMStudio
 
         // create and fill the main layout
         QHBoxLayout* layout = new QHBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
 
         QVBoxLayout* leftLayout     = new QVBoxLayout();
@@ -278,9 +278,9 @@ namespace EMStudio
         helperWidgetRight->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
         leftLayout->setSpacing(0);
-        leftLayout->setMargin(0);
+        leftLayout->setContentsMargins(0, 0, 0, 0);
         rightLayout->setSpacing(0);
-        rightLayout->setMargin(0);
+        rightLayout->setContentsMargins(0, 0, 0, 0);
         helperWidgetLeft->setLayout(leftLayout);
         helperWidgetRight->setLayout(rightLayout);
 

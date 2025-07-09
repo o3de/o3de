@@ -1662,7 +1662,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::contextMenuEvent(QContextMenuEvent* event)
     {
-        emit onRequestedContextMenu(m_sourceNode, event->globalPos());
+        emit onRequestedContextMenu(m_sourceNode, event->globalPosition());
         event->accept();
     }
 

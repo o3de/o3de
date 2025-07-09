@@ -384,7 +384,7 @@ namespace EMStudio
         // execute the menu
         if (menu.isEmpty() == false)
         {
-            menu.exec(event->globalPos());
+            menu.exec(event->globalPosition());
         }
     }
 

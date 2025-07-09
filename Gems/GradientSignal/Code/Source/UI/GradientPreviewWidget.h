@@ -32,7 +32,7 @@ namespace GradientSignal
         void popoutClicked();
 
     protected:
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void paintEvent(QPaintEvent* paintEvent) override;
         void resizeEvent(QResizeEvent* resizeEvent) override;

@@ -11,7 +11,6 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QSettings>
 
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>

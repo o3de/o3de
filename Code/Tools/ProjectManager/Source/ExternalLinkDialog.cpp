@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         setLayout(hLayout);
 
         QVBoxLayout* warningLayout = new QVBoxLayout();
-        warningLayout->setMargin(0);
+        warningLayout->setContentsMargins(0, 0, 0, 0);
         warningLayout->setAlignment(Qt::AlignTop);
         hLayout->addLayout(warningLayout);
 
@@ -46,7 +46,7 @@ namespace O3DE::ProjectManager
         warningLayout->addStretch();
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setAlignment(Qt::AlignTop);
         hLayout->addLayout(layout);
 

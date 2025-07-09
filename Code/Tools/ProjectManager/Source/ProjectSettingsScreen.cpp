@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         scrollArea->setWidget(scrollWidget);
 
         m_verticalLayout = new QVBoxLayout();
-        m_verticalLayout->setMargin(0);
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
         scrollWidget->setLayout(m_verticalLayout);
 
@@ -106,7 +106,7 @@ namespace O3DE::ProjectManager
         {
             // this validation should roughly match the utils.validate_identifier which the cli
             // uses to validate project names
-            QRegExp validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
+            QRegularExpression validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
             const bool result = validProjectNameRegex.exactMatch(m_projectName->lineEdit()->text());
             if (!result)
             {

@@ -248,7 +248,7 @@ namespace PhysX
             addNewGroup->setFixedSize(s_buttonWidth + s_rowHeaderWidthBuffer, s_rowHeight);
 
             m_mainLayout = new QVBoxLayout();
-            m_mainLayout->setMargin(0);
+            m_mainLayout->setContentsMargins(0, 0, 0, 0);
             m_mainLayout->setSpacing(0);
             m_mainLayout->setContentsMargins(0, 0, 0, 0);
             m_mainLayout->addLayout(m_gridLayout);

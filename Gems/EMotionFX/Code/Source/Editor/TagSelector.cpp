@@ -19,7 +19,7 @@ namespace EMotionFX
         : QWidget(parent)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
 
         m_tagSelector = new AzQtComponents::TagSelector(this);
         connect(m_tagSelector, &AzQtComponents::TagSelector::TagsChanged, this, &TagSelector::OnSelectedTagsChanged);

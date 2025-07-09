@@ -34,7 +34,7 @@ namespace EMotionFX
 
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->addWidget(m_propertyEditor);
         setLayout(mainLayout);

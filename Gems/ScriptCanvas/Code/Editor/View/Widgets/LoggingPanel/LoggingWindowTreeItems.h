@@ -35,7 +35,7 @@ namespace ScriptCanvasEditor
     class DebugLogFilter
     {
     public:
-        QRegExp m_filter;
+        QRegularExpression m_filter;
 
         bool IsEmpty() const
         {

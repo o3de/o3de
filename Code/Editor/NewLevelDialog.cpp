@@ -76,8 +76,8 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     InitTemplateListWidget();
 
     // Level name only supports ASCII characters
-    QRegExp rx("[_a-zA-Z0-9-]+");
-    QValidator* validator = new QRegExpValidator(rx, this);
+    QRegularExpression rx("[_a-zA-Z0-9-]+");
+    QValidator* validator = new QRegularExpressionValidator(rx, this);
     ui->LEVEL->setValidator(validator);
 
     validator = new LevelFolderValidator(this);
@@ -297,7 +297,7 @@ void CNewLevelDialog::OnLevelNameChange()
 {
     UpdateData(true);
 
-    // QRegExpValidator means the string will always be valid as long as it's not empty:
+    // QRegularExpressionValidator means the string will always be valid as long as it's not empty:
     bool valid = !m_level.isEmpty() && ValidateLevel();
     if (valid)
     {

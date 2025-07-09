@@ -51,7 +51,7 @@ namespace GraphCanvas
     void GraphCanvasComboBoxFilterProxyModel::SetFilter(const QString& filter)
     {
         m_filter = filter;
-        m_testRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_testRegex = QRegularExpression(m_filter, Qt::CaseInsensitive);
         invalidateFilter();
 
         if (m_filter.isEmpty())

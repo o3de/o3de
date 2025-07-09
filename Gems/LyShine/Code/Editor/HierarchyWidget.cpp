@@ -243,7 +243,7 @@ void HierarchyWidget::contextMenuEvent(QContextMenuEvent* ev)
              HierarchyMenu::Show::kEditorOnly),
             true);
 
-        contextMenu.exec(ev->globalPos());
+        contextMenu.exec(ev->globalPosition());
     }
 
     QTreeWidget::contextMenuEvent(ev);

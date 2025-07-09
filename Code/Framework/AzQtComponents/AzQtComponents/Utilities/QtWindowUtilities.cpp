@@ -11,7 +11,6 @@
 #include <AzQtComponents/Utilities/ScreenUtilities.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QPainter>
 #include <QDockWidget>

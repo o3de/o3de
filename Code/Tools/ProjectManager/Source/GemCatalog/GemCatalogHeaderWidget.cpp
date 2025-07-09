@@ -189,7 +189,7 @@ namespace O3DE::ProjectManager
         downloadingGemsWidget->setObjectName("GemCatalogCartOverlayGemDownloadHeader");
         layout->addWidget(downloadingGemsWidget);
         QVBoxLayout* gemDownloadLayout = new QVBoxLayout();
-        gemDownloadLayout->setMargin(0);
+        gemDownloadLayout->setContentsMargins(0, 0, 0, 0);
         gemDownloadLayout->setAlignment(Qt::AlignTop);
         downloadingGemsWidget->setLayout(gemDownloadLayout);
         QLabel* processingQueueLabel = new QLabel("Processing Queue");
@@ -383,7 +383,7 @@ namespace O3DE::ProjectManager
         , m_downloadController(downloadController)
     {
         m_layout = new QHBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         setLayout(m_layout);
 
         QPushButton* iconButton = new QPushButton();

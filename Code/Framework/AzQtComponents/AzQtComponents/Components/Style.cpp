@@ -1103,6 +1103,8 @@ namespace AzQtComponents
                 break;
             }
 
+            // #GH_TODO
+            /*
             case QStyle::PM_MenuHPlacementOffset:
             {
                 const int hOffset = Menu::horizontalShadowMargin(this, option, widget, m_data->menuConfig);
@@ -1122,6 +1124,7 @@ namespace AzQtComponents
                 }
                 break;
             }
+            */
 
             case QStyle::PM_MenuButtonIndicator:
             {

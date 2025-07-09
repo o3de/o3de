@@ -77,7 +77,7 @@ namespace EMStudio
         QWidget* contentsWidget = new QWidget();
         QVBoxLayout* contentsLayout = new QVBoxLayout();
         contentsLayout->setSpacing(1);
-        contentsLayout->setMargin(0);
+        contentsLayout->setContentsMargins(0, 0, 0, 0);
         contentsWidget->setLayout(contentsLayout);
 
         m_nodeNamesCheckBox = new QCheckBox("Show Node Names");
@@ -180,7 +180,7 @@ namespace EMStudio
 
         m_trackWidget = new QWidget();
         m_trackLayout = new QVBoxLayout();
-        m_trackLayout->setMargin(0);
+        m_trackLayout->setContentsMargins(0, 0, 0, 0);
         m_trackLayout->setSpacing(1);
 
         const size_t numTracks = m_plugin->m_tracks.size();
@@ -212,7 +212,7 @@ namespace EMStudio
         m_plugin = parentPlugin;
 
         QHBoxLayout* mainLayout = new QHBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(0);
 
         m_headerTrackWidget  = trackHeaderWidget;

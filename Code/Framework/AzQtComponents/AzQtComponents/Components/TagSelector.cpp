@@ -48,8 +48,8 @@ namespace AzQtComponents
 
     void TagWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        m_lastMouseX = event->x();
-        m_lastMouseY = event->y();
+        m_lastMouseX = event->position().x();
+        m_lastMouseY = event->position().y();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ namespace AzQtComponents
         , m_widget(nullptr)
     {
         m_layout = new QVBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         setLayout(m_layout);
 
         m_width = 250;
@@ -88,7 +88,7 @@ namespace AzQtComponents
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setAlignment(Qt::AlignLeft);
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
 
         QHBoxLayout* hLayout = nullptr;
         int usedSpaceInRow = 0;
@@ -114,7 +114,7 @@ namespace AzQtComponents
                 // Add a new row for the current tag widget.
                 hLayout = new QHBoxLayout();
                 hLayout->setAlignment(Qt::AlignLeft);
-                hLayout->setMargin(0);
+                hLayout->setContentsMargins(0, 0, 0, 0);
                 vLayout->addLayout(hLayout);
 
                 // Reset the used space in the row.
@@ -223,7 +223,7 @@ namespace AzQtComponents
     void TagSelector::Init()
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         // Add the tag widget container representing the currently selected tags.
         m_tagWidgets = new TagWidgetContainer();

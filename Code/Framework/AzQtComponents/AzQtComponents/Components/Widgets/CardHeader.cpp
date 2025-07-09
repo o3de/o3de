@@ -49,7 +49,7 @@ namespace AzQtComponents
         {
             if (m_clickable)
             {
-                emit clicked(event->globalPos());
+                emit clicked(event->globalPosition().toPoint());
             }
             else
             {

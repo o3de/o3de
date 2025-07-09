@@ -360,7 +360,7 @@ AssetCatalogEntry* AssetCatalogModel::AddAsset(QString assetPath, AZ::Data::Asse
         asset = assetPath.mid(slashIdx + 1);
     }
 
-    QRegExp mipMapExtension("\\.dds\\.\\d+a?$");    // Files that end with ".dds.#", with an optional "a"
+    QRegularExpression mipMapExtension("\\.dds\\.\\d+a?$");    // Files that end with ".dds.#", with an optional "a"
     if (asset.contains(mipMapExtension))
     {
         //  Mip map files should be ignored by the file browser.
@@ -628,12 +628,12 @@ void AssetCatalogModel::BuildFilter(QStringList& criteriaList, AzToolsFramework:
                 filter += "(?=.*" + text + ")"; //  Using Lookaheads to produce an "and" effect.
             }
 
-            SetFilterRegExp(tag.toStdString().c_str(), QRegExp(filter, Qt::CaseInsensitive));
+            SetFilterRegExp(tag.toStdString().c_str(), QRegularExpression(filter, Qt::CaseInsensitive));
         }
     }
 }
 
-void AssetCatalogModel::SetFilterRegExp(const AZStd::string& filterType, const QRegExp& regExp)
+void AssetCatalogModel::SetFilterRegExp(const AZStd::string& filterType, const QRegularExpression& regExp)
 {
     m_filtersRegExp[filterType] = regExp;
 }
@@ -644,12 +644,12 @@ void AssetCatalogModel::ClearFilterRegExp(const AZStd::string& filterType)
     {
         for (auto& it : m_filtersRegExp)
         {
-            it.second = QRegExp();
+            it.second = QRegularExpression();
         }
     }
     else
     {
-        m_filtersRegExp[filterType] = QRegExp();
+        m_filtersRegExp[filterType] = QRegularExpression();
     }
 }
 

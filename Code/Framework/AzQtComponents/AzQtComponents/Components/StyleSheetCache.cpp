@@ -17,7 +17,7 @@
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QStringList>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 #include <QApplication>
 #include <QQueue>
@@ -28,7 +28,7 @@ namespace AzQtComponents
 StyleSheetCache::StyleSheetCache(QObject* parent)
 : QObject(parent)
 , m_fileWatcher(new QFileSystemWatcher(this))
-, m_importExpression(new QRegExp("^\\s*@import\\s+\"?([^\"]+)\"?\\s*;(.*)$"))
+, m_importExpression(new QRegularExpression("^\\s*@import\\s+\"?([^\"]+)\"?\\s*;(.*)$"))
 {
     connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, this, &StyleSheetCache::fileOnDiskChanged);
 }
@@ -225,7 +225,7 @@ private:
     int parseForImportStatement(const QString& line);
 
     State m_state = State::Default;
-    QRegExp m_importStatement;
+    QRegularExpression m_importStatement;
     QChar m_lastCharacter;
     QString m_result;
     int m_lineNumber = 0;
@@ -245,7 +245,7 @@ QString MiniLessParser::process(const QString& styleSheet)
     m_lineNumber = 0;
     m_lastCharacter = QChar();
 
-    QStringList lines = styleSheet.split(QRegExp("[\\n\\r]"), Qt::SkipEmptyParts);
+    QStringList lines = styleSheet.split(QRegularExpression("[\\n\\r]"), Qt::SkipEmptyParts);
     for (QString& line : lines)
     {
         parseLine(line);
@@ -304,8 +304,10 @@ void MiniLessParser::parseLine(const QString& line)
     m_state = State::Default;
 }
 
-int MiniLessParser::parseForImportStatement(const QString& line)
+int MiniLessParser::parseForImportStatement([[maybe_unused]] const QString& line)
 {
+    // #GH_TODO
+    /*
     QString importName;
     int ret = 0;
     int pos = m_importStatement.indexIn(line, 0);
@@ -328,6 +330,8 @@ int MiniLessParser::parseForImportStatement(const QString& line)
     }
 
     return ret;
+    */
+    return -1;
 }
 
 QString StyleSheetCache::preprocess(QString styleFileName, QString loadedStyleSheet)

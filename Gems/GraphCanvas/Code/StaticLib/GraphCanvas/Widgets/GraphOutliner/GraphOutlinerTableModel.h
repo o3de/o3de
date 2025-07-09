@@ -95,6 +95,6 @@ namespace GraphCanvas
 
     private:
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

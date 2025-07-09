@@ -698,7 +698,7 @@ namespace EMStudio
         {
             if (event->button() == Qt::RightButton)
             {
-                OnContextMenuEvent(event->pos(), event->globalPos(), m_plugin->GetActionFilter());
+                OnContextMenuEvent(event->pos(), event->globalPosition(), m_plugin->GetActionFilter());
                 //setCursor( Qt::ArrowCursor );
             }
         }
@@ -1453,7 +1453,7 @@ namespace EMStudio
 
                 QPoint localPos     = helpEvent->pos();
                 QPoint globalPos    = LocalToGlobal(localPos);
-                QPoint tooltipPos   = helpEvent->globalPos();
+                QPoint tooltipPos   = helpEvent->globalPosition();
 
                 // find the connection at the mouse position
                 NodeConnection* connection = m_activeGraph->FindConnection(globalPos);

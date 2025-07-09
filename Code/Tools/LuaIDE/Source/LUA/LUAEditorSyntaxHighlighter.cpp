@@ -682,7 +682,7 @@ namespace LUAEditor
         QTextCharFormat spaceFormat = QTextCharFormat();
         spaceFormat.setForeground(colors->GetTextWhitespaceColor());
 
-        QRegExp tabsAndSpaces("( |\t)+");
+        QRegularExpression tabsAndSpaces("( |\t)+");
         int index = tabsAndSpaces.indexIn(text);
         while (index >= 0)
         {

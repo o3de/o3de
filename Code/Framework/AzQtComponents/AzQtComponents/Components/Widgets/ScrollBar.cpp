@@ -169,7 +169,8 @@ namespace AzQtComponents
                     {
                         if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
                         {
-                            styleSheet->repolish(cornerWidget);
+                            // #GH_TODO
+                            // styleSheet->repolish(cornerWidget);
                         }
                     }
                     break;

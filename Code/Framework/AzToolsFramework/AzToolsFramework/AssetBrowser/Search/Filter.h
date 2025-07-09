@@ -17,6 +17,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
+#include <QRegularExpression>
 #endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
@@ -155,14 +156,14 @@ namespace AzToolsFramework
             ~RegExpFilter() override = default;
             AssetBrowserEntryFilter* Clone() const override;
 
-            void SetFilterPattern(const QRegExp& filterPattern);
+            void SetFilterPattern(const QRegularExpression& filterPattern);
 
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            QRegExp m_filterPattern;
+            QRegularExpression m_filterPattern;
         };
 
         //////////////////////////////////////////////////////////////////////////

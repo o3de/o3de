@@ -292,7 +292,7 @@ namespace EMStudio
             m_mouseRightClicked = true;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = true;
         }
@@ -372,7 +372,7 @@ namespace EMStudio
             m_isScrolling = false;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = false;
         }
@@ -845,7 +845,7 @@ namespace EMStudio
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnResetTimeline);
 
         // show the menu at the given position
-        menu.exec(event->globalPos());
+        menu.exec(event->globalPosition());
     }
 
 }   // namespace EMStudio

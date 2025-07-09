@@ -26,7 +26,7 @@ namespace AzQtComponents
         auto layout = new QHBoxLayout(this);
         layout->addWidget(m_label);
         layout->addWidget(m_lineEdit);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(3);
 
         m_lineEdit->setValidator(new QDoubleValidator(this));
@@ -111,12 +111,12 @@ namespace AzQtComponents
 
         // Two layouts so we can have smaller spacing between icon label and line edits
         auto outterLayout = new QHBoxLayout(this);
-        outterLayout->setMargin(0);
+        outterLayout->setContentsMargins(0, 0, 0, 0);
         outterLayout->setSpacing(5);
         auto container = new QWidget();
         auto layout = new QHBoxLayout(container);
 
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(15);
         setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 

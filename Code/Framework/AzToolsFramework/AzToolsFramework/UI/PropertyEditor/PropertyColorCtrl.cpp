@@ -19,7 +19,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QToolButton>
-#include <QtGui/QRegExpValidator>
+#include <QtGui/QRegularExpressionValidator>
 
 namespace AzToolsFramework
 {
@@ -156,7 +156,7 @@ namespace AzToolsFramework
         }
     }
 
-    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator()
+    QRegularExpressionValidator* PropertyColorCtrl::CreateTextEditValidator()
     {
         /*Use regex to validate the input
         *\d\d?    Match 0-99
@@ -173,7 +173,7 @@ namespace AzToolsFramework
             R"(^\s*((25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*,\s*){%1}(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*$)"
         ).arg(numInitialChannelComponents);
 
-        return new QRegExpValidator(QRegExp(regex), this);
+        return new QRegularExpressionValidator(QRegularExpression(regex), this);
     }
 
     void PropertyColorCtrl::CreateColorDialog()

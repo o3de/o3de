@@ -454,7 +454,7 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
                 true,
                 &pos);
 
-            contextMenu.exec(e->globalPos());
+            contextMenu.exec(e->globalPosition());
         }
     }
 

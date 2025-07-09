@@ -52,7 +52,7 @@ namespace LUAEditor
                 setFormat(0, block.length(), textFormat);
 
                 textFormat.setForeground(colors->GetFindResultsMatchColor());
-                QRegExp regex(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                QRegularExpression regex(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
                 int index = 0;
                 if (m_regEx || m_wholeWord)
                 {

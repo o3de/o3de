@@ -107,7 +107,7 @@ namespace MysticQt
         dialogLayout->setAlignment(Qt::AlignTop);
         dialogWidget->setLayout(dialogLayout);
         dialogLayout->setSpacing(0);
-        dialogLayout->setMargin(0);
+        dialogLayout->setContentsMargins(0, 0, 0, 0);
 
         // add the dialog widget
         // the splitter is hierarchical : {a, {b, c}}

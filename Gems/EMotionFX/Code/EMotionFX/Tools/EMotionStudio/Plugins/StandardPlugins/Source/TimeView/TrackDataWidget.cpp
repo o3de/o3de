@@ -1343,7 +1343,7 @@ namespace EMStudio
             m_mouseRightClicked = true;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = true;
         }
@@ -1503,7 +1503,7 @@ namespace EMStudio
             m_isScrolling = false;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = false;
         }
@@ -1811,7 +1811,7 @@ namespace EMStudio
         }
 
         // show the menu at the given position
-        menu.exec(event->globalPos());
+        menu.exec(event->globalPosition());
     }
 
 
@@ -2189,7 +2189,7 @@ namespace EMStudio
             QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
 
             QPoint localPos     = helpEvent->pos();
-            QPoint tooltipPos   = helpEvent->globalPos();
+            QPoint tooltipPos   = helpEvent->globalPosition();
 
             // get the position
             if (localPos.y() < 0)
@@ -2378,7 +2378,7 @@ namespace EMStudio
         }
 
         // show the menu at the given position
-        menu.exec(event->globalPos());
+        menu.exec(event->globalPosition());
     }
 
     // build a tooltip for a node history item

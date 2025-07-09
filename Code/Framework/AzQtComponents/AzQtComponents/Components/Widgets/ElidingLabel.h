@@ -11,6 +11,7 @@
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QLabel>
+#include <QRegularExpression>
 #endif
 
 namespace AzQtComponents
@@ -122,7 +123,7 @@ namespace AzQtComponents
         void requestElide(bool updateGeometry);
 
         QString m_filterString;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
 
     private:
         void elide();

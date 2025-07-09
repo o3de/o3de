@@ -32,7 +32,7 @@ namespace EMStudio
         // create the layout
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setSpacing(2);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         // checkbox to enable/disable manual mode for all morph targets
         m_selectAll = new QCheckBox("Select All");
@@ -49,7 +49,7 @@ namespace EMStudio
         topControlLayout->addWidget(m_selectAll);
         topControlLayout->addWidget(resetAll);
         topControlLayout->setSpacing(5);
-        topControlLayout->setMargin(0);
+        topControlLayout->setContentsMargins(0, 0, 0, 0);
 
         // add the top control layout in the main layout
         layout->addLayout(topControlLayout);
