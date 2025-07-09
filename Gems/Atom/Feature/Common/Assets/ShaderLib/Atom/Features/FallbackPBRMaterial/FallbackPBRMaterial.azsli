@@ -1,0 +1,178 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This file defines most functions such that the Material behaves similar to the current PBR materials, but the
+// function parameters are not compatible.
+// - it defines EvaluateVertexGeometry()
+// - EvaluatePixelGeometry() doesn't exist: the functionality is folded into EvaluateSurface
+// - it defines the Surface struct
+// - it defines the LightingData struct
+
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_FallbackPBR
+#endif
+VsOutput EvaluateVertexGeometry_FallbackPBR(VsInput objectVertex, int objectIdForTransform, float4x4 viewProjectionMatrix)
+{
+    VsOutput output = (VsOutput)0;
+
+#if MATERIAL_USES_VERTEX_POSITION
+    float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectIdForTransform);
+    float4 worldPosition = mul(objectToWorld, float4(objectVertex.position, 1.0));
+#if MATERIAL_USES_VERTEX_POSITIONWS
+    output.positionWS = worldPosition.xyz;
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+    output.position = mul(viewProjectionMatrix, worldPosition);
+#endif // MATERIAL_USES_VERTEX_POSITION
+#if MATERIAL_USES_VERTEX_UV
+    // We don't have a UV transform.
+    output.uvs[0] = objectVertex.uv0;
+    output.uvs[1] = objectVertex.uv1;
+#endif // MATERIAL_USES_VERTEX_UV
+#if MATERIAL_USES_VERTEX_NORMAL
+    float detObjectToWorldSign = sign(SceneSrg::GetDetObjectToWorld(objectIdForTransform));
+    output.normal = objectVertex.normal * detObjectToWorldSign;
+#endif // MATERIAL_USES_VERTEX_NORMAL
+#if MATERIAL_USES_VERTEX_TANGENT
+    output.tangent = objectVertex.tangent;
+#endif // MATERIAL_USES_VERTEX_TANGENT
+    return output;
+}
+
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry EvaluatePixelGeometry_FallbackPBR
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+PixelGeometryData EvaluatePixelGeometry_FallbackPBR(VsOutput vertex, int objectIdForTransform)
+{
+    PixelGeometryData geoData = (PixelGeometryData)0;
+
+    geoData.positionWS = vertex.positionWS;
+    geoData.vertexNormal = normalize(vertex.normal);
+
+    geoData.uvs = vertex.uvs;
+
+    float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectIdForTransform);
+    float3x3 worldInvTranspose = SceneSrg::GetObjectToWorldInverseTransposeMatrix(objectIdForTransform);
+
+    ConstructTBN(real3(vertex.normal), 
+                 real4(vertex.tangent), 
+                 objectToWorld, 
+                 worldInvTranspose,
+                 geoData.vertexNormal, 
+                 geoData.tangent, 
+                 geoData.bitangent);
+
+    return geoData;
+}
+
+#ifndef EvaluateSurface
+#define EvaluateSurface EvaluateSurface_FallbackPBR
+#endif
+
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+
+Surface EvaluateSurface_FallbackPBR(PixelGeometryData geoData, TextureData textureData, uint lightingChannels)
+{
+    Surface surface = (Surface)0;
+
+    surface.lightingChannels = lightingChannels;
+    surface.position = geoData.positionWS;
+
+    const float specularF0Factor = 1.0f;
+    surface.SetAlbedoAndSpecularF0(textureData.m_baseColor.rgb, 1.0f, textureData.m_metallic);
+
+    surface.normal = GetWorldSpaceNormal(textureData.m_normal.xy, geoData.vertexNormal, geoData.tangent, geoData.bitangent);
+
+    surface.roughnessLinear = textureData.m_roughness;
+    surface.CalculateRoughnessA();
+
+    surface.emissiveLighting = textureData.m_emissiveColor;
+
+    surface.opacity = textureData.m_baseColor.a;
+
+    // Note: these aren't used, they are re-initialized in the LightingData
+    surface.diffuseAmbientOcclusion = 1.0f;
+    surface.specularOcclusion = 1.0f;
+
+    return surface;
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE
+
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+// Then define the Diffuse and Specular lighting functions
+real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
+{
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
+
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_feature_enabled)
+    {
+        // Attenuate diffuse term by clear coat's fresnel term to account for energy loss
+        real HdotV = saturate(dot(normalize(dirToLight + lightingData.dirToCamera[0]), lightingData.dirToCamera[0]));
+        diffuse *= 1.0 - (FresnelSchlick(HdotV, 0.04) * surface.clearCoat.factor);
+    }
+#endif
+    
+    diffuse *= lightIntensity;
+    return diffuse;
+}
+
+real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight, uint viewIndex)
+{
+    real3 specular = SpecularGGX(lightingData.dirToCamera[viewIndex], dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(viewIndex), surface.roughnessA2, lightingData.multiScatterCompensation);
+
+#if ENABLE_CLEAR_COAT
+    if(o_clearCoat_feature_enabled)
+    {
+        specular = ClearCoatSpecular(dirToLight, lightingData.dirToCamera[viewIndex], surface.clearCoat.normal, surface.clearCoat.factor, surface.clearCoat.roughness, specular);
+    }
+#endif
+
+    specular *= lightIntensity;    
+    return specular;
+}
+
+#ifndef InitializeLightingData
+#define InitializeLightingData InitializeLightingData_FallbackPBR
+#endif
+
+
+void InitializeLightingData_FallbackPBR(Surface surface, float3 viewPositions[MAX_SHADING_VIEWS], inout LightingData lightingData)
+{
+    lightingData.Init(surface.position, surface.GetSpecularNormal(),  surface.roughnessLinear, viewPositions);
+
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    // Multiscatter
+    lightingData.CalculateMultiscatterCompensation(surface.GetSpecularF0(), o_specularF0_enableMultiScatterCompensation);
+
+    lightingData.emissiveLighting = surface.emissiveLighting;
+}
+
+#ifndef FinalizeLightingData
+#define FinalizeLightingData FinalizeLightingData_FallbackPBR
+#endif
+void FinalizeLightingData_FallbackPBR(Surface surface, inout LightingData lightingData)
+{
+    lightingData.FinalizeLighting();
+}
+
+// use the default PBR lights for all supported light types
+#include <Atom/Features/PBR/Lights/Lights.azsli>
+
+#endif // MATERIALPIPELINE_SHADER_HAS_LIGHTING_STAGE

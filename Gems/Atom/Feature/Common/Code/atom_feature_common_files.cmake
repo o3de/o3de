@@ -118,6 +118,8 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
+    Source/Material/FallbackPBRMaterialManager.cpp
+    Source/Material/FallbackPBRMaterialManager.h
     Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
     Source/Math/MathFilter.h
@@ -129,6 +131,8 @@ set(FILES
     Source/Mesh/MeshInstanceGroupList.h
     Source/Mesh/MeshInstanceManager.cpp
     Source/Mesh/MeshInstanceManager.h
+    Source/Mesh/MeshInfoManager.cpp
+    Source/Mesh/MeshInfoManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
     Source/Mesh/MeshFeatureProcessor.h
     Source/Mesh/ModelReloader.cpp

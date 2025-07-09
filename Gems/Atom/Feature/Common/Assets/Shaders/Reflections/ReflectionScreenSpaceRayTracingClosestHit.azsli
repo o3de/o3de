@@ -19,11 +19,14 @@
 #include <Atom/RPI/Assets/ShaderLib/Atom/RPI/TangentSpace.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 
-void ScreenSpaceClosestHitImpl(inout PayloadData payload, VertexData vertexData, float3x4 worldInvTranspose)
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+
+
+void ScreenSpaceClosestHitImpl(inout PayloadData payload, VsInput vertexData, float3x4 worldInvTranspose)
 {
     payload.m_hitT = RayTCurrent();
 
-    float3 positionWS = mul(ObjectToWorld3x4(), float4(vertexData.m_position, 1.0f));
+    float3 positionWS = mul(ObjectToWorld3x4(), float4(vertexData.position, 1.0f));
 
     uint2 dimensions = DispatchRaysDimensions().xy;
     float4 hitCoords = mul(ViewSrg::m_viewProjectionMatrix, float4(positionWS, 1.0f));
@@ -49,13 +52,13 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VertexData vertexData,
     hitCoords.xy = (hitCoords.xy * 0.5f + 0.5f) * dimensions;
 
     // retrieve Material data for the hit
-    RayTracingMaterialSrg::MaterialInfo materialInfo = RayTracingMaterialSrg::m_materialInfo[NonUniformResourceIndex(InstanceIndex())];
-    TextureData textureData = GetHitTextureData(materialInfo, vertexData.m_uv);      
+    MaterialInfo materialInfo = SceneSrg::m_fallbackPBRMaterial[NonUniformResourceIndex(InstanceIndex())];
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingSceneSrg::LinearSampler, vertexData.uv0);      
     
-    float3 vertexNormalWS = normalize(mul(worldInvTranspose, float4(vertexData.m_normal, 0)).xyz);
+    float3 vertexNormalWS = normalize(mul(worldInvTranspose, float4(vertexData.normal, 0)).xyz);
 
     float3 normalWS = float3(0.0f, 0.0f, 0.0f);    
-    if (materialInfo.m_textureFlags & TEXTURE_FLAG_NORMAL)
+    if (materialInfo.m_normalImage >= 0)
     {           
         float3x4 world34 = ObjectToWorld3x4();
         float4x4 world44;
@@ -66,8 +69,8 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VertexData vertexData,
         
         float3 tangentWS = float3(0.0f, 0.0f, 0.0f);
         float3 bitangentWS = float3(0.0f, 0.0f, 0.0f);            
-        ConstructTBN(real3(vertexData.m_normal), 
-                     real4(vertexData.m_tangent), 
+        ConstructTBN(real3(vertexData.normal), 
+                     real4(vertexData.tangent), 
                      world44, 
                      (float3x3)worldInvTranspose,
                      normalWS, 

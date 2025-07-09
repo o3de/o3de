@@ -8,14 +8,6 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
-// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
-//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
-//        investigated and resolved.
-// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingMaterialSrg.azsli and RayTracingFeatureProcessor.h files
-//        that must match the setting of this define.
-#define USE_BINDLESS_SRG 1
-
 #include <Atom/Features/PBR/Lights/LightStructures.azsli>
 
 ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
@@ -53,71 +45,27 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         MipFilter = Linear;
     };
     
+    Sampler LinearSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
     TextureCube m_diffuseEnvMap;
     float4 m_iblOrientation;
     float m_iblExposure;
-       
-    // mesh info structured buffer containing offsets into the mesh buffers, irradiance color, and transform for each mesh
-    struct MeshInfo
-    {
-        uint m_indexOffset;
-        uint m_positionOffset;
-        uint m_normalOffset;
-        uint m_tangentOffset;
-        uint m_bitangentOffset;
-        uint m_uvOffset;
 
-        uint m_indexFormat;
-        uint m_positionFormat;
-        uint m_normalFormat;
-        uint m_uvFormat;
-        uint m_tangentFormat;
-        uint m_bitangentFormat;
-        
-        uint m_bufferFlags;
-        uint m_bufferStartIndex;
-
-        uint _padding1;
-        uint _padding2;
-
-        float3x4 m_worldInvTranspose;
-    };
-
-    // hit shaders can retrieve the MeshInfo for a mesh hit using: RayTracingSceneSrg::m_meshInfo[InstanceIndex()]    
-    StructuredBuffer<MeshInfo> m_meshInfo;
-    uint m_meshInfoCount;
-    
-    // indirection buffer containing indices into the m_meshBuffers unbounded array
-    // Note 1: the index list for a particular mesh begins at MeshInfo::m_bufferStartIndex
-    // Note 2: multiple MeshInfos will refer to the same buffer in m_meshBuffers when they are instances of the same mesh
-    Buffer<uint> m_meshBufferIndices;
+    uint m_blasMeshCount;
 
     // contains a mapping from RT InstanceIndex to procedural geometry instances, which can be used to read per-instance geometry data:
     // [0] bindlessBufferIndex parameter from RegisterProceduralGeometryType
     // [1] localInstanceIndex parameter from AddProceduralGeometry
     Buffer<uint2> m_proceduralGeometryInfo;
-
-    // buffer array index offsets from MeshInfo::m_bufferStartIndex in the m_meshBufferIndices indirection buffer
-    // Note: every mesh has all six entries in the index list, but only the Index, Position, and Normal buffers are guaranteed to be valid
-    #define MESH_INDEX_BUFFER_OFFSET        0
-    #define MESH_POSITION_BUFFER_OFFSET     1
-    #define MESH_NORMAL_BUFFER_OFFSET       2   
-    #define MESH_TANGENT_BUFFER_OFFSET      3
-    #define MESH_BITANGENT_BUFFER_OFFSET    4
-    #define MESH_UV_BUFFER_OFFSET           5   
-
-    // buffer flag bits indicating if optional buffers are present
-    #define MESH_BUFFER_FLAG_TANGENT        (1 << 0)
-    #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
-    #define MESH_BUFFER_FLAG_UV             (1 << 2)
-
+    
     // Specifies which debug visualization to use (value must be from RayTracingDebugViewMode enum)
     uint m_debugViewMode;
-
-#if !USE_BINDLESS_SRG
-    // Unbounded array of mesh stream buffers:
-    // Note 1: Index, Position, and Normal stream buffers are guaranteed to be valid for each mesh
-    // Note 2: Optional stream buffers such as Tangent, Bitangent, and UV are indicated in the MeshInfo.m_bufferFlags field
-    ByteAddressBuffer m_meshBuffers[];
-#endif
 }

@@ -43,8 +43,11 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
+    Include/Atom/Feature/Material/FallbackPBRMaterial.h
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
+    Include/Atom/Feature/Mesh/MeshInfo.h
+    Include/Atom/Feature/Mesh/MeshInfoBus.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/Mesh/StreamBufferViewsBuilderInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h

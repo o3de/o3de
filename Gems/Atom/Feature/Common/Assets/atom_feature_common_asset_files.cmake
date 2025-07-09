@@ -349,6 +349,13 @@ set(FILES
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/Readme.md
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfo.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial_Defines.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRStandardLighting.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfo.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfoUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli
@@ -363,8 +370,6 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/Tonemap.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingGlobalSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl

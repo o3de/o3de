@@ -59,6 +59,8 @@ class Surface
     real roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
     float roughnessA2;         //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance. Float precision is needed as values can get very close to 0
 
+    float opacity;
+
     // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
     // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
     // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor

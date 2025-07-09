@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include <Atom/Feature/Material/FallbackPBRMaterial.h>
+#include <Atom/Feature/Mesh/MeshInfo.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RHI/DispatchItem.h>
+#include <Atom/RPI.Public/Buffer/RingBuffer.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
@@ -97,10 +100,13 @@ namespace AZ
             AZ_RTTI(AZ::Render::ModelDataInstanceInterface, "{0B990760-AB5C-4357-A983-AD066EC9AC2E}");
             virtual ~ModelDataInstanceInterface() = default;
 
+            virtual const TransformServiceFeatureProcessorInterface::ObjectId GetObjectId() const = 0;
             virtual const Data::Instance<RPI::Model>& GetModel() = 0;
             virtual const RPI::Cullable& GetCullable() = 0;
 
             virtual const uint32_t GetLightingChannelMask() = 0;
+            virtual MeshInfoHandle GetMeshInfoHandle(size_t modelLodIndex, size_t meshIndex) const = 0;
+            virtual int32_t GetMeshInfoIndex(size_t modelLodIndex, size_t meshIndex) const = 0;
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
@@ -325,6 +331,16 @@ namespace AZ
             virtual const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
                 RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const = 0;
 
+            virtual const RHI::Ptr<MeshInfoEntry>& GetMeshInfoEntry(const MeshInfoHandle handle) const = 0;
+            virtual MeshInfoHandle AcquireMeshInfoEntry() = 0;
+            virtual void ReleaseMeshInfoEntry(const MeshInfoHandle handle) = 0;
+            virtual void UpdateMeshInfoEntry(const MeshInfoHandle handle, AZStd::function<bool(MeshInfoEntry*)> updateFunction) = 0;
+            virtual const Data::Instance<RPI::Buffer>& GetMeshInfoBuffer() const = 0;
+
+            virtual const RHI::Ptr<FallbackPBR::MaterialEntry>& GetFallbackPBRMaterialEntry(const MeshInfoHandle handle) const = 0;
+            virtual void UpdateFallbackPBRMaterialEntry(
+                const MeshInfoHandle handle, AZStd::function<bool(FallbackPBR::MaterialEntry*)> updateFunction) = 0;
+            virtual const Data::Instance<RPI::Buffer>& GetFallbackPBRMaterialBuffer() const = 0;
         };
     } // namespace Render
 } // namespace AZ

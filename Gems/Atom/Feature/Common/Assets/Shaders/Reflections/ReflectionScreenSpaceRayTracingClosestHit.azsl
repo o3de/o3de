@@ -11,8 +11,12 @@
 [shader("closesthit")]
 void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes attrib)
 {
-    RayTracingSceneSrg::MeshInfo meshInfo = RayTracingSceneSrg::m_meshInfo[NonUniformResourceIndex(InstanceIndex())];
-    VertexData vertexData = GetHitInterpolatedVertexData(meshInfo, attrib.barycentrics);
 
-    ScreenSpaceClosestHitImpl(payload, vertexData, meshInfo.m_worldInvTranspose);
+    MeshInfo meshInfo;
+    if (GetMeshInfoEntry(InstanceID(), meshInfo)) {
+        VsInput vertex = GetHitInterpolatedVertexData(meshInfo, PrimitiveIndex(), attrib.barycentrics);
+
+        ScreenSpaceClosestHitImpl(payload, vertex, WorldToObject3x4());
+    }
+
 }
