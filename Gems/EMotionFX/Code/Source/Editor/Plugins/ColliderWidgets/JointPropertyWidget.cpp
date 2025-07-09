@@ -38,7 +38,7 @@ namespace EMotionFX
         : QWidget(parent)
     {
         auto* mainLayout = new QVBoxLayout;
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setContentsMargins(0, 5, 0, 0);
         mainLayout->setSpacing(0);
         auto* propertyCard = new AzQtComponents::Card;

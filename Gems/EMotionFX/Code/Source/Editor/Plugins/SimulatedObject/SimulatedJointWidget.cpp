@@ -422,7 +422,7 @@ namespace EMotionFX
         QWidget* scrolledWidget = new QWidget();
         QVBoxLayout* mainLayout = new QVBoxLayout(scrolledWidget);
         mainLayout->setAlignment(Qt::AlignTop);
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->addWidget(m_contentsWidget);
         mainLayout->addWidget(m_colliderWidget);
 

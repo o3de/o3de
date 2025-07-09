@@ -360,7 +360,6 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     m_matchCount = 0;
 
     qRegisterMetaType<CTrackViewNodePtr>("CTrackViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CTrackViewNodePtr>("CTrackViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();

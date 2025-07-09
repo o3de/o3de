@@ -19,7 +19,7 @@ namespace EMStudio
         , m_plugin(plugin)
     {
         QHBoxLayout* mainLayout = new QHBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setContentsMargins(2, 0, 0, 0);
         mainLayout->setSpacing(0);
         mainLayout->setSizeConstraint(QLayout::SetNoConstraint);

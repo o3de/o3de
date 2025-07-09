@@ -316,7 +316,7 @@ namespace O3DE::ProjectManager
                         QString nameList = GetGemNameList(dependents);
                         if (!nameList.isEmpty())
                         {
-                            QToolTip::showText(event->globalPos(), tr("This gem is a dependency of %1.\nTo disable this gem, first disable %1.").arg(nameList));
+                            QToolTip::showText(event->globalPosition(), tr("This gem is a dependency of %1.\nTo disable this gem, first disable %1.").arg(nameList));
                         }
                     }
                 }

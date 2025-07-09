@@ -67,7 +67,7 @@ namespace AzToolsFramework
         m_searchText->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_searchText);
 
-        m_searchRegExp = QRegExp("", Qt::CaseInsensitive, QRegExp::RegExp);
+        m_searchRegExp = QRegularExpression("", Qt::CaseInsensitive, QRegularExpression::RegExp);
 
         searchLayout->addWidget(m_searchText);
         m_searchFrame->setLayout(searchLayout);
@@ -322,7 +322,7 @@ namespace AzToolsFramework
     void ComponentPaletteWidget::UpdateSearch()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        m_searchRegExp = QRegExp(m_searchText->text(), Qt::CaseInsensitive, QRegExp::RegExp);
+        m_searchRegExp = QRegularExpression(m_searchText->text(), Qt::CaseInsensitive, QRegularExpression::RegExp);
         m_searchText->setFocus();
         UpdateContent();
     }

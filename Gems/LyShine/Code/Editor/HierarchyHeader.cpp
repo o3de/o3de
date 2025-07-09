@@ -85,7 +85,7 @@ void HierarchyHeader::paintSection(QPainter* painter, const QRect& rect, int log
     // Otherwise it will draw over our icons.
 }
 
-void HierarchyHeader::enterEvent(QEvent* ev)
+void HierarchyHeader::enterEvent(QEnterEvent* ev)
 {
     m_hierarchy->ClearItemBeingHovered();
 

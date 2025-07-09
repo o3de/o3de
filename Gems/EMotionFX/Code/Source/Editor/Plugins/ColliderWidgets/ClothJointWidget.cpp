@@ -36,7 +36,7 @@ namespace EMotionFX
     {
         QWidget* result = new QWidget(parent);
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         result->setLayout(layout);
 
         // Colliders

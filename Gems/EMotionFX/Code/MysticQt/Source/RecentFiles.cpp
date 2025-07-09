@@ -40,7 +40,7 @@ namespace MysticQt
                 QAction* action = activeAction();
                 if (action)
                 {
-                    QToolTip::showText(helpEvent->globalPos(), action->toolTip(), m_parent);
+                    QToolTip::showText(helpEvent->globalPosition(), action->toolTip(), m_parent);
                 }
             }
             else

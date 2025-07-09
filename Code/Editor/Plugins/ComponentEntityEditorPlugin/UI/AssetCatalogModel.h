@@ -107,7 +107,7 @@ protected:
 
     void BuildFilter(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     void InvalidateFilter();
-    void SetFilterRegExp(const AZStd::string& filterType, const QRegExp& regExp);
+    void SetFilterRegExp(const AZStd::string& filterType, const QRegularExpression& regExp);
     void ClearFilterRegExp(const AZStd::string& filterType = AZStd::string());
 
     AZ::Data::AssetType GetAssetType(const QString &filename) const;

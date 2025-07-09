@@ -38,7 +38,7 @@ namespace EMotionFX
     {
         QWidget* result = new QWidget(parent);
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
 
@@ -47,7 +47,7 @@ namespace EMotionFX
             m_ownershipWidget = new QWidget(result);
             QHBoxLayout* ownershipLayout = new QHBoxLayout(m_ownershipWidget);
             ownershipLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-            ownershipLayout->setMargin(0);
+            ownershipLayout->setContentsMargins(0, 0, 0, 0);
             ownershipLayout->setSpacing(0);
             m_ownershipWidget->setLayout(ownershipLayout);
 
@@ -69,7 +69,7 @@ namespace EMotionFX
             m_collideWithWidget = new QWidget(result);
             QHBoxLayout* collideWithLayout = new QHBoxLayout(m_collideWithWidget);
             collideWithLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-            collideWithLayout->setMargin(0);
+            collideWithLayout->setContentsMargins(0, 0, 0, 0);
             collideWithLayout->setSpacing(0);
             m_collideWithWidget->setLayout(collideWithLayout);
 

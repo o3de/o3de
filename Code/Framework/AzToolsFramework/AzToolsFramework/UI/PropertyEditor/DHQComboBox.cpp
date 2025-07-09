@@ -65,7 +65,7 @@ namespace AzToolsFramework
         if (event->type() == QEvent::ToolTip && !m_headerOverride.isEmpty())
         {
             QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
-            QToolTip::showText(helpEvent->globalPos(), "<i>- Multiple selected -</i>");
+            QToolTip::showText(helpEvent->globalPosition(), "<i>- Multiple selected -</i>");
             return true;
         }
         return QWidget::event(event);

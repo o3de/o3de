@@ -230,7 +230,7 @@ namespace UnitTest
         if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-            m_mouseGlobalPosition = mouseEvent->globalPos();
+            m_mouseGlobalPosition = mouseEvent->globalPosition();
             m_mouseLocalPosition = mouseEvent->pos();
         }
 

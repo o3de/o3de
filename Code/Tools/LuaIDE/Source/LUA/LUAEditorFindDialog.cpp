@@ -602,7 +602,7 @@ namespace LUAEditor
                     ResultEntry entry;
                     entry.m_lineText = dLines[line];
 
-                    QRegExp regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    QRegularExpression regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
                     int index = 0;
                     if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                     {
@@ -739,7 +739,7 @@ namespace LUAEditor
                             ResultEntry entry;
                             entry.m_lineText = dLines[line];
 
-                            QRegExp regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                            QRegularExpression regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
                             int index = 0;
                             if(m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                                 index = entry.m_lineText.indexOf(regex, index);
@@ -1103,7 +1103,7 @@ namespace LUAEditor
                         for(AZStd::size_t line=0; line<dLines.size(); ++line)
                         {
                             QString str(dLines[line]);
-                            QRegExp regex(m_RIFData.m_SearchText, m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                            QRegularExpression regex(m_RIFData.m_SearchText, m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
                             int index = 0;
                             if(m_bRegExIsChecked || m_bWholeWordIsChecked)
                                 index = str.indexOf(regex, index);

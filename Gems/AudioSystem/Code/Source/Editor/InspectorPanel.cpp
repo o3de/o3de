@@ -38,7 +38,7 @@ namespace AudioControls
         connect(m_autoLoadCheckBox, SIGNAL(clicked(bool)), this, SLOT(SetAutoLoadForCurrentControl(bool)));
 
         // data validators
-        m_nameLineEditor->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9_]*$"), m_nameLineEditor));
+        m_nameLineEditor->setValidator(new QRegularExpressionValidator(QRegularExpression("^[a-zA-Z0-9_]*$"), m_nameLineEditor));
 
         m_atlControlsModel->AddListener(this);
 

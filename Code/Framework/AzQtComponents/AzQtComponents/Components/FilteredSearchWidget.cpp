@@ -20,12 +20,10 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QMenu>
 #include <QPainter>
 #include <QPushButton>
@@ -69,7 +67,7 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
+        m_frameLayout->setContentsMargins(0, 0, 0, 0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 
@@ -95,7 +93,7 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
+        m_frameLayout->setContentsMargins(0, 0, 0, 0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 
@@ -136,7 +134,7 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
+        m_frameLayout->setContentsMargins(0, 0, 0, 0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 
@@ -215,7 +213,7 @@ namespace AzQtComponents
         }
 
         QStyleOption options;
-        options.init(this);
+        options.initFrom(this);
         const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &options, this);
         const int vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &options, this);
 

@@ -1175,7 +1175,7 @@ namespace AssetProcessor
                 auto scanFolderMatch = [watchFolderQt = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(),
                     aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size()))](const QString& scanFolderPattern)
                 {
-                    QRegExp nameMatch(scanFolderPattern, Qt::CaseInsensitive, QRegExp::Wildcard);
+                    QRegularExpression nameMatch(scanFolderPattern, Qt::CaseInsensitive, QRegularExpression::Wildcard);
                     return nameMatch.exactMatch(watchFolderQt);
                 };
                 if (!scanFolderPatterns.empty() && AZStd::none_of(scanFolderPatterns.begin(), scanFolderPatterns.end(), scanFolderMatch))
@@ -1688,7 +1688,7 @@ namespace AssetProcessor
         QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        QRegularExpression nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegularExpression::Wildcard };
         QDirIterator dirIterator(
             sourceFolderDir.path(), QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot,
             recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
@@ -1726,7 +1726,7 @@ namespace AssetProcessor
         QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        QRegularExpression nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegularExpression::Wildcard };
         AZStd::stack<QString> dirs;
         dirs.push(sourceFolderDir.absolutePath());
 

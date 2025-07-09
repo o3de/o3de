@@ -1408,7 +1408,7 @@ namespace AzToolsFramework
             }
         }
 
-        void DetachMenuActionWidget::enterEvent(QEvent* event)
+        void DetachMenuActionWidget::enterEvent(QEnterEvent* event)
         {
             if (m_toLabel)
             {

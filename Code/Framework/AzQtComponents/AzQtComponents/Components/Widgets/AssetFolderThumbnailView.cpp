@@ -801,7 +801,7 @@ namespace AzQtComponents
                 }
             }
 
-            itemDelegate(index)->paint(painter, option, index);
+            itemDelegateForIndex(index)->paint(painter, option, index);
         }
     }
 
@@ -1050,12 +1050,13 @@ namespace AzQtComponents
         Q_EMIT selectionChangedSignal(selected, deselected);
     }
 
-    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent* event)
+    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent*)
     {
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
-        m_queuedMouseEvent = new QMouseEvent(*event);
+        // #GH_TODO
+        // m_queuedMouseEvent = new QMouseEvent(*event);
     }
 
     void AssetFolderThumbnailView::mouseMoveEvent(QMouseEvent* event)

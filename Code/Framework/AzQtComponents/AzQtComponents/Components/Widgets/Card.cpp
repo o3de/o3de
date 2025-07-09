@@ -15,7 +15,6 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/TitleBarOverdrawHandler.h> // for the QMargins metatype declarations
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPushButton>
 #include <QVBoxLayout>

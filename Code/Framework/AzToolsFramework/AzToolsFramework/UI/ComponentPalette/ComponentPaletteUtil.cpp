@@ -157,7 +157,7 @@ namespace AzToolsFramework
             return ContainsEditableComponents(serializeContext, componentFilter, serviceFilter, incompatibleServices);
         }
 
-        QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator)
+        QRegularExpression BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator)
         {
             // Go through the list of items and show/hide as needed due to filter.
             QString filter;
@@ -183,7 +183,7 @@ namespace AzToolsFramework
                 }
             }
 
-            return QRegExp(filter, Qt::CaseInsensitive, QRegExp::RegExp);
+            return QRegularExpression(filter, Qt::CaseInsensitive, QRegularExpression::RegExp);
         }
     }
 }

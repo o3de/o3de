@@ -1315,7 +1315,7 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
         if (m_lastToolTipPos != point)
         {
             m_lastToolTipPos = point;
-            QToolTip::showText(event->globalPos(), tipText);
+            QToolTip::showText(event->globalPosition(), tipText);
         }
     }
     else if (m_editMode != TrackingMode)

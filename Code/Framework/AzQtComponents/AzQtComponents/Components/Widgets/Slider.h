@@ -32,9 +32,6 @@ namespace AzQtComponents
     public:
         explicit CustomSlider(Qt::Orientation orientation, QWidget* parent);
 
-        //! Initialize option with the values from this Slider.
-        void initStyleOption(QStyleOptionSlider& option);
-
     protected:
         void mousePressEvent(QMouseEvent* ev) override;
         void mouseReleaseEvent(QMouseEvent* ev) override;

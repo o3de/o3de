@@ -147,7 +147,7 @@ public:
                         menu->addAction(noAction);
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition());
                     return true;
                 }
 

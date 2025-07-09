@@ -348,7 +348,7 @@ namespace EMStudio
     void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
     {
         m_pixelsSinceClick = 0;
-        m_prevMousePoint = event->globalPos();
+        m_prevMousePoint = event->globalPosition();
     }
 
     void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
@@ -432,7 +432,7 @@ namespace EMStudio
 
         if (!menu->isEmpty())
         {
-            menu->popup(event->globalPos());
+            menu->popup(event->globalPosition());
         }
     }
 

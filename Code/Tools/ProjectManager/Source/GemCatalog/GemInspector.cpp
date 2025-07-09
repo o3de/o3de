@@ -372,10 +372,10 @@ namespace O3DE::ProjectManager
             m_versionWidget = new QWidget();
             m_versionWidget->setObjectName("GemCatalogVersion");
             auto versionVLayout = new QVBoxLayout();
-            versionVLayout->setMargin(0);
+            versionVLayout->setContentsMargins(0, 0, 0, 0);
             versionVLayout->addSpacing(5);
             auto versionHLayout = new QHBoxLayout();
-            versionHLayout->setMargin(0);
+            versionHLayout->setContentsMargins(0, 0, 0, 0);
             versionVLayout->addLayout(versionHLayout);
             m_versionWidget->setLayout(versionVLayout);
             m_mainLayout->addWidget(m_versionWidget);
@@ -438,7 +438,7 @@ namespace O3DE::ProjectManager
         // License
         {
             QHBoxLayout* licenseHLayout = new QHBoxLayout();
-            licenseHLayout->setMargin(0);
+            licenseHLayout->setContentsMargins(0, 0, 0, 0);
             licenseHLayout->setAlignment(Qt::AlignLeft);
             m_mainLayout->addLayout(licenseHLayout);
 
@@ -454,7 +454,7 @@ namespace O3DE::ProjectManager
         // Directory and documentation links
         {
             QHBoxLayout* linksHLayout = new QHBoxLayout();
-            linksHLayout->setMargin(0);
+            linksHLayout->setContentsMargins(0, 0, 0, 0);
             m_mainLayout->addLayout(linksHLayout);
 
             linksHLayout->addStretch();

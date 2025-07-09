@@ -555,9 +555,6 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
     , m_advancedDockManager(nullptr)
     , m_componentModeNotifications(AZStd::make_unique<ViewportEditorModeNotificationsBusImpl>())
 {
-    qRegisterMetaTypeStreamOperators<ViewLayoutState>("ViewLayoutState");
-    qRegisterMetaTypeStreamOperators<QVector<QString> >("QVector<QString>");
-
     // view pane manager is interested when we enter/exit ComponentMode
     m_componentModeNotifications->BusConnect(AzToolsFramework::GetEntityContextId());
     m_windowRequest.BusConnect();
@@ -1635,10 +1632,10 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     QString baseName = name;
 
     // Strip away any enumeration.
-    baseName = baseName.remove(QRegExp("\\([0-9]+\\)$"));
+    baseName = baseName.remove(QRegularExpression("\\([0-9]+\\)$"));
 
     // Build a regexp which will match just the name, or the name followed by a number in parentheses.
-    QRegExp pattern(name + "([ ]*\\([0-9]+\\))*");
+    QRegularExpression pattern(name + "([ ]*\\([0-9]+\\))*");
 
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)

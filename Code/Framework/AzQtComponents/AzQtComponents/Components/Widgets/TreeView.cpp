@@ -46,7 +46,8 @@ namespace AzQtComponents
                         auto styleSheet = StyleManager::styleSheetStyle(widget);
                         if (styleSheet)
                         {
-                            styleSheet->repolish(widget);
+                            // #GH_TODO
+                            // styleSheet->repolish(widget);
                         }
                         widget->update();
                         break;

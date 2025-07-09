@@ -1245,7 +1245,7 @@ PropertyCard::PropertyCard([[maybe_unused]] QWidget* parent /*= nullptr*/)
     m_propertyEditor->setProperty("ComponentDisabl", true); // used by stylesheet
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(m_header);
     mainLayout->addWidget(m_propertyEditor);

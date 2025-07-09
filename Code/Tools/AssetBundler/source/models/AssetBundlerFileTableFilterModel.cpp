@@ -31,7 +31,7 @@ namespace AssetBundler
     {
         // Override the default implemention since we want to define custom rules here 
         QModelIndex index = sourceModel()->index(sourceRow, m_displayNameCol, sourceParent);
-        QRegExp filter(filterRegExp());
+        QRegularExpression filter(filterRegExp());
 
         return sourceModel()->data(index).toString().toLower().contains(filter);
     }

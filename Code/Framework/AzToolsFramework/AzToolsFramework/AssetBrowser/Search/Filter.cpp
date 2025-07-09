@@ -213,7 +213,7 @@ namespace AzToolsFramework
             return clone;
         }
 
-        void RegExpFilter::SetFilterPattern(const QRegExp& filterPattern)
+        void RegExpFilter::SetFilterPattern(const QRegularExpression& filterPattern)
         {
             m_filterPattern = filterPattern;
             Q_EMIT updatedSignal();
