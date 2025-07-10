@@ -85,6 +85,7 @@ ly_append_configurations_options(
         #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
         /we4774 # 'string' : format string expected in argument number is not a string literal
         /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
+        #/we4855 # implicit capture of 'this' via '[=]' is deprecated in 'version' TODO(c++20): Enable this
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
         /we5233 # explicit lambda capture 'identifier' is not used
