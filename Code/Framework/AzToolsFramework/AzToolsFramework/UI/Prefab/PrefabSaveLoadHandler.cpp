@@ -1023,7 +1023,7 @@ namespace AzToolsFramework
         }
 
         void PrefabSaveHandler::SourceFileRemoved(
-            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+            AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
             // This gets triggered for every source file. We only need source files that are prefabs and are loaded in the current level.
             TemplateId loadedTemplateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath.c_str());
