@@ -1050,13 +1050,12 @@ namespace AzQtComponents
         Q_EMIT selectionChangedSignal(selected, deselected);
     }
 
-    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent*)
+    void AssetFolderThumbnailView::mousePressEvent(QMouseEvent* event)
     {
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
-        // #GH_TODO
-        // m_queuedMouseEvent = new QMouseEvent(*event);
+        m_queuedMouseEvent = event->clone();
     }
 
     void AssetFolderThumbnailView::mouseMoveEvent(QMouseEvent* event)

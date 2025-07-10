@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
 #include <QtGui/QPainter>
 #include <QMessageBox>
 #include <QStylePainter>
+#include <QFile>
 AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
@@ -1662,7 +1663,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::contextMenuEvent(QContextMenuEvent* event)
     {
-        emit onRequestedContextMenu(m_sourceNode, event->globalPosition());
+        emit onRequestedContextMenu(m_sourceNode, event->globalPos());
         event->accept();
     }
 

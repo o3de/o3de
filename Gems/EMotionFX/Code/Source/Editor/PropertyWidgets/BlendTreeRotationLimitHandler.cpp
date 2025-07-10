@@ -27,7 +27,7 @@ namespace EMotionFX
 
         QHBoxLayout* hLayout = new QHBoxLayout(this);
 
-        hLayout->setMargin(2);
+        hLayout->setContentsMargins(2, 2, 2, 2);
         setLayout(hLayout);
         m_spinBoxMin = new AzQtComponents::DoubleSpinBox(this);
         layout()->addWidget(m_spinBoxMin);
@@ -147,7 +147,7 @@ namespace EMotionFX
     {
         QHBoxLayout* hLayout = new QHBoxLayout(this);
 
-        hLayout->setMargin(2);
+        hLayout->setContentsMargins(2, 2, 2, 2);
         setLayout(hLayout);
         QLabel* headerColumn1 = new QLabel("Min angle \xB0", this);
         layout()->addWidget(headerColumn1);

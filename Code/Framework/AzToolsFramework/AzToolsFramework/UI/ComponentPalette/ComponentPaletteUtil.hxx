@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
 #include <QString>
+#include <QRegularExpression>
 
 namespace AZ
 {

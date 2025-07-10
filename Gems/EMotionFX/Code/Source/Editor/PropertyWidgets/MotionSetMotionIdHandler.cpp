@@ -49,7 +49,7 @@ namespace EMotionFX
         QHBoxLayout* layoutX = new QHBoxLayout();
         layoutX->setAlignment(Qt::AlignRight);
         layoutX->setSpacing(2);
-        layoutX->setMargin(2);
+        layoutX->setContentsMargins(2, 2, 2, 2);
         m_randomWeightSpinbox = new AzQtComponents::DoubleSpinBox();
         m_randomWeightSpinbox->setSingleStep(0.1);
         m_randomWeightSpinbox->setDecimals(1);

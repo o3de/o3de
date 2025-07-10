@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
         setWidget(m_mainWidget);
 
         m_mainLayout = new QVBoxLayout();
-        m_mainLayout->setMargin(15);
+        m_mainLayout->setContentsMargins(15, 15, 15, 15);
         m_mainLayout->setAlignment(Qt::AlignTop);
         m_mainWidget->setLayout(m_mainLayout);
 

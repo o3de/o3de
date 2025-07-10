@@ -42,7 +42,7 @@ namespace EMStudio
 
         // create the main layout
         m_mainLayout = new QVBoxLayout();
-        m_mainLayout->setMargin(2);
+        m_mainLayout->setContentsMargins(2, 2, 2, 2);
         m_mainLayout->setSpacing(0);
         m_mainLayout->setAlignment(Qt::AlignTop);
 

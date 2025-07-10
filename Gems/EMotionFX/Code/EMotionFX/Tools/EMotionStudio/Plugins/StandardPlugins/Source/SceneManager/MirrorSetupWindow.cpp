@@ -60,7 +60,7 @@ namespace EMStudio
 
         // create the main layout
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(3);
+        mainLayout->setContentsMargins(3);
         mainLayout->setSpacing(1);
         setLayout(mainLayout);
 

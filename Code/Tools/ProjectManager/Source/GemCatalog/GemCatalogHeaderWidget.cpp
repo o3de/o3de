@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
 
         m_layout = new QVBoxLayout();
         m_layout->setSpacing(0);
-        m_layout->setMargin(5);
+        m_layout->setContentsMargins(5, 5, 5, 5);
         m_layout->setAlignment(Qt::AlignTop);
         setLayout(m_layout);
         setMinimumHeight(400);

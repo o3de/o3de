@@ -67,7 +67,7 @@ namespace AzToolsFramework
         m_searchText->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_searchText);
 
-        m_searchRegExp = QRegularExpression("", Qt::CaseInsensitive, QRegularExpression::RegExp);
+        m_searchRegExp = QRegularExpression("", QRegularExpression::CaseInsensitiveOption);
 
         searchLayout->addWidget(m_searchText);
         m_searchFrame->setLayout(searchLayout);
@@ -133,7 +133,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_componentModel->clear();
 
-        bool applyRegExFilter = !m_searchRegExp.isEmpty();
+        bool applyRegExFilter = m_searchRegExp.isValid();
 
         // Gather all components that match our filter and group by category.
         ComponentPaletteUtil::ComponentDataTable componentDataTable;
@@ -322,7 +322,7 @@ namespace AzToolsFramework
     void ComponentPaletteWidget::UpdateSearch()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        m_searchRegExp = QRegularExpression(m_searchText->text(), Qt::CaseInsensitive, QRegularExpression::RegExp);
+        m_searchRegExp = QRegularExpression(m_searchText->text(), QRegularExpression::CaseInsensitiveOption);
         m_searchText->setFocus();
         UpdateContent();
     }

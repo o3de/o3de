@@ -166,7 +166,7 @@ namespace UnitTest
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             // do our best to build a key sequence
             // note: this will not handle more complex multi-key shortcuts at this time
-            const auto keySequence = QKeySequence(keyEvent->modifiers() + keyEvent->key());
+            const auto keySequence = QKeySequence(keyEvent->modifiers() | keyEvent->key());
             // lookup the action that corresponds to this key event
             const auto actionIt = AZStd::find_if(
                 cachedActions.begin(), cachedActions.end(), [keySequence](QAction* action)
@@ -230,7 +230,7 @@ namespace UnitTest
         if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-            m_mouseGlobalPosition = mouseEvent->globalPosition();
+            m_mouseGlobalPosition = mouseEvent->globalPosition().toPoint();
             m_mouseLocalPosition = mouseEvent->pos();
         }
 

@@ -30,7 +30,7 @@ namespace O3DE::ProjectManager
         setModal(true);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(30);
+        hLayout->setContentsMargins(30, 30, 30, 30);
         hLayout->setAlignment(Qt::AlignTop);
         setLayout(hLayout);
 

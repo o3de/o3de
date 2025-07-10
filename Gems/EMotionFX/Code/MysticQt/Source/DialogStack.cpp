@@ -233,7 +233,7 @@ namespace MysticQt
         QVBoxLayout* layout = new QVBoxLayout();
         layout->addWidget(widget, Qt::AlignTop | Qt::AlignLeft);
         layout->setSpacing(0);
-        layout->setMargin(3);
+        layout->setContentsMargins(3);
 
         // set the frame layout
         frame->setLayout(layout);

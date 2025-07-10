@@ -222,7 +222,7 @@ namespace EMStudio
         QWidget* labelHelperWidgetAdd = new QWidget();
         QVBoxLayout* labelHelperWidgetAddLayout = new QVBoxLayout();
         labelHelperWidgetAddLayout->setSpacing(0);
-        labelHelperWidgetAddLayout->setMargin(2);
+        labelHelperWidgetAddLayout->setContentsMargins(2, 2, 2, 2);
         labelHelperWidgetAdd->setLayout(labelHelperWidgetAddLayout);
         QLabel* labelAdd = new QLabel("- Use drag&drop or double click to add -");
         labelHelperWidgetAddLayout->addWidget(labelAdd);
@@ -252,7 +252,7 @@ namespace EMStudio
         QWidget* labelHelperWidgetRemove = new QWidget();
         QVBoxLayout* labelHelperWidgetRemoveLayout = new QVBoxLayout();
         labelHelperWidgetRemoveLayout->setSpacing(0);
-        labelHelperWidgetRemoveLayout->setMargin(2);
+        labelHelperWidgetRemoveLayout->setContentsMargins(2, 2, 2, 2);
         labelHelperWidgetRemove->setLayout(labelHelperWidgetRemoveLayout);
         QLabel* labelRemove = new QLabel("- Use drag&drop or double click to remove -");
         labelHelperWidgetRemoveLayout->addWidget(labelRemove);

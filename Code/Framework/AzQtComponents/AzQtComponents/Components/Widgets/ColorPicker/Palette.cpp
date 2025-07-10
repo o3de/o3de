@@ -255,18 +255,22 @@ void Palette::insertColorsIgnoringDuplicates(int index, QVector<AZ::Color>::cons
     }
 }
 
+/*
 QDataStream& operator<<(QDataStream& out, const Palette&)
 {
     // #GH_TODO
     // out << palette.m_colors;
     return out;
 }
+*/
 
+/*
 QDataStream& operator>>(QDataStream& in, Palette&)
 {
     // #GH_TODO
     // in >> palette.m_colors;
     return in;
 }
+*/
 
 }

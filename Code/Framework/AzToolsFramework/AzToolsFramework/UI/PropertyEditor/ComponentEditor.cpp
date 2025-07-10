@@ -439,7 +439,7 @@ namespace AzToolsFramework
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));
         connect(featureButton, &QPushButton::clicked, this, [this, featureButton, services, incompatibleServices]()
         {
-            QRect screenRect(qApp->desktop()->availableGeometry(featureButton));
+            QRect screenRect(qApp->primaryScreen()->availableGeometry());
             QRect menuRect(
                 featureButton->mapToGlobal(featureButton->rect().topLeft()),
                 featureButton->mapToGlobal(featureButton->rect().bottomRight()));
@@ -820,7 +820,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::contextMenuEvent(QContextMenuEvent *event)
     {
-        OnContextMenuClicked(event->globalPosition());
+        OnContextMenuClicked(event->globalPos());
         event->accept();
     }
 
