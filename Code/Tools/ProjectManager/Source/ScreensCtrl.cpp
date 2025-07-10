@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
         {
-            return iterator.value();
+            return iterator->second;
         }
         else
         {
@@ -89,12 +89,12 @@ namespace O3DE::ProjectManager
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
         {
-            newScreen = iterator.value();
+            newScreen = iterator->second;
         }
         else
         {
             // Check if screen is contained by another screen
-            for (ScreenWidget* checkingScreen : m_screenMap)
+            for (const auto& [key, checkingScreen] : m_screenMap)
             {
                 if (checkingScreen->ContainsScreen(screen))
                 {
@@ -196,7 +196,7 @@ namespace O3DE::ProjectManager
             }
         }
 
-        m_screenMap.insert(screen, newScreen);
+        m_screenMap.insert({ screen, newScreen });
 
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
         connect(newScreen, &ScreenWidget::GoToPreviousScreenRequest, this, &ScreensCtrl::GoToPreviousScreen);
@@ -210,7 +210,7 @@ namespace O3DE::ProjectManager
     {
         for (auto iter = m_screenMap.begin(); iter != m_screenMap.end(); ++iter)
         {
-            ResetScreen(iter.key());
+            ResetScreen(iter->first);
         }
     }
 
@@ -220,7 +220,7 @@ namespace O3DE::ProjectManager
         const auto iter = m_screenMap.find(screen);
         if (iter != m_screenMap.end())
         {
-            ScreenWidget* screenToDelete = iter.value();
+            ScreenWidget* screenToDelete = iter->second;
             if (screenToDelete->IsTab())
             {
                 int tabIndex = m_tabWidget->indexOf(screenToDelete);
@@ -245,7 +245,7 @@ namespace O3DE::ProjectManager
     {
         for (auto iter = m_screenMap.begin(); iter != m_screenMap.end(); ++iter)
         {
-            DeleteScreen(iter.key());
+            DeleteScreen(iter->first);
         }
     }
 
@@ -263,7 +263,7 @@ namespace O3DE::ProjectManager
         const auto iter = m_screenMap.find(screen);
         if (iter != m_screenMap.end())
         {
-            ScreenWidget* screenWidget = iter.value();
+            ScreenWidget* screenWidget = iter->second;
             if (screenWidget->IsTab())
             {
                 return m_tabWidget->indexOf(screenWidget);

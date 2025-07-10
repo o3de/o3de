@@ -235,10 +235,10 @@ namespace O3DE::ProjectManager
         // Use regex to collect that directory, and collect the slice of the word surrounded in quotes
         
         QRegularExpression quotedDirRegex("Project exported to '([^']*)'\\.");
-        int pos = quotedDirRegex.indexIn(exportOutput);
-        if (pos > -1)
+        QRegularExpressionMatch match = quotedDirRegex.match(exportOutput);
+        if (match.hasMatch())
         {
-            m_expectedOutputDir = quotedDirRegex.cap(1);
+            m_expectedOutputDir = match.capturedTexts().at(1);
         }
         
         return AZ::Success();

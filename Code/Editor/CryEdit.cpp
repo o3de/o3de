@@ -3301,8 +3301,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     // QtOpenGL attributes and surface format setup.
