@@ -602,7 +602,7 @@ namespace LUAEditor
                     ResultEntry entry;
                     entry.m_lineText = dLines[line];
 
-                    QRegularExpression regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    QRegularExpression regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                     int index = 0;
                     if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                     {
@@ -630,11 +630,11 @@ namespace LUAEditor
                         {
                             if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, regex.matchedLength()));
+                                entry.m_matches.push_back(AZStd::make_pair(index, regex.captureCount()));
                             }
                             else
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, m_FIFData.m_SearchText.length()));
+                                entry.m_matches.push_back(AZStd::make_pair(index, static_cast<int>(m_FIFData.m_SearchText.length())));
                             }
 
                             index++;

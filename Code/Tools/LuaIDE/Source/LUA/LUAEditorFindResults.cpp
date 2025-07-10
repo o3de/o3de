@@ -14,6 +14,8 @@
 
 #include <Source/LUA/ui_LUAEditorFindResults.h>
 
+#include <QRegularExpression>
+
 namespace LUAEditor
 {
     void FindResultsHighlighter::SetSearchString(const QString& searchString, bool regEx, bool wholeWord, bool caseSensitive)
@@ -52,7 +54,8 @@ namespace LUAEditor
                 setFormat(0, block.length(), textFormat);
 
                 textFormat.setForeground(colors->GetFindResultsMatchColor());
-                QRegularExpression regex(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                QRegularExpression regex(
+                    m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                 int index = 0;
                 if (m_regEx || m_wholeWord)
                 {
@@ -66,7 +69,7 @@ namespace LUAEditor
                 {
                     if (m_regEx || m_wholeWord)
                     {
-                        setFormat(index, regex.matchedLength(), textFormat);
+                        setFormat(index, regex.captureCount(), textFormat);
                     }
                     else
                     {

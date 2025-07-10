@@ -195,7 +195,7 @@ namespace LUAEditor
 
     void FoldingWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        auto mousePos = event->localPos();
+        auto mousePos = event->position();
 
         m_textEdit->ForEachVisibleBlock([&](QTextBlock& blockClicked, const QRectF& blockRect)
             {
