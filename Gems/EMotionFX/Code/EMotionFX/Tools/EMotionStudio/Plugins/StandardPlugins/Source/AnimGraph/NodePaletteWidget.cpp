@@ -131,7 +131,7 @@ namespace EMStudio
         else
         {
             // set the layout params
-            m_layout->setMargin(2);
+            m_layout->setContentsMargins(2, 2, 2, 2);
             m_layout->setSpacing(2);
 
             // set the widget visible or not

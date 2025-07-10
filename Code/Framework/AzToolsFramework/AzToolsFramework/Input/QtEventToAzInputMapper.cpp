@@ -298,7 +298,7 @@ namespace AzToolsFramework
         {
             // Clear override cursor when moving outside of the viewport
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPosition())))
+            if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPosition()).toPoint()))
             {
                 qApp->restoreOverrideCursor();
                 m_overrideCursor = false;
@@ -381,7 +381,7 @@ namespace AzToolsFramework
         else if (eventType == QEvent::Type::MouseMove)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-            HandleMouseMoveEvent(mouseEvent->globalPosition());
+            HandleMouseMoveEvent(mouseEvent->globalPosition().toPoint());
         }
         // Map wheel events to the mouse Z movement channel.
         else if (eventType == QEvent::Type::Wheel)

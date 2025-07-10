@@ -227,7 +227,8 @@ namespace AzToolsFramework
         bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
             // Return true if the filter is empty or the display name matches.
-            return m_filterPattern.isEmpty() || m_filterPattern.exactMatch(entry->GetDisplayName());
+            QRegularExpressionMatch match = m_filterPattern.match(entry->GetDisplayName());
+            return !m_filterPattern.isValid() || match.hasMatch();
         }
 
         //////////////////////////////////////////////////////////////////////////

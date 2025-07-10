@@ -59,7 +59,7 @@ namespace EMStudio
         vLayout->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(5);
+        layout->setContentsMargins(5, 5, 5, 5);
         layout->setSpacing(4);
         vLayout->addLayout(layout);
 

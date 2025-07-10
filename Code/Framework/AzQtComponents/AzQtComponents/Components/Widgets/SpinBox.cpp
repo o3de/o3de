@@ -31,7 +31,7 @@
 #include <QWindow>
 #include <QTextLayout>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+// #include <QtWidgets/private/qstylesheetstyle_p.h> // #GH_TODO
 #include <qcoreevent.h>
 
 namespace AzQtComponents

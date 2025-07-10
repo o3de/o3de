@@ -124,7 +124,7 @@ namespace EMStudio
     {
         QWidget* widget = new QWidget();
         QHBoxLayout* layout = new QHBoxLayout();
-        layout->setMargin(32);
+        layout->setContentsMargins(32, 32, 32, 32);
         widget->setLayout(layout);
 
         QLabel* label = new QLabel(errorMessage);

@@ -183,7 +183,7 @@ namespace AzToolsFramework
                 }
             }
 
-            return QRegularExpression(filter, Qt::CaseInsensitive, QRegularExpression::RegExp);
+            return QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
         }
     }
 }

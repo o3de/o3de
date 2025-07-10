@@ -66,7 +66,7 @@ namespace EMotionFX
         innerWidget->setLayout(vLayout);
 
         QGridLayout* topLayout = new QGridLayout();
-        topLayout->setMargin(2);
+        topLayout->setContentsMargins(2, 2, 2, 2);
         topLayout->setAlignment(Qt::AlignLeft);
 
         // Has joint limit
