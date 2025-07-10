@@ -198,7 +198,7 @@ namespace AzQtComponents
         // m_style = new Style(m_styleSheetStyle);
 
         QApplication::setStyle(m_style);
-        m_style->setParent(this);
+        // m_style->setParent(this); // #GH_TODO
         refresh();
 
         connect(m_stylesheetCache, &StyleSheetCache::styleSheetsChanged, this, [this]

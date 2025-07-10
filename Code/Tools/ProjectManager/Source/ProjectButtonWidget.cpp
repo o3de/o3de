@@ -346,7 +346,7 @@ namespace O3DE::ProjectManager
         connect(m_projectImageLabel, &LabelButton::triggered, [this](QMouseEvent* event) {
             if (!m_isProjectBuilding && event->button() == Qt::RightButton)
             {
-                m_projectMenuButton->menu()->move(event->globalPosition());
+                m_projectMenuButton->menu()->move(event->globalPosition().toPoint());
                 m_projectMenuButton->menu()->show();
             }
         });
