@@ -54,6 +54,7 @@ ly_append_configurations_options(
         -Wno-undefined-var-template
         -fno-relaxed-template-template-args
         -Wno-deprecated-no-relaxed-template-template-args
+        -Wno-deprecated-this-capture # TODO(c++20): Remove this
 
         ###################
         # Enabled warnings (that are disabled by default)
