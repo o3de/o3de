@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
 	<class>LUAEditorMainWindow</class>
-	<widget class="QMainWindow" name="LUAEditorMainWindow">
+	<widget class="LUAEditor::LUAEditorMainWindow" name="LUAEditorMainWindow">
 		<property name="geometry">
 			<rect>
 				<x>0</x>
@@ -1353,6 +1353,11 @@
 		</action>
 	</widget>
 	<customwidgets>
+		<customwidget>
+			<class>LUAEditor::LUAEditorMainWindow</class>
+			<extends>QMainWindow</extends>
+			<header>LUAEditorMainWindow.hxx</header>
+		</customwidget>
 		<customwidget>
 			<class>AzToolsFramework::LogPanel::TracePrintFLogPanel</class>
 			<extends>QWidget</extends>
