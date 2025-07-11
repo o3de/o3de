@@ -539,9 +539,9 @@ void CEditorImpl::SetActiveView(CViewport* viewport)
     m_pViewManager->SelectViewport(viewport);
 }
 
-void CEditorImpl::UpdateViews(int flags, const AABB* updateRegion)
+void CEditorImpl::UpdateViews(int flags, const AZ::Aabb* updateRegion)
 {
-    AABB prevRegion = m_pViewManager->GetUpdateRegion();
+    AZ::Aabb prevRegion = m_pViewManager->GetUpdateRegion();
     if (updateRegion)
     {
         m_pViewManager->SetUpdateRegion(*updateRegion);

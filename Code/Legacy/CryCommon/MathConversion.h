@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -21,7 +19,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Plane.h>
 #include <Cry_Math.h>
-#include <Cry_Geo.h>
 #include <Cry_Color.h>
 
 inline AZ::Vector2 LYVec2ToAZVec2(const Vec2& source)
@@ -151,16 +148,6 @@ inline AZ::Transform LYTransformToAZTransform(const Matrix34& source)
 inline AZ::Matrix3x4 LYTransformToAZMatrix3x4(const Matrix34& source)
 {
     return AZ::Matrix3x4::CreateFromRowMajorFloat12(source.GetData());
-}
-
-inline AABB AZAabbToLyAABB(const AZ::Aabb& source)
-{
-    return AABB(AZVec3ToLYVec3(source.GetMin()), AZVec3ToLYVec3(source.GetMax()));
-}
-
-inline AZ::Aabb LyAABBToAZAabb(const AABB& source)
-{
-    return AZ::Aabb::CreateFromMinMax(LYVec3ToAZVec3(source.min), LYVec3ToAZVec3(source.max));
 }
 
 inline AZ::Plane LyPlaneToAZPlane(const ::Plane& source)
