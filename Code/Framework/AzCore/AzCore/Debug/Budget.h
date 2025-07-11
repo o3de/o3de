@@ -55,18 +55,14 @@ namespace AZ::Debug
     {                                                                                                                                      \
         return nullptr;                                                                                                                    \
     }
-#define AZ_DEFINE_BUDGET_SHARED(name)                                                                                                      \
-    AZ_DLL_EXPORT ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                            \
-    {                                                                                                                                      \
-        return nullptr;                                                                                                                    \
-    }
 #else
 // Usage example:
 // In a single C++ source file:
-// AZ_DEFINE_BUDGET(AzCore);
+// AZ_DEFINE_BUDGET(AzCore);   
+// 
+// In addition, depending on if the source file is part of a static or shared library, the budget needs to be declared appropriately and must
+// be done before the AZ_DEFINE_BUDGET declaration (see below)
 //
-// Anywhere the budget is used, the budget must be declared (either in a header or in the source file itself)
-// AZ_DECLARE_BUDGET(AzCore);
 #define AZ_DEFINE_BUDGET(name)                                                          \
     ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                       \
     {                                                                                   \
@@ -78,21 +74,14 @@ namespace AZ::Debug
         }                                                                               \
         return budget;                                                                  \
     }
-#define AZ_DEFINE_BUDGET_SHARED(name)                                                                                                             \
-    AZ_DLL_EXPORT ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                                          \
-    {                                                                                                                                      \
-        static ::AZ::Debug::Budget* budget = nullptr;                                                                                      \
-        if (budget == nullptr)                                                                                                             \
-        {                                                                                                                                  \
-            constexpr static uint32_t crc = AZ_CRC_CE(#name);                                                                              \
-            ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(budget, #name, crc);                                                      \
-        }                                                                                                                                  \
-        return budget;                                                                                                                     \
-    }
 #endif
 
+// Anywhere the budget is used, the budget must be declared (either in a header or in the source file itself)
+// AZ_DECLARE_BUDGET(AzCore);
+
 // If using a budget defined in a different C++ source file, add AZ_DECLARE_BUDGET(yourBudget); somewhere in your source file at namespace
-// scope Alternatively, AZ_DECLARE_BUDGET can be used in a header to declare the budget for use across any users of the header
+// scope Alternatively, AZ_DECLARE_BUDGET can be used in a header to declare the budget for use across any users of the header. If the budget
+// is declared in a shared library and is meant to be visible outside of that library, use the AZ_DECLARE_BUDGET_SHARED instead.
 #define AZ_DECLARE_BUDGET(name) ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()
 
 #define AZ_DECLARE_BUDGET_SHARED(name) AZ_DLL_EXPORT ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()

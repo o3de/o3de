@@ -223,7 +223,7 @@ namespace AzFramework
             auto assetFound = m_fileTagAssetsMap.find(fileTagType);
             if (assetFound == m_fileTagAssetsMap.end())
             {
-                m_fileTagAssetsMap[fileTagType] = AZStd::make_shared<AzFramework::FileTag::FileTagAsset>();
+                m_fileTagAssetsMap[fileTagType] = AZStd::make_unique<AzFramework::FileTag::FileTagAsset>();
             }
 
             return m_fileTagAssetsMap[fileTagType].get();

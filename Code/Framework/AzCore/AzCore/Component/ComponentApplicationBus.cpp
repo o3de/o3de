@@ -9,4 +9,3 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 
 AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
- 

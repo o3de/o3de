@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>

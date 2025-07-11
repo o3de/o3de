@@ -63,7 +63,9 @@
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 #include <AzToolsFramework/Metadata/UuidUtils.h>
 
-AZ_DEFINE_BUDGET_SHARED(AzToolsFramework);
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
+
+AZ_DEFINE_BUDGET(AzToolsFramework);
 
 AZ_CVAR_API(AZTF_API, bool, ed_useNewAssetBrowserListView, true, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Use the new AssetBrowser ListView for searching assets.");

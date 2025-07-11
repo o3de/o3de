@@ -82,8 +82,7 @@ AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional express
 AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
-
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
 namespace OpenMesh
 {
     template<>

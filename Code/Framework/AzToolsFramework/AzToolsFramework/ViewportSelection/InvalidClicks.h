@@ -31,7 +31,11 @@ namespace AzToolsFramework
     class InvalidClick
     {
     public:
+        InvalidClick() = default;
+
         virtual ~InvalidClick() = default;
+
+        AZ_DISABLE_COPY(InvalidClick);
 
         //! Begin the feedback.
         //! @param screenPoint The position of the click in screen coordinates.
@@ -48,6 +52,9 @@ namespace AzToolsFramework
     class AZTF_API ExpandingFadingCircles : public InvalidClick
     {
     public:
+        ExpandingFadingCircles() = default;
+        AZ_DISABLE_COPY(ExpandingFadingCircles);
+
         void Begin(const AzFramework::ScreenPoint& screenPoint) override;
         void Update(float deltaTime) override;
         bool Updating() override;
@@ -72,9 +79,12 @@ namespace AzToolsFramework
     {
     public:
         explicit FadingText(AZStd::string message)
-            : m_message(AZStd::move(message))
+            : InvalidClick(),
+              m_message(AZStd::move(message))
         {
         }
+
+        AZ_DISABLE_COPY(FadingText);
 
         void Begin(const AzFramework::ScreenPoint& screenPoint) override;
         void Update(float deltaTime) override;
@@ -92,8 +102,8 @@ namespace AzToolsFramework
     class AZTF_API InvalidClicks : private AZ::TickBus::Handler
     {
     public:
-        explicit InvalidClicks(AZStd::vector<AZStd::shared_ptr<InvalidClick>> invalidClickBehaviors)
-            : m_invalidClickBehaviors((invalidClickBehaviors))
+        explicit InvalidClicks(AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClickBehaviors)
+            : m_invalidClickBehaviors(AZStd::move(invalidClickBehaviors))
         {
         }
 
@@ -107,6 +117,6 @@ namespace AzToolsFramework
         //! AZ::TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        AZStd::vector<AZStd::shared_ptr<InvalidClick>> m_invalidClickBehaviors; //!< Invalid click behaviors to run.
+        AZStd::vector<AZStd::unique_ptr<InvalidClick>> m_invalidClickBehaviors; //!< Invalid click behaviors to run.
     };
 } // namespace AzToolsFramework

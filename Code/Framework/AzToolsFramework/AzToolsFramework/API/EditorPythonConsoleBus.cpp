@@ -9,4 +9,3 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonConsoleNotifications);
- 

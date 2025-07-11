@@ -177,9 +177,9 @@ namespace AzToolsFramework
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        AZStd::vector<AZStd::shared_ptr<InvalidClick>> invalidClicks;
-        invalidClicks.push_back(AZStd::make_shared<FadingText>("Not in focus"));
-        invalidClicks.push_back(AZStd::make_shared<ExpandingFadingCircles>());
+        AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClicks;
+        invalidClicks.push_back(AZStd::make_unique<FadingText>("Not in focus"));
+        invalidClicks.push_back(AZStd::make_unique<ExpandingFadingCircles>());
         m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 

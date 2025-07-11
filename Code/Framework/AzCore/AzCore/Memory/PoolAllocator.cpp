@@ -39,17 +39,10 @@ namespace AZ
 
 namespace AZ::Internal
 {
-    // NOTE: The following is disabled now that the PoolAllocationHelper now implements the functions inline
-
-    // AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
-
     template class AZCORE_API_EXPORT PoolAllocatorHelper<PoolSchema>;
 
     // Also instantiate the PoolAllocatorHelper for the Thread Pool Allocator
     template class AZCORE_API_EXPORT PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
-
-
-    
 }
 
 namespace AZ

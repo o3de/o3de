@@ -35,7 +35,7 @@ namespace AzFramework
             EditorOnly,
             Shader
         };
-        using FileTagAssetsMap = AZStd::map<FileTagType, AZStd::shared_ptr<AzFramework::FileTag::FileTagAsset>>;
+        using FileTagAssetsMap = AZStd::map<FileTagType, AZStd::unique_ptr<AzFramework::FileTag::FileTagAsset>>;
 
         //! File Tag Manager class can be used to add/remove tags based on either filepaths or file patterns.
         class AZF_API FileTagManager
