@@ -13,7 +13,11 @@
                 "Atom/Features/ColorManagement/TransformColor.azsli"
             ],
             "instructions": [
-                "SLOTTYPE(outColor) outColor = TransformColor4(GetMaterialTexture(params.inValue).Sample(GetMaterialTextureSampler(params.inSampler), (float2)inUV), inColorSpaceFrom, inColorSpaceTo);"
+                "#ifdef CS_SAMPLERS",
+                "SLOTTYPE(outColor) outColor = TransformColor4(GetMaterialTexture(params.inValue).SampleLevel(GetMaterialTextureSampler(params.inSampler), (float2)inUV, 0), inColorSpaceFrom, inColorSpaceTo);",
+                "#else",
+                "SLOTTYPE(outColor) outColor = TransformColor4(GetMaterialTexture(params.inValue).Sample(GetMaterialTextureSampler(params.inSampler), (float2)inUV), inColorSpaceFrom, inColorSpaceTo);",
+                "#endif /* CS_SAMPLERS */"
             ]
         },
         "propertySlots": [
