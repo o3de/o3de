@@ -107,6 +107,8 @@ namespace AzToolsFramework
         {
         }
 
+        AZ_DISABLE_COPY(InvalidClicks);
+
         //! Add an invalid click and activate one or more of the added invalid click behaviors.
         void AddInvalidClick(const AzFramework::ScreenPoint& screenPoint);
 

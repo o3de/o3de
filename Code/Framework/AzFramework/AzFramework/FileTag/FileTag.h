@@ -48,6 +48,8 @@ namespace AzFramework
             FileTagManager();
             ~FileTagManager();
 
+            AZ_DISABLE_COPY(FileTagManager);
+
             //////////////////////////////////////////////////////////////////////////
             // FileTagsEventBus Interface
 
@@ -80,6 +82,8 @@ namespace AzFramework
 
             FileTagQueryManager(FileTagType fileTagType);
             ~FileTagQueryManager();
+
+            AZ_DISABLE_COPY(FileTagQueryManager);
 
             //////////////////////////////////////////////////////////////////////////
             // QueryFileTagsEventBus Interface

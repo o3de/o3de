@@ -56,6 +56,10 @@ namespace AzFramework
             AZ_RTTI(FileTagAsset, "{F3BE5CAB-85B7-44B7-9495-863863F6B267}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(FileTagAsset, AZ::SystemAllocator);
 
+            FileTagAsset() = default;
+
+            AZ_DISABLE_COPY(FileTagAsset);
+
             static const char* GetDisplayName();
             static const char* GetGroup();
             static const char* Extension();
