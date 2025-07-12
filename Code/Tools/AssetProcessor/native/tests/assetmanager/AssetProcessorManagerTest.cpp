@@ -5621,7 +5621,7 @@ TEST_F(ChainJobDependencyTest, TestChainDependency_Multi)
 
     // Wait for the file compiled event and trigger OnAddedToCatalog with a delay, this is what causes rccontroller to process out of order
     AZStd::vector<JobEntry> finishedJobs;
-    QObject::connect(m_data->m_rcController.get(), &RCController::FileCompiled, [this, &finishedJobs](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+    QObject::connect(m_data->m_rcController.get(), &RCController::FileCompiled, [this, &finishedJobs](JobEntry entry,[[maybe_unused]]  AssetBuilderSDK::ProcessJobResponse response)
         {
             finishedJobs.push_back(entry);
 

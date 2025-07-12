@@ -48,7 +48,7 @@ namespace UnitTest
         void Render(const RenderPacket&)  override {};
 
         // Overrides for scene notification bus handler
-        void OnRenderPipelinePersistentViewChanged(AZ::RPI::RenderPipeline* renderPipeline, AZ::RPI::PipelineViewTag viewTag, AZ::RPI::ViewPtr newView, AZ::RPI::ViewPtr previousView) override
+        void OnRenderPipelinePersistentViewChanged(AZ::RPI::RenderPipeline* renderPipeline, [[maybe_unused]] AZ::RPI::PipelineViewTag viewTag, [[maybe_unused]] AZ::RPI::ViewPtr newView,[[maybe_unused]]  AZ::RPI::ViewPtr previousView) override
         {
             m_viewSetCount++;
             m_lastPipeline = renderPipeline;
