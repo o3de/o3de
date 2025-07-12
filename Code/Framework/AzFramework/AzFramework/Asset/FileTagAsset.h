@@ -58,7 +58,7 @@ namespace AzFramework
 
             FileTagAsset() = default;
 
-            AZ_DISABLE_COPY(FileTagAsset);
+            AZ_DISABLE_COPY_MOVE(FileTagAsset);
 
             static const char* GetDisplayName();
             static const char* GetGroup();
