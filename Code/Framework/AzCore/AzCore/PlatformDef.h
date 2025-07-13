@@ -25,6 +25,8 @@
     #define AZ_TRAIT_COMPILER_TEMPLATE_EXTERN extern
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
+    // DLL exporting and extern as mutually exclusive for MSVC compilers but needed for clang/gcc, so omit the keyword when declaring an exported template
+    // (see https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4910?view=msvc-170)
     #define AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
 #else
 #   error This compiler is not supported
