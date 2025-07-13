@@ -12,8 +12,8 @@
 
 namespace AZStd
 {
-    AZCORE_API_EXTERN template struct AZCORE_API ClassNames<char>;
-    AZCORE_API_EXTERN template struct AZCORE_API ClassNames<wchar_t>;
-    AZCORE_API_EXTERN template class AZCORE_API RegexTraits<char>;
-    AZCORE_API_EXTERN template class AZCORE_API RegexTraits<wchar_t>;
+    extern template struct AZCORE_API ClassNames<char>;
+    extern template struct AZCORE_API ClassNames<wchar_t>;
+    extern template class AZCORE_API RegexTraits<char>;
+    extern template class AZCORE_API RegexTraits<wchar_t>;
 } // namespace AZStd

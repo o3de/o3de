@@ -16,18 +16,15 @@
 
 #if defined(__clang__)
     #define AZ_COMPILER_CLANG   __clang_major__
-    #define AZ_TRAIT_COMPILER_TEMPLATE_EXTERN extern
 #elif defined(__GNUC__)
     //  Assign AZ_COMPILER_GCC to a number that represents the major+minor (2 digits) + path level (2 digits)  i.e. 3.2.0 == 30200
     #define AZ_COMPILER_GCC     (__GNUC__ * 10000 \
                                + __GNUC_MINOR__ * 100 \
                                + __GNUC_PATCHLEVEL__)
-    #define AZ_TRAIT_COMPILER_TEMPLATE_EXTERN extern
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
     // DLL exporting and extern as mutually exclusive for MSVC compilers but needed for clang/gcc, so omit the keyword when declaring an exported template
     // (see https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4910?view=msvc-170)
-    #define AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
 #else
 #   error This compiler is not supported
 #endif
@@ -52,8 +49,6 @@
     #define AZ_DLL_EXPORT_EXTERN
     #define AZ_DLL_IMPORT_EXTERN
 #endif
-
-#define AZ_TEMPLATE_EXTERN AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
 
 // These defines will be deprecated in the future with LY-99152
 #if defined(AZ_PLATFORM_MAC)

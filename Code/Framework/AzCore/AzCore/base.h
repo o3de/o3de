@@ -43,19 +43,13 @@ namespace AZ::Internal
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZCORE_API
-    #define AZCORE_TEMPLATE_EXTERN
-    #define AZCORE_API_EXTERN           extern
     #define AZCORE_API_EXPORT
 #else
     #if defined(AZCORE_EXPORTS)
         #define AZCORE_API              AZ_DLL_EXPORT
-        #define AZCORE_TEMPLATE_EXTERN  AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
-        #define AZCORE_API_EXTERN       AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
         #define AZCORE_API_EXPORT       AZ_DLL_EXPORT
     #else
         #define AZCORE_API              AZ_DLL_IMPORT
-        #define AZCORE_TEMPLATE_EXTERN  AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
-        #define AZCORE_API_EXTERN       AZ_TRAIT_COMPILER_TEMPLATE_EXTERN
         #define AZCORE_API_EXPORT       
     #endif
 #endif

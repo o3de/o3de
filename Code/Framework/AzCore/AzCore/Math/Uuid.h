@@ -192,7 +192,7 @@ namespace AZ
 namespace AZStd
 {
     // extern the fixed_string<39> class required to hold a Uuid string
-    AZCORE_API_EXTERN template class AZCORE_API basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+    extern template class AZCORE_API basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
 
     // hash specialization
     template <>

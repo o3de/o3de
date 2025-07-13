@@ -273,7 +273,7 @@ namespace AzToolsFramework
 
 namespace AZStd
 {
-    AZ_TEMPLATE_EXTERN template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
+    extern template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
 
 AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);

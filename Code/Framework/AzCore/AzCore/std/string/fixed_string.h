@@ -490,7 +490,7 @@ namespace AZStd
     struct hash<basic_fixed_string<Element, MaxElementCount, Traits>>;
 
     // Extern common fixed_string types
-    AZCORE_API_EXTERN template class AZCORE_API basic_fixed_string<char, 1024>;
+    extern template class AZCORE_API basic_fixed_string<char, 1024>;
 
 } // namespace AZStd
 

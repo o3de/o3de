@@ -229,9 +229,9 @@ namespace AZ
         AZCORE_API bool UnsetEnv(const char* envname);
 
 
-        AZCORE_API_EXTERN template AZCORE_API AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-        AZCORE_API_EXTERN template AZCORE_API AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-        AZCORE_API_EXTERN template AZCORE_API AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-        AZCORE_API_EXTERN template AZCORE_API AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+        extern template AZCORE_API AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+        extern template AZCORE_API AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+        extern template AZCORE_API AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+        extern template AZCORE_API AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     }
 } // namespace AZ

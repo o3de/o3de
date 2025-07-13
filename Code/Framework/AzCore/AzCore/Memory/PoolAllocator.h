@@ -183,14 +183,14 @@ namespace AZ::Internal
     };
 
     AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL_INLINE(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
-    AZCORE_API_EXTERN template class AZCORE_API PoolAllocatorHelper<PoolSchema>;
+    extern template class AZCORE_API PoolAllocatorHelper<PoolSchema>;
 }
 
 namespace AZ
 {
     // Extern the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template to
     // to reduce instantations
-    AZCORE_API_EXTERN template struct AZCORE_API AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
+    extern template struct AZCORE_API AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
     /*!
      * Pool allocator
      * Specialized allocation for extremely fast small object memory allocations.
@@ -217,7 +217,7 @@ namespace AZ
     class ThreadPoolAllocator;
     namespace Internal
     {
-        AZCORE_API_EXTERN template class AZCORE_API PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+        extern template class AZCORE_API PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
     }
 
     /*!
