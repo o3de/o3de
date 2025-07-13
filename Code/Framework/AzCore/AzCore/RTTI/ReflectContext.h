@@ -229,6 +229,8 @@ namespace AZ
         AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, Attribute);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
+        AZ_DISABLE_COPY(Attribute);
+
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
         { }

@@ -276,6 +276,8 @@ namespace AzToolsFramework
         InstanceDataHierarchy();
         virtual ~InstanceDataHierarchy() = default;
 
+        AZ_DISABLE_COPY_MOVE(InstanceDataHierarchy);
+
         enum Flags
         {
             None = 0x00,
@@ -385,7 +387,7 @@ namespace AzToolsFramework
     protected:
         struct SupplementalEditData
         {
-            using AttributePtr = AZStd::shared_ptr<AZ::Edit::Attribute>;
+            using AttributePtr = AZStd::unique_ptr<AZ::Edit::Attribute>;
 
             AZ::Edit::ElementData               m_editElementData;
             AZStd::string                       m_displayLabel;
@@ -447,7 +449,7 @@ namespace AzToolsFramework
         SupplementalEditDataContainer                           m_supplementalEditData;     ///< List of additional edit data generated during traversal for elements.
         EditDataOverrideStack                                   m_editDataOverrides;
         InstanceDataArray                                       m_comparisonInstances;      ///< Optional comparison instance for Override recognition.
-        AZStd::vector<AZStd::shared_ptr<InstanceDataHierarchy>> m_comparisonHierarchies;    ///< Hierarchy representing comparison instance.
+        AZStd::vector<AZStd::unique_ptr<InstanceDataHierarchy>> m_comparisonHierarchies;    ///< Hierarchy representing comparison instance.
         ValueComparisonFunction                                 m_valueComparisonFunction;  ///< Customizable function for comparing value nodes.
         AZ::u8                                                  m_buildFlags = 0;           ///< Flags to customize behavior during Build.
     };

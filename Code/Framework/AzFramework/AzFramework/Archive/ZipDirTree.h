@@ -13,7 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
@@ -22,7 +22,12 @@ namespace AZ::IO::ZipDir
     {
     public:
         AZ_CLASS_ALLOCATOR(FileEntryTree, AZ::SystemAllocator);
+
+        FileEntryTree() = default;
+
         virtual ~FileEntryTree () {Clear(); }
+
+        AZ_DISABLE_COPY(FileEntryTree);
 
         // adds a file to this directory
         // Function can modify szPath input
@@ -50,9 +55,9 @@ namespace AZ::IO::ZipDir
         bool IsOwnerOf(const FileEntry* pFileEntry) const;
 
         // subdirectories
-        using SubdirMap = AZStd::map<AZ::IO::PathView, AZStd::shared_ptr<FileEntryTree>>;
+        using SubdirMap = AZStd::map<AZ::IO::PathView, AZStd::unique_ptr<FileEntryTree>>;
         // file entries
-        using FileMap = AZStd::map<AZ::IO::PathView, AZStd::shared_ptr<FileEntry>>;
+        using FileMap = AZStd::map<AZ::IO::PathView, AZStd::unique_ptr<FileEntry>>;
 
         FileEntryTree* FindDir(AZ::IO::PathView szDirName);
         ErrorEnum RemoveDir(AZ::IO::PathView szDirName);
