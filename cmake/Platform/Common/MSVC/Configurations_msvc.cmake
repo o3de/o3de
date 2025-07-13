@@ -65,7 +65,7 @@ ly_append_configurations_options(
         /wd4324 #  warning C4324: 'std::tuple<...>': structure was padded due to alignment specifier. This warning is triggered whenever a simd type is used with the MSVC std::optional or std::tuple types, which is namespaced into AZStd
         /wd4251 # Don't warn if a class with dllexport attribute has nonstatic members which don't have the dllexport attribute
         /wd4275 # non dll-interface class 'XXXXX' used as base for dll-interface class 'XXXXX'
-        /wd4910 # '__declspec(dllexport)' and 'extern' are incompatible on an explicit instantiatio
+        /wd4910 # '__declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
 
         ###################
         # Enabled warnings (that are disabled by default from /W4)
