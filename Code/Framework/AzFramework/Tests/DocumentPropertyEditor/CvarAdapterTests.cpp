@@ -104,7 +104,7 @@ namespace AZ::DocumentPropertyEditor::Tests
     {
         EXPECT_EQ(static_cast<uint8_t>(dpe_TestUint), GetEntryValue("dpe_TestUint").GetUint64());
         SetEntryValue("dpe_TestUint", Dom::Value(42));
-        EXPECT_EQ(42, dpe_TestUint);
+        EXPECT_EQ(AZ::u8(42), dpe_TestUint);
         EXPECT_EQ(42, GetEntryValue("dpe_TestUint").GetUint64());
     }
 

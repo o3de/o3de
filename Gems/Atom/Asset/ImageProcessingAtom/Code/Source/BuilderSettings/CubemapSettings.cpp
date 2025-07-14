@@ -11,12 +11,12 @@
 
 namespace ImageProcessingAtom
 {
-    bool CubemapSettings::operator!=(const CubemapSettings& other)
+    bool CubemapSettings::operator!=(const CubemapSettings& other) const
     {
         return !(*this == other);
     }
 
-    bool CubemapSettings::operator==(const CubemapSettings& other)
+    bool CubemapSettings::operator==(const CubemapSettings& other) const
     {
         return
             m_filter == other.m_filter &&

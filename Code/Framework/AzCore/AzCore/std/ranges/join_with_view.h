@@ -534,14 +534,13 @@ namespace AZStd::ranges
 
         //! iterator to the outer view element of the view wrapped by the join_with_view
         OuterIter m_outerIter{};
-        //! iterator to the range element which is wrapped by the view or the pattern
-        //! placement new and destructor calls aren't constexpr until C++20
-        //! Because AZStd::variant under the hood invokes AZStd::construct_at, which uses placement new
-        //! this makes the emplace calls in this class non-constexpr
-        //! fallback to use a struct in C++17 with a bool, since it is simple to deal with than a union
-#if __cpp_constexpr_dynamic_alloc >= 201907L
+
+        //! Iterator to the range element which is wrapped by the view or the pattern.
+        //! This needs a constexpr-capable variant in order for the views::join_with expression to be usable in a constexpr context.
+#if AZSTD_HAS_STD_CONSTEXPR_VARIANT
         variant<PatternIter, InnerIter> m_innerIter{};
 #else
+        //! Fallback implementation to use a struct in C++17 with a bool, since it is simpler to deal with than a union.
         struct ElementIter
         {
             constexpr bool operator==(const ElementIter& other) const
