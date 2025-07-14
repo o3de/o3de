@@ -245,8 +245,8 @@ namespace Vegetation
 
             bool IsInside(const SectorId& sector) const;
             ViewRect Overlap(const ViewRect& b) const;
-            bool operator !=(const ViewRect& b);
-            bool operator ==(const ViewRect& b);
+            bool operator !=(const ViewRect& b) const;
+            bool operator ==(const ViewRect& b) const;
             size_t GetNumSectors() const;
             int GetMinXSector() const { return m_x; }
             int GetMinYSector() const { return m_y; }

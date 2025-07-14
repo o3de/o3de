@@ -71,6 +71,11 @@ namespace EMotionFX
         return m_id == rhs.m_id;
     }
 
+    bool ObjectId::operator==(AZ::u64 rhs) const
+    {
+        return m_id == rhs;
+    }
+
     bool ObjectId::operator!=(const ObjectId& rhs) const
     {
         return m_id != rhs.m_id;
