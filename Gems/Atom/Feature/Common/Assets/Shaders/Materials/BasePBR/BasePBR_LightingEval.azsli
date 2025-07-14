@@ -16,33 +16,41 @@
 #define FinalizeLightingData FinalizeLightingData_BasePBR
 #endif
 
-// Note: See the note in BasePBR_LightingData.azsli as to why this isn't a class method
-void BasePBR_InitLightingData(inout LightingData lightingData, float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS])
+// Wrapper arround SampleBrdfMap(). 
+// We need this because while the function is defined between the LightingData_BasePBR - class definition and the LightingData_BasePBR::Init() declaration, 
+// azslc puts the function declaration with the class definition, and then doesn't find the SampleBrdfMap() function.
+// And azslc tends to crash if we add a forward declaration for SampleBrdfMap() directly.
+float2 MySampleBrdfMap(float2 brdfUV)
 {
-    lightingData.diffuseLighting = real3(0.0, 0.0, 0.0);
-    lightingData.multiScatterCompensation = real3(1.0, 1.0, 1.0);
-    lightingData.emissiveLighting = real3(0.0, 0.0, 0.0);
+    return SampleBrdfMap(brdfUV);
+}
+
+void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS])
+{
+    diffuseLighting = real3(0.0, 0.0, 0.0);
+    multiScatterCompensation = real3(1.0, 1.0, 1.0);
+    emissiveLighting = real3(0.0, 0.0, 0.0);
 #if ENABLE_TRANSMISSION
-    lightingData.translucentBackLighting = real3(0.0, 0.0, 0.0);
+    translucentBackLighting = real3(0.0, 0.0, 0.0);
 #endif
-    lightingData.diffuseAmbientOcclusion = 1.0;
-    lightingData.specularOcclusion = 1.0;
+    diffuseAmbientOcclusion = 1.0;
+    specularOcclusion = 1.0;
 
     [unroll]
     for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
     {
-        lightingData.specularLighting[i] = real3(0.0, 0.0, 0.0);
-        lightingData.dirToCamera[i] = normalize(viewPosition[i] - positionWS);
-        lightingData.NdotV[i] = saturate(dot(specularNormal, lightingData.dirToCamera[i]));
+        specularLighting[i] = real3(0.0, 0.0, 0.0);
+        dirToCamera[i] = normalize(viewPosition[i] - positionWS);
+        NdotV[i] = saturate(dot(specularNormal, dirToCamera[i]));
         // sample BRDF map (indexed by smoothness values rather than roughness)
-        float2 brdfUV = float2(lightingData.NdotV[i], (1.0 - roughnessLinear));
-        lightingData.brdf[i] = real2(SampleBrdfMap(brdfUV));
+        float2 brdfUV = float2(NdotV[i], (1.0 - roughnessLinear));
+        brdf[i] = real2(MySampleBrdfMap(brdfUV));
     }
 }
 
 void InitializeLightingData_BasePBR(Surface surface, float3 viewPositions[MAX_SHADING_VIEWS], inout LightingData lightingData)
 {
-    BasePBR_InitLightingData(lightingData, surface.position, surface.GetSpecularNormal(),  surface.roughnessLinear, viewPositions);
+    lightingData.Init(surface.position, surface.GetSpecularNormal(),  surface.roughnessLinear, viewPositions);
 
     // Diffuse and Specular response (used in IBL calculations)
     real3 specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);

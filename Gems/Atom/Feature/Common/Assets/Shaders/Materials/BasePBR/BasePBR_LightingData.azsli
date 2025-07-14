@@ -28,6 +28,9 @@
 #define GET_SHADING_VIEW_COUNT 1
 #endif
 
+// Forward declaration for a wrapper arround SampleBrdfMap(). 
+float2 MySampleBrdfMap(float2 brdfUV);
+
 class LightingData_BasePBR
 {
     // Lighting outputs
@@ -63,18 +66,12 @@ class LightingData_BasePBR
     real diffuseAmbientOcclusion;
     real specularOcclusion;
 
-    // Note: The intent is that the LightingData_BasePBR definition is included in BasePBR_Defines.azsli, then the render pipeline 
-    // declares the SampleBrdfMap - function in the PipelineCallbacks.azsli, and then we use it in LightingData_BasePBR::Init(), which *should* be placed
-    // in BasePBR_LightingEval.azsli (which is included via BasePBR.azsli).
-    // Unfortunately AZSLC messes up with class member functions and either drops the SampleBRDFMap - function, or crashes, which forces
-    // us to move the BRDF-Initialisation to the non-class function BasePBR_InitLightingData().
-    // void Init(float3 positionWS, real3 specularNormal, float3 viewPosition[MAX_SHADING_VIEWS]);
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS]);
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting(Surface surface);
     float GetSpecularNdotV() { return NdotV[0]; }
     float GetSpecularNdotV(uint i) { return NdotV[i]; }
 };
-
 
 void LightingData_BasePBR::CalculateMultiscatterCompensation(real3 specularF0, bool enabled)
 {
