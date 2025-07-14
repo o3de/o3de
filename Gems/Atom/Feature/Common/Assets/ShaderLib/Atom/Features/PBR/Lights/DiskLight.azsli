@@ -18,49 +18,49 @@
 
 class DiskLightUtil_PBR
 {
-    real3 posToLight;
-    real3 posToLightDir;
-    real  lightDistanceSquared;
+    real3 m_posToLight;
+    real3 m_posToLightDir;
+    real  m_lightDistanceSquared;
     
-    real  falloff;
-    real  angleFalloff;
+    real  m_falloff;
+    real  m_angleFalloff;
 
-    real3 dirToConeTip;
-    real  dotWithDirection;
+    real3 m_dirToConeTip;
+    real  m_dotWithDirection;
 
 #if ENABLE_TRANSMISSION
     // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
     // - If transmission mode is thick object -> use transmission thickness parameter instead
     // - If transmission mode is thin object -> ignore back lighting
-    real transmissionDistance;
+    real m_transmissionDistance;
 #endif
 
     static DiskLightUtil_PBR Init(DiskLight light, Surface surface)
     {
         DiskLightUtil_PBR result;
 
-        result.posToLight = light.m_position - surface.position;
-        result.lightDistanceSquared = dot(result.posToLight, result.posToLight); // light distance squared
-        result.falloff = result.lightDistanceSquared * light.m_invAttenuationRadiusSquared;
-        result.posToLightDir = normalize(result.posToLight);
+        result.m_posToLight = light.m_position - surface.position;
+        result.m_lightDistanceSquared = dot(result.m_posToLight, result.m_posToLight); // light distance squared
+        result.m_falloff = result.m_lightDistanceSquared * light.m_invAttenuationRadiusSquared;
+        result.m_posToLightDir = normalize(result.m_posToLight);
 
         // Reduce the brightness based on how much the disk is facing this pixel.
-        result.angleFalloff = dot(result.posToLightDir, -light.m_direction);
+        result.m_angleFalloff = dot(result.m_posToLightDir, -light.m_direction);
 
         float3 coneTipPosition = light.m_position + light.m_bulbPositionOffset * -light.m_direction;
-        result.dirToConeTip = normalize(coneTipPosition - surface.position);
-        result.dotWithDirection = dot(result.dirToConeTip, -normalize(light.m_direction));
+        result.m_dirToConeTip = normalize(coneTipPosition - surface.position);
+        result.m_dotWithDirection = dot(result.m_dirToConeTip, -normalize(light.m_direction));
 
         // Only calculate shading if light is in range
-        if (result.falloff < 1.0f && result.angleFalloff > 0.0f)
+        if (result.m_falloff < 1.0f && result.m_angleFalloff > 0.0f)
         {
             bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
             if (useConeAngle)
             {
                 // If outside the outer cone angle: Set angle-Falloff to 0.
-                if (result.dotWithDirection < light.m_cosOuterConeAngle)
+                if (result.m_dotWithDirection < light.m_cosOuterConeAngle)
                 {
-                    result.angleFalloff = 0.0f;
+                    result.m_angleFalloff = 0.0f;
                 }
             }
         }
@@ -69,49 +69,49 @@ class DiskLightUtil_PBR
 
     real3 GetSurfaceToLightDirection()
     {
-        return posToLightDir;
+        return m_posToLightDir;
     }
 
 #if ENABLE_TRANSMISSION
     void SetTransmissionDistance(real distance)
     {
-        transmissionDistance = distance;
+        m_transmissionDistance = distance;
     }
 #endif
 
     real GetFalloff()
     {
-        return select(angleFalloff > 0.0f, falloff, 1.0f);
+        return select(m_angleFalloff > 0.0f, m_falloff, 1.0f);
     }
 
     real3 GetDirectionToConeTip()
     {
-        return dirToConeTip;
+        return m_dirToConeTip;
     }
 
     void Apply(DiskLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        float radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
         // Find the distance to the closest point on the disk
-        float distanceToPlane = dot(posToLight, -light.m_direction);
+        float distanceToPlane = dot(m_posToLight, -light.m_direction);
         float distanceToPlane2 = distanceToPlane * distanceToPlane;
-        float pointOnPlaneToLightDistance = sqrt(lightDistanceSquared - distanceToPlane2); // pythagorean theorem 
+        float pointOnPlaneToLightDistance = sqrt(m_lightDistanceSquared - distanceToPlane2); // pythagorean theorem 
         float pointOnPlaneToDiskDistance = max(pointOnPlaneToLightDistance - light.m_diskRadius, 0.0f); 
         float distanceToDisk2 = pointOnPlaneToDiskDistance * pointOnPlaneToDiskDistance + distanceToPlane2;
 
         // Update the light direction based on the edges of the disk as visible from this point instead of the center.
         float3 pointOnPlane = -light.m_direction * distanceToPlane;
-        float3 pointOnPlaneToLightDir = normalize(posToLight - pointOnPlane);
+        float3 pointOnPlaneToLightDir = normalize(m_posToLight - pointOnPlane);
         float3 nearSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance - light.m_diskRadius));
         float3 farSideDir = normalize(pointOnPlane + pointOnPlaneToLightDir * (pointOnPlaneToLightDistance + light.m_diskRadius));
-        posToLightDir = normalize((nearSideDir + farSideDir) * 0.5);
+        m_posToLightDir = normalize((nearSideDir + farSideDir) * 0.5);
 
-        // Standard quadratic falloff
-        lightDistanceSquared = max(0.001 * 0.001, lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / lightDistanceSquared) * radiusAttenuation * angleFalloff;
+        // Standard quadratic m_falloff
+        m_lightDistanceSquared = max(0.001 * 0.001, m_lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / m_lightDistanceSquared) * radiusAttenuation * m_angleFalloff;
 
         // Adjust brightness based on the disk size relative to its distance.
         // The larger the disk is relative to the surface point, the dimmer it becomes.
@@ -119,10 +119,10 @@ class DiskLightUtil_PBR
         lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0);
 
         bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
-        if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        if (useConeAngle && m_dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
         {
             // Normalize into 0.0 - 1.0 space.
-            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            float penumbraMask = (m_dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
 
             // Apply smoothstep
             penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
@@ -131,11 +131,11 @@ class DiskLightUtil_PBR
         }
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, m_posToLightDir) * litRatio;
 
         // Transmission contribution
 #if ENABLE_TRANSMISSION
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, posToLightDir, transmissionDistance, lightDistanceSquared) * litRatio;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, m_posToLightDir, m_transmissionDistance, m_lightDistanceSquared) * litRatio;
 #endif
 
         // Calculate specular lighting for each view
@@ -160,25 +160,25 @@ class DiskLightUtil_PBR
                 // Reflection going away from the light. Choose a point far off and project it on the plane,
                 // then treat that as the reflection plane intersection.
                 float3 posToFarOffPoint = reflectionDir * distanceToPlane * 10000.0;
-                float3 lightToFarOffPoint = posToFarOffPoint - posToLight;
+                float3 lightToFarOffPoint = posToFarOffPoint - m_posToLight;
                 float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, light.m_direction) * light.m_direction;
                 posToIntersection = posToFarOffPoint - intersectionToFarOffPoint;
             }
 
             // Calculate a vector from the reflection vector to the light
-            float3 intersectionToLight = posToLight - posToIntersection;
+            float3 intersectionToLight = m_posToLight - posToIntersection;
 
             // Adjust the direction to light based on the bulb size
-            posToLight -= intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
+            m_posToLight -= intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
 
             // Adjust the direction to light based on the bulb size
-            float3 viewPosToLight = posToLight - intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
+            float3 viewm_posToLight = m_posToLight - intersectionToLight * saturate(light.m_diskRadius / length(intersectionToLight));
 
             // Adjust the intensity of the light based on the bulb size to conserve energy
-            float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, lightDistanceSquared);
+            float diskIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_diskRadius, m_lightDistanceSquared);
 
             // Specular contribution
-            lightingData.specularLighting[viewIndex] += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(viewPosToLight), viewIndex) * litRatio;
+            lightingData.specularLighting[viewIndex] += diskIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(viewm_posToLight), viewIndex) * litRatio;
         }
     }
 

@@ -18,51 +18,51 @@
 
 class CapsuleLightUtil_PBR
 {
-    real  lightLength;
-    real3 startPoint;
-    real3 startToEnd;
-    real3 endPoint;
-    real3 surfaceToStart;
-    real closestPointDistance;
-    real3 dirToClosestPoint;
-    real d2;
-    real  falloff;
+    real  m_lightLength;
+    real3 m_startPoint;
+    real3 m_startToEnd;
+    real3 m_endPoint;
+    real3 m_surfaceToStart;
+    real  m_closestPointDistance;
+    real3 m_dirToClosestPoint;
+    real  m_d2;
+    real  m_falloff;
 
     static CapsuleLightUtil_PBR Init(CapsuleLight light, Surface surface)
     {
         CapsuleLightUtil_PBR result;
 
-        result.lightLength = light.m_length;
-        result.startPoint = light.m_startPoint;
-        result.startToEnd = light.m_direction * result.lightLength;
-        result.endPoint = result.startPoint + result.startToEnd;
+        result.m_lightLength = light.m_length;
+        result.m_startPoint = light.m_startPoint;
+        result.m_startToEnd = light.m_direction * result.m_lightLength;
+        result.m_endPoint = result.m_startPoint + result.m_startToEnd;
         
-        // Do simple distance check to line for falloff and tight culling.
-        result.surfaceToStart = result.startPoint - surface.position;
-        result.closestPointDistance = dot(-result.surfaceToStart, light.m_direction);
-        result.closestPointDistance = clamp(result.closestPointDistance, 0.0f, result.lightLength);
+        // Do simple distance check to line for m_falloff and tight culling.
+        result.m_surfaceToStart = result.m_startPoint - surface.position;
+        result.m_closestPointDistance = dot(-result.m_surfaceToStart, light.m_direction);
+        result.m_closestPointDistance = clamp(result.m_closestPointDistance, 0.0f, result.m_lightLength);
 
-        result.dirToClosestPoint = result.surfaceToStart + result.closestPointDistance * light.m_direction;
-        result.d2 = dot(result.dirToClosestPoint, result.dirToClosestPoint);
-        result.falloff = result.d2 * light.m_invAttenuationRadiusSquared;
+        result.m_dirToClosestPoint = result.m_surfaceToStart + result.m_closestPointDistance * light.m_direction;
+        result.m_d2 = dot(result.m_dirToClosestPoint, result.m_dirToClosestPoint);
+        result.m_falloff = result.m_d2 * light.m_invAttenuationRadiusSquared;
         return result;
     }
 
     real GetFalloff()
     {
-        return falloff;
+        return m_falloff;
     }
 
     void Apply(CapsuleLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        float radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
         // Check if the capsule intersects the plane formed by the surface normal. If so, the capsule should be
         // truncated to just the portion above the plane.
-        float startProjection = dot(surface.GetDiffuseNormal(), surfaceToStart);
-        float lengthProjection = dot(surface.GetDiffuseNormal(), startToEnd);
+        float startProjection = dot(surface.GetDiffuseNormal(), m_surfaceToStart);
+        float lengthProjection = dot(surface.GetDiffuseNormal(), m_startToEnd);
         float startOverLength = startProjection / lengthProjection;
         float ratioVisible = 1.0;
 
@@ -77,31 +77,31 @@ class CapsuleLightUtil_PBR
             if (startProjection < 0.0f)
             {
                 // start point is behind the surface, so move it
-                startPoint = startPoint + lightLength * startOverLength * light.m_direction;
+                m_startPoint = m_startPoint + m_lightLength * startOverLength * light.m_direction;
                 ratioVisible = 1.0 - startOverLength;
-                lightLength *= ratioVisible;
-                surfaceToStart = startPoint - surface.position;
+                m_lightLength *= ratioVisible;
+                m_surfaceToStart = m_startPoint - surface.position;
             }
             else
             {
                 // end point is behind the surface so adjust the capsule length
-                lightLength *= startOverLength;
+                m_lightLength *= startOverLength;
                 ratioVisible = startOverLength;
-                endPoint = light.m_startPoint + light.m_direction * lightLength;
+                m_endPoint = light.m_startPoint + light.m_direction * m_lightLength;
             }
-            startToEnd = light.m_direction * lightLength;
+            m_startToEnd = light.m_direction * m_lightLength;
         }
 
         // Calculate the distances to start and end
-        float distanceToStart = length(surfaceToStart);
-        float3 surfaceToEnd = endPoint - surface.position;
+        float distanceToStart = length(m_surfaceToStart);
+        float3 surfaceToEnd = m_endPoint - surface.position;
         float distanceToEnd = length(surfaceToEnd);
 
         // Integration of lambert reflectance of a line segment to get diffuse intensity
         // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
-        float NdotStart = dot(surface.GetDiffuseNormal(), surfaceToStart) / distanceToStart;
+        float NdotStart = dot(surface.GetDiffuseNormal(), m_surfaceToStart) / distanceToStart;
         float NdotEnd =  dot(surface.GetDiffuseNormal(), surfaceToEnd) / distanceToEnd;
-        float intensity = (NdotStart + NdotEnd) / (distanceToStart * distanceToEnd + dot(surfaceToStart, surfaceToEnd));
+        float intensity = (NdotStart + NdotEnd) / (distanceToStart * distanceToEnd + dot(m_surfaceToStart, surfaceToEnd));
         intensity *= INV_PI; // normalize for lambert reflectance.
 
         float3 lightIntensity = (intensity * radiusAttenuation * ratioVisible) * light.m_rgbIntensityCandelas;
@@ -117,7 +117,7 @@ class CapsuleLightUtil_PBR
         // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
         const float attenuationDistance = 0.0f;
 
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(dirToClosestPoint), transmissionDistance, attenuationDistance) * litRatio;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(m_dirToClosestPoint), transmissionDistance, attenuationDistance) * litRatio;
 #endif
 
         // Calculate specular lighting for each view
@@ -129,11 +129,11 @@ class CapsuleLightUtil_PBR
 
             // Find closest point on light to reflection vector.
             // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
-            float reflDotStartToEnd = dot(reflectionDir, startToEnd);
-            float closestT = (dot(reflectionDir, surfaceToStart) * reflDotStartToEnd - dot(surfaceToStart, startToEnd)) / (dot(startToEnd, startToEnd) - reflDotStartToEnd * reflDotStartToEnd);
+            float reflDotm_startToEnd = dot(reflectionDir, m_startToEnd);
+            float closestT = (dot(reflectionDir, m_surfaceToStart) * reflDotm_startToEnd - dot(m_surfaceToStart, m_startToEnd)) / (dot(m_startToEnd, m_startToEnd) - reflDotm_startToEnd * reflDotm_startToEnd);
             closestT = saturate(closestT);
 
-            float3 closestIntersectionPoint = startPoint + closestT * startToEnd;
+            float3 closestIntersectionPoint = m_startPoint + closestT * m_startToEnd;
             float3 posToLight = closestIntersectionPoint - surface.position;
 
             // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
@@ -142,11 +142,11 @@ class CapsuleLightUtil_PBR
 
             // Adjust the direction to light based on the capsule radius
             posToLight -= lightReflectionOffset * saturate(light.m_radius / length(lightReflectionOffset));
-            d2 = dot(posToLight, posToLight);
-            d2 = max(light.m_radius * light.m_radius, d2);
+            m_d2 = dot(posToLight, posToLight);
+            m_d2 = max(light.m_radius * light.m_radius, m_d2);
 
             // Adjust the intensity of the light based on the capsule radius to conserve energy
-            float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_radius, d2);
+            float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_radius, m_d2);
 
             // Capsule specular is done just like spherical specular, we just move the position of the sphere along the capsule depending
             // on the point being shaded. However this means that the intensity needs to be reduced by the ratio of the capsule surface
@@ -154,7 +154,7 @@ class CapsuleLightUtil_PBR
             float sphereToCapsuleAreaRatio = 2.0 * light.m_radius / max(2.0 * light.m_radius + light.m_length, EPSILON);
 
             // Specular contribution
-            float3 viewLightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / d2;
+            float3 viewLightIntensity = sphereToCapsuleAreaRatio * radiusAttenuation / m_d2;
             viewLightIntensity *= light.m_rgbIntensityCandelas;
             lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, viewLightIntensity, normalize(posToLight), viewIndex) * litRatio;
         }

@@ -32,12 +32,12 @@ float RectangleSolidAngle(float3 v0, float3 v1, float3 v2, float3 v3)
 
 // Unlike standard ray-plane intersection, this version is made for light planes to avoid discontinuities when the
 // reflection vector is going away from a light plane.
-float3 RayLightPlaneIntersection(in float3 pos, in float3 rayDirection, in float3 lightOrigin, in float3 lightDirection)
+float3 RayLightPlaneIntersection(in float3 pos, in float3 rayDirection, in float3 lightOrigin, in float3 m_lightDirection)
 {
     float3 lightToPos = pos - lightOrigin;
-    float reflectionDotLight = dot(rayDirection, -lightDirection);
+    float reflectionDotLight = dot(rayDirection, -m_lightDirection);
 
-    float distanceToPlane = dot(lightToPos, lightDirection);
+    float distanceToPlane = dot(lightToPos, m_lightDirection);
     if (reflectionDotLight >= 0.0001)
     {
         // Reflection going towards the light
@@ -50,7 +50,7 @@ float3 RayLightPlaneIntersection(in float3 pos, in float3 rayDirection, in float
         float3 posToFarOffPoint = rayDirection * distanceToPlane * 10000.0;
         float3 lightToFarOffPoint = lightToPos + posToFarOffPoint;
         // Here "intersection" refers to the projection of the far off point onto the light plane.
-        float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, lightDirection) * lightDirection;
+        float3 intersectionToFarOffPoint = dot(lightToFarOffPoint, m_lightDirection) * m_lightDirection;
         return pos + posToFarOffPoint - intersectionToFarOffPoint;
     }
 }
@@ -77,57 +77,57 @@ float3 GetSpecularDominantDirection(float3 normal, float3 reflection, float roug
 class QuadLightUtil_PBR
 {
 
-    real3 lightDirection;
-    real3 posToLight;
-    real posToLightDotLightDirection;
-    real distanceToLight2;
-    real falloff;
-    bool doubleSided;
+    real3 m_lightDirection;
+    real3 m_posToLight;
+    real m_posToLightDotLightDirection;
+    real m_distanceToLight2;
+    real m_falloff;
+    bool m_doubleSided;
 
     static QuadLightUtil_PBR Init(QuadLight light, Surface surface)
     {
         QuadLightUtil_PBR result;
 
-        result.lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
+        result.m_lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized.
 
-        result.posToLight = light.m_position - surface.position;
-        result.posToLightDotLightDirection = dot(result.posToLight, -result.lightDirection);
+        result.m_posToLight = light.m_position - surface.position;
+        result.m_posToLightDotLightDirection = dot(result.m_posToLight, -result.m_lightDirection);
 
-        result.distanceToLight2 = dot(result.posToLight, result.posToLight); // light distance squared
-        result.falloff = result.distanceToLight2 * light.m_invAttenuationRadiusSquared;
+        result.m_distanceToLight2 = dot(result.m_posToLight, result.m_posToLight); // light distance squared
+        result.m_falloff = result.m_distanceToLight2 * light.m_invAttenuationRadiusSquared;
 
-        result.doubleSided = (light.m_flags & EmitsBothDirections) > 0;
-        if (result.doubleSided)
+        result.m_doubleSided = (light.m_flags & EmitsBothDirections) > 0;
+        if (result.m_doubleSided)
         {
-            result.lightDirection *= sign(result.posToLightDotLightDirection);
-            result.posToLightDotLightDirection = abs(result.posToLightDotLightDirection);
+            result.m_lightDirection *= sign(result.m_posToLightDotLightDirection);
+            result.m_posToLightDotLightDirection = abs(result.m_posToLightDotLightDirection);
         }
-        if (result.posToLightDotLightDirection <= 0.0f)
+        if (result.m_posToLightDotLightDirection <= 0.0f)
         {
-            result.falloff = 1.0f;
+            result.m_falloff = 1.0f;
         }
         return result;
     }
 
     real GetFalloff()
     {
-        return falloff;
+        return m_falloff;
     }
 
     void Apply(QuadLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
                 // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        float radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
         float3 left = light.m_leftDir * light.m_halfWidth;
         float3 up = light.m_upDir * light.m_halfHeight;
 
         // Calculation positions for 4 corners relative to the surface
-        float3 p0 = posToLight + -left +  up;
-        float3 p1 = posToLight + -left + -up;
-        float3 p2 = posToLight +  left + -up;
-        float3 p3 = posToLight +  left +  up;
+        float3 p0 = m_posToLight + -left +  up;
+        float3 p1 = m_posToLight + -left + -up;
+        float3 p2 = m_posToLight +  left + -up;
+        float3 p3 = m_posToLight +  left +  up;
 
         bool useFastApproximation = (light.m_flags & UseFastApproximation) > 0;
         if (!useFastApproximation && o_enableQuadLightLTC)
@@ -144,7 +144,7 @@ class QuadLightUtil_PBR
                 float viewDiffuse = 0.0;
                 float3 viewSpecular = float3(0.0, 0.0, 0.0);
 
-                LtcQuadEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, p, doubleSided, viewIndex, viewDiffuse, viewSpecular);
+                LtcQuadEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, p, m_doubleSided, viewIndex, viewDiffuse, viewSpecular);
 
                 // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
                 float3 intensity = 0.5 * INV_PI * radiusAttenuation * light.m_rgbIntensityNits;
@@ -169,7 +169,7 @@ class QuadLightUtil_PBR
             p2 = normalize(p2);
             p3 = normalize(p3);
 
-            float3 dirToLightCenter = normalize(posToLight);
+            float3 dirToLightCenter = normalize(m_posToLight);
 
             // Intensity is the solid angle times the brightness of the light surface.
             // Each position contributes 1/5 of the light (4 corners + center)
@@ -213,7 +213,7 @@ class QuadLightUtil_PBR
 
                 // First find the reflection-plane intersection, then find the closest point on the rectangle to that intersection.
                 float2 halfSize = float2(light.m_halfWidth, light.m_halfHeight);
-                float3 positionOnPlane = RayLightPlaneIntersection(surface.position, reflectionDir, light.m_position, lightDirection);
+                float3 positionOnPlane = RayLightPlaneIntersection(surface.position, reflectionDir, light.m_position, m_lightDirection);
                 float3 lightPositionWorld = ClosestPointRect(positionOnPlane, light.m_position, light.m_leftDir, light.m_upDir, halfSize);
                 float3 lightPositionLocal = lightPositionWorld - surface.position;
 
@@ -221,7 +221,7 @@ class QuadLightUtil_PBR
                 // is at a grazing angle. This can cause the "closest" point to tend towards the corners of the rectangle. To correct this,
                 // we find the closest point on the reflection line to this first attempt, and use it for a second attempt.
                 float3 localPositionOnLine = reflectionDir * dot(reflectionDir, lightPositionLocal);
-                lightPositionLocal = ClosestPointRect(localPositionOnLine, posToLight, light.m_leftDir, light.m_upDir, halfSize);
+                lightPositionLocal = ClosestPointRect(localPositionOnLine, m_posToLight, light.m_leftDir, light.m_upDir, halfSize);
 
                 float3 dirToLight = normalize(lightPositionLocal);
                 float lightPositionDist2 = dot(lightPositionLocal, lightPositionLocal);
@@ -247,13 +247,13 @@ class QuadLightUtil_PBR
             specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
         }
 
-        float bothDirectionsFactor = doubleSided ? -1.0 : 0.0;
+        float bothDirectionsFactor = m_doubleSided ? -1.0 : 0.0;
 
         for (uint i = 0; i < sampleCount; ++i)
         {
             float2 randomPoint = GetHammersleyPoint(i, sampleCount);
             float3 samplePoint = SampleRectangle(randomPoint, light);
-            AddSampleContribution(surface, lightingData, samplePoint, lightDirection, bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
+            AddSampleContribution(surface, lightingData, samplePoint, m_lightDirection, bothDirectionsFactor, diffuseAcc, specularAcc, translucentAcc);
         }
 
         float area = light.m_halfWidth * light.m_halfHeight * 4.0;

@@ -11,28 +11,10 @@
 
 // This define construct enables something like inhertiance, since you can implement your own class before including this file, 
 // and still use functions from this class by refering to CapsuleLightUtil_PBR directly.
+// Also see LightUtilTemplate.azsli as a rough guide on the suggested structure of the <LightType>Util - class
 #ifndef CapsuleLightUtil
 #define CapsuleLightUtil CapsuleLightUtil_PBR
 #endif
-
-class CapsuleLightUtil_PBR
-{
-   
-    // create an instance of the Class, prepare values required during both apply and falloff-calculation
-    static CapsuleLightUtil_PBR Init(CapsuleLight light, Surface surface)
-
-    // return the falloff-value based on the orientation and attenuation radius.
-    // Values >= 1.0 means the light can be skipped safely, since the LightingData would not change noticeably
-    real GetFalloff()
-
-    // Apply the light to the surface. Area-lights will be applied analytical, and do not take partial shadows into account.
-    // the litRatio - parameter denotes the shadow-vale of the surface, and is only available with certain lights.
-    void Apply(CapsuleLight light, Surface surface, [real litRatio], inout LightingData lightingData)
-    
-    // Only for Area-Lights: Generate several sample-points on the surface and apply them as point-light. 
-    // This is used to validate the analyitical implementation for area lights, but assumes the light is entirely unobstructed.
-    static void ApplySampled(CapsuleLight light, Surface surface, inout LightingData lightingData, const uint sampleCount)
-};
 */
 
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>

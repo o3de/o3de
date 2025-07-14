@@ -18,68 +18,68 @@
 
 class PointLightUtil_PBR
 {
-    real3 surfaceToLight;
-    real3 surfaceToLightDirection;
-    real  lightDistanceSquared;
-    real  falloff;
+    real3 m_surfaceToLight;
+    real3 m_surfaceToLightDirection;
+    real  m_lightDistanceSquared;
+    real  m_falloff;
 
     // calculated in Apply(), but can be useful afterwards
-    real3 lightIntensity;
+    real3 m_lightIntensity;
 
 #if ENABLE_TRANSMISSION
     // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
     // - If transmission mode is thick object -> use transmission thickness parameter instead
     // - If transmission mode is thin object -> ignore back lighting
-    real transmissionDistance;
+    real m_transmissionDistance;
 #endif
 
     static PointLightUtil_PBR Init(PointLight light, Surface surface)
     {
         PointLightUtil_PBR result;
 
-        result.surfaceToLight = real3(light.m_position) - real3(surface.position);
-        result.surfaceToLightDirection = normalize(result.surfaceToLight);
-        result.lightDistanceSquared = dot(result.surfaceToLight, result.surfaceToLight);
-        result.falloff = result.lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
+        result.m_surfaceToLight = real3(light.m_position) - real3(surface.position);
+        result.m_surfaceToLightDirection = normalize(result.m_surfaceToLight);
+        result.m_lightDistanceSquared = dot(result.m_surfaceToLight, result.m_surfaceToLight);
+        result.m_falloff = result.m_lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
         return result;
     }
 
 
     real3 GetSurfaceToLightDirection()
     {
-        return surfaceToLightDirection;
+        return m_surfaceToLightDirection;
     }
 
 #if ENABLE_TRANSMISSION
     void SetTransmissionDistance(real distance)
     {
-        transmissionDistance = distance;
+        m_transmissionDistance = distance;
     }
 #endif
 
     real GetFalloff()
     {
-        return falloff;
+        return m_falloff;
     }
 
     void Apply(PointLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
 
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        real radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
-        // Standard quadratic falloff
-        lightDistanceSquared = max(0.001 * 0.001, lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
-        lightIntensity = (real3(light.m_rgbIntensityCandelas) / lightDistanceSquared) * radiusAttenuation;
+        // Standard quadratic m_falloff
+        m_lightDistanceSquared = max(0.001 * 0.001, m_lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
+        m_lightIntensity = (real3(light.m_rgbIntensityCandelas) / m_lightDistanceSquared) * radiusAttenuation;
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, surfaceToLightDirection) * litRatio;
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection) * litRatio;
 
         // Transmission contribution
 #if ENABLE_TRANSMISSION
-        real posToLightDist = length(surfaceToLight);
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, surfaceToLightDirection, transmissionDistance, posToLightDist) * litRatio;
+        real posToLightDist = length(m_surfaceToLight);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection, m_transmissionDistance, posToLightDist) * litRatio;
 #endif
 
         // Calculate specular lighting for each view
@@ -90,16 +90,16 @@ class PointLightUtil_PBR
             real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
 
             // Calculate a vector from the reflection vector to the light
-            real3 reflectionPosToLight = surfaceToLight - dot(surfaceToLight, reflectionDir) * reflectionDir;
+            real3 reflectionPosToLight = m_surfaceToLight - dot(m_surfaceToLight, reflectionDir) * reflectionDir;
 
             // Adjust the direction to light based on the bulb size
-            real3 surfaceToLightAdjusted = surfaceToLight - (reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight)));
+            real3 m_surfaceToLightAdjusted = m_surfaceToLight - (reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight)));
             
             // Adjust the intensity of the light based on the bulb size to conserve energy
-            real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), lightDistanceSquared);
+            real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), m_lightDistanceSquared);
 
             // Specular contribution
-            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(surfaceToLightAdjusted), viewIndex) * litRatio;
+            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, m_lightIntensity, normalize(m_surfaceToLightAdjusted), viewIndex) * litRatio;
         }
     }
 

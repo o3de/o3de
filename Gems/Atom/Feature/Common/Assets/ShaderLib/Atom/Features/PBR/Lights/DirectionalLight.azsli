@@ -17,14 +17,14 @@
 class DirectionalLightUtil_PBR
 {
 #if ENABLE_TRANSMISSION
-    real transmissionDistance;
+    real m_transmissionDistance;
 #endif
 
     static DirectionalLightUtil_PBR Init(DirectionalLight light, Surface surface)
     {
         DirectionalLightUtil_PBR result;
 #if ENABLE_TRANSMISSION
-        result.transmissionDistance = 0.0f;
+        result.m_transmissionDistance = 0.0f;
 #endif
         return result;
     }
@@ -32,7 +32,7 @@ class DirectionalLightUtil_PBR
 #if ENABLE_TRANSMISSION
     void SetTransmissionDistance(real distance)
     {
-        transmissionDistance = distance;
+        m_transmissionDistance = distance;
     }
 #endif
 
@@ -44,7 +44,7 @@ class DirectionalLightUtil_PBR
 #if ENABLE_TRANSMISSION
         // We evaluate translucent backlighting only for one camera
         real camToSurfDist = real(distance(ViewSrg::m_worldPosition, surface.position));
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight, real(transmissionDistance), camToSurfDist);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight, real(m_transmissionDistance), camToSurfDist);
 #endif
         
         // Calculate diffuse lighting (same for all views)

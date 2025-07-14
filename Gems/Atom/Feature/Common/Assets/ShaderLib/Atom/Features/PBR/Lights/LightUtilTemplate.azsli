@@ -6,8 +6,6 @@
  *
  */
 
-// Note: Copy this file and replace _LIGHTTYPE_ and _NAME_ with your editor to get started with your custom light-util.
-// also, keep in mind that not every light-type has exactly the same functions
 #error "This file exists as starting point for a custom lightTypeUtil class, and can't be used directly."
 
 #pragma once
@@ -18,6 +16,11 @@
 
 #include <Atom/Features/PBR/Lights/_LIGHTTYPE_.azsli>
 
+// "Manual" template for a custom <LightType>Util class that holds the <LightType>Util_PBR base-class, and redirects all
+// functions to that base class. This exists as a workarround to allow extension or modification of parts of the <LightType>Util_PBR base-class, 
+// since azsl doesn't really support inheritance and virtual function overrides.
+// Copy this file and replace _LIGHTTYPE_ and _NAME_ with your editor to get started quickly with your custom light-util.
+// Also, keep in mind that not every lightType needs the 'ApplySampled' function
 class _LIGHTTYPE_Util__NAME_
 {
     _LIGHTTYPE_Util_PBR base;

@@ -24,24 +24,24 @@
 class PolygonLightUtil_PBR
 {
 
-    real3 posToLight;
-    real distanceToLight2;
-    bool doubleSided;
-    real falloff;
+    real3 m_posToLight;
+    real m_distanceToLight2;
+    bool m_doubleSided;
+    real m_falloff;
 
     static PolygonLightUtil_PBR Init(PolygonLight light, Surface surface)
     {
         PolygonLightUtil_PBR result;
-        result.posToLight = light.m_position - surface.position;
-        result.distanceToLight2 = dot(result.posToLight, result.posToLight); // light distance squared
-        result.falloff = result.distanceToLight2 * abs(light.m_invAttenuationRadiusSquared);
+        result.m_posToLight = light.m_position - surface.position;
+        result.m_distanceToLight2 = dot(result.m_posToLight, result.m_posToLight); // light distance squared
+        result.m_falloff = result.m_distanceToLight2 * abs(light.m_invAttenuationRadiusSquared);
     
-        result.doubleSided = light.m_invAttenuationRadiusSquared < 0.0;
-        if (!result.doubleSided)
+        result.m_doubleSided = light.m_invAttenuationRadiusSquared < 0.0;
+        if (!result.m_doubleSided)
         {
-            if (dot(result.posToLight, -light.m_direction) <= 0.0)
+            if (dot(result.m_posToLight, -light.m_direction) <= 0.0)
             {
-                result.falloff = 1.0f; // Light isn't facing the surface
+                result.m_falloff = 1.0f; // Light isn't facing the surface
             }
         }
         return result;
@@ -49,7 +49,7 @@ class PolygonLightUtil_PBR
 
     real GetFalloff()
     {
-        return falloff;
+        return m_falloff;
     }
 
     void Apply(PolygonLight light, Surface surface, real litRatio, inout LightingData lightingData)
@@ -59,7 +59,7 @@ class PolygonLightUtil_PBR
         uint startIndex = ViewSrg::PolygonLightGetStartIndex(light.m_startEndIndex);
         uint endIndex = ViewSrg::PolygonLightGetEndIndex(light.m_startEndIndex);
         
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        float radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
         // Scale by inverse surface area of hemisphere (1/2pi), attenuation, and light intensity
@@ -75,8 +75,8 @@ class PolygonLightUtil_PBR
 
             LtcPolygonEvaluate(surface, lightingData, SceneSrg::m_ltcMatrix, SceneSrg::m_ltcAmplification, ViewSrg::m_polygonLightPoints, startIndex, endIndex, viewIndex, diffuse, specularRgb);
 
-            diffuse = doubleSided ? abs(diffuse) : max(0.0, diffuse);
-            specularRgb = doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
+            diffuse = m_doubleSided ? abs(diffuse) : max(0.0, diffuse);
+            specularRgb = m_doubleSided ? abs(specularRgb) : max(0.0, specularRgb);
 
             // Only add diffuse lighting once (for the first view)
             if (viewIndex == 0)

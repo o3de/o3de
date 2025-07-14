@@ -16,28 +16,28 @@
 
 class SimpleSpotLightUtil_PBR
 {
-    real3 surfaceToLightDirection;
-    real  lightDistanceSquared;
-    real  dotWithDirection;
-    real  falloff;
+    real3 m_surfaceToLightDirection;
+    real  m_lightDistanceSquared;
+    real  m_dotWithDirection;
+    real  m_falloff;
 
     // filled in Apply(), but can be useful afterwards
-    real3 lightIntensity;
+    real3 m_lightIntensity;
 
     static SimpleSpotLightUtil_PBR Init(SimpleSpotLight light, Surface surface)
     {
         SimpleSpotLightUtil_PBR result;
         real3 posToLight = real3(light.m_position - surface.position);
-        result.surfaceToLightDirection = normalize(posToLight);
+        result.m_surfaceToLightDirection = normalize(posToLight);
 
-        result.lightDistanceSquared = dot(posToLight, posToLight); // light distance squared
-        result.falloff = result.lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
+        result.m_lightDistanceSquared = dot(posToLight, posToLight); // light distance squared
+        result.m_falloff = result.m_lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
 
-        result.dotWithDirection = dot(result.surfaceToLightDirection, -real3(light.m_direction));
+        result.m_dotWithDirection = dot(result.m_surfaceToLightDirection, -real3(light.m_direction));
         // If outside the outer cone angle return.
-        if (result.dotWithDirection < real(light.m_cosOuterConeAngle))
+        if (result.m_dotWithDirection < real(light.m_cosOuterConeAngle))
         {
-            result.falloff = 1.0f;
+            result.m_falloff = 1.0f;
         }
 
         return result;
@@ -45,50 +45,50 @@ class SimpleSpotLightUtil_PBR
 
     real3 GetSurfaceToLightDirection()
     {
-        return surfaceToLightDirection;
+        return m_surfaceToLightDirection;
     }
 
     real GetFalloff()
     {
-        return falloff;
+        return m_falloff;
     }
 
     void Apply(SimpleSpotLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        real radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
 
-        // Standard quadratic falloff
-        lightDistanceSquared = max(0.001 * 0.001, lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
-        lightIntensity = (real3(light.m_rgbIntensityCandelas) / lightDistanceSquared) * radiusAttenuation;
+        // Standard quadratic m_falloff
+        m_lightDistanceSquared = max(0.001 * 0.001, m_lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
+        m_lightIntensity = (real3(light.m_rgbIntensityCandelas) / m_lightDistanceSquared) * radiusAttenuation;
 
         // apply gobo texture
         #if PIPELINE_HAS_PASS_SRG
-        lightIntensity *= SampleGoboTexture(light.m_goboTexIndex, PassSrg::LinearSampler, light.m_viewProjectionMatrix, surface.position);
+        m_lightIntensity *= SampleGoboTexture(light.m_goboTexIndex, PassSrg::LinearSampler, light.m_viewProjectionMatrix, surface.position);
         #endif 
 
         real cosInnerConeAngle = real(light.m_cosInnerConeAngle);
-        if (dotWithDirection < cosInnerConeAngle) // in penumbra
+        if (m_dotWithDirection < cosInnerConeAngle) // in penumbra
         {
             // Normalize into 0.0 - 1.0 space.
-            real penumbraMask = (dotWithDirection - real(light.m_cosOuterConeAngle)) / (cosInnerConeAngle - real(light.m_cosOuterConeAngle));
+            real penumbraMask = (m_dotWithDirection - real(light.m_cosOuterConeAngle)) / (cosInnerConeAngle - real(light.m_cosOuterConeAngle));
 
             // Apply smoothstep
             penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
 
-            lightIntensity *= penumbraMask;
+            m_lightIntensity *= penumbraMask;
         }
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, surfaceToLightDirection) * litRatio;
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection) * litRatio;
 
         // Calculate specular lighting for each view
         [unroll]
         for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
         {
             // Specular contribution
-            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, surfaceToLightDirection, viewIndex) * litRatio;
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection, viewIndex) * litRatio;
         }
     }
 };
