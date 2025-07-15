@@ -54,6 +54,7 @@ namespace AZ
                 }
                 const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
+                
                 const auto meshHasTangentsAndBitangents = [&scene](const unsigned int meshIndex)
                 {
                     return scene->mMeshes[meshIndex]->HasTangentsAndBitangents();

@@ -29,7 +29,6 @@
 #include <SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpBlendShapeImporter.h>
 
-
 namespace AZ
 {
     namespace SceneAPI

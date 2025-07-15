@@ -19,7 +19,6 @@ namespace AZ
         {
             void ImportContextRegistryComponent::Activate()
             {
-                AZ_Info("SceneAPI", "Activate SceneBuilderSystemComponent.\n");
                 // Get the import context registy
                 if (auto* registry = ImportContextRegistryInterface::Get())
                 {
