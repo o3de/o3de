@@ -49,7 +49,9 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<ImportContextRegistryComponent, SceneCore::SceneSystemComponent>()->Version(1);
+                    serializeContext->Class<ImportContextRegistryComponent, SceneCore::SceneSystemComponent>()->Version(1)->Attribute(
+                        Edit::Attributes::SystemComponentTags,
+                        AZStd::vector<Crc32>({ Events::AssetImportRequest::GetAssetImportRequestComponentTag() }));
                 }
             }
         } // namespace SceneBuilder
