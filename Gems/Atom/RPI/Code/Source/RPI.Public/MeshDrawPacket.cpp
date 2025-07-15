@@ -328,8 +328,17 @@ namespace AZ
                 {
                     return false;
                 }
-
-                const bool isRasterShader = (shaderItem.GetShaderAsset()->GetPipelineStateType() == RHI::PipelineStateType::Draw);
+                bool isRasterShader = true;
+                if (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster)
+                {
+                    // backwards compatability: DrawItemType::Raster is the fallback type if none is provided, and we supported
+                    // dispatch-items before the DrawItemType, using the piplineState-Type to determine if we need a dispatch item.
+                    isRasterShader = (shaderItem.GetShaderAsset()->GetPipelineStateType() == RHI::PipelineStateType::Draw);
+                }
+                else if (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Dispatch)
+                {
+                    isRasterShader = false;
+                }
                 if (isRasterShader && !parentScene.HasOutputForPipelineState(drawListTag))
                 {
                     // drawListTag not found in this scene, so don't render this item
@@ -525,7 +534,9 @@ namespace AZ
             m_material->ForAllShaderItems(
                 [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
-                    if (shaderItem.IsEnabled() && shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster)
+                    if (shaderItem.IsEnabled() &&
+                        (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster ||
+                         shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Dispatch))
                     {
                         if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                         {

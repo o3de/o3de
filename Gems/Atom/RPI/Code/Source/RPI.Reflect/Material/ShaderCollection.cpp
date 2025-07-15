@@ -75,9 +75,10 @@ namespace AZ
                 serializeContext->Enum<ShaderCollection::Item::DrawItemType>()
                     ->Version(1)
                     ->Value("Raster", ShaderCollection::Item::DrawItemType::Raster)
+                    ->Value("Dispatch", ShaderCollection::Item::DrawItemType::Dispatch)
                     ->Value("Deferred", ShaderCollection::Item::DrawItemType::Deferred)
                     ->Value("RayTracing", ShaderCollection::Item::DrawItemType::RayTracing)
-                    ->Value("None", ShaderCollection::Item::DrawItemType::None);
+                    ->Value("Custom", ShaderCollection::Item::DrawItemType::Custom);
 
                 serializeContext->Class<ShaderCollection::Item>()
                     ->Version(7)

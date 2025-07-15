@@ -94,15 +94,15 @@ namespace AZ
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(
-            const ShaderCollection::Item::DrawItemType drawItemType, const SupervariantIndex& supervariantIndex) const
+            const SupervariantIndex& supervariantIndex, const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            return m_materialTypeAsset->GetObjectSrgLayout(drawItemType, supervariantIndex);
+            return m_materialTypeAsset->GetObjectSrgLayout(supervariantIndex, drawItemType);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(
-            const ShaderCollection::Item::DrawItemType drawItemType, const AZ::Name& supervariantName) const
+            const AZ::Name& supervariantName, const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            return m_materialTypeAsset->GetObjectSrgLayout(drawItemType, supervariantName);
+            return m_materialTypeAsset->GetObjectSrgLayout(supervariantName, drawItemType);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(

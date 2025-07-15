@@ -97,12 +97,14 @@ namespace AZ
             //! All shaders with the same DrawItemType in a material will have the same per-object SRG layout.
             //! @param supervariantIndex: supervariant index to get the layout from.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(
-                const ShaderCollection::Item::DrawItemType drawItemType, const SupervariantIndex& supervariantIndex) const;
+                const SupervariantIndex& supervariantIndex,
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
             //! because it will discover the index from the name.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(
-                const ShaderCollection::Item::DrawItemType drawItemType, const AZ::Name& supervariantName) const;
+                const AZ::Name& supervariantName,
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.

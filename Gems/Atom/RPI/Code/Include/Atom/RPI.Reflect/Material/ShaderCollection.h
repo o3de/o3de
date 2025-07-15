@@ -50,12 +50,14 @@ namespace AZ
                 //! Required for use in containers; not meant to be called directly.
                 Item();
 
+                // type of the generated draw-item the Rendering-Pass expects
                 enum class DrawItemType : uint32_t
                 {
                     Raster = 0, // the shader expects a default draw item for a rasterpass (default)
+                    Dispatch, // the shader expects a dispatch-item for a compute-pass
                     Deferred, // the shader expects a fullscreen draw item for a deferred rendering pass
                     RayTracing, // the shader expects shader libraries for a raytracing shader table
-                    None, // no draw-item should be created
+                    Custom, // The draw-item will be created in a custom gem
                     MaxCount // count for array indexing
                 };
 
@@ -65,12 +67,12 @@ namespace AZ
                 Item(
                     const Data::Asset<ShaderAsset>& shaderAsset,
                     const AZ::Name& shaderTag,
-                    DrawItemType drawItemType,
+                    DrawItemType drawItemType = DrawItemType::Raster,
                     ShaderVariantId variantId = ShaderVariantId{});
                 Item(
                     Data::Asset<ShaderAsset>&& shaderAsset,
                     const AZ::Name& shaderTag,
-                    DrawItemType drawItemType,
+                    DrawItemType drawItemType = DrawItemType::Raster,
                     ShaderVariantId variantId = ShaderVariantId{});
 
                 const Data::Asset<ShaderAsset>& GetShaderAsset() const;
