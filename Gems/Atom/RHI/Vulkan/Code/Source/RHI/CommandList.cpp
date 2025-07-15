@@ -442,8 +442,89 @@ namespace AZ
             default:
                 AZ_Assert(false, "Invalid dispatch type");
                 break;
-            }            
-        }       
+            }
+        }
+
+        AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> GetRequestedSrgNames(
+            const PipelineLayout* pipelineLayout)
+        {
+            AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> layoutNamesByAzslBindingSlot;
+            auto noneName = AZ::Name("None");
+            layoutNamesByAzslBindingSlot.fill(noneName);
+            for (auto index = 0; index < pipelineLayout->GetDescriptorSetLayoutCount(); ++index)
+            {
+                const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(index);
+                for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
+                {
+                    if (srgBitset[bindingSlot])
+                    {
+                        layoutNamesByAzslBindingSlot[bindingSlot] =
+                            pipelineLayout->GetDescriptorSetLayout(index)->GetShaderResourceGroupLayout()->GetName();
+                    }
+                }
+            }
+            return layoutNamesByAzslBindingSlot;
+        }
+
+        AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> GetProvidedSrgNames(
+            const RHI::DeviceShaderResourceGroup* const* srgs,
+            const uint8_t srgCount,
+            RHI::DeviceShaderResourceGroup const* uniqueSrg,
+            int bindlessSrgSlot)
+        {
+            AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> srgNamesByAzslBindingSlot;
+            auto noneName = AZ::Name("None");
+            srgNamesByAzslBindingSlot.fill(noneName);
+            for (uint8_t srgIndex = 0; srgIndex < srgCount; ++srgIndex)
+            {
+                auto* srg = srgs[srgIndex];
+                srgNamesByAzslBindingSlot[srg->GetBindingSlot()] = srg->GetData().GetLayout()->GetName();
+            }
+            if (uniqueSrg)
+            {
+                srgNamesByAzslBindingSlot[uniqueSrg->GetBindingSlot()] = uniqueSrg->GetData().GetLayout()->GetName();
+            }
+            if (srgNamesByAzslBindingSlot[bindlessSrgSlot] == AZ::Name("None"))
+            {
+                srgNamesByAzslBindingSlot[bindlessSrgSlot] = AZ::Name("Bindless");
+            }
+            return srgNamesByAzslBindingSlot;
+        }
+
+        AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> GetProvidedSrgNames(
+            AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>& providedSrgs, int bindlessSrgSlot)
+        {
+            AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> srgNamesByAzslBindingSlot;
+            auto noneName = AZ::Name("None");
+            srgNamesByAzslBindingSlot.fill(noneName);
+            for (uint32_t srgIndex = 0; srgIndex < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++srgIndex)
+            {
+                auto* srg = providedSrgs[srgIndex];
+                if (srg)
+                {
+                    srgNamesByAzslBindingSlot[srg->GetBindingSlot()] = srg->GetData().GetLayout()->GetName();
+                }
+            }
+            if (srgNamesByAzslBindingSlot[bindlessSrgSlot] == AZ::Name("None"))
+            {
+                srgNamesByAzslBindingSlot[bindlessSrgSlot] = AZ::Name("Bindless");
+            }
+            return srgNamesByAzslBindingSlot;
+        }
+
+        void PrintSrgNames(
+            [[maybe_unused]] const AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>& requested,
+            [[maybe_unused]] const AZStd::array<AZ::Name, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>& provided)
+        {
+            AZ_Info("CommandList::Submit", "SRGs slots %-25s %-25s", "requested by shader", "provided by render item");
+            for ([[maybe_unused]] auto index = 0u; index < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++index)
+            {
+                AZ_Info("CommandList::Submit", " Slot [%d]: %-25s %-25s", index, requested[index].GetCStr(), provided[index].GetCStr());
+            }
+            AZ_Info("CommandList::Submit", "Notes:");
+            AZ_Info("CommandList::Submit", " - This may be inaccurate for merged SRGs.");
+            AZ_Info("CommandList::Submit", " - This does not track SRGs occupying the same slot.");
+        }
 
         void CommandList::Submit([[maybe_unused]] const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
@@ -476,6 +557,9 @@ namespace AZ
 
             const PipelineState& globalPipelineState = static_cast<const PipelineState&>(*dispatchRaysItem.m_globalPipelineState);
             const PipelineLayout& globalPipelineLayout = static_cast<const PipelineLayout&>(*globalPipelineState.GetPipelineLayout());
+
+            bool srgMismatch = false;
+
             for (uint32_t descriptorSetIndex = 0; descriptorSetIndex < globalPipelineLayout.GetDescriptorSetLayoutCount(); ++descriptorSetIndex)
             {
                 RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
@@ -511,9 +595,10 @@ namespace AZ
 
                 if (shaderResourceGroup == nullptr)
                 {
-                    AZ_Assert(
-                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
-                        "Bindless SRG slot needs to match the one described in the shader.");
+                    if (srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()] == false)
+                    {
+                        srgMismatch = true;
+                    }
                     descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
                 }
                 else
@@ -521,6 +606,16 @@ namespace AZ
                     descriptorSets.push_back(shaderResourceGroup->GetCompiledData().GetNativeDescriptorSet());
                 }
             }
+
+            if (srgMismatch)
+            {
+                const auto bindlessSrgSlot = m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
+                const auto srgCount = static_cast<uint8_t>(dispatchRaysItem.m_shaderResourceGroupCount);
+                PrintSrgNames(
+                    GetRequestedSrgNames(&globalPipelineLayout),
+                    GetProvidedSrgNames(dispatchRaysItem.m_shaderResourceGroups, srgCount, nullptr, bindlessSrgSlot));
+            }
+            AZ_Assert(!srgMismatch, "The provided SRGs don't match the SRGs requested by the shader.");
 
             context.CmdBindDescriptorSets(
                 m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipelineLayout(), 0,
@@ -1031,6 +1126,7 @@ namespace AZ
             const PipelineState& pipelineState = *bindings.m_pipelineState;
             const PipelineLayout& pipelineLayout = *pipelineState.GetPipelineLayout();
             RHI::Interval interval = InvalidInterval;
+            bool srgMismatch = false;
             for (uint32_t index = 0; index < pipelineLayout.GetDescriptorSetLayoutCount(); ++index)
             {
                 RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
@@ -1072,9 +1168,7 @@ namespace AZ
 
                 if (shaderResourceGroup == nullptr)
                 {
-                    AZ_Assert(
-                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
-                        "Bindless SRG slot needs to match the one described in the shader.");
+                    srgMismatch = srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()] == false;
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
                 }
                 else
@@ -1090,6 +1184,13 @@ namespace AZ
                     interval.m_min = AZStd::min<uint32_t>(interval.m_min, index);
                 }
             }
+
+            if (srgMismatch)
+            {
+                const auto bindlessSrgSlot = m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
+                PrintSrgNames(GetRequestedSrgNames(&pipelineLayout), GetProvidedSrgNames(bindings.m_SRGByAzslBindingSlot, bindlessSrgSlot));
+            }
+            AZ_Assert(!srgMismatch, "The provided SRGs don't match the SRGs requested by the shader.");
 
             if (interval != InvalidInterval)
             {
