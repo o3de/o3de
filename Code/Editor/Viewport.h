@@ -194,7 +194,7 @@ public:
 
     //! Center viewport on selection.
     virtual void CenterOnSelection() = 0;
-    virtual void CenterOnAABB(const AABB& aabb) = 0;
+    virtual void CenterOnAABB(const AZ::Aabb& aabb) = 0;
 
     /** Set ID of this viewport
     */
@@ -392,7 +392,7 @@ public:
     float GetSelectionTolerance() const override { return m_selectionTolerance; }
     //! Center viewport on selection.
     void CenterOnSelection() override {}
-    void CenterOnAABB([[maybe_unused]] const AABB& aabb) override {}
+    void CenterOnAABB([[maybe_unused]] const AZ::Aabb& aabb) override {}
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
@@ -420,7 +420,7 @@ public:
     virtual QSize GetIdealSize() const;
 
     //! Check if world space bounding box is visible in this view.
-    bool IsBoundsVisible(const AABB& box) const override;
+    bool IsBoundsVisible(const AZ::Aabb& box) const override;
 
     //////////////////////////////////////////////////////////////////////////
 

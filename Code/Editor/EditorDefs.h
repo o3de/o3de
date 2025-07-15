@@ -89,7 +89,6 @@
 /////////////////////////////////////////////////////////////////////////////
 #include <platform.h>
 #include <Cry_Math.h>
-#include <Cry_Geo.h>
 #include <Range.h>
 #include <StlUtils.h>
 

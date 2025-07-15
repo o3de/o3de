@@ -9,7 +9,10 @@
 #pragma once
 
 class QPoint;
-struct AABB;
+namespace AZ
+{
+    class Aabb;
+}
 class CViewport;
 
 struct IDisplayViewport
@@ -45,7 +48,7 @@ struct IDisplayViewport
 
     virtual float GetAspectRatio() const = 0;
 
-    virtual bool IsBoundsVisible(const AABB& box) const = 0;
+    virtual bool IsBoundsVisible(const AZ::Aabb& box) const = 0;
 
     virtual void ScreenToClient(QPoint& pt) const = 0;
     virtual void GetDimensions(int* width, int* height) const = 0;
