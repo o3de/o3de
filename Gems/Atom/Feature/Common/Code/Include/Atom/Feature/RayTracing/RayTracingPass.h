@@ -97,7 +97,6 @@ namespace AZ
 
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;
-            bool m_requiresRayTracingMaterialSrg = false;
             bool m_requiresRayTracingSceneSrg = false;
             float m_maxRayLength = 1e27f;
 
