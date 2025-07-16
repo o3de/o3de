@@ -45,13 +45,14 @@ namespace AZ
 
         AZStd::pair<SceneWrapperBase::AxisVector, int32_t> SceneWrapperBase::GetFrontVectorAndSign() const
         {
-            return { AxisVector::X, 1 };
+            return { AxisVector::Y, 1 };
         }
 
         AZStd::pair<SceneWrapperBase::AxisVector, int32_t> SceneWrapperBase::GetRightVectorAndSign() const
         {
-            return { AxisVector::X, 1 };
+            return { AxisVector::X, -1 };
         }
+
         AZStd::optional<SceneAPI::DataTypes::MatrixType> SceneWrapperBase::UseForcedRootTransform() const
         {
             return AZStd::nullopt;

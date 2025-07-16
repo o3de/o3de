@@ -167,7 +167,10 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const
         {
-            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Y, 1);
+            // technically not true. According to https://the-asset-importer-lib-documentation.readthedocs.io/en/latest/usage/use_the_lib.html#introduction
+            // data provided by AssImp is +Y upwards
+            // We leave the old default value to maintain backward compatibility
+            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Z, 1);
             int32_t upVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("UpAxis", upVectorRead);
             m_assImpScene->mMetaData->Get("UpAxisSign", result.second);
@@ -177,7 +180,10 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetFrontVectorAndSign() const
         {
-            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Z, 1);
+            // technically not true. According to https://the-asset-importer-lib-documentation.readthedocs.io/en/latest/usage/use_the_lib.html#introduction
+            // data provided by AssImp is +Z towards viewer
+            // We leave the old default value to maintain backward compatibility
+            AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Y, 1);
             int32_t frontVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("FrontAxis", frontVectorRead);
             m_assImpScene->mMetaData->Get("FrontAxisSign", result.second);
@@ -194,6 +200,7 @@ namespace AZ
             result.first = static_cast<AssImpSceneWrapper::AxisVector>(rightVectorRead);
             return result;
         }
+
         AZStd::optional<SceneAPI::DataTypes::MatrixType> AssImpSceneWrapper::UseForcedRootTransform() const
         {
             // AssImp automatically converts all incoming scenes to Y-up coordinate system internally, regardless of their original orientation.
