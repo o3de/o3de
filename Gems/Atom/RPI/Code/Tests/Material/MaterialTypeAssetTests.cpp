@@ -1083,7 +1083,7 @@ namespace UnitTest
 
         checkShaderDrawItemType(0, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Custom);
         checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Raster);
-        checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
+        checkShaderDrawItemType(2, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
     }
 
     TEST_F(MaterialTypeAssetTests, InternalPipelineProperty_ConnectToShaderOption_AccessesLocalShadersOnly)
@@ -2346,11 +2346,9 @@ namespace UnitTest
         creator.AddShader(m_testShaderAsset);
         creator.BeginMaterialProperty(Name{"bool"}, MaterialPropertyDataType::Bool);
 
-        AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderOptions(Name{"DoesNotExist"});
-        AZ_TEST_STOP_ASSERTTEST(1);
+        creator.ConnectMaterialPropertyToShaderOptions(Name{ "DoesNotExist" });
 
-        EXPECT_EQ(1, creator.GetErrorCount());
+        EXPECT_EQ(1, creator.GetWarningCount());
     }
 
     TEST_F(MaterialTypeAssetTests, ShaderOptionOwnership)

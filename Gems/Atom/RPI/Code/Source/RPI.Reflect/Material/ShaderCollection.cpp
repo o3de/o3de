@@ -73,7 +73,6 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Enum<ShaderCollection::Item::DrawItemType>()
-                    ->Version(1)
                     ->Value("Raster", ShaderCollection::Item::DrawItemType::Raster)
                     ->Value("Dispatch", ShaderCollection::Item::DrawItemType::Dispatch)
                     ->Value("Deferred", ShaderCollection::Item::DrawItemType::Deferred)
