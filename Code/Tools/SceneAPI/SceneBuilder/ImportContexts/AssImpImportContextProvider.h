@@ -69,6 +69,7 @@ namespace AZ
                 bool CanHandleExtension(AZStd::string_view fileExtension) const override
                 {
                     // The AssImp is our default provider and returns true for all registered extensions.
+                    AZ_UNUSED(fileExtension);
                     return true;
                 }
 
