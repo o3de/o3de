@@ -995,8 +995,8 @@ namespace UnitTest
         // Modify the drawItemType to make sure it doesn't interfere
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Custom, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Custom, Name{ "PipelineB" });
 
         materialTypeCreator.BeginMaterialProperty(Name{"debug"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
@@ -1045,13 +1045,13 @@ namespace UnitTest
         // Default: DrawItemType::Raster
         materialTypeCreator.AddShader(m_testShaderAsset);
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, MaterialPipelineNone);
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Custom, MaterialPipelineNone);
 
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineA" });
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineA" });
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineA" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Custom, Name{ "PipelineA" });
 
-        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::None, Name{ "PipelineB" });
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Custom, Name{ "PipelineB" });
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Raster, Name{ "PipelineB" });
         materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, DrawItemType::Deferred, Name{ "PipelineB" });
 
@@ -1075,13 +1075,13 @@ namespace UnitTest
 
         checkShaderDrawItemType(0, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::Raster);
         checkShaderDrawItemType(1, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::Deferred);
-        checkShaderDrawItemType(2, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::None);
+        checkShaderDrawItemType(2, MaterialPipelineNone, MaterialTypeAssetCreator::DrawItemType::Custom);
 
         checkShaderDrawItemType(0, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::Raster);
         checkShaderDrawItemType(1, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
-        checkShaderDrawItemType(2, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::None);
+        checkShaderDrawItemType(2, Name{ "PipelineA" }, MaterialTypeAssetCreator::DrawItemType::Custom);
 
-        checkShaderDrawItemType(0, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::None);
+        checkShaderDrawItemType(0, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Custom);
         checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Raster);
         checkShaderDrawItemType(1, Name{ "PipelineB" }, MaterialTypeAssetCreator::DrawItemType::Deferred);
     }
