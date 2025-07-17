@@ -81,7 +81,7 @@ namespace AZ::RPI
                 auto desc = m_sceneMaterialSrg->GetLayout()->GetShaderInput(samplerIndex);
                 [[maybe_unused]] uint32_t maxTextureSamplerStates = desc.m_count;
                 AZ_Assert(
-                    maxTextureSamplerStates == m_sceneTextureSamplers.GetMaxNumSamplerStates(),
+                    maxTextureSamplerStates >= m_sceneTextureSamplers.GetMaxNumSamplerStates(),
                     "SceneMaterialSrg::m_samplers[] has size %d, expected size is AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS (%d)",
                     maxTextureSamplerStates,
                     AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS);

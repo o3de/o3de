@@ -18,6 +18,7 @@
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
 #include <AzCore/Math/IntersectSegment.h>
+#include <MathConversion.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -531,7 +532,6 @@ void QtViewport::OnSetCursor()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetSelectionRegion()
 {
-    AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
     m_selectedRect = QRect();
 }
 
@@ -544,8 +544,7 @@ void QtViewport::SetSelectionRectangle(const QRect& rect)
 void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
 {
     Vec3 org;
-    AABB box;
-    box.Reset();
+    AZ::Aabb box = AZ::Aabb::CreateNull();
 
     //adjust QRect bottom and right corner once before extracting bottom/right coordinates
     const QRect correctedRect = rect.adjusted(0, 0, 1, 1);
@@ -555,24 +554,27 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
     // Calculate selection volume.
     if (!bNormalizeRect)
     {
-        box.Add(p1);
-        box.Add(p2);
+        box.AddPoint(LYVec3ToAZVec3(p1));
+        box.AddPoint(LYVec3ToAZVec3(p2));
     }
     else
     {
         const QRect rc = correctedRect.normalized();
-        box.Add(ViewToWorld(rc.topLeft()));
-        box.Add(ViewToWorld(rc.topRight()));
-        box.Add(ViewToWorld(rc.bottomLeft()));
-        box.Add(ViewToWorld(rc.bottomRight()));
+        box.AddPoint(LYVec3ToAZVec3(ViewToWorld(rc.topLeft())));
+        box.AddPoint(LYVec3ToAZVec3(ViewToWorld(rc.topRight())));
+        box.AddPoint(LYVec3ToAZVec3(ViewToWorld(rc.bottomLeft())));
+        box.AddPoint(LYVec3ToAZVec3(ViewToWorld(rc.bottomRight())));
     }
 
-    box.min.z = -10000;
-    box.max.z = 10000;
+    AZ::Vector3 boxMin = box.GetMin();
+    AZ::Vector3 boxMax = box.GetMax();
+    boxMin.SetZ(-10000);
+    boxMax.SetZ(10000);
+    box.Set(boxMin, boxMax);
 
     // Show marker position in the status bar
-    float w = box.max.x - box.min.x;
-    float h = box.max.y - box.min.y;
+    float w = box.GetXExtent();
+    float h = box.GetYExtent();
     char szNewStatusText[512];
     sprintf_s(szNewStatusText, "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
     GetIEditor()->SetStatusText(szNewStatusText);
@@ -779,7 +781,7 @@ QSize QtViewport::GetIdealSize() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool QtViewport::IsBoundsVisible([[maybe_unused]] const AABB& box) const
+bool QtViewport::IsBoundsVisible([[maybe_unused]] const AZ::Aabb& box) const
 {
     // Always visible in standard implementation.
     return true;

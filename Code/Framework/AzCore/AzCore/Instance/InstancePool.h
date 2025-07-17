@@ -150,7 +150,7 @@ namespace AZ
             typename InstancePool<T>::ResetInstance resetFunc = [](T&){},
             [[maybe_unused]] typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
-            return CreatePool<T>(GetDefaultName<T>(), resetFunc);
+            return CreatePool<T>(GetDefaultName<T>(), resetFunc, createFunc);
         }
 
         // returns the pool with the specified name

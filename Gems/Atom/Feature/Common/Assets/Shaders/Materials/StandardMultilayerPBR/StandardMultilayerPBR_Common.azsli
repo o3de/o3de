@@ -107,11 +107,11 @@ real3 GetApplicableBlendMaskValues(const MaterialParameters params, LayerBlendSo
                 }
                 else
                 {
-                #ifdef CS_SAMPLERS
+#ifdef CS_SAMPLERS
                     blendSourceValues = real3(GetMaterialTexture(params.m_blendMaskTexture).SampleLevel(GetMaterialTextureSampler(), blendMaskUv, 0).rgb);
-                #else
+#else
                     blendSourceValues = real3(GetMaterialTexture(params.m_blendMaskTexture).Sample(GetMaterialTextureSampler(), blendMaskUv).rgb);
-                #endif
+#endif /* CS_SAMPLERS */
                 }
                 break;
             case LayerBlendSource::BlendMaskVertexColors:
@@ -253,8 +253,12 @@ real3 GetBlendWeights(const MaterialParameters params, LayerBlendSource blendSou
         bool useBlendMask = 
            LayerBlendSource::Displacement_With_BlendMaskTexture == blendSource || 
            LayerBlendSource::Displacement_With_BlendMaskVertexColors == blendSource;
-           
+
+#ifdef CS_SAMPLERS
+        layerDepthValues = real3(GetLayerDepthValues(params, uv, float2(0, 0), float2(0, 0)));
+#else
         layerDepthValues = real3(GetLayerDepthValues(params, uv, ddx_fine(uv), ddy_fine(uv)));
+#endif /* CS_SAMPLERS */
 
         if(useBlendMask)
         {

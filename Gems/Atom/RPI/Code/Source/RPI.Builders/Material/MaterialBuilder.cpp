@@ -140,15 +140,7 @@ namespace AZ
                 if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
                     MaterialBuilderUtils::AddJobDependency(
-                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
-
-                    for (const auto& shader : materialTypeSourceData.GetShaderReferences())
-                    {
-                        MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor,
-                            AssetUtils::ResolvePathReference(resolvedMaterialTypePath, shader.m_shaderFilePath),
-                            "Shader Asset");
-                    }
+                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 }, false);
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
@@ -159,7 +151,9 @@ namespace AZ
                         outputJobDescriptor,
                         resolvedMaterialTypePath,
                         MaterialTypeBuilder::PipelineStageJobKey,
-                        AssetBuilderSDK::CommonPlatformName);
+                        AssetBuilderSDK::CommonPlatformName,
+                        {},
+                        false);
 
                     // The abstract, pipeline material type will generate a direct material type as an intermediate source asset. This
                     // attempts to predict where that source asset will be located in the intermediate asset folder then maps it as a
@@ -171,14 +165,7 @@ namespace AZ
                         // Add the ordered product dependency for the intermediate material type source file so that the material cannot be
                         // processed before it's complete
                         MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
-
-                        // Add a wild card job dependency for any of the shaders generated with the material type so the material will only
-                        // be processed after they are complete
-                        auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor, intermediateMaterialTypePath, "Shader Asset", {}, {}, false);
-                        jobDependency.m_sourceFile.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
-                        AZ::StringFunc::Replace(jobDependency.m_sourceFile.m_sourceFileDependencyPath, "_generated.materialtype", "*.shader");
+                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 }, false);
                     }
                 }
             }
