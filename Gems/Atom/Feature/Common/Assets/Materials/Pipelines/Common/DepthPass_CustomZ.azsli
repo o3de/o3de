@@ -52,7 +52,7 @@ PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, SV, isFrontFace, GetMaterialParameters());
 
     // Pixel clipping can be done here
-    EvaluateSurface(IN, geoData, GetMaterialParameters());
+    EvaluateSurface(IN, SV, geoData, GetMaterialParameters());
 
     PsOutput OUT;
     OUT.m_depth = IN.position.z;

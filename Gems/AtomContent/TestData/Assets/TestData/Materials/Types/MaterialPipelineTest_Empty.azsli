@@ -37,9 +37,11 @@ void CalcPositions(float3 inPosition, VsSystemValues SV, out float3 worldPos, ou
         return pgd;
     }
 
-    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
     {
         Surface surface;
+
+        surface.lightingChannels = GetLightingChannelMask(SV);
 
         surface.position = geoData.positionWS.xyz;
         surface.vertexNormal = geoData.vertexNormal;
@@ -55,6 +57,9 @@ void CalcPositions(float3 inPosition, VsSystemValues SV, out float3 worldPos, ou
 
         return surface;
     }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>
 
 #else
 

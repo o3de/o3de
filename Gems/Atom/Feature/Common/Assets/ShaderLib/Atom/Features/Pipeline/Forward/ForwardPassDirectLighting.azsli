@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/Debug.azsli>
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassCapsuleLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassDirectionalLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassDiskLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPointLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPolygonLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassQuadLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSimplePointLights.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSimpleSpotLights.azsli>
+
+void ApplyDirectLighting_ForwardPass(Surface surface, inout LightingData lightingData, float4 screenUv, inout LightCullingTileIterator tileIterator)
+{
+    if( IsDirectLightingEnabled() )
+    {
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
+        if (o_enablePunctualLights)
+        {
+            ApplySimplePointLights(surface, lightingData, tileIterator);
+            ApplySimpleSpotLights(surface, lightingData, tileIterator);
+        }
+        if (o_enableAreaLights)
+        {
+            ApplyPointLights(surface, lightingData, tileIterator);
+            ApplyDiskLights(surface, lightingData, tileIterator);
+            ApplyCapsuleLights(surface, lightingData, tileIterator);
+            ApplyQuadLights(surface, lightingData, tileIterator);
+            ApplyPolygonLights(surface, lightingData, tileIterator);
+        }
+    }
+    else if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
+    {
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
+    }
+    else if( UseDebugLight() )
+    {
+        real3 lightIntensity = real3(SceneSrg::m_debugLightingIntensity);
+        real3 lightDirection = real3(SceneSrg::m_debugLightingDirection);
+
+        // Diffuse lighting is view-independent
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
+
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection, viewIndex);
+        }
+    }
+}
+

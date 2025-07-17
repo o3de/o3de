@@ -1,0 +1,76 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+// the SimpleSpotLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/SimpleSpotLight.azsli
+
+#if ENABLE_SHADOWS
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
+#ifndef SimpleSpotLightUtil
+#error "SimpleSpotLightUtil needs to be defined"
+#endif // SimpleSpotLightUtil
+
+void ApplySimpleSpotLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    SimpleSpotLight srgLight = ViewSrg::m_simpleSpotLights[lightIndex];
+ 
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+    
+    SimpleSpotLightUtil light = SimpleSpotLightUtil::Init(srgLight, surface);
+    
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+
+    real litRatio = 1.0f;
+
+#if ENABLE_SHADOWS
+    if (o_enableShadows && o_enableSimpleSpotLightShadows)
+    {
+        litRatio = ProjectedShadow::GetVisibility(
+                srgLight.m_shadowIndex,
+                srgLight.m_position,
+                surface.position,
+                light.GetSurfaceToLightDirection(),
+                surface.vertexNormal);
+    }
+#endif
+
+    light.Apply(srgLight, surface, litRatio, lightingData);
+}
+
+
+void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+
+        ApplySimpleSpotLight(currLightIndex, surface, lightingData);
+    }
+#else
+
+    // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
+    // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
+    #ifndef ENABLE_SIMPLE_SPOTLIGHTS_CAP
+        #define ENABLE_SIMPLE_SPOTLIGHTS_CAP 20 
+    #endif
+
+    // Since there's no GPU culling for simple spot lights, we rely on culling done by CPU
+    // Only apply visible spot lights
+    for(uint lightIndex = 0; (lightIndex < ENABLE_SIMPLE_SPOTLIGHTS_CAP && lightIndex < ViewSrg::m_visibleSimpleSpotLightCount); lightIndex++)
+    {
+        ApplySimpleSpotLight(ViewSrg::m_visibleSimpleSpotLightIndices[lightIndex], surface, lightingData);
+    }
+#endif
+
+}

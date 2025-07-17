@@ -30,9 +30,11 @@ Surface EvaluateSurface_StandardPBR(
     bool isDisplacementClipped,
     float4 uvDxDy,
     bool customDerivatives,
-    float4 vertexColor)
+    float4 vertexColor,
+    uint lightingChannels
+    )
 {
-    Surface surface = EvaluateSurface_BasePBR(params, positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives, vertexColor);
+    Surface surface = EvaluateSurface_BasePBR(params, positionWS, vertexNormal, tangents, bitangents, uvs, isFrontFace, uvDxDy, customDerivatives, vertexColor, lightingChannels);
 
     // ------- Parallax Clipping -------
 
@@ -95,7 +97,8 @@ Surface EvaluateSurface_StandardPBR(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     return EvaluateSurface_StandardPBR(
         params,
@@ -108,7 +111,8 @@ Surface EvaluateSurface_StandardPBR(
         isDisplacementClipped,
         uvDxDy,
         customDerivatives,
-        float4(1.0f, 1.0f, 1.0f, 1.0f));
+        float4(1.0f, 1.0f, 1.0f, 1.0f) /* VertexColor */,
+        lightingChannels);
 }
 
 Surface EvaluateSurface_StandardPBR(
@@ -119,7 +123,8 @@ Surface EvaluateSurface_StandardPBR(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    uint lightingChannels)
 {
     return EvaluateSurface_StandardPBR(
         params,
@@ -130,11 +135,12 @@ Surface EvaluateSurface_StandardPBR(
         uvs,
         isFrontFace,
         isDisplacementClipped,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false, /* customDerivatives */
+        lightingChannels);
 }
 
-Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_StandardPBR(
         params,
@@ -147,10 +153,11 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, cons
         geoData.isDisplacementClipped,
         uvDxDy,
         customDerivatives,
-        GetVertexColor(IN));
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_StandardPBR(
         params,
@@ -161,7 +168,8 @@ Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData, cons
         geoData.uvs,
         geoData.isFrontFace,
         geoData.isDisplacementClipped,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false,
-        GetVertexColor(IN));
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false,  /* customDerivatives */
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }

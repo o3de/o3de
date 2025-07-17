@@ -17,7 +17,6 @@
 
 #include <viewsrg_all.srgi>
 #include <Atom/Features/Debug.azsli>
-#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
@@ -29,12 +28,11 @@
 #define GET_SHADING_VIEW_COUNT 1
 #endif
 
+// Forward declaration for a wrapper arround SampleBrdfMap(). 
+float2 MySampleBrdfMap(float2 brdfUV);
+
 class LightingData_BasePBR
 {
-    LightCullingTileIterator tileIterator;
-
-    uint lightingChannels;
-
     // Lighting outputs
     real3 diffuseLighting;
     real3 specularLighting[MAX_SHADING_VIEWS];
@@ -74,32 +72,6 @@ class LightingData_BasePBR
     float GetSpecularNdotV() { return NdotV[0]; }
     float GetSpecularNdotV(uint i) { return NdotV[i]; }
 };
-
-void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS])
-{
-    diffuseLighting = real3(0.0, 0.0, 0.0);
-    multiScatterCompensation = real3(1.0, 1.0, 1.0);
-    emissiveLighting = real3(0.0, 0.0, 0.0);
-#if ENABLE_TRANSMISSION
-    translucentBackLighting = real3(0.0, 0.0, 0.0);
-#endif
-    diffuseAmbientOcclusion = 1.0;
-    specularOcclusion = 1.0;
-
-    lightingChannels = 0xFFFFFFFF;
-
-    [unroll]
-    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
-    {
-        specularLighting[i] = real3(0.0, 0.0, 0.0);
-        dirToCamera[i] = normalize(viewPosition[i] - positionWS);
-        NdotV[i] = saturate(dot(specularNormal, dirToCamera[i]));
-
-        // sample BRDF map (indexed by smoothness values rather than roughness)
-        float2 brdfUV = float2(NdotV[i], (1.0 - roughnessLinear));
-        brdf[i] = real2(SampleBrdfMap(brdfUV));
-    }
-}
 
 void LightingData_BasePBR::CalculateMultiscatterCompensation(real3 specularF0, bool enabled)
 {

@@ -90,12 +90,14 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     // Clear Coat
     surface.clearCoat.InitializeToZero();
 
+    // ------- Light culling iterator -----
+
+    LightCullingTileIterator tileIterator;
+    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+
     // ------- LightingData -------
 
     LightingData lightingData;
-
-    // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
 
@@ -108,10 +110,10 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     // ------- Lighting Calculation -------
 
     // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
+    ApplyDecals(tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, IN.m_position);
+    ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
 
     // Apply Image Based Lighting (IBL)
     ApplyIblForward(surface, lightingData);

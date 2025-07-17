@@ -79,12 +79,16 @@ bool NeedsTangentFrame()
 #include "MaterialGraphName_PixelGeometryEval.azsli"
 #include "MaterialGraphName_SurfaceEval.azsli"
 
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
+
 #elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 
 #include "MaterialGraphName_VertexEval.azsli"
 #include "MaterialGraphName_PixelGeometryEval.azsli"
     
-void EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
     const float3 O3DE_MC_POSITION = (float3)IN.position;
