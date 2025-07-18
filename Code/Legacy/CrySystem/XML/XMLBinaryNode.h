@@ -91,7 +91,7 @@ public:
     virtual bool getAttributeByIndex(int index, XmlString& key, XmlString& value);
 
 
-    void copyAttributes(XmlNodeRef fromNode) override { assert(0); };
+    void copyAttributes(XmlNodeRef) override { assert(0); };
 
     //! Get XML Node attribute for specified key.
     const char* getAttr(const char* key) const override;

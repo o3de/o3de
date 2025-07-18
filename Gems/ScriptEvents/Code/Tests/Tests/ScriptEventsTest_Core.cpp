@@ -231,13 +231,13 @@ namespace ScriptEventsTests
             AZ::Data::AssetBus::Handler::BusDisconnect();
         }
         
-        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> assetData) override
+        void OnAssetError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> assetData) override
         {
             EXPECT_TRUE(false);
             AZ::Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData>) override
+        void OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData>) override
         {
             m_ready++;
 
@@ -247,7 +247,7 @@ namespace ScriptEventsTests
             m_onReadyCallback();
         }
 
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] bool isSuccessful) override
+        void OnAssetSaved([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] bool isSuccessful) override
         {
             AZ::Data::AssetBus::Handler::BusDisconnect();
             AZ::Data::AssetManager::Instance().DispatchEvents();

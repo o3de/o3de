@@ -20,7 +20,7 @@
 
 namespace UnitTest
 {
-    void AcceptTwoStrings(AZStd::string stringValue1, AZStd::string stringValue2)
+    void AcceptTwoStrings([[maybe_unused]] AZStd::string stringValue1, [[maybe_unused]] AZStd::string stringValue2)
     {
         AZ_TracePrintf("python", stringValue1.empty() ? "stringValue1_is_empty" : "stringValue1_has_data");
         AZ_TracePrintf("python", stringValue2.empty() ? "stringValue2_is_empty" : "stringValue2_has_data");

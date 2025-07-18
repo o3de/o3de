@@ -276,7 +276,7 @@ namespace LegacyFramework
         if (m_applicationEntity)
         {
             // if the component already exists on the system entity, this is an error.
-            if (auto comp = m_ptrSystemEntity->FindComponent(componentCRC))
+            if ([[maybe_unused]] auto comp = m_ptrSystemEntity->FindComponent(componentCRC))
             {
                 AZ_Warning("EditorFramework", 0, "Attempt to add a component that already exists on the system entity: %s\n", comp->RTTI_GetTypeName());
                 return true;

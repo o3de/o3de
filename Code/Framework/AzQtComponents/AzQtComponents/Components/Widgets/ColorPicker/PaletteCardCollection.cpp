@@ -38,7 +38,7 @@ namespace AzQtComponents
     QSharedPointer<PaletteCard> PaletteCardCollection::makeCard(QSharedPointer<Palette> palette, const QString& title)
     {
         auto card = QSharedPointer<PaletteCard>::create(palette, m_colorController, m_undoStack, this);
-        card->setTitle(uniquePaletteName(card, title));
+        card->setTitle(uniquePaletteName(title));
         card->setSwatchSize(m_swatchSize);
         card->setGammaEnabled(m_gammaEnabled);
         card->setGamma(m_gamma);
@@ -206,7 +206,7 @@ namespace AzQtComponents
         }
     }
 
-    QString PaletteCardCollection::uniquePaletteName(QSharedPointer<PaletteCard> card, const QString& name) const
+    QString PaletteCardCollection::uniquePaletteName(const QString& name) const
     {
         const auto paletteNameExists = [this](const QString& name)
         {

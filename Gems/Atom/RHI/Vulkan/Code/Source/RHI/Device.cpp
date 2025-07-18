@@ -265,9 +265,9 @@ namespace AZ
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
                 vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorIndexing;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingVariableDescriptorCount;
                 // We use the "VkPhysicalDeviceBufferDeviceAddressFeatures" instead of the "VkPhysicalDeviceVulkan12Features" for buffer device address
                 // because some drivers (e.g. Intel) don't report any features of buffer device address through the "PhysicalDeviceVulkan12Features" but they do
                 // through the "VK_EXT_buffer_device_address" extension.
