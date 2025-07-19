@@ -689,7 +689,6 @@ namespace AzToolsFramework
         AZ::Entity* GetSelectedEntityById(AZ::EntityId& entityId) const;
     };
 
-    //void SortComponentsByOrder(AZ::EntityId entityId, AZ::Entity::ComponentArrayType& componentsOnEntity);
     void SaveComponentOrder(AZ::EntityId entityId, AZStd::span<AZ::Component* const> componentsInOrder);
 
 } // namespace AzToolsFramework
