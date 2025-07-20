@@ -25,7 +25,8 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
                 3rdParty::X11::xcb
                 3rdParty::X11::xcb_xkb
                 3rdParty::X11::xcb_xfixes
-                3rdParty::X11::xcb_xinput
+                xcb-xinput
+                xcb-keysyms
                 AZ::AzFramework
                 AZ::AzFramework.NativeUI
                 AZ::AzTest
