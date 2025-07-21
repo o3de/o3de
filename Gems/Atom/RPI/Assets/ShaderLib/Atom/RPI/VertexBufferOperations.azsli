@@ -84,6 +84,13 @@ float3 DecodeNormalPackedOctahedron(uint encodedPackedValue, uint xyBits)
     return DecodeNormalSignedOctahedron(encodedNormal);
 }
 
+float4 DecodeTangentPackedOctahedron(uint encodedPackedValue, uint xyBits)
+{
+    return float4(
+        DecodeNormalPackedOctahedron(encodedPackedValue, xyBits),
+        ((encodedPackedValue >> (xyBits * 2 + 1)) & 1) * 2.f - 1.f);
+}
+
 float2 LoadFloat2FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFormat format)
 {
     switch (format)
@@ -128,6 +135,12 @@ float4 LoadFloat4FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFor
         return asfloat(buffer.Load4(byteOffset));
     case VertexFormat::R16G16B16A16_FLOAT:
         return LoadFloat16x4FromBuffer(buffer, byteOffset);
+    case VertexFormat::T32_OCT:
+        return DecodeTangentPackedOctahedron(buffer.Load(byteOffset), 15);
+    case VertexFormat::T16_OCT:
+        return DecodeTangentPackedOctahedron(LoadUint16FromBufferUnaligned(buffer, byteOffset), 7);
+    case VertexFormat::T8_OCT:
+        return DecodeTangentPackedOctahedron(LoadUint8FromBufferUnaligned(buffer, byteOffset), 3);
     default:
         return float4(0.f, 0.f, 0.f, 0.f);
     }

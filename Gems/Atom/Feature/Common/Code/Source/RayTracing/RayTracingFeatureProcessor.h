@@ -192,6 +192,7 @@ namespace AZ
                 uint32_t m_bitangentByteOffset = 0;
                 uint32_t m_uvByteOffset = 0;
 
+                RHI::IndexFormat m_indexFormat;
                 RHI::VertexFormat m_positionFormat;
                 RHI::VertexFormat m_normalFormat;
                 RHI::VertexFormat m_uvFormat;
@@ -203,7 +204,6 @@ namespace AZ
 
                 uint32_t _padding1;
                 uint32_t _padding2;
-                uint32_t _padding3;
 
                 AZStd::array<float, 12> m_worldInvTranspose; // float3x4
             };

@@ -462,6 +462,7 @@ namespace AZ
                         subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
                     meshInfo.m_uvByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
 
+                    meshInfo.m_indexFormat = subMesh.m_indexBufferView.GetIndexFormat();
                     meshInfo.m_positionFormat = subMesh.m_positionFormat;
                     meshInfo.m_normalFormat = subMesh.m_normalFormat;
                     meshInfo.m_uvFormat = subMesh.m_uvFormat;

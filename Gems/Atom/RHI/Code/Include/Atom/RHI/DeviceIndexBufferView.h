@@ -7,20 +7,12 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI.Reflect/IndexFormat.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
 {
     class DeviceBuffer;
-
-    enum class IndexFormat : uint32_t
-    {
-        Uint16 = 0,
-        Uint32
-    };
-
-    uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
     class alignas(8) DeviceIndexBufferView
     {

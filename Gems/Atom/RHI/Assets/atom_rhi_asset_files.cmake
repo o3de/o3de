@@ -6,5 +6,6 @@
 # 
 
 set(FILES
+    ShaderLib/Atom/RHI/IndexFormat.azsli
     ShaderLib/Atom/RHI/VertexFormat.azsli
 )

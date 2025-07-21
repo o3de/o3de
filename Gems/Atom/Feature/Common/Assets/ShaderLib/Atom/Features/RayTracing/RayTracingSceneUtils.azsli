@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Features/Bindless.azsli>
+#include <Atom/RHI/IndexFormat.azsli>
 #include <Atom/RPI/VertexBufferOperations.azsli>
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
@@ -25,13 +26,13 @@ uint3 GetHitIndices(RayTracingSceneSrg::MeshInfo meshInfo)
     // get the index buffer resource index from the indirection list
     uint meshIndexBufferArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_INDEX_BUFFER_OFFSET)];
 
-    uint indexFormatSize = meshInfo.m_bufferFlags & MESH_BUFFER_UINT16_INDEX ? 2 : 4;
+    IndexFormat indexFormat = (IndexFormat)meshInfo.m_indexFormat;
 
     // compute the offset into the index buffer for this primitve of the mesh
-    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 3 * indexFormatSize);
+    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 3 * GetIndexFormatSize(indexFormat));
 
     // load the indices for this primitive from the index buffer
-    if (meshInfo.m_bufferFlags & MESH_BUFFER_UINT16_INDEX)
+    if (indexFormat == IndexFormat::Uint16)
     {
 #if USE_BINDLESS_SRG
         return LoadUint16x3FromBufferUnaligned(Bindless::GetByteAddressBuffer(meshIndexBufferArrayIndex), offsetBytes);
