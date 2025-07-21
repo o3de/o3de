@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiElementGroupComponent.h"
+#include "UiHierarchyInteractivityToggleComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -14,23 +14,23 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiInteractableBus.h>
 
-AZ_COMPONENT_IMPL(UiElementGroupComponent, "UiElementGroupComponent", "{B8C5A864-1A98-48B9-BEBB-1FDE06E6D463}");
+AZ_COMPONENT_IMPL(UiHierarchyInteractivityToggleComponent, "UiHierarchyInteractivityToggleComponent", "{B8C5A864-1A98-48B9-BEBB-1FDE06E6D463}");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::Activate()
+void UiHierarchyInteractivityToggleComponent::Activate()
 {
-    UiElementGroupBus::Handler::BusConnect(GetEntityId());
+    UiHierarchyInteractivityToggleBus::Handler::BusConnect(GetEntityId());
     UiInitializationBus::Handler::BusConnect(GetEntityId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::Deactivate()
+void UiHierarchyInteractivityToggleComponent::Deactivate()
 {
-    UiElementGroupBus::Handler::BusDisconnect();
+    UiHierarchyInteractivityToggleBus::Handler::BusDisconnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::InGamePostActivate()
+void UiHierarchyInteractivityToggleComponent::InGamePostActivate()
 {
     UiInitializationBus::Handler::BusDisconnect();
 
@@ -38,14 +38,10 @@ void UiElementGroupComponent::InGamePostActivate()
     {
         SetInteractivity(false);
     }
-    if (!m_isRenderingLocallyEnabled)
-    {
-        SetRendering(false);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiElementGroupComponent::SetInteractivity(bool enabled)
+bool UiHierarchyInteractivityToggleComponent::SetInteractivity(bool enabled)
 {
     m_isInteractionLocallyEnabled = enabled;
     UpdateInteractiveState();
@@ -53,7 +49,7 @@ bool UiElementGroupComponent::SetInteractivity(bool enabled)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiElementGroupComponent::SetParentInteractivity(bool parentEnabled)
+bool UiHierarchyInteractivityToggleComponent::SetParentInteractivity(bool parentEnabled)
 {
     m_isInteractionParentEnabled = parentEnabled;
     UpdateInteractiveState();
@@ -61,7 +57,7 @@ bool UiElementGroupComponent::SetParentInteractivity(bool parentEnabled)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::UpdateInteractiveState()
+void UiHierarchyInteractivityToggleComponent::UpdateInteractiveState()
 {
     const bool effectiveState = GetInteractiveState();
 
@@ -73,18 +69,18 @@ void UiElementGroupComponent::UpdateInteractiveState()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::DoRecursiveSetInteractivityToChildren(const AZ::EntityId& parentId, bool parentState)
+void UiHierarchyInteractivityToggleComponent::DoRecursiveSetInteractivityToChildren(const AZ::EntityId& parentId, bool parentState)
 {
     AZStd::vector<AZ::EntityId> children;
     UiElementBus::EventResult(children, parentId, &UiElementInterface::GetChildEntityIds);
 
     for (const AZ::EntityId& child : children)
     {
-        // If has ElementGroup, will return true;
+        // If has InteractivityToggleComp, will return true;
         bool hasGroup = false;
-        UiElementGroupBus::EventResult(hasGroup, child, &UiElementGroupInterface::SetParentInteractivity, parentState);
+        UiHierarchyInteractivityToggleBus::EventResult(hasGroup, child, &UiHierarchyInteractivityToggleInterface::SetParentInteractivity, parentState);
 
-        // Because no group found, affect child and recurse.
+        // Because no toggle found, affect child and recurse.
         if (!hasGroup)
         {
             // Affect interactable state directly
@@ -98,82 +94,61 @@ void UiElementGroupComponent::DoRecursiveSetInteractivityToChildren(const AZ::En
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiElementGroupComponent::SetRendering(bool enabled)
-{
-    UiElementBus::Event(GetEntityId(), &UiElementInterface::SetIsRenderEnabled, enabled);
-    m_isRenderingLocallyEnabled = enabled;
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiElementGroupComponent::GetRenderingState()
-{
-    UiElementBus::EventResult(m_isRenderingLocallyEnabled, GetEntityId(), &UiElementInterface::IsRenderEnabled);
-
-    return m_isRenderingLocallyEnabled;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::Reflect(AZ::ReflectContext* context)
+void UiHierarchyInteractivityToggleComponent::Reflect(AZ::ReflectContext* context)
 {
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<UiElementGroupComponent, AZ::Component>()
+        serializeContext->Class<UiHierarchyInteractivityToggleComponent, AZ::Component>()
             ->Version(1)
-            ->Field("LocalInteraction", &UiElementGroupComponent::m_isInteractionLocallyEnabled)
-            ->Field("LocalRendering", &UiElementGroupComponent::m_isRenderingLocallyEnabled);
+            ->Field("LocalInteraction", &UiHierarchyInteractivityToggleComponent::m_isInteractionLocallyEnabled)
+            ;
 
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
             editContext
-                ->Class<UiElementGroupComponent>(
-                    "ElementGroup", "A grouping handler that allows interaction and rendering for the entire hierarchy of children.")
+                ->Class<UiHierarchyInteractivityToggleComponent>(
+                    "HierarchyInteractivityToggle", "A grouping handler that allows interaction and rendering for the entire hierarchy of children.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
-                    &UiElementGroupComponent::m_isInteractionLocallyEnabled,
+                    &UiHierarchyInteractivityToggleComponent::m_isInteractionLocallyEnabled,
                     "Is Interactive",
-                    "Whether this group and children will be interactable.")
-                ->DataElement(
-                    AZ::Edit::UIHandlers::Default,
-                    &UiElementGroupComponent::m_isRenderingLocallyEnabled,
-                    "Is Visible",
-                    "Whether this group and children will be rendered.");
+                    "Whether this entity and children will be interactable.")
+                    ;
         }
     }
 
     if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
     {
-        behaviorContext->EBus<UiElementGroupBus>("UiElementGroupBus")
-            ->Event("Set Interactive State", &UiElementGroupInterface::SetInteractivity)
-            ->Event("Get Interactive State", &UiElementGroupInterface::GetInteractiveState)
-            ->Event("Set Rendering State", &UiElementGroupInterface::SetRendering)
-            ->Event("Get Rendering State", &UiElementGroupInterface::GetRenderingState);
+        behaviorContext->EBus<UiHierarchyInteractivityToggleBus>("UiHierarchyInteractivityToggleBus")
+            ->Event("Set Interactive State", &UiHierarchyInteractivityToggleInterface::SetInteractivity)
+            ->Event("Get Interactive State", &UiHierarchyInteractivityToggleInterface::GetInteractiveState)
+            ;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+void UiHierarchyInteractivityToggleComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
 {
-    provided.push_back(AZ_CRC_CE("UiElementGroupComponentService"));
+    provided.push_back(AZ_CRC_CE("UiHierarchyInteractivityToggleComponentService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+void UiHierarchyInteractivityToggleComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
 {
-    incompatible.push_back(AZ_CRC_CE("UiElementGroupComponentService"));
+    incompatible.push_back(AZ_CRC_CE("UiHierarchyInteractivityToggleComponentService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+void UiHierarchyInteractivityToggleComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
 {
     required.push_back(AZ_CRC_CE("UiElementService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiElementGroupComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+void UiHierarchyInteractivityToggleComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
 {
 }

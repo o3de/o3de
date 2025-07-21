@@ -10,9 +10,9 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <LyShine/UiBase.h>
 
-    // The event bus that interfaces with the UiElementGroup Component.
-    // Used to toggle features to the current entity and descendants.
-    class UiElementGroupInterface
+    // The event bus that interfaces with the UiHierarchyInteractivityToggle Component.
+    // Used to toggle interactivity to the current entity and descendants.
+    class UiHierarchyInteractivityToggleInterface
         : public AZ::ComponentBus
     {
     public:
@@ -24,12 +24,6 @@
         virtual bool SetParentInteractivity(bool parentEnabled) = 0;
         //! Getter to see the current interactive state.
         virtual bool GetInteractiveState() = 0;
-
-        //Rendering
-        //! The root event call used to manipulate the Rendering state.
-        virtual bool SetRendering(bool enabled) = 0;
-        //! Getter to see the current Rendering state.
-        virtual bool GetRenderingState() = 0;
     };   
 
-    typedef AZ::EBus<UiElementGroupInterface> UiElementGroupBus;
+    typedef AZ::EBus<UiHierarchyInteractivityToggleInterface> UiHierarchyInteractivityToggleBus;

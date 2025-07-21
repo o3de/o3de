@@ -15,7 +15,6 @@
 
 #include "UiCanvasComponent.h"
 #include "UiElementComponent.h"
-#include "UiElementGroupComponent.h"
 #include "UiTransform2dComponent.h"
 #include "UiImageComponent.h"
 #include "UiImageSequenceComponent.h"
@@ -47,6 +46,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiSpawnerComponent.h"
+#include "UiHierarchyInteractivityToggleComponent.h"
 
 #include "World/UiCanvasAssetRefComponent.h"
 #include "World/UiCanvasProxyRefComponent.h"
@@ -74,7 +74,6 @@ namespace LyShine
                 UiCanvasOnMeshComponent::CreateDescriptor(),
                 UiCanvasComponent::CreateDescriptor(),
                 UiElementComponent::CreateDescriptor(),
-                UiElementGroupComponent::CreateDescriptor(),
                 UiTransform2dComponent::CreateDescriptor(),
                 UiImageComponent::CreateDescriptor(),
                 UiImageSequenceComponent::CreateDescriptor(),
@@ -106,6 +105,7 @@ namespace LyShine
                 UiRadioButtonComponent::CreateDescriptor(),
                 UiRadioButtonGroupComponent::CreateDescriptor(),
                 UiParticleEmitterComponent::CreateDescriptor(),
+                UiHierarchyInteractivityToggleComponent::CreateDescriptor(),
     #if defined(LYSHINE_BUILDER)
                 // Builder
                 LyShineBuilder::LyShineBuilderComponent::CreateDescriptor(),

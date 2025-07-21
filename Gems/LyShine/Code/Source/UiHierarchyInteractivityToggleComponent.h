@@ -7,18 +7,18 @@
  */
 #pragma once
 
-#include <LyShine/Bus/UiElementGroupBus.h>
+#include <LyShine/Bus/UiHierarchyInteractivityToggleBus.h>
 
 #include <AzCore/Component/Component.h>
 #include <LyShine/Bus/UiInitializationBus.h>
 
-class UiElementGroupComponent
+class UiHierarchyInteractivityToggleComponent
     : public AZ::Component
     , public UiInitializationBus::Handler
-    , public UiElementGroupBus::Handler
+    , public UiHierarchyInteractivityToggleBus::Handler
 {
     public:
-        AZ_COMPONENT_DECL(UiElementGroupComponent);
+        AZ_COMPONENT_DECL(UiHierarchyInteractivityToggleComponent);
         
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -30,18 +30,13 @@ class UiElementGroupComponent
         void InGamePostActivate() override;
         //~UiInitializationBus::Handler overrides...
         
-        //UiElementGroupBus::Handler overrides..
-        //! The root method used to manipulate the Rendering state.
-        bool SetRendering(bool enabled) override;
-        //! Getter to see the current Rendering state.
-        bool GetRenderingState() override;
-        
+        //UiHierarchyInteractivityToggleBus::Handler overrides..
         //! The root Method call used to manipulate the Interactive state.
         bool SetInteractivity(bool enabled) override;
         bool SetParentInteractivity(bool parentEnabled) override; //Used for child propagation.
         //! Getter to see the current interactive state.
         bool GetInteractiveState() override { return m_isInteractionLocallyEnabled && m_isInteractionParentEnabled; };
-        //~UiElementGroupBus::Handler overrides...
+        //~UiHierarchyInteractivityToggleBus::Handler overrides...
     
         //Local Methods.
         void UpdateInteractiveState();
@@ -54,5 +49,4 @@ class UiElementGroupComponent
         //State
         bool m_isInteractionLocallyEnabled = true;
         bool m_isInteractionParentEnabled = true;
-        bool m_isRenderingLocallyEnabled = true;
 };
