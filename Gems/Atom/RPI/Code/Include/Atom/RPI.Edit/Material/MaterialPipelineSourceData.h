@@ -54,8 +54,16 @@ namespace AZ
 
                 bool operator<(const ShaderTemplate& rhs) const
                 {
-                    return AZStd::tuple(m_shader, m_azsli, m_shaderTag.GetHash(), static_cast<int32_t>(m_drawItemType)) <
-                        AZStd::tuple(rhs.m_shader, rhs.m_azsli, rhs.m_shaderTag.GetHash(), static_cast<int32_t>(rhs.m_drawItemType));
+                    return AZStd::tuple(
+                               AZStd::string_view(m_shader),
+                               AZStd::string_view(m_azsli),
+                               m_shaderTag.GetHash(),
+                               static_cast<int32_t>(m_drawItemType)) <
+                        AZStd::tuple(
+                               AZStd::string_view(rhs.m_shader),
+                               AZStd::string_view(rhs.m_azsli),
+                               rhs.m_shaderTag.GetHash(),
+                               static_cast<int32_t>(rhs.m_drawItemType));
                 }
             };
 
