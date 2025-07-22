@@ -222,9 +222,29 @@ namespace AZ
             *    This specifically does not have a default parameter to ensure callers intentionally choose the correct behavior
             *    For asset references intended to be saved to disk
             * \param loadParams optional set of parameters to control loading
-            * Keep in mind that this async operation, asset will not be loaded after the call to this function completes.
+            * Keep in mind that this is an async operation, the asset will not be loaded after the call to this function completes.
             **/
             Asset<AssetData> GetAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{});
+
+            /**
+             * Gets an asset from the database, if not present it loads it from the catalog/stream. For events register a handler by calling
+             * RegisterEventHandler().
+             * \param assetId a valid id of the asset
+             * \param assetType type id of the asset
+             * \param assetHint the hint as to where the asset is stored
+             * \param assetReferenceLoadBehavior the AssetLoadBehavior set on the returned Asset<T> object.  Important (only) when the
+             *    Asset<T> is saved to disk as this behavior will be preserved and used when loading the asset containing this reference
+             *    This specifically does not have a default parameter to ensure callers intentionally choose the correct behavior
+             *     For asset references intended to be saved to disk
+             * \param loadParams optional set of parameters to control loading
+             * Keep in mind that this is an async operation, the asset will not be loaded after the call to this function completes.
+             **/
+            Asset<AssetData> GetAsset(
+                const AssetId& assetId,
+                const AssetType& assetType,
+                const AZStd::string& assetHint,
+                AssetLoadBehavior assetReferenceLoadBehavior,
+                const AssetLoadParameters& loadParams = AssetLoadParameters{});
 
             /**
              * Locates an existing in-memory asset, if the asset is unknown, a new in-memory asset will be created.
@@ -266,7 +286,7 @@ namespace AZ
             /**
              * Requests a reload of a given asset from storage.
              */
-            void ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload = false);
+            Asset<AssetData> ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload = false);
 
             /**
              * Reloads an asset from provided in-memory data.
@@ -355,9 +375,18 @@ namespace AZ
             void PostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
 
             Asset<AssetData> GetAssetInternal(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{}, AssetInfo assetInfo = AssetInfo(), bool signalLoaded = false);
+            Asset<AssetData> GetAssetInternal(
+                const AssetId& assetId,
+                const AssetType& assetType,
+                const AZStd::string& assetHint,
+                AssetLoadBehavior assetReferenceLoadBehavior,
+                const AssetLoadParameters& loadParams = AssetLoadParameters{},
+                AssetInfo assetInfo = AssetInfo(),
+                bool signalLoaded = false);
+
             // Alternative path to GetAssetInternal intended to be called by the AssetContainer when reloading an asset
             // Assumes the asset is already ready to go and just needs to be set up for loading
-            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded);
+            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded, const AssetLoadParameters& loadParams);
 
             void UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
