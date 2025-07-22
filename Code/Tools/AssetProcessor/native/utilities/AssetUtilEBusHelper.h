@@ -39,9 +39,9 @@ public:
 
     virtual ~AssetProcessorPlaformBusTraits() {}
     //Informs that the AP got a connection for this platform.
-    virtual void AssetProcessorPlatformConnected(const AZStd::string platform) {}
+    virtual void AssetProcessorPlatformConnected([[maybe_unused]] const AZStd::string platform) {}
     //Informs that a connection got disconnected for this platform.
-    virtual void AssetProcessorPlatformDisconnected(const AZStd::string platform) {}
+    virtual void AssetProcessorPlatformDisconnected([[maybe_unused]] const AZStd::string platform) {}
 };
 
 using AssetProcessorPlatformBus = AZ::EBus<AssetProcessorPlaformBusTraits>;

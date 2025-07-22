@@ -859,7 +859,7 @@ namespace AZ
         }
 
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelinePersistentViewChanged(
-            RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
+            RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, [[maybe_unused]] RPI::ViewPtr previousView)
         {
             if (m_sceneAndViewShader)
             {

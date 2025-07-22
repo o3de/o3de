@@ -117,7 +117,9 @@ namespace MessagePopup
     }
 
     //-----------------------------------------------------------------------------
-    void LyShineMessagePopup::OnShowPopup(AZ::u32 _popupID, const AZStd::string& _message, EPopupButtons _buttons, EPopupKind _kind, AZStd::function<void(int _button)> _callback, void** _popupClientID)
+    // The callback function is provided by the API, but isn't used in this function, because the above function callign OnHide will
+    // cause the popup callback function to be called.
+    void LyShineMessagePopup::OnShowPopup(AZ::u32 _popupID, const AZStd::string& _message, EPopupButtons _buttons, EPopupKind _kind, [[maybe_unused]] AZStd::function<void(int _button)> _callback, void** _popupClientID)
     {
         AZ::EntityId canvasEntityId;
         bool isNavigationSupported = false;

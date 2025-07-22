@@ -290,6 +290,11 @@ namespace AzToolsFramework
         // Loop through all items one by one.
         auto* myRow = GetRow();
         const int itemCount = count();
+        if (itemCount == 0)
+        {
+            return;
+        }
+
         for (int itemIndex = 0; itemIndex < itemCount; ++itemIndex)
         {
             auto* currentItem = itemAt(itemIndex);
