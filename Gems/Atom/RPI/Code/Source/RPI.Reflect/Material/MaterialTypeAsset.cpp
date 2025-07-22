@@ -160,35 +160,40 @@ namespace AZ
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(
-            const SupervariantIndex& supervariantIndex) const
+            const SupervariantIndex& supervariantIndex, const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            if (!m_shaderWithObjectSrg)
+            if (!m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)])
             {
                 return RHI::NullSrgLayout;
             }
 
-            return m_shaderWithObjectSrg->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object, supervariantIndex);
+            return m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)]->FindShaderResourceGroupLayout(
+                RPI::SrgBindingSlot::Object, supervariantIndex);
         }
 
-        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(
+            const AZ::Name& supervariantName, const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            if (!m_shaderWithObjectSrg)
+            if (!m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)])
             {
                 return RHI::NullSrgLayout;
             }
 
-            auto supervariantIndex = m_shaderWithObjectSrg->GetSupervariantIndex(supervariantName);
-            return m_shaderWithObjectSrg->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object, supervariantIndex);
+            auto supervariantIndex = m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)]->GetSupervariantIndex(supervariantName);
+            return m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)]->FindShaderResourceGroupLayout(
+                RPI::SrgBindingSlot::Object, supervariantIndex);
         }
 
-        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(
+            const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            return GetObjectSrgLayout(DefaultSupervariantIndex);
+            return GetObjectSrgLayout(DefaultSupervariantIndex, drawItemType);
         }
 
-        const Data::Asset<ShaderAsset>& MaterialTypeAsset::GetShaderAssetForObjectSrg() const
+        const Data::Asset<ShaderAsset>& MaterialTypeAsset::GetShaderAssetForObjectSrg(
+            const ShaderCollection::Item::DrawItemType drawItemType) const
         {
-            return m_shaderWithObjectSrg;
+            return m_shaderWithObjectSrg[AZStd::to_underlying(drawItemType)];
         }
 
         const MaterialPropertiesLayout* MaterialTypeAsset::GetMaterialPropertiesLayout() const

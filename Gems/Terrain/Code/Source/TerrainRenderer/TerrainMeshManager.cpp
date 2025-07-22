@@ -580,7 +580,7 @@ namespace Terrain
         m_materialInstance->ForAllShaderItems(
             [&](const AZ::Name& materialPipelineName, const AZ::RPI::ShaderCollection::Item& shaderItem)
             {
-                if (!shaderItem.IsEnabled())
+                if (!shaderItem.IsEnabled() || shaderItem.GetDrawItemType() != AZ::RPI::ShaderCollection::Item::DrawItemType::Raster)
                 {
                     return true;
                 }
