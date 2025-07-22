@@ -128,7 +128,7 @@ namespace AZ
                         geometry.m_vertexBuffer.GetByteOffset();
                     geometryDesc.geometry.triangles.vertexStride = geometry.m_vertexBuffer.GetByteStride();
                     geometryDesc.geometry.triangles.maxVertex = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<uint32_t>(geometryDesc.geometry.triangles.vertexStride);
-                    geometryDesc.geometry.triangles.vertexFormat = ConvertFormat(geometry.m_vertexFormat);
+                    geometryDesc.geometry.triangles.vertexFormat = ConvertFormat(RHI::ConvertToImageFormat(geometry.m_vertexFormat));
 
                     addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
                     addressInfo.pNext = nullptr;

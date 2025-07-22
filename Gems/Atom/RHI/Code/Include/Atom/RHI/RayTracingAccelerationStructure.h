@@ -28,7 +28,7 @@ namespace AZ::RHI
     //! scene.  Each RayTracingBlas contains a list of these entries.
     struct RayTracingGeometry
     {
-        RHI::Format m_vertexFormat = RHI::Format::Unknown;
+        RHI::VertexFormat m_vertexFormat = RHI::VertexFormat::Unknown;
         RHI::StreamBufferView m_vertexBuffer;
         RHI::IndexBufferView m_indexBuffer;
     };
