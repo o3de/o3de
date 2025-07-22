@@ -20,7 +20,7 @@
 namespace AzToolsFramework
 {
     class ContainerEntityInterface;
-    class EntityOutlinerListModel;
+    class EntityOutlinerListModelFromPrefab;
 
     //! Enables the Outliner to filter entries based on search string.
     //! Enables the Outliner to do custom sorting on entries.
@@ -45,7 +45,7 @@ namespace AzToolsFramework
 
     private:
         QString m_filterName;
-        EntityOutlinerListModel* m_listModel = nullptr;
+        EntityOutlinerListModelFromPrefab* m_listModel = nullptr;
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
     };
 
