@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
@@ -24,7 +25,7 @@ namespace AzToolsFramework
     
     //! Menu Manager class definition.
     //! Handles Editor Menus and allows registration and access across tools.
-    class MenuManager
+    class AZTF_API MenuManager
         : private MenuManagerInterface
         , private MenuManagerInternalInterface
         , private AZ::SystemTickBus::Handler

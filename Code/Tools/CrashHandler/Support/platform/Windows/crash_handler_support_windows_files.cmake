@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    ../../Platform/win/CrashSupport_win.cpp
+    ../../platform/win/CrashSupport_win.cpp
 )

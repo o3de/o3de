@@ -7,10 +7,12 @@
  */
 #pragma once
 
-#include <QModelIndex>
-
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+#include <QModelIndex>
+
 
 namespace AzToolsFramework
 {
@@ -24,3 +26,5 @@ namespace AzToolsFramework
     using EntityOutlinerRequestBus = AZ::EBus<EntityOutlinerRequests>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityOutlinerRequests);

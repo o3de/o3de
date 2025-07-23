@@ -17,7 +17,7 @@ namespace AZ
     class ReflectContext;
 
     //! N-dimensional vector class.
-    class VectorN final
+    class AZCORE_API VectorN final
     {
     public:
 

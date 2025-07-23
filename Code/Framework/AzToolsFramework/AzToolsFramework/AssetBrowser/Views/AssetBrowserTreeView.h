@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -37,7 +39,7 @@ namespace AzToolsFramework
         class AssetBrowserThumbnailView;
         class EntryDelegate;
 
-        class AssetBrowserTreeView
+        class AZTF_API AssetBrowserTreeView
             : public QTreeViewWithStateSaving
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler

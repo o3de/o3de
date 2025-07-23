@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,11 +23,11 @@ namespace AzFramework
 {
     class DebugDisplayRequests;
 
-    void DisplayFrustum(const AZ::Frustum& frustum, DebugDisplayRequests& debugDisplay);
+    AZF_API void DisplayFrustum(const AZ::Frustum& frustum, DebugDisplayRequests& debugDisplay);
 
-    void DisplayFrustum(const AZ::ViewFrustumAttributes& viewFrustumAttribs, DebugDisplayRequests& debugDisplay);
+    AZF_API void DisplayFrustum(const AZ::ViewFrustumAttributes& viewFrustumAttribs, DebugDisplayRequests& debugDisplay);
 
-    void DisplayFrustum(
+    AZF_API void DisplayFrustum(
         const AZ::Transform& worldFromView, float aspect, float fovRadians, float nearClip, float farClip,
         DebugDisplayRequests& debugDisplay);
 
@@ -44,6 +45,6 @@ namespace AzFramework
         }
     };
 
-    void DisplayOctreeDebug(const OctreeDebug& octreeDebug, DebugDisplayRequests& debugDisplay);
+    AZF_API void DisplayOctreeDebug(const OctreeDebug& octreeDebug, DebugDisplayRequests& debugDisplay);
 
 } // namespace AzFramework

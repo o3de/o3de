@@ -9,12 +9,13 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! This system will take care of reflecting physics material classes and
     //! registering the physics material asset.
-    class MaterialSystemComponent
+    class AZF_API MaterialSystemComponent
         : public AZ::Component
     {
     public:

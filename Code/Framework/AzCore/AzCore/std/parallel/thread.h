@@ -78,7 +78,7 @@ namespace AZStd
 
 
     // 30.3.1
-    class thread
+    class AZCORE_API thread
     {
     public:
         // types:
@@ -151,10 +151,10 @@ namespace AZStd
     class thread;
     inline void swap(thread& x, thread& y)      { x.swap(y); }
     namespace this_thread {
-        thread::id get_id();
-        void yield();
+        AZCORE_API thread::id get_id();
+        AZCORE_API void yield();
         ///extension, spins for the specified number of loops, yielding correctly on hyper threaded processors
-        void pause(int numLoops);
+        AZCORE_API void pause(int numLoops);
         //template <class Clock, class Duration>
         //void sleep_until(const chrono::time_point<Clock, Duration>& abs_time);
         template <class Rep, class Period>

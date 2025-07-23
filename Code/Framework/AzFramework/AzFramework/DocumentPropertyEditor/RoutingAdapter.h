@@ -12,12 +12,13 @@
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! RoutingAdapter manages chaining DocumentAdapters together so that their contents
     //! hierarchically merge, and their corresponding patches get applied cleanly.
-    class RoutingAdapter : public DocumentAdapter
+    class AZF_API RoutingAdapter : public DocumentAdapter
     {
     public:
         RoutingAdapter() = default;

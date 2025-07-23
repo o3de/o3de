@@ -19,6 +19,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -30,7 +31,7 @@ namespace AZ::DocumentPropertyEditor
     //!     static constexpr AZStd::string_view Name = "MyNode";
     //!     static bool CanAddToParentNode(const Dom::Value& parentNode);
     //! };
-    struct NodeDefinition
+    struct AZF_API NodeDefinition
     {
         //! Defines the Name of the node definition.
         //! This field must be defined for all NodeDefinitions.
@@ -61,7 +62,7 @@ namespace AZ::DocumentPropertyEditor
 
     //! Runtime data describing a NodeDescriptor.
     //! This is used to look up a descriptor from a given name in the PropertyEditorSystem.
-    struct NodeMetadata
+    struct AZF_API NodeMetadata
     {
         //! Helper method, extracts runtime metadata from a NodeDefinition.
         template<typename NodeDefinition>
@@ -235,7 +236,7 @@ namespace AZ::DocumentPropertyEditor
     };
 
     //! Represents an attribute that should resolve to an AZ::TypeId with a string representation.
-    class TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
+    class AZF_API TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
     {
     public:
         explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
@@ -251,7 +252,7 @@ namespace AZ::DocumentPropertyEditor
 
     //! Represents an attribute that should be stored as an AZ::Name, but legacy attribute instances (AZ::Attribute*)
     //! will marshal the attribute as a CRC32 that needs to be translated back into a Name.
-    class NamedCrcAttributeDefinition final : public AttributeDefinition<AZ::Name>
+    class AZF_API NamedCrcAttributeDefinition final : public AttributeDefinition<AZ::Name>
     {
     public:
         explicit constexpr NamedCrcAttributeDefinition(AZStd::string_view name)

@@ -65,7 +65,7 @@ namespace UnitTest
         {
             if (m_cleanUpGenericClassInfo)
             {
-                AZ::GetCurrentSerializeContextModule().Cleanup();
+                AZ::GetGlobalSerializeContextModule().Cleanup();
             }
             AZ::AllocatorManager::Instance().GarbageCollect();
 

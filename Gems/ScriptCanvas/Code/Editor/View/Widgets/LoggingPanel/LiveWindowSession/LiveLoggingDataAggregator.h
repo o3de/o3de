@@ -21,12 +21,6 @@ namespace ScriptCanvasEditor
         , public ScriptCanvas::Debugger::ServiceNotificationsBus::Handler
         , public ScriptCanvas::Debugger::ClientUINotificationBus::Handler
     {
-        enum CaptureType
-        {
-            Editor,
-            External
-        };
-
     public:
         AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator);
         LiveLoggingDataAggregator();
@@ -80,7 +74,6 @@ namespace ScriptCanvasEditor
         void SetupEditorEntities();
         void SetupExternalEntities();
 
-        CaptureType m_captureType;
         bool m_isCapturingData;
         bool m_ignoreRegistrations;
 

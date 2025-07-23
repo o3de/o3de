@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -111,3 +111,5 @@ namespace AZ
 
 #endif // AZCORE_SCRIPT_SYSTEM_BUS_H
 #pragma once
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::ScriptSystemRequests);

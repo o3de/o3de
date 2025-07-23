@@ -8,50 +8,18 @@
 
 #pragma once
 
-#ifndef VsInput
-#define VsInput VsInput_Depth
-#endif
-
-#ifndef VsSystemValues
-#define VsSystemValues VsSystemValues_Depth
-#endif
-
-#ifndef VsOutput
-#define VsOutput VsOutput_Depth
-#endif
-
-struct VsInput_Depth
-{
-    float3 m_position : POSITION;
-    float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT;
-    float3 m_bitangent : BITANGENT;
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
- 
+// by default the Vertex-Data is empty, so enable the parts we need
+#define MATERIAL_USES_VERTEX_POSITION 1
+#define MATERIAL_USES_VERTEX_POSITIONWS 1
+// #define MATERIAL_USES_VERTEX_LOCALPOSITION 1
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
-    float3 m_optional_prevPosition : POSITIONT;
+#define MATERIAL_USES_VERTEX_PREV_POSITION 1
 #endif
-};
+#define MATERIAL_USES_VERTEX_NORMAL 1
+#define MATERIAL_USES_VERTEX_TANGENT 1
+// #define MATERIAL_USES_VERTEX_BITANGENT 1
+#define MATERIAL_USES_VERTEX_UV 1
+// #define MATERIAL_USES_VERTEX_DETAIL_UV 1
+// #define MATERIAL_USES_VERTEX_COLOR 1
+// #define MATERIAL_USES_VERTEX_BLENDMASK 1
 
-struct VsSystemValues_Depth
-{
-    uint m_instanceId;
-};
-
-#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
-    option bool o_prevPosition_isBound;
-#endif
-
-struct VsOutput_Depth
-{
-    // "centroid" is needed for SV_Depth to compile
-    precise linear centroid 
-    float4 m_position : SV_Position;
- 
-#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
-    float3 m_worldPos : TEXCOORD0;
-    float3 m_worldPosPrev: TEXCOORD1;
-#endif
-    uint m_instanceId : SV_InstanceID;
-};

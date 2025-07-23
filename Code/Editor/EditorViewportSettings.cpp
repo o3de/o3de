@@ -670,7 +670,7 @@ namespace SandboxEditor
 
     float CameraDefaultNearPlaneDistance()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.2));
     }
 
     void SetCameraDefaultNearPlaneDistance(const float distance)
@@ -680,7 +680,7 @@ namespace SandboxEditor
 
     float CameraDefaultFarPlaneDistance()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 1024.0));
     }
 
     void SetCameraDefaultFarPlaneDistance(const float distance)
@@ -700,7 +700,7 @@ namespace SandboxEditor
 
     float CameraDefaultFovDegrees()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(75.0)));
     }
 
     void SetCameraDefaultFovDegrees(const float fovDegrees)

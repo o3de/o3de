@@ -29,7 +29,8 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode Fence::Init(MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice)
+    ResultCode Fence::Init(
+        MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice, AZStd::optional<int> ownerDeviceIndex)
     {
         if (Validation::IsEnabled())
         {
@@ -44,14 +45,39 @@ namespace AZ::RHI
 
         ResultCode resultCode = ResultCode::Success;
 
+        auto flags = FenceFlags::None;
+        if (usedForWaitingOnDevice)
+        {
+            flags |= FenceFlags::WaitOnDevice;
+        }
+        if (ownerDeviceIndex)
+        {
+            auto* device = RHISystemInterface::Get()->GetDevice(ownerDeviceIndex.value());
+            m_deviceObjects[ownerDeviceIndex.value()] = Factory::Get().CreateFence();
+            flags |= FenceFlags::CrossDevice;
+            resultCode = GetDeviceFence(ownerDeviceIndex.value())->Init(*device, initialState, flags);
+        }
+        m_ownerDeviceIndex = ownerDeviceIndex;
+
         IterateDevices(
-            [this, initialState, usedForWaitingOnDevice, &resultCode](int deviceIndex)
+            [this, initialState, ownerDeviceIndex, flags, &resultCode](int deviceIndex)
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                if (ownerDeviceIndex)
+                {
+                    if (deviceIndex != ownerDeviceIndex.value())
+                    {
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                        resultCode = GetDeviceFence(deviceIndex)->InitCrossDevice(*device, GetDeviceFence(ownerDeviceIndex.value()));
+                    }
+                }
+                else
+                {
+                    m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
 
-                resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, usedForWaitingOnDevice);
+                    resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, flags);
+                }
 
                 return resultCode == ResultCode::Success;
             });
@@ -96,9 +122,19 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        return IterateObjects<DeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+        if (m_ownerDeviceIndex)
         {
-            return deviceFence->Reset();
-        });
+            // Only the owner device is reset here
+            // All the other device fences share the state of the owner device and thus resetting them does not make sense
+            return GetDeviceFence(m_ownerDeviceIndex.value())->Reset();
+        }
+        else
+        {
+            return IterateObjects<DeviceFence>(
+                []([[maybe_unused]] auto deviceIndex, auto deviceFence)
+                {
+                    return deviceFence->Reset();
+                });
+        }
     }
 } // namespace AZ::RHI

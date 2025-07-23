@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
@@ -19,7 +21,7 @@ namespace AZ
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class PrefabCatchmentProcessor
+    class AZTF_API PrefabCatchmentProcessor
         : public PrefabProcessor
     {
     public:

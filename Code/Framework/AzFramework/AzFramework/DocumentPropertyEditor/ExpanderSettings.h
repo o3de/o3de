@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/SettingsRegistrar.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ::DocumentPropertyEditor
     class DocumentPropertyEditor;
 
     //! This serializable class stores and loads the DocumentPropertyEditor settings such as tree node expansion state.
-    class ExpanderSettings
+    class AZF_API ExpanderSettings
     {
     public:
         AZ_RTTI(ExpanderSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
@@ -88,7 +89,7 @@ namespace AZ::DocumentPropertyEditor
         const AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter;
     };
 
-    class LabeledRowDPEExpanderSettings : public ExpanderSettings
+    class AZF_API LabeledRowDPEExpanderSettings : public ExpanderSettings
     {
     public:
         LabeledRowDPEExpanderSettings(

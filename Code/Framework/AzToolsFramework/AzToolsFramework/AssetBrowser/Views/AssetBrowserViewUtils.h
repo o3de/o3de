@@ -8,6 +8,7 @@
 #pragma once
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QString>
 
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
 
-        class AssetBrowserViewUtils
+        class AZTF_API AssetBrowserViewUtils
         {
         public:
             static bool RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
@@ -31,7 +32,7 @@ namespace AzToolsFramework
             static bool IsFolderEmpty(AZStd::string_view path);
             static bool IsEngineOrProjectFolder(AZStd::string_view path);
 
-            static Qt::DropAction SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries);
+            static Qt::DropAction SelectDropActionForEntries(const AssetBrowserEntry* parent, const AZStd::vector<const AssetBrowserEntry*>& entries);
 
             // Returns the custom image or default icon for a given asset browser entry
             // @param returnIcon - when set to true, always returns the default icon for a given entry

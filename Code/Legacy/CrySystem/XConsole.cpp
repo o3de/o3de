@@ -21,7 +21,6 @@
 #include <ILog.h>
 #include <IFont.h>
 #include <ITexture.h>
-#include "ConsoleHelpGen.h"         // CConsoleHelpGen
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -265,15 +264,6 @@ void Command_DumpCommandsVars(IConsoleCmdArgs* Cmd)
 
     // txt
     pConsole->DumpCommandsVarsTxt(arg);
-
-#if defined(WIN32) || defined(WIN64)
-    // HTML
-    {
-        CConsoleHelpGen Generator(*pConsole);
-
-        Generator.Work();
-    }
-#endif
 }
 
 void Command_DumpVars(IConsoleCmdArgs* Cmd)

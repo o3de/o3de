@@ -503,7 +503,7 @@ namespace AZ
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<VariantType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<VariantType>();
         }
 
         static AZ::TypeId GetClassTypeId()

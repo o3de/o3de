@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/IPC/SharedMemory.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -22,7 +24,7 @@
 
 namespace LegacyFramework
 {
-    class IPCComponent
+    class AZTF_API IPCComponent
         : public AZ::Component
         , private IPCCommandBus::Handler
     {

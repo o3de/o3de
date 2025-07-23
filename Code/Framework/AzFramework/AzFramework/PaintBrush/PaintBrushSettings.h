@@ -12,6 +12,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // This needs to be forward-declared so that we can make it a friend class.
 namespace AzToolsFramework
@@ -80,7 +81,7 @@ namespace AzFramework
     );
 
     //! Defines the specific paintbrush settings to use with a paintbrush.
-    class PaintBrushSettings
+    class AZF_API PaintBrushSettings
     {
     public:
 

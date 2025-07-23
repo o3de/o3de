@@ -44,7 +44,7 @@ namespace PhysX
         m_rotationManipulators.SetLocalPosition(nonUniformScale * colliderOffset);
         m_rotationManipulators.SetLocalOrientation(colliderRotation);
         m_rotationManipulators.AddEntityComponentIdPair(idPair);
-        m_rotationManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);       
+        m_rotationManipulators.Register(AzToolsFramework::GetMainManipulatorManagerId());       
         m_rotationManipulators.SetLocalAxes(
             AZ::Vector3::CreateAxisX(),
             AZ::Vector3::CreateAxisY(),

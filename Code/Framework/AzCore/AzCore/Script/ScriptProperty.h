@@ -35,7 +35,7 @@ namespace AzToolsFramework
 namespace AZ
 {
     class ReflectContext;
-    class ScriptProperties
+    class AZCORE_API ScriptProperties
     {
     public:
         static void Reflect(AZ::ReflectContext* reflection);
@@ -44,7 +44,7 @@ namespace AZ
     /**
     * Base class for all script properties.
     */
-    class ScriptProperty
+    class AZCORE_API ScriptProperty
     {
     public:
         static void UpdateScriptProperty(AZ::ScriptDataContext& sdc, int valueIndex, ScriptProperty** targetProperty);
@@ -52,7 +52,7 @@ namespace AZ
         static void Reflect(AZ::ReflectContext* reflection);
 
         virtual ~ScriptProperty() {}
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptProperty);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         ScriptProperty() {}
@@ -90,16 +90,17 @@ namespace AZ
     protected:
         virtual void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) = 0;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptProperty);
 
     // Denotes a ScriptProperty that has some functions associated with it.
     // that can modify the underlying data type, and would need to be handled
     // specially in the case of an 'in place' operation when being stored for
     // network functionality.
-    class FunctionalScriptProperty
+    class AZCORE_API FunctionalScriptProperty
         : public ScriptProperty
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(FunctionalScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, FunctionalScriptProperty);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         FunctionalScriptProperty();
@@ -122,13 +123,14 @@ namespace AZ
 
         AZStd::set< AZ::ScriptPropertyWatcher* >  m_watchers;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, FunctionalScriptProperty);
 
-    class ScriptPropertyNil
+    class AZCORE_API ScriptPropertyNil
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNil, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNil);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyNil);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -148,13 +150,14 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNil);
 
-    class ScriptPropertyBoolean
+    class AZCORE_API ScriptPropertyBoolean
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyBoolean, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyBoolean);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyBoolean);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -181,13 +184,14 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyBoolean);
 
-    class ScriptPropertyNumber
+    class AZCORE_API ScriptPropertyNumber
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNumber, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNumber);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyNumber);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -214,13 +218,14 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNumber);
 
-    class ScriptPropertyString
+    class AZCORE_API ScriptPropertyString
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyString, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyString);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyString);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -246,8 +251,9 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyString);
 
-    class ScriptPropertyGenericClass
+    class AZCORE_API ScriptPropertyGenericClass
         : public FunctionalScriptProperty
         , public BehaviorObjectSignals::Handler
     {
@@ -255,7 +261,7 @@ namespace AZ
         friend class AzToolsFramework::Components::ScriptEditorComponent;
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClass, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyGenericClass);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyGenericClass);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -321,14 +327,15 @@ namespace AZ
 
         AZ::DynamicSerializableField    m_value;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyGenericClass);
 
-    class ScriptPropertyNumberArray
+    class AZCORE_API ScriptPropertyNumberArray
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNumberArray, AZ::SystemAllocator);
 
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNumberArray);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyNumberArray);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -354,13 +361,14 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyNumberArray);
 
-    class ScriptPropertyBooleanArray
+    class AZCORE_API ScriptPropertyBooleanArray
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyBooleanArray, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyBooleanArray);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyBooleanArray);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -386,13 +394,14 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyBooleanArray);
 
-    class ScriptPropertyStringArray
+    class AZCORE_API ScriptPropertyStringArray
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyStringArray, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyStringArray);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyStringArray);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -418,15 +427,16 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyStringArray);
 
-    class ScriptPropertyGenericClassArray
+    class AZCORE_API ScriptPropertyGenericClassArray
         : public ScriptProperty
     {
     public:
         typedef AZStd::vector<AZ::DynamicSerializableField> ValueArrayType;
 
         AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassArray, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyGenericClassArray);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyGenericClassArray);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -465,13 +475,14 @@ namespace AZ
 
         AZ::Uuid m_elementTypeId = AZ::Uuid::CreateNull(); // Stores type wrapped by DynamicSerializableField values
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyGenericClassArray);
 
-    class ScriptPropertyAsset
+    class AZCORE_API ScriptPropertyAsset
         : public ScriptProperty
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyAsset, AZ::SystemAllocator);
-        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyAsset);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ScriptPropertyAsset);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -495,6 +506,7 @@ namespace AZ
     protected:
         void CloneDataFrom(const AZ::ScriptProperty* scriptProperty) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ScriptPropertyAsset);
 }
 
 

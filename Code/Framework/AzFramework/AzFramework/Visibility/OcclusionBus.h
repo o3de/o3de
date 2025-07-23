@@ -19,6 +19,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -41,7 +42,7 @@ namespace AzFramework
     //!
     //! The bus must be connected to an entity context ID for an entity context containing objects that contribute to or interacting
     //! with the occlusion scene.
-    class OcclusionRequests : public AZ::EBusTraits
+    class AZF_API OcclusionRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -132,4 +133,4 @@ namespace AzFramework
     AZ_TYPE_INFO_SPECIALIZE(OcclusionState, "{1F6EE4E1-FD5C-4D80-AC72-E2C6C5E4A53F}");
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::OcclusionRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::OcclusionRequests);

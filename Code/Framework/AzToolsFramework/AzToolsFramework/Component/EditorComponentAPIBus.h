@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -114,5 +114,6 @@ namespace AzToolsFramework
         virtual void SetVisibleEnforcement(bool enforceVisiblity) = 0;
     };
     using EditorComponentAPIBus = AZ::EBus<EditorComponentAPIRequests>;
+} // namespace AzToolsFramework
 
-}
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentAPIRequests)

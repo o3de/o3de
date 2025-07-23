@@ -1,0 +1,31 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#ifndef PIPELINE_HAS_PASS_SRG
+// assume we have a pass-srg by default
+#define PIPELINE_HAS_PASS_SRG 1
+#endif 
+
+#if PIPELINE_HAS_PASS_SRG
+float2 SampleBrdfMap(float2 brdfUV)
+{
+#ifdef CS_SAMPLERS
+    return PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, 0).rg;
+#else
+    return PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+#endif // CS_SAMPLERS
+}
+#else
+float2 SampleBrdfMap(float2 brdfUV)
+{
+    // TODO: We currently always need a Pass-Srg if we want the BrdfMap
+    return float2(0, 0);
+}
+#endif // PIPELINE_HAS_PASS_SRG
+

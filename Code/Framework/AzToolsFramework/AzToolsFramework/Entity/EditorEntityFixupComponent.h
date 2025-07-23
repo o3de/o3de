@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Slice/SliceBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -15,7 +16,7 @@ namespace AzToolsFramework
      * System component which fixes up entity and component data in ways that
      * can't be dealt with by version-converters or component Init() functions.
      */
-    class EditorEntityFixupComponent
+    class AZTF_API EditorEntityFixupComponent
         : public AZ::Component
         , protected AZ::SliceAssetSerializationNotificationBus::Handler
     {

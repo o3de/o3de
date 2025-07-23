@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include "EditorLockComponentBus.h"
 #include "EditorComponentBase.h"
 
@@ -15,7 +16,7 @@ namespace AzToolsFramework
     namespace Components
     {
          //! Controls whether an Entity is frozen/locked in the Editor.
-        class EditorLockComponent
+        class AZTF_API EditorLockComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorLockComponentRequestBus::Handler
         {

@@ -668,6 +668,8 @@ namespace ScriptCanvasEditor
 
             if (!paletteConfig.m_isInContextMenu)
             {
+                // Now that scriptcanvas is a separate application, cannot use AssetEditorRequestsBus 
+                /*
                 QMenu* creationMenu = new QMenu();
 
                 auto scriptEventAction = creationMenu->addAction("New Script Event");
@@ -682,8 +684,7 @@ namespace ScriptCanvasEditor
                 //
 
                 AddSearchCustomizationWidget(m_newCustomEvent);
-
-                
+                */
 
                 {
                     m_nextCycleAction = new QAction(treeView);

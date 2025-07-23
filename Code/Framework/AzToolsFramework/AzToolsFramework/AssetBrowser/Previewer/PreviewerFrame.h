@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QFrame>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +22,7 @@ namespace AzToolsFramework
         class Previewer;
 
         //! Widget managing previewers.
-        class PreviewerFrame
+        class AZTF_API PreviewerFrame
             : public QFrame
         {
             Q_OBJECT

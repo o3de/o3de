@@ -1014,35 +1014,35 @@ namespace var_type
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
-            azsprintf(buf, "%f,%f", value.x, value.y);
+            azsnprintf(buf, sizeof(buf), "%f,%f", value.x, value.y);
             to.assign(buf);
         }
         void operator()(const Vec3& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Vec4& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
             to.assign(buf);
         }
         void operator()(const Ang3& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Quat& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
             to.assign(buf);
         }
 
@@ -1050,35 +1050,35 @@ namespace var_type
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
             to.assign(buf);
         }
         void operator()(const AZ::Vector2& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
-            azsprintf(buf, "%f,%f", from.GetX(), from.GetY());
+            azsnprintf(buf, sizeof(buf), "%f,%f", from.GetX(), from.GetY());
             to.assign(buf);
         }
         void operator()(const AZ::Vector3& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Vector4& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Quaternion& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
         }
 

@@ -22,7 +22,7 @@ namespace AZ
     /**
      *
      */
-    class StreamerComponent
+    class AZCORE_API StreamerComponent
         : public Component
         , public TickBus::Handler
     {

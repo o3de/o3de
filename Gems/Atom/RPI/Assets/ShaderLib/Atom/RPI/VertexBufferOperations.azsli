@@ -1,0 +1,147 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/RHI/VertexFormat.azsli>
+
+uint LoadUint8FromBufferUnaligned(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint value = buffer.Load(byteOffset & ~0x3);
+    value >>= (byteOffset & 0x3) * 8;
+    value &= 0xFF;
+    return value;
+}
+
+uint LoadUint16FromBufferUnaligned(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint value = buffer.Load(byteOffset & ~0x3);
+    value >>= (byteOffset & 0x3) * 8;
+    value &= 0xFFFF;
+    return value;
+}
+
+uint3 LoadUint16x3FromBufferUnaligned(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint2 value = buffer.Load2(byteOffset & ~0x3);
+    if (byteOffset % 4 != 0)
+    {
+        value.x >>= 16;
+        value.x |= (value.y & 0xFFFF) << 16;
+        value.y >>= 16;
+    }
+    return uint3(value.x & 0xFFFF, value.x >> 16, value.y & 0xFFFF);
+}
+
+float2 LoadFloat16x2FromBuffer(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint valuePacked = buffer.Load(byteOffset);
+    return float2(
+        f16tof32(valuePacked.x & 0xFFFF),
+        f16tof32(valuePacked.x >> 16));
+}
+
+float2 LoadUnorm8x2FromBufferUnaligned(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint valuePacked = LoadUint16FromBufferUnaligned(buffer, byteOffset);
+    return float2(
+        (float)(valuePacked & 0xFF) / 0xFF,
+        (float)((valuePacked >> 8) & 0xFF) / 0xFF);
+}
+
+float3 LoadFloat16x3FromBufferUnaligned(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint3 valuePacked = LoadUint16x3FromBufferUnaligned(buffer, byteOffset);
+    return float3(
+        f16tof32(valuePacked.x),
+        f16tof32(valuePacked.y),
+        f16tof32(valuePacked.z));
+}
+
+float4 LoadFloat16x4FromBuffer(ByteAddressBuffer buffer, uint byteOffset)
+{
+    uint2 valuePacked = buffer.Load2(byteOffset);
+    return float4(
+        f16tof32(valuePacked.x & 0xFFFF),
+        f16tof32(valuePacked.x >> 16),
+        f16tof32(valuePacked.y & 0xFFFF),
+        f16tof32(valuePacked.y >> 16));
+}
+
+float3 DecodeNormalPackedOctahedron(uint encodedPackedValue, uint xyBits)
+{
+    uint mask = (1u << xyBits) - 1;
+    float3 encodedNormal = float3(
+        (float)(encodedPackedValue & mask) / mask,
+        (float)((encodedPackedValue >> xyBits) & mask) / mask,
+        (float)((encodedPackedValue >> (xyBits * 2)) & 1));
+    return DecodeNormalSignedOctahedron(encodedNormal);
+}
+
+float4 DecodeTangentPackedOctahedron(uint encodedPackedValue, uint xyBits)
+{
+    return float4(
+        DecodeNormalPackedOctahedron(encodedPackedValue, xyBits),
+        ((encodedPackedValue >> (xyBits * 2 + 1)) & 1) * 2.f - 1.f);
+}
+
+float2 LoadFloat2FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFormat format)
+{
+    switch (format)
+    {
+    case VertexFormat::R32G32_FLOAT:
+        return asfloat(buffer.Load2(byteOffset));
+    case VertexFormat::R16G16_FLOAT:
+        return LoadFloat16x2FromBuffer(buffer, byteOffset);
+    case VertexFormat::R8G8_UNORM:
+        return LoadUnorm8x2FromBufferUnaligned(buffer, byteOffset);
+    default:
+        return float2(0.f, 0.f);
+    }
+}
+
+float3 LoadFloat3FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFormat format)
+{
+    switch (format)
+    {
+    case VertexFormat::R32G32B32_FLOAT:
+        return asfloat(buffer.Load3(byteOffset));
+    case VertexFormat::R16G16B16_FLOAT:
+        return LoadFloat16x3FromBufferUnaligned(buffer, byteOffset);
+    case VertexFormat::R16G16B16A16_FLOAT:
+        return LoadFloat16x4FromBuffer(buffer, byteOffset).xyz;
+    case VertexFormat::N32_OCT:
+        return DecodeNormalPackedOctahedron(buffer.Load(byteOffset), 15);
+    case VertexFormat::N16_OCT:
+        return DecodeNormalPackedOctahedron(LoadUint16FromBufferUnaligned(buffer, byteOffset), 7);
+    case VertexFormat::N8_OCT:
+        return DecodeNormalPackedOctahedron(LoadUint8FromBufferUnaligned(buffer, byteOffset), 3);
+    default:
+        return float3(0.f, 0.f, 0.f);
+    }
+}
+
+float4 LoadFloat4FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFormat format)
+{
+    switch (format)
+    {
+    case VertexFormat::R32G32B32A32_FLOAT:
+        return asfloat(buffer.Load4(byteOffset));
+    case VertexFormat::R16G16B16A16_FLOAT:
+        return LoadFloat16x4FromBuffer(buffer, byteOffset);
+    case VertexFormat::T32_OCT:
+        return DecodeTangentPackedOctahedron(buffer.Load(byteOffset), 15);
+    case VertexFormat::T16_OCT:
+        return DecodeTangentPackedOctahedron(LoadUint16FromBufferUnaligned(buffer, byteOffset), 7);
+    case VertexFormat::T8_OCT:
+        return DecodeTangentPackedOctahedron(LoadUint8FromBufferUnaligned(buffer, byteOffset), 3);
+    default:
+        return float4(0.f, 0.f, 0.f, 0.f);
+    }
+}

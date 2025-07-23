@@ -43,6 +43,11 @@ class Surface
     ClearCoatSurfaceData clearCoat;
 #endif
 
+    // ------- Lighting Channels -------
+
+    // from the object
+    uint lightingChannels;
+
     // ------- BasePbrSurfaceData -------
     
     precise real3 position;    //!< Position in world-space

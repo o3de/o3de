@@ -37,6 +37,7 @@
     
     // heightmap and heightmap sampler don't matter here: They get passed to the GetDepth() - function of the StandardMultiLayerPBR - material, where they are ignored.
     GetParallaxInput(
+        params,
         GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), normal, tangents[params.m_parallaxUvIndex], bitangents[params.m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
         objectToWorld, uvMatrix, uvMatrixInverse,

@@ -16,11 +16,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AzFramework/PaintBrush/PaintBrushSessionBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! PaintBrushSystemComponent generically manages runtime paint brush sessions for any components that support runtime painting.
-    class PaintBrushSystemComponent
+    class AZF_API PaintBrushSystemComponent
         : public AZ::Component
         , protected AzFramework::PaintBrushSessionBus::Handler
     {

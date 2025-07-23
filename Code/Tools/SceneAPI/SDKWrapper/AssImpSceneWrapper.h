@@ -44,6 +44,7 @@ namespace AZ
 
             AZStd::pair<AxisVector, int32_t> GetUpVectorAndSign() const;
             AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
+            AZStd::pair<AxisVector, int32_t> GetRightVectorAndSign() const;
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
             aiAABB GetAABB() const { return m_aabb; }

@@ -493,9 +493,10 @@ namespace AZ
                 {
                     fence->SetSignalEvent(signalEvent);
                     fence->SetSignalEventDependencies(currentDependencies);
-                    if (!signalledFences.contains(fence.get()))
+                    if (!signalledFences.contains(fence.get()) && !fence->IsCrossDevice())
                     {
-                        // We assume the fence is signalled on the CPU
+                        // If no other scope has signalled this Fence we assume that it is signalled on the CPU
+                        // Except when it's a cross device fence, then we assume it's signalled on another device
                         fence->SetSignalEventBitToSignal(currentBitToSignal);
                         hasSemaphoreSignal = true;
                     }

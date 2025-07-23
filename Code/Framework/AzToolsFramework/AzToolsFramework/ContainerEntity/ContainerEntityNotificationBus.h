@@ -10,8 +10,8 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
-
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -39,3 +39,5 @@ namespace AzToolsFramework
     using ContainerEntityNotificationBus = AZ::EBus<ContainerEntityNotifications>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ContainerEntityNotifications);

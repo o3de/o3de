@@ -10,10 +10,13 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/map.h>
+
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
+
 #include <Atom/RPI.Edit/Configuration.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
@@ -138,6 +141,10 @@ namespace AZ
                 //! Unique tag to identify the shader, particularly in lua functors
                 AZ::Name m_shaderTag;
 
+                //! Type of the generated draw-items
+                using DrawItemType = AZ::RPI::ShaderCollection::Item::DrawItemType;
+                DrawItemType m_drawItemType = DrawItemType::Raster;
+
                 //! This list provides a way for users to set shader option values in a 'hard-coded' way rather than connecting them to material properties.
                 //! These are optional and the list will usually be empty; most options will either get set from a material property connection,
                 //! or will use the default value from the shader. 
@@ -205,6 +212,13 @@ namespace AZ
             //! is determined by the .materialpipeline.
             //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
+
+            //! This indicates a .azsli file that contains only material-specific shader definitions, which will be included.
+            //! in the final shader before any other files.
+            //! The build system will automatically combine this code with .materialpipeline shader code
+            //! for use in each available render pipeline.
+            //! This is relevant for "abstract" material type files (see GetFormat()).
+            AZStd::string m_materialShaderDefines;
 
             //! This indicates a .azsli file that contains only material-specific shader code.
             //! The build system will automatically combine this code with .materialpipeline shader code

@@ -28,7 +28,7 @@ namespace AZ
     * some global allocations. This manager is NOT thread safe, so all allocators
     * should be created on the same thread (we can change that if needed, we just need a good reason).
     */
-    class AllocatorManager
+    class AZCORE_API AllocatorManager
     {
         friend IAllocator;
         friend class AllocatorBase;

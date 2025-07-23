@@ -210,7 +210,6 @@ float3 CalculateLighting(
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0( material.m_color, specularF0Factor);
 
-    // The trasmission / back lighting does not seem to work!
     surface.transmission.InitializeToZero();    // Assuming thin layer
     surface.transmission.tint = material.m_color;
     surface.transmission.thickness = 0.001;     // 1 mm settings
@@ -218,20 +217,20 @@ float3 CalculateLighting(
 
     //------- LightingData init -------
     LightingData lightingData;
-
-    float4 screenPositionForLighting = mul(ViewSrg::m_viewProjectionMatrix, float4(vPositionWS, 1.0));
-    uint2 dimensions;
-    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
-    screenPositionForLighting.y = 1.0 - screenPositionForLighting.y;
-    screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
-
-    // Light iterator - required for the init but the culling is not used yet.
-    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-
+    
     // The normal assignment will be overriden afterwards per light
     lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
+    
 
-    ApplyLighting(surface, lightingData, screenCoords, views);
+    // Light iterator -> not used, since we don't support light culling yet
+    LightCullingTileIterator tileIterator;
+    // tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    tileIterator.InitNoCulling();
+
+    ApplyLighting(surface, lightingData, screenCoords, views, tileIterator);
+
+    // We need to call FinalizeLighting to apply the transmission to the diffuse lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
 
     float3 ligthingOutput = lightingData.diffuseLighting;
 

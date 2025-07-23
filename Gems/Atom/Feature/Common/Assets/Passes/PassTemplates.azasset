@@ -621,6 +621,26 @@
                 "Path": "Passes/ChromaticAberration.pass"
             },
             {
+                "Name": "MotionBlurTemplate",
+                "Path": "Passes/MotionBlur.pass"
+            },
+            {
+                "Name": "MotionBlurTileMaxHorTemplate",
+                "Path": "Passes/MotionBlurTileMaxHor.pass"
+            },
+            {
+                "Name": "MotionBlurTileMaxVerTemplate",
+                "Path": "Passes/MotionBlurTileMaxVer.pass"
+            },
+            {
+                "Name": "MotionBlurTileFilterTemplate",
+                "Path": "Passes/MotionBlurTileFilter.pass"
+            },
+            {
+                "Name": "MotionBlurParentTemplate",
+                "Path": "Passes/MotionBlurParent.pass"
+            },
+            {
                 "Name": "PaniniProjectionTemplate",
                 "Path": "Passes/PaniniProjection.pass"
             }, 

@@ -20,6 +20,9 @@
 
 class SurfaceData_BasePBR
 {   
+
+    uint lightingChannels;     //!< Lightingchannel of the object
+
     precise float3 position;   //!< Position in world-space
     real3 normal;              //!< Normal in world-space
     real3 vertexNormal;        //!< Vertex normal in world-space

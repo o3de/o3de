@@ -110,9 +110,9 @@ namespace AZ::RHI
     void CommandQueue::ProcessQueue()
     {
         //runs forever in a background thread
-        Command command;
         for (;;)
         {
+            Command command;
             {
                 AZStd::unique_lock<AZStd::mutex> lock(m_workQueueMutex);
                     

@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef EDITOR_ENTITY_ID_CONTAINER_H
-#define EDITOR_ENTITY_ID_CONTAINER_H
-
+#pragma once
+ 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -23,7 +23,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class EditorEntityIdContainer
+    class AZTF_API EditorEntityIdContainer
     {
     public:
         virtual ~EditorEntityIdContainer() { }
@@ -43,5 +43,3 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
     };
 }
-
-#endif // EDITOR_ENTITY_ID_LIST_CONTAINER_H

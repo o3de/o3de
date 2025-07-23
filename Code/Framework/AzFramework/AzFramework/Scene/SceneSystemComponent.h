@@ -12,10 +12,11 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class SceneSystemComponent
+    class AZF_API SceneSystemComponent
         : public AZ::Component
         , public SceneSystemInterface::Registrar
     {
@@ -59,4 +60,4 @@ namespace AzFramework
         AZStd::recursive_mutex m_eventMutex;
         SceneEvent m_events;
     };
-}
+} // namespace AzFramework

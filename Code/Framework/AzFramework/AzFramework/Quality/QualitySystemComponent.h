@@ -11,6 +11,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Quality/QualitySystemBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
+#include <AzFramework/Quality/QualityCVarGroup.h>
 
 namespace AzFramework
 {
@@ -18,7 +20,7 @@ namespace AzFramework
 
     // QualitySystemComponent manages quality groups, levels and cvar settings
     // stored in the SettingsRegistry
-    class QualitySystemComponent final
+    class AZF_API QualitySystemComponent final
         : public AZ::Component
         , public QualitySystemEvents::Bus::Handler
     {

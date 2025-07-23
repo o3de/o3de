@@ -72,7 +72,7 @@ namespace AZ
         using ClassInfoType = GenericTemplatedClassInfo;
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
 
         static AZ::TypeId GetClassTypeId()

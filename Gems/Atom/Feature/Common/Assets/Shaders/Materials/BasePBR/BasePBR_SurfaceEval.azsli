@@ -43,10 +43,12 @@ Surface EvaluateSurface_BasePBR(
     bool isFrontFace,
     float4 uvDxDy,
     bool customDerivatives,
-    float4 vertexColor)
+    float4 vertexColor,
+    uint lightingChannels)
 {
     Surface surface;
     surface.position = positionWS;
+    surface.lightingChannels = lightingChannels;
 
     // ------- Normal -------
 
@@ -114,7 +116,8 @@ Surface EvaluateSurface_BasePBR(
     float2 uvs[UvSetCount],
     bool isFrontFace,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     return EvaluateSurface_BasePBR(
         params,
@@ -126,7 +129,8 @@ Surface EvaluateSurface_BasePBR(
         isFrontFace,
         uvDxDy,
         customDerivatives,
-        float4(1.0f, 1.0f, 1.0f, 1.0f));
+        float4(1.0f, 1.0f, 1.0f, 1.0f), /* VertexColor */
+        lightingChannels);
 }
 
 Surface EvaluateSurface_BasePBR(
@@ -136,7 +140,8 @@ Surface EvaluateSurface_BasePBR(
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    uint lightingChannels)
 {
     return EvaluateSurface_BasePBR(
         params,
@@ -146,11 +151,12 @@ Surface EvaluateSurface_BasePBR(
         bitangents,
         uvs,
         isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false, /* customDerivatives */
+        lightingChannels);
 }
 
-Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_BasePBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_BasePBR(
         params,
@@ -162,10 +168,11 @@ Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, const Ma
         geoData.isFrontFace,
         uvDxDy,
         customDerivatives,
-        GetVertexColor(IN));
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_BasePBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_BasePBR(
         params,
@@ -175,7 +182,8 @@ Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData, const Ma
         geoData.bitangents,
         geoData.uvs,
         geoData.isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false,
-        GetVertexColor(IN));
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false,  /* customDerivatives */     
+        GetVertexColor(IN),
+        GetLightingChannelMask(SV));
 }

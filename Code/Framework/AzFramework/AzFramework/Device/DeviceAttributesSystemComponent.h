@@ -10,13 +10,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     class DeviceAttributeInterface;
 
     //! System component responsible for managing device attributes
-    class DeviceAttributesSystemComponent final
+    class AZF_API DeviceAttributesSystemComponent final
         : public AZ::Component
         , public DeviceAttributeRegistrarInterface
     {

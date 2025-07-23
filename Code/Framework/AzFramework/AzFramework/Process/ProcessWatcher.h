@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Process/ProcessCommon_fwd.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -25,7 +26,7 @@ namespace AzFramework
             PLR_MissingFile,    // Missing file or command
         };
 
-        struct ProcessLaunchInfo
+        struct AZF_API ProcessLaunchInfo
         {
             //! This is the process to execute.  Do not escape spaces here.
             AZStd::string m_processExecutableString;
@@ -59,11 +60,11 @@ namespace AzFramework
         };
 
         static const AZ::u32 INFINITE_TIMEOUT = (AZ::u32) -1;
-        bool LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData);
-        bool LaunchUnwatchedProcess(const ProcessLaunchInfo& processLaunchInfo);
+        AZF_API bool LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData);
+        AZF_API bool LaunchUnwatchedProcess(const ProcessLaunchInfo& processLaunchInfo);
     }  // namespace ProccessLauncher
 
-    class ProcessWatcher
+    class AZF_API ProcessWatcher
     {
     public:
         // Use LaunchProcess to launch a child process at a given path with a commandline and communication type, optional environment variables (null means inherit from parent environment)

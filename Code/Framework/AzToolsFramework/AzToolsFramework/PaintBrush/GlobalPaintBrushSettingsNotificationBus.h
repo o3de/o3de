@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -41,3 +42,5 @@ namespace AzToolsFramework
     using GlobalPaintBrushSettingsNotificationBus = AZ::EBus<GlobalPaintBrushSettingsNotifications>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::GlobalPaintBrushSettingsNotifications);

@@ -180,6 +180,11 @@ namespace AZ
             // the path and fails if it can't be found.
             addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderCode);
 
+            if (!materialTypeSourceData.m_materialShaderDefines.empty())
+            {
+                addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderDefines);
+            }
+
             // Note we report dependencies based on GetMaterialPipelinePaths() rather than LoadMaterialPipelines(), because dependencies are
             // needed even for pipelines that fail to load, so that the job will re-process when the broken pipeline gets fixed.
             for (const auto& materialPipelineFilePath : GetMaterialPipelinePaths())
@@ -256,18 +261,6 @@ namespace AZ
                     return true;
                 });
 
-            materialTypeSourceData.EnumerateProperties(
-                [&outputJobDescriptor, &materialTypeSourcePath](const MaterialPropertySourceData* property, const MaterialNameContext&)
-                {
-                    if (property->m_dataType == MaterialPropertyDataType::Image &&
-                        MaterialUtils::LooksLikeImageFileReference(property->m_value))
-                    {
-                        MaterialBuilderUtils::AddPossibleImageDependencies(
-                            materialTypeSourcePath, property->m_value.GetValue<AZStd::string>(), outputJobDescriptor);
-                    }
-                    return true;
-                });
-
             for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
             {
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
@@ -280,7 +273,12 @@ namespace AZ
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
                 {
-                    if (jobDependency.m_platformIdentifier.empty())
+                    // we pre-populated these dependencies without any platform to depend on, ie, its blank.
+                    // Jobs depend on other jobs via a unique triplicate, which is (platform, job key, source file)
+                    // e.g. ("android", "Material Type Builder", "blah/whatever/foo.materialtype")
+                    // Anything can depend on the common platform (used for intermediate assets) but other platforms
+                    // should only depend on other assets from the same platform.
+                    if (jobDependency.m_platformIdentifier.compare(AssetBuilderSDK::CommonPlatformName) != 0)
                     {
                         jobDependency.m_platformIdentifier = platformInfo.m_identifier;
                     }
@@ -607,7 +605,19 @@ namespace AZ
                 return;
             }
 
+            // material shader defines work simila as m_materialShaderCode: its partial material shader code, and exists only in the
+            // abstract material type, but it can be empty from the start
+            const AZ::IO::FixedMaxPath materialDefinesAzsliFilePath(
+                AssetUtils::ResolvePathReference(materialTypeSourcePath, materialTypeSourceData.m_materialShaderDefines));
+            if (materialDefinesAzsliFilePath.HasFilename() &&
+                !AZ::IO::LocalFileIO::GetInstance()->Exists(materialDefinesAzsliFilePath.c_str()))
+            {
+                AZ_Error(MaterialTypeBuilderName, false, "File is missing: '%s'", materialTypeSourceData.m_materialShaderDefines.c_str());
+                return;
+            }
+
             materialTypeSourceData.m_materialShaderCode.clear();
+            materialTypeSourceData.m_materialShaderDefines.clear();
             materialTypeSourceData.m_lightingModel.clear();
             // These should already be clear, but just in case
             materialTypeSourceData.m_shaderCollection.clear();
@@ -682,6 +692,13 @@ namespace AZ
                     AZStd::string::format("#define MATERIAL_PARAMETERS_AZSLI_FILE_PATH \"%s\" \n", materialParameterAzsliFileName.c_str());
 
                 generatedAzsl += AZStd::string::format("\n");
+                if (!materialDefinesAzsliFilePath.empty())
+                {
+                    const AZ::IO::PathView materialDefinesAzsliFilePathView{ materialDefinesAzsliFilePath };
+                    generatedAzsl += AZStd::string::format(
+                        "#define MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH \"%s\" \n",
+                        materialDefinesAzsliFilePathView.StringAsPosix().c_str());
+                }
 
                 // At this point m_azsli should be absolute due to ResolvePathReference() being called above.
                 // It might be better for the include path to be relative to the generated .shader file path in the intermediate cache,
@@ -690,9 +707,11 @@ namespace AZ
                 const AZ::IO::PathView materialAzsliFilePathView{ materialAzsliFilePath };
                 generatedAzsl += AZStd::string::format(
                     "#define MATERIAL_TYPE_AZSLI_FILE_PATH \"%s\" \n", materialAzsliFilePathView.StringAsPosix().c_str());
+
                 auto materialTypeNameUpper = materialTypeName;
                 AZStd::to_upper(materialTypeNameUpper);
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_%s 1 \n", materialTypeNameUpper.c_str());
+
                 generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
@@ -755,6 +774,7 @@ namespace AZ
                     MaterialTypeSourceData::ShaderVariantReferenceData shaderVariantReferenceData;
                     shaderVariantReferenceData.m_shaderFilePath = AZ::IO::Path{ outputShaderFilePath.Filename() }.c_str();
                     shaderVariantReferenceData.m_shaderTag = shaderTemplate.m_shaderTag;
+                    shaderVariantReferenceData.m_drawItemType = shaderTemplate.m_drawItemType;
 
                     // Files in the cache, including intermediate files, end up using lower case for all files and folders. We have to match
                     // this in the output .materialtype file, because the asset system's source dependencies are case-sensitive on some
@@ -897,6 +917,8 @@ namespace AZ
                     AZ_Error(MaterialTypeBuilderName, false, "Failed to output product dependencies.");
                     return;
                 }
+
+                MaterialBuilderUtils::AddImageAssetDependenciesToProduct(materialTypeAsset.Get(), jobProduct);
 
                 response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
             }

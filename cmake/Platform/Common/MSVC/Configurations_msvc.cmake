@@ -64,6 +64,8 @@ ly_append_configurations_options(
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
         /wd4324 #  warning C4324: 'std::tuple<...>': structure was padded due to alignment specifier. This warning is triggered whenever a simd type is used with the MSVC std::optional or std::tuple types, which is namespaced into AZStd
         /wd4251 # Don't warn if a class with dllexport attribute has nonstatic members which don't have the dllexport attribute
+        /wd4275 # non dll-interface class 'XXXXX' used as base for dll-interface class 'XXXXX'
+        /wd4910 # '__declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
 
         ###################
         # Enabled warnings (that are disabled by default from /W4)
@@ -93,7 +95,7 @@ ly_append_configurations_options(
         /GS             # Enable Buffer security check
         /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
-        /Ob0            # Disables inline expansions
+        /Ob2            # Inline any suitable function
         /Od             # Disables optimization
     COMPILATION_PROFILE
         /GF             # Enable string pooling
@@ -126,7 +128,7 @@ ly_append_configurations_options(
 # Look for O3DE_ENABLE_COMPILER_CACHE as a CMake flag or environment variable, then sets the appropriate compatible flags for caching
 # More details about the compiler cache can be found in CompilerCache.cmake
 
-if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true"))
+if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true") AND NOT O3DE_SCRIPT_ONLY)
     o3de_compiler_cache_activation() # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
@@ -147,7 +149,6 @@ if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "t
     set(CMAKE_VS_GLOBALS
         "CLToolExe=cl.exe"
         "CLToolPath=${CMAKE_BINARY_DIR}"
-        "TrackFileAccess=false"
     )
 else()
     ly_append_configurations_options(

@@ -14,6 +14,7 @@
 #include <AzFramework/Asset/XmlSchemaAsset.h>
 #include <AzFramework/Asset/Benchmark/BenchmarkSettingsAsset.h>
 #include <AzFramework/Asset/Benchmark/BenchmarkAsset.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class CustomAssetTypeComponent
+    class AZF_API CustomAssetTypeComponent
         : public AZ::Component
     {
     public:

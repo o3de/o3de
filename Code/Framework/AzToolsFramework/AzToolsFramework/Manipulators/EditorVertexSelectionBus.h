@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,3 +27,5 @@ namespace AzToolsFramework
     };
     using EditorVertexSelectionVariableRequestBus = AZ::EBus<EditorVertexSelectionVariableRequests>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorVertexSelectionVariableRequests);

@@ -66,7 +66,7 @@ namespace AzQtComponents
         void paletteCountChanged();
 
     private:
-        QString uniquePaletteName(QSharedPointer<PaletteCard> card, const QString& name) const;
+        QString uniquePaletteName(const QString& name) const;
         void paletteCardDestroyed(QObject* obj);
 
         Internal::ColorController* m_colorController;

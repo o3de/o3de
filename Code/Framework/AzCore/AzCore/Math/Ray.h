@@ -15,7 +15,7 @@ namespace AZ
     class LineSegment;
 
     //! Ray defined by two Vector3, an orign and a normalized direction.
-    class Ray
+    class AZCORE_API Ray
     {
     public:
         AZ_TYPE_INFO(Ray, "{0301a872-5bea-4563-8070-85ed243cb57c}");

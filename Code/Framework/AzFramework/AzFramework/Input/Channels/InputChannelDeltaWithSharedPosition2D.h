@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannelDelta.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,7 +19,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional delta input values and share a position.
     //! Examples: mouse movement
-    class InputChannelDeltaWithSharedPosition2D : public InputChannelDelta
+    class AZF_API InputChannelDeltaWithSharedPosition2D : public InputChannelDelta
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

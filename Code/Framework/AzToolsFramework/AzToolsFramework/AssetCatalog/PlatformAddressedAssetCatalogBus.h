@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -35,3 +35,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AZ::Data::AssetCatalogRequests, AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogBusTraits);

@@ -10,13 +10,14 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! ScaleManipulators is an aggregation of 3 linear manipulators for each basis axis who share
     //! the same transform, and a single linear manipulator at the center of the transform whose
     //! axis is world up (z).
-    class ScaleManipulators : public Manipulators
+    class AZTF_API ScaleManipulators : public Manipulators
     {
     public:
         AZ_RTTI(ScaleManipulators, "{C6350CE0-7B7A-46F8-B65F-D4A54DD9A7D9}")

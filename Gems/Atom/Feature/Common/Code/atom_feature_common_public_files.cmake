@@ -86,6 +86,9 @@ set(FILES
     Include/Atom/Feature/PostProcess/FilmGrain/FilmGrainSettingsInterface.h
     Include/Atom/Feature/PostProcess/LookModification/LookModificationParams.inl
     Include/Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h
+    Include/Atom/Feature/PostProcess/MotionBlur/MotionBlurConstants.h
+    Include/Atom/Feature/PostProcess/MotionBlur/MotionBlurParams.inl
+    Include/Atom/Feature/PostProcess/MotionBlur/MotionBlurSettingsInterface.h
     Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionConstants.h
     Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionParams.inl
     Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionSettingsInterface.h
@@ -109,7 +112,6 @@ set(FILES
     Include/Atom/Feature/RayTracing/RayTracingIndexList.h
     Include/Atom/Feature/RayTracing/RayTracingPass.h
     Include/Atom/Feature/RayTracing/RayTracingPassData.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl

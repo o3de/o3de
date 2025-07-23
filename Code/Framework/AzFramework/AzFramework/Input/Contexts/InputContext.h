@@ -13,6 +13,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -26,7 +27,7 @@ namespace AzFramework
     //! meaning they can be interleaved with any other engine / gameplay system that consumes input.
     //! InputContext also inherits from InputDevice, which while unintuitive is necessary for input
     //! mapping instances that need to be created by passing a reference to the parent input device.
-    class InputContext : public InputDevice
+    class AZF_API InputContext : public InputDevice
                        , public InputChannelEventListener
     {
     public:

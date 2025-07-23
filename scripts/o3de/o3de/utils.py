@@ -33,6 +33,7 @@ UI_MSG_FORMAT = '%(message)s'
 
 logger = logging.getLogger('o3de.utils')
 logging.basicConfig(format=LOG_FORMAT)
+logger.setLevel(logging.INFO)
 
 COPY_BUFSIZE = 64 * 1024
 

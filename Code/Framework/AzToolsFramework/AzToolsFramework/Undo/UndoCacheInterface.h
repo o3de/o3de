@@ -12,7 +12,7 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Interface/Interface.h>
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
 
 namespace AzToolsFramework
 {

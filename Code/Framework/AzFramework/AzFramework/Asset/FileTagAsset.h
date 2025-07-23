@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 
 namespace AZ
@@ -34,7 +35,7 @@ namespace AzFramework
         };
 
         //! File Tag Data stores all the information related to the FileTagAsset.
-        struct FileTagData
+        struct AZF_API FileTagData
         {
             AZ_TYPE_INFO(FileTagData, "{5F66E43B-548B-4AA8-8CD8-F6924F6031E6}");
             FileTagData(AZStd::set<AZStd::string> fileTags, FilePatternType filePatternType = FilePatternType::Exact, const AZStd::string& comment = "");
@@ -48,12 +49,16 @@ namespace AzFramework
 
         using FileTagMap = AZStd::map<AZStd::string, AzFramework::FileTag::FileTagData>;
 
-        class FileTagAsset
+        class AZF_API FileTagAsset
             : public AZ::Data::AssetData
         {
         public:
             AZ_RTTI(FileTagAsset, "{F3BE5CAB-85B7-44B7-9495-863863F6B267}", AZ::Data::AssetData);
             AZ_CLASS_ALLOCATOR(FileTagAsset, AZ::SystemAllocator);
+
+            FileTagAsset() = default;
+
+            AZ_DISABLE_COPY_MOVE(FileTagAsset);
 
             static const char* GetDisplayName();
             static const char* GetGroup();

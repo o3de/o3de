@@ -56,7 +56,6 @@ class IAWSResourceManager;
 
 struct ISystem;
 struct IRenderer;
-struct AABB;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
@@ -75,6 +74,11 @@ typedef void* HANDLE;
 struct HWND__;
 typedef HWND__* HWND;
 #endif
+
+namespace AZ
+{
+    class Aabb;
+}
 
 namespace Editor
 {
@@ -444,7 +448,7 @@ struct IEditor
     //////////////////////////////////////////////////////////////////////////
     virtual class CLevelIndependentFileMan* GetLevelIndependentFileMan() = 0;
     //! Notify all views that data is changed.
-    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AABB* updateRegion = nullptr) = 0;
+    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AZ::Aabb* updateRegion = nullptr) = 0;
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;

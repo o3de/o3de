@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Vector2.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,7 +19,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit two dimensional axis input values.
     //! Example: game-pad thumb-stick x and y
-    class InputChannelAxis2D : public InputChannel
+    class AZF_API InputChannelAxis2D : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

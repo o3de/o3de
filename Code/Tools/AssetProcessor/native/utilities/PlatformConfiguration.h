@@ -36,7 +36,6 @@ namespace AZ
 
 namespace AssetProcessor
 {
-    inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
     inline constexpr const char* AssetProcessorServerKey{ "/O3DE/AssetProcessor/Settings/Server" };
     class PlatformConfiguration;
     class ScanFolderInfo;
@@ -177,10 +176,6 @@ namespace AssetProcessor
         bool IsMetaDataTypeRealFile(QString relativeName) const;
 
         void EnablePlatform(const AssetBuilderSDK::PlatformInfo& platform, bool enable = true);
-
-        //! Gets the minumum jobs specified in the configuration file
-        int GetMinJobs() const;
-        int GetMaxJobs() const;
 
         void EnableCommonPlatform();
         void AddIntermediateScanFolder();
@@ -331,9 +326,6 @@ namespace AssetProcessor
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
         mutable AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
-
-        int m_minJobs = 1;
-        int m_maxJobs = 3;
 
         // used only during file read, keeps the total running list of all the enabled platforms from all config files and command lines
         AZStd::vector<AZStd::string> m_tempEnabledPlatforms;

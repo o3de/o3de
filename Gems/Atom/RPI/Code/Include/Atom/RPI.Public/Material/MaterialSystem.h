@@ -60,7 +60,8 @@ namespace AZ::RPI
     private:
         bool LoadMaterialSrgShaderAsset();
         void CreateSceneMaterialSrg();
-        void UpdateSceneMaterialSrg();
+        bool UpdateSceneMaterialSrg();
+        bool UpdateSharedSamplerStates();
         void PrepareMaterialParameterBuffers();
         void UpdateChangedMaterialParameters();
         void CreateTextureSamplers(const AZStd::vector<RHI::SamplerState>& samplers, Data::Instance<ShaderResourceGroup> srg);
@@ -125,6 +126,7 @@ namespace AZ::RPI
 
         Data::Instance<Buffer> m_materialTypeBufferIndicesBuffer;
         bool m_bufferReadIndicesDirty = false;
+        bool m_sharedSamplerStatesDirty = false;
     };
 
 } // namespace AZ::RPI

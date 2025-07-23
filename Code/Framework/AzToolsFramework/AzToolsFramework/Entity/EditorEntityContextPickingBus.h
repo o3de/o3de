@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -34,3 +34,5 @@ namespace AzToolsFramework
     using EditorEntityContextPickingRequestBus = AZ::EBus<EditorEntityContextPickingRequests>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityContextPickingRequests);

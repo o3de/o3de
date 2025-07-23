@@ -17,7 +17,7 @@
 namespace AZ
 {
     //! Implementation of the ILogger system interface.
-    class LoggerSystemComponent
+    class AZCORE_API LoggerSystemComponent
         : public AZ::Component
         , public ILoggerRequestBus::Handler
     {

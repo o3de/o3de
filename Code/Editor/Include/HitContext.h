@@ -15,7 +15,10 @@
 #pragma once
 
 struct IDisplayViewport;
-struct AABB;
+namespace AZ
+{
+    class Aabb;
+}
 
 #include <QRect>
 #include <platform.h>
@@ -63,7 +66,7 @@ struct HitContext
     //! 2D Selection rectangle (Only when HitTestRect)
     QRect rect;
     //! Optional limiting bounding box for hit testing.
-    AABB* bounds;
+    AZ::Aabb* bounds;
 
     //! Testing performed in 2D viewport.
     bool b2DViewport;

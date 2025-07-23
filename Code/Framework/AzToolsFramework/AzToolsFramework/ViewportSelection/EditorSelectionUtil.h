@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -37,40 +39,40 @@ namespace AzToolsFramework
     }
 
     //! Return offset from object pivot to center if center is true, otherwise Vector3::Zero.
-    AZ::Vector3 CalculateCenterOffset(AZ::EntityId entityId, EditorTransformComponentSelectionRequests::Pivot pivot);
+    AZTF_API AZ::Vector3 CalculateCenterOffset(AZ::EntityId entityId, EditorTransformComponentSelectionRequests::Pivot pivot);
 
     //! Calculate scale factor based on distance from camera
-    float CalculateScreenToWorldMultiplier(const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState);
+    AZTF_API float CalculateScreenToWorldMultiplier(const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState);
 
     //! Given a mouse interaction, determine if the pick ray from its position
     //! in screen space intersected an aabb in world space.
-    bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb);
+    AZTF_API bool AabbIntersectMouseRay(const ViewportInteraction::MouseInteraction& mouseInteraction, const AZ::Aabb& aabb);
 
     //! Wrapper to perform an intersection between a ray and an aabb.
     //! Note: direction should be normalized (it is scaled internally by the editor pick distance).
-    bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance);
+    AZTF_API bool AabbIntersectRay(const AZ::Vector3& origin, const AZ::Vector3& direction, const AZ::Aabb& aabb, float& distance);
 
     //! Return if a mouse interaction (pick ray) did intersect the tested EntityId.
-    bool PickEntity(
+    AZTF_API bool PickEntity(
         AZ::EntityId entityId, const ViewportInteraction::MouseInteraction& mouseInteraction, float& closestDistance, int viewportId);
 
     //! Return if a mouse interaction (pick ray) did intersect the tested EntityId.
-    bool PickEntity(
+    AZTF_API bool PickEntity(
         AZ::EntityId entityId, const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& closestDistance, int viewportId);
 
     //! Wrapper for EBus call to return the CameraState for a given viewport.
-    AzFramework::CameraState GetCameraState(int viewportId);
+    AZTF_API AzFramework::CameraState GetCameraState(int viewportId);
 
     //! Wrapper for EBus call to return the DPI scaling for a given viewport.
-    float GetScreenDisplayScaling(int viewportId);
+    AZTF_API float GetScreenDisplayScaling(int viewportId);
 
     //! The default distance an entity is placed from the camera if there is no intersection.
-    float GetDefaultEntityPlacementDistance();
+    AZTF_API float GetDefaultEntityPlacementDistance();
 
     //! A utility to return the center of several points.
     //! Take several positions and store the min and max of each in
     //! turn - when all points have been added return the center/midpoint.
-    class MidpointCalculator
+    class AZTF_API MidpointCalculator
     {
     public:
         //! Default constructed with min and max initialized to opposites.

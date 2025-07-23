@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 
 namespace AzToolsFramework::ViewportInteraction
 {
-    class Helpers
+    class AZTF_API Helpers
     {
     public:
         static MouseButton GetMouseButton(const AzFramework::InputChannel& inputChannel);

@@ -19,7 +19,7 @@ namespace AZ
 {
     struct Uuid;
 
-    class JsonBaseContext
+    class AZCORE_API JsonBaseContext
     {
     public:
         JsonBaseContext(JsonSerializationMetadata& metadata, JsonSerializationResult::JsonIssueCallback reporting,
@@ -84,7 +84,7 @@ namespace AZ
         JsonRegistrationContext* m_registrationContext = nullptr;
     };
 
-    class JsonDeserializerContext final
+    class AZCORE_API JsonDeserializerContext final
         : public JsonBaseContext
     {
     public:
@@ -105,7 +105,7 @@ namespace AZ
         bool m_clearContainers = false;
     };
 
-    class JsonSerializerContext final
+    class AZCORE_API JsonSerializerContext final
         : public JsonBaseContext
     {
     public:
@@ -129,7 +129,7 @@ namespace AZ
         bool m_keepDefaults = false;
     };
 
-    class ScopedContextReporter
+    class AZCORE_API ScopedContextReporter
     {
     public:
         ScopedContextReporter(JsonBaseContext& context, JsonSerializationResult::JsonIssueCallback callback);
@@ -139,7 +139,7 @@ namespace AZ
         JsonBaseContext& m_context;
     };
 
-    class ScopedContextPath
+    class AZCORE_API ScopedContextPath
     {
     public:
         ScopedContextPath(JsonBaseContext& context, AZStd::string_view child);
@@ -152,7 +152,7 @@ namespace AZ
 
     //! The abstract class for primitive Json Serializers. 
     //! It is intentionally not templated, and uses void* for output value parameters.
-    class BaseJsonSerializer
+    class AZCORE_API BaseJsonSerializer
     {
     public:
         AZ_RTTI(BaseJsonSerializer, "{7291FFDC-D339-40B5-BB26-EA067A327B21}");

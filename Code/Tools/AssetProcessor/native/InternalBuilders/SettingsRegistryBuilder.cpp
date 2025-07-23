@@ -70,18 +70,18 @@ namespace AssetProcessor
         }
 
         AZ::IO::Path settingsRegistryWildcard = AZStd::string_view(AZ::Utils::GetEnginePath());
-        settingsRegistryWildcard /= AZ::SettingsRegistryInterface::RegistryFolder;
+        settingsRegistryWildcard /= AZ::SettingsRegistryConstants::RegistryFolder;
         settingsRegistryWildcard /= "*.setreg";
         response.m_sourceFileDependencyList.emplace_back(AZStd::move(settingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
 
         auto projectPath = AZ::IO::Path(AZStd::string_view(AZ::Utils::GetProjectPath()));
         response.m_sourceFileDependencyList.emplace_back(
-            AZStd::move((projectPath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg").Native()),
+            AZStd::move((projectPath / AZ::SettingsRegistryConstants::RegistryFolder / "*.setreg").Native()),
             AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
         response.m_sourceFileDependencyList.emplace_back(
-            AZStd::move((projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "*.setreg").Native()),
+            AZStd::move((projectPath / AZ::SettingsRegistryConstants::DevUserRegistryFolder / "*.setreg").Native()),
             AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
 
@@ -96,7 +96,7 @@ namespace AssetProcessor
                 {
                     for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
                     {
-                        auto gemSettingsRegistryWildcard = absoluteSourcePath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg";
+                        auto gemSettingsRegistryWildcard = absoluteSourcePath / AZ::SettingsRegistryConstants::RegistryFolder / "*.setreg";
                         if (auto foundIt = AZStd::find(gemSettingsRegistryWildcards.begin(), gemSettingsRegistryWildcards.end(), gemSettingsRegistryWildcard);
                             foundIt == gemSettingsRegistryWildcards.end())
                         {

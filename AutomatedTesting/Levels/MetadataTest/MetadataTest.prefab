@@ -375,10 +375,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{1270F006-F9E6-4CBD-9E78-604A9EB00298}",
+                                    "guid": "{0C6BBB76-4EC2-583A-B8C6-1A4C4FD1FE9D}",
                                     "subId": 283109893
                                 },
-                                "assetHint": "objects/bunny.azmodel"
+                                "assetHint": "objects/bunny.fbx.azmodel"
                             }
                         }
                     }

@@ -66,7 +66,7 @@ namespace AZStd
     /**
      * All allocation will be piped to AZ::SystemAllocator, make sure it is created!
      */
-    class allocator
+    class AZCORE_API allocator
     {
     public:
         using value_type = void;
@@ -138,7 +138,7 @@ namespace AZStd
     * the AZStd integration this means that you might have defined in your
     * code a default allocator or even have predefined container types. Use them.
     */
-    class no_default_allocator
+    class AZCORE_API no_default_allocator
     {
     public:
         using pointer = void*;

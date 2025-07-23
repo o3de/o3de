@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -43,8 +44,8 @@ namespace AzFramework
     //! queried at will, but will rather be sent by the system at a pre-determined time (eg. touch).
     //! In these cases, input devices must queue all raw input until TickInputDevice is called, when
     //! they can use it to update their input channels and broadcast events at the appropriate time.
-    class InputDevice : public InputDeviceRequestBus::Handler
-                      , public ApplicationLifecycleEvents::Bus::Handler
+    class AZF_API InputDevice : public InputDeviceRequestBus::Handler
+                              , public ApplicationLifecycleEvents::Bus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

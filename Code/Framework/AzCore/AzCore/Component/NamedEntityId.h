@@ -17,7 +17,7 @@ namespace AZ
 {
     class ReflectContext;
 
-    class NamedEntityId
+    class AZCORE_API NamedEntityId
         : public EntityId
     {
     public: 

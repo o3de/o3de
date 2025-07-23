@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -24,14 +25,14 @@ namespace AzToolsFramework
     //! Handler class to sync up Component Mode customized actions to the Action Manager.
     //! Ensures each Component Mode is mapped to an ActionContextMode and that the two systems
     //! are correctly synchronized when the state changes.
-    class ComponentModeActionHandler
+    class AZTF_API ComponentModeActionHandler
         : private ActionManagerRegistrationNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , private ViewportEditorModeNotificationsBus::Handler
     {
     public:
         ComponentModeActionHandler();
-        ~ComponentModeActionHandler();
+        ~ComponentModeActionHandler() override;
 
     private:
         // ActionManagerRegistrationNotificationBus overrides ...

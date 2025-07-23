@@ -11,6 +11,7 @@
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -25,7 +26,7 @@ namespace AZ::DocumentPropertyEditor
     //! the AZ Reflection system (via SerializeContext & EditContext) and creates
     //! a property grid that supports editing its members in a manner outlined by
     //! its reflection data.
-    class ReflectionAdapter : public RoutingAdapter
+    class AZF_API ReflectionAdapter : public RoutingAdapter
     {
     public:
         //! Holds the parameters that define a specific property change event

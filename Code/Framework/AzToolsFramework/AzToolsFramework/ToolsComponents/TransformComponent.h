@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/TransformBus.h>
@@ -31,7 +32,7 @@ namespace AzToolsFramework
     {
         /// Manages transform data as separate vector fields for editing purposes.
         /// The TransformComponent is referenced by other components in the same entity, it is not an asset.
-        class TransformComponent
+        class AZTF_API TransformComponent
             : public EditorComponentBase
             , public AZ::TransformBus::Handler
             , public AZ::SliceEntityHierarchyRequestBus::Handler

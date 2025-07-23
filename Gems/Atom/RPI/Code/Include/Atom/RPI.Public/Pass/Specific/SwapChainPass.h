@@ -63,6 +63,10 @@ namespace AZ
             void OnResolutionChanged(uint32_t width, uint32_t height) override;
             // Swapchain may get resized when window is resized
             void OnWindowResized(uint32_t width, uint32_t height) override;
+            // Window is minimized
+            void OnWindowMinimized() override;
+            // Window is restored
+            void OnWindowRestored() override;
 
         private:
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 
@@ -83,6 +87,7 @@ namespace AZ
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
             ViewType m_viewType = ViewType::Default;
+            bool m_isMinimized = false;
         };
 
     }   // namespace RPI

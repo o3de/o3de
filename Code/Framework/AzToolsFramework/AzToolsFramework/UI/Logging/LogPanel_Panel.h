@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef LOGPANEL_PANEL_H
-#define LOGPANEL_PANEL_H
-
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
@@ -121,7 +120,7 @@ namespace AzToolsFramework
 
         //! BaseLogPanel is the base GUI class that has tabs (as opposed to a single view)
         //!    you derive from this class and handle the AddTab() and other such messages
-        class BaseLogPanel
+        class AZTF_API BaseLogPanel
             : public QWidget
         {
             Q_OBJECT
@@ -176,7 +175,7 @@ namespace AzToolsFramework
         //! it can be set to have a maximum number of lines, which will cause the older lines to drop off when they accumulate too deeply
         //! it is primarily used for incoming data streams that are constantly filling, not static sources such as files.
         //! of particular interest here is how it implements the required rowCount, columnCount, data, and flags functions
-        class RingBufferLogDataModel
+        class AZTF_API RingBufferLogDataModel
             : public QAbstractTableModel
         {
             Q_OBJECT
@@ -216,7 +215,7 @@ namespace AzToolsFramework
         //! this is a list-based (uses a vector) data model
         //! its meant for static or ever-growing data that we do not want to discard older lines for.  For example
         //! if you are forensically examining a previously-captured file.
-        class ListLogDataModel
+        class AZTF_API ListLogDataModel
             : public QAbstractTableModel
         {
             Q_OBJECT
@@ -247,7 +246,7 @@ namespace AzToolsFramework
         };
 
         //! FilteredLogDataModel filters data based on whats in the TabSettings.
-        class FilteredLogDataModel
+        class AZTF_API FilteredLogDataModel
             : public QSortFilterProxyModel
         {
         public:
@@ -263,7 +262,7 @@ namespace AzToolsFramework
         // ------------------------- INTERNAL IMPLEMENTATION STUFF -----------------------
         //! This log panel layout class just exists to glue the last element to the top right corner, ie, the add button
         //! The rest of the children are just standard.  usually there is only one other.
-        class LogPanelLayout
+        class AZTF_API LogPanelLayout
             : public QLayout
         {
             Q_OBJECT
@@ -287,7 +286,7 @@ namespace AzToolsFramework
 
 
         // this is a private class, but its here because its a Q object and needs MOC to run.
-        class LogPanelItemDelegate
+        class AZTF_API LogPanelItemDelegate
             : public QStyledItemDelegate
         {
             Q_OBJECT
@@ -317,7 +316,7 @@ Q_SIGNALS:
             int m_messageColumn; // which column contains the message data ?
         };
 
-        class SavedState
+        class AZTF_API SavedState
             : public AZ::UserSettings
         {
         public:
@@ -331,5 +330,3 @@ Q_SIGNALS:
         };
     } // namespace LogPanel
 } // namespace AzToolsFramework
-
-#endif

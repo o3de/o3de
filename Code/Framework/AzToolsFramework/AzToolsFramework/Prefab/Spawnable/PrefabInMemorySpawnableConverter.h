@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string_view.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework::Prefab
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class PrefabInMemorySpawnableConverter
+    class AZTF_API PrefabInMemorySpawnableConverter
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabInMemorySpawnableConverter, AZ::SystemAllocator);

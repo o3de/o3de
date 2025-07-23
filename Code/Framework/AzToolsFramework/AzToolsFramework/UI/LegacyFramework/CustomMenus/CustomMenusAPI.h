@@ -13,7 +13,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Crc.h>
 #include <QtCore/QString>
-
+#include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusCommon.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #pragma once
 
 class QMenu;
@@ -25,35 +26,7 @@ namespace AZ
 
 namespace LegacyFramework
 {
-    namespace CustomMenusCommon
-    {
-        struct WorldEditor
-        {
-            static const AZ::Crc32 Application;
-            static const AZ::Crc32 File;
-            static const AZ::Crc32 Debug;
-            static const AZ::Crc32 Edit;
-            static const AZ::Crc32 Build;
-        };
-        struct LUAEditor
-        {
-            static const AZ::Crc32 Application;
-            static const AZ::Crc32 File;
-            static const AZ::Crc32 Edit;
-            static const AZ::Crc32 View;
-            static const AZ::Crc32 Debug;
-            static const AZ::Crc32 SourceControl;
-            static const AZ::Crc32 Options;
-        };
-        struct Viewport
-        {
-            static const AZ::Crc32 Layout;
-            static const AZ::Crc32 Grid;
-            static const AZ::Crc32 View;
-        };
-    }
-
-    class CustomMenusMessages
+    class AZTF_API CustomMenusMessages
         : public AZ::EBusTraits
     {
     public:

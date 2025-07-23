@@ -19,6 +19,7 @@
 #include <QAbstractItemView>
 
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzQtComponents
 {
@@ -34,7 +35,7 @@ namespace AzToolsFramework
         class AssetBrowserThumbnailViewProxyModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserThumbnailView
+        class AZTF_API AssetBrowserThumbnailView
             : public QWidget
         {
             Q_OBJECT

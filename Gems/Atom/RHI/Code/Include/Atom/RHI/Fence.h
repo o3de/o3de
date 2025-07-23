@@ -28,7 +28,15 @@ namespace AZ::RHI
         //! It creates on device-specific fence for each bit set in the deviceMask and
         //! passes on the initial FenceState to each DeviceFence.
         //! Set usedForWaitingOnDevice to true if the Fence shoud be signaled on the CPU and waited for on the device.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice = false);
+        //! ownerDeviceIndex:
+        //!     If set the Fence will be only created on the specific device.
+        //!     All other device Fences export the Fence of the owner device and import it again on their device
+        //!     Setting the owner device is only supported if the DeviceFeatures::m_crossDeviceFences is set for all devices in deviceMask
+        ResultCode Init(
+            MultiDevice::DeviceMask deviceMask,
+            FenceState initialState,
+            bool usedForWaitingOnDevice = false,
+            AZStd::optional<int> ownerDeviceIndex = {});
 
         //! Shuts down all device-specific fences.
         void Shutdown() override final;
@@ -43,5 +51,9 @@ namespace AZ::RHI
 
     protected:
         bool ValidateIsInitialized() const;
+
+        // If this is set, the Fence was created on the owner device
+        // For all other devices the Fence was exported from the owner device and then imported into the other device
+        AZStd::optional<int> m_ownerDeviceIndex;
     };
 } // namespace AZ::RHI

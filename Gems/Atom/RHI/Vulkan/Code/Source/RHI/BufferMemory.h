@@ -37,19 +37,22 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(BufferMemory, AZ::ThreadPoolAllocator);
             AZ_RTTI(BufferMemory, "{39053FBD-CE0E-44E8-A9BF-29C4014C3958}", Base);
 
-             struct Descriptor : public RHI::BufferDescriptor
-             {
-                 Descriptor() = default;
-                 Descriptor(const RHI::BufferDescriptor& desc, RHI::HeapMemoryLevel memoryLevel);
+            struct Descriptor : public RHI::BufferDescriptor
+            {
+                Descriptor() = default;
+                Descriptor(const RHI::BufferDescriptor& desc, RHI::HeapMemoryLevel memoryLevel);
 
-                 RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-             };
+                RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            };
 
             ~BufferMemory() = default;
 
             static RHI::Ptr<BufferMemory> Create();
             RHI::ResultCode Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor);
             RHI::ResultCode Init(Device& device, const Descriptor& descriptor);
+            RHI::ResultCode InitWithExternalHostMemory(Device& device, const Descriptor& descriptor);
+            RHI::ResultCode InitWithExternalHostMemory(
+                Device& device, const Descriptor& descriptor, void* allocatedHostMemory, size_t allocatedMemoryHostSize);
 
             // It maps a memory and returns its mapped address.
             CpuVirtualAddress Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess);
@@ -66,6 +69,9 @@ namespace AZ
             size_t GetAllocationSize() const;
             size_t GetSize() const;
             const MemoryView& GetMemoryView() const;
+
+            void* GetAllocatedHostMemory() const;
+            size_t GetAllocatedHostMemorySize() const;
 
         private:
             BufferMemory() = default;
@@ -84,6 +90,16 @@ namespace AZ
             VkBuffer m_vkBuffer = VK_NULL_HANDLE;
             MemoryView m_memoryView;
             VkSharingMode m_sharingMode = VK_SHARING_MODE_MAX_ENUM;
+
+            struct AlignedMemoryDeleter
+            {
+                void operator()(void* ptr)
+                {
+                    AZ_OS_FREE(ptr);
+                }
+            };
+            AZStd::unique_ptr<void, AlignedMemoryDeleter> m_allocatedHostMemory;
+            size_t m_allocatedHostMemorySize = 0;
         };
     }
 }

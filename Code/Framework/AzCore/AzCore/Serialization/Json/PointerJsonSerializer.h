@@ -16,10 +16,10 @@ namespace AZ
 {
     //! JSON serializer for PointerObject
     //! This is only used for marshaling a pointer to/from a Dom Value in-meory
-    class PointerJsonSerializer : public BaseJsonSerializer
+    class AZCORE_API PointerJsonSerializer : public BaseJsonSerializer
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(PointerJsonSerializer);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, PointerJsonSerializer);
         AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL;
 
@@ -37,4 +37,5 @@ namespace AZ
 
         BaseJsonSerializer::OperationFlags GetOperationsFlags() const override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, PointerJsonSerializer);
 } // namespace AZ

@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
@@ -89,3 +92,6 @@ namespace AzToolsFramework
 
     using ToastRequestBus = AZ::EBus<ToastRequests>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastRequests);

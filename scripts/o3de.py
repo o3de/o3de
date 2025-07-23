@@ -12,6 +12,7 @@ import pathlib
 import sys
 
 logger = logging.getLogger('o3de')
+logger.setLevel(logging.INFO)
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     """

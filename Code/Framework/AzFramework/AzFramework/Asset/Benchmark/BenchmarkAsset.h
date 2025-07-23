@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +23,7 @@ namespace AzFramework
     //! BenchmarkAsset is generated from a BenchmarkSettingsAsset asset.  It is designed to
     //! provide a variety of asset loading scenarios to benchmark by using different sizes
     //! and combinations of dependent asset hierarchies.
-    class BenchmarkAsset
+    class AZF_API BenchmarkAsset
         : public AZ::Data::AssetData
     {
     public:

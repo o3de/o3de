@@ -814,7 +814,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-void CGameEngine::OnAreaModified([[maybe_unused]] const AABB& modifiedArea)
+void CGameEngine::OnAreaModified([[maybe_unused]] const AZ::Aabb& modifiedArea)
 {
 }
 

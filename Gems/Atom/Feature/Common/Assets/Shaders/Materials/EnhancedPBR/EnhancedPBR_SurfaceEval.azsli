@@ -30,10 +30,12 @@ Surface EvaluateSurface_EnhancedPBR(
     bool isDisplacementClipped,
     float4 uvDxDy,
     bool customDerivatives,
-    float4 vertexColor)
+    float4 vertexColor,
+    uint lightingChannels)
 {
     Surface surface;
     surface.position = positionWS;
+    surface.lightingChannels = lightingChannels;
 
     // ------- Detail Layer Setup -------
     
@@ -191,7 +193,8 @@ Surface EvaluateSurface_EnhancedPBR(
     bool isFrontFace,
     bool isDisplacementClipped,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     return EvaluateSurface_EnhancedPBR(
             params,
@@ -205,7 +208,8 @@ Surface EvaluateSurface_EnhancedPBR(
             isDisplacementClipped,
             uvDxDy,
             customDerivatives,
-            float4(1.0f, 1.0f, 1.0f, 1.0f));
+            float4(1.0f, 1.0f, 1.0f, 1.0f) /* VertexColor */,
+            lightingChannels);
 }
 
 Surface EvaluateSurface_EnhancedPBR(
@@ -217,7 +221,8 @@ Surface EvaluateSurface_EnhancedPBR(
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
     bool isFrontFace,
-    bool isDisplacementClipped)
+    bool isDisplacementClipped,
+    uint lightingChannels)
 {
     return EvaluateSurface_EnhancedPBR(
         params,
@@ -229,11 +234,12 @@ Surface EvaluateSurface_EnhancedPBR(
         detailUvs,
         isFrontFace,
         isDisplacementClipped,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f) /* uvDxDy */,
+        false /* customDerivatives*/,
+        lightingChannels);
 }
 
-Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData,  const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_EnhancedPBR(
         params,
@@ -247,10 +253,11 @@ Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData, cons
         geoData.isDisplacementClipped,
         uvDxDy,
         customDerivatives,
-        GetVertexColor(IN));
+        GetVertexColor(IN), 
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_EnhancedPBR(
         params,
@@ -264,5 +271,6 @@ Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData, cons
         geoData.isDisplacementClipped,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
         false,
-        GetVertexColor(IN));
+        GetVertexColor(IN), 
+        GetLightingChannelMask(SV));
 }

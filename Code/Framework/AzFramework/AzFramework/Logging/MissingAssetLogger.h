@@ -10,12 +10,13 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Logging/MissingAssetNotificationBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework { class LogFile; }
 
 namespace AzFramework
 {
-    class MissingAssetLogger
+    class AZF_API MissingAssetLogger
         : public MissingAssetNotificationBus::Handler
     {
     public:

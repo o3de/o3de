@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Cry_Geo.h>
 #include <Include/IPlugin.h>
 #include <QtWidgets/QMainWindow>
 #include <LyShine/IDraw2d.h>

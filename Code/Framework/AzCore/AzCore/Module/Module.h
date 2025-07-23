@@ -28,7 +28,7 @@ namespace AZ
      * This class must perform tasks such as reflecting the classes within
      * the module and adding critical components to the system entity.
      */
-    class Module
+    class AZCORE_API Module
     {
     public:
         AZ_RTTI(Module, "{59682E0E-731F-4361-BC0B-039BC5376CA1}");

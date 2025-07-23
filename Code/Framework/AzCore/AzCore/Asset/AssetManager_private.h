@@ -47,5 +47,5 @@ namespace AZ
     }  // namespace Data
 }   // namespace AZ
 
-
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetLoadEvents);
 

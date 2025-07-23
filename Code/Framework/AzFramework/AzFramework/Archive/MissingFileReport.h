@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
+
 namespace AZ::IO::Internal
 {
     // Report missing files in the archive when they are loaded
-    void ReportFileMissingFromArchive(const char *szPath);
+    AZF_API void ReportFileMissingFromArchive(const char *szPath);
 }

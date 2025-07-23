@@ -18,7 +18,6 @@
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 #include <LyShine/UiSerializeHelpers.h>
 
-#include <Cry_Geo.h>
 #include <IIndexedMesh.h>
 
 

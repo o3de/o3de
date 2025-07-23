@@ -27,7 +27,7 @@ namespace AZ
     //! Note that the D component is often referred to as 'distance' below, in the sense that it is the distance of the
     //! origin from the plane. This is not the same as what many other people refer to as the plane distance, which
     //! would be the negation of this.
-    class Plane
+    class AZCORE_API Plane
     {
     public:
 

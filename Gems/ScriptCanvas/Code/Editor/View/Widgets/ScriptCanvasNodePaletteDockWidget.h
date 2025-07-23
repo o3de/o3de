@@ -216,7 +216,7 @@ namespace ScriptCanvasEditor
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
             const NodePaletteModel& m_nodePaletteModel;
 
-            QToolButton* m_newCustomEvent;
+            // QToolButton* m_newCustomEvent; // See comment in code
 
             AZStd::unordered_set< ScriptCanvas::NodeTypeIdentifier > m_cyclingIdentifiers;
             GraphCanvas::NodeFocusCyclingHelper m_cyclingHelper;

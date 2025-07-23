@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
@@ -65,6 +66,9 @@ namespace AssetUtilsInternal
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
     // This is because Qt has to init random number gen on each thread.
     AZ_THREAD_LOCAL bool g_hasInitializedRandomNumberGenerator = false;
+
+    constexpr AZStd::string_view AssetProcessorUserSetregRelPath = "user/Registry/asset_processor.setreg";
+
 
     // so that even if we do init two seeds at exactly the same msec time, theres still this extra
     // changing number
@@ -158,11 +162,20 @@ namespace AssetUtilsInternal
         return true;
     }
 
-    static bool DumpAssetProcessorUserSettingsToFile(AZ::SettingsRegistryInterface& settingsRegistry,
-        const AZ::IO::FixedMaxPath& setregPath)
+    static bool DumpAssetProcessorUserSettingsToFile(AZ::SettingsRegistryInterface& settingsRegistry)
     {
-        // The AssetProcessor settings are currently under the Bootstrap object(This may change in the future
-        constexpr AZStd::string_view AssetProcessorUserSettingsRootKey = AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey;
+        using namespace AssetUtilities;
+        AZ::IO::FixedMaxPath setregPath = AZ::Utils::GetProjectPath();
+        setregPath /= AssetProcessorUserSetregRelPath;
+
+        // AssetProcessor saves Bootstrap settings and user settings
+        constexpr AZStd::string_view BootstrapSettingsKey = AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey;
+        constexpr AZStd::string_view UserSettingsKey = AssetProcessorUserSettingsRootKey;
+
+        const auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/allowed_list";
+        const auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(BootstrapSettingsKey) + "/assetProcessor_branch_token";
+        const auto generalUserSettingsKey = AZ::SettingsRegistryInterface::FixedValueString(UserSettingsKey);
+
         AZStd::string apSettingsJson;
         AZ::IO::ByteContainerStream apSettingsStream(&apSettingsJson);
 
@@ -170,23 +183,16 @@ namespace AssetUtilsInternal
         apDumperSettings.m_prettifyOutput = true;
         AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                   // capture. Newer versions issue unused warning
-        apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        apDumperSettings.m_includeFilter = [&allowedListKey, &branchTokenKey, &generalUserSettingsKey](AZStd::string_view path)
         AZ_POP_DISABLE_WARNING
         {
-            // The AssetUtils only updates the following keys in the registry
-            // Dump them all out to the setreg file
-            auto allowedListKey = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorUserSettingsRootKey)
-                + "/allowed_list";
-            auto branchTokenKey = AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorUserSettingsRootKey)
-                + "/assetProcessor_branch_token";
             // The objects leading up to the keys to dump must be included in order the keys to be dumped
-            return allowedListKey.starts_with(path.substr(0, allowedListKey.size()))
-                || branchTokenKey.starts_with(path.substr(0, branchTokenKey.size()));
+            return allowedListKey.starts_with(path.substr(0, allowedListKey.size())) ||
+                   branchTokenKey.starts_with(path.substr(0, branchTokenKey.size())) ||
+                   generalUserSettingsKey.starts_with(path.substr(0, generalUserSettingsKey.size()));
         };
-        apDumperSettings.m_jsonPointerPrefix = AssetProcessorUserSettingsRootKey;
 
-        if (AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(settingsRegistry, AssetProcessorUserSettingsRootKey,
-            apSettingsStream, apDumperSettings))
+        if (AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(settingsRegistry, "", apSettingsStream, apDumperSettings))
         {
             constexpr const char* AssetProcessorTmpSetreg = "asset_processor.setreg.tmp";
             // Write to a temporary file first before renaming it to the final file location
@@ -219,8 +225,7 @@ namespace AssetUtilsInternal
         }
         else
         {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Dump of AssetProcessor User Settings failed at JSON pointer %.*s \n",
-                aznumeric_cast<int>(AssetProcessorUserSettingsRootKey.size()), AssetProcessorUserSettingsRootKey.data());
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Dump of AssetProcessor User Settings failed. \n");
         }
 
         return false;
@@ -229,8 +234,6 @@ namespace AssetUtilsInternal
 
 namespace AssetUtilities
 {
-    constexpr AZStd::string_view AssetProcessorUserSetregRelPath = "user/Registry/asset_processor.setreg";
-
     // do not place Qt objects in global scope, they allocate and refcount threaded data.
     AZ::SettingsRegistryInterface::FixedValueString s_projectPath;
     AZ::SettingsRegistryInterface::FixedValueString s_projectName;
@@ -614,9 +617,6 @@ namespace AssetUtilities
 
     bool WriteAllowedlistToSettingsRegistry(const QStringList& newAllowedList)
     {
-        AZ::IO::FixedMaxPath assetProcessorUserSetregPath = AZ::Utils::GetProjectPath();
-        assetProcessorUserSetregPath /= AssetProcessorUserSetregRelPath;
-
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         if (!settingsRegistry)
         {
@@ -649,7 +649,7 @@ namespace AssetUtilities
         AZStd::string azNewAllowedList{ newAllowedList.join(',').toUtf8().constData() };
         settingsRegistry->Set(allowedListKey, azNewAllowedList);
 
-        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
+        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry);
     }
 
     quint16 ReadListeningPortFromSettingsRegistry(QString initialFolder /*= QString()*/)
@@ -944,9 +944,6 @@ namespace AssetUtilities
 
     bool UpdateBranchToken()
     {
-        AZ::IO::FixedMaxPath assetProcessorUserSetregPath = AZ::Utils::GetProjectPath();
-        assetProcessorUserSetregPath /= AssetProcessorUserSetregRelPath;
-
         AZStd::string appBranchToken;
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
 
@@ -964,21 +961,21 @@ namespace AssetUtilities
             if (appBranchToken == registryBranchToken)
             {
                 // no need to update, branch token match
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Branch token (%s) is already correct in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Branch token (%s) is already correct, not updating\n", appBranchToken.c_str());
                 return true;
             }
 
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Updating branch token (%s) in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Updating branch token (%s)\n", appBranchToken.c_str());
         }
         else
         {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Adding branch token (%s) in (%s)\n", appBranchToken.c_str(), assetProcessorUserSetregPath.c_str());
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Adding branch token (%s)\n", appBranchToken.c_str());
         }
 
         // Update Settings Registry with new token
         settingsRegistry->Set(branchTokenKey, appBranchToken);
 
-        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
+        return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry);
     }
 
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer)
@@ -1051,6 +1048,61 @@ namespace AssetUtilities
         response.m_isSuccess = true;
         return ReadJobLogResult::Success;
     }
+
+    template<typename T>
+    bool SetUserSetting(const char* settingName, T value)
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            constexpr AZStd::string_view UserSettingsKey = AssetProcessorUserSettingsRootKey;
+            auto settingKey = AZ::SettingsRegistryInterface::FixedValueString(UserSettingsKey) + "/" + settingName;
+            bool wasSet = settingsRegistry->Set(settingKey, value);
+            if (wasSet)
+            {
+                AssetProcessorUserSettingsNotificationBus::Broadcast(&AssetProcessorUserSettingsNotificationBus::Events::OnSettingChanged, settingName);
+                return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry);
+            }
+        }
+
+        return false;
+    }
+    template<typename T>
+    T GetUserSetting(const char* settingName, T defaultValue)
+    {
+        T resultValue = defaultValue;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            constexpr AZStd::string_view UserSettingsKey = AssetProcessorUserSettingsRootKey;
+            auto settingKey = AZ::SettingsRegistryInterface::FixedValueString(UserSettingsKey) + "/" + settingName;
+            settingsRegistry->Get(resultValue, settingKey);
+        }
+        return resultValue;
+    }
+
+    bool SaveSettingsFile()
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry);
+        }
+        return false;
+    }
+
+    // we implement these for the types the settings registry allows
+    template bool SetUserSetting<bool>(const char* settingName, bool value);
+    template bool GetUserSetting<bool>(const char* settingName, bool defaultValue);
+
+    template bool SetUserSetting<AZ::s64>(const char* settingName, AZ::s64 value);
+    template AZ::s64 GetUserSetting<AZ::s64>(const char* settingName, AZ::s64 defaultValue);
+
+    template bool SetUserSetting<AZ::u64>(const char* settingName, AZ::u64 value);
+    template AZ::u64 GetUserSetting<AZ::u64>(const char* settingName, AZ::u64 defaultValue);
+
+    template bool SetUserSetting<double>(const char* settingName, double value);
+    template double GetUserSetting<double>(const char* settingName, double defaultValue);
+
+    template bool SetUserSetting<AZStd::string>(const char* settingName, AZStd::string value);
+    template AZStd::string GetUserSetting<AZStd::string>(const char* settingName, AZStd::string defaultValue);
 
     unsigned int GenerateFingerprint(const AssetProcessor::JobDetails& jobDetail)
     {

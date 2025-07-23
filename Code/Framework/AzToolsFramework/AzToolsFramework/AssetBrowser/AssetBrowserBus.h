@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
 AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
@@ -121,14 +123,19 @@ namespace AzToolsFramework
             //! This is the function to call.  If you fill a nullptr in here, then the default operating system behavior will be suppressed
             //! but no opener will be opened.  This will also cause the 'open' option in context menus to disappear if the only openers
             //! are nullptr ones.
-            SourceFileOpenerFunctionType m_opener; 
+            SourceFileOpenerFunctionType m_opener;
+
+            //! Indicates whether this opener should be prioritized when multiple openers are available
+            //! If set to true, this opener will take precedence over others
+            bool m_isPrioritized = false;
 
             SourceFileOpenerDetails() = default;
-            SourceFileOpenerDetails(const char* identifier, const char* displayText, QIcon icon, SourceFileOpenerFunctionType functionToCall)
+            SourceFileOpenerDetails(const char* identifier, const char* displayText, QIcon icon, SourceFileOpenerFunctionType functionToCall, bool isPrioritized = false)
                 : m_identifier(identifier)
                 , m_displayText(displayText)
                 , m_iconToUse(icon)
-                , m_opener(functionToCall) {}
+                , m_opener(functionToCall)
+                , m_isPrioritized(isPrioritized) {}
         };
 
         typedef AZStd::vector<SourceFileOpenerDetails> SourceFileOpenerList;
@@ -464,3 +471,16 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)

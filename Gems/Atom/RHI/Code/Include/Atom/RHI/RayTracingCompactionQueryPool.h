@@ -41,7 +41,9 @@ namespace AZ::RHI
 
         ResultCode Init(RayTracingCompactionQueryPoolDescriptor desc);
 
-        ResultCode InitQuery(RayTracingCompactionQuery* query);
+        ResultCode InitQuery(MultiDevice::DeviceMask deviceMask, RayTracingCompactionQuery* query);
+        ResultCode AddDeviceToQuery(int deviceIndex, RayTracingCompactionQuery* query);
+        void RemoveDeviceFromQuery(int deviceIndex, RayTracingCompactionQuery* query);
 
         void BeginFrame(int frame);
     };

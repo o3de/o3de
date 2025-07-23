@@ -9,6 +9,7 @@
 
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that filters input events by channel name, device name, local user id, or
     //! any combination of the three.
-    class InputChannelEventFilter
+    class AZF_API InputChannelEventFilter
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that filters input channel events based on included input channels and devices.
-    class InputChannelEventFilterInclusionList : public InputChannelEventFilter
+    class AZF_API InputChannelEventFilterInclusionList : public InputChannelEventFilter
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that filters input channel events based on excluded input channels and devices.
-    class InputChannelEventFilterExclusionList : public InputChannelEventFilter
+    class AZF_API InputChannelEventFilterExclusionList : public InputChannelEventFilter
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

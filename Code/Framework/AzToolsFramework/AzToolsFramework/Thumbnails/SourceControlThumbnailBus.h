@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,3 +27,5 @@ namespace AzToolsFramework
         using SourceControlThumbnailRequestBus = AZ::EBus<SourceControlThumbnailRequests>;
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::SourceControlThumbnailRequests);

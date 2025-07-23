@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class JsonStringSerializer
+    class AZCORE_API JsonStringSerializer
         : public BaseJsonSerializer
     {
     public:
@@ -26,7 +26,7 @@ namespace AZ
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
     };
 
-    class JsonOSStringSerializer
+    class AZCORE_API JsonOSStringSerializer
         : public BaseJsonSerializer
     {
     public:

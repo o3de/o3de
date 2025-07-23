@@ -6,12 +6,11 @@
  *
  */
 
-#ifndef AZFRAMEWORK_SIMPLEASSET_H
-#define AZFRAMEWORK_SIMPLEASSET_H
+ #pragma once
 
 #include <AzCore/base.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
-#pragma once
 
 /*!
  * Asset references are simply game-folder relative paths.
@@ -56,7 +55,7 @@ namespace AzFramework
      * - Handles storage of the game-relative asset path.
      * - Handles reflection of reference type for use in serialization/editing.
      */
-    class SimpleAssetReferenceBase
+    class AZF_API SimpleAssetReferenceBase
     {
     public:
 
@@ -161,13 +160,13 @@ namespace AzFramework
      * Retrieves the name of an asset by asset type (which is actually a name Crc).
      * This information is stored in the environment, so it's accessible from any module.
      */
-    const char* SimpleAssetTypeGetName(const AZ::Data::AssetType& assetType);
+    AZF_API const char* SimpleAssetTypeGetName(const AZ::Data::AssetType& assetType);
 
     /*!
      * Retrieves the file filter for an asset type.
      * This information is stored in the environment, so it's accessible from any module.
      */
-    const char* SimpleAssetTypeGetFileFilter(const AZ::Data::AssetType& assetType);
+    AZF_API const char* SimpleAssetTypeGetFileFilter(const AZ::Data::AssetType& assetType);
 
 } // namespace AzFramework
 
@@ -194,4 +193,3 @@ namespace AZ
     AZ_TYPE_INFO_TEMPLATE(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId, AZ_TYPE_INFO_CLASS);
 }
 
-#endif // AZFRAMEWORK_SIMPLEASSET_H

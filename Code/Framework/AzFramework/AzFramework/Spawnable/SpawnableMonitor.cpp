@@ -98,7 +98,7 @@ namespace AzFramework
         OnSpawnableLoaded();
     }
 
-    void SpawnableMonitor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void SpawnableMonitor::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ_Assert(m_isLoaded, "Trying to reload a spawnable %s (%s) that wasn't loaded.",
             asset.GetHint().c_str(), asset.GetId().ToString<AZStd::string>().c_str());
@@ -113,7 +113,7 @@ namespace AzFramework
         OnSpawnableUnloaded();
     }
 
-    void SpawnableMonitor::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void SpawnableMonitor::OnAssetError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (m_isLoaded)
         {
@@ -126,7 +126,7 @@ namespace AzFramework
         OnSpawnableIssue(IssueType::Error, message);
     }
 
-    void SpawnableMonitor::OnAssetCanceled(AZ::Data::AssetId assetId)
+    void SpawnableMonitor::OnAssetCanceled([[maybe_unused]] AZ::Data::AssetId assetId)
     {
         if (m_isLoaded)
         {
@@ -139,7 +139,7 @@ namespace AzFramework
         OnSpawnableIssue(IssueType::Cancel, message);
     }
 
-    void SpawnableMonitor::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void SpawnableMonitor::OnAssetReloadError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (m_isLoaded)
         {

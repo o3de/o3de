@@ -47,6 +47,8 @@ namespace AZ
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
+            bool RaytracingRevisionOutdated() const;
+
             // Helper function to get the query by the scope index and query type
             AZ::RHI::Ptr<AZ::RPI::Query> GetQuery(AZ::RPI::ScopeQueryType queryType);
 
@@ -73,12 +75,6 @@ namespace AZ
 
             // buffer view descriptor for the TLAS
             RHI::BufferViewDescriptor m_tlasBufferViewDescriptor;
-
-            // revision number of the ray tracing data when the TLAS was built
-            uint32_t m_rayTracingRevision = 0;
-
-            // revision out of date
-            bool m_rayTracingRevisionOutDated{ false };
 
             // keeps track of the current frame to determine updates or rebuilds of the skinned BLASes
             uint64_t m_frameCount = 0;

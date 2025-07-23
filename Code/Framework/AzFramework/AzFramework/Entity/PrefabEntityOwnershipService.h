@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Entity/EntityOwnershipService.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {

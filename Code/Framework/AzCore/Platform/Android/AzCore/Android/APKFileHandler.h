@@ -54,7 +54,7 @@ namespace AZ
             }
         };
 
-        class APKFileHandler
+        class AZCORE_API APKFileHandler
         {
         public:
             AZ_TYPE_INFO(APKFileHandler, "{D16233A2-A183-40FE-8CF4-ABE8D53AB5B5}")

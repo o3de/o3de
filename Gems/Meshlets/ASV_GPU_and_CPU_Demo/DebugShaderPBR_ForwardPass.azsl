@@ -5,18 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
+#include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>
 #include <Atom/Features/InstancedTransforms.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
+
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
-#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
-#include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassStandardLighting.azsli>
 
 ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial
 {
@@ -74,50 +72,15 @@ ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
 
-    Surface surface;
-    
-    // Position, Normal, Roughness
-    surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(IN.m_normal);
-    surface.vertexNormal = normalize(IN.m_normal);
-    surface.roughnessLinear = DebugShaderPBRSrg::m_roughness;
-    surface.CalculateRoughnessA();
-
-    // Albedo, SpecularF0
+    float3 normal = normalize(IN.m_normal);
     const float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(DebugShaderPBRSrg::m_baseColor, specularF0Factor, DebugShaderPBRSrg::m_metallic);
-
-    // Clear Coat, Transmission
-    surface.clearCoat.InitializeToZero();
-
+    Surface surface = EvaluateSurface(IN.m_worldPosition.xyz, normal, normal, DebugShaderPBRSrg::m_baseColor, specularF0Factor, DebugShaderPBRSrg::m_roughness, DebugShaderPBRSrg::m_metallic, ObjectSrg::m_lightingChannelMask);
+    
     // ------- LightingData -------
 
-    LightingData lightingData;
-
-    // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
-
-    // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+    LightingData lightingData = EvaluateLighting(surface, IN.m_position, ViewSrg::m_worldPosition.xyz);
 
     const float alpha = 1.0f;
-
-    // ------- Lighting Calculation -------
-
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
-
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, IN.m_position);
-
-    // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting();
-
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     // ------- Output -------

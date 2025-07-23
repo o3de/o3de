@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -21,7 +23,7 @@ namespace AzToolsFramework
     };
 
     //! Implements the Editor UI for Procedural Prefabs.
-    class ProceduralPrefabUiHandler
+    class AZTF_API ProceduralPrefabUiHandler
         : public PrefabUiHandler
     {
     public:

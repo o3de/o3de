@@ -94,10 +94,6 @@ set(FILES
     Source/Builders/CopyDependencyBuilder/XmlBuilderWorker/XmlBuilderWorker.h
     Source/Builders/CopyDependencyBuilder/XmlFormattedAssetBuilderWorker.cpp
     Source/Builders/CopyDependencyBuilder/XmlFormattedAssetBuilderWorker.h
-    Source/Builders/LevelBuilder/LevelBuilderComponent.cpp
-    Source/Builders/LevelBuilder/LevelBuilderComponent.h
-    Source/Builders/LevelBuilder/LevelBuilderWorker.cpp
-    Source/Builders/LevelBuilder/LevelBuilderWorker.h
     Source/Builders/SliceBuilder/SliceBuilderComponent.cpp
     Source/Builders/SliceBuilder/SliceBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderWorker.cpp

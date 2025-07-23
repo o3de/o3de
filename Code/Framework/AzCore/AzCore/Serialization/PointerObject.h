@@ -14,16 +14,19 @@ namespace AZ
 {
     //! Wraps a pointer for serializing the pointer address to JSON
     //! This is not meant for serialization to filesystem
-    struct PointerObject
+    struct AZCORE_API PointerObject
     {
-        AZ_TYPE_INFO_WITH_NAME_DECL(PointerObject);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, PointerObject);
         void* m_address{};
         AZ::TypeId m_typeId;
 
         bool IsValid() const;
 
-        friend bool operator==(const PointerObject& lhs, const PointerObject& rhs);
-        friend bool operator!=(const PointerObject& lhs, const PointerObject& rhs);
+        friend AZCORE_API bool operator==(const PointerObject& lhs, const PointerObject& rhs);
+        friend AZCORE_API bool operator!=(const PointerObject& lhs, const PointerObject& rhs);
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, PointerObject);
 
+    AZCORE_API bool operator==(const PointerObject& lhs, const PointerObject& rhs);
+    AZCORE_API bool operator!=(const PointerObject& lhs, const PointerObject& rhs);
 } // namespace AZ

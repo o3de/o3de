@@ -9,7 +9,6 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
-#include <AzCore/O3DEKernelConfiguration.h>
 #include <cstdarg>
 
 namespace AZStd
@@ -30,7 +29,7 @@ namespace AZ
         inline constexpr const char* NoWindow = "";
         namespace Platform
         {
-            void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
+            AZCORE_API void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
 
         enum class LogLevel { Disabled = 0, Errors = 1, Warnings = 2, Info = 3, Debug = 4, Trace = 5 };
@@ -43,7 +42,7 @@ namespace AZ
             None
         };
 
-        class O3DEKERNEL_API ITrace
+        class AZCORE_API ITrace
         {
         public:
             ITrace();
@@ -148,7 +147,7 @@ namespace AZ
             bool m_printCallstack = false;
         };
 
-        class Trace
+        class AZCORE_API Trace
             : public ITrace
         {
         public:

@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -18,7 +19,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! FolderAssetBrowserEntry is a class for any folder.
-        class FolderAssetBrowserEntry
+        class AZTF_API FolderAssetBrowserEntry
             : public AssetBrowserEntry
         {
             friend class RootAssetBrowserEntry;

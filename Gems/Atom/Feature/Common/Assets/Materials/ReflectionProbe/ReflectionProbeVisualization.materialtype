@@ -69,5 +69,6 @@
         }
     },
     "lightingModel": "Base",
+    "materialShaderDefines": "ReflectionProbeVisualization_Defines.azsli",
     "materialShaderCode": "ReflectionProbeVisualization.azsli"
 }

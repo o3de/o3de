@@ -16,7 +16,7 @@ namespace AZ
     class ReflectContext;
 
     //! Implementation of the ITime system interface.
-    class TimeSystem
+    class AZCORE_API TimeSystem
         : public ITimeRequestBus::Handler
     {
     public:

@@ -79,7 +79,8 @@ namespace AssetProcessor
         // Returns how many finished jobs that haven't been updated in the catalog.
         unsigned int jobsPendingCatalog() const;
 
-        void UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobPrioririty);
+        void UpdateJobEscalation(const QueueElementID& toEscalate, int valueToEscalateTo);
+        void UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int valueToEscalateTo);
         void UpdateRow(int jobIndex);
 
         bool isEmpty();

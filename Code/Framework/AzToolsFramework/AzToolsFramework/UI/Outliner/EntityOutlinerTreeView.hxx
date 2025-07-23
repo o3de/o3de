@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -35,7 +37,7 @@ namespace AzToolsFramework
     //! delaying the Editor selection from updating with mouse interaction to
     //! allow for dragging and dropping of entities from the outliner into the property editor
     //! of other entities. If the selection updates instantly, this would never be possible.
-    class EntityOutlinerTreeView
+    class AZTF_API EntityOutlinerTreeView
         : public AzQtComponents::StyledTreeView
         , private FocusModeNotificationBus::Handler
     {

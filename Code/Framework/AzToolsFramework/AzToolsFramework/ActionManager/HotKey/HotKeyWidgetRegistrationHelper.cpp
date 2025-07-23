@@ -14,12 +14,6 @@
 
 namespace AzToolsFramework
 {
-    struct HotKeyWidgetRegistrationHelper::HotKeyActionContextPair
-    {
-        AZStd::string actionContextIdentifier;
-        QWidget* widget;
-    };
-
     HotKeyWidgetRegistrationHelper::HotKeyWidgetRegistrationHelper()
     {
         m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();

@@ -68,6 +68,8 @@ namespace AZ
             LoadStoreOpNone,
             SubpassMergeFeedback,
             CalibratedTimestamps,
+            ExternalMemoryHost,
+            ExternalSemaphore,
             Count
         };
 
@@ -93,7 +95,7 @@ namespace AZ
             const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const;
             const VkPhysicalDeviceConservativeRasterizationPropertiesEXT& GetPhysicalDeviceConservativeRasterProperties() const;
             const VkPhysicalDeviceDepthClipEnableFeaturesEXT& GetPhysicalDeviceDepthClipEnableFeatures() const;
-            const VkPhysicalDeviceRobustness2FeaturesEXT& GetPhysicalDeviceRobutness2Features() const;
+            const VkPhysicalDeviceRobustness2FeaturesEXT& GetPhysicalDeviceRobustness2Features() const;
             const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR& GetPhysicalDeviceFloat16Int8Features() const;
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& GetPhysicalDeviceDescriptorIndexingFeatures() const;
             const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& GetPhysicalDeviceBufferDeviceAddressFeatures() const;
@@ -112,6 +114,7 @@ namespace AZ
             const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
             const VkPhysicalDeviceTimelineSemaphoreFeatures& GetPhysicalDeviceTimelineSemaphoreFeatures() const;
             const VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT& GetPhysicalSubpassMergeFeedbackFeatures() const;
+            const VkPhysicalDeviceExternalMemoryHostPropertiesEXT& GetExternalMemoryHostProperties() const;
 
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
@@ -142,7 +145,7 @@ namespace AZ
             VkPhysicalDeviceProperties m_deviceProperties{};
             VkPhysicalDeviceConservativeRasterizationPropertiesEXT m_conservativeRasterProperties{};
             VkPhysicalDeviceDepthClipEnableFeaturesEXT m_dephClipEnableFeatures{};
-            VkPhysicalDeviceRobustness2FeaturesEXT m_robutness2Features{};
+            VkPhysicalDeviceRobustness2FeaturesEXT m_robustness2Features{};
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR m_float16Int8Features{};
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT m_descriptorIndexingFeatures{};
             VkPhysicalDeviceBufferDeviceAddressFeaturesEXT m_bufferDeviceAddressFeatures{};
@@ -161,6 +164,7 @@ namespace AZ
             VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
             VkPhysicalDeviceTimelineSemaphoreFeatures m_timelineSemaphoreFeatures{};
             VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT m_subpassMergeFeedbackFeatures{};
+            VkPhysicalDeviceExternalMemoryHostPropertiesEXT m_externalHostMemoryFeatures{};
             uint32_t m_vulkanVersion = 0;
         };
     }

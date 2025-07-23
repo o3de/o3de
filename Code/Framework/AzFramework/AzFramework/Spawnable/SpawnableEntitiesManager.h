@@ -17,6 +17,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -26,7 +27,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class SpawnableEntitiesManager
+    class AZF_API SpawnableEntitiesManager
         : public SpawnableEntitiesInterface::Registrar
     {
     public:

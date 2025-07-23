@@ -12,12 +12,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::Scripts
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
     //! reflected with BehaviorContext for interfacing with Lua API
-    class SpawnableScriptMediator final
+    class AZF_API SpawnableScriptMediator final
         : public AZ::TickBus::Handler
     {
     public:

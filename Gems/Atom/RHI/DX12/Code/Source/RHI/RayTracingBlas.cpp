@@ -91,7 +91,7 @@ namespace AZ
                     geometryDesc.Triangles.VertexBuffer.StartAddress = static_cast<const DX12::Buffer*>(geometry.m_vertexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_vertexBuffer.GetByteOffset();
                     geometryDesc.Triangles.VertexBuffer.StrideInBytes = geometry.m_vertexBuffer.GetByteStride();
                     geometryDesc.Triangles.VertexCount = geometry.m_vertexBuffer.GetByteCount() / aznumeric_cast<UINT>(geometryDesc.Triangles.VertexBuffer.StrideInBytes);
-                    geometryDesc.Triangles.VertexFormat = ConvertFormat(geometry.m_vertexFormat);
+                    geometryDesc.Triangles.VertexFormat = ConvertFormat(RHI::ConvertToImageFormat(geometry.m_vertexFormat));
                     geometryDesc.Triangles.IndexBuffer = static_cast<const DX12::Buffer*>(geometry.m_indexBuffer.GetBuffer())->GetMemoryView().GetGpuAddress() + geometry.m_indexBuffer.GetByteOffset();
                     geometryDesc.Triangles.IndexFormat = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
                     geometryDesc.Triangles.IndexCount = aznumeric_cast<UINT>(geometry.m_indexBuffer.GetByteCount()) / ((geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? 2 : 4);

@@ -18,7 +18,7 @@ namespace AZ
      * A job context stores information about the execution environment of jobs, a single context should be shared
      * between many jobs.
      */
-    class JobContext
+    class AZCORE_API JobContext
     {
     public:
         AZ_CLASS_ALLOCATOR(JobContext, ThreadPoolAllocator);

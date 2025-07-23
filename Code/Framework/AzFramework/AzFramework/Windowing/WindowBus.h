@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -158,6 +159,12 @@ namespace AzFramework
         //! This is called when the window's desired render resolution is changed.
         virtual void OnResolutionChanged(uint32_t width, uint32_t height) { AZ_UNUSED(width); AZ_UNUSED(height); };
 
+        //! This is called when the window is minimized.
+        virtual void OnWindowMinimized() {};
+
+        //! This is called when the window is restored from minimized.
+        virtual void OnWindowRestored() {};
+
         //! This is called if the window's underyling DPI scaling factor changes.
         virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }
 
@@ -253,3 +260,9 @@ namespace AzFramework
     };
     using WindowSystemNotificationBus = AZ::EBus<WindowSystemNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::WindowNotifications)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::ExclusiveFullScreenRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::WindowSystemNotifications)

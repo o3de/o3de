@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/O3DEKernelConfiguration.h>
 #include <AzCore/Debug/Trace.h>
 
 namespace AZ::Debug

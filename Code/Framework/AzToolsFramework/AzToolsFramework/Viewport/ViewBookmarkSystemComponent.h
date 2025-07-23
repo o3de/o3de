@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <Viewport/LocalViewBookmarkLoader.h>
 
@@ -15,7 +17,7 @@ namespace AzToolsFramework
 {
     //! @class ViewBookmarkSystemComponent
     //! @brief System Component that holds functionality for the ViewBookmarks
-    class ViewBookmarkSystemComponent final
+    class AZTF_API ViewBookmarkSystemComponent final
         : public AZ::Component
     {
     public:

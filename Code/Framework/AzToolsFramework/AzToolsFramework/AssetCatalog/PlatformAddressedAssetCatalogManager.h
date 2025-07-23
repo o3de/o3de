@@ -12,11 +12,12 @@
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Handle multiple AssetCatalogs with requests addressing each by platform
-    class PlatformAddressedAssetCatalogManager : private AzFramework::AssetSystem::NetworkAssetUpdateInterface
+    class AZTF_API PlatformAddressedAssetCatalogManager : private AzFramework::AssetSystem::NetworkAssetUpdateInterface
     {
     public:
         AZ_TYPE_INFO(PlatformAddressedAssetCatalogManager, "{985263D2-1C04-4811-9EC6-6A069641512A}");

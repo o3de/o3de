@@ -9,8 +9,10 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -70,4 +72,5 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityVisibilityNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorVisibilityRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityVisibilityNotifications);

@@ -10,7 +10,7 @@ find_library(APPKIT_LIBRARY AppKit)
 find_library(FOUNDATION_LIBRARY Foundation)
 
 set(LY_BUILD_DEPENDENCIES
-    PRIVATE
+    PUBLIC
         ${APPKIT_LIBRARY}
         ${FOUNDATION_LIBRARY}
 )

@@ -9,12 +9,13 @@
 #pragma once
 
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::ProcessUtils
 {
     // Finds any existing processes matching a particular name.
     // @param processFilename The filename of the process to search for. Example: "MyGame.ServerLauncher.exe"
     // @return bool Returns the number of processes found matching a given name.
-    int ProcessCount(AZStd::string_view processFilename);
+    AZF_API int ProcessCount(AZStd::string_view processFilename);
 
 } // namespace AzFramework::ProcessUtils

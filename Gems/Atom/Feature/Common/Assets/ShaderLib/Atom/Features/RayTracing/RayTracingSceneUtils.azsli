@@ -7,6 +7,8 @@
  */
 
 #include <Atom/Features/Bindless.azsli>
+#include <Atom/RHI/IndexFormat.azsli>
+#include <Atom/RPI/VertexBufferOperations.azsli>
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
@@ -24,15 +26,28 @@ uint3 GetHitIndices(RayTracingSceneSrg::MeshInfo meshInfo)
     // get the index buffer resource index from the indirection list
     uint meshIndexBufferArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_INDEX_BUFFER_OFFSET)];
 
+    IndexFormat indexFormat = (IndexFormat)meshInfo.m_indexFormat;
+
     // compute the offset into the index buffer for this primitve of the mesh
-    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 12);
+    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 3 * GetIndexFormatSize(indexFormat));
 
     // load the indices for this primitive from the index buffer
+    if (indexFormat == IndexFormat::Uint16)
+    {
 #if USE_BINDLESS_SRG
-    return Bindless::GetByteAddressBuffer(meshIndexBufferArrayIndex).Load3(offsetBytes);
+        return LoadUint16x3FromBufferUnaligned(Bindless::GetByteAddressBuffer(meshIndexBufferArrayIndex), offsetBytes);
 #else
-    return RayTracingSceneSrg::m_meshBuffers[meshIndexBufferArrayIndex].Load3(offsetBytes);
+        return LoadUint16x3FromBufferUnaligned(RayTracingSceneSrg::m_meshBuffers[meshIndexBufferArrayIndex], offsetBytes);
 #endif
+    }
+    else
+    {
+#if USE_BINDLESS_SRG
+        return Bindless::GetByteAddressBuffer(meshIndexBufferArrayIndex).Load3(offsetBytes);
+#else
+        return RayTracingSceneSrg::m_meshBuffers[meshIndexBufferArrayIndex].Load3(offsetBytes);
+#endif
+    }
 }
 
 // returns the interpolated vertex data for the primitive hit by the ray
@@ -60,84 +75,94 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
     {
         // position
         {
+            VertexFormat positionFormat = (VertexFormat)meshInfo.m_positionFormat;
+
             // array index of the position buffer for this mesh in the m_meshBuffers unbounded array
             uint meshVertexPositionArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_POSITION_BUFFER_OFFSET)];
 
             // offset into the position buffer for this vertex
-            uint positionOffset = meshInfo.m_positionOffset + (indices[i] * 12);
+            uint positionOffset = meshInfo.m_positionOffset + (indices[i] * GetVertexFormatSize(positionFormat));
 
             // load the position data
 #if USE_BINDLESS_SRG
-            vertexData.m_position += asfloat(Bindless::GetByteAddressBuffer(meshVertexPositionArrayIndex).Load3(positionOffset)) * barycentrics[i];
+            vertexData.m_position += LoadFloat3FromBuffer(Bindless::GetByteAddressBuffer(meshVertexPositionArrayIndex), positionOffset, positionFormat) * barycentrics[i];
 #else
-            vertexData.m_position += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexPositionArrayIndex].Load3(positionOffset)) * barycentrics[i];
+            vertexData.m_position += LoadFloat3FromBuffer(RayTracingSceneSrg::m_meshBuffers[meshVertexPositionArrayIndex], positionOffset, positionFormat) * barycentrics[i];
 #endif
         }
 
         // normal
         {
+            VertexFormat normalFormat = (VertexFormat)meshInfo.m_normalFormat;
+
             // array index of the normal buffer for this mesh in the m_meshBuffers unbounded array
             uint meshVertexNormalArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_NORMAL_BUFFER_OFFSET)];
 
             // offset into the normal buffer for this vertex
-            uint normalOffset = meshInfo.m_normalOffset + (indices[i] * 12);
+            uint normalOffset = meshInfo.m_normalOffset + (indices[i] * GetVertexFormatSize(normalFormat));
 
              // load the normal data
 #if USE_BINDLESS_SRG
-            vertexData.m_normal += asfloat(Bindless::GetByteAddressBuffer(meshVertexNormalArrayIndex).Load3(normalOffset)) * barycentrics[i];
+            vertexData.m_normal += LoadFloat3FromBuffer(Bindless::GetByteAddressBuffer(meshVertexNormalArrayIndex), normalOffset, normalFormat) * barycentrics[i];
 #else
-            vertexData.m_normal += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex].Load3(normalOffset)) * barycentrics[i];
+            vertexData.m_normal += LoadFloat3FromBuffer(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex], normalOffset, normalFormat) * barycentrics[i];
 #endif
         }
 
         // tangent
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_TANGENT)
         {
+            VertexFormat tangentFormat = (VertexFormat)meshInfo.m_tangentFormat;
+
             // array index of the tangent buffer for this mesh in the m_meshBuffers unbounded array
             uint meshVertexTangentArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_TANGENT_BUFFER_OFFSET)];
 
             // offset into the tangent buffer for this vertex
-            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
+            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * GetVertexFormatSize(tangentFormat));
 
             // load the tangent data
 #if USE_BINDLESS_SRG
-            vertexData.m_tangent += asfloat(Bindless::GetByteAddressBuffer(meshVertexTangentArrayIndex).Load4(tangentOffset)) * barycentrics[i];
+            vertexData.m_tangent += LoadFloat4FromBuffer(Bindless::GetByteAddressBuffer(meshVertexTangentArrayIndex), tangentOffset, tangentFormat) * barycentrics[i];
 #else
-            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load4(tangentOffset)) * barycentrics[i];
+            vertexData.m_tangent += LoadFloat4FromBuffer(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex], tangentOffset, tangentFormat) * barycentrics[i];
 #endif
         }
 
         // bitangent
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_BITANGENT)
         {
+            VertexFormat bitangentFormat = (VertexFormat)meshInfo.m_bitangentFormat;
+
             // array index of the bitangent buffer for this mesh in the m_meshBuffers unbounded array
             uint meshVertexBitangentArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_BITANGENT_BUFFER_OFFSET)];
 
             // offset into the bitangent buffer for this vertex
-            uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * 12);
+            uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * GetVertexFormatSize(bitangentFormat));
 
             // load the bitangent data
 #if USE_BINDLESS_SRG
-            vertexData.m_bitangent += asfloat(Bindless::GetByteAddressBuffer(meshVertexBitangentArrayIndex).Load3(bitangentOffset)) * barycentrics[i];
+            vertexData.m_bitangent += LoadFloat3FromBuffer(Bindless::GetByteAddressBuffer(meshVertexBitangentArrayIndex), bitangentOffset, bitangentFormat) * barycentrics[i];
 #else
-            vertexData.m_bitangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexBitangentArrayIndex].Load3(bitangentOffset)) * barycentrics[i];
+            vertexData.m_bitangent += LoadFloat3FromBuffer(RayTracingSceneSrg::m_meshBuffers[meshVertexBitangentArrayIndex], bitangentOffset, bitangentFormat) * barycentrics[i];
 #endif
         }
 
         // UV
         if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_UV)
         {
+            VertexFormat uvFormat = (VertexFormat)meshInfo.m_uvFormat;
+
             // array index of the UV buffer for this mesh in the m_meshBuffers unbounded array
             uint meshVertexUVArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_UV_BUFFER_OFFSET)];   
 
             // offset into the UV buffer for this vertex
-            uint uvOffset = meshInfo.m_uvOffset + (indices[i] * 8);    
+            uint uvOffset = meshInfo.m_uvOffset + (indices[i] * GetVertexFormatSize(uvFormat));
     
             // load the UV data
 #if USE_BINDLESS_SRG
-            vertexData.m_uv += asfloat(Bindless::GetByteAddressBuffer(meshVertexUVArrayIndex).Load2(uvOffset)) * barycentrics[i];
+            vertexData.m_uv += LoadFloat2FromBuffer(Bindless::GetByteAddressBuffer(meshVertexUVArrayIndex), uvOffset, uvFormat) * barycentrics[i];
 #else
-            vertexData.m_uv += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexUVArrayIndex].Load2(uvOffset)) * barycentrics[i];
+            vertexData.m_uv += LoadFloat2FromBuffer(RayTracingSceneSrg::m_meshBuffers[meshVertexUVArrayIndex], uvOffset, uvFormat) * barycentrics[i];
 #endif
         }
     }

@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class JsonColorSerializer
+    class AZCORE_API JsonColorSerializer
         : public BaseJsonSerializer
     {
     public:

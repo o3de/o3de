@@ -9,11 +9,12 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
 
-    class MetaAdapter : public DocumentAdapter
+    class AZF_API MetaAdapter : public DocumentAdapter
     {
     public:
         void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);

@@ -1380,20 +1380,22 @@ bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::IsBoundsVisible(const AABB&) const
+bool EditorViewportWidget::IsBoundsVisible(const AZ::Aabb&) const
 {
     AZ_Assert(false, "Not supported");
     return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
+void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
 {
-    Vec3 selectionCenter = aabb.GetCenter();
+    AZ::Vector3 selectionCenter;
+    float radius;
+    aabb.GetAsSphere(selectionCenter, radius);
 
     // Minimum center size is 40cm
     const float minSelectionRadius = 0.4f;
-    const float selectionSize = std::max(minSelectionRadius, aabb.GetRadius());
+    const float selectionSize = std::max(minSelectionRadius, radius);
 
     // Move camera 25% further back than required
     const float centerScale = 1.25f;
@@ -1413,7 +1415,7 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
 
     // Compute new transform matrix
     const float distanceToTarget = selectionSize * fovScale * centerScale;
-    const Vec3 newPosition = selectionCenter - (viewDirection * distanceToTarget);
+    const Vec3 newPosition = AZVec3ToLYVec3(selectionCenter) - (viewDirection * distanceToTarget);
     Matrix34 newTM = Matrix34(rotationMatrix, newPosition);
 
     // Set new orbit distance

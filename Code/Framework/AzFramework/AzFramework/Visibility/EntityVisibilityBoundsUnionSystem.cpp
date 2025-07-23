@@ -11,7 +11,11 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 
 namespace AzFramework
 {

@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        version.lib
+)

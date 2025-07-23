@@ -532,6 +532,13 @@
                                 "Pass": "SubsurfaceScatteringPass",
                                 "Attachment": "Output"
                             }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
                         }
                     ]
                 },

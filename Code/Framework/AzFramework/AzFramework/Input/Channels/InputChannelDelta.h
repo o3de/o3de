@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional delta input values, where the 'delta' and
     //! 'value' is one and the same, unlike other input channels that calculate the delta themselves.
-    class InputChannelDelta : public InputChannel
+    class AZF_API InputChannelDelta : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

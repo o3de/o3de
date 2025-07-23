@@ -192,7 +192,7 @@ namespace AZ
             delete m_parameters;
             m_parameters = nullptr;
 
-            AZ::GetCurrentSerializeContextModule().Cleanup();
+            AZ::GetGlobalSerializeContextModule().Cleanup();
 
             UnitTest::TraceBusHook::TeardownEnvironment();
 

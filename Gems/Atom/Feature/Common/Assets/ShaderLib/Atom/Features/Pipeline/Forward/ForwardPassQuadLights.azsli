@@ -1,0 +1,70 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+// the QuadLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/QuadLight.azsli
+
+#if ENABLE_QUAD_LIGHTS
+
+#ifndef QuadLightUtil
+#error "QuadLightUtil needs to be defined"
+#endif // QuadLightUtil
+
+void ApplyQuadLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    QuadLight srgLight = ViewSrg::m_quadLights[lightIndex];
+
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+    
+    QuadLightUtil light = QuadLightUtil::Init(srgLight, surface);
+
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+
+    // QuadLights don't get shadows
+    real litRatio = 1.0f;
+
+#if ENABLE_AREA_LIGHT_VALIDATION
+    if (o_area_light_validation)
+    {
+        light.ApplySampled(srgLight, surface, lightingData);
+    }
+    else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+    {
+        light.Apply(srgLight, surface, litRatio, lightingData);
+    }
+}
+
+
+void ApplyQuadLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();    
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        ApplyQuadLight(currLightIndex, surface, lightingData);
+    }
+#else
+
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_pointLightCount; lightIndex++)
+    {
+        ApplyQuadLight(lightIndex, surface, lightingData);
+    }
+#endif /* ENABLE_LIGHT_CULLING */
+}
+#else 
+void ApplyQuadLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+    // empty
+}
+#endif /* ENABLE_DISK_LIGHTS */
+
+

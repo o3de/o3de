@@ -17,13 +17,17 @@
 #include <QToolButton>
 #include <QWidget>
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Math/Crc.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -228,6 +232,8 @@ namespace ScriptCanvasEditor
         , private VariablePaletteRequestBus::Handler
         , private ScriptCanvas::BatchOperationNotificationBus::Handler
         , private AssetGraphSceneBus::Handler
+        , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+        , private AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler
 #if SCRIPTCANVAS_EDITOR
         //, public IEditorNotifyListener
 #endif
@@ -256,10 +262,12 @@ namespace ScriptCanvasEditor
 
     public:
 
-        explicit MainWindow(QWidget* parent = nullptr);
+        MainWindow(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MainWindow() override;
 
     private:
+        void InitMainWindow();
+
         // UIRequestBus
         QMainWindow* GetMainWindow() override { return qobject_cast<QMainWindow*>(this); }
         void OpenValidationPanel() override;
@@ -282,6 +290,10 @@ namespace ScriptCanvasEditor
         VariablePaletteRequests::VariableConfigurationOutput ShowVariableConfigurationWidget(
             const VariablePaletteRequests::VariableConfigurationInput& input, const QPoint& scenePosition) override;
         ////
+
+        // AtomToolsDocumentNotificationBus
+        void OnDocumentOpened(const AZ::Uuid& documentId) override;
+        // ~AtomToolsDocumentNotificationBus
 
         // GraphCanvas::AssetEditorRequestBus
         void OnSelectionManipulationBegin() override;
@@ -321,6 +333,10 @@ namespace ScriptCanvasEditor
         //! ScriptCanvas::BatchOperationsNotificationBus
         void OnCommandStarted(AZ::Crc32 commandTag) override;
         void OnCommandFinished(AZ::Crc32 commandTag) override;
+
+        //! AssetBrowserComponentNotificationBus
+        void OnAssetBrowserComponentReady() override;
+        ////
 
         // File menu
         void OnFileNew();
@@ -769,5 +785,7 @@ namespace ScriptCanvasEditor
         void MarkRecentSave(const SourceHandle& handle);
         AZStd::recursive_mutex m_mutex;
         AZStd::unordered_map <AZStd::string, AZStd::chrono::steady_clock::time_point> m_saves;
+
+        const AZ::Crc32 m_toolId = {};
     };
 }

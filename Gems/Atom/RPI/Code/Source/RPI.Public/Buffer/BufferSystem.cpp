@@ -194,6 +194,7 @@ namespace AZ
             bufferDesc.m_alignment = descriptor.m_elementSize;
             bufferDesc.m_bindFlags = bufferPool->GetDescriptor().m_bindFlags;
             bufferDesc.m_byteCount = descriptor.m_byteCount;
+            bufferDesc.m_ownerDeviceIndex = descriptor.m_ownerDeviceIndex;
 
             Data::Asset<BufferAsset> bufferAsset;
             BufferAssetCreator creator;

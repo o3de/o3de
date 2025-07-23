@@ -121,7 +121,11 @@ namespace AZ::RHI
         ResultCode resultCode = DeviceBufferPoolBase::InitBuffer(
             initRequest.m_buffer,
             initRequest.m_descriptor,
-            [this, &initRequest]() { return InitBufferInternal(*initRequest.m_buffer, initRequest.m_descriptor); });
+            [this, &initRequest]()
+            {
+                return InitBufferInternal(
+                    *initRequest.m_buffer, initRequest.m_descriptor, initRequest.m_descriptor.m_ownerDeviceIndex.has_value());
+            });
 
         if (resultCode == ResultCode::Success && initRequest.m_initialData)
         {
@@ -140,6 +144,19 @@ namespace AZ::RHI
         }
 
         return resultCode;
+    }
+
+    ResultCode DeviceBufferPool::InitBufferCrossDevice(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
+    {
+        AZ_PROFILE_FUNCTION(RHI);
+
+        return DeviceBufferPoolBase::InitBuffer(
+            &bufferBase,
+            originalDeviceBuffer.GetDescriptor(),
+            [this, &bufferBase, &originalDeviceBuffer]()
+            {
+                return InitBufferCrossDeviceInternal(bufferBase, originalDeviceBuffer);
+            });
     }
 
     ResultCode DeviceBufferPool::OrphanBuffer(DeviceBuffer& buffer)

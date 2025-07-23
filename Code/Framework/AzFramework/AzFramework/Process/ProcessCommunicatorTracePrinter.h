@@ -11,10 +11,11 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 //! ProcessCommunicatorTracePrinter listens to stderr and stdout of a running process and writes its output to the AZ_Trace system
 //! Importantly, it does not do any blocking operations.
-class ProcessCommunicatorTracePrinter
+class AZF_API ProcessCommunicatorTracePrinter
 {
 public:
     enum class TraceProcessing

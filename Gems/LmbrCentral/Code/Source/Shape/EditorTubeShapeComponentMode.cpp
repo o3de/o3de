@@ -201,7 +201,7 @@ namespace LmbrCentral
             views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(
                 AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             linearManipulator->SetViews(AZStd::move(views));
-            linearManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+            linearManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
             struct SharedState
             {

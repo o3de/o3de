@@ -63,10 +63,12 @@ Surface EvaluateSurface_Eye(
     float4x4 worldMatrix,
     float3x3 worldMatrixIT,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives,
+    uint lightingChannels)
 {
     Surface surface;
     surface.position = positionWS;
+    surface.lightingChannels = lightingChannels;
 
     // ------- Iris/Sclera Layer Setup -------
 
@@ -252,7 +254,8 @@ Surface EvaluateSurface_Eye(
     float3 localPosition,
     bool isFrontFace,
     real4x4 worldMatrix,
-    real3x3 worldMatrixIT)
+    real3x3 worldMatrixIT,
+    uint lightingChannels)
 {
     return EvaluateSurface_Eye(
         params,
@@ -266,10 +269,11 @@ Surface EvaluateSurface_Eye(
         worldMatrix,
         worldMatrixIT,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        lightingChannels);
 }
 
-Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_Eye(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_Eye(
         params,
@@ -283,10 +287,11 @@ Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData, const Materi
         geoData.objectToWorld,
         geoData.objectToWorldIT,
         uvDxDy,
-        customDerivatives);
+        customDerivatives,
+        GetLightingChannelMask(SV));
 }
 
-Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_Eye(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_Eye(
         params,
@@ -300,5 +305,6 @@ Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData, const Materi
         geoData.objectToWorld,
         geoData.objectToWorldIT,
         float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        false,
+        GetLightingChannelMask(SV));
 }

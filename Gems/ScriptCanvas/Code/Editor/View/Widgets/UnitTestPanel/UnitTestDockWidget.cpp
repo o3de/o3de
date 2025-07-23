@@ -427,9 +427,6 @@ namespace ScriptCanvasEditor
 
     void UnitTestDockWidget::OpenScriptInEditor(AZ::Uuid sourceUuid)
     {
-        AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-        AZ::Data::AssetId sourceAssetId(sourceUuid, 0);
-
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
         GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId
             , SourceHandle(nullptr, sourceUuid)

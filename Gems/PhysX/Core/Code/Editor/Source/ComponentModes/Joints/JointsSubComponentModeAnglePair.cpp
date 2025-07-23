@@ -133,8 +133,8 @@ namespace PhysX
                     AngleLimitsFloatPair(m_sharedRotationState->m_valuePair.first, newSecondValue));
             });
 
-        m_firstManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_secondManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_firstManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
+        m_secondManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }

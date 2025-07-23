@@ -77,11 +77,6 @@ namespace AZ
         return result;
     }
 
-    AZ_MATH_INLINE const Transform& Transform::Identity()
-    {
-        return g_transformIdentity;
-    }
-
     AZ_MATH_INLINE Vector3 Transform::GetBasis(int32_t index) const
     {
         switch (index)

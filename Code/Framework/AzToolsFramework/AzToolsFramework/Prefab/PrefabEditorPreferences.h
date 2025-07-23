@@ -8,20 +8,21 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AzToolsFramework::Prefab
 {
-    extern const AZStd::string_view HotReloadToggleKey;
+    AZStd::string_view GetHotReloadToggleKey();
     
     //! Checks if hot reloading for prefab files is enabled.
-    bool IsHotReloadingEnabled();
+    AZTF_API bool IsHotReloadingEnabled();
 
     //! Checks if override visualization and authoring workflows in Entity Outliner are enabled.
-    bool IsOutlinerOverrideManagementEnabled();
+    AZTF_API bool IsOutlinerOverrideManagementEnabled();
 
     //! Checks if override visualization and authoring workflows in DPE Entity Inspector are enabled.
     //! Note that this feature does not work if DPE flag is disabled.
-    bool IsInspectorOverrideManagementEnabled();
+    AZTF_API bool IsInspectorOverrideManagementEnabled();
 
 } // namespace AzToolsFramework::Prefab

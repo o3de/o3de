@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace AzToolsFramework
@@ -16,7 +17,7 @@ namespace AzToolsFramework
     {
         // @deprecated - SelectionComponent has been deprecated and is no longer instantiated.
         // This type is being retained to handle legacy data serialization.
-        class SelectionComponent : public EditorComponentBase
+        class AZTF_API SelectionComponent : public EditorComponentBase
         {
         public:
             AZ_COMPONENT(SelectionComponent, "{A7CBE7BC-9B4A-47DC-962F-1BFAE85DBF3A}", EditorComponentBase)

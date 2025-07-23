@@ -157,6 +157,27 @@
                     ]
                 },
                 {
+                    "Name": "MotionBlurPass",
+                    "TemplateName": "MotionBlurParentTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "DepthOfFieldPass",
+                                "Attachment": "LightingBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "MotionVectors"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "BloomPass",
                     "TemplateName": "BloomPassTemplate",
                     "Enabled": true,
@@ -164,8 +185,8 @@
                         {
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
-                                "Pass": "DepthOfFieldPass",
-                                "Attachment": "LightingBuffer"
+                                "Pass": "MotionBlurPass",
+                                "Attachment": "OutputColor"
                             }
                         }
                     ]

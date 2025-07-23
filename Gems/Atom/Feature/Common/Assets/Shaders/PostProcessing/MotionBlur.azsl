@@ -1,0 +1,176 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include "MotionBlur.azsli"
+
+#define TILE_DIM_X 16
+#define TILE_DIM_Y 16
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    Texture2D<float4> m_linearDepth;
+    Texture2D<float2> m_inputVelocity;
+    Texture2D<float2> m_inputTileVelocity;
+
+    RWTexture2D<float4> m_outputColor;
+
+    struct Constants
+    {
+        uint m_sampleNumber;
+        float m_strength; // Multiplier for sampling offset
+        uint2 m_outputSize; // Texture size of output
+    };
+    Constants m_constants;
+
+    // Sampler for tile velocity, use linear interpolation to avoid tile artifacts
+    Sampler LinearClampSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float2 DepthCmp(float centerDepth, float sampleDepth, float depthScale)
+{
+    return saturate(0.5f + float2(depthScale, -depthScale) * (sampleDepth - centerDepth));
+}
+
+float2 SpreadCmp(float offsetLen, float2 spreadLen, float pixelToSampleUnitsScale)
+{
+    return saturate(pixelToSampleUnitsScale * spreadLen - offsetLen + 1.0f);
+}
+
+float SampleWeight(float centerDepth, float sampleDepth, float offsetLen, float centerSpreadLen, float sampleSpreadLen, float pixelToSampleUnitsScale, float depthScale)
+{
+    float2 depthCmp = DepthCmp(centerDepth, sampleDepth, depthScale);
+    float2 spreadCmp = SpreadCmp(offsetLen, float2(centerSpreadLen, sampleSpreadLen), pixelToSampleUnitsScale);
+    return dot(depthCmp, spreadCmp);
+}
+
+
+uint2 ClampCoords(int2 coord)
+{
+    uint2 clampedCoords;
+    clampedCoords.x = uint(clamp(coord.x, 0, PassSrg::m_constants.m_outputSize.x - 1));
+    clampedCoords.y = uint(clamp(coord.y, 0, PassSrg::m_constants.m_outputSize.y - 1));
+    return clampedCoords;
+}
+
+// Transform velocity from UV unit to pixel unit and multiply by the effect strength
+float2 TransformVelocity(float2 velocity)
+{
+    velocity *= float2(PassSrg::m_constants.m_outputSize);
+    velocity *= PassSrg::m_constants.m_strength;
+    return velocity;
+}
+
+// Interleaved gradient function from Jimenez 2014
+// Use integer coordinates rather than UV since UV varies too little
+float GradientNoise(float2 coords)
+{
+    float f = dot(float2(0.06711056f, 0.00583715f), coords);
+    return frac(52.9829189f * frac(f));
+}
+
+// Add some jittering to the sample position on tile max velocity to reduce tile artifacts
+float2 TileJitter(float2 uv, float2 tileVelocityTexelSize) {
+    float rx, ry;
+    sincos(GradientNoise((uv + float2(2, 0)) * (float2)PassSrg::m_constants.m_outputSize) * 3.14159 * 2, ry, rx);
+    return float2(rx, ry) * tileVelocityTexelSize / 4;
+}
+
+// This shader calculates motion blur effect from tile max speeds. 
+// See https://advances.realtimerendering.com/s2014/index.html#_NEXT_GENERATION_POST
+// for a detailed overview of the technique. 
+[numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    uint2 pixelCoord = dispatchThreadID.xy;
+    if (pixelCoord.x >= PassSrg::m_constants.m_outputSize.x || pixelCoord.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
+
+    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
+    PassSrg::m_outputColor[pixelCoord].rgb = color;
+
+    float depth = PassSrg::m_linearDepth[pixelCoord].r;
+
+    const float2 invOutputSize = 1.0 / (float2)PassSrg::m_constants.m_outputSize;
+    const float2 uv = pixelCoord * invOutputSize;
+
+    const float2 tileVelocityTexelSize = invOutputSize * float2(TILE_SIZE, TILE_SIZE);
+    // Use sample for linear interpolation here
+    float2 tileVelocity = PassSrg::m_inputTileVelocity.SampleLevel(PassSrg::LinearClampSampler, uv + TileJitter(uv, tileVelocityTexelSize), 0);
+    
+    tileVelocity = TransformVelocity(tileVelocity);
+    float tileVelocityLength = length(tileVelocity);
+
+    // Omit effect for velocities that are too small
+    if (tileVelocityLength < 1)
+    {
+        return;
+    }
+
+    // Introduce some dithering according to the slides
+    int2 ditherCoord = int2(pixelCoord.x % 2, pixelCoord.y % 2);
+    float samplingDither = (-0.25 + 2.0 * 0.25 * ditherCoord.x) * (-1.0 + 2.0 * ditherCoord.y);
+    
+    const uint iterationCount = PassSrg::m_constants.m_sampleNumber;
+    const float invIterationCount = 1 / (float)iterationCount;
+    const float2 sampleStep = tileVelocity * invIterationCount;
+    const float pixelToSampleUnitsScale = rsqrt(dot(sampleStep, sampleStep));
+    float4 accumulatedColor = float4(0.0, 0.0, 0.0, 0.0);
+    
+    for (int i = 0; i < iterationCount; ++i)
+    {
+        int2 offset = int2((i + samplingDither) * sampleStep);
+        uint2 coord1 = ClampCoords(pixelCoord + offset);
+        uint2 coord2 = ClampCoords(pixelCoord - offset);
+
+        float2 sampleVelocity1 = PassSrg::m_inputVelocity[coord1];
+        float2 sampleVelocity2 = PassSrg::m_inputVelocity[coord2];
+        sampleVelocity1 = TransformVelocity(sampleVelocity1);
+        sampleVelocity2 = TransformVelocity(sampleVelocity2);
+
+        float sampleVelocityLength1 = length(sampleVelocity1);
+        float sampleVelocityLength2 = length(sampleVelocity2);
+
+        float sampleDepth1 = PassSrg::m_linearDepth[coord1].r;
+        float sampleDepth2 = PassSrg::m_linearDepth[coord2].r;
+
+        float weight1 = SampleWeight(depth, sampleDepth1, i + samplingDither, tileVelocityLength, sampleVelocityLength1, pixelToSampleUnitsScale, 1);
+        float weight2 = SampleWeight(depth, sampleDepth2, i + samplingDither, tileVelocityLength, sampleVelocityLength2, pixelToSampleUnitsScale, 1);
+
+        bool2 doMirror = bool2(sampleDepth1 > sampleDepth2, sampleVelocityLength2 > sampleVelocityLength1);
+        weight1 = all(doMirror) ? weight2 : weight1;
+        weight2 = any(doMirror) ? weight2 : weight1;
+
+        accumulatedColor += weight1 * float4(PassSrg::m_inputColor[coord1].rgb, 1.0);
+        accumulatedColor += weight2 * float4(PassSrg::m_inputColor[coord2].rgb, 1.0);
+    }
+    
+    if(accumulatedColor.w == 0)
+    {
+        return;
+    }
+    
+    accumulatedColor *= (0.5 * invIterationCount);
+    accumulatedColor.rgb = max(0.0, accumulatedColor.rgb);
+    PassSrg::m_outputColor[pixelCoord].rgb = accumulatedColor.rgb + (1. - accumulatedColor.w) * color;
+}

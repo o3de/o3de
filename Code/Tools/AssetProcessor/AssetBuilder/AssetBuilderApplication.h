@@ -45,6 +45,10 @@ public:
 
     void InitializeBuilderComponents() override;
 
+protected:
+    // AzFramework::ApplicationRequests::Bus overrides ...
+    void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
+
 private:
     void InstallCtrlHandler();
 

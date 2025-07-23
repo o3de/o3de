@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include "MotionBlur.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float2> m_inputVelocity;
+    RWTexture2D<float2> m_outputVelocity;
+}
+
+// The first pass of motion blur calculates max velocity in NxN tiles, called `Tile Max`. 
+// The NxN max operation could be split into a 1xN max and a Nx1 max. 
+// This shader performs the horizontal part (Nx1) of calculating tile max velocity. 
+[numthreads(8, 8, 1)]
+void MainCS(
+    uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    uint2 outPixel = dispatchThreadID.xy;
+    uint2 inputDimensions;
+    uint2 outputDimensions;
+    
+    PassSrg::m_inputVelocity.GetDimensions(inputDimensions.x, inputDimensions.y);
+    PassSrg::m_outputVelocity.GetDimensions(outputDimensions.x, outputDimensions.y);
+    if (outPixel.x >= outputDimensions.x || outPixel.y >= outputDimensions.y)
+    {
+        return;
+    }
+    
+    uint2 inPixel = outPixel * uint2(TILE_SIZE, 1);
+    if (inPixel.x >= inputDimensions.x || inPixel.y >= inputDimensions.y)
+    {
+        return;
+    }
+
+    float2 maxVelocity = float2(0, 0);
+    [unroll]
+    for(int x = 0; x < TILE_SIZE; x++)
+    {
+        if (inPixel.x + x >= inputDimensions.x)
+        {
+            continue;
+        }
+
+        float2 sampleVelocity = PassSrg::m_inputVelocity[inPixel + uint2(x, 0)];
+        maxVelocity = vmax(maxVelocity, sampleVelocity);
+    }
+
+    PassSrg::m_outputVelocity[outPixel] = maxVelocity;
+}

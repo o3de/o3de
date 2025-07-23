@@ -50,7 +50,7 @@ namespace AZ::Metrics
 
 namespace AZ
 {
-    class ReflectionEnvironment
+    class AZCORE_API ReflectionEnvironment
     {
     public:
 
@@ -74,7 +74,7 @@ namespace AZ
     //! Settings used to customize the constructor calls for the ComponentApplications
     //! This differs from the ComponentApplication::StartupParameters and ComponentApplication::Descriptor structs
     //! These settings are only used at construction time of the ComponentApplication and not in ComponentApplication::Create()
-    struct ComponentApplicationSettings
+    struct AZCORE_API ComponentApplicationSettings
     {
         //! JSON string that will be merged to the Settings Registry right after construction
         AZStd::string_view m_setregBootstrapJson;
@@ -91,7 +91,7 @@ namespace AZ
      * data that will allocate memory on construction. This is because the memory managers
      * are NOT yet ready. They will be initialized during the Create call.
      */
-    class ComponentApplication
+    class AZCORE_API ComponentApplication
         : public ComponentApplicationBus::Handler
         , public TickRequestBus::Handler
     {
@@ -109,7 +109,7 @@ namespace AZ
          * \note It's important this structure not contain members that allocate from the system allocator.
          *       Use the OSAllocator only.
          */
-        struct Descriptor
+        struct AZCORE_API Descriptor
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
             AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);

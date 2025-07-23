@@ -19,20 +19,20 @@ namespace AZ
     //! @param[in] buffer pointer to the memory to be hashed
     //! @param[in] length the length in bytes of memory to read for generating the hash
     //! @return 32 bit resulting hash
-    HashValue32 TypeHash32(const uint8_t* buffer, uint64_t length);
+    AZCORE_API HashValue32 TypeHash32(const uint8_t* buffer, uint64_t length);
 
     //! Hashes a contiguous array of bytes starting at buffer and ending at buffer + length
     //! @param[in] buffer pointer to the memory to be hashed
     //! @param[in] length the length in bytes of memory to read for generating the hash
     //! @return 64 bit resulting hash
-    HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length);
+    AZCORE_API HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length);
 
     //! Hashes a contiguous array of bytes starting at buffer and ending at buffer + length
     //! @param[in] buffer pointer to the memory to be hashed
     //! @param[in] length the length in bytes of memory to read for generating the hash
     //! @param[in] seed   a seed that is hashed into the result
     //! @return 64 bit resulting hash
-    HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length, HashValue64 seed);
+    AZCORE_API HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length, HashValue64 seed);
 
     //! Hashes a contiguous array of bytes starting at buffer and ending at buffer + length
     //! @param[in] buffer pointer to the memory to be hashed
@@ -40,7 +40,7 @@ namespace AZ
     //! @param[in] seed1  first seed that is hashed into the result
     //! @param[in] seed2  second seed that is also hashed into the result
     //! @return 64 bit resulting hash
-    HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length, HashValue64 seed1, HashValue64 seed2);
+    AZCORE_API HashValue64 TypeHash64(const uint8_t* buffer, uint64_t length, HashValue64 seed1, HashValue64 seed2);
 
     template <typename T>
     HashValue32 TypeHash32(const T& t)

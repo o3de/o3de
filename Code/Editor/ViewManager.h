@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Cry_Geo.h"
+#include <AzCore/Math/Aabb.h>
 #include "Viewport.h"
 #include "QtViewPaneManager.h"
 // forward declaration.
@@ -62,8 +62,8 @@ public:
     //! Update all views.
     void    UpdateViews(int flags = 0xFFFFFFFF);
 
-    void SetUpdateRegion(const AABB& updateRegion) { m_updateRegion = updateRegion; };
-    const AABB& GetUpdateRegion() { return m_updateRegion; };
+    void SetUpdateRegion(const AZ::Aabb& updateRegion) { m_updateRegion = updateRegion; };
+    const AZ::Aabb& GetUpdateRegion() { return m_updateRegion; };
 
     /** Get 2D viewports origin.
     */
@@ -123,7 +123,7 @@ private:
     float   m_zoomFactor;
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    AABB m_updateRegion;
+    AZ::Aabb m_updateRegion;
 
     //! Origin of 2d viewports.
     Vec3 m_origin2D;

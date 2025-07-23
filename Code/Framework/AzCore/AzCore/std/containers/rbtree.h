@@ -1066,7 +1066,7 @@ namespace AZStd
                 if (m_numElements > 0)
                 {
                     // create temp list with all elements relocated.
-                    this_type templist(begin(), end(), allocator);
+                    this_type templist(*this, allocator);
                     clear();
                     m_allocator = allocator;
                     swap(templist);

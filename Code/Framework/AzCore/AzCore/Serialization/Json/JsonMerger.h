@@ -18,7 +18,7 @@ namespace AZ
     struct JsonApplyPatchSettings;
     struct JsonCreatePatchSettings;
 
-    class JsonMerger final
+    class AZCORE_API JsonMerger final
     {
         friend class JsonSerialization;
 

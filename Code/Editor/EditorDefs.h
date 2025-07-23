@@ -89,7 +89,6 @@
 /////////////////////////////////////////////////////////////////////////////
 #include <platform.h>
 #include <Cry_Math.h>
-#include <Cry_Geo.h>
 #include <Range.h>
 #include <StlUtils.h>
 
@@ -116,7 +115,6 @@
 #include "Util/EditorUtils.h"
 #include "Util/FileEnum.h"
 #include <Editor/Util/EditorUtils.h>
-#include <CryCommon/Cry_GeoIntersect.h>
 #include "Util/AffineParts.h"
 
 // Xml support.

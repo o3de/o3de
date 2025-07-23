@@ -184,8 +184,8 @@ private:
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
-    bool IsBoundsVisible(const AABB& box) const override;
-    void CenterOnAABB(const AABB& aabb) override;
+    bool IsBoundsVisible(const AZ::Aabb& box) const override;
+    void CenterOnAABB(const AZ::Aabb& aabb) override;
     void OnTitleMenu(QMenu* menu) override;
     void SetViewTM(const Matrix34& tm) override;
     const Matrix34& GetViewTM() const override;

@@ -435,9 +435,8 @@ namespace AZ::Utils
         return manifestDirectory.Native();
     }
 
-
-    template AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-    template AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZCORE_API_EXPORT AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZCORE_API_EXPORT AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZCORE_API_EXPORT AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
+    template AZCORE_API_EXPORT AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
 }

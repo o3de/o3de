@@ -8,8 +8,8 @@
 
 #pragma once
 
-#ifndef PROPERTY_COLORCTRL_CTRL
-#define PROPERTY_COLORCTRL_CTRL
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -51,7 +51,7 @@ namespace AzToolsFramework
         AzQtComponents::ColorPicker::Configuration m_colorPickerDialogConfiguration = AzQtComponents::ColorPicker::Configuration::RGB;
     };
 
-    class PropertyColorCtrl
+    class AZTF_API PropertyColorCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -122,7 +122,7 @@ namespace AzToolsFramework
     };
 
 
-    class Vector3ColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Vector3>
+    class AZTF_API Vector3ColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Vector3>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
@@ -135,7 +135,7 @@ namespace AzToolsFramework
         virtual bool ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    class AZColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Color>
+    class AZTF_API AZColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Color>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
@@ -148,7 +148,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterColorPropertyHandlers();
+    AZTF_API void RegisterColorPropertyHandlers();
 };
-
-#endif

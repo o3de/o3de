@@ -263,7 +263,7 @@ namespace AssetProcessor
 
         QueueElementID m_queueElementID; // cached to prevent lots of construction of this all over the place
 
-        int m_JobEscalation = AssetProcessor::JobEscalation::Default; // Escalation indicates how important the job is and how soon it needs processing, the greater the number the greater the escalation
+        int m_JobEscalation = AssetProcessor::JobEscalation::DefaultEscalation; // Escalation indicates how important the job is and how soon it needs processing, the greater the number the greater the escalation
 
         QDateTime m_timeCreated;
         QDateTime m_timeLaunched;

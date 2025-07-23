@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
 
 namespace Physics
 {
-    class ColliderConfiguration
+    class AZF_API ColliderConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator);
@@ -83,7 +84,7 @@ namespace Physics
 
     struct RayCastRequest;
 
-    class Shape
+    class AZF_API Shape
     {
     public:
         AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);

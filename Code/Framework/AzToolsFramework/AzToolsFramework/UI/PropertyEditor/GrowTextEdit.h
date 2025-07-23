@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,6 +6,11 @@
  *
  */
 
+#pragma once
+ 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+ 
+ 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
@@ -21,7 +24,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
-    class GrowTextEdit : public QTextEdit
+    class AZTF_API GrowTextEdit : public QTextEdit
     {
         Q_OBJECT
     public:

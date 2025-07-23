@@ -89,7 +89,7 @@ namespace
             bool continueRunning = true;
             while (continueRunning) 
             {
-                continueRunning = PumpEvents(&ALooper_pollAll);
+                continueRunning = PumpEvents(&ALooper_pollOnce);
             }
         }
 

@@ -15,6 +15,7 @@
 // required by components implementing BoundsRequestBus to notify the
 // Entity that their bounds has changed (or to access the cached entity bound union)
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
 namespace AzFramework
 {
     //! Implemented by components that provide bounds for use with various systems.
-    class BoundsRequests
+    class AZF_API BoundsRequests
         : public AZ::ComponentBus
     {
     public:
@@ -51,12 +52,12 @@ namespace AzFramework
     //! Returns a union of all local Aabbs provided by components implementing the BoundsRequestBus.
     //! @note It is preferred to call this function as opposed to GetLocalBounds directly as more than one
     //! component may be implementing this bus on an Entity and so only the first result (Aabb) will be returned.
-    AZ::Aabb CalculateEntityLocalBoundsUnion(const AZ::Entity* entity);
+    AZF_API AZ::Aabb CalculateEntityLocalBoundsUnion(const AZ::Entity* entity);
 
     //! Returns a union of all world Aabbs provided by components implementing the BoundsRequestBus.
     //! @note It is preferred to call this function as opposed to GetWorldBounds directly as more than one
     //! component may be implementing this bus on an Entity and so only the first result (Aabb) will be returned.
-    AZ::Aabb CalculateEntityWorldBoundsUnion(const AZ::Entity* entity);
+    AZF_API AZ::Aabb CalculateEntityWorldBoundsUnion(const AZ::Entity* entity);
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::BoundsRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::BoundsRequests);

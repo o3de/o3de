@@ -261,6 +261,9 @@ namespace AZ::AzGenericTypeInfo
 #define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
     AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
         decltype(AZ::AzGenericTypeInfo::Internal::GetTemplateIdentity<_TemplateName>()));
+#define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL_API(_Api, _TemplateName) \
+        _Api AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
+        decltype(AZ::AzGenericTypeInfo::Internal::GetTemplateIdentity<_TemplateName>()));
 
 #define AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, ...) \
     template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
@@ -273,9 +276,24 @@ namespace AZ::AzGenericTypeInfo
     AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
         AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);
 
+#define AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL_API(_Api, _TemplateName, ...)                                                                        \
+    template<AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)>                                                                   \
+    _Api AZ::TypeNameString GetO3deTypeName(                                                                                                    \
+        AZ::Adl, AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);                     \
+    template<AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)>                                                                   \
+    _Api AZ::TypeId GetO3deTypeId(                                                                                                              \
+        AZ::Adl, AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);                     \
+    template<AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)>                                                                   \
+    _Api AZ::TemplateId GetO3deClassTemplateId(                                                                                                 \
+        AZ::Adl, AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);
+
 #define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(_TemplateName, ...) \
     AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
     AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, __VA_ARGS__)
+
+#define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL_API(_Api, _TemplateName, ...)                                                   \
+    AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL_API(_Api, _TemplateName)                                                                             \
+    AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL_API(_Api, _TemplateName, __VA_ARGS__)
 
 #define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _PrefixUuid, _PostfixUuid, _FunctionSpecifier) \
     _FunctionSpecifier AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
@@ -636,3 +654,11 @@ namespace AZ::AzGenericTypeInfo
             AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>); \
         template AZ::TemplateId GetO3deClassTemplateId( \
             AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>);
+
+#define AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(TemplateName, ...)                                                                     \
+    template AZ_DLL_EXPORT AZ::TypeNameString GetO3deTypeName(                                                                                           \
+        AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>);              \
+    template AZ_DLL_EXPORT AZ::TypeId GetO3deTypeId(                                                                                                     \
+        AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>);              \
+    template AZ_DLL_EXPORT AZ::TemplateId GetO3deClassTemplateId(                                                                                        \
+        AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>);

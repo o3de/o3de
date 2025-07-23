@@ -22,6 +22,7 @@
 
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -43,7 +44,7 @@ namespace AzFramework
         * It is primarily used for the AssetProcessor to connect to the game
         * and stream files across the network
         */
-        class AssetProcessorConnection
+        class AZF_API AssetProcessorConnection
             : public SocketConnection
         {
             struct ThreadState

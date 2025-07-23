@@ -40,6 +40,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h    
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.h    
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/MotionBlur/MotionBlurBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/MotionBlur/MotionBlurComponentConfig.h   
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/PaniniProjection/PaniniProjectionComponentConfig.h    
     Include/AtomLyIntegration/CommonFeatures/PostProcess/FilmGrain/FilmGrainBus.h

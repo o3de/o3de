@@ -171,6 +171,6 @@ namespace AzToolsFramework
         }
     }
 
-    template class LineSegmentHoverSelection<AZ::Vector2>;
-    template class LineSegmentHoverSelection<AZ::Vector3>;
+    template class AZ_DLL_EXPORT LineSegmentHoverSelection<AZ::Vector2>;
+    template class AZ_DLL_EXPORT LineSegmentHoverSelection<AZ::Vector3>;
 } // namespace AzToolsFramework

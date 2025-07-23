@@ -135,11 +135,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
                 {
                     real clearCoatNdotV = saturate(dot(surface.clearCoat.normal, lightingData.dirToCamera[viewIndex]));
                     clearCoatNdotV = max(clearCoatNdotV, 0.01);  // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
-                    #ifdef CS_SAMPLERS
-                    real2 clearCoatBrdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, GetBRDFTexCoords(surface.clearCoat.roughness, clearCoatNdotV), 0).rg);
-                    #else
-                    real2 clearCoatBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.clearCoat.roughness, clearCoatNdotV)).rg);
-                    #endif
+                    real2 clearCoatBrdf = real2(SampleBrdfMap(GetBRDFTexCoords(surface.clearCoat.roughness, clearCoatNdotV)));
 
                     // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
                     // coat layer assumed to be dielectric thus don't need multiple scattering compensation
@@ -157,11 +153,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
 #if ENABLE_DUAL_SPECULAR
                 if(o_enableDualSpecular)
                 {
-                    #ifdef CS_SAMPLERS
-                    real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV(viewIndex)), 0).rg);
-                    #else
-                    real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV(viewIndex))).rg);
-                    #endif
+                    real2 dualSpecularBrdf = real2(SampleBrdfMap(GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV(viewIndex))));
                     real3 dualSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.dualSpecF0.xxx, surface.dualSpecRoughness, lightingData.dirToCamera[viewIndex], dualSpecularBrdf, reflectionProbe, reflectionProbeCubemap);
                     iblSpecular = lerp(iblSpecular, dualSpecular, surface.dualSpecFactor);
                 }

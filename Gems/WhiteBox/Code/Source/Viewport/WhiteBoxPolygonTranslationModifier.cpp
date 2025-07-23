@@ -58,7 +58,7 @@ namespace WhiteBox
 
         CreateView();
 
-        m_translationManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
         struct SharedState
         {

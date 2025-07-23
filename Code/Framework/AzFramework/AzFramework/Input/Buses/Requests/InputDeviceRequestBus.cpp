@@ -8,7 +8,7 @@
 
 #include <AzFramework/Input/Buses/Requests/InputDeviceRequestBus.h>
 
-DECLARE_EBUS_INSTANTIATION(AzFramework::InputDeviceRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputDeviceRequests);
 
 namespace AzFramework
 {

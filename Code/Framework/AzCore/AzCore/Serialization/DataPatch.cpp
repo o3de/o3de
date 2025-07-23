@@ -1349,7 +1349,7 @@ namespace AZ
 
             auto classData = context->FindClassData(original.GetElementTypeId());
 
-            m_pathElement = AZStd::string::format("%s(%s)::%s%s%u%s", classData->m_name, m_addressClassTypeId.ToString<AZStd::string>().c_str(), newElementName.data(), AddressTypeElement::VersionDelimiter, newElementVersion, AddressTypeElement::PathDelimiter);
+            m_pathElement = AZStd::string::format("%s(%s)::%s%s%u%s", classData->m_name, m_addressClassTypeId.ToString<AZStd::string>().c_str(), newElementName.data(), AZ::DataPatchInternal::VersionDelimiter, newElementVersion, AZ::DataPatchInternal::PathDelimiter);
         }
 
         AddressTypeElement::AddressTypeElement(const AZ::TypeId& newTypeId, const AZ::u32 newElementVersion, const AddressTypeElement& original)
@@ -1417,8 +1417,8 @@ namespace AZ
             const size_t    typeIdCloseDelimLength = strlen(typeIdCloseDelim);
             const size_t    classTypeElemDelimLength = strlen(classTypeElemDelim);
             const size_t    indexTypeElemDelimLength = strlen(indexTypeElemDelim);
-            const size_t    versionDelimLength = strlen(AddressTypeElement::VersionDelimiter);
-            const size_t    pathDelimLength = strlen(AddressTypeElement::PathDelimiter);
+            const size_t versionDelimLength = strlen(AZ::DataPatchInternal::VersionDelimiter);
+            const size_t pathDelimLength = strlen(AZ::DataPatchInternal::PathDelimiter);
 
             const AZStd::string_view pathElementView(pathElement);
             const size_t typeIdOpen = pathElementView.find(typeIdOpenDelim);
@@ -1448,7 +1448,7 @@ namespace AZ
             // Every find chains from the previous: find(substr, lastFindPosition)
             // if versionMarker != npos then all markers are != npos
             // This way we save on find times and do not require an npos check on each
-            size_t versionMarker = pathElementView.find(AddressTypeElement::VersionDelimiter, elementMarker);
+            size_t versionMarker = pathElementView.find(AZ::DataPatchInternal::VersionDelimiter, elementMarker);
 
             // Validate that we have found our appropriate markers and that version marker occurs after elementMarker.
             // Also validate that elementMarker occurs directly after bracketClosed
@@ -1539,7 +1539,7 @@ namespace AZ
                 stream.Read(dataSize, streamData.data());
 
                 bool addressIsInvalid = false;
-                size_t elementWalker = streamData.find(AddressTypeElement::PathDelimiter);
+                size_t elementWalker = streamData.find(AZ::DataPatchInternal::PathDelimiter);
 
                 // Used to verify that we loaded the address in its entirety
                 size_t loadedAddressLength = 0;
@@ -1551,7 +1551,7 @@ namespace AZ
                 }
                 else
                 {
-                    const size_t pathDelimLength = strlen(AddressTypeElement::PathDelimiter);
+                    const size_t pathDelimLength = strlen(AZ::DataPatchInternal::PathDelimiter);
                     // Walk the path and build an AddressTypeElement per delimited block
                     size_t startingPos = 0;
                     while (elementWalker != AZStd::string::npos)
@@ -1567,7 +1567,7 @@ namespace AZ
 
                         loadedAddressLength += address->back().GetPathElement().size();
                         startingPos = elementWalker + pathDelimLength;
-                        elementWalker = streamData.find(AddressTypeElement::PathDelimiter, startingPos);
+                        elementWalker = streamData.find(AZ::DataPatchInternal::PathDelimiter, startingPos);
                     }
                 }
 

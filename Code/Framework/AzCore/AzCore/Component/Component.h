@@ -42,7 +42,7 @@ namespace AZ
     /**
      * Base class for all components.
      */
-    class Component
+    class AZCORE_API Component
     {
         friend class Entity;
     public:
@@ -50,7 +50,7 @@ namespace AZ
         /**
          * Forward declare run-time type information to the component.
          */
-        AZ_TYPE_INFO_WITH_NAME_DECL(Component);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, Component);
         AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL
 
@@ -258,6 +258,7 @@ namespace AZ
         Entity*     m_entity;       ///< Reference to the entity that owns the component. The value is null if the component is not attached to an entity.
         ComponentId m_id;           ///< A component ID that is unique for an entity. This component ID is not unique across all entities.
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, Component);
 
     /**
      * Includes the core component code required to make a component work.
@@ -524,7 +525,7 @@ namespace AZ
      * If you implement a component descriptor, inherit from ComponentDescriptorHelper
      * to implement additional functionality.
      */
-    class ComponentDescriptor
+    class AZCORE_API ComponentDescriptor
     {
     public:
         AZ_CLASS_ALLOCATOR(ComponentDescriptor, ComponentAllocator);
@@ -826,4 +827,4 @@ namespace AZ
     };
 }
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS_WITH_TRAITS(ComponentDescriptor, ComponentDescriptorBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::ComponentDescriptor, AZ::ComponentDescriptorBusTraits);

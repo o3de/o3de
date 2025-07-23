@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class TaskGraphSystemComponent
+    class AZCORE_API TaskGraphSystemComponent
         : public Component
         , public TaskGraphActiveInterface
     {

@@ -149,7 +149,7 @@ public:
 
     CLevelIndependentFileMan* GetLevelIndependentFileMan() override { return m_pLevelIndependentFileMan; }
 
-    void UpdateViews(int flags, const AABB* updateRegion) override;
+    void UpdateViews(int flags, const AZ::Aabb* updateRegion) override;
     void ResetViews() override;
     void ReloadTrackView() override;
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);

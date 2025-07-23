@@ -10,12 +10,13 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Debug/TraceContextStackInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Debug
     {
-        class TraceContextStack : public TraceContextStackInterface
+        class AZTF_API TraceContextStack : public TraceContextStackInterface
         {
         public:
             ~TraceContextStack() override = default;

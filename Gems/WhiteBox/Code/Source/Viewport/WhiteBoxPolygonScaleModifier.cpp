@@ -87,7 +87,7 @@ namespace WhiteBox
 
                 views.emplace_back(AZStd::move(sphereView));
                 manipulator->SetViews(AZStd::move(views));
-                manipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+                manipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
                 manipulator->InstallLeftMouseDownCallback(
                     [this, vertexHandle]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)

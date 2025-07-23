@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
@@ -20,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     class PrefabProcessorContext;
 
-    class PrefabDocument final
+    class AZTF_API PrefabDocument final
     {
     public:
         explicit PrefabDocument(AZStd::string name);

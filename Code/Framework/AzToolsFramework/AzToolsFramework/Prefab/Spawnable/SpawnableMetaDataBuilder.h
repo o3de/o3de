@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class SpawnableMetaDataBuilder final
+    class AZTF_API SpawnableMetaDataBuilder final
     {
     public:
         SpawnableMetaDataBuilder& Add(AZStd::string_view key, bool value);

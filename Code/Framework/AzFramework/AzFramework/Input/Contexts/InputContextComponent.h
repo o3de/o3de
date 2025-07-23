@@ -19,12 +19,13 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class InputContextComponentRequests : public AZ::ComponentBus
+    class AZF_API InputContextComponentRequests : public AZ::ComponentBus
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ namespace AzFramework
     //! InputContext (at run time). The life cycle of any InputContextComponent is controlled by the
     //! AZ::Entity it is attached to, adhering to the same rules as any other AZ::Component, and the
     //! InputContext which it owns is created/destroyed when the component is activated/deactivated.
-    class InputContextComponent : public AZ::Component
+    class AZF_API InputContextComponent : public AZ::Component
                                 , public InputContextComponentRequestBus::Handler
     {
     public:

@@ -45,7 +45,7 @@ namespace AZ
     *     separated by whitespace is a new argument
     * `app.exe --verbose 1 <PositionalArg>`  or `app.exe --verbose=1 <PositionalArg>`
     */
-    class CommandLine
+    class AZCORE_API CommandLine
     {
     public:
         AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator);

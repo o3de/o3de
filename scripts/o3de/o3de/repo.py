@@ -18,6 +18,7 @@ from o3de import manifest, utils, validation
 
 logger = logging.getLogger('o3de.repo')
 logging.basicConfig(format=utils.LOG_FORMAT)
+logger.setLevel(logging.INFO)
 
 REPO_IMPLICIT_SCHEMA_VERSION = "0.0.0"
 

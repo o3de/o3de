@@ -23,6 +23,7 @@ from o3de import manifest, register, validation, utils
 
 logger = logging.getLogger('o3de.engine_template')
 logging.basicConfig(format=utils.LOG_FORMAT)
+logger.setLevel(logging.INFO)
 
 binary_file_ext = {
     '.pak',
@@ -311,18 +312,11 @@ def _execute_restricted_template_json(template_json_data: dict,
                                       keep_restricted_in_instance: bool = False,
                                       keep_license_text: bool = False) -> None:
 
-    # if we are not keeping restricted in instance make restricted.json if not present
-    if not keep_restricted_in_instance:
-        restricted_json = destination_restricted_path / 'restricted.json'
-        os.makedirs(os.path.dirname(restricted_json), exist_ok=True)
-        if not os.path.isfile(restricted_json):
-            with open(restricted_json, 'w') as s:
-                restricted_json_data = {}
-                restricted_json_data.update({"restricted_name": destination_name})
-                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
-
+    
     ###################################################################################
     # for each createDirectories in the template copy any entries in the json_data that are for this platform
+
+    had_any_restricted_files = False
     for create_directory in template_json_data['createDirectories']:
         new_dir = pathlib.Path(create_directory['dir'])
         if not keep_restricted_in_instance and 'Platform' in new_dir.parts:
@@ -357,6 +351,7 @@ def _execute_restricted_template_json(template_json_data: dict,
                     copy_files = []
                     if 'copyFiles' in json_data.keys():
                         copy_files = json_data['copyFiles']
+                        had_any_restricted_files = True
                     copy_files.append(copy_file)
                     json_data.update({'copyFiles': copy_files})
 
@@ -365,6 +360,21 @@ def _execute_restricted_template_json(template_json_data: dict,
     # every entry is saved in its combined location, so if not keep_restricted_in_instance
     # then we need to palify into the restricted folder
 
+    # if there are no restricted createdirs, and no restricted copyfiles, we should early out
+    # and prevent creating any empty restricted folders
+    if not keep_restricted_in_instance and not had_any_restricted_files:
+        return
+    
+    # Create the restricted.json file in the destination_restricted_path
+    if not keep_restricted_in_instance:
+        restricted_json = destination_restricted_path / 'restricted.json'
+        os.makedirs(os.path.dirname(restricted_json), exist_ok=True)
+        if not os.path.isfile(restricted_json):
+            with open(restricted_json, 'w') as s:
+                restricted_json_data = {}
+                restricted_json_data.update({"restricted_name": destination_name})
+                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
+    
     # create dirs first
     # for each createDirectory entry, transform the folder name
     if 'createDirectories' in json_data:
@@ -450,6 +460,7 @@ def _instantiate_template(template_json_data: dict,
     """
     # execute the template json
     # this will filter out any restricted platforms in the template
+    logger.info(f'Instantiating template: `{template_name}` into `{destination_path}`...')
     _execute_template_json(template_json_data,
                            destination_path,
                            template_path,
@@ -1488,23 +1499,28 @@ def create_from_template(destination_path: pathlib.Path,
     # restricted folder, so make sure the restricted has this destinations name
     # Note there is no linking of non o3de objects to o3de restricted. So this will make no attempt to figure out
     # if this destination was actually an o3de object and try to alter the <type>.json
+
+    # also note, if there were no restricted objects in the template, it is also not going to make a restricted
+    # object for this template.
+
     if not keep_restricted_in_instance:
         if destination_restricted_path:
-            os.makedirs(destination_restricted_path, exist_ok=True)
+            # Only generate the restricted.json if there were any objects in the template
+            # if this was the case, they would have already been copied in there.
+            if  os.path.isdir(destination_restricted_path):
+                # write the restricted_name to the destination restricted.json
+                restricted_json = destination_restricted_path / 'restricted.json'
+                if not os.path.isfile(restricted_json):
+                    with open(restricted_json, 'w') as s:
+                        restricted_json_data = {}
+                        restricted_json_data.update({'restricted_name': destination_name})
+                        s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
-            # write the restricted_name to the destination restricted.json
-            restricted_json = destination_restricted_path / 'restricted.json'
-            if not os.path.isfile(restricted_json):
-                with open(restricted_json, 'w') as s:
-                    restricted_json_data = {}
-                    restricted_json_data.update({'restricted_name': destination_name})
-                    s.write(json.dumps(restricted_json_data, indent=4) + '\n')
-
-            # Register the restricted
-            if not no_register:
-                if register.register(restricted_path=destination_restricted_path):
-                    logger.error(f'Failed to register the restricted {destination_restricted_path}.')
-                    return 1
+                # Register the restricted
+                if not no_register:
+                    if register.register(restricted_path=destination_restricted_path):
+                        logger.error(f'Failed to register the restricted {destination_restricted_path}.')
+                        return 1
 
     logger.warning(f'Instantiation successful. NOTE: This is a generic instantiation of the template. If this'
                    f' was a template of an o3de object like a project, gem, template, etc. then the create-project'
@@ -1841,60 +1857,62 @@ def create_project(project_path: pathlib.Path,
     # restricted json and set that as this projects restricted
     if not keep_restricted_in_project:
         if project_restricted_path:
-            os.makedirs(project_restricted_path, exist_ok=True)
+            # we only want to do this if the project template had any restricted files in it
+            # if it didn't there is no point in creating a restricted object for it that is empty.
+            # the user can always add a restricted object to their project at any later time.
+            if  os.path.isdir(project_restricted_path):
+                # read the restricted_name from the projects restricted.json
+                restricted_json = project_restricted_path / 'restricted.json'
+                if os.path.isfile(restricted_json):
+                    if not validation.valid_o3de_restricted_json(restricted_json):
+                        logger.error(f'Restricted json {restricted_json} is not valid.')
+                        return 1
+                else:
+                    with open(restricted_json, 'w') as s:
+                        restricted_json_data = {}
+                        restricted_json_data.update({'restricted_name': project_name})
+                        s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
-            # read the restricted_name from the projects restricted.json
-            restricted_json = project_restricted_path / 'restricted.json'
-            if os.path.isfile(restricted_json):
-                if not validation.valid_o3de_restricted_json(restricted_json):
-                    logger.error(f'Restricted json {restricted_json} is not valid.')
-                    return 1
-            else:
-                with open(restricted_json, 'w') as s:
-                    restricted_json_data = {}
-                    restricted_json_data.update({'restricted_name': project_name})
-                    s.write(json.dumps(restricted_json_data, indent=4) + '\n')
+                with open(restricted_json, 'r') as s:
+                    try:
+                        restricted_json_data = json.load(s)
+                    except json.JSONDecodeError as e:
+                        logger.error(f'Failed to load restricted json {restricted_json}.')
+                        return 1
 
-            with open(restricted_json, 'r') as s:
                 try:
-                    restricted_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f'Failed to load restricted json {restricted_json}.')
+                    restricted_name = restricted_json_data["restricted_name"]
+                except KeyError as e:
+                    logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                     return 1
 
-            try:
-                restricted_name = restricted_json_data["restricted_name"]
-            except KeyError as e:
-                logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
-                return 1
-
-            # set the "restricted": <restricted_name> element of the project.json
-            project_json = project_path / 'project.json'
-            if not validation.valid_o3de_project_json(project_json):
-                logger.error(f'Project json {project_json} is not valid.')
-                return 1
-
-            with open(project_json, 'r') as s:
-                try:
-                    project_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f'Failed to load project json {project_json}.')
+                # set the "restricted": <restricted_name> element of the project.json
+                project_json = project_path / 'project.json'
+                if not validation.valid_o3de_project_json(project_json):
+                    logger.error(f'Project json {project_json} is not valid.')
                     return 1
 
-            project_json_data.update({"restricted": restricted_name})
-            os.unlink(project_json)
-            with open(project_json, 'w') as s:
-                try:
-                    s.write(json.dumps(project_json_data, indent=4) + '\n')
-                except OSError as e:
-                    logger.error(f'Failed to write project json {project_json}.')
-                    return 1
+                with open(project_json, 'r') as s:
+                    try:
+                        project_json_data = json.load(s)
+                    except json.JSONDecodeError as e:
+                        logger.error(f'Failed to load project json {project_json}.')
+                        return 1
 
-            # Register the restricted
-            if not no_register:
-                if register.register(restricted_path=project_restricted_path):
-                    logger.error(f'Failed to register the restricted {project_restricted_path}.')
-                    return 1
+                project_json_data.update({"restricted": restricted_name})
+                os.unlink(project_json)
+                with open(project_json, 'w') as s:
+                    try:
+                        s.write(json.dumps(project_json_data, indent=4) + '\n')
+                    except OSError as e:
+                        logger.error(f'Failed to write project json {project_json}.')
+                        return 1
+
+                # Register the restricted
+                if not no_register:
+                    if register.register(restricted_path=project_restricted_path):
+                        logger.error(f'Failed to register the restricted {project_restricted_path}.')
+                        return 1
 
     print(f'Project created at {project_path}')
 
@@ -2280,69 +2298,62 @@ def create_gem(gem_path: pathlib.Path,
     # restricted json and set that as this gems restricted
     if not keep_restricted_in_gem:
         if gem_restricted_path:
-            os.makedirs(gem_restricted_path, exist_ok=True)
+            # note that we should only actually do this if gem_restricted_path already exists
+            # if it doesn't it means that there were no restricted platform files anywhere in the template
+            # and as such, it is not necessary to make an empty useless restricted object.
+            if os.path.isdir(gem_restricted_path): 
+                # read the restricted_name from the gems restricted.json
+                restricted_json = gem_restricted_path / 'restricted.json'
+                if os.path.isfile(restricted_json):
+                    if not validation.valid_o3de_restricted_json(restricted_json):
+                        logger.error(f'Restricted json {restricted_json} is not valid.')
+                        return 1
+                else:
+                    with open(restricted_json, 'w') as s:
+                        restricted_json_data = {}
+                        restricted_json_data.update({'restricted_name': gem_name})
+                        s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
-            # read the restricted_name from the gems restricted.json
-            restricted_json = gem_restricted_path / 'restricted.json'
-            if os.path.isfile(restricted_json):
-                if not validation.valid_o3de_restricted_json(restricted_json):
-                    logger.error(f'Restricted json {restricted_json} is not valid.')
-                    return 1
-            else:
-                with open(restricted_json, 'w') as s:
-                    restricted_json_data = {}
-                    restricted_json_data.update({'restricted_name': gem_name})
-                    s.write(json.dumps(restricted_json_data, indent=4) + '\n')
+                with open(restricted_json, 'r') as s:
+                    try:
+                        restricted_json_data = json.load(s)
+                    except json.JSONDecodeError as e:
+                        logger.error(f'Failed to load restricted json {restricted_json}.')
+                        return 1
 
-            with open(restricted_json, 'r') as s:
                 try:
-                    restricted_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f'Failed to load restricted json {restricted_json}.')
+                    restricted_name = restricted_json_data["restricted_name"]
+                except KeyError as e:
+                    logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                     return 1
 
-            try:
-                restricted_name = restricted_json_data["restricted_name"]
-            except KeyError as e:
-                logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
-                return 1
-
-            # set the "restricted_name": <restricted_name> element of the gem.json
-            gem_json = gem_path / 'gem.json'
-            if not validation.valid_o3de_gem_json(gem_json):
-                logger.error(f'Gem json {gem_json} is not valid.')
-                return 1
-
-            with open(gem_json, 'r') as s:
-                try:
-                    gem_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f'Failed to load gem json {gem_json}.')
+                # set the "restricted_name": <restricted_name> element of the gem.json
+                gem_json = gem_path / 'gem.json'
+                if not validation.valid_o3de_gem_json(gem_json):
+                    logger.error(f'Gem json {gem_json} is not valid.')
                     return 1
 
-            gem_json_data.update({"restricted": restricted_name})
-            os.unlink(gem_json)
-            with open(gem_json, 'w') as s:
-                try:
-                    s.write(json.dumps(gem_json_data, indent=4) + '\n')
-                except OSError as e:
-                    logger.error(f'Failed to write project json {gem_json}.')
-                    return 1
-            '''
-            for restricted_platform in restricted_platforms:
-                restricted_gem = gem_restricted_path / restricted_platform / gem_name
-                os.makedirs(restricted_gem, exist_ok=True)
-                cmakelists_file_name = restricted_gem / 'CMakeLists.txt'
-                if not os.path.isfile(cmakelists_file_name):
-                    with open(cmakelists_file_name, 'w') as d:
-                        if keep_license_text:
-                            d.write(O3DE_LICENSE_TEXT)
-            '''
-            # Register the restricted
-            if not no_register:
-                if register.register(restricted_path=gem_restricted_path):
-                    logger.error(f'Failed to register the restricted {gem_restricted_path}.')
-                    return 1
+                with open(gem_json, 'r') as s:
+                    try:
+                        gem_json_data = json.load(s)
+                    except json.JSONDecodeError as e:
+                        logger.error(f'Failed to load gem json {gem_json}.')
+                        return 1
+
+                gem_json_data.update({"restricted": restricted_name})
+                os.unlink(gem_json)
+                with open(gem_json, 'w') as s:
+                    try:
+                        s.write(json.dumps(gem_json_data, indent=4) + '\n')
+                    except OSError as e:
+                        logger.error(f'Failed to write project json {gem_json}.')
+                        return 1
+                
+                # Register the restricted
+                if not no_register:
+                    if register.register(restricted_path=gem_restricted_path):
+                        logger.error(f'Failed to register the restricted {gem_restricted_path}.')
+                        return 1
 
     print(f'Gem created at {gem_path}')
 

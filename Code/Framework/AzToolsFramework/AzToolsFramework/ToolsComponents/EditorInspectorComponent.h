@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include "EditorComponentBase.h"
 #include "EditorInspectorComponentBus.h"
 #include <AzCore/Serialization/SerializeContext.h>
@@ -18,7 +19,7 @@ namespace AzToolsFramework
         /**
          * Contains Inspector related data that needs to be stored on a per-entity level, such as component ordering per-entity
          */
-        class EditorInspectorComponent
+        class AZTF_API EditorInspectorComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorInspectorComponentRequestBus::Handler
         {

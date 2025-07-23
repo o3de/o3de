@@ -153,5 +153,7 @@ namespace PhysX
         m_fileIo.reset();
         m_application->Destroy();
         delete m_application;
+
+        AZ::AllocatorManager::Instance().GarbageCollect();
     }
 } // namespace PhysX

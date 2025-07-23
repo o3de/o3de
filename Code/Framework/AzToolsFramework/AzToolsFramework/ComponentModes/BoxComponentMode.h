@@ -10,13 +10,14 @@
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
+    AZTF_API void InstallBoxViewportEditFunctions(BoxViewportEdit* boxViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! The specific ComponentMode responsible for handling box editing.
-    class BoxComponentMode
+    class AZTF_API BoxComponentMode
         : public BaseShapeComponentMode
     {
     public:

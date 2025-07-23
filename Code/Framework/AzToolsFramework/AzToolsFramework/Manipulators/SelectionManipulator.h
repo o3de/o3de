@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -18,7 +19,7 @@ namespace AzToolsFramework
 
     //! Represents a sphere that can be clicked on to trigger a particular behavior.
     //! For example clicking a preview point to create a translation manipulator.
-    class SelectionManipulator
+    class AZTF_API SelectionManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalPosition
     {

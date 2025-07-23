@@ -266,6 +266,14 @@ namespace AzFramework
 
         switch (message)
         {
+        case WM_GETMINMAXINFO:
+        {
+            MINMAXINFO* minMaxInfo = reinterpret_cast<MINMAXINFO*>(lParam);
+            minMaxInfo->ptMinTrackSize.x = static_cast<LONG>(MIN_WINDOW_WIDTH);
+            minMaxInfo->ptMinTrackSize.y = static_cast<LONG>(MIN_WINDOW_HEIGHT);
+
+            return 0;
+        }
         case WM_CLOSE:
         {
             nativeWindowImpl->Deactivate();
@@ -273,10 +281,23 @@ namespace AzFramework
         }
         case WM_SIZE:
         {
-            const uint16_t newWidth = LOWORD(lParam);
-            const uint16_t newHeight = HIWORD(lParam);
-            
-            nativeWindowImpl->WindowSizeChanged(static_cast<uint32_t>(newWidth), static_cast<uint32_t>(newHeight));
+            const uint32_t m_width  = static_cast<uint32_t>(LOWORD(lParam));
+            const uint32_t m_height = static_cast<uint32_t>(HIWORD(lParam));
+
+            if (wParam == SIZE_MINIMIZED)
+            {
+                WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowMinimized);
+            }
+            else if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
+            {
+                WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowRestored);
+                nativeWindowImpl->WindowSizeChanged(m_width, m_height);
+                WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &AzFramework::WindowNotifications::OnWindowResized, m_width, m_height);
+            }
+            else if(m_width > 0 && m_height > 0)
+            {
+                nativeWindowImpl->WindowSizeChanged(m_width, m_height);
+            }
             break;
         }
         case WM_INPUT:

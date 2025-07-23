@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h>
@@ -21,7 +22,7 @@
 namespace AzToolsFramework
 {
     //! System Component to handle the Action Manager system and subsystems.
-    class ActionManagerSystemComponent final
+    class AZTF_API ActionManagerSystemComponent final
         : public AZ::Component
     {
     public:

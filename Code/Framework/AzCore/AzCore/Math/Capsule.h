@@ -14,7 +14,7 @@
 namespace AZ
 {
     //! A class representing a capsule (a cylinder with a hemispherical cap at each end).
-    class Capsule
+    class AZCORE_API Capsule
     {
     public:
         AZ_TYPE_INFO(Capsule, "{4B7E9154-B258-40D2-81A4-A27A25030588}");

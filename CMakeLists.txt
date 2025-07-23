@@ -30,9 +30,30 @@ if(NOT PROJECT_NAME)
     )
 endif()
 
+# Output some useful-for-debugging information in case something goes wrong and the user sends a log.
+# this cannot be done until project() is called.
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if (O3DE_SCRIPT_ONLY)
+    message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
+                    "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
+            )
+else()
+    message(STATUS  "Basic Configuration Information:\n" 
+                    "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
+                    "   CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}\n"
+                    "   CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}\n"
+                    "   O3DE_INSTALL_VERSION_STRING: ${O3DE_INSTALL_VERSION_STRING}\n"
+                    "   INSTALLED_ENGINE: ${INSTALLED_ENGINE}"
+            )
+endif()
+
 ################################################################################
 # Initialize
 ################################################################################
+message(STATUS "Initializing O3DE CMake system...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
 include(CTest)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
@@ -55,7 +76,6 @@ include(cmake/O3DEJson.cmake)
 include(cmake/Subdirectories.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
-get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 if (O3DE_SCRIPT_ONLY AND NOT INSTALLED_ENGINE)
     get_property(engine_root GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER)
     message(FATAL_ERROR "Script-only projects require pre-built versions of O3DE.\n\
@@ -69,12 +89,17 @@ endif()
 # into the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
 add_o3de_manifest_json_external_subdirectories()
 
+list(POP_BACK CMAKE_MESSAGE_INDENT)
+message(STATUS "Executing CMake scripts...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 # Add external subdirectories listed in the engine.json.
 # O3DE_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
 # external subdirectories.
+
 add_engine_json_external_subdirectories()
 
 if(NOT INSTALLED_ENGINE)
@@ -101,6 +126,13 @@ endif()
 # Post-processing
 ################################################################################
 # The following steps have to be done after all targets are registered:
+list(POP_BACK CMAKE_MESSAGE_INDENT)
+
+message(STATUS "Finishing up configuration...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+# Most of these post processing steps are nearly instantaneous, so no point in displaying a message
+# but if any of them take a time, we can add a message.
 
 # 1. Add any dependencies registered via ly_enable_gems
 ly_enable_gems_delayed()
@@ -120,12 +152,15 @@ ly_delayed_generate_settings_registry()
 ly_delayed_target_link_libraries()
 
 # 5. generate a registry file for unit testing for platforms that support unit testing
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()
 endif()
 
 # 5. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
 #    the dependencies
+#    This step takes a bit of time, so we display a message
+message(STATUS "Computing Runtime Dependencies (files to copy to the target's output directory)...")
 ly_delayed_generate_runtime_dependencies()
 
 # 6. Perform test impact framework post steps once all of the targets have been enumerated
@@ -134,6 +169,8 @@ if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED OR O3DE_TEST_IMPACT_PYTHON_TEST_
         ly_test_impact_post_step()
     endif()
 endif()
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(LY_INSTALL_ENABLED)

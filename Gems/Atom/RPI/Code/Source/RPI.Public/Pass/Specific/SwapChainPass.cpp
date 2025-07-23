@@ -123,7 +123,7 @@ namespace AZ
 
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr)
+            if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr || m_isMinimized)
             {
                 return;
             }
@@ -163,7 +163,7 @@ namespace AZ
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
         {
             if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr ||
-                m_windowContext->GetSwapChain(m_viewType)->GetImageCount() == 0)
+                m_windowContext->GetSwapChain(m_viewType)->GetImageCount() == 0 || m_isMinimized)
             {
                 return;
             }
@@ -202,12 +202,30 @@ namespace AZ
         
         void SwapChainPass::OnResolutionChanged([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
+            if (m_isMinimized)
+            {
+                return;
+            }
             QueueForBuildAndInitialization();
         }
 
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
+            if (m_isMinimized)
+            {
+                return;
+            }
             QueueForBuildAndInitialization();
+        }
+
+        void SwapChainPass::OnWindowMinimized()
+        {
+            m_isMinimized = true;
+        }
+
+        void SwapChainPass::OnWindowRestored()
+        {
+            m_isMinimized = false;
         }
 
         void SwapChainPass::ReadbackSwapChain(AZStd::shared_ptr<AttachmentReadback> readback)

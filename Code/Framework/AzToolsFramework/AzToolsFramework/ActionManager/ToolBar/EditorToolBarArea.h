@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <QToolBar>
 
 class QMainWindow;
@@ -25,7 +27,7 @@ namespace AzToolsFramework
     class ToolBarManagerInterface;
     class ToolBarManagerInternalInterface;
 
-    class EditorToolBarArea final
+    class AZTF_API EditorToolBarArea final
     {
     public:
         AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator);

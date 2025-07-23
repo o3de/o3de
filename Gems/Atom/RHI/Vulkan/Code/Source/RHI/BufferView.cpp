@@ -55,7 +55,7 @@ namespace AZ
             // Vulkan BufferViews are used to enable shaders to access buffer contents interpreted as formatted data.
             bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
-            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
+            if (shaderRead || shaderReadWrite)
             {
 #if defined(AZ_RHI_ENABLE_VALIDATION)
                 AZ_Assert(
@@ -65,7 +65,12 @@ namespace AZ
                     "Typed Buffer View has to be aligned to a multiple of %d bytes.",
                     device.GetLimits().m_minTexelBufferOffsetAlignment);
 #endif
-                auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
+
+                RHI::ResultCode result = RHI::ResultCode::Success;
+                if (viewDescriptor.m_elementFormat != RHI::Format::Unknown)
+                {
+                    result = BuildNativeBufferView(device, buffer, viewDescriptor);
+                }
 
                 if (device.GetBindlessDescriptorPool().IsInitialized())
                 {

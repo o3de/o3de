@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/Manipulators/SurfaceManipulator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -31,7 +32,7 @@ namespace AzToolsFramework
 
     //! TranslationManipulators is an aggregation of 3 linear manipulators, 3 planar manipulators
     //! and one surface manipulator who share the same transform.
-    class TranslationManipulators : public Manipulators
+    class AZTF_API TranslationManipulators : public Manipulators
     {
     public:
         AZ_RTTI(TranslationManipulators, "{D5E49EA2-30E0-42BC-A51D-6A7F87818260}")
@@ -150,10 +151,10 @@ namespace AzToolsFramework
     //! Function pointer to configure how a translation manipulator should look and behave (dimensions/axes/views).
     using TranslationManipulatorConfiguratorFn = void (*)(TranslationManipulators*);
 
-    void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators);
-    void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators);
+    AZTF_API void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators);
+    AZTF_API void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators);
 
-    AZStd::shared_ptr<ManipulatorViewQuad> CreateManipulatorViewQuadForPlanarTranslationManipulator(
+    AZTF_API AZStd::shared_ptr<ManipulatorViewQuad> CreateManipulatorViewQuadForPlanarTranslationManipulator(
         const AZ::Vector3& axis1,
         const AZ::Vector3& axis2,
         const AZ::Color& axis1Color,

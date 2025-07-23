@@ -14,5 +14,4 @@
 #include "../MaterialInputs/MetallicInput.azsli"
 #include "../MaterialInputs/SpecularInput.azsli"
 #include "../MaterialInputs/NormalInput.azsli"
-#include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/SilhouetteBlockerInput.azsli"

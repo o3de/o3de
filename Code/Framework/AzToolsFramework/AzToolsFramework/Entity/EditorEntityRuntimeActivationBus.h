@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Entity.h>
-
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,3 +27,5 @@ namespace AzToolsFramework
 
     using EditorEntityRuntimeActivationChangeNotificationBus = AZ::EBus<EditorEntityRuntimeActivationChangeNotifications>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityRuntimeActivationChangeNotifications);

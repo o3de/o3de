@@ -142,7 +142,7 @@ namespace AzToolsFramework
 
                 if (Utils::FromMimeData(data, entries))
                 {
-                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(sourceparent, entries);
                     if (selectedAction == Qt::IgnoreAction)
                     {
                         return false;

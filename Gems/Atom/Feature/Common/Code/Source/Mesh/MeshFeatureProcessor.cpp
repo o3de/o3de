@@ -2421,12 +2421,12 @@ namespace AZ
                 // set the SubMesh data to pass to the RayTracingFeatureProcessor, starting with vertex/index data
                 RayTracingFeatureProcessor::SubMesh subMesh;
                 RayTracingFeatureProcessor::SubMeshMaterial& subMeshMaterial = subMesh.m_material;
-                subMesh.m_positionFormat = PositionStreamFormat;
+                subMesh.m_positionFormat = RHI::ConvertToVertexFormat(PositionStreamFormat);
                 subMesh.m_positionVertexBufferView = streamIter[0];
                 subMesh.m_positionShaderBufferView =
                     const_cast<RHI::Buffer*>(streamIter[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
 
-                subMesh.m_normalFormat = NormalStreamFormat;
+                subMesh.m_normalFormat = RHI::ConvertToVertexFormat(NormalStreamFormat);
                 subMesh.m_normalVertexBufferView = streamIter[1];
                 subMesh.m_normalShaderBufferView =
                     const_cast<RHI::Buffer*>(streamIter[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
@@ -2434,7 +2434,7 @@ namespace AZ
                 if (tangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
-                    subMesh.m_tangentFormat = TangentStreamFormat;
+                    subMesh.m_tangentFormat = RHI::ConvertToVertexFormat(TangentStreamFormat);
                     subMesh.m_tangentVertexBufferView = streamIter[2];
                     subMesh.m_tangentShaderBufferView =
                         const_cast<RHI::Buffer*>(streamIter[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
@@ -2443,7 +2443,7 @@ namespace AZ
                 if (bitangentBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
-                    subMesh.m_bitangentFormat = BitangentStreamFormat;
+                    subMesh.m_bitangentFormat = RHI::ConvertToVertexFormat(BitangentStreamFormat);
                     subMesh.m_bitangentVertexBufferView = streamIter[3];
                     subMesh.m_bitangentShaderBufferView =
                         const_cast<RHI::Buffer*>(streamIter[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
@@ -2452,7 +2452,7 @@ namespace AZ
                 if (uvBufferByteCount > 0)
                 {
                     subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
-                    subMesh.m_uvFormat = UVStreamFormat;
+                    subMesh.m_uvFormat = RHI::ConvertToVertexFormat(UVStreamFormat);
                     subMesh.m_uvVertexBufferView = streamIter[4];
                     subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamIter[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
                 }

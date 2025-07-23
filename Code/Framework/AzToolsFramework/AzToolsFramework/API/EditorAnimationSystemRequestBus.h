@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     /**
@@ -32,4 +35,6 @@ namespace AzToolsFramework
     };
 
     using EditorAnimationSystemRequestsBus = AZ::EBus<EditorAnimationSystemRequests>;
-}
+} // EditorAnimationSystemRequests
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorAnimationSystemRequests);

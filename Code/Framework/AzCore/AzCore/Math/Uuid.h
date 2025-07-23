@@ -21,7 +21,7 @@ typedef _GUID GUID;
 
 namespace AZ
 {
-    struct Uuid
+    struct AZCORE_API Uuid
     {
         enum Variant
         {
@@ -192,7 +192,7 @@ namespace AZ
 namespace AZStd
 {
     // extern the fixed_string<39> class required to hold a Uuid string
-    extern template class basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+    extern template class AZCORE_API basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
 
     // hash specialization
     template <>

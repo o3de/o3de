@@ -10,10 +10,11 @@
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class RowFilterAdapter : public MetaAdapter
+    class AZF_API RowFilterAdapter : public MetaAdapter
     {
     public:
         RowFilterAdapter();

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <QWidget>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/ValueStringFilter.h>
 
@@ -20,7 +21,7 @@ namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
 
-    class FilteredDPE
+    class AZTF_API FilteredDPE
         : public QWidget
     {
     public:

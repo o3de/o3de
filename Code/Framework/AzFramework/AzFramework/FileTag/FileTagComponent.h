@@ -13,12 +13,13 @@
 #include <AzFramework/FileTag/FileTagBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     namespace FileTag
     {
-        class FileTagComponent
+        class AZF_API FileTagComponent
             : public AZ::Component
         {
         public:
@@ -35,7 +36,7 @@ namespace AzFramework
         };
 
         //! This component can be used to query the file tagging system 
-        class FileTagQueryComponent
+        class AZF_API FileTagQueryComponent
             : public AZ::Component
         {
         public:
@@ -54,7 +55,7 @@ namespace AzFramework
 
         //! This component can be used to query whether we need to exclude files based on file tags.
         //! This component loads the default excluded filetags file automatically. 
-        class ExcludeFileComponent
+        class AZF_API ExcludeFileComponent
             : public AZ::Component
             , public AzFramework::AssetCatalogEventBus::Handler
         {

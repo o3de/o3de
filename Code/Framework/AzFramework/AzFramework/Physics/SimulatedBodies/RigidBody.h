@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -28,7 +29,7 @@ namespace Physics
 namespace AzPhysics
 {
     //! Dynamic rigid body.
-    struct RigidBody
+    struct AZF_API RigidBody
         : public SimulatedBody
     {
     public:

@@ -35,7 +35,7 @@ namespace PhysX
                 EditorPrimitiveColliderComponentRequestBus::Event(
                     m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetSphereRadius, radius);
             });
-        m_sphereViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
+        m_sphereViewportEdit->Setup(AzToolsFramework::GetMainManipulatorManagerId());
         m_sphereViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }

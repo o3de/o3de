@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::SurfaceData
 {
@@ -26,7 +27,7 @@ namespace AzFramework::SurfaceData
         static constexpr size_t MaxSurfaceWeights = 16;
     }
 
-    struct SurfaceTagWeight
+    struct AZF_API SurfaceTagWeight
     {
         AZ_TYPE_INFO(SurfaceTagWeight, "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}");
         SurfaceTagWeight() = default;
@@ -55,7 +56,7 @@ namespace AzFramework::SurfaceData
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    struct SurfaceTagWeightComparator
+    struct AZF_API SurfaceTagWeightComparator
     {
         bool operator()(const SurfaceTagWeight& tagWeight1, const SurfaceTagWeight& tagWeight2) const
         {
@@ -79,7 +80,7 @@ namespace AzFramework::SurfaceData
 
     using SurfaceTagWeightList = AZStd::fixed_vector<SurfaceTagWeight, Constants::MaxSurfaceWeights>;
 
-    struct SurfacePoint final
+    struct AZF_API SurfacePoint final
     {
         AZ_TYPE_INFO(SurfacePoint, "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}");
 

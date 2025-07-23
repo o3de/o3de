@@ -20,12 +20,12 @@ namespace AZ
         extern MachineId s_machineId;
 
         /// Returns the current process id (pid)
-        ProcessId GetCurrentProcessId();
+        AZCORE_API ProcessId GetCurrentProcessId();
 
         /// Returns a unique machine id that should be unique per platform (PC, Mac, console, etc)
-        MachineId GetLocalMachineId();
+        AZCORE_API MachineId GetLocalMachineId();
 
         /// Sets the machine id. Id should be unique per platform (PC, Mac, console, etc)
-        void SetLocalMachineId(MachineId machineId);
+        AZCORE_API void SetLocalMachineId(MachineId machineId);
     }
 }

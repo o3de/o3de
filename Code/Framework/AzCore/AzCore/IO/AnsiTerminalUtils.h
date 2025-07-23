@@ -8,19 +8,21 @@
 
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AZ::IO::Posix
 {
     //! Enables Virtual Terminal Processing on Windows for th specified file descriptor
     //! This allows ANSI escapes to be supported
     //! https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
-    void EnableVirtualTerminalProcessing(int fileDescriptor);
+    AZCORE_API void EnableVirtualTerminalProcessing(int fileDescriptor);
 
     //! return true the terminal supports color ANSI escape codes
-    bool TerminalSupportsColor();
+    AZCORE_API bool TerminalSupportsColor();
 
     //! return true if the open file descriptor is a terminal
-    bool IsATty(int fileDescriptor);
+    AZCORE_API bool IsATty(int fileDescriptor);
 
     //! return true if the file descriptor supports ANSI escape sequences
-    bool SupportsAnsiEscapes(int fileDescriptor);
+    AZCORE_API bool SupportsAnsiEscapes(int fileDescriptor);
 }

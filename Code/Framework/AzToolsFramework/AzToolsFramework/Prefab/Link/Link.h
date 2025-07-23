@@ -8,6 +8,8 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -15,7 +17,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
-AZ_DECLARE_BUDGET(PrefabSystem);
+AZ_DECLARE_BUDGET_SHARED(PrefabSystem);
 
 namespace AzToolsFramework
 {
@@ -29,7 +31,7 @@ namespace AzToolsFramework
         using LinkReference = AZStd::optional<AZStd::reference_wrapper<Link>>;
 
         // A link is the primary point of communication between prefab templates.
-        class Link
+        class AZTF_API Link
         {
         public:
             AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator);
@@ -78,8 +80,9 @@ namespace AzToolsFramework
 
             Link();
             Link(LinkId linkId);
-            Link(const Link& other) = delete;
-            Link& operator=(const Link& other) = delete;
+
+            Link(const Link&) = delete;
+            Link& operator=(const Link&) = delete;
 
             Link(Link&& other) noexcept;
             Link& operator=(Link&& other) noexcept;

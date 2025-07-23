@@ -28,20 +28,42 @@ namespace AZStd
     class intrusive_refcount
     {
     public:
-        inline uint32_t use_count() const
+        AZ_FORCE_INLINE uint32_t use_count() const
         {
             return static_cast<uint32_t>(m_refCount);
         }
 
     protected:
-        intrusive_refcount();
-        intrusive_refcount(Deleter deleter);
-        intrusive_refcount(const intrusive_refcount&) = delete;
-        intrusive_refcount(intrusive_refcount&&) = delete;
-        virtual ~intrusive_refcount();
+        AZ_FORCE_INLINE intrusive_refcount() = default;
 
-        void add_ref() const;
-        void release() const;
+        AZ_FORCE_INLINE intrusive_refcount(Deleter deleter)
+            : m_deleter{ deleter }
+        {
+        }
+
+        intrusive_refcount(const intrusive_refcount&) = delete;
+
+        intrusive_refcount(intrusive_refcount&&) = delete;
+
+        AZ_FORCE_INLINE virtual ~intrusive_refcount()
+        {
+            AZ_Assert(m_refCount == 0, "The destructor was called on an object with active references.");
+        }
+
+        AZ_FORCE_INLINE void add_ref() const
+        {
+            ++m_refCount;
+        }
+
+        AZ_FORCE_INLINE void release() const
+        {
+            const int32_t refCount = static_cast<int32_t>(--m_refCount);
+            AZ_Assert(refCount != -1, "Releasing an already released object");
+            if (refCount == 0)
+            {
+                m_deleter(this);
+            }
+        }
 
         template <typename T>
         friend struct IntrusivePtrCountPolicy;
@@ -52,36 +74,4 @@ namespace AZStd
         mutable refcount_t m_refCount = {0};
         Deleter m_deleter;
     };
-
-    template <typename refcount_t, typename Deleter>
-    intrusive_refcount<refcount_t, Deleter>::intrusive_refcount() = default;
-
-    template <typename refcount_t, typename Deleter>
-    intrusive_refcount<refcount_t, Deleter>::intrusive_refcount(Deleter deleter)
-        : m_deleter{ deleter }
-    {
-    }
-
-    template <typename refcount_t, typename Deleter>
-    intrusive_refcount<refcount_t, Deleter>::~intrusive_refcount()
-    {
-        AZ_Assert(m_refCount == 0, "The destructor was called on an object with active references.");
-    }
-
-    template <typename refcount_t, typename Deleter>
-    void intrusive_refcount<refcount_t, Deleter>::add_ref() const
-    {
-        ++m_refCount;
-    }
-
-    template <typename refcount_t, typename Deleter>
-    void intrusive_refcount<refcount_t, Deleter>::release() const
-    {
-        const int32_t refCount = static_cast<int32_t>(--m_refCount);
-        AZ_Assert(refCount != -1, "Releasing an already released object");
-        if (refCount == 0)
-        {
-            m_deleter(this);
-        }
-    }
 } // namespace AZStd

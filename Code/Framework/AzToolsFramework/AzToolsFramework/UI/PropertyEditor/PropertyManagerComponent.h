@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTY_MANAGER_COMPONENT_H
-#define PROPERTY_MANAGER_COMPONENT_H
+#pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/map.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class PropertyManagerComponent
+        class AZTF_API PropertyManagerComponent
             : public AZ::Component
             , private PropertyTypeRegistrationMessages::Bus::Handler
             , private PropertyEditorGUIMessages::Bus::Handler
@@ -88,5 +90,3 @@ namespace AzToolsFramework
         };
     } // namespace Components
 } // namespace AzToolsFramework
-
-#endif

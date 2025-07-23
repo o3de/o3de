@@ -29,8 +29,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityInfoRequests);
-
 #include <QtWidgets/QMessageBox>
 
 namespace

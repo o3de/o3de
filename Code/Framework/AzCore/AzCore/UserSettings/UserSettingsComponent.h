@@ -27,7 +27,7 @@ namespace AZ
     /**
      * UserSettingsComponent
      */
-    class UserSettingsComponent
+    class AZCORE_API UserSettingsComponent
         : public Component
         , protected UserSettingsComponentRequestBus::Handler
     {

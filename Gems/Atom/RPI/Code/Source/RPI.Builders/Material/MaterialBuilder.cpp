@@ -140,15 +140,7 @@ namespace AZ
                 if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
                     MaterialBuilderUtils::AddJobDependency(
-                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
-
-                    for (const auto& shader : materialTypeSourceData.GetShaderReferences())
-                    {
-                        MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor,
-                            AssetUtils::ResolvePathReference(resolvedMaterialTypePath, shader.m_shaderFilePath),
-                            "Shader Asset");
-                    }
+                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 }, false);
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
@@ -159,7 +151,9 @@ namespace AZ
                         outputJobDescriptor,
                         resolvedMaterialTypePath,
                         MaterialTypeBuilder::PipelineStageJobKey,
-                        AssetBuilderSDK::CommonPlatformName);
+                        AssetBuilderSDK::CommonPlatformName,
+                        {},
+                        false);
 
                     // The abstract, pipeline material type will generate a direct material type as an intermediate source asset. This
                     // attempts to predict where that source asset will be located in the intermediate asset folder then maps it as a
@@ -171,27 +165,8 @@ namespace AZ
                         // Add the ordered product dependency for the intermediate material type source file so that the material cannot be
                         // processed before it's complete
                         MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
-
-                        // Add a wild card job dependency for any of the shaders generated with the material type so the material will only
-                        // be processed after they are complete
-                        auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
-                            outputJobDescriptor, intermediateMaterialTypePath, "Shader Asset", {}, {}, false);
-                        jobDependency.m_sourceFile.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
-                        AZ::StringFunc::Replace(jobDependency.m_sourceFile.m_sourceFileDependencyPath, "_generated.materialtype", "*.shader");
+                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 }, false);
                     }
-                }
-            }
-
-            // Assign dependencies from image properties
-            for (const auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
-            {
-                AZ_UNUSED(propertyId);
-
-                if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
-                {
-                    MaterialBuilderUtils::AddPossibleImageDependencies(
-                        materialSourcePath, propertyValue.GetValue<AZStd::string>(), outputJobDescriptor);
                 }
             }
 
@@ -202,7 +177,12 @@ namespace AZ
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
                 {
-                    if (jobDependency.m_platformIdentifier.empty())
+                    // we pre-populated these dependencies without any platform to depend on, ie, its blank.
+                    // Jobs depend on other jobs via a unique triplicate, which is (platform, job key, source file)
+                    // e.g. ("android", "Material Type Builder", "blah/whatever/foo.materialtype")
+                    // Anything can depend on the common platform (used for intermediate assets) but other platforms
+                    // should only depend on other assets from the same platform
+                    if (jobDependency.m_platformIdentifier.compare(AssetBuilderSDK::CommonPlatformName) != 0)
                     {
                         jobDependency.m_platformIdentifier = platformInfo.m_identifier;
                     }
@@ -285,6 +265,8 @@ namespace AZ
                 return;
             }
 
+            MaterialBuilderUtils::AddImageAssetDependenciesToProduct(materialAsset.Get(), jobProduct);
+           
             response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;

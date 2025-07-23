@@ -41,7 +41,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////
             // FenceBase
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForCrossDevice) override;
+            RHI::ResultCode InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<Fence> originalDeviceFence) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;
@@ -51,6 +52,8 @@ namespace AZ
 
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
             uint64_t m_pendingValue = 0;
+
+            RHI::Ptr<TimelineSemaphoreFence> m_originalDeviceFence;
         };
     } // namespace Vulkan
 } // namespace AZ

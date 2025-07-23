@@ -1,0 +1,156 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+#if ENABLE_SPHERE_LIGHTS
+// the PointLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/PointLight.azsli
+#if ENABLE_SHADOWS
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+
+int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
+{
+    const float3 toPoint = targetPos - lightPos;    
+    const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
+    if (toPoint.x == -maxElement)
+    {
+        return 0;
+    }
+    else if (toPoint.x == maxElement)
+    {
+        return 1;
+    }   
+    else if (toPoint.y == -maxElement)
+    {
+        return 2;
+    }
+    else if (toPoint.y == maxElement)
+    {
+        return 3;
+    }
+    else if (toPoint.z == -maxElement)
+    {
+        return 4;
+    }
+    else 
+    {
+        return 5;
+    }   
+}
+
+// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
+// This function returns the proper uint16_t value given an input face in the range 0-5
+int UnpackPointLightShadowIndex(const PointLight light, const int face)
+{
+    const int index = face >> 1;
+    const int shiftAmount = (face & 1) * 16;
+    return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
+} 
+
+uint ComputeShadowIndex(const PointLight light, const Surface surface)
+{
+    // shadow map size and bias are the same across all shadowmaps used by a specific point light, so just grab the first one
+    const uint lightIndex0 = UnpackPointLightShadowIndex(light, 0);
+    const float shadowmapSize = ViewSrg::m_projectedFilterParams[lightIndex0].m_shadowmapSize;
+    
+    // Note that the normal bias offset could potentially move the shadowed position from one map to another map inside the same point light shadow.
+    const float normalBias = ViewSrg::m_projectedShadows[lightIndex0].m_normalShadowBias;
+    const float3 biasedPosition = surface.position + ComputeNormalShadowOffset(normalBias, surface.vertexNormal, shadowmapSize);
+    
+    const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
+    return UnpackPointLightShadowIndex(light, shadowCubemapFace);
+}
+
+#endif // ENABLE_SHADOWS
+
+
+#ifndef PointLightUtil
+#error "PointLightUtil needs to be defined"
+#endif // PointLightUtil
+// the PointLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/PointLight.azsli
+
+void ApplyPointLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    PointLight srgLight = ViewSrg::m_pointLights[lightIndex];
+
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+
+    PointLightUtil light = PointLightUtil::Init(srgLight, surface);
+
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+
+    real litRatio = 1.0f;
+
+#if ENABLE_SHADOWS
+    if (o_enableShadows && o_enableSphereLightShadows)
+    {
+        const uint shadowIndex = ComputeShadowIndex(srgLight, surface);
+        litRatio *= real(ProjectedShadow::GetVisibility(
+                    shadowIndex,
+                    srgLight.m_position,
+                    surface.position,
+                    light.GetSurfaceToLightDirection(),
+                    surface.vertexNormal));
+
+#if ENABLE_TRANSMISSION
+        real transmissionDistance = -1.0f;
+        // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
+        if (o_transmission_mode == TransmissionMode::ThickObject)
+        {
+            transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position);
+        }
+        else if (o_transmission_mode == TransmissionMode::ThinObject)
+        {
+            transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
+        }
+        light.SetTransmissionDistance(transmissionDistance);
+#endif // ENABLE_TRANSMISSION
+    }
+#endif // ENABLE_SHADOWS
+
+#if ENABLE_AREA_LIGHT_VALIDATION
+    if (o_area_light_validation)
+    {
+        light.ApplySampled(srgLight, surface, lightingData);
+    }
+    else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+    {
+        light.Apply(srgLight, surface, litRatio, lightingData);
+    }
+
+}
+
+
+void ApplyPointLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();    
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        ApplyPointLight(currLightIndex, surface, lightingData);
+    }
+#else  // ENABLE_LIGHT_CULLING
+
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_pointLightCount; lightIndex++)
+    {
+        ApplyPointLight(lightIndex, surface, lightingData);
+    }
+#endif // ENABLE_LIGHT_CULLING
+}
+
+#else // ENABLE_SPHERE_LIGHTS
+void ApplyPointLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+    // empty
+}
+
+#endif /* ENABLE_SPHERE_LIGHTS */ 
+

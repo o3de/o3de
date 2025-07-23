@@ -1532,7 +1532,7 @@ namespace AZ::IO
     extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
 
     // Append operator explicit declarations
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
+    extern template BasicPath<AZStd::string> operator/ <AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
     extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
     extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
     extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
@@ -1542,17 +1542,17 @@ namespace AZ::IO
         const typename BasicPath<FixedMaxPathString>::value_type* rhs);
 
     // Iterator compare explicit declarations
-    extern template bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
+    extern template AZCORE_API bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    extern template bool operator==<const Path>(const PathIterator<const Path>& lhs,
+    extern template AZCORE_API bool operator== <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    extern template bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    extern template AZCORE_API bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
-    extern template bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
+    extern template AZCORE_API bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    extern template bool operator!=<const Path>(const PathIterator<const Path>& lhs,
+    extern template AZCORE_API bool operator!= <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    extern template AZCORE_API bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
 }
 

@@ -7,8 +7,8 @@
  */
 #include <AzCore/base.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/parallel/thread.h> /// this_thread sleep_for.
-
 namespace AZ::IO
 {
     bool RetryOpenStream(FileIOStream& stream, int numRetries, int delayBetweenRetry)

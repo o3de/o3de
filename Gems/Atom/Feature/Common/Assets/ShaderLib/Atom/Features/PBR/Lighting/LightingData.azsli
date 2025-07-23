@@ -23,10 +23,6 @@
 
 class LightingData
 {
-    LightCullingTileIterator tileIterator;
-
-    uint lightingChannels;
-
     // Lighting outputs
     real3 diffuseLighting;
     real3 specularLighting[MAX_SHADING_VIEWS];
@@ -82,8 +78,6 @@ void LightingData::Init(float3 positionWS, real3 specularNormal, real roughnessL
     emissiveLighting = real3(0.0, 0.0, 0.0);
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
-
-    lightingChannels = 0xFFFFFFFF;
 
     [unroll]
     for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)

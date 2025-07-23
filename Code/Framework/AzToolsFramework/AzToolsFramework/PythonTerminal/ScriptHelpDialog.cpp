@@ -312,6 +312,10 @@ namespace AzToolsFramework
 
         connect(ui->tableView, &ScriptTableView::doubleClicked, this, &CScriptHelpDialog::OnDoubleClick);
     }
+    
+    CScriptHelpDialog ::~CScriptHelpDialog()
+    {
+    }
 
     CScriptHelpDialog* CScriptHelpDialog::GetInstance()
     {

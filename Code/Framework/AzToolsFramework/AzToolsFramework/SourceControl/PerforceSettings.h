@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QString>
@@ -23,7 +25,7 @@ namespace Ui {
 
 namespace AzToolsFramework
 {
-    class PerforceSettings
+    class AZTF_API PerforceSettings
         : public QDialog
     {
         Q_OBJECT

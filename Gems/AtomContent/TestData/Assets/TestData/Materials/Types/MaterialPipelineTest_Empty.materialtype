@@ -4,6 +4,7 @@
     "propertyLayout": {
     },
     "lightingModel": "Base",
+    "materialShaderDefines": "./MaterialPipelineTest_Empty_Defines.azsli",
     "materialShaderCode": "./MaterialPipelineTest_Empty.azsli",
     "functors": [
     ]

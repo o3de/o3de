@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -44,3 +45,4 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabLoaderScriptingTraits);

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/utils.h>
@@ -21,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     //! These typically store the created object for immediate use in the editor plus additional information
     //! to allow the Prefab Builder to convert the object into a serialized form and register it with the
     //! Asset Database.
-    class ProcessedObjectStore
+    class AZTF_API ProcessedObjectStore
     {
     public:
         using SerializerFunction = AZStd::function<bool(AZStd::vector<uint8_t>&, const ProcessedObjectStore&)>;

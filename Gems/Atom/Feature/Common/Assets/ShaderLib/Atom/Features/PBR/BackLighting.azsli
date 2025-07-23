@@ -37,7 +37,12 @@ float3 T(float s)
     float3(0.078, 0.0, 0.0) * exp(-s*s/7.41);
 }
 
-real3 GetBackLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight, real transmissionDistance, real attenuationDistance)
+#ifndef GetBackLighting
+#define GetBackLighting GetBackLighting_Default
+#endif 
+
+// TODO: move this to the <MaterialType>_LightingBrdf.azsli files
+real3 GetBackLighting_Default(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight, real transmissionDistance, real attenuationDistance)
 {
     real3 result = real3(0.0, 0.0, 0.0);
 

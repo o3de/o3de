@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -35,7 +37,7 @@ namespace AzToolsFramework
     class DocumentPropertyEditor;
     class DPERowWidget;
 
-    class DPELayout : public QHBoxLayout
+    class AZTF_API DPELayout : public QHBoxLayout
     {
         Q_OBJECT
 
@@ -95,7 +97,7 @@ namespace AzToolsFramework
         mutable QSize m_cachedMinLayoutSize;
     };
 
-    class DPERowWidget : public QFrame
+    class AZTF_API DPERowWidget : public QFrame
     {
         Q_OBJECT
         Q_PROPERTY(bool hasChildRows READ HasChildRows);
@@ -180,7 +182,7 @@ namespace AzToolsFramework
         AZStd::optional<bool> m_expandByDefault;
     };
 
-    class DocumentPropertyEditor
+    class AZTF_API DocumentPropertyEditor
         : public QScrollArea
         , public IPropertyEditor
     {

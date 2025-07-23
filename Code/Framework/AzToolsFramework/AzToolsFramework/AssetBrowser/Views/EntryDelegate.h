@@ -15,6 +15,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'Q
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 #include <QStyledItemDelegate>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 AZ_POP_DISABLE_WARNING
 
 class QWidget;
@@ -41,7 +43,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
 
         //! EntryDelegate draws a single item in AssetBrowser.
-        class EntryDelegate
+        class AZTF_API EntryDelegate
             : public QStyledItemDelegate
         {
             Q_OBJECT
@@ -72,7 +74,7 @@ namespace AzToolsFramework
         };
 
         //! SearchEntryDelegate draws a single item in AssetBrowserListView.
-        class SearchEntryDelegate
+        class AZTF_API SearchEntryDelegate
             : public EntryDelegate
         {
             Q_OBJECT

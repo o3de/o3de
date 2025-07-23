@@ -17,7 +17,6 @@
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/config.h>
 #include <AzCore/std/typetraits/has_virtual_destructor.h>
-#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {
@@ -112,7 +111,7 @@ namespace AZ
         EnvironmentVariable<T>  FindVariable(const char* uniqueName);
 
         /// Returns the environment so you can share it with \ref AttachEnvironment
-        O3DEKERNEL_API EnvironmentInstance GetInstance();
+        AZCORE_API EnvironmentInstance GetInstance();
 
         /// Returns module id (non persistent)
         inline const void* GetModuleId()
@@ -211,7 +210,7 @@ namespace AZ
             using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
             // Assumes the m_mutex is already locked.
             // On return m_mutex is in an unlocked state.
-            O3DEKERNEL_API void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
+            AZCORE_API void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
             const void* m_moduleOwner; ///< Used when the variable can't transferred across module and we need to destruct the variable when the module is going away
@@ -311,16 +310,16 @@ namespace AZ
         * If you provide addedVariableLock you will receive lock if a variable has been created, so you can safely construct the object and then
         * release the lock.
         */
-        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
+        AZCORE_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
 
         /// Returns the value of the variable if found, otherwise nullptr.
-        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid);
+        AZCORE_API EnvironmentVariableResult GetVariable(u32 guid);
 
         /// Returns the allocator used by the current environment.
-        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator();
+        AZCORE_API Environment::AllocatorInterface* GetAllocator();
 
         /// Converts a string name to an ID (using Crc32 function)
-        O3DEKERNEL_API u32  EnvironmentVariableNameToId(const char* uniqueName);
+        AZCORE_API u32  EnvironmentVariableNameToId(const char* uniqueName);
     } // namespace Internal
 
     /**

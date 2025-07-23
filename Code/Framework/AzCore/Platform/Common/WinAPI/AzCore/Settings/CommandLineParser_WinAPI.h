@@ -16,7 +16,7 @@ namespace AZ::Settings::Platform
     //! A class to ensure command-line parameters are in utf-8 encoding.
     //! On Windows installations without utf-8 commandline arguments, the passed argc and argv arguments are overwritten. This class may
     //! allocate and stores additional strings, therefore it needs to stay in scope until the arguments are no longer needed.
-    class CommandLineConverter
+    class AZCORE_API CommandLineConverter
     {
         AZStd::vector<AZStd::string> m_convertedArguments;
         AZStd::vector<char*> m_convertedArgumentPointers;

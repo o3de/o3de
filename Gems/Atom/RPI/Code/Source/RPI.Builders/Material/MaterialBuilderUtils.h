@@ -14,6 +14,9 @@ namespace AZ
 {
     namespace RPI
     {
+        class MaterialAsset;
+        class MaterialTypeAsset;
+
         namespace MaterialBuilderUtils
         {
             //! @brief configure and register a job dependency with the job descriptor
@@ -33,14 +36,14 @@ namespace AZ
                 const AZStd::vector<AZ::u32>& subIds = {},
                 const bool updateFingerprint = true);
 
-            //! Resolve potential paths and add source and job dependencies for image assets
-            //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
-            //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
-            //! @param jobDescriptor Used to update job dependencies
-            void AddPossibleImageDependencies(
-                const AZStd::string& originatingSourceFilePath,
-                const AZStd::string& referencedSourceFilePath,
-                AssetBuilderSDK::JobDescriptor& jobDescriptor);
+            //! Given a material asset that has been fully built and prepared,
+            //! add any image dependencies as pre-load dependencies, to the job being emitted.
+            //! This will cause them to auto preload as part of loading the material, as well as make sure
+            //! they are included in any pak files shipped with the product.
+            void AddImageAssetDependenciesToProduct(const AZ::RPI::MaterialAsset* materialAsset, AssetBuilderSDK::JobProduct& product);
+
+            //! Same as the above overload, but for material TYPE assets.
+            void AddImageAssetDependenciesToProduct(const AZ::RPI::MaterialTypeAsset* materialTypeAsset, AssetBuilderSDK::JobProduct& product);
 
             //! Append a fingerprint value to the job descriptor using the file modification time of the specified file path
             void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor);

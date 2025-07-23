@@ -31,6 +31,7 @@
 
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Archive/ZipDirCache.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -42,7 +43,7 @@ namespace AZ::IO
 {
     class Archive;
     // this is the header in the cache of the file data
-    struct CCachedFileData
+    struct AZF_API CCachedFileData
         : public AZStd::intrusive_base
     {
         AZ_CLASS_ALLOCATOR(CCachedFileData, AZ::SystemAllocator);
@@ -86,7 +87,7 @@ namespace AZ::IO
     };
 
     //////////////////////////////////////////////////////////////////////
-    class Archive
+    class AZF_API Archive
         : public IArchive
         , public AZ::IO::CompressionBus::Handler
     {

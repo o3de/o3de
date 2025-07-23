@@ -255,7 +255,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom()),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, dataType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
@@ -287,7 +292,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptionsLayout),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, dataType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, dataType);
@@ -320,7 +330,12 @@ namespace UnitTest
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom()), AZ::RPI::ShaderVariantId{}, Name{"TestShader"}, materialPipelineName);
+            materialTypeCreator.AddShader(
+                CreateTestShaderAsset(Uuid::CreateRandom()),
+                AZ::RPI::ShaderVariantId{},
+                Name{ "TestShader" },
+                MaterialTypeAssetCreator::DrawItemType::Raster,
+                materialPipelineName);
             materialTypeCreator.BeginMaterialProperty(Name{pipelineMaterialPropertyName}, pipelineMaterialPropertyType, materialPipelineName);
             materialTypeCreator.EndMaterialProperty();
             materialTypeCreator.BeginMaterialProperty(Name{materialPropertyName}, materialPropertyType);

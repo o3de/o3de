@@ -11,13 +11,14 @@
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
         //! A System Component to reflect Editor operations on Components to Behavior Context
-        class EditorComponentAPIComponent
+        class AZTF_API EditorComponentAPIComponent
             : public AZ::Component
             , public EditorComponentAPIBus::Handler
         {

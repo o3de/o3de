@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityBus.h>
 
 #include "EditorComponentBase.h"
@@ -20,7 +21,7 @@ namespace AzToolsFramework
         /// Entity icons are the visual icon representing an entity in the editor viewport.
         /// This component enables customization of the entity icon for the owning entity.
         /// If the \ref m_entityIconAssetId is invalid, an icon from one of its components is chosen instead.
-        class EditorEntityIconComponent
+        class AZTF_API EditorEntityIconComponent
             : public EditorComponentBase
             , public AZ::EntityBus::Handler
             , public EditorEntityIconComponentRequestBus::Handler

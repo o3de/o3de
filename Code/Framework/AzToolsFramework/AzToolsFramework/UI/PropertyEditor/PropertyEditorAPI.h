@@ -7,6 +7,9 @@
  */
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -310,7 +313,7 @@ namespace AzToolsFramework
     /**
      * Events/bus for listening externally for property changes on a specific entity.
      */
-    class PropertyEditorEntityChangeNotifications
+    class AZTF_API PropertyEditorEntityChangeNotifications
         : public AZ::ComponentBus
     {
     public:
@@ -354,7 +357,7 @@ namespace AzToolsFramework
      * \param node - instance data hierarchy node
      * \return ref AZ::Edit::PropertyVisibility value
      */
-    AZ::Crc32 ResolveVisibilityAttribute(const InstanceDataNode& node);
+    AZTF_API AZ::Crc32 ResolveVisibilityAttribute(const InstanceDataNode& node);
 
     /**
      * Used by in-editor tools to determine if a given field has any visible children.
@@ -363,7 +366,7 @@ namespace AzToolsFramework
      * \param isSlicePushUI (optional - false by default) if enabled, additional push-only visibility options are applied.
      * \return bool
      */
-    bool HasAnyVisibleChildren(const InstanceDataNode& node, bool isSlicePushUI = false);
+    AZTF_API bool HasAnyVisibleChildren(const InstanceDataNode& node, bool isSlicePushUI = false);
 
     /**
      * Used by in-editor tools to determine if a given field should be visible.
@@ -373,38 +376,38 @@ namespace AzToolsFramework
      * \param isSlicePushUI (optional - false by default) if enabled, additional push-only visibility options are applied.
      * \return ref NodeDisplayVisibility
      */
-    NodeDisplayVisibility CalculateNodeDisplayVisibility(const InstanceDataNode& node, bool isSlicePushUI = false);
+    AZTF_API NodeDisplayVisibility CalculateNodeDisplayVisibility(const InstanceDataNode& node, bool isSlicePushUI = false);
 
     /**
      * Used by in-editor tools to determine if a node matches the passed in filter
     */
-    bool NodeMatchesFilter(const InstanceDataNode& node, const char* filter);
+    AZTF_API bool NodeMatchesFilter(const InstanceDataNode& node, const char* filter);
 
     /**
      * Used by in-editor tools to determine if the parent of a node matches the passed in filter
     */
-    bool NodeGroupMatchesFilter(const InstanceDataNode& node, const char* filter);
+    AZTF_API bool NodeGroupMatchesFilter(const InstanceDataNode& node, const char* filter);
 
     /**
      * Used by in-editor tools to read the visibility attribute on a given instance
     */
-    bool ReadVisibilityAttribute(void* instance, AZ::Edit::Attribute* attr, AZ::Crc32& visibility);
+    AZTF_API bool ReadVisibilityAttribute(void* instance, AZ::Edit::Attribute* attr, AZ::Crc32& visibility);
 
     /**
      * Determines the display name tools should use for a given property node.
      * \param node - instance data hierarchy node for which display name should be determined.
      */
-    AZStd::string GetNodeDisplayName(const InstanceDataNode& node);
+    AZTF_API AZStd::string GetNodeDisplayName(const InstanceDataNode& node);
 
     /**
      * Wrapper for OnEntityComponentPropertyChanged EBus call.
      */
-    void OnEntityComponentPropertyChanged(const AZ::EntityComponentIdPair& entityComponentIdPair);
+    AZTF_API void OnEntityComponentPropertyChanged(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     /**
      * Wrapper for OnEntityComponentPropertyChanged EBus call (overload).
      */
-    void OnEntityComponentPropertyChanged(AZ::EntityId entityId, AZ::ComponentId componentId);
+    AZTF_API void OnEntityComponentPropertyChanged(AZ::EntityId entityId, AZ::ComponentId componentId);
 
     /**
      * A function that evaluates whether a property node is read-only.

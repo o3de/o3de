@@ -878,7 +878,7 @@ namespace AZ
                 {
                     for (AZ::u64 i = aliasLen; i < bufferLen && inOutBuffer[i] != '\0'; ++i)
                     {
-                        inOutBuffer[i] = static_cast<char>(std::tolower(static_cast<int>(inOutBuffer[i])));
+                        inOutBuffer[i] = AZStd::tolower(inOutBuffer[i]);
                     }
 
                     return true;

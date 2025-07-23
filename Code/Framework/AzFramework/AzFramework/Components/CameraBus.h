@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Camera
 {
@@ -264,3 +265,9 @@ namespace Camera
 #define EditorCameraComponentTypeId AZ::TypeId("{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}")
 
 } // namespace Camera
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Camera::CameraComponentRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::ActiveCameraRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Camera::CameraNotifications);

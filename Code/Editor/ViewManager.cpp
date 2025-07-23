@@ -56,8 +56,8 @@ CViewManager::CViewManager()
     m_origin2D(0, 0, 0);
     m_zoom2D = 1.0f;
 
-    m_updateRegion.min = Vec3(-100000, -100000, -100000);
-    m_updateRegion.max = Vec3(100000, 100000, 100000);
+    m_updateRegion.SetMin(AZ::Vector3(-100000, -100000, -100000));
+    m_updateRegion.SetMax(AZ::Vector3(100000, 100000, 100000));
 
     m_pSelectedView = nullptr;
 

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>

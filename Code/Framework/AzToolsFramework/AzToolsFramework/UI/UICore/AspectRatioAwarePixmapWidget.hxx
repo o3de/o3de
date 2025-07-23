@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QWidget>
 #include <QPixmap>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
     // maintained and always fitting within the confines of the widget's
     // bounding box. You can use this instead of a QLabel if that's the
     // functionality you are looking for.
-    class AspectRatioAwarePixmapWidget : public QWidget
+    class AZTF_API AspectRatioAwarePixmapWidget : public QWidget
     {
     public:
         AZ_CLASS_ALLOCATOR(AspectRatioAwarePixmapWidget, AZ::SystemAllocator);

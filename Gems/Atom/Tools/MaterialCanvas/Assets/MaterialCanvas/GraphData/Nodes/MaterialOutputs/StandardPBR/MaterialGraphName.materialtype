@@ -2,6 +2,7 @@
     "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
     "version": 1,
     "lightingModel": "Standard",
+    "materialShaderDefines": "MaterialGraphName_Defines.azsli",
     "materialShaderCode": "MaterialGraphName_Common.azsli",
     "functors": [
         {

@@ -1,0 +1,61 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+// the PolygonLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/PolygonLight.azsli
+
+#if ENABLE_POLYGON_LTC_LIGHTS
+
+#ifndef PolygonLightUtil
+#error "PolygonLightUtil needs to be defined"
+#endif // PolygonLightUtil
+
+void ApplyPolygonLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    PolygonLight srgLight = ViewSrg::m_polygonLights[lightIndex];
+
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+
+    PolygonLightUtil light = PolygonLightUtil::Init(srgLight, surface);
+
+    // Polygon Lights don't get shadows
+    real litRatio = 1.0f;
+
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+
+    light.Apply(srgLight, surface, litRatio, lightingData);
+}
+
+
+void ApplyPolygonLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();    
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        ApplyPolygonLight(currLightIndex, surface, lightingData);
+    }
+#else
+
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_pointLightCount; lightIndex++)
+    {
+        ApplyPolygonLight(lightIndex, surface, lightingData);
+    }
+#endif /* ENABLE_LIGHT_CULLING */
+}
+#else 
+void ApplyPolygonLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+    // empty
+}
+#endif /* ENABLE_POLYGON_LTC_LIGHTS */
+
+

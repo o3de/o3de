@@ -9,13 +9,14 @@
 
 #include <AzFramework/Input/Buses/Notifications/InputChannelNotificationBus.h>
 #include <AzFramework/Input/Events/InputChannelEventFilter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that consumes all input event that pass the specified filter.
-    class InputChannelEventSink : public InputChannelNotificationBus::Handler
+    class AZF_API InputChannelEventSink : public InputChannelNotificationBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

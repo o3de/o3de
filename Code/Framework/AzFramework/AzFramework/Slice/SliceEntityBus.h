@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Slice/SliceComponent.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -39,4 +40,6 @@ namespace AzFramework
     };
 
     using SliceEntityRequestBus = AZ::EBus<SliceEntityRequests>;
-}
+} // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::SliceEntityRequests)

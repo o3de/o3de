@@ -35,7 +35,6 @@ namespace ScriptCanvasEditor
     class SystemComponent
         : public AZ::Component
         , private SystemRequestBus::Handler
-        , private AzToolsFramework::EditorEvents::Bus::Handler
         , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         , private ScriptCanvasExecutionBus::Handler
         , private AZ::UserSettingsNotificationBus::Handler
@@ -70,11 +69,7 @@ namespace ScriptCanvasEditor
         // SystemRequestBus::Handler...
         void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) override;
         void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AztoolsFramework::EditorEvents::Bus::Handler...
-        void NotifyRegisterViews() override;
+        void OpenScriptCanvasEditor(const AZStd::string& sourcePath) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -103,6 +98,8 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // ActionManagerRegistrationNotificationBus::Handler...
         void OnActionContextRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

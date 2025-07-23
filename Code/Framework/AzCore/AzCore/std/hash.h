@@ -217,7 +217,7 @@ namespace AZStd
     //@} Hash functions
 
     // Bucket size suitable to hold n elements.
-    AZStd::size_t hash_next_bucket_size(AZStd::size_t n);
+    AZCORE_API AZStd::size_t hash_next_bucket_size(AZStd::size_t n);
 }
 
 #endif // AZSTD_HASH_H

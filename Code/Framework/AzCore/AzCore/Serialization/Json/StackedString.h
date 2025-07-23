@@ -19,7 +19,7 @@ namespace AZ
     constexpr char JsonPointerReferenceTokenPrefix = '/';
     constexpr AZStd::string_view JsonPointerEncodedReferenceTokenPrefix = "~1";
 
-    class StackedString
+    class AZCORE_API StackedString
     {
     public:
         enum class Format
@@ -54,7 +54,7 @@ namespace AZ
     };
 
     //! Scoped object that manages the life cycle of a single entry on the string stack.
-    class ScopedStackedString
+    class AZCORE_API ScopedStackedString
     {
     public:
         //! Pushes a new entry on the stack.

@@ -13,6 +13,7 @@
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Utils/Utils.h>
 
 namespace O3DE::ProjectManager
@@ -138,7 +139,7 @@ namespace O3DE::ProjectManager
 
             // First attempt to launch the Editor.exe within the project build directory if it exists
             AZ::IO::FixedMaxPath buildPathSetregPath = fixedProjectPath
-            / AZ::SettingsRegistryInterface::DevUserRegistryFolder
+            / AZ::SettingsRegistryConstants::DevUserRegistryFolder
                 / "Platform" / AZ_TRAIT_OS_PLATFORM_CODENAME / "build_path.setreg";
             if (AZ::IO::SystemFile::Exists(buildPathSetregPath.c_str()))
             {

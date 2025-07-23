@@ -42,7 +42,7 @@ namespace AZ
         /**
          * ZStd compressor per stream data.
          */
-        class CompressorZStdData
+        class AZCORE_API CompressorZStdData
             : public CompressorData
         {
         public:
@@ -69,7 +69,7 @@ namespace AZ
             SeekPointArray    m_seekPoints;               ///< List of seek points for the archive, we must have at least one!
         };
 
-        class CompressorZStd
+        class AZCORE_API CompressorZStd
             : public Compressor
         {
         public:

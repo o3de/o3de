@@ -29,9 +29,13 @@
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
-DECLARE_EBUS_INSTANTIATION(AzFramework::AssetSystem::AssetSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests);
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 
 namespace AzFramework
 {

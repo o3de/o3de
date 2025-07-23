@@ -120,6 +120,8 @@ namespace AZ::RHI
         //!      this amounts to seeing if buffer.IsInitialized() is true.
         ResultCode InitBuffer(const DeviceBufferInitRequest& request);
 
+        ResultCode InitBufferCrossDevice(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer);
+
         //! NOTE: Only applicable to 'Host' pools. Device pools will fail with ResultCode::InvalidOperation.
         //!
         //! Instructs the pool to allocate a new backing allocation for the buffer. This enables the user to
@@ -194,7 +196,9 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const RHI::BufferPoolDescriptor& descriptor) = 0;
 
         /// Called when a buffer is being initialized onto the pool.
-        virtual ResultCode InitBufferInternal(DeviceBuffer& buffer, const BufferDescriptor& descriptor) = 0;
+        virtual ResultCode InitBufferInternal(DeviceBuffer& buffer, const BufferDescriptor& descriptor, bool usedForCrossDevice) = 0;
+
+        virtual RHI::ResultCode InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer) = 0;
 
         /// Called when the buffer is being orphaned.
         virtual ResultCode OrphanBufferInternal(DeviceBuffer& buffer) = 0;

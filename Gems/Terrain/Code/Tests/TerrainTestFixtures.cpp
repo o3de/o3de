@@ -39,8 +39,6 @@
 #include <Terrain/MockTerrainLayerSpawner.h>
 #include <Terrain/MockTerrainRPISystemComponent.h>
 
-extern "C" void CleanUpRpiPublicGenericClassInfo();
-
 namespace UnitTest
 {
     void TerrainTestEnvironment::AddGemsAndComponents()
@@ -429,7 +427,7 @@ namespace UnitTest
 
         m_systemEntity.reset();
 
-        CleanUpRpiPublicGenericClassInfo();
+        AZ::GetGlobalSerializeContextModule().Cleanup();
 
         UnitTest::TerrainTestFixture::TearDown();
     }

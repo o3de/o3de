@@ -16,28 +16,28 @@
 
 namespace AzToolsFramework
 {
-    void RegisterIntSpinBoxHandlers();
-    void RegisterIntSliderHandlers();
-    void RegisterFilePathHandler();
-    void RegisterDoubleSpinBoxHandlers();
-    void RegisterDoubleSliderHandlers();
-    void RegisterColorPropertyHandlers();
-    void RegisterStringLineEditHandler();
-    void RegisterBoolComboBoxHandler();
-    void RegisterCheckBoxHandlers();
-    void RegisterBoolRadioButtonsHandler();
-    void RegisterEnumComboBoxHandler();
-    void RegisterStringComboBoxHandler();
-    void RegisterAssetPropertyHandler();
-    void RegisterAudioPropertyHandler();
-    void RegisterEntityIdPropertyHandler();
-    void RegisterVectorHandlers();
-    void RegisterButtonPropertyHandlers();
-    void RegisterMultiLineEditHandler();
-    void RegisterCrcHandler();
-    void ReflectPropertyEditor(AZ::ReflectContext* context);
-    void RegisterExeSelectPropertyHandler();
-    void RegisterLabelHandler();
+    AZTF_API void RegisterIntSpinBoxHandlers();
+    AZTF_API void RegisterIntSliderHandlers();
+    AZTF_API void RegisterFilePathHandler();
+    AZTF_API void RegisterDoubleSpinBoxHandlers();
+    AZTF_API void RegisterDoubleSliderHandlers();
+    AZTF_API void RegisterColorPropertyHandlers();
+    AZTF_API void RegisterStringLineEditHandler();
+    AZTF_API void RegisterBoolComboBoxHandler();
+    AZTF_API void RegisterCheckBoxHandlers();
+    AZTF_API void RegisterBoolRadioButtonsHandler();
+    AZTF_API void RegisterEnumComboBoxHandler();
+    AZTF_API void RegisterStringComboBoxHandler();
+    AZTF_API void RegisterAssetPropertyHandler();
+    AZTF_API void RegisterAudioPropertyHandler();
+    AZTF_API void RegisterEntityIdPropertyHandler();
+    AZTF_API void RegisterVectorHandlers();
+    AZTF_API void RegisterButtonPropertyHandlers();
+    AZTF_API void RegisterMultiLineEditHandler();
+    AZTF_API void RegisterCrcHandler();
+    AZTF_API void ReflectPropertyEditor(AZ::ReflectContext* context);
+    AZTF_API void RegisterExeSelectPropertyHandler();
+    AZTF_API void RegisterLabelHandler();
 
     namespace Components
     {

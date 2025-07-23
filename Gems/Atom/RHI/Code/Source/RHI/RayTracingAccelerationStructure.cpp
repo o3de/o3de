@@ -39,34 +39,6 @@ namespace AZ::RHI
         return descriptor;
     }
 
-    DeviceRayTracingTlasDescriptor RayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
-    {
-        AZ_Assert(m_instances.empty() || !m_instancesBuffer, "Instance list and instance buffer must not be used in the same TLAS");
-
-        DeviceRayTracingTlasDescriptor descriptor;
-
-        for (const auto& instance : m_instances)
-        {
-            auto& tlasInstance = descriptor.m_instances.emplace_back();
-
-            tlasInstance.m_instanceID = instance.m_instanceID;
-            tlasInstance.m_hitGroupIndex = instance.m_hitGroupIndex;
-            tlasInstance.m_instanceMask = instance.m_instanceMask;
-            tlasInstance.m_transform = instance.m_transform;
-            tlasInstance.m_nonUniformScale = instance.m_nonUniformScale;
-            tlasInstance.m_transparent = instance.m_transparent;
-            tlasInstance.m_blas = instance.m_blas->GetDeviceRayTracingBlas(deviceIndex);
-        }
-
-        if (m_instancesBuffer)
-        {
-            descriptor.m_instancesBuffer = m_instancesBuffer->GetDeviceBuffer(deviceIndex);
-            descriptor.m_numInstancesInBuffer = m_numInstancesInBuffer;
-        }
-
-        return descriptor;
-    }
-
     ResultCode RayTracingBlas::CreateBuffers(
         MultiDevice::DeviceMask deviceMask,
         const RayTracingBlasDescriptor* descriptor,
@@ -108,13 +80,14 @@ namespace AZ::RHI
     }
 
     ResultCode RayTracingBlas::CreateCompactedBuffers(
+        MultiDevice::DeviceMask deviceMask,
         const RayTracingBlas& sourceBlas,
         const AZStd::unordered_map<int, uint64_t>& compactedSizes,
         const RayTracingBufferPools& rayTracingBufferPools)
     {
         m_descriptor = sourceBlas.m_descriptor;
 
-        MultiDeviceObject::Init(sourceBlas.GetDeviceMask());
+        MultiDeviceObject::Init(deviceMask);
         ResultCode resultCode{ ResultCode::Success };
 
         IterateDevices(
@@ -148,6 +121,42 @@ namespace AZ::RHI
         return resultCode;
     }
 
+    ResultCode RayTracingBlas::AddDevice(int deviceIndex, const RayTracingBufferPools& rayTracingBufferPools)
+    {
+        MultiDeviceObject::Init(SetBit(GetDeviceMask(), deviceIndex));
+
+        auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+        this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
+
+        auto deviceDescriptor{ m_descriptor.GetDeviceRayTracingBlasDescriptor(deviceIndex) };
+
+        return GetDeviceRayTracingBlas(deviceIndex)
+            ->CreateBuffers(*device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+    }
+
+    ResultCode RayTracingBlas::AddDeviceCompacted(
+        int deviceIndex, const RayTracingBlas& sourceBlas, uint64_t compactedSize, const RayTracingBufferPools& rayTracingBufferPools)
+    {
+        MultiDeviceObject::Init(SetBit(GetDeviceMask(), deviceIndex));
+
+        auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+        this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
+        this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
+
+        return GetDeviceRayTracingBlas(deviceIndex)
+            ->CreateCompactedBuffers(
+                *device,
+                sourceBlas.GetDeviceRayTracingBlas(deviceIndex),
+                compactedSize,
+                *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+    }
+
+    void RayTracingBlas::RemoveDevice(int deviceIndex)
+    {
+        MultiDeviceObject::Init(ResetBit(GetDeviceMask(), deviceIndex));
+        m_deviceObjects.erase(deviceIndex);
+    }
+
     bool RayTracingBlas::IsValid() const
     {
         if (m_deviceObjects.empty())
@@ -169,11 +178,9 @@ namespace AZ::RHI
 
     ResultCode RayTracingTlas::CreateBuffers(
         MultiDevice::DeviceMask deviceMask,
-        const RayTracingTlasDescriptor* descriptor,
+        const AZStd::unordered_map<int, DeviceRayTracingTlasDescriptor>& descriptor,
         const RayTracingBufferPools& rayTracingBufferPools)
     {
-        m_descriptor = *descriptor;
-
         MultiDeviceObject::Init(deviceMask);
 
         ResultCode resultCode{ResultCode::Success};
@@ -186,11 +193,16 @@ namespace AZ::RHI
                     this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas().get();
                 }
 
-                auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
-
-                resultCode = GetDeviceRayTracingTlas(deviceIndex)
-                                 ->CreateBuffers(
-                                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                if (!descriptor.count(deviceIndex))
+                {
+                    AZ_Assert(false, "TLAS descriptor for device %d was not provided even though it's in the deviceMask", deviceIndex);
+                    resultCode = ResultCode::Fail;
+                    return false;
+                }
+                resultCode =
+                    GetDeviceRayTracingTlas(deviceIndex)
+                        ->CreateBuffers(
+                            *device, &descriptor.at(deviceIndex), *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
                 return resultCode == ResultCode::Success;
             });
 

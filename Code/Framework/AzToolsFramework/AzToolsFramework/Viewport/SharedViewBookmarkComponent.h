@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
@@ -14,7 +16,7 @@ namespace AzToolsFramework
 {
     //! @class EditorViewBookmarks.
     //! @brief struct that stores a vector of View bookmarks.
-    struct EditorViewBookmarks final
+    struct AZTF_API EditorViewBookmarks final
     {
         AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
@@ -29,7 +31,7 @@ namespace AzToolsFramework
     //! @class SharedViewBookmarkComponent.
     //! @brief component that stores a vector of View bookmarks stored in the prefab.
     //! so they can be shared in version control easily.
-    class SharedViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
+    class AZTF_API SharedViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
         static inline constexpr AZ::TypeId ViewBookmarkComponentTypeId{ "{6959832F-9382-4C7D-83AC-380DA9F138DE}" };

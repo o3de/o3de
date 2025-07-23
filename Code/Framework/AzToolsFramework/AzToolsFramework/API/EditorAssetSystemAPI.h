@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Crc.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/PlatformDef.h>
+#include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -37,7 +38,6 @@ namespace AzToolsFramework
             : public AZ::EBusTraits
         {
         public:
-
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // single bus
 
@@ -141,10 +141,9 @@ namespace AzToolsFramework
             virtual bool ClearFingerprintForAsset(const AZStd::string& sourcePath) = 0;
         };
 
-
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension
-        class AssetSystemNotifications
+        class AssetSystemNotifications 
             : public AZ::EBusTraits
         {
         public:
@@ -176,10 +175,10 @@ namespace AzToolsFramework
             Missing //indicate that the job is not present for example if the source file is not there, or if job key is not there
         };
 
-        extern const char* JobStatusString(JobStatus status);
+        AZTF_API const char* JobStatusString(JobStatus status);
 
         //! This struct is used for responses and requests about Asset Processor Jobs
-        struct JobInfo
+        struct AZTF_API JobInfo
         {
             AZ_TYPE_INFO(JobInfo, "{276C9DE3-0C81-4721-91FE-F7C961D28DA8}")
             JobInfo();
@@ -264,7 +263,7 @@ namespace AzToolsFramework
         };
 
         //! Returns "mac", "pc", or "linux" statically.
-        const char* GetHostAssetPlatform();
+        AZTF_API const char* GetHostAssetPlatform();
 
     } // namespace AssetSystem
     using AssetSystemBus = AZ::EBus<AssetSystem::AssetSystemNotifications>;
@@ -274,5 +273,9 @@ namespace AzToolsFramework
 
 namespace AZStd
 {
-    extern template class vector<AzToolsFramework::AssetSystem::JobInfo>;
+    extern template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);

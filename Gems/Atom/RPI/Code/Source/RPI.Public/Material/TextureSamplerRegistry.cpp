@@ -20,7 +20,8 @@ namespace AZ::RPI
         if (m_maxSamplerStates > 0)
         {
             // create a shared_ptr to the default sampler, so it never expires
-            m_defaultSamplerState = RegisterTextureSampler(defaultSamplerState);
+            auto [samplerState, registered] = RegisterTextureSampler(defaultSamplerState);
+            m_defaultSamplerState = samplerState;
         }
     }
 
@@ -107,17 +108,13 @@ namespace AZ::RPI
         return nullptr;
     }
 
-    AZStd::shared_ptr<SharedSamplerState> TextureSamplerRegistry::RegisterTextureSampler(const RHI::SamplerState& samplerState)
+    AZStd::pair<AZStd::shared_ptr<SharedSamplerState>, bool> TextureSamplerRegistry::RegisterTextureSampler(
+        const RHI::SamplerState& samplerState)
     {
         auto it = m_samplerLookup.find(samplerState);
         if (it == m_samplerLookup.end())
         {
-            auto result = MakeSharedSamplerState(samplerState);
-            if (result)
-            {
-                m_samplerLookup[result->m_samplerState] = result->m_samplerIndex;
-            }
-            return result;
+            return { MakeSharedSamplerState(samplerState), true };
         }
         else
         {
@@ -126,11 +123,11 @@ namespace AZ::RPI
             {
                 auto sharedSampler = AZStd::make_shared<SharedSamplerState>(SharedSamplerState{ it->second, samplerState });
                 m_samplerStates[it->second] = sharedSampler;
-                return sharedSampler;
+                return { sharedSampler, true };
             }
             else
             {
-                return m_samplerStates[it->second].lock();
+                return { m_samplerStates[it->second].lock(), false };
             }
         }
     }

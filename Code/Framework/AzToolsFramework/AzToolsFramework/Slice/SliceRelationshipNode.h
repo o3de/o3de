@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -16,7 +17,7 @@ namespace AzToolsFramework
 {
     class SliceDependencyBrowserComponent;
 
-    class SliceRelationshipNode
+    class AZTF_API SliceRelationshipNode
     {
     public:
 

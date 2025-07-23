@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 
@@ -24,7 +26,7 @@ namespace Ui
 
 namespace AzToolsFramework
 {
-    class ProgressShield
+    class AZTF_API ProgressShield
         : public QWidget
     {
         Q_OBJECT;

@@ -105,7 +105,7 @@ public:
     //! Called every frame.
     void Update();
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
-    void OnAreaModified(const AABB& modifiedArea);
+    void OnAreaModified(const AZ::Aabb& modifiedArea);
 
     void ExecuteQueuedEvents();
 

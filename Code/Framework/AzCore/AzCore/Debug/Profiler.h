@@ -66,7 +66,7 @@ namespace AZStd
 namespace AZ::Debug
 {
     // interface for externally defined profiler systems
-    class Profiler
+    class AZCORE_API Profiler
     {
     public:
         AZ_RTTI(Profiler, "{3E5D6329-72D1-41BA-9158-68A349D1A4D5}");
@@ -82,7 +82,7 @@ namespace AZ::Debug
         static void ReportProfileEvent(const Budget* budget, const char* eventName);
     };
 
-    class ProfileScope
+    class AZCORE_API ProfileScope
     {
     public:
         static void BeginRegion(Budget* budget, const char* eventName, ...);

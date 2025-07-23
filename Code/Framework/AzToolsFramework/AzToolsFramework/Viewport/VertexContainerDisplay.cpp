@@ -14,10 +14,6 @@ namespace AzToolsFramework
 {
     namespace VertexContainerDisplay
     {
-        const float DefaultVertexTextSize = 1.5f;
-        const AZ::Color DefaultVertexTextColor = AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
-        const AZ::Vector3 DefaultVertexTextOffset = AZ::Vector3(0.0f, 0.0f, -0.1f);
-
         void DisplayVertexContainerIndex(
             AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, const size_t index, const float textSize)
         {
@@ -56,7 +52,7 @@ namespace AzToolsFramework
     } // namespace VertexContainerDisplay
 
     // explicit template instantiations
-    template void VertexContainerDisplay::DisplayVertexContainerIndices(
+    template AZ_DLL_EXPORT void VertexContainerDisplay::DisplayVertexContainerIndices(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector2>& vertices,
         const AZ::Transform& transform,
@@ -65,7 +61,7 @@ namespace AzToolsFramework
         float textSize,
         const AZ::Color& textColor,
         const AZ::Vector3& textOffset);
-    template void VertexContainerDisplay::DisplayVertexContainerIndices(
+    template AZ_DLL_EXPORT void VertexContainerDisplay::DisplayVertexContainerIndices(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::FixedVertices<AZ::Vector3>& vertices,
         const AZ::Transform& transform,

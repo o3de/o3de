@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_BUTTON_CTRL
-#define PROPERTY_BUTTON_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -22,7 +22,7 @@ class InstanceDataNode;
 
 namespace AzToolsFramework
 {
-    class PropertyButtonCtrl
+    class AZTF_API PropertyButtonCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -46,7 +46,7 @@ Q_SIGNALS:
         QPushButton* m_button;
     };
 
-    class ButtonHandlerCommon
+    class AZTF_API ButtonHandlerCommon
         : public QObject
     {
         Q_OBJECT
@@ -56,7 +56,7 @@ Q_SIGNALS:
         void ConsumeAttributeCommon(PropertyButtonCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
     };
 
-    class ButtonGenericHandler
+    class AZTF_API ButtonGenericHandler
         : public ButtonHandlerCommon
         , public GenericPropertyHandler<PropertyButtonCtrl>
     {
@@ -71,7 +71,7 @@ Q_SIGNALS:
         void ConsumeAttribute(PropertyButtonCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
-    class ButtonBoolHandler
+    class AZTF_API ButtonBoolHandler
         : public ButtonHandlerCommon
         , public PropertyHandler<bool, PropertyButtonCtrl>
     {
@@ -86,7 +86,7 @@ Q_SIGNALS:
         void ConsumeAttribute(PropertyButtonCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
     
-    class ButtonStringHandler
+    class AZTF_API ButtonStringHandler
         : public ButtonHandlerCommon
         , public PropertyHandler<AZStd::string, PropertyButtonCtrl>
     {
@@ -101,8 +101,6 @@ Q_SIGNALS:
         void ConsumeAttribute(PropertyButtonCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
-    void RegisterButtonPropertyHandlers();
+    AZTF_API void RegisterButtonPropertyHandlers();
 
 }; // namespace AzToolsFramework
-
-#endif // PROPERTY_BUTTON_CTRL

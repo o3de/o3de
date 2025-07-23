@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,3 +29,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement RadiusManipulatorRequests
     using RadiusManipulatorRequestBus = AZ::EBus<RadiusManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::RadiusManipulatorRequests);

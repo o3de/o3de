@@ -51,7 +51,8 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
-            RHI::ResultCode Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState);
+            RHI::ResultCode Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState, bool usedForCrossDevice = false);
+            RHI::ResultCode InitCrossDevice(ID3D12DeviceX* dx12Device, Fence* originalDeviceFence, ID3D12DeviceX* originalDevice);
 
             void Shutdown();
 
@@ -72,6 +73,7 @@ namespace AZ
 
         private:
             RHI::Ptr<ID3D12Fence> m_fence;
+            Fence* m_originalDeviceFence = nullptr;
             uint64_t m_pendingValue = 1;
         };
 
@@ -127,7 +129,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceFence
-            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, bool usedForWaitingOnDevice) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState, RHI::FenceFlags flags) override;
+            RHI::ResultCode InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<RHI::DeviceFence> originalDeviceFence) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;
             void WaitOnCpuInternal() const override;
@@ -136,6 +139,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             DX12::Fence m_fence;
+            RHI::Ptr<RHI::DeviceFence> m_originalDeviceFence;
         };
     }
 }

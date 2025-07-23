@@ -11,11 +11,6 @@
 
 #include <string.h>
 
-namespace AZ::Internal
-{
-    template struct AggregateTypes<Crc32>;
-}
-
 namespace AZ
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(Crc32, "Crc32", "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}")

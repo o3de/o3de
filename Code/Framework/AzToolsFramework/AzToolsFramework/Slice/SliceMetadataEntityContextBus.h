@@ -7,10 +7,11 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -112,3 +113,7 @@ namespace AzToolsFramework
 
     using SliceMetadataEntityContextNotificationBus = AZ::EBus<SliceMetadataEntityContextNotifications>;
 } // namespace AzToolsFramework
+
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceMetadataEntityContextNotifications);

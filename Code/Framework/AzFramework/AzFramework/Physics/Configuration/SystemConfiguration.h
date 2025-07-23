@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -19,7 +20,7 @@ namespace AzPhysics
 {
     //! Contains global physics settings.
     //! Used to initialize the Physics System.
-    struct alignas(16) SystemConfiguration
+    struct AZF_API alignas(16) SystemConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::SystemConfiguration, "{24697CAF-AC00-443D-9C27-28D58734A84C}");

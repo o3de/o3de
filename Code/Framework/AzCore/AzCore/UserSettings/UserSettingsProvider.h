@@ -106,7 +106,7 @@ namespace AZ
     /**
      *
      */
-    class UserSettingsProvider
+    class AZCORE_API UserSettingsProvider
         : public UserSettingsBus::Handler
     {
     public:

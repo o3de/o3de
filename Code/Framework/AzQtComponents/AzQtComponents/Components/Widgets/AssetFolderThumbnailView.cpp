@@ -29,6 +29,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'in
 #include <QStyledItemDelegate>
 #include <QTextDocument>
 #include <QTimer>
+#include <QApplication>
+
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -1309,9 +1311,30 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::HandleDrag()
     {
+        // m_queuedMouseEvent is the state of the mouse when the drag operation started
+        // since then, it has moved to m_mousePosition.
+        if (!m_queuedMouseEvent)
+        {
+            return;
+        }
+
+        bool isLeftButton = (m_queuedMouseEvent->button() == Qt::LeftButton);
+        if (!isLeftButton)
+        {
+            // we don't support right-dragging
+            return;
+        }
+
+        // Only start a drag if the mouse has moved far enough since the button was held down:
+        const int moveDistance = (m_queuedMouseEvent->pos() - m_mousePosition).manhattanLength();
+
+        if (moveDistance < QApplication::startDragDistance())
+        {
+            return;
+        }
+
         // Retrieve the index at the click position.
         QModelIndex indexAtClick = indexAt(m_queuedMouseEvent->pos()).siblingAtColumn(0);
-
         // If the index is selected, we should move the whole selection.
         if (selectionModel()->isSelected(indexAtClick))
         {

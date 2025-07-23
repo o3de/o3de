@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 
 namespace AzToolsFramework
@@ -15,7 +16,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         //! Undo class for handling deletion of entities and prefab instances to an instance as override of focused instance.
-        class PrefabUndoDeleteAsOverride
+        class AZTF_API PrefabUndoDeleteAsOverride
             : public PrefabUndoUpdateLink
         {
         public:

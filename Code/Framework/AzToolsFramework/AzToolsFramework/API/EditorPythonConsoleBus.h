@@ -10,6 +10,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -118,3 +119,4 @@ namespace AzToolsFramework
     using EditorPythonConsoleNotificationBus = AZ::EBus<EditorPythonConsoleNotifications>;
 }
 
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonConsoleNotifications);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelDigital.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional digital input values and a position.
     //! Examples: touch
-    class InputChannelDigitalWithPosition2D : public InputChannelDigital
+    class AZF_API InputChannelDigitalWithPosition2D : public InputChannelDigital
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

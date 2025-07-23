@@ -9,6 +9,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QTimer>
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -161,5 +162,7 @@ namespace AtomToolsFramework
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
         // Implementation of ViewportInteractionRequests (handles viewport picking operations).
         AZStd::unique_ptr<ViewportInteractionImpl> m_viewportInteractionImpl;
+        // Allow to delay the resize event to prevent freezing the editor on continuous mouse drag
+        QTimer m_resizeEventCooldown;
     };
 } //namespace AtomToolsFramework

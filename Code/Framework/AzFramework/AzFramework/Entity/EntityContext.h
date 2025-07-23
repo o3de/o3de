@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_ENTITYCONTEXT_H
-#define AZFRAMEWORK_ENTITYCONTEXT_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
@@ -16,6 +15,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -37,7 +37,7 @@ namespace AzFramework
      * Entity contexts are not required to use entities, but provide a package for managing
      * independent prefab hierarchies (i.e. a level, a world, etc).
      */
-    class EntityContext
+    class AZF_API EntityContext
         : public EntityIdContextQueryBus::MultiHandler
         , public AZ::EntityBus::MultiHandler 
         , public EntityContextRequestBus::Handler
@@ -132,5 +132,3 @@ namespace AzFramework
         bool m_contextIsResetting = false;
     };
 } // namespace AzFramework
-
-#endif // AZFRAMEWORK_ENTITYCONTEXT_H

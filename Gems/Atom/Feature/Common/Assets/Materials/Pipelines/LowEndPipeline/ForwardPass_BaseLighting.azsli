@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
 #define MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE 1
 
 // TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
@@ -23,15 +26,25 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#include MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli>
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
 #include "LowEndForwardPassVertexAndPixel.azsli"
 

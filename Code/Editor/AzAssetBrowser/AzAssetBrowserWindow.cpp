@@ -39,7 +39,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserListView);
+AZ_CVAR_API_EXTERNED(AZTF_API, bool, ed_useNewAssetBrowserListView);
 
 AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
 

@@ -8,8 +8,11 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/VertexContainerInterface.h>
+#include <AzToolsFramework/Viewport/VertexContainerDisplayDefaults.h>
 
 namespace AzFramework
 {
@@ -21,10 +24,6 @@ namespace AzToolsFramework
     //! Utility functions for rendering vertex container indices.
     namespace VertexContainerDisplay
     {
-        extern const float DefaultVertexTextSize;
-        extern const AZ::Color DefaultVertexTextColor;
-        extern const AZ::Vector3 DefaultVertexTextOffset;
-
         //! Displays all vertex container indices as text at the position of each vertex when selected
         template<typename Vertex>
         void DisplayVertexContainerIndices(
@@ -33,8 +32,29 @@ namespace AzToolsFramework
             const AZ::Transform& transform,
             const AZ::Vector3& nonUniformScale,
             bool selected,
-            float textSize = DefaultVertexTextSize,
-            const AZ::Color& textColor = DefaultVertexTextColor,
-            const AZ::Vector3& textOffset = DefaultVertexTextOffset);
+            float textSize = AZ_DEFAULT_VERTEX_TEXT_SIZE,
+            const AZ::Color& textColor = AZ_DEFAULT_VERTEX_TEXT_COLOR,
+            const AZ::Vector3& textOffset = AZ_DEFAULT_VERTEX_TEXT_OFFSET);
     } // namespace VertexContainerDisplay
+
+
+    extern template void VertexContainerDisplay::DisplayVertexContainerIndices(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::FixedVertices<AZ::Vector2>& vertices,
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        bool selected,
+        float textSize,
+        const AZ::Color& textColor,
+        const AZ::Vector3& textOffset);
+    extern template void VertexContainerDisplay::DisplayVertexContainerIndices(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::FixedVertices<AZ::Vector3>& vertices,
+        const AZ::Transform& transform,
+        const AZ::Vector3& nonUniformScale,
+        bool selected,
+        float textSize,
+        const AZ::Color& textColor,
+        const AZ::Vector3& textOffset);
+
 } // namespace AzToolsFramework

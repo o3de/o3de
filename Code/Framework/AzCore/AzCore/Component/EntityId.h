@@ -29,7 +29,7 @@ namespace AZ
      * attached to an entity is tagged with the entity's ID, and component buses 
      * are typically addressed by entity ID.
      */
-    class EntityId
+    class AZCORE_API EntityId
     {
         friend class JsonEntityIdSerializer;
         friend class Entity;

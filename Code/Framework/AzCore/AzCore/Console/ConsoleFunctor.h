@@ -27,11 +27,11 @@ namespace AZ
         TypeNotConvertible,
         ConsoleVarNotFound,
     };
-    const char* GetEnumString(GetValueResult value);
+    AZCORE_API const char* GetEnumString(GetValueResult value);
 
     //! @class ConsoleFunctorBase
     //! Base class for console functors.
-    class ConsoleFunctorBase
+    class AZCORE_API ConsoleFunctorBase
     {
     public:
 

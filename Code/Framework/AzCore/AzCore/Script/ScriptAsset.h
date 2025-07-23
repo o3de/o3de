@@ -22,7 +22,7 @@ namespace AZ
     class ReflectContext;
     class ScriptAsset;
 
-    class LuaScriptData
+    class AZCORE_API LuaScriptData
     {
     public:
         AZ_CLASS_ALLOCATOR(LuaScriptData, AZ::SystemAllocator);
@@ -43,7 +43,7 @@ namespace AZ
     /**
     * Script Asset - contains the source code for a script
     */
-    class ScriptAsset
+    class AZCORE_API ScriptAsset
         : public Data::AssetData
     {
     public:

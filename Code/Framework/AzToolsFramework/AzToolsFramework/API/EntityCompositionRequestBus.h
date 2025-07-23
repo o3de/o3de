@@ -7,14 +7,13 @@
  */
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

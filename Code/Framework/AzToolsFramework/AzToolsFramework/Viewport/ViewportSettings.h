@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 namespace AzToolsFramework
@@ -17,48 +19,48 @@ namespace AzToolsFramework
     inline constexpr float MaxManipulatorViewBaseScale = 2.0f;
     inline constexpr ViewportInteraction::KeyboardModifier DefaultSymmetricalEditingModifier = ViewportInteraction::KeyboardModifier::Shift;
 
-    bool FlipManipulatorAxesTowardsView();
-    void SetFlipManipulatorAxesTowardsView(bool enabled);
+    AZTF_API bool FlipManipulatorAxesTowardsView();
+    AZTF_API void SetFlipManipulatorAxesTowardsView(bool enabled);
 
-    float LinearManipulatorAxisLength();
-    void SetLinearManipulatorAxisLength(float length);
+    AZTF_API float LinearManipulatorAxisLength();
+    AZTF_API void SetLinearManipulatorAxisLength(float length);
 
-    float PlanarManipulatorAxisLength();
-    void SetPlanarManipulatorAxisLength(float length);
+    AZTF_API float PlanarManipulatorAxisLength();
+    AZTF_API void SetPlanarManipulatorAxisLength(float length);
 
-    float SurfaceManipulatorRadius();
-    void SetSurfaceManipulatorRadius(float radius);
+    AZTF_API float SurfaceManipulatorRadius();
+    AZTF_API void SetSurfaceManipulatorRadius(float radius);
 
-    float SurfaceManipulatorOpacity();
-    void SetSurfaceManipulatorOpacity(float opacity);
+    AZTF_API float SurfaceManipulatorOpacity();
+    AZTF_API void SetSurfaceManipulatorOpacity(float opacity);
 
-    float LinearManipulatorConeLength();
-    void SetLinearManipulatorConeLength(float length);
+    AZTF_API float LinearManipulatorConeLength();
+    AZTF_API void SetLinearManipulatorConeLength(float length);
 
-    float LinearManipulatorConeRadius();
-    void SetLinearManipulatorConeRadius(float radius);
+    AZTF_API float LinearManipulatorConeRadius();
+    AZTF_API void SetLinearManipulatorConeRadius(float radius);
 
-    float ScaleManipulatorBoxHalfExtent();
-    void SetScaleManipulatorBoxHalfExtent(float halfExtent);
+    AZTF_API float ScaleManipulatorBoxHalfExtent();
+    AZTF_API void SetScaleManipulatorBoxHalfExtent(float halfExtent);
 
-    float RotationManipulatorRadius();
-    void SetRotationManipulatorRadius(float radius);
+    AZTF_API float RotationManipulatorRadius();
+    AZTF_API void SetRotationManipulatorRadius(float radius);
 
-    float ManipulatorViewBaseScale();
-    void SetManipulatorViewBaseScale(float scale);
+    AZTF_API float ManipulatorViewBaseScale();
+    AZTF_API void SetManipulatorViewBaseScale(float scale);
 
-    bool IconsVisible();
-    void SetIconsVisible(bool visible);
+    AZTF_API bool IconsVisible();
+    AZTF_API void SetIconsVisible(bool visible);
 
-    bool HelpersVisible();
-    void SetHelpersVisible(bool visible);
+    AZTF_API bool HelpersVisible();
+    AZTF_API void SetHelpersVisible(bool visible);
 
-    bool OnlyShowHelpersForSelectedEntities();
-    void SetOnlyShowHelpersForSelectedEntities(bool visible);
+    AZTF_API bool OnlyShowHelpersForSelectedEntities();
+    AZTF_API void SetOnlyShowHelpersForSelectedEntities(bool visible);
 
-    bool ComponentSwitcherEnabled();
+    AZTF_API bool ComponentSwitcherEnabled();
 
-    bool PrefabEditModeEffectEnabled();
-    void SetPrefabEditModeEffectEnabled(bool enabled);
+    AZTF_API bool PrefabEditModeEffectEnabled();
+    AZTF_API void SetPrefabEditModeEffectEnabled(bool enabled);
 
 } // namespace AzToolsFramework

@@ -24,9 +24,6 @@
 
 #include <Tests.Builders/BuilderTestFixture.h>
 
-extern "C" void CleanUpRpiPublicGenericClassInfo();
-extern "C" void CleanUpRpiEditGenericClassInfo();
-
 namespace UnitTest
 {
     using namespace AZ;
@@ -121,8 +118,7 @@ namespace UnitTest
 
         m_context.reset();
 
-        CleanUpRpiPublicGenericClassInfo();
-        CleanUpRpiEditGenericClassInfo();
+        AZ::GetGlobalSerializeContextModule().Cleanup();
 
         LeakDetectionFixture::TearDown();
     }

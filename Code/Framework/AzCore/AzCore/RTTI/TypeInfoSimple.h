@@ -98,6 +98,10 @@ namespace AZ
         AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
         AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>);
 
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(_Api, _ClassName) \
+        _Api AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+        _Api AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>);
+
     #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassName, _DisplayName, _ClassUuid) \
         AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, constexpr)
 
@@ -112,21 +116,21 @@ namespace AZ
         AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, inline)
 
     //! Add GetO3deTypeName and GetO3deTypeId overloads for built-in types
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(char);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::s8);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(short);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(int);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(long);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::s64);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned char);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned short);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned int);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned long);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::u64);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(float);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(double);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(bool);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(void);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, char);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, AZ::s8);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, short);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, int);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, long);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, AZ::s64);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, unsigned char);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, unsigned short);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, unsigned int);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, unsigned long);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, AZ::u64);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, float);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, double);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, bool);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(AZCORE_API, void);
 
     /**
     * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).
@@ -155,6 +159,9 @@ namespace AZ
     // Adds declaration TypeInfo function overloads for a type(class, enum or fundamental)
     #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(_ClassName) \
         AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(_ClassName)
+
+    #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL_API(_Api, _ClassName) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL_API(_Api, _ClassName)
 
     // Adds function definition for TypeInfo functions
     // NOTE: This needs to be in the same namespace as the declaration
@@ -614,6 +621,21 @@ namespace AZ
     AZ_TYPE_INFO_WITH_NAME_DECL_HELPER(AZ_USE_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName)), \
     AZ_WRAP(AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName))) )
 
+#define AZ_TYPE_INFO_WITH_NAME_DECL_HELPER_API(_Api, _ClassName, _TemplatePlaceholders) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplatePlaceholders \
+    friend _Api AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplatePlaceholders \
+    friend _Api AZ::TypeId GetO3deTypeId(AZ::Adl,AZStd::type_identity<_ClassName>); \
+    static const char* TYPEINFO_Name(); \
+    static AZ::TypeId TYPEINFO_Uuid();
+
+#define AZ_TYPE_INFO_WITH_NAME_DECL_API(_Api, _ClassNameOrTemplateName) \
+    AZ_TYPE_INFO_WITH_NAME_DECL_HELPER_API(_Api, AZ_USE_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName)), \
+    AZ_WRAP(AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ClassNameOrTemplateName))) )
+
+#define AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(_Api, _ClassName)  \
+    _Api AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+    _Api AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>);      
 
 // Repeat of AZ_TYPE_INFO_MACRO_CALL with a different name to allow
 // calling a macro if inside of an expansion of a current AZ_TYPE_INFO_MACRO_CALL call

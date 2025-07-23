@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -175,4 +177,7 @@ namespace Physics
 
     using CharacterNotificationBus = AZ::EBus<CharacterNotifications>;
 
-    } // namespace Physics
+} // namespace Physics
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::CharacterRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::CharacterNotifications);

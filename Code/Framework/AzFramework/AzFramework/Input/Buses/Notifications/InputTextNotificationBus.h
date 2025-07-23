@@ -9,6 +9,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -58,3 +59,5 @@ namespace AzFramework
     };
     using InputTextNotificationBus = AZ::EBus<InputTextNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputTextNotifications);

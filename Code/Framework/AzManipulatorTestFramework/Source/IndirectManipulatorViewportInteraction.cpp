@@ -63,14 +63,14 @@ namespace AzManipulatorTestFramework
 
     AzToolsFramework::ManipulatorManagerId IndirectCallManipulatorManager::GetId() const
     {
-        return AzToolsFramework::g_mainManipulatorManagerId;
+        return AzToolsFramework::GetMainManipulatorManagerId();
     }
 
     bool IndirectCallManipulatorManager::ManipulatorBeingInteracted() const
     {
         bool manipulatorInteracting;
         AzToolsFramework::ManipulatorManagerRequestBus::EventResult(
-            manipulatorInteracting, AzToolsFramework::g_mainManipulatorManagerId,
+            manipulatorInteracting, AzToolsFramework::GetMainManipulatorManagerId(),
             &AzToolsFramework::ManipulatorManagerRequestBus::Events::Interacting);
 
         return manipulatorInteracting;

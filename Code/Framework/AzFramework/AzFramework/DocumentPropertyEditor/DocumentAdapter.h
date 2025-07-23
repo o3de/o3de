@@ -12,6 +12,7 @@
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -26,7 +27,7 @@ namespace AZ::DocumentPropertyEditor
     //! A message, invoked via CallbackAttribute, that is routed to a DocumentAdapter.
     //! Adapters, or their views, may handle these messages as they see fit, possibly
     //! providing a response.
-    struct AdapterMessage
+    struct AZF_API AdapterMessage
     {
         //! The name of this message (derived from the CallbackAttribute's name)
         AZ::Name m_messageName;
@@ -68,7 +69,7 @@ namespace AZ::DocumentPropertyEditor
     //! An adapter message bound to a given adapter, to be invoked as part of a CallbackAttribute.
     //! Used to store a message and all of the associated context as part of a DocumentAdapter.
     //! \see AdapterBuilder::AddMessageHandler
-    struct BoundAdapterMessage
+    struct AZF_API BoundAdapterMessage
     {
         DocumentAdapter* m_adapter = nullptr;
         AZ::Name m_messageName;
@@ -106,7 +107,7 @@ namespace AZ::DocumentPropertyEditor
     //! - PropertyEditor elements that display a property editor of an arbitrary type, specified by the mandatory
     //!   "type" attribute. The Document Property View will scan for a registered property editor of this type, and provide
     //!   this node to the property editor for rendering. The contents of a PropertyEditor are dictated by its type.
-    class DocumentAdapter
+    class AZF_API DocumentAdapter
     {
     public:
         AZ_RTTI(DocumentAdapter, "{8CEFE485-45C2-4ECC-B9D1-BBE75C7B02AB}");

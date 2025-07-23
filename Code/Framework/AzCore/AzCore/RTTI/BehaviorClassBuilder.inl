@@ -10,7 +10,7 @@
 namespace AZ::Internal
 {
     /// Internal structure to maintain class information while we are describing a class.
-    struct ClassBuilderBase : public AZ::Internal::GenericAttributes<ClassBuilderBase>
+    struct AZCORE_API ClassBuilderBase : public AZ::Internal::GenericAttributes<ClassBuilderBase>
     {
         using Base = AZ::Internal::GenericAttributes<ClassBuilderBase>;
 
