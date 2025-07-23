@@ -16,6 +16,7 @@
 #include <QString>
 #include <QSettings>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -23,7 +24,7 @@ namespace AzToolsFramework
     {
         class SearchWidget;
 
-        class SearchAssetBrowserFavoriteItem : public AssetBrowserFavoriteItem
+        class AZTF_API SearchAssetBrowserFavoriteItem : public AssetBrowserFavoriteItem
         {
         public:
             struct SavedTypeFilter

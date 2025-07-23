@@ -38,7 +38,7 @@ namespace PhysX
 
         m_dimensionsManipulators.SetSpace(colliderWorldTransform);
         m_dimensionsManipulators.AddEntityComponentIdPair(idPair);
-        m_dimensionsManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_dimensionsManipulators.Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_dimensionsManipulators.SetAxes(
             AZ::Vector3::CreateAxisX(),
             AZ::Vector3::CreateAxisY(),

@@ -38,7 +38,7 @@ namespace O3DE::ProjectManager
         }
 
         AZ::IO::FixedMaxPath o3deUserPath = AZ::Utils::GetO3deManifestDirectory();
-        o3deUserPath /= AZ::SettingsRegistryInterface::RegistryFolder;
+        o3deUserPath /= AZ::SettingsRegistryConstants::RegistryFolder;
         o3deUserPath /= "ProjectManager.setreg";
 
         [[maybe_unused]] bool saved = false;

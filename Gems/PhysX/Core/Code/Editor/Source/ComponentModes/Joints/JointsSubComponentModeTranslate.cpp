@@ -38,7 +38,7 @@ namespace PhysX
         m_manipulator.SetLocalPosition(m_resetValue);
 
         m_manipulator.AddEntityComponentIdPair(idPair);
-        m_manipulator.Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_manipulator.Register(AzToolsFramework::GetMainManipulatorManagerId());
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_manipulator);
         m_manipulator.InstallLinearManipulatorMouseMoveCallback(
             [this, idPair](const AzToolsFramework::LinearManipulator::Action& action)

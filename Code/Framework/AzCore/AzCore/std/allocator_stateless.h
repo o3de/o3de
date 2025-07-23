@@ -14,7 +14,7 @@
 
 namespace AZStd
 {
-    class stateless_allocator
+    class AZCORE_API stateless_allocator
     {
     public:
         AZ_TYPE_INFO(stateless_allocator, "{E4976C53-0B20-4F39-8D41-0A76F59A7D68}");
@@ -40,6 +40,6 @@ namespace AZStd
         bool is_delayed_recycling();
     };
 
-    bool operator==(const stateless_allocator& left, const stateless_allocator& right);
-    bool operator!=(const stateless_allocator& left, const stateless_allocator& right);
+    AZCORE_API bool operator==(const stateless_allocator& left, const stateless_allocator& right);
+    AZCORE_API bool operator!=(const stateless_allocator& left, const stateless_allocator& right);
 }

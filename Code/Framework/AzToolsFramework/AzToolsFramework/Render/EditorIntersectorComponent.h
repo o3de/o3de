@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 
@@ -16,7 +17,7 @@ namespace AzToolsFramework
     {
         //! System component for calculating render geometry intersections against entities.
         //! Contains an implementation of AzFramework::IntersectorInterface.
-        class EditorIntersectorComponent
+        class AZTF_API EditorIntersectorComponent
             : public AZ::Component
         {
         public:

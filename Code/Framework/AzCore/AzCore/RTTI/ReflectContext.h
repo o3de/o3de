@@ -51,7 +51,7 @@ namespace AZ
      * Base classes for structures that store references to OnDemandReflection instantiations.
      * ReflectContext will own weak pointers to the function, so that we may look up already registered types.
      */
-    class OnDemandReflectionOwner
+    class AZCORE_API OnDemandReflectionOwner
     {
     public:
         virtual ~OnDemandReflectionOwner();
@@ -102,10 +102,10 @@ namespace AZ
      * To do so make sure that when \ref ReflectContext::m_isRemoveReflection is set to true any calls to Class<...>() actualy remove
      * reflection. We recommend this approach so the user can write only one reflection function (not Reflect and "Unreflect")
      */
-    class ReflectContext
+    class AZCORE_API ReflectContext
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(ReflectContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, ReflectContext);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         ReflectContext();
@@ -137,6 +137,7 @@ namespace AZ
 
         friend OnDemandReflectionOwner;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, ReflectContext);
 }
 
 namespace AZ::Internal
@@ -199,7 +200,7 @@ namespace AZ::Internal
 
     // Custom struct to use as a unique_ptr deleter which can selectively deletes an attribute if
     // the caller should the pointer
-    struct AttributeDeleter
+    struct AZCORE_API AttributeDeleter
     {
         AttributeDeleter();
         AttributeDeleter(bool deletePtr);
@@ -220,13 +221,15 @@ namespace AZ
     * Base abstract class for all attributes. Use azrtti to get the
     * appropriate version. Of course if NULL there is a data mismatch of attributes.
     */
-    class Attribute
+    class AZCORE_API Attribute
     {
     public:
         using ContextDeleter = void(*)(void* contextData);
 
-        AZ_TYPE_INFO_WITH_NAME_DECL(Attribute);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, Attribute);
         AZ_RTTI_NO_TYPE_INFO_DECL();
+
+        AZ_DISABLE_COPY(Attribute);
 
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
@@ -326,6 +329,7 @@ namespace AZ
 
         static void DefaultDelete(void*) { }
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, Attribute);
 
     typedef AZ::u32 AttributeId;
     typedef AZStd::pair<AttributeId, Attribute*> AttributePair;
@@ -377,7 +381,7 @@ namespace AZ
         T   m_data;
     };
 
-    extern template class AttributeData<Crc32>;
+    extern template class AZCORE_API AttributeData<Crc32>;
 
     /**
     * Generic attribute for class member data, we use the object instance to access member data.

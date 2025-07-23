@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,7 +29,7 @@ namespace AzToolsFramework
     {
         class AssetEntryChange;
 
-        class AssetEntryChangeset
+        class AZTF_API AssetEntryChangeset
         {
         public:
             AssetEntryChangeset(

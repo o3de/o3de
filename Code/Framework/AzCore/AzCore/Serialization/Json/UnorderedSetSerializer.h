@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class JsonUnorderedSetContainerSerializer
+    class AZCORE_API JsonUnorderedSetContainerSerializer
         : public BaseJsonSerializer
     {
     public:

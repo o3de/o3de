@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
     //! System Component to wrap active input handler.
     //! EditorInteractionSystemComponent is notified of viewport mouse events from RenderViewport
     //! and forwards them to a concrete implementation of ViewportSelectionRequests.
-    class EditorInteractionSystemComponent
+    class AZTF_API EditorInteractionSystemComponent
         : public AZ::Component
         , private EditorInteractionSystemViewportSelectionRequestBus::Handler
         , private AzFramework::ViewportDebugDisplayEventBus::Handler

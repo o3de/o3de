@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Attribute.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::Reflection
 {
@@ -182,7 +183,7 @@ namespace AZ::Reflection
 
     // The IRead and/or IReadWrite interfaces are implemented by the user.
 
-    class IRead
+    class AZF_API IRead
     {
     public:
         virtual ~IRead() = default;
@@ -220,7 +221,7 @@ namespace AZ::Reflection
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const IAssetAccess& access, const IAttributes& attributes);
     };
 
-    class IReadWrite
+    class AZF_API IReadWrite
     {
     public:
         virtual ~IReadWrite() = default;
@@ -258,7 +259,7 @@ namespace AZ::Reflection
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, IAssetAccess& access, const IAttributes& attributes);
     };
 
-    class IReadWriteToRead final : public IReadWrite
+    class AZF_API IReadWriteToRead final : public IReadWrite
     {
     public:
         IReadWriteToRead(IRead* reader) : m_reader(reader) {}

@@ -12,7 +12,7 @@
 
 namespace AZ::IO
 {
-    class WindowsStorageDriveConfig final :
+    class AZCORE_API WindowsStorageDriveConfig final :
         public IStreamerStackConfig
     {
     public:

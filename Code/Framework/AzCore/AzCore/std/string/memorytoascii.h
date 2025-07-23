@@ -54,7 +54,7 @@ namespace AZStd
             Default = OffsetHeaderBinaryASCII
         };
 
-        AZStd::string ToString(const void* memoryAddrs, AZStd::size_t dataSize, AZStd::size_t maxShowSize, AZStd::size_t dataWidth = 16, Options format = Options::Default);
+        AZCORE_API AZStd::string ToString(const void* memoryAddrs, AZStd::size_t dataSize, AZStd::size_t maxShowSize, AZStd::size_t dataWidth = 16, Options format = Options::Default);
     }
 }
 

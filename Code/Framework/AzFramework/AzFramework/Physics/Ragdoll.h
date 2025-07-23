@@ -18,12 +18,13 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     using ParentIndices = AZStd::vector<size_t>;
 
-    class RagdollNodeConfiguration
+    class AZF_API RagdollNodeConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
     public:
@@ -37,7 +38,7 @@ namespace Physics
         AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };
 
-    class RagdollConfiguration
+    class AZF_API RagdollConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
@@ -60,7 +61,7 @@ namespace Physics
     };
 
     /// Represents a single rigid part of a ragdoll.
-    class RagdollNode
+    class AZF_API RagdollNode
         : public AzPhysics::SimulatedBody
     {
     public:
@@ -75,7 +76,7 @@ namespace Physics
     };
 
     /// A hierarchical collection of rigid bodies connected by joints typically used to physically simulate a character.
-    class Ragdoll
+    class AZF_API Ragdoll
         : public AzPhysics::SimulatedBody
     {
     public:

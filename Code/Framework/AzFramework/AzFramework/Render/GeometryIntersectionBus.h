@@ -10,6 +10,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -100,8 +101,8 @@ namespace AzFramework
         {
             IntersectionNotificationBus::Event(entityAndContext.m_contextId, &IntersectionNotifications::OnEntityDisconnected, entityAndContext.m_entityId);
         }
-    }
-}
+    } // namespace RenderGeometry
+} // namespace AzFramework
 
 namespace AZStd
 {
@@ -117,3 +118,6 @@ namespace AZStd
         }
     };
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RenderGeometry::IntersectionNotifications);

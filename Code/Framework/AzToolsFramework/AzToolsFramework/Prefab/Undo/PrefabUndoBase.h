@@ -7,6 +7,8 @@
  */
 
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -18,7 +20,7 @@ namespace AzToolsFramework
         class InstanceDomGeneratorInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabUndoBase
+        class AZTF_API PrefabUndoBase
             : public UndoSystem::URSequencePoint
         {
         public:

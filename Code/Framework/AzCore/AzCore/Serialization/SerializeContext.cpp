@@ -52,7 +52,7 @@ namespace AZ
     // The first argument to RTTI is template name followed by any template placeholders for substituting the template type specifiers
     AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
 
-    AZ_THREAD_LOCAL void* Internal::AZStdArrayEvents::m_indices = nullptr;
+    AZ_THREAD_LOCAL void* s_indices = nullptr;
 
     //////////////////////////////////////////////////////////////////////////
     // Integral types serializers
@@ -501,7 +501,7 @@ namespace AZ
     {
         DestroyEditContext();
         auto moduleSet = AZStd::move(m_perModuleSet);
-        for(PerModuleGenericClassInfo* module : moduleSet)
+        for(GlobalGenericClassInfo* module : moduleSet)
         {
             module->UnregisterSerializeContext(this);
         }
@@ -509,7 +509,7 @@ namespace AZ
 
     void SerializeContext::CleanupModuleGenericClassInfo()
     {
-        GetCurrentSerializeContextModule().UnregisterSerializeContext(this);
+        GetGlobalSerializeContextModule().UnregisterSerializeContext(this);
     }
 
     //=========================================================================
@@ -754,7 +754,7 @@ namespace AZ
         else
         {
             // Make sure that the ModuleCleanup structure has the serializeContext set on it.
-            GetCurrentSerializeContextModule().RegisterSerializeContext(this);
+            GetGlobalSerializeContextModule().RegisterSerializeContext(this);
             // Find the module GenericClassInfo in the SerializeContext GenericClassInfo multimap and add if it is not part of the SerializeContext multimap
             auto scGenericClassInfoRange = m_uuidGenericMap.equal_range(classId);
             auto scGenericInfoFoundIt = AZStd::find_if(scGenericClassInfoRange.first, scGenericClassInfoRange.second, [genericClassInfo](const AZStd::pair<AZ::Uuid, GenericClassInfo*>& genericPair)
@@ -2166,21 +2166,21 @@ namespace AZ
     void Internal::AZStdArrayEvents::OnWriteBegin(void* classPtr)
     {
         (void)classPtr;
-        if (m_indices)
+        if (s_indices)
         {
-            if ((reinterpret_cast<uintptr_t>(m_indices) & 1) == 1)
+            if ((reinterpret_cast<uintptr_t>(s_indices) & 1) == 1)
             {
                 // Pointer is already in use to store an index so convert it to a stack
-                size_t previousIndex = reinterpret_cast<uintptr_t>(m_indices) >> 1;
+                size_t previousIndex = reinterpret_cast<uintptr_t>(s_indices) >> 1;
                 Stack* stack = new Stack();
                 AZ_Assert((reinterpret_cast<uintptr_t>(stack) & 1) == 0, "Expected memory allocation to be at least 2 byte aligned.");
                 stack->push(previousIndex);
                 stack->push(0);
-                m_indices = stack;
+                s_indices = stack;
             }
             else
             {
-                Stack* stack = reinterpret_cast<Stack*>(m_indices);
+                Stack* stack = reinterpret_cast<Stack*>(s_indices);
                 stack->push(0);
             }
         }
@@ -2188,28 +2188,28 @@ namespace AZ
         {
             // Use the pointer to just store the one counter instead of allocating memory. Using 1 bit to identify this as a regular
             // index and not a pointer.
-            m_indices = reinterpret_cast<void*>(1);
+            s_indices = reinterpret_cast<void*>(1);
         }
     }
 
     void Internal::AZStdArrayEvents::OnWriteEnd(void* classPtr)
     {
         (void)classPtr;
-        if (m_indices)
+        if (s_indices)
         {
-            if ((reinterpret_cast<uintptr_t>(m_indices) & 1) == 1)
+            if ((reinterpret_cast<uintptr_t>(s_indices) & 1) == 1)
             {
                 // There was only one entry so no stack. Clear out the final bit that indicated this was an index and not a pointer.
-                m_indices = nullptr;
+                s_indices = nullptr;
             }
             else
             {
-                Stack* stack = reinterpret_cast<Stack*>(m_indices);
+                Stack* stack = reinterpret_cast<Stack*>(s_indices);
                 stack->pop();
                 if (stack->empty())
                 {
                     delete stack;
-                    m_indices = nullptr;
+                    s_indices = nullptr;
                 }
             }
         }
@@ -2222,16 +2222,16 @@ namespace AZ
 
     size_t Internal::AZStdArrayEvents::GetIndex() const
     {
-        if (m_indices)
+        if (s_indices)
         {
-            if ((reinterpret_cast<uintptr_t>(m_indices) & 1) == 1)
+            if ((reinterpret_cast<uintptr_t>(s_indices) & 1) == 1)
             {
                 // The first bit is used to indicate this is a regular index instead of a pointer so shift down one to get the actual index.
-                return reinterpret_cast<uintptr_t>(m_indices) >> 1;
+                return reinterpret_cast<uintptr_t>(s_indices) >> 1;
             }
             else
             {
-                const Stack* stack = reinterpret_cast<const Stack*>(m_indices);
+                const Stack* stack = reinterpret_cast<const Stack*>(s_indices);
                 return stack->top();
             }
         }
@@ -2244,18 +2244,18 @@ namespace AZ
 
     void Internal::AZStdArrayEvents::Increment()
     {
-        if (m_indices)
+        if (s_indices)
         {
-            if ((reinterpret_cast<uintptr_t>(m_indices) & 1) == 1)
+            if ((reinterpret_cast<uintptr_t>(s_indices) & 1) == 1)
             {
                 // Increment by 2 because the first bit is used to indicate whether or not a stack is used so the real
                 //      value starts one bit later.
-                size_t index = reinterpret_cast<uintptr_t>(m_indices) + (1 << 1);
-                m_indices = reinterpret_cast<void*>(index);
+                size_t index = reinterpret_cast<uintptr_t>(s_indices) + (1 << 1);
+                s_indices = reinterpret_cast<void*>(index);
             }
             else
             {
-                Stack* stack = reinterpret_cast<Stack*>(m_indices);
+                Stack* stack = reinterpret_cast<Stack*>(s_indices);
                 stack->top()++;
             }
         }
@@ -2267,19 +2267,19 @@ namespace AZ
 
     void Internal::AZStdArrayEvents::Decrement()
     {
-        if (m_indices)
+        if (s_indices)
         {
-            if ((reinterpret_cast<uintptr_t>(m_indices) & 1) == 1)
+            if ((reinterpret_cast<uintptr_t>(s_indices) & 1) == 1)
             {
                 // Decrement by 2 because the first bit is used to indicate whether or not a stack is used so the real
                 //      value starts one bit later. This assumes that index is check to be larger than 0 before calling
                 //      this function.
-                size_t index = reinterpret_cast<uintptr_t>(m_indices) - (1 << 1);
-                m_indices = reinterpret_cast<void*>(index);
+                size_t index = reinterpret_cast<uintptr_t>(s_indices) - (1 << 1);
+                s_indices = reinterpret_cast<void*>(index);
             }
             else
             {
-                Stack* stack = reinterpret_cast<Stack*>(m_indices);
+                Stack* stack = reinterpret_cast<Stack*>(s_indices);
                 stack->top()--;
             }
         }
@@ -2291,7 +2291,13 @@ namespace AZ
 
     bool Internal::AZStdArrayEvents::IsEmpty() const
     {
-        return m_indices == nullptr;
+        return s_indices == nullptr;
+    }
+
+    Internal::NullFactory* Internal::NullFactory::GetInstance()
+    {
+        static Internal::NullFactory s_nullFactory;
+        return &s_nullFactory;
     }
 
     bool SerializeContext::IsTypeReflected(AZ::Uuid typeId) const
@@ -2300,12 +2306,12 @@ namespace AZ
         return (reflectedClassData != nullptr);
     }
 
-    SerializeContext::PerModuleGenericClassInfo::~PerModuleGenericClassInfo()
+    SerializeContext::GlobalGenericClassInfo::~GlobalGenericClassInfo()
     {
         Cleanup();
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::Cleanup()
+    void SerializeContext::GlobalGenericClassInfo::Cleanup()
     {
         auto genericClassInfoContainer = AZStd::move(m_moduleLocalGenericClassInfos);
         auto serializeContextSet = AZStd::move(m_serializeContextSet);
@@ -2327,13 +2333,13 @@ namespace AZ
         }
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::RegisterSerializeContext(AZ::SerializeContext* serializeContext)
+    void SerializeContext::GlobalGenericClassInfo::RegisterSerializeContext(AZ::SerializeContext* serializeContext)
     {
         m_serializeContextSet.emplace(serializeContext);
         serializeContext->m_perModuleSet.emplace(this);
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::UnregisterSerializeContext(AZ::SerializeContext* serializeContext)
+    void SerializeContext::GlobalGenericClassInfo::UnregisterSerializeContext(AZ::SerializeContext* serializeContext)
     {
         m_serializeContextSet.erase(serializeContext);
         serializeContext->m_perModuleSet.erase(this);
@@ -2343,7 +2349,7 @@ namespace AZ
         }
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo)
+    void SerializeContext::GlobalGenericClassInfo::AddGenericClassInfo(AZ::GenericClassInfo* genericClassInfo)
     {
         if (!genericClassInfo)
         {
@@ -2354,7 +2360,7 @@ namespace AZ
         m_moduleLocalGenericClassInfos.emplace(genericClassInfo->GetSpecializedTypeId(), genericClassInfo);
     }
 
-    void SerializeContext::PerModuleGenericClassInfo::RemoveGenericClassInfo(const AZ::TypeId& genericTypeId)
+    void SerializeContext::GlobalGenericClassInfo::RemoveGenericClassInfo(const AZ::TypeId& genericTypeId)
     {
         if (genericTypeId.IsNull())
         {
@@ -2369,16 +2375,16 @@ namespace AZ
         }
     }
 
-    AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo(const AZ::TypeId& genericTypeId) const
+    AZ::GenericClassInfo* SerializeContext::GlobalGenericClassInfo::FindGenericClassInfo(const AZ::TypeId& genericTypeId) const
     {
         auto genericClassInfoFoundIt = m_moduleLocalGenericClassInfos.find(genericTypeId);
         return genericClassInfoFoundIt != m_moduleLocalGenericClassInfos.end() ? genericClassInfoFoundIt->second : nullptr;
     }
 
     // Take advantage of static variables being unique per dll module to clean up module specific registered classes when the module unloads
-    SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule()
+    SerializeContext::GlobalGenericClassInfo& GetGlobalSerializeContextModule()
     {
-        static SerializeContext::PerModuleGenericClassInfo s_ModuleCleanupInstance;
+        static SerializeContext::GlobalGenericClassInfo s_ModuleCleanupInstance;
         return s_ModuleCleanupInstance;
     }
 } // namespace AZ

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 

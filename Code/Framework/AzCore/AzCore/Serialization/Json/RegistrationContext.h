@@ -17,7 +17,7 @@
 
 namespace AZ
 {
-    class JsonRegistrationContext
+    class AZCORE_API JsonRegistrationContext
         : public ReflectContext
     {
     public:
@@ -28,7 +28,10 @@ namespace AZ
         using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;
         using HandledTypesMap = AZStd::unordered_map<Uuid, BaseJsonSerializer*, AZStd::hash<Uuid>>;
 
+        JsonRegistrationContext() = default;
         ~JsonRegistrationContext() override;
+
+        AZ_DISABLE_COPY(JsonRegistrationContext);
 
         const HandledTypesMap& GetRegisteredSerializers() const;
         BaseJsonSerializer* GetSerializerForType(const Uuid& typeId) const;
@@ -52,7 +55,7 @@ namespace AZ
             }
         }
 
-        class SerializerBuilder
+        class AZCORE_API SerializerBuilder
         {
             friend class JsonRegistrationContext;
         public:

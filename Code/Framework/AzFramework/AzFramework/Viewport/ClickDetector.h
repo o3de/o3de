@@ -11,6 +11,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -23,7 +24,7 @@ namespace AzFramework
     //! Utility class to help detect different types of mouse click (mouse down and up with
     //! no movement), mouse move (down and initial move after some threshold) and mouse release
     //! (mouse down with movement and then mouse up).
-    class ClickDetector
+    class AZF_API ClickDetector
     {
     public:
         ClickDetector();

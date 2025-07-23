@@ -1141,7 +1141,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath mergePath = AZ::Utils::GetExecutableDirectory();
         if (!mergePath.empty())
         {
-            aggregateMergeResult.Combine(registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),
+            aggregateMergeResult.Combine(registry.MergeSettingsFolder((mergePath / SettingsRegistryConstants::RegistryFolder).Native(),
                 specializations, platform, "", scratchBuffer));
         }
 
@@ -1150,7 +1150,7 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(cacheRootPath, FilePathKey_CacheRootFolder))
         {
             mergePath = AZStd::move(cacheRootPath);
-            AZStd::fixed_string<32> registryFolderLower(SettingsRegistryInterface::RegistryFolder);
+            AZStd::fixed_string<32> registryFolderLower(SettingsRegistryConstants::RegistryFolder);
             AZStd::to_lower(registryFolderLower.begin(), registryFolderLower.end());
             mergePath /= registryFolderLower;
             aggregateMergeResult.Combine(registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer));
@@ -1160,7 +1160,7 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(projectBinPath.Native(), FilePathKey_ProjectConfigurationBinPath))
         {
             // Append the project build path path to the project root
-            projectBinPath /= SettingsRegistryInterface::RegistryFolder;
+            projectBinPath /= SettingsRegistryConstants::RegistryFolder;
             aggregateMergeResult.Combine(registry.MergeSettingsFolder(projectBinPath.Native(), specializations, platform, "", scratchBuffer));
         }
 
@@ -1176,7 +1176,7 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(engineRootPath, FilePathKey_EngineRootFolder))
         {
             AZ::IO::FixedMaxPath mergePath{ AZStd::move(engineRootPath) };
-            mergePath /= SettingsRegistryInterface::RegistryFolder;
+            mergePath /= SettingsRegistryConstants::RegistryFolder;
             mergeResult.Combine(registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer));
         }
 
@@ -1201,7 +1201,7 @@ namespace AZ::SettingsRegistryMergeUtils
         for (const auto& gemPath : gemPaths)
         {
             aggregateMergeResult.Combine(registry.MergeSettingsFolder(
-                (gemPath / SettingsRegistryInterface::RegistryFolder).Native(), specializations, platform, "", scratchBuffer));
+                (gemPath / SettingsRegistryConstants::RegistryFolder).Native(), specializations, platform, "", scratchBuffer));
         }
 
         return aggregateMergeResult;
@@ -1216,7 +1216,7 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(projectPath, FilePathKey_ProjectPath))
         {
             AZ::IO::FixedMaxPath mergePath{ projectPath };
-            mergePath /= SettingsRegistryInterface::RegistryFolder;
+            mergePath /= SettingsRegistryConstants::RegistryFolder;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
         }
 
@@ -1232,7 +1232,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectUserPath;
         if (registry.Get(projectUserPath.Native(), FilePathKey_ProjectPath))
         {
-            projectUserPath /= SettingsRegistryInterface::DevUserRegistryFolder;
+            projectUserPath /= SettingsRegistryConstants::DevUserRegistryFolder;
             mergeResult.Combine(registry.MergeSettingsFolder(projectUserPath.Native(), specializations, platform, "", scratchBuffer));
         }
 
@@ -1246,7 +1246,7 @@ namespace AZ::SettingsRegistryMergeUtils
         SettingsRegistryInterface::MergeSettingsResult mergeResult;
         if (AZ::IO::FixedMaxPath o3deUserPath = AZ::Utils::GetO3deManifestDirectory(); !o3deUserPath.empty())
         {
-            o3deUserPath /= SettingsRegistryInterface::RegistryFolder;
+            o3deUserPath /= SettingsRegistryConstants::RegistryFolder;
             mergeResult.Combine(registry.MergeSettingsFolder(o3deUserPath.Native(), specializations, platform, "", scratchBuffer));
         }
 

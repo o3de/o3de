@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -34,3 +36,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement CapsuleManipulatorRequests
     using CapsuleManipulatorRequestBus = AZ::EBus<CapsuleManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::CapsuleManipulatorRequests);

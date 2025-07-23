@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -34,7 +37,7 @@ namespace AzToolsFramework
     };
 
     //=========================================================================
-    class CReflectedVarAudioControl
+    class AZTF_API CReflectedVarAudioControl
     {
     public:
         AZ_RTTI(CReflectedVarAudioControl, "{00016E8C-06FB-48D2-B482-1848343094D3}");

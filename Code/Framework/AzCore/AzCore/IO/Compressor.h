@@ -17,7 +17,7 @@ namespace AZ::IO
      * Compressor/Decompressor base interface.
      * Used for all stream compressors.
      */
-    class Compressor
+    class AZCORE_API Compressor
     {
     public:
         typedef AZ::u64 SizeType;
@@ -45,7 +45,7 @@ namespace AZ::IO
     /**
      * Base compressor data assigned for all compressors.
      */
-    class CompressorData
+    class AZCORE_API CompressorData
     {
     public:
         virtual ~CompressorData() {}
@@ -57,7 +57,7 @@ namespace AZ::IO
     /**
      * All data is stored in network order (big endian).
      */
-    struct  CompressorHeader
+    struct AZCORE_API CompressorHeader
     {
         CompressorHeader()      { m_azcs[0] = 0; m_azcs[1] = 0; m_azcs[2] = 0; m_azcs[3] = 0; }
 

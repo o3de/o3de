@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -36,3 +37,5 @@ namespace AzFramework
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::SpawnableAssetEvents);

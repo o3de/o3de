@@ -9,11 +9,12 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! Class that is used to identify a material.
-    struct MaterialId
+    struct AZF_API MaterialId
     {
         AZ_TYPE_INFO(Physics::MaterialId, "{30DED897-0E19-40B7-9BE1-0E92CBD307F9}");
 

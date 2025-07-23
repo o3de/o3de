@@ -9,12 +9,13 @@
 
 #include <AzFramework/Device/DeviceAttributeInterface.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! Device attribute for getting the GPU(s) model name.
     //! It will match against any of the GPUs being used.
-    class DeviceAttributeGPUModel : public DeviceAttribute
+    class AZF_API DeviceAttributeGPUModel : public DeviceAttribute
     {
     public:
         DeviceAttributeGPUModel(const AZStd::vector<AZStd::string_view>& value);

@@ -21,7 +21,7 @@ namespace AZ
      * Handles platform-specific interaction with dynamic modules
      * (aka DLLs, aka dynamic link libraries, aka shared libraries).
      */
-    class DynamicModuleHandle
+    class AZCORE_API DynamicModuleHandle
     {
     public:
         /// Flags used for loading a dynamic module.

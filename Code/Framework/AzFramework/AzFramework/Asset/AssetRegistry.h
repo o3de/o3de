@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AzFramework
     * Data storage for asset registry.
     * Maintained separate to facilitate easy serialization to/from disk.
     */
-    class AssetRegistry
+    class AZF_API AssetRegistry
     {
         friend class AssetCatalog;
     public:

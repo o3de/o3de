@@ -188,6 +188,8 @@ namespace AZ
     {
         ModuleManagerRequestBus::Handler::BusDisconnect();
 
+        AZ::GetGlobalSerializeContextModule().Cleanup();
+
         UnloadModules();
 
 #if defined(AZ_ENABLE_TRACING)

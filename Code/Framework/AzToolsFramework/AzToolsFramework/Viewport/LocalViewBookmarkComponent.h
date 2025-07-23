@@ -7,13 +7,15 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace AzToolsFramework
 {
     //! @class LocalViewBookmarkComponent.
     //! @brief Component that stores the name of the local View bookmark file associated to the prefab.
-    class LocalViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
+    class AZTF_API LocalViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
 

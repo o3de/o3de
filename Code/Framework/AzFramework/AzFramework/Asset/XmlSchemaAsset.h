@@ -13,10 +13,11 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class VersionSearchRule
+    class AZF_API VersionSearchRule
     {
     public:
         AZ_TYPE_INFO(VersionSearchRule, "{0AC0D453-7F3E-4BA2-9D28-B39052361B0F}");
@@ -29,7 +30,7 @@ namespace AzFramework
         AZStd::string m_rootNodeAttributeName;
     };
 
-    class MatchingRule
+    class AZF_API MatchingRule
     {
     public:
         AZ_TYPE_INFO(MatchingRule, "{0052598D-594B-44C7-8B0F-F268FBBA6E4F}");
@@ -47,7 +48,7 @@ namespace AzFramework
         AZStd::vector<AZStd::string> m_versionConstraints;
     };
 
-    class XmlSchemaAttribute
+    class AZF_API XmlSchemaAttribute
     {
     public:
         AZ_TYPE_INFO(XmlSchemaAttribute, "{EE322552-0565-4D54-B022-9A9F134BF447}");
@@ -92,7 +93,7 @@ namespace AzFramework
         bool m_cacheRelativePath;
     };
 
-    class XmlSchemaElement
+    class AZF_API XmlSchemaElement
     {
     public:
         AZ_TYPE_INFO(XmlSchemaElement, "{DB03558D-9533-4426-B50F-3DB16F7AA686}");
@@ -111,7 +112,7 @@ namespace AzFramework
         bool m_optional;
     };
 
-    class SearchRuleDefinition
+    class AZF_API SearchRuleDefinition
     {
     public:
         AZ_TYPE_INFO(SearchRuleDefinition, "{DA29525E-3032-4919-97B2-3FECCDFF06A6}");
@@ -126,7 +127,7 @@ namespace AzFramework
         bool m_relativeToXmlRoot;
     };
 
-    class DependencySearchRule
+    class AZF_API DependencySearchRule
     {
     public:
         AZ_TYPE_INFO(DependencySearchRule, "{5A6EB7DE-A2EC-47F3-A2AB-91F0560C2E66}");
@@ -142,7 +143,7 @@ namespace AzFramework
         AZStd::vector<AZStd::string> m_versionConstraints;
     };
 
-    class XmlSchemaAsset
+    class AZF_API XmlSchemaAsset
         : public AZ::Data::AssetData
     {
     public:

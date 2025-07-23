@@ -10,6 +10,7 @@
 
 #include <AzCore/std/functional.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AzToolsFramework
     //! EntityComponentIdPair.
     //! To facilitate uses in the main viewport, an EntityComponentIdPair can optionally be specified using AddEntityComponentIdPair, in
     //! order to hook manipulators up to undo/redo behavior and UI refreshing.
-    class BaseShapeViewportEdit
+    class AZTF_API BaseShapeViewportEdit
     {
     public:
         virtual ~BaseShapeViewportEdit() = default;

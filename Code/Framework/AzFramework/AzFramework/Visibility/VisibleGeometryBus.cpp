@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Visibility/VisibleGeometryBus.h>
 
-DECLARE_EBUS_INSTANTIATION(AzFramework::VisibleGeometryRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::VisibleGeometryRequests);
 
 namespace AzFramework
 {

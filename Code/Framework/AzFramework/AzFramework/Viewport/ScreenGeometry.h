@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/base.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -85,7 +86,7 @@ namespace AzFramework
         return aznumeric_cast<float>(m_height);
     }
 
-    void ScreenGeometryReflect(AZ::ReflectContext* context);
+    AZF_API void ScreenGeometryReflect(AZ::ReflectContext* context);
 
     inline const ScreenVector operator-(const ScreenPoint& lhs, const ScreenPoint& rhs)
     {

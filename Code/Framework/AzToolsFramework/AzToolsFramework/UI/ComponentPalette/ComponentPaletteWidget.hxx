@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -34,7 +36,7 @@ namespace AzToolsFramework
 {
     class ComponentPaletteModel;
 
-    class ComponentPaletteWidget
+    class AZTF_API ComponentPaletteWidget
         : public QFrame
     {
         Q_OBJECT

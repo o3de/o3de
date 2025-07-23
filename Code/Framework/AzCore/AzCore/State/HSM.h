@@ -29,7 +29,7 @@ namespace AZ
      * if you want such behavior. This restriction is imposed only to prevent the user from creating
      * extremely complicated to trace state machines (which is what we are trying to avoid).
      */
-    class HSM
+    class AZCORE_API HSM
     {
     public:
         typedef unsigned char StateId;

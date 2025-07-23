@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetRegistry.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
@@ -35,3 +36,5 @@ namespace AZ::IO
     using ArchiveNotificationBus = AZ::EBus<ArchiveNotifications>;
 
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AZ::IO::ArchiveNotifications);

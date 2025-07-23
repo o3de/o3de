@@ -11,12 +11,13 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! CollisionRequests configures global project-level collision filtering settings.
     //! This is equivalent to setting values via the UI.
-    class CollisionRequests
+    class AZF_API CollisionRequests
     {
     public:
 
@@ -75,7 +76,7 @@ namespace Physics
     using CollisionRequestBus = AZ::EBus<CollisionRequests, CollisionRequestsTraits>;
 
     //! CollisionFilteringRequests configures filtering settings per entity.
-    class CollisionFilteringRequests
+    class AZF_API CollisionFilteringRequests
         : public AZ::ComponentBus
     {
     public:
@@ -109,3 +110,6 @@ namespace Physics
     using CollisionFilteringRequestBus = AZ::EBus<CollisionFilteringRequests>;
 
 } // namespace Physics
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, Physics::CollisionRequests, Physics::CollisionRequestsTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::CollisionFilteringRequests);

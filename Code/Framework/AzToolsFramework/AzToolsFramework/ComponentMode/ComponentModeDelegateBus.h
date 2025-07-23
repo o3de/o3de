@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -29,3 +30,5 @@ namespace AzFramework
 
     using ComponentModeDelegateNotificationBus = AZ::EBus<ComponentModeDelegateNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzFramework::ComponentModeDelegateNotifications);

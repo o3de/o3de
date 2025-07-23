@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -19,8 +20,8 @@ namespace AzFramework
     //! Defines a generic virtual keyboard device. Platform specific implementations are defined as
     //! private implementations so that creating an instance of this generic class will work on any
     //! platform that supports a virtual keyboard.
-    class InputDeviceVirtualKeyboard : public InputDevice
-                                     , public InputTextEntryRequestBus::Handler
+    class AZF_API InputDeviceVirtualKeyboard : public InputDevice
+                                             , public InputTextEntryRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +141,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of virtual keyboard input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////

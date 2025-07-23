@@ -21,7 +21,7 @@
 
 namespace AZ
 {
-    class SettingsRegistryOriginTracker
+    class AZCORE_API SettingsRegistryOriginTracker
     {
     public:
         AZ_TYPE_INFO(SettingsRegistryOriginTracker, "{F6E3B4E5-F8CF-43D8-8609-BC322D9D08C5}");
@@ -44,7 +44,7 @@ namespace AZ
         //! Returns the last origin associated with the given key
         bool FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key) const;
 
-        struct SettingsRegistryOrigin
+        struct AZCORE_API SettingsRegistryOrigin
         {
             //! Path to the file where the settings is sourced from or a special value in angle brackets to indicate a non-file source(<C++>, <command-line>, etc...)
             AZ::IO::Path m_originFilePath;
@@ -82,7 +82,7 @@ namespace AZ
 
     private:
 
-        struct SettingsNotificationHandler
+        struct AZCORE_API SettingsNotificationHandler
         {
             SettingsNotificationHandler(SettingsRegistryOriginTracker& originTracker);
             ~SettingsNotificationHandler();

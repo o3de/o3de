@@ -10,10 +10,11 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class NonUniformScaleComponent
+    class AZF_API NonUniformScaleComponent
         : public AZ::Component
         , public AZ::NonUniformScaleRequestBus::Handler
     {

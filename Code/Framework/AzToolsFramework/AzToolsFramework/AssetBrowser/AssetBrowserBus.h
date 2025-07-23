@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
 AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
@@ -469,3 +471,16 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserComponentNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserModelRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserModelNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserViewRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequest)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFavoriteRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetBrowser::AssetBrowserFavoritesNotifications)

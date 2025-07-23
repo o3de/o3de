@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/GenericButtonHandler.h>
 
 namespace AzToolsFramework
 {
-    class ContainerActionButtonHandler : public GenericButtonHandler
+    class AZTF_API ContainerActionButtonHandler : public GenericButtonHandler
     {
     public:
         ContainerActionButtonHandler();

@@ -17,7 +17,7 @@ namespace AZ
     namespace Data
     {
         //! JSON serializer for Asset<T>.
-        class AssetJsonSerializer
+        class AZCORE_API AssetJsonSerializer
             : public BaseJsonSerializer
         {
         public:
@@ -35,7 +35,7 @@ namespace AZ
             JsonSerializationResult::Result LoadAsset(void* outputValue, const rapidjson::Value& inputValue, JsonDeserializerContext& context);
         };
 
-        class SerializedAssetTracker final
+        class AZCORE_API SerializedAssetTracker final
         {
         public:
             AZ_RTTI(SerializedAssetTracker, "{1E067091-8C0A-44B1-A455-6E97663F6963}");

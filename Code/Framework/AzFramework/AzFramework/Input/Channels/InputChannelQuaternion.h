@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Quaternion.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,7 +19,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit quaternion input values.
     //! Example: motion sensor data (orientation)
-    class InputChannelQuaternion : public InputChannel
+    class AZF_API InputChannelQuaternion : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

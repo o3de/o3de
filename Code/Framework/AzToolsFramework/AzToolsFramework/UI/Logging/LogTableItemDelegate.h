@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -17,7 +19,7 @@ namespace AzToolsFramework
 {
     namespace Logging
     {
-        class LogTableItemDelegate
+        class AZTF_API LogTableItemDelegate
             : public AzQtComponents::TableViewItemDelegate
         {
             Q_OBJECT

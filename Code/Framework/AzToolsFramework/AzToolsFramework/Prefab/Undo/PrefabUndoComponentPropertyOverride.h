@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
 namespace AzToolsFramework::Prefab
@@ -19,7 +20,7 @@ namespace AzToolsFramework::Prefab
     class PrefabSystemComponentInterface;
 
     //! Undo class for handling updating component properties of a prefab as overrides from focused prefab.
-    class PrefabUndoComponentPropertyOverride : public UndoSystem::URSequencePoint
+    class AZTF_API PrefabUndoComponentPropertyOverride : public UndoSystem::URSequencePoint
     {
     public:
         AZ_RTTI(PrefabUndoComponentPropertyOverride, "{DF46772A-4D01-4267-A218-778758804C66}", UndoSystem::URSequencePoint);

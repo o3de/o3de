@@ -1326,7 +1326,7 @@ namespace AzToolsFramework
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> selectionView = AzToolsFramework::CreateManipulatorViewSphere(
-            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), g_defaultManipulatorSphereRadius,
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), GetDefaultManipulatorSphereRadius(),
             [&selectionManipulator](
                 const ViewportInteraction::MouseInteraction& /*mouseInteraction*/, const bool mouseOver, const AZ::Color& defaultColor)
             {
@@ -1378,7 +1378,7 @@ namespace AzToolsFramework
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> manipulatorView = AzToolsFramework::CreateManipulatorViewSphere(
-            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), g_defaultManipulatorSphereRadius,
+            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f), GetDefaultManipulatorSphereRadius(),
             [&selectionManipulator](
                 const ViewportInteraction::MouseInteraction& mouseInteraction, const bool mouseOver, const AZ::Color& defaultColor)
             {
@@ -1645,21 +1645,21 @@ namespace AzToolsFramework
     }
 
     // explicit instantiations
-    template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
-    template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
-    template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
-    template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    template AZTF_API_EXPORT void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
+    template AZTF_API_EXPORT void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
+    template AZTF_API_EXPORT void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    template AZTF_API_EXPORT void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator)
 
-    template class EditorVertexSelectionBase<AZ::Vector2>;
-    template class EditorVertexSelectionBase<AZ::Vector3>;
-    template class EditorVertexSelectionFixed<AZ::Vector2>;
-    template class EditorVertexSelectionFixed<AZ::Vector3>;
-    template class EditorVertexSelectionVariable<AZ::Vector2>;
-    template class EditorVertexSelectionVariable<AZ::Vector3>;
+    template class AZTF_API_EXPORT EditorVertexSelectionBase<AZ::Vector2>;
+    template class AZTF_API_EXPORT EditorVertexSelectionBase<AZ::Vector3>;
+    template class AZTF_API_EXPORT EditorVertexSelectionFixed<AZ::Vector2>;
+    template class AZTF_API_EXPORT EditorVertexSelectionFixed<AZ::Vector3>;
+    template class AZTF_API_EXPORT EditorVertexSelectionVariable<AZ::Vector2>;
+    template class AZTF_API_EXPORT EditorVertexSelectionVariable<AZ::Vector3>;
 
 } // namespace AzToolsFramework

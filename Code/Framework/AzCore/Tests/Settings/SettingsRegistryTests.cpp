@@ -1313,9 +1313,9 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, MergeSettingsFile_PathAsSubString_ReturnsTrue)
     {
         auto path = m_tempDirectory.GetDirectoryAsFixedMaxPath()
-            / AZ::SettingsRegistryInterface::RegistryFolder / "test.setreg1234";
+            / AZ::SettingsRegistryConstants::RegistryFolder / "test.setreg1234";
         AZ::Test::CreateTestFile(
-            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "test.setreg", R"({ "Test": 1 })");
+            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "test.setreg", R"({ "Test": 1 })");
 
         AZStd::string_view subPath(path.c_str(), path.Native().size() - 4);
         auto result = m_registry->MergeSettingsFile(subPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
@@ -1517,19 +1517,19 @@ namespace SettingsRegistryTests
     {
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.setreg",
             R"({ "Memory": 0, "MemoryRoot": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.test.setreg",
             R"({ "Memory": 3, "MemoryEditorTest": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.setreg",
             R"({ "Memory": 1, "MemoryEditor": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.test.setreg",
             R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
@@ -1548,7 +1548,7 @@ namespace SettingsRegistryTests
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), {"editor", "test"}, {});
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), {"editor", "test"}, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
     }
@@ -1557,28 +1557,28 @@ namespace SettingsRegistryTests
     {
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.setreg",
             R"({ "Memory": 0, "MemoryRoot": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.test.setreg",
             R"({ "Memory": 5, "MemoryEditorTest": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.setreg",
             R"({ "Memory": 2, "MemoryEditor": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.test.setreg",
             R"({ "Memory": 4, "MemoryTest": true })");
 
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Platform/Special/Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Platform/Special/Memory.setreg",
             R"({ "Memory": 1, "MemorySpecial": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Platform/Special/Memory.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Platform/Special/Memory.editor.setreg",
             R"({ "Memory": 3, "MemoryEditorSpecial": true })");
 
         size_t counter = 0;
@@ -1599,7 +1599,7 @@ namespace SettingsRegistryTests
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, "Special");
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(6, counter);
     }
@@ -1607,18 +1607,18 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_DifferentlyNamedFiles_FilesAppliedInAlphabeticAndSpecializationOrder)
     {
         AZ::Test::CreateTestFile(
-            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "c.setreg", R"({ "Id": 2, "c": true })");
+            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "c.setreg", R"({ "Id": 2, "c": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "a.editor.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "a.editor.test.setreg",
             R"({ "Id": 0, "a": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "b.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "b.editor.setreg",
             R"({ "Id": 1, "b": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "c.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "c.test.setreg",
             R"({ "Id": 3, "cTest": true })");
 
         size_t counter = 0;
@@ -1637,7 +1637,7 @@ namespace SettingsRegistryTests
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
     }
@@ -1646,18 +1646,18 @@ namespace SettingsRegistryTests
     {
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.setreg",
             R"({ "Memory": 0, "MemoryRoot": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.test.setreg",
             R"({ "Memory": 3, "MemoryEditorTest": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.setreg",
             R"({ "Memory": 1, "MemoryEditor": true })");
         AZ::Test::CreateTestFile(
-            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.test.setregpatch", R"(
+            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.test.setregpatch", R"(
             [
                 { "op": "replace", "path": "/Memory", "value": 2 },
                 { "op": "add", "path": "/MemoryTest", "value": true }
@@ -1679,7 +1679,7 @@ namespace SettingsRegistryTests
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
     }
@@ -1688,15 +1688,15 @@ namespace SettingsRegistryTests
     {
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.setreg",
             R"({ "Memory": 0, "MemoryRoot": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.wrong",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.wrong",
             R"({ "Memory": 1, "Wrong": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Platform/Special/Memory.wrong",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Platform/Special/Memory.wrong",
             R"({ "Memory": 2, "SpecialWrong": true })");
 
         size_t counter = 0;
@@ -1712,7 +1712,7 @@ namespace SettingsRegistryTests
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, "Special");
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, "Special");
         EXPECT_TRUE(result);
         EXPECT_EQ(1, counter);
     }
@@ -1721,19 +1721,19 @@ namespace SettingsRegistryTests
     {
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.setreg",
             R"({ "Memory": 0, "MemoryRoot": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.test.setreg",
             R"({ "Memory": 3, "MemoryEditorTest": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.setreg",
             R"({ "Memory": 1, "MemoryEditor": true })");
         AZ::Test::CreateTestFile(
             m_tempDirectory,
-            AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.test.setreg",
+            AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.test.setreg",
             R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
@@ -1754,7 +1754,7 @@ namespace SettingsRegistryTests
 
         AZStd::vector<char> buffer;
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {}, "", &buffer);
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, {}, "", &buffer);
         EXPECT_TRUE(result);
         EXPECT_EQ(4, counter);
     }
@@ -1778,11 +1778,11 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_ConflictingSpecializations_ReportsErrorAndReturnsFalse)
     {
         AZ::Test::CreateTestFile(
-            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.test.editor.setreg", "{}");
+            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.test.editor.setreg", "{}");
         AZ::Test::CreateTestFile(
-            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryInterface::RegistryFolder) / "Memory.editor.test.setreg", "{}");
+            m_tempDirectory, AZ::IO::FixedMaxPath(AZ::SettingsRegistryConstants::RegistryFolder) / "Memory.editor.test.setreg", "{}");
 
-        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
+        auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryConstants::RegistryFolder).Native(), { "editor", "test" }, {});
         EXPECT_FALSE(result);
         // The message structure should contain the error message
         EXPECT_FALSE(result.GetMessages().empty());

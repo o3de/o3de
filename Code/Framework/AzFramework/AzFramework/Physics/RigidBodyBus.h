@@ -15,6 +15,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzPhysics
 {
@@ -146,3 +147,6 @@ namespace Physics
 
     using RigidBodyNotificationBus = AZ::EBus<RigidBodyNotifications>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::RigidBodyRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::RigidBodyNotifications);

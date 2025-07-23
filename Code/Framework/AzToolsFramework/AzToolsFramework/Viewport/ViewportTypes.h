@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -214,7 +216,7 @@ namespace AzToolsFramework
 
         //! Structure to compose MouseInteraction (mouse state) and
         //! MouseEvent (MouseEvent::MouseUp/MouseEvent::DownMove etc.)
-        struct MouseInteractionEvent
+        struct AZTF_API MouseInteractionEvent
         {
             //! @cond
             AZ_TYPE_INFO(MouseInteractionEvent, "{67FE0826-DD59-4B5B-BEFE-421E83EA7F31}");
@@ -337,7 +339,7 @@ namespace AzToolsFramework
         }
 
         //! Create a mouse interaction from the specified pick, buttons, interaction id and keyboard modifiers.
-        MouseInteraction BuildMouseInteraction(
+        AZTF_API MouseInteraction BuildMouseInteraction(
             const MousePick& mousePick, MouseButtons buttons, InteractionId interactionId, KeyboardModifiers modifiers);
 
         //! Create a mouse buttons from the specified mouse button.
@@ -347,10 +349,10 @@ namespace AzToolsFramework
         }
 
         //! Create a mouse interaction event from the specified interaction and event.
-        MouseInteractionEvent BuildMouseInteractionEvent(
+        AZTF_API MouseInteractionEvent BuildMouseInteractionEvent(
             const MouseInteraction& mouseInteraction, MouseEvent event, bool cursorCaptured = false);
 
         //! Reflect all viewport related types.
-        void ViewportInteractionReflect(AZ::ReflectContext* context);
+        AZTF_API void ViewportInteractionReflect(AZ::ReflectContext* context);
     } // namespace ViewportInteraction
 } // namespace AzToolsFramework

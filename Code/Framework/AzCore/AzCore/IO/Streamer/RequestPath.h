@@ -21,7 +21,7 @@ namespace AZ
         //! RequestPath uses lazy evaluation so the relative path is
         //! not resolved to an absolute path until the path is requested
         //! or a check is done for validity.
-        class RequestPath
+        class AZCORE_API RequestPath
         {
         public:
             RequestPath() = default;

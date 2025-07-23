@@ -9,16 +9,18 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! A utility class to make it easier to work with individual spawnables.
     //! This class will monitor a spawnable for changes and provides a simplified interface to
     //! respond to.
-    class SpawnableMonitor
+    class AZF_API SpawnableMonitor
         : public AZ::Data::AssetBus::MultiHandler
     {
     public:

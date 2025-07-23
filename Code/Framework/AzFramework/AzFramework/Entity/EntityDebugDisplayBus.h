@@ -21,6 +21,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -340,3 +341,8 @@ namespace AzFramework
 
     using DebugDisplayEventBus = AZ::EBus<DebugDisplayEvents>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::DebugDisplayRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityDebugDisplayEvents)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::ViewportDebugDisplayEvents)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::DebugDisplayEvents)

@@ -11,5 +11,5 @@
 
 namespace AZStd
 {
-    template class AZ_DLL_EXPORT intrusive_refcount<atomic_uint>;
+    template class AZCORE_API_EXPORT intrusive_refcount<atomic_uint>;
 }

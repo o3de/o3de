@@ -11,18 +11,20 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzFramework/FileTag/FileTagBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     namespace FileTag
     {
-        //! These are list of some common file tags 
-        extern const char* FileTags[];
+        //! These are list of some common file tags
+        AZF_API extern const char* FileTags[];
 
-        extern const char* ExcludeFileName;
-        extern const char* IncludeFileName;
+        AZF_API extern const char* ExcludeFileName;
+        AZF_API extern const char* IncludeFileName;
 
         //! helper enum for retrieving indexes in FileTags array 
         enum class FileTagsIndex : unsigned int
@@ -36,7 +38,7 @@ namespace AzFramework
         using FileTagAssetsMap = AZStd::map<FileTagType, AZStd::unique_ptr<AzFramework::FileTag::FileTagAsset>>;
 
         //! File Tag Manager class can be used to add/remove tags based on either filepaths or file patterns.
-        class FileTagManager
+        class AZF_API FileTagManager
             : public FileTagsEventBus::Handler
         {
         public:
@@ -45,6 +47,8 @@ namespace AzFramework
 
             FileTagManager();
             ~FileTagManager();
+
+            AZ_DISABLE_COPY(FileTagManager);
 
             //////////////////////////////////////////////////////////////////////////
             // FileTagsEventBus Interface
@@ -69,7 +73,7 @@ namespace AzFramework
         };
 
         //! File Tag Query Manager class can be used to retreive tags based on either filepaths or patterns.
-        class FileTagQueryManager
+        class AZF_API FileTagQueryManager
             : public QueryFileTagsEventBus::Handler
         {
         public:
@@ -78,6 +82,8 @@ namespace AzFramework
 
             FileTagQueryManager(FileTagType fileTagType);
             ~FileTagQueryManager();
+
+            AZ_DISABLE_COPY(FileTagQueryManager);
 
             //////////////////////////////////////////////////////////////////////////
             // QueryFileTagsEventBus Interface

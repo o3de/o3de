@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h> // for Entity::ComponentArrayType
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -25,3 +26,5 @@ namespace AzToolsFramework
 
     using EditorDisabledCompositionRequestBus = AZ::EBus<EditorDisabledCompositionRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorDisabledCompositionRequests);

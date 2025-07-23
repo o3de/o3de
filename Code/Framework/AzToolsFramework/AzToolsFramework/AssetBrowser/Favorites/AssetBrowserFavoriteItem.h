@@ -13,13 +13,16 @@
 #include <QObject>
 #endif
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
 
-        class AssetBrowserFavoriteItem
+        class AZTF_API AssetBrowserFavoriteItem
             : public QObject
         {
             Q_OBJECT

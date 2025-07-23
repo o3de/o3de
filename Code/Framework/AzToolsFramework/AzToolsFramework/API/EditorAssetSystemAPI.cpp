@@ -7,12 +7,16 @@
  */
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+ 
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);
 
 namespace AZStd
 {
-    template class vector<AzToolsFramework::AssetSystem::JobInfo>;
+    template class AZTF_API_EXPORT  vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
 
 namespace AzToolsFramework

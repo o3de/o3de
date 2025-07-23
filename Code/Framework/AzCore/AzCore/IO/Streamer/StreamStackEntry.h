@@ -31,7 +31,7 @@ namespace AZ
         //! functionality tries perform its task and if it fails pass the request to the next entry
         //! in the stack. For instance if a request isn't cached it passes the request to the next
         //! entry which might read it from disk instead.
-        class StreamStackEntry
+        class AZCORE_API StreamStackEntry
         {
         public:
             struct Status

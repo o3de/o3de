@@ -8,13 +8,15 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <QToolButton>
 
 namespace AzToolsFramework
 {
-    class GenericButtonHandler : public PropertyHandlerWidget<QToolButton>
+    class AZTF_API GenericButtonHandler : public PropertyHandlerWidget<QToolButton>
     {
     public:
         GenericButtonHandler();

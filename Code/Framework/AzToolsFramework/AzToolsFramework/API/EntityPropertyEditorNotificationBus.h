@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -34,3 +34,5 @@ namespace AzToolsFramework
 
     using EntityPropertyEditorNotificationBus = AZ::EBus<EntityPropertyEditorNotifications>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityPropertyEditorNotifications);

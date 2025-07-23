@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
@@ -18,7 +20,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     //! Data class for a button group on the Viewport UI. A button group is defined as a group of buttons with icons
     //! each of which can be clicked to trigger an event e.g. toggling between modes.
     //! @note This can be used with either a Cluster or a Switcher with slightly different visuals for each.
-    class ButtonGroup
+    class AZTF_API ButtonGroup
     {
     public:
         ButtonGroup();

@@ -11,12 +11,13 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
     struct IArchive;
 
-    struct FileDesc
+    struct AZF_API FileDesc
     {
         enum class Attribute : uint32_t
         {
@@ -42,7 +43,7 @@ namespace AZ::IO
     class FindData;
     //! This is not really an iterator, but a handle
     //! that extends ownership of any found filenames from an archive file or the file system
-    struct ArchiveFileIterator
+    struct AZF_API ArchiveFileIterator
     {
         ArchiveFileIterator() = default;
         explicit ArchiveFileIterator(FindData* findData);
@@ -63,7 +64,7 @@ namespace AZ::IO
     };
 
 
-    class FindData
+    class AZF_API FindData
         : public AZStd::intrusive_base
     {
     public:

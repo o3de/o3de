@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #endif
@@ -15,7 +17,7 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        class LoadingThumbnail : public Thumbnail
+        class AZTF_API LoadingThumbnail : public Thumbnail
         {
             Q_OBJECT
         public:

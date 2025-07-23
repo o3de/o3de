@@ -15,6 +15,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
 namespace AzPhysics
 {
     //! Base Class of all Physics Joints that will be simulated.
-    struct JointConfiguration
+    struct AZF_API JointConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::JointConfiguration, "{DF91D39A-4901-48C4-9159-93FD2ACA5252}");

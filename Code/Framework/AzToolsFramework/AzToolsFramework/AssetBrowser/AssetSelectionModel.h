@@ -10,6 +10,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -23,7 +24,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! Used in combination with Asset Browser Picker to configure selection settings and store selection results
-        class AssetSelectionModel
+        class AZTF_API AssetSelectionModel
         {
         public:
             AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator)

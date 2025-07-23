@@ -14,6 +14,7 @@
 
 #include <AzCore/std/string/fixed_string.h>
 #include <AzFramework/Archive/ZipDirTree.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
@@ -22,7 +23,7 @@ namespace AZ::IO::ZipDir
     //  FindData fd (pZip);
     //  for (fd.FindFirst("*.cgf"); fd.GetFileEntry(); fd.FindNext())
     //  {} // inside the loop, use GetFileEntry() and GetFileName() to get the file entry and name records
-    class FindData
+    class AZF_API FindData
     {
     public:
 
@@ -52,7 +53,7 @@ namespace AZ::IO::ZipDir
         AZ::IO::FixedMaxPath m_szWildcard;
     };
 
-    class FindFile
+    class AZF_API FindFile
         : public FindData
     {
     public:
@@ -80,7 +81,7 @@ namespace AZ::IO::ZipDir
         FileEntryTree::FileMap::iterator m_itFile; // the current file iterator inside the parent directory
     };
 
-    class FindDir
+    class AZF_API FindDir
         : public FindData
     {
     public:

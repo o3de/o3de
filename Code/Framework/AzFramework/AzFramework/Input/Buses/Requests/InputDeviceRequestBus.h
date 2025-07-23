@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -23,7 +24,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! EBus interface used to query input devices for their associated input channels and state
-    class InputDeviceRequests : public AZ::EBusTraits
+    class AZF_API InputDeviceRequests : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,4 +273,4 @@ namespace AzFramework
     };
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::InputDeviceRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputDeviceRequests);

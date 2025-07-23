@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    class JsonPathSerializer
+    class AZCORE_API JsonPathSerializer
         : public BaseJsonSerializer
     {
     public:

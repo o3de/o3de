@@ -13,6 +13,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
@@ -35,7 +37,7 @@ namespace AzToolsFramework
     using EditorManipulatorCommandUndoRedoRequestBus = AZ::EBus<EditorManipulatorCommandUndoRedoRequests>;
 
     //! Stores a manipulator transform change.
-    class EntityManipulatorCommand : public UndoSystem::URSequencePoint
+    class AZTF_API EntityManipulatorCommand : public UndoSystem::URSequencePoint
     {
     public:
         AZ_CLASS_ALLOCATOR(EntityManipulatorCommand, AZ::SystemAllocator);
@@ -82,12 +84,12 @@ namespace AzToolsFramework
         State m_stateAfter;
     };
 
-    bool operator==(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
-    bool operator!=(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
+    AZTF_API bool operator==(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
+    AZTF_API bool operator!=(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
 
-    AZ::u8 BuildPivotOverride(bool translationOverride, bool orientationOverride);
+    AZTF_API AZ::u8 BuildPivotOverride(bool translationOverride, bool orientationOverride);
 
-    bool PivotHasTranslationOverride(AZ::u8 pivotOverride);
-    bool PivotHasOrientationOverride(AZ::u8 pivotOverride);
-    bool PivotHasTransformOverride(AZ::u8 pivotOverride);
+    AZTF_API bool PivotHasTranslationOverride(AZ::u8 pivotOverride);
+    AZTF_API bool PivotHasOrientationOverride(AZ::u8 pivotOverride);
+    AZTF_API bool PivotHasTransformOverride(AZ::u8 pivotOverride);
 } // namespace AzToolsFramework

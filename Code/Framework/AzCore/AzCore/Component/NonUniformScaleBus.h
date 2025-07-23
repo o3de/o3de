@@ -18,7 +18,7 @@ namespace AZ
     using NonUniformScaleChangedEvent = AZ::Event<const AZ::Vector3&>;
 
     //! Requests for working with non-uniform scale.
-    class NonUniformScaleRequests
+    class AZCORE_API NonUniformScaleRequests
         : public AZ::ComponentBus
     {
     public:
@@ -35,7 +35,7 @@ namespace AZ
         virtual void RegisterScaleChangedEvent(NonUniformScaleChangedEvent::Handler& handler) = 0;
     };
 
-    using NonUniformScaleRequestBus = AZ::EBus<NonUniformScaleRequests>;
+    using NonUniformScaleRequestBus = AZCORE_API AZ::EBus<NonUniformScaleRequests>;
 } // namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(NonUniformScaleRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::NonUniformScaleRequests);

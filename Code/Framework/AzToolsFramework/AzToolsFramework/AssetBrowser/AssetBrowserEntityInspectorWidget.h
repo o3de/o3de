@@ -31,7 +31,7 @@ namespace AzToolsFramework
     {
         class DependentAssetTreeWidgetItem;
 
-        class AssetBrowserEntityInspectorWidget
+        class AZTF_API AssetBrowserEntityInspectorWidget
             : public QWidget
             , public AssetBrowserPreviewRequestBus::Handler
         {

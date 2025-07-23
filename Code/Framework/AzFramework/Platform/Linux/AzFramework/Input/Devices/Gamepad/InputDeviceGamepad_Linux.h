@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace GamepadLinuxPrivate
 {
@@ -26,7 +27,7 @@ namespace AzFramework
     struct LibEVDevWrapper;
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Platform specific implementation for Linux game-pad input devices
-    class InputDeviceGamepadLinux : public InputDeviceGamepad::Implementation
+    class AZF_API InputDeviceGamepadLinux : public InputDeviceGamepad::Implementation
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

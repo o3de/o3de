@@ -9,9 +9,10 @@
 #pragma once
 
 #if !defined(AZ_RELEASE_BUILD)
+#include <AzFramework/AzFrameworkAPI.h>
 #include <AzFramework/Thermal/ThermalInfo.h>
 
-class ThermalInfoAndroidHandler : public ThermalInfoRequestsBus::Handler
+class AZF_API ThermalInfoAndroidHandler : public ThermalInfoRequestsBus::Handler
 {
 public:
     ThermalInfoAndroidHandler();

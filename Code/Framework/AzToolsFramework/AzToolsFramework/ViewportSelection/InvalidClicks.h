@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AzFramework
@@ -29,7 +31,11 @@ namespace AzToolsFramework
     class InvalidClick
     {
     public:
+        InvalidClick() = default;
+
         virtual ~InvalidClick() = default;
+
+        AZ_DISABLE_COPY(InvalidClick);
 
         //! Begin the feedback.
         //! @param screenPoint The position of the click in screen coordinates.
@@ -43,9 +49,12 @@ namespace AzToolsFramework
     };
 
     //! Display expanding fading circles for every click of the mouse that is invalid.
-    class ExpandingFadingCircles : public InvalidClick
+    class AZTF_API ExpandingFadingCircles : public InvalidClick
     {
     public:
+        ExpandingFadingCircles() = default;
+        AZ_DISABLE_COPY(ExpandingFadingCircles);
+
         void Begin(const AzFramework::ScreenPoint& screenPoint) override;
         void Update(float deltaTime) override;
         bool Updating() override;
@@ -66,13 +75,16 @@ namespace AzToolsFramework
 
     //! Display fading text where an invalid click happened.
     //! @note There is only one fading text, each click will update its position.
-    class FadingText : public InvalidClick
+    class AZTF_API FadingText : public InvalidClick
     {
     public:
         explicit FadingText(AZStd::string message)
-            : m_message(AZStd::move(message))
+            : InvalidClick(),
+              m_message(AZStd::move(message))
         {
         }
+
+        AZ_DISABLE_COPY(FadingText);
 
         void Begin(const AzFramework::ScreenPoint& screenPoint) override;
         void Update(float deltaTime) override;
@@ -87,13 +99,15 @@ namespace AzToolsFramework
     };
 
     //! Interface to begin invalid click feedback (will run all added InvalidClick behaviors).
-    class InvalidClicks : private AZ::TickBus::Handler
+    class AZTF_API InvalidClicks : private AZ::TickBus::Handler
     {
     public:
         explicit InvalidClicks(AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClickBehaviors)
             : m_invalidClickBehaviors(AZStd::move(invalidClickBehaviors))
         {
         }
+
+        AZ_DISABLE_COPY(InvalidClicks);
 
         //! Add an invalid click and activate one or more of the added invalid click behaviors.
         void AddInvalidClick(const AzFramework::ScreenPoint& screenPoint);

@@ -14,6 +14,8 @@
 #include <QPointer>
 #include <QWidget>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
@@ -42,3 +44,5 @@ namespace AzToolsFramework
         using ComponentModeViewportUiRequestBus = AZ::EBus<ComponentModeViewportUiRequests>;
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeViewportUiRequests);

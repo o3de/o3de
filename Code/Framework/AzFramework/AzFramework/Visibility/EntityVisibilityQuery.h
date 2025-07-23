@@ -13,11 +13,12 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/Visibility/VisibilityDebug.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! Utility class to encapsulate entity visibility queries against the view frustum.
-    class EntityVisibilityQuery
+    class AZF_API EntityVisibilityQuery
     {
     public:
         EntityVisibilityQuery() = default;

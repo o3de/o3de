@@ -39,6 +39,8 @@
 #define ASSET_DEBUG_OUTPUT(OUTPUT)
 #endif
 
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetLoadEvents);
+
 namespace AZ::Data
 {
     AZ_CVAR(bool, cl_assetLoadWarningEnable, false, nullptr, AZ::ConsoleFunctorFlags::Null,

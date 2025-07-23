@@ -677,12 +677,11 @@ namespace AZ
             {
                 // Default to looking for startup config file at "<exe-directory>/startup.cfg" if the O3DE_STARTUP_CFG_FILE env is not set
                 startupCfgPath =
-                    AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                    AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / SettingsRegistryConstants::RegistryFolder / "startup.cfg";
                 if (!AZ::IO::SystemFile::Exists(startupCfgPath.c_str()))
                 {
                     // If a <exe-directory>/startup.cfg doesn't exist, try to locate the startup config file at "~/.o3de/Registry/startup.cfg"
-                    startupCfgPath =
-                        AZ::IO::FixedMaxPath(AZ::Utils::GetO3deManifestDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                    startupCfgPath = AZ::IO::FixedMaxPath(AZ::Utils::GetO3deManifestDirectory()) / SettingsRegistryConstants::RegistryFolder / "startup.cfg";
                 }
             }
 
@@ -1031,6 +1030,10 @@ namespace AZ
         // budgets initialized cross boundary are freed properly
         m_budgetTracker.Reset();
 #endif
+        // Cleanup the SerializeContext ClassInfos before we unload the modules since some ClassInfos will have
+        // symbols that were registered from the modules and will cause issues if the modules are unloaded before
+        // we clean them up
+        AZ::GetGlobalSerializeContextModule().Cleanup();
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();

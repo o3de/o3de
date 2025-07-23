@@ -61,4 +61,4 @@ namespace AZ
     } // namespace Debug
 } // namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_SINGLE_ADDRESS(Debug::TraceMessageEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents);

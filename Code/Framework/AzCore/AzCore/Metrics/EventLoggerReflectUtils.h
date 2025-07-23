@@ -43,11 +43,11 @@ namespace AZ::Metrics
     inline namespace Script
     {
         //! Entry point for reflecting the EventLogger API to the reflection context
-        void Reflect(AZ::ReflectContext* context);
+        AZCORE_API void Reflect(AZ::ReflectContext* context);
 
         // Reflects the Event Logger API for Scripting
         // Users will interact with the Event logger using an API similiar
         // to the EventLoggerUtils functions
-        void ReflectScript(AZ::BehaviorContext& behaviorContext);
+        AZCORE_API void ReflectScript(AZ::BehaviorContext& behaviorContext);
     } // inline namespace Utility
 } // namespace AZ::Metrics

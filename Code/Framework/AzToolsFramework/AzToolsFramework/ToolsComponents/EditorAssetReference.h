@@ -5,8 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef EDITOR_ASSET_REFERENCE_H
-#define EDITOR_ASSET_REFERENCE_H
+#pragma once
+ 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -22,7 +23,7 @@ namespace AzToolsFramework
 {
     // the base class of an editor asset reference - this is what you would derive a model reference from, for example
     // these guys show up in the editor as a live drag-and-droppable field.
-    class AssetReferenceBase
+    class AZTF_API AssetReferenceBase
     {
     public:
         AZ_RTTI(AssetReferenceBase, "{C30974B6-5831-443D-BFB2-CDF12600164D}");
@@ -38,5 +39,3 @@ namespace AzToolsFramework
         AZ::Data::AssetId m_currentID;
     };
 }
-
-#endif

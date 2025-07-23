@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AZ::Settings::Platform
 {
     //! A class to ensure command-line parameters are in utf-8 encoding.
     //! On non-Windows platforms, it is assumed that utf-8 is used by default, so no further processing is required.
-    class CommandLineConverter
+    class AZCORE_API CommandLineConverter
     {
     public:
         CommandLineConverter(int& argc, char**& argv);

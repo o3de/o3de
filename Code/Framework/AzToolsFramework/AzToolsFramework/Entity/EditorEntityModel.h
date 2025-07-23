@@ -34,10 +34,11 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    class EditorEntityModel
+    class AZTF_API EditorEntityModel
         : public AzFramework::EntityContextEventBus::Handler
         , public EditorEntityContextNotificationBus::Handler
         , public EditorEntitySortNotificationBus::MultiHandler
@@ -150,7 +151,7 @@ namespace AzToolsFramework
 
         void UpdateSliceInfoHierarchy(AZ::EntityId entityId);
 
-        class EditorEntityModelEntry
+        class AZTF_API EditorEntityModelEntry
             : private AZ::EntityBus::Handler
             , private EditorLockComponentNotificationBus::Handler
             , private EditorVisibilityNotificationBus::Handler

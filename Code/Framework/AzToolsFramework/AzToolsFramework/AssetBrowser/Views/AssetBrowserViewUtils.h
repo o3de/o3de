@@ -8,6 +8,7 @@
 #pragma once
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QString>
 
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
 
-        class AssetBrowserViewUtils
+        class AZTF_API AssetBrowserViewUtils
         {
         public:
             static bool RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);

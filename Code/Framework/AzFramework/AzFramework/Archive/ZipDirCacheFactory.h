@@ -13,13 +13,14 @@
 #pragma once
 
 #include <AzFramework/Archive/IArchive.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
     class Cache;
 
     // an instance of this class is temporarily created on stack to initialize the CZipFile instance
-    class CacheFactory
+    class AZF_API CacheFactory
     {
     public:
         enum

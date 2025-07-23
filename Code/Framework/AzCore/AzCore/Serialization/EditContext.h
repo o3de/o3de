@@ -36,7 +36,7 @@ namespace AZ::Edit
      * Enumerates the serialization context and inserts component Uuids which match at least one tag in requiredTags
      * for the AZ::Edit::SystemComponentsTag attribute on the reflected class data
      */
-    void GetComponentUuidsWithSystemComponentTag(
+    AZCORE_API void GetComponentUuidsWithSystemComponentTag(
         const SerializeContext* serializeContext,
         const AZStd::vector<AZ::Crc32>& requiredTags,
         AZStd::unordered_set<AZ::Uuid>& componentUuids);
@@ -66,7 +66,7 @@ namespace AZ::Edit
      * generic attributes. You can have elements for class members called DataElements or Elements which define
      * attributes for the class itself called ClassElement.
      */
-    struct ElementData
+    struct AZCORE_API ElementData
     {
         ElementData()
             : m_elementId(0)
@@ -93,7 +93,7 @@ namespace AZ::Edit
      * ElementData. Elements contains class Elements (like groups, etc.) while the ElementData
      * contains attributes related to ehe SerializeContext::ClassBuilder::Field.
      */
-    struct ClassData
+    struct AZCORE_API ClassData
     {
         ClassData()
             : m_name(nullptr)
@@ -133,7 +133,7 @@ namespace AZ::Edit
     //! Visitor invoked when calling the EnumerateAll function
     //! @return true from the visitor to indicate that visitation should continue,
     //! otherwise false should be returned to halt visitation
-    struct TypeVisitor
+    struct AZCORE_API TypeVisitor
     {
         //! Default constructs the TypeVisitor with a no-op function
         TypeVisitor();
@@ -167,8 +167,8 @@ namespace AZ::Edit::Internal
 {
     struct ConsoleFunctorHandle
     {
-        ConsoleFunctorHandle();
-        ~ConsoleFunctorHandle();
+        ConsoleFunctorHandle() = default;
+        ~ConsoleFunctorHandle() = default;
         using ConsoleFunctor = AZ::ConsoleFunctor<const EditContext, false>;
         using ConsoleFunctorContainer = AZStd::vector<ConsoleFunctor>;
 
@@ -185,7 +185,7 @@ namespace AZ
      * it's ABSTRACT. Please refer to your editor/edit tools to check what are the "id"
      * for the uiElements and their respective properties "id" and values.
      */
-    class EditContext
+    class AZCORE_API EditContext
     {
     public:
         /// @cond EXCLUDE_DOCS
@@ -258,7 +258,7 @@ namespace AZ
          *
          */
     public:
-        class ClassBuilder
+        class AZCORE_API ClassBuilder
         {
             friend EditContext;
             ClassBuilder(EditContext* context, SerializeContext::ClassData* classData, Edit::ClassData* classElement)
@@ -454,7 +454,7 @@ namespace AZ
         *
         *
         */
-        class EnumBuilder
+        class AZCORE_API EnumBuilder
         {
             friend EditContext;
 
@@ -486,7 +486,7 @@ namespace AZ
         };
 
         /// Analog to SerializeContext::EnumerateInstanceCallContext for enumerating an EditContext
-        struct EnumerateInstanceCallContext
+        struct AZCORE_API EnumerateInstanceCallContext
         {
             AZ_TYPE_INFO(EnumerateInstanceCallContext, "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
             EnumerateInstanceCallContext(
@@ -1219,5 +1219,5 @@ namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
 
-extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
-extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);
+extern template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char*, AZ::Crc32);
+extern template AZCORE_API_EXPORT AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

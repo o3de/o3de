@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -71,4 +72,7 @@ namespace AzFramework
 
         using StreamingInstallPackageNotificationBus = AZ::EBus<StreamingInstallPackageNotifications>;
     } //namespace StreamingInstall
-}
+} // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallChunkNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::StreamingInstall::StreamingInstallPackageNotifications);

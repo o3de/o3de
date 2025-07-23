@@ -26,12 +26,12 @@ namespace AZ {
     /*
      * Returns the serialization UUID for Asset class
      */
-    const Uuid& GetAssetClassId();
+    AZCORE_API const Uuid& GetAssetClassId();
 
     /// Generic IDataSerializer specialization for Asset<T>
     /// This is used internally by the object stream because assets need
     /// special handling during serialization
-    class AssetSerializer
+    class AZCORE_API AssetSerializer
         : public SerializeContext::IDataSerializer
     {
     public:
@@ -197,7 +197,7 @@ namespace AZ {
 
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
 
         static AZ::TypeId GetClassTypeId()

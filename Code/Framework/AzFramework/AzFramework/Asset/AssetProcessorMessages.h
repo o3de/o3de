@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -48,7 +49,7 @@ namespace AzFramework
             return AZ::Utils::LoadObjectFromStreamInPlace(byteStream, nullptr, message.RTTI_GetType(), &message, AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_STRICT));
         }
 
-        class BaseAssetProcessorMessage
+        class AZF_API BaseAssetProcessorMessage
         {
         public:
             AZ_RTTI(BaseAssetProcessorMessage, "{366A7093-C57B-4514-A1BD-A6437AEF2098}");
@@ -67,7 +68,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //negotiation
-        class NegotiationMessage
+        class AZF_API NegotiationMessage
             : public BaseAssetProcessorMessage
         {
         public:
@@ -86,7 +87,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // ping request/response
-        class RequestPing
+        class AZF_API RequestPing
             : public BaseAssetProcessorMessage
         {
         public:
@@ -99,7 +100,7 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
         };
 
-        class ResponsePing
+        class AZF_API ResponsePing
             : public BaseAssetProcessorMessage
         {
         public:
@@ -113,7 +114,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //!  Request the status of an asset or force one to compile
-        class RequestAssetStatus
+        class AZF_API RequestAssetStatus
             : public BaseAssetProcessorMessage
         {
         public:
@@ -139,7 +140,7 @@ namespace AzFramework
         };
 
         //! this will be sent in response to the RequestAssetStatus request
-        class ResponseAssetStatus
+        class AZF_API ResponseAssetStatus
             : public BaseAssetProcessorMessage
         {
         public:
@@ -157,7 +158,7 @@ namespace AzFramework
         * There is no response to this request, nor does it fence, so it is "fire-and-forget"
         * and thus doesn't need to introduce a lot of latency
         */
-        class RequestEscalateAsset
+        class AZF_API RequestEscalateAsset
             : public BaseAssetProcessorMessage
         {
         public:
@@ -180,7 +181,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! Request the status of the asset processor
-        class RequestAssetProcessorStatus
+        class AZF_API RequestAssetProcessorStatus
             : public BaseAssetProcessorMessage
         {
         public:
@@ -196,7 +197,7 @@ namespace AzFramework
 
         //! This will be send in response to the RequestAssetProcessorStatus request,
         //! Will contain information whether the AP is ready and how many jobs are remaining
-        class ResponseAssetProcessorStatus
+        class AZF_API ResponseAssetProcessorStatus
             : public BaseAssetProcessorMessage
         {
         public:
@@ -211,7 +212,7 @@ namespace AzFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        struct GetUnresolvedDependencyCountsRequest
+        struct AZF_API GetUnresolvedDependencyCountsRequest
             : BaseAssetProcessorMessage
         {
             AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsRequest, AZ::OSAllocator);
@@ -231,7 +232,7 @@ namespace AzFramework
             AZ::Data::AssetId m_assetId;
         };
 
-        struct GetUnresolvedDependencyCountsResponse
+        struct AZF_API GetUnresolvedDependencyCountsResponse
             : BaseAssetProcessorMessage
         {
             AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsResponse, AZ::OSAllocator);
@@ -252,7 +253,7 @@ namespace AzFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        class GetRelativeProductPathFromFullSourceOrProductPathRequest
+        class AZF_API GetRelativeProductPathFromFullSourceOrProductPathRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -268,7 +269,7 @@ namespace AzFramework
             AZ::OSString m_sourceOrProductPath;
         };
 
-        class GetRelativeProductPathFromFullSourceOrProductPathResponse
+        class AZF_API GetRelativeProductPathFromFullSourceOrProductPathResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -285,7 +286,7 @@ namespace AzFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        class GenerateRelativeSourcePathRequest : public BaseAssetProcessorMessage
+        class AZF_API GenerateRelativeSourcePathRequest : public BaseAssetProcessorMessage
         {
         public:
             AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathRequest, AZ::OSAllocator);
@@ -305,7 +306,7 @@ namespace AzFramework
             AZ::OSString m_sourcePath;
         };
 
-        class GenerateRelativeSourcePathResponse : public BaseAssetProcessorMessage
+        class AZF_API GenerateRelativeSourcePathResponse : public BaseAssetProcessorMessage
         {
         public:
             AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathResponse, AZ::OSAllocator);
@@ -324,7 +325,7 @@ namespace AzFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        class GetFullSourcePathFromRelativeProductPathRequest
+        class AZF_API GetFullSourcePathFromRelativeProductPathRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -342,7 +343,7 @@ namespace AzFramework
             AZ::OSString m_relativeProductPath;
         };
 
-        class GetFullSourcePathFromRelativeProductPathResponse
+        class AZF_API GetFullSourcePathFromRelativeProductPathResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -360,7 +361,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
 
-        class SourceAssetInfoRequest
+        class AZF_API SourceAssetInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -387,7 +388,7 @@ namespace AzFramework
             AZ::Data::AssetType m_assetType = AZ::Data::s_invalidAssetType;
         };
 
-        class SourceAssetInfoResponse
+        class AZF_API SourceAssetInfoResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -407,7 +408,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
 
-        class AssetInfoRequest
+        class AZF_API AssetInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -436,7 +437,7 @@ namespace AzFramework
             AZ::Data::AssetType m_assetType = AZ::Data::s_invalidAssetType;
         };
 
-        class AssetInfoResponse
+        class AZF_API AssetInfoResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -457,7 +458,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
 
-        class AssetDependencyInfoRequest
+        class AZF_API AssetDependencyInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -490,7 +491,7 @@ namespace AzFramework
             DependencyType m_dependencyType{ DependencyType::AllDependencies };
         };
 
-        class AssetDependencyInfoResponse
+        class AZF_API AssetDependencyInfoResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -521,7 +522,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
 
-        class RegisterSourceAssetRequest
+        class AZF_API RegisterSourceAssetRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -541,7 +542,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
 
-        class UnregisterSourceAssetRequest
+        class AZF_API UnregisterSourceAssetRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -560,7 +561,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //ShowAssetProcessorRequest
-        class ShowAssetProcessorRequest
+        class AZF_API ShowAssetProcessorRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -575,7 +576,7 @@ namespace AzFramework
 
         //! Sent from any tool to the AP, notifying it to toggle the state of source control to either on or off.
         //! This avoids the need for AP to restart.
-        class UpdateSourceControlStatusRequest
+        class AZF_API UpdateSourceControlStatusRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -592,7 +593,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //ShowAssetInAssetProcessorRequest
-        class ShowAssetInAssetProcessorRequest
+        class AZF_API ShowAssetInAssetProcessorRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -609,7 +610,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // AssetNotificationMessage
-        class AssetNotificationMessage
+        class AZF_API AssetNotificationMessage
             : public BaseAssetProcessorMessage
         {
         public:
@@ -646,7 +647,7 @@ namespace AzFramework
 
         //! Bulk message for sending updates for multiple assets all at once.
         //! All updates must be of the same type and for the same platform.  The only supported types are AssetChanged and AssetRemoved.
-        class BulkAssetNotificationMessage
+        class AZF_API BulkAssetNotificationMessage
             : public BaseAssetProcessorMessage
         {
         public:
@@ -663,7 +664,7 @@ namespace AzFramework
         };
 
         // SaveAssetCatalogRequest
-        class SaveAssetCatalogRequest
+        class AZF_API SaveAssetCatalogRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -677,7 +678,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // SaveAssetCatalogResponse
-        class SaveAssetCatalogResponse
+        class AZF_API SaveAssetCatalogResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -693,7 +694,7 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //file op messages
-        class FileOpenRequest
+        class AZF_API FileOpenRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -710,7 +711,7 @@ namespace AzFramework
             AZ::u32 m_mode;
         };
 
-        class FileOpenResponse
+        class AZF_API FileOpenResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -726,7 +727,7 @@ namespace AzFramework
             AZ::u32 m_returnCode;
         };
 
-        class FileCloseRequest
+        class AZF_API FileCloseRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -742,7 +743,7 @@ namespace AzFramework
             AZ::u32 m_fileHandle;
         };
 
-        class FileReadRequest
+        class AZF_API FileReadRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -760,7 +761,7 @@ namespace AzFramework
             bool m_failOnFewerRead;
         };
 
-        class FileReadResponse
+        class AZF_API FileReadResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -776,7 +777,7 @@ namespace AzFramework
             AZStd::vector<AZ::u8, AZ::OSStdAllocator> m_data;
         };
 
-        class FileWriteRequest
+        class AZF_API FileWriteRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -793,7 +794,7 @@ namespace AzFramework
             AZStd::vector<AZ::u8, AZ::OSStdAllocator> m_data;
         };
 
-        class FileWriteResponse
+        class AZF_API FileWriteResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -809,7 +810,7 @@ namespace AzFramework
             AZ::u64 m_bytesWritten;
         };
 
-        class FileTellRequest
+        class AZF_API FileTellRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -825,7 +826,7 @@ namespace AzFramework
             AZ::u32 m_fileHandle;
         };
 
-        class FileTellResponse
+        class AZF_API FileTellResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -841,7 +842,7 @@ namespace AzFramework
             AZ::u64 m_offset;
         };
 
-        class FileSeekRequest
+        class AZF_API FileSeekRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -859,7 +860,7 @@ namespace AzFramework
             AZ::s64 m_offset;
         };
 
-        class FileSeekResponse
+        class AZF_API FileSeekResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -874,7 +875,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class FileIsReadOnlyRequest
+        class AZF_API FileIsReadOnlyRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -890,7 +891,7 @@ namespace AzFramework
             AZ::OSString m_filePath;
         };
 
-        class FileIsReadOnlyResponse
+        class AZF_API FileIsReadOnlyResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -905,7 +906,7 @@ namespace AzFramework
             bool m_isReadOnly;
         };
 
-        class PathIsDirectoryRequest
+        class AZF_API PathIsDirectoryRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -921,7 +922,7 @@ namespace AzFramework
             AZ::OSString m_path;
         };
 
-        class PathIsDirectoryResponse
+        class AZF_API PathIsDirectoryResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -936,7 +937,7 @@ namespace AzFramework
             bool m_isDir;
         };
 
-        class FileSizeRequest
+        class AZF_API FileSizeRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -952,7 +953,7 @@ namespace AzFramework
             AZ::OSString m_filePath;
         };
 
-        class FileSizeResponse
+        class AZF_API FileSizeResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -968,7 +969,7 @@ namespace AzFramework
             AZ::u64 m_size;
         };
 
-        class FileModTimeRequest
+        class AZF_API FileModTimeRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -984,7 +985,7 @@ namespace AzFramework
             AZ::OSString m_filePath;
         };
 
-        class FileModTimeResponse
+        class AZF_API FileModTimeResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -999,7 +1000,7 @@ namespace AzFramework
             AZ::u64 m_modTime;
         };
 
-        class FileExistsRequest
+        class AZF_API FileExistsRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1015,7 +1016,7 @@ namespace AzFramework
             AZ::OSString m_filePath;
         };
 
-        class FileExistsResponse
+        class AZF_API FileExistsResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1030,7 +1031,7 @@ namespace AzFramework
             bool m_exists;
         };
 
-        class FileFlushRequest
+        class AZF_API FileFlushRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1046,7 +1047,7 @@ namespace AzFramework
             AZ::u32 m_fileHandle;
         };
 
-        class FileFlushResponse
+        class AZF_API FileFlushResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1061,7 +1062,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class PathCreateRequest
+        class AZF_API PathCreateRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1077,7 +1078,7 @@ namespace AzFramework
             AZ::OSString m_path;
         };
 
-        class PathCreateResponse
+        class AZF_API PathCreateResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1092,7 +1093,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class PathDestroyRequest
+        class AZF_API PathDestroyRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1108,7 +1109,7 @@ namespace AzFramework
             AZ::OSString m_path;
         };
 
-        class PathDestroyResponse
+        class AZF_API PathDestroyResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1123,7 +1124,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class FileRemoveRequest
+        class AZF_API FileRemoveRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1139,7 +1140,7 @@ namespace AzFramework
             AZ::OSString m_filePath;
         };
 
-        class FileRemoveResponse
+        class AZF_API FileRemoveResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1154,7 +1155,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class FileCopyRequest
+        class AZF_API FileCopyRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1171,7 +1172,7 @@ namespace AzFramework
             AZ::OSString m_destPath;
         };
 
-        class FileCopyResponse
+        class AZF_API FileCopyResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1186,7 +1187,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class FileRenameRequest
+        class AZF_API FileRenameRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1203,7 +1204,7 @@ namespace AzFramework
             AZ::OSString m_destPath;
         };
 
-        class FileRenameResponse
+        class AZF_API FileRenameResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1218,7 +1219,7 @@ namespace AzFramework
             AZ::u32 m_resultCode;
         };
 
-        class FindFilesRequest
+        class AZF_API FindFilesRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1235,7 +1236,7 @@ namespace AzFramework
             AZ::OSString m_filter;
         };
 
-        class FindFilesResponse
+        class AZF_API FindFilesResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1253,7 +1254,7 @@ namespace AzFramework
             FileList m_files;
         };
 
-        class FileTreeRequest
+        class AZF_API FileTreeRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1266,7 +1267,7 @@ namespace AzFramework
             unsigned int GetMessageType() const override;
         };
 
-        class FileTreeResponse
+        class AZF_API FileTreeResponse
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1288,7 +1289,7 @@ namespace AzFramework
             FolderList m_folderList;
         };
 
-        class AssetChangeReportRequest
+        class AZF_API AssetChangeReportRequest
             : public BaseAssetProcessorMessage
         {
         public:
@@ -1316,7 +1317,7 @@ namespace AzFramework
             bool m_isFolder;
         };
 
-        class AssetChangeReportResponse
+        class AZF_API AssetChangeReportResponse
             : public BaseAssetProcessorMessage
         {
         public:

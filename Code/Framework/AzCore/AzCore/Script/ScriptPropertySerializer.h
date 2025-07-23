@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class ScriptPropertySerializer
+    class AZCORE_API ScriptPropertySerializer
         : public BaseJsonSerializer
     {
     public:

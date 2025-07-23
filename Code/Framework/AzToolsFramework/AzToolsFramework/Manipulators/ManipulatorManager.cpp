@@ -14,8 +14,6 @@
 
 namespace AzToolsFramework
 {
-    const ManipulatorManagerId g_mainManipulatorManagerId = ManipulatorManagerId(AZ::Crc32("MainManipulatorManagerId"));
-
     ManipulatorManager::ManipulatorManager(const ManipulatorManagerId managerId)
         : m_manipulatorManagerId(managerId)
         , m_nextManipulatorIdToGenerate(ManipulatorId(1))
@@ -306,4 +304,12 @@ namespace AzToolsFramework
             }
         }
     }
+
+    const ManipulatorManagerId g_mainManipulatorManagerId = ManipulatorManagerId(AZ::Crc32("MainManipulatorManagerId"));
+
+    ManipulatorManagerId GetMainManipulatorManagerId()
+    {
+        return g_mainManipulatorManagerId;
+    }
+
 } // namespace AzToolsFramework

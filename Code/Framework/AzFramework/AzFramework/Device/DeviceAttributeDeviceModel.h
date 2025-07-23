@@ -8,11 +8,12 @@
 #pragma once
 
 #include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! Device attribute for getting device model name e.g. "Pixel 3 XL" 
-    class DeviceAttributeDeviceModel : public DeviceAttribute
+    class AZF_API DeviceAttributeDeviceModel : public DeviceAttribute
     {
     public:
         DeviceAttributeDeviceModel();

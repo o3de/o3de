@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzFramework/IO/RemoteFileIO.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
@@ -27,7 +28,7 @@ namespace AZ::IO
 
 namespace AzFramework
 {
-    struct RemoteStorageDriveConfig final :
+    struct AZF_API RemoteStorageDriveConfig final :
         public AZ::IO::IStreamerStackConfig
     {
         AZ_RTTI(AzFramework::RemoteStorageDriveConfig, "{A37AC957-AC1F-4CAC-BB7B-0CAD5ABAD416}", AZ::IO::IStreamerStackConfig);
@@ -41,7 +42,7 @@ namespace AzFramework
         AZ::u32 m_maxFileHandles{ 1024 };
     };
 
-    class RemoteStorageDrive
+    class AZF_API RemoteStorageDrive
         : public AZ::IO::StreamStackEntry
     {
     public:

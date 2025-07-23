@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! An adapter for displaying an editable list of CVars registered to the console instance.
     //! Supports editing CVars with primitive types, string types, and numeric vector types
     //! (VectorX, Quaternion, and Color).
-    class CvarAdapter : public DocumentAdapter
+    class AZF_API CvarAdapter : public DocumentAdapter
     {
     public:
         CvarAdapter();

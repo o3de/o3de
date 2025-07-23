@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! SingleViewportController defines a viewport controller interface that supports only registering
     //! one viewport at any given time. This can be used for simple cases in which the viewport controller
     //! will not be shared in a ViewportControllerList between multiple viewports.
-    class SingleViewportController
+    class AZF_API SingleViewportController
         : public ViewportControllerInterface
     {
     public:

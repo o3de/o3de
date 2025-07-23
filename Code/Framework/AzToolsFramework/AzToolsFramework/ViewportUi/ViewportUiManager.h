@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
@@ -21,11 +23,11 @@ namespace AzToolsFramework::ViewportUi
         class ViewportUiDisplay;
     } // namespace Internal
 
-    class ViewportUiManager : public ViewportUiRequestBus::Handler
+    class AZTF_API ViewportUiManager : public ViewportUiRequestBus::Handler
     {
     public:
         ViewportUiManager() = default;
-        ~ViewportUiManager() = default;
+        ~ViewportUiManager() override = default;
 
         // ViewportUiRequestBus ...
         const ClusterId CreateCluster(Alignment align) override;

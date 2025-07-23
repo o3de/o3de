@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AZ
 {
     namespace IO
@@ -18,7 +20,7 @@ namespace AZ
         * lock on a file stream.
         * returns false if the stream is not open at the end of the retries.
         */
-        bool RetryOpenStream(FileIOStream& stream, int numRetries = 10, int delayBetweenRetry = 250);
+       AZCORE_API bool RetryOpenStream(FileIOStream& stream, int numRetries = 10, int delayBetweenRetry = 250);
     }   // namespace IO
    
 }   // namespace AZ

@@ -11,10 +11,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    struct SeedInfo
+    struct AZF_API SeedInfo
     {
         AZ_TYPE_INFO(SeedInfo, "{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}");
 
@@ -30,7 +31,7 @@ namespace AzFramework
     };
 
     using AssetSeedList = AZStd::vector<SeedInfo>;
-    class AssetSeedListReflector
+    class AZF_API AssetSeedListReflector
     {
     public:
 

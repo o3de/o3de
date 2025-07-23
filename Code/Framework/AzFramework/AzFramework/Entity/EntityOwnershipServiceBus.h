@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -66,3 +67,5 @@ namespace AzFramework
 
     using EntityOwnershipServiceNotificationBus = AZ::EBus<EntityOwnershipServiceNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityOwnershipServiceNotifications);

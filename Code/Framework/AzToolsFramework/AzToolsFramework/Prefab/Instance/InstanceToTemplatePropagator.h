@@ -13,12 +13,13 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class InstanceToTemplatePropagator
+        class AZTF_API InstanceToTemplatePropagator
             : private InstanceToTemplateInterface
         {
         public:

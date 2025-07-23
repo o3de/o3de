@@ -856,7 +856,7 @@ namespace AZ
 
             AZ_PROFILE_FUNCTION(RHI);
             const auto& viewports = m_state.m_viewportState.m_states;
-            MTLViewport metalViewports[viewports.size()];
+            AZStd::vector<MTLViewport> metalViewports(viewports.size());
 
             for (uint32_t i = 0; i < viewports.size(); ++i)
             {
@@ -869,7 +869,7 @@ namespace AZ
             }
 
             id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            [renderEncoder setViewports: metalViewports
+            [renderEncoder setViewports: metalViewports.data()
                                   count: viewports.size()];
             m_state.m_viewportState.m_isDirty = false;
         }

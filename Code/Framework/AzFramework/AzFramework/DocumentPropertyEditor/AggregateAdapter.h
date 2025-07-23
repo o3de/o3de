@@ -12,11 +12,12 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! class to allow multi-edits of row-based DPE adapters
-    class RowAggregateAdapter : public DocumentAdapter
+    class AZF_API RowAggregateAdapter : public DocumentAdapter
     {
     public:
         RowAggregateAdapter();
@@ -162,7 +163,7 @@ namespace AZ::DocumentPropertyEditor
         AdapterBuilder m_builder;
     };
 
-    class LabeledRowAggregateAdapter : public RowAggregateAdapter
+    class AZF_API LabeledRowAggregateAdapter : public RowAggregateAdapter
     {
     protected:
         static AZStd::string_view GetFirstLabel(const Dom::Value& rowValue);

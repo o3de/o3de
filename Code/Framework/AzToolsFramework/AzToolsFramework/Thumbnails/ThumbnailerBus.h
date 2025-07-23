@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QPixmap;
 class QThreadPool;
@@ -76,3 +77,7 @@ namespace AzToolsFramework
         using ThumbnailerRendererNotificationBus = AZ::EBus<ThumbnailerRendererNotifications>;
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications);

@@ -10,6 +10,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -56,3 +57,5 @@ namespace AzFramework
         virtual void LoadDefaultQualityGroup(QualityLevel level = QualityLevel::LevelFromDeviceRules) = 0;
     };
 } //AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::QualitySystemEvents);

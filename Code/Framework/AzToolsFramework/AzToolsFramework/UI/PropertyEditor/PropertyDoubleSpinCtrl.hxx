@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_DOUBLESPINBOX_CTRL
-#define PROPERTY_DOUBLESPINBOX_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -25,7 +25,7 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
-    class PropertyDoubleSpinCtrl
+    class AZTF_API PropertyDoubleSpinCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -89,7 +89,7 @@ namespace AzToolsFramework
         void UpdateWidgetInternalTabbing(PropertyDoubleSpinCtrl* widget) override { widget->UpdateTabOrder(); }
     };
 
-    class doublePropertySpinboxHandler
+    class AZTF_API doublePropertySpinboxHandler
         : QObject
         , public DoubleSpinBoxHandlerCommon<double>
     {
@@ -112,7 +112,7 @@ namespace AzToolsFramework
         bool ModifyTooltip(QWidget* widget, QString& toolTipString) override;
     };
 
-    class floatPropertySpinboxHandler
+    class AZTF_API floatPropertySpinboxHandler
         : QObject
         , public DoubleSpinBoxHandlerCommon<float>
     {
@@ -130,7 +130,5 @@ namespace AzToolsFramework
     };
 
 
-    void RegisterDoubleSpinBoxHandlers();
+    AZTF_API void RegisterDoubleSpinBoxHandlers();
 };
-
-#endif

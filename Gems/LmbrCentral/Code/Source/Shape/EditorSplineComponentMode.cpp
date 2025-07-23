@@ -113,9 +113,9 @@ namespace LmbrCentral
             spline, GetEntityId(), &SplineComponentRequests::GetSpline);
 
         m_vertexSelection.Create(
-            GetEntityComponentIdPair(), g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), GetMainManipulatorManagerId(),
             AZStd::make_unique<SplineHoverSelection>(
-                GetEntityComponentIdPair(), g_mainManipulatorManagerId, spline),
+                GetEntityComponentIdPair(), GetMainManipulatorManagerId(), spline),
             TranslationManipulators::Dimensions::Three, ConfigureTranslationManipulatorAppearance3d);
     }
 
@@ -140,7 +140,7 @@ namespace LmbrCentral
             spline, GetEntityId(), &SplineComponentRequests::GetSpline);
 
         m_vertexSelection.CreateTranslationManipulator(
-            GetEntityComponentIdPair(), AzToolsFramework::g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), AzToolsFramework::GetMainManipulatorManagerId(),
             spline->m_vertexContainer.GetVertices()[index], index);
     }
 

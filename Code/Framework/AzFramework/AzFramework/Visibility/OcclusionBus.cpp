@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Visibility/OcclusionBus.h>
 
-DECLARE_EBUS_INSTANTIATION(AzFramework::OcclusionRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::OcclusionRequests);
 
 namespace AzFramework
 {

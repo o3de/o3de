@@ -12,6 +12,8 @@
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #endif
@@ -24,7 +26,7 @@ namespace AzToolsFramework
 {
     //! Editor Action class definitions.
     //! Wraps a QAction and provides additional metadata.
-    class EditorAction
+    class AZTF_API EditorAction
         : public QObject
     {
         Q_OBJECT

@@ -15,6 +15,7 @@
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/FileTagAsset.h>

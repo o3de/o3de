@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
@@ -981,7 +983,7 @@ namespace AzToolsFramework
      * entity->ChangeData(...);
      * undoBatch.MarkEntityDirty(entity->GetId());
      */
-    class ScopedUndoBatch
+    class AZTF_API ScopedUndoBatch
     {
     public:
         AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator);
@@ -1039,7 +1041,7 @@ namespace AzToolsFramework
     /// Any currently open view panes of this type will be closed before the view pane handlers are unregistered.
     ///
     /// \param viewPaneName - name of the pane to unregister. Must be the same as the name previously registered with RegisterViewPane.
-    void UnregisterViewPane(const char* viewPaneName);
+    AZTF_API void UnregisterViewPane(const char* viewPaneName);
 
     /// Returns the widget contained/wrapped in a view pane.
     /// \param name - the name of the pane which contains the widget to be retrieved. This must match the name used for registration.
@@ -1055,25 +1057,31 @@ namespace AzToolsFramework
     /// Opens a view pane if not already open, and activating the view pane if it was already opened.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    void OpenViewPane(const char* viewPaneName);
+    AZTF_API void OpenViewPane(const char* viewPaneName);
 
     /// Opens a view pane if not already open, and activating the view pane if it was already opened.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    QDockWidget* InstanceViewPane(const char* viewPaneName);
+    AZTF_API QDockWidget* InstanceViewPane(const char* viewPaneName);
 
     /// Closes a view pane if it is currently open.
     ///
     /// \param viewPaneName - name of the pane to open/activate. Must be the same as the name previously registered with RegisterViewPane.
-    void CloseViewPane(const char* viewPaneName);
+    AZTF_API void CloseViewPane(const char* viewPaneName);
 
     /**
      * Helper to wrap checking if an undo/redo operation is in progress.
      */
-    bool UndoRedoOperationInProgress();
+    AZTF_API bool UndoRedoOperationInProgress();
 } // namespace AzToolsFramework
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorRequests);
-DECLARE_EBUS_EXTERN(AzToolsFramework::ToolsApplicationEvents);
-DECLARE_EBUS_EXTERN(AzToolsFramework::EntitySelectionEvents);
+AZ_DECLARE_BUDGET_SHARED(AzToolsFramework);
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EntitySelectionEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEvents);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks);

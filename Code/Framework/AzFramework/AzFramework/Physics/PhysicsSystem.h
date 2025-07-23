@@ -16,12 +16,13 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzPhysics
 {
     //!Interface to access the Physics System.
     //! 
-    class SystemInterface
+    class AZF_API SystemInterface
     {
     public:
         AZ_RTTI(SystemInterface, "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}");

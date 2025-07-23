@@ -118,11 +118,11 @@ namespace AZ
 
         RHI::ResultCode FenceImpl::InitInternal(RHI::Device& device, RHI::FenceState initialState, [[maybe_unused]] RHI::FenceFlags flags)
         {
-            return m_fence.Init(&static_cast<Device&>(deviceBase), initialState);
+            return m_fence.Init(&static_cast<Device&>(device), initialState);
         }
 
         RHI::ResultCode FenceImpl::InitCrossDeviceInternal(
-            [[maybe_unused]] Device& device, [[maybe_unused]] RHI::Ptr<RHI::DeviceFence> originalDeviceFence)
+            [[maybe_unused]] RHI::Device& device, [[maybe_unused]] RHI::Ptr<RHI::DeviceFence> originalDeviceFence)
         {
             AZ_Assert(false, "Not implemented");
             return RHI::ResultCode::Fail;

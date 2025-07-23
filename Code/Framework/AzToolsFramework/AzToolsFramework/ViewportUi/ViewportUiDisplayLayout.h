@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <QBoxLayout>
@@ -51,7 +53,7 @@ namespace AzToolsFramework::ViewportUi
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! QGridLayout implementation that uses a grid of QVBox/QHBoxLayouts internally to stack widgets.
-    class ViewportUiDisplayLayout : public QGridLayout
+    class AZTF_API ViewportUiDisplayLayout : public QGridLayout
     {
     public:
         explicit ViewportUiDisplayLayout(QWidget* parent = nullptr);
