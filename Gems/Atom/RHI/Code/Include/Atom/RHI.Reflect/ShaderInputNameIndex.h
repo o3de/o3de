@@ -25,7 +25,7 @@ namespace AZ::RHI
     //! Users can initialize this class with the Name used to lookup the index and
     //! then use this class as an index. Under the hood, the code will initialize
     //! the index if it's not already initialized before using it.
-    struct ShaderInputNameIndex
+    struct ATOM_RHI_REFLECT_API ShaderInputNameIndex
     {
         AZ_TYPE_INFO(ShaderInputNameIndex, "{1A9A92A7-9289-45E1-9EFE-D08257EF2BF1}");
         static void Reflect(AZ::ReflectContext* context);

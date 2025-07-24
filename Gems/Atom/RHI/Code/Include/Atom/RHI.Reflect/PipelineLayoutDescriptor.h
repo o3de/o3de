@@ -34,7 +34,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct ResourceBindingInfo
+    struct ATOM_RHI_REFLECT_API ResourceBindingInfo
     {
         AZ_TYPE_INFO(ResourceBindingInfo, "{2B25FA97-21C2-4567-8F01-6A64F7B9DFF6}");
         static void Reflect(AZ::ReflectContext* context);
@@ -62,7 +62,7 @@ namespace AZ::RHI
 
     //! This class describes binding information about the Shader Resource Group
     //! that is part of a Pipeline. Contains the register number for each SRG resource.
-    struct ShaderResourceGroupBindingInfo
+    struct ATOM_RHI_REFLECT_API ShaderResourceGroupBindingInfo
     {
         AZ_TYPE_INFO(ShaderResourceGroupBindingInfo, "{FE67D6A9-57E7-4075-94F9-3E2F443D1BD3}");
         static void Reflect(AZ::ReflectContext* context);
@@ -85,7 +85,7 @@ namespace AZ::RHI
     //! In short, if the shader compiler needs to communicate platform-specific shader binding information
     //! when constructing a pipeline state, this is the place to do it. Platforms are expected to override
     //! this class in their PLATFORM.Reflect library, which is then exposed to the offline shader compiler.
-    class PipelineLayoutDescriptor
+    class ATOM_RHI_REFLECT_API PipelineLayoutDescriptor
         : public AZStd::intrusive_base
     {
     public:

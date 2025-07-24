@@ -22,7 +22,7 @@ namespace AZ::RHI
         Transient
     };
 
-    class ShaderResourceGroupPoolDescriptor
+    class ATOM_RHI_REFLECT_API ShaderResourceGroupPoolDescriptor
         : public ResourcePoolDescriptor
     {
     public:

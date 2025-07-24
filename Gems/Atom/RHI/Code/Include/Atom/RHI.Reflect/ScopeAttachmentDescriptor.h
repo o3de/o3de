@@ -17,7 +17,7 @@
 namespace AZ::RHI
 {
     //! Describes the binding of an attachment to a scope.
-    struct ScopeAttachmentDescriptor
+    struct ATOM_RHI_REFLECT_API ScopeAttachmentDescriptor
     {
         AZ_TYPE_INFO(ScopeAttachmentDescriptor, "{04BBA36D-9A61-4E24-9CA0-7A4307C6A411}");
             

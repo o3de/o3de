@@ -20,7 +20,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct TransientAttachmentPoolBudgets
+    struct ATOM_RHI_REFLECT_API TransientAttachmentPoolBudgets
     {
         AZ_TYPE_INFO(AZ::RHI::TransientAttachmentPoolBudgets, "{CE39BBEF-C9CD-4B9A-BA41-C886D9F063BC}");
         static void Reflect(AZ::ReflectContext* context);
@@ -38,7 +38,7 @@ namespace AZ::RHI
 
     //! The platform default values are initially set with those hard coded in RHI Limits.
     //! They can be overridden by PlatformLimits.azasset from each platform, if a value is provided in that file.
-    struct PlatformDefaultValues
+    struct ATOM_RHI_REFLECT_API PlatformDefaultValues
     {
         AZ_TYPE_INFO(AZ::RHI::PlatformDefaultValues, "{F928CA84-C3F8-4F0B-8F34-808A24FA7C86}");
         static void Reflect(AZ::ReflectContext* context);
@@ -51,7 +51,7 @@ namespace AZ::RHI
     };
 
     //! A descriptor used to configure limits for each backend. Can be overridden by platformlimits.azasset file
-    class PlatformLimitsDescriptor
+    class ATOM_RHI_REFLECT_API PlatformLimitsDescriptor
         : public AZStd::intrusive_base
     {
     public:
@@ -73,7 +73,7 @@ namespace AZ::RHI
         virtual void LoadPlatformLimitsDescriptor(const char* rhiName);
     };
 
-    class PlatformLimits final
+    class ATOM_RHI_REFLECT_API PlatformLimits final
     {
     public:
         AZ_RTTI(AZ::RHI::PlatformLimits, "{48158F25-5044-441C-A2B2-2D3E9255B0C3}");

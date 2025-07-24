@@ -81,10 +81,13 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ${gem_name}.Reflect STATIC
+    NAME ${gem_name}.Reflect ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_reflect_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RHI_REFLECT_EXPORTS
     INCLUDE_DIRECTORIES
         PRIVATE
             Source

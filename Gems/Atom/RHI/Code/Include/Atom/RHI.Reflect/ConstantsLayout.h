@@ -39,7 +39,7 @@ namespace AZ::RHI
     //! To use the class, assign shader inputs using AddShaderInput, and call Finalize to
     //! complete construction of the layout. This class is intended to be built using an offline shader
     //! compiler, and serialized to / from disk.
-    class ConstantsLayout
+    class ATOM_RHI_REFLECT_API ConstantsLayout
         : public AZStd::intrusive_base
     {
     public:
