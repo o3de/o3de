@@ -121,11 +121,12 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+        PUBLIC
             Gem::${gem_name}.Reflect
 )
 
 ly_add_target(
-    NAME ${gem_name}.Private.Static STATIC
+    NAME ${gem_name}.Private.Object OBJECT
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_private_files.cmake
@@ -156,7 +157,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::${gem_name}.Public
-            Gem::${gem_name}.Private.Static
+            Gem::${gem_name}.Private.Object
             Gem::${gem_name}.Profiler
     RUNTIME_DEPENDENCIES
         ${PROFILER_DEPENDENCIES}            

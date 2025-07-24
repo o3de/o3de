@@ -134,7 +134,16 @@ namespace AZ::RHI
 
         ImageSubresourceLayout() = default;
 
-        void Init(RHI::MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout& deviceLayout);
+        void Init(RHI::MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout& deviceLayout)
+        {
+            MultiDeviceObject::IterateDevices(
+                deviceMask,
+                [this, deviceLayout](int deviceIndex)
+                {
+                    m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
+                    return true;
+                });
+        }
 
         DeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
         {
