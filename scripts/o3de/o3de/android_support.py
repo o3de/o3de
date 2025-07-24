@@ -1943,7 +1943,7 @@ class AndroidProjectGenerator(object):
         # Check orientation type and convert if needed
         if isinstance(orientation_source, str):
             if orientation_source not in ORIENTATION_MAPPING:
-                raise RuntimeError(
+                raise AndroidToolError(
                     f'Invalid orientation "{orientation}" in android_project.json. '
                     f'Expected one of: {list(ORIENTATION_MAPPING.keys())}'
                 )
@@ -1951,13 +1951,13 @@ class AndroidProjectGenerator(object):
         elif isinstance(orientation_source, int):
             VALID_ORIENTATIONS = {ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT, ORIENTATION_ALL}
             if orientation_source not in VALID_ORIENTATIONS:
-                raise RuntimeError(
+                raise AndroidToolError(
                     f'Invalid numeric orientation "{orientation}" in android_project.json. '
                     f'Expected one of: {VALID_ORIENTATIONS}'
                 )
             orientation = orientation_source
         else:
-            raise RuntimeError(
+            raise AndroidToolError(
                 f'ANDROID_SCREEN_ORIENTATION must be a string or int in android_project.json. '
                 f'Got: {type(orientation).__name__}'
             )
