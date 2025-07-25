@@ -39,8 +39,6 @@ def Menus_FileMenuOptions_Work():
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
-        ("Edit Project Settings",),
-        ("Edit Platform Settings",),
         ("New Project",),
         ("Open Project",),
         # Disabling "Show Log File" for CI testing as it launches an external app. Uncomment as needed for local testing
