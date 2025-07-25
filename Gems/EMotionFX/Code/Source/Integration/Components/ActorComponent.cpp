@@ -595,7 +595,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZ_PROFILE_FUNCTION(Animation);            
+            AZ_PROFILE_FUNCTION(Animation);
 
             // If we've got an asset that finished loading (denoted by an OnAssetReady() call), create the actor instance here.
             if (m_processLoadedAsset)
