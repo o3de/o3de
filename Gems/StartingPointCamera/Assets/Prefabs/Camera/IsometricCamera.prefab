@@ -1,0 +1,105 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "IsometricCamera",
+        "Components": {
+            "EditorDisabledCompositionComponent": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3837204912784440039
+            },
+            "EditorEntityIconComponent": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8018146290632383969
+            },
+            "EditorEntitySortComponent": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 7874177159288365422
+            },
+            "EditorInspectorComponent": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "EditorLockComponent": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "EditorOnlyEntityComponent": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 3261249813163778338
+            },
+            "EditorPendingCompositionComponent": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12917798267488243668
+            },
+            "EditorPrefabComponent": {
+                "$type": "EditorPrefabComponent",
+                "Id": 10182366347512475253
+            },
+            "EditorVisibilityComponent": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
+            },
+            "TransformComponent": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 4272963378099646759,
+                "Parent Entity": ""
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[14361055434364288387]": {
+            "Id": "Entity_[14361055434364288387]",
+            "Name": "Isometric Camera",
+            "Components": {
+                "Component_[14346412589118253737]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 14346412589118253737,
+                    "m_template": {
+                        "$type": "CameraRigComponent",
+                        "Target Acquirers": [
+                            {
+                                "$type": "AcquireByTag"
+                            }
+                        ],
+                        "Look-at Behaviors": [
+                            {
+                                "$type": "OffsetPosition",
+                                "Positional Offset": [
+                                    0.0,
+                                    0.0,
+                                    1.7999999523162842
+                                ]
+                            }
+                        ],
+                        "Camera Transform Behaviors": [
+                            {
+                                "$type": "FollowTargetFromAngle",
+                                "Angle": -60.0,
+                                "Distance From Target": 10.0
+                            }
+                        ]
+                    }
+                },
+                "Component_[2567642046327062565]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 2567642046327062565,
+                    "Parent Entity": "ContainerEntity",
+                    "Transform Data": {
+                        "Translate": [
+                            70.0,
+                            66.0,
+                            41.0
+                        ]
+                    }
+                },
+                "Component_[6723585965463865528]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 6723585965463865528,
+                    "m_template": {
+                        "$type": "{E2DC7EB8-02D1-4E6D-BFE4-CE652FCB7C7F} CameraComponent"
+                    }
+                }
+            }
+        }
+    }
+}
