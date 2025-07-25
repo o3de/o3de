@@ -37,7 +37,7 @@ namespace AZ::RHI
     //! RayTracingBlasDescriptor
     //!
     //! Describes a ray tracing bottom-level acceleration structure.
-    class RayTracingBlasDescriptor final
+    class ATOM_RHI_PUBLIC_API RayTracingBlasDescriptor final
     {
     public:
         //! Returns the device-specific DeviceRayTracingBlasDescriptor for the given index
@@ -51,7 +51,7 @@ namespace AZ::RHI
     //! RayTracingBlas
     //!
     //! A RayTracingBlas is created from the information in the RayTracingBlasDescriptor.
-    class RayTracingBlas : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API RayTracingBlas : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator, 0);
@@ -92,7 +92,7 @@ namespace AZ::RHI
     //! RayTracingTlas
     //!
     //! A RayTracingTlas is created from the information in the RayTracingTlasDescriptor.
-    class RayTracingTlas : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API RayTracingTlas : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator, 0);

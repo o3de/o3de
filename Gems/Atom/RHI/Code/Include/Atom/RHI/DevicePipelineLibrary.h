@@ -43,7 +43,7 @@ namespace AZ::RHI
     //! to initialize pipeline states across threads using the same DevicePipelineLibrary instance, but this will
     //! result in the two calls serializing on the mutex. Instead, see PipelineStateCache which stores
     //! a DevicePipelineLibrary instance per thread to avoid this contention.
-    class DevicePipelineLibrary : public DeviceObject
+    class ATOM_RHI_PUBLIC_API DevicePipelineLibrary : public DeviceObject
     {
     public:
         AZ_RTTI(DevicePipelineLibrary, "{843579BE-57E4-4527-AB00-C0217885AEA9}");

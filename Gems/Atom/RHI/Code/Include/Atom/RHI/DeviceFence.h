@@ -29,7 +29,7 @@ namespace AZ::RHI
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(FenceFlags);
 
-    class DeviceFence
+    class ATOM_RHI_PUBLIC_API DeviceFence
         : public DeviceObject
     {
     public:

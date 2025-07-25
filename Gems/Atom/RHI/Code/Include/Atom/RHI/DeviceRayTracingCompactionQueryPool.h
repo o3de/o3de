@@ -28,7 +28,7 @@ namespace AZ::RHI
     //! This process takes multiple frames to complete as the compact size must be available on the CPU
     //!
     //! See https://developer.nvidia.com/blog/tips-acceleration-structure-compaction/ for a more detailed description
-    class DeviceRayTracingCompactionQuery : public DeviceObject
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingCompactionQuery : public DeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(DeviceRayTracingCompactionQuery, AZ::SystemAllocator, 0);
@@ -59,7 +59,7 @@ namespace AZ::RHI
     };
 
     //! Provides storage for DeviceRayTracingCompactionQuery objects and handles
-    class DeviceRayTracingCompactionQueryPool : public DeviceObject
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingCompactionQueryPool : public DeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(DeviceRayTracingCompactionQueryPool, AZ::SystemAllocator, 0);

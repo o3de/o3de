@@ -28,7 +28,7 @@ namespace AZ::RHI
     //!
     //! It also provides basic checks, like trying to write more commands than allowed, or
     //! writing commands that are not specified in the layout.
-    class DeviceIndirectBufferWriter :
+    class ATOM_RHI_PUBLIC_API DeviceIndirectBufferWriter :
         public Object
     {
         using Base = Object;

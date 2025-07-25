@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Handle.h>
+#include <Atom/RHI/Base.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -24,7 +25,7 @@ namespace AZ::RHI
 
     //! Helper class to manage executing work in a background thread.
     //! Work items are processed in the order that they were received.
-    class AsyncWorkQueue
+    class ATOM_RHI_PUBLIC_API AsyncWorkQueue
     {
     public:
         AZ_CLASS_ALLOCATOR(AsyncWorkQueue, AZ::SystemAllocator);

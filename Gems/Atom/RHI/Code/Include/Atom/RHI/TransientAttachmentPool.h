@@ -35,7 +35,7 @@ namespace AZ::RHI
     //! be re-used within a subsequent scope. The final result of this process is a set of
     //! image / buffer attachments that are backed by guaranteed memory valid *only* for the scope in
     //! which they attached.
-    class TransientAttachmentPool : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API TransientAttachmentPool : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);

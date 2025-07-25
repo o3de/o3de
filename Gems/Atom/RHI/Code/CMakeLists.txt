@@ -102,12 +102,15 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ${gem_name}.Public STATIC
+    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_public_files.cmake
         ../Assets/atom_rhi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RHI_PUBLIC_EXPORTS
     INCLUDE_DIRECTORIES
         PRIVATE
             Source

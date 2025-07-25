@@ -22,7 +22,7 @@ namespace AZ::RHI
     //! A Buffer holds all Buffers across multiple devices.
     //! The buffer descriptor will be shared across all the buffers.
     //! The user manages the lifecycle of a Buffer through a BufferPool
-    class Buffer : public Resource
+    class ATOM_RHI_PUBLIC_API Buffer : public Resource
     {
         using Base = Resource;
         friend class BufferPoolBase;

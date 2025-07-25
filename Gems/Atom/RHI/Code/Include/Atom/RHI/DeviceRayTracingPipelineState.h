@@ -64,7 +64,7 @@ namespace AZ::RHI
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations.
-    class DeviceRayTracingPipelineState
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingPipelineState
         : public DeviceObject
     {
     public:

@@ -18,7 +18,7 @@ namespace AZ::RHI
     class ImageScopeAttachment;
 
     //! A specialization of Attachment for an image. Provides access to the image.
-    class ImageFrameAttachment
+    class ATOM_RHI_PUBLIC_API ImageFrameAttachment
         : public FrameAttachment
     {
     public:

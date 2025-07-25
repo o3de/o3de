@@ -18,7 +18,7 @@ namespace AZ::RHI
 
     //! A specialization of a scope attachment for buffers. Provides
     //! access to the buffer view and buffer scope attachment descriptor.
-    class BufferScopeAttachment final
+    class ATOM_RHI_PUBLIC_API BufferScopeAttachment final
         : public ScopeAttachment
     {
         friend class FrameGraphCompiler;

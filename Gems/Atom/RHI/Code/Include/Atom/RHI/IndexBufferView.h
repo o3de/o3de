@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! A multi-device class representing a view onto a Buffer holding indices, distinct from
     //! actual view classes (like DeviceBufferView), there is no representation on the API level.
     //! Its device-specific buffers are provided to the RHI back-end at draw time.
-    class alignas(8) IndexBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) IndexBufferView
     {
     public:
         IndexBufferView() = default;

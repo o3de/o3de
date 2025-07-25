@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI/Base.h>
 #include <AzCore/base.h>
 
 namespace AZ::RHI
@@ -16,7 +17,7 @@ namespace AZ::RHI
     //! To account for this, VirtualAddress::Null is used instead. Check validity of the address
     //! using IsValid or IsNull instead of checking for 0. VirtualAddress is initialized
     //! to Null, so returning the default constructor is sufficient to represent an invalid address.
-    class VirtualAddress
+    class ATOM_RHI_PUBLIC_API VirtualAddress
     {
         static const VirtualAddress Null;
     public:
@@ -54,10 +55,10 @@ namespace AZ::RHI
     //! these are often deferred-released after N frames. The user may provide a garbage collection
     //! latency, which controls the number of GarbageCollect calls that must occur before an allocation
     //! is actually reclaimed. The intended use case is to garbage collect at the end of each frame.
-    class Allocator
+    class ATOM_RHI_PUBLIC_API Allocator
     {
     public:
-        struct Descriptor
+        struct ATOM_RHI_PUBLIC_API Descriptor
         {
             static const size_t DefaultAlignment = 256;
 

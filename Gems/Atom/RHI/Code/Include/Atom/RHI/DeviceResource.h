@@ -25,7 +25,7 @@ namespace AZ::RHI
     //! DeviceResource is a base class for pooled RHI resources (DeviceImage / DeviceBuffer / DeviceShaderResourceGroup, etc). It provides
     //! some common lifecycle management semantics. DeviceResource creation is separate from initialization. Resources are
     //! created separate from any pool, but its backing platform data is associated at initialization time on a specific pool.
-    class DeviceResource
+    class ATOM_RHI_PUBLIC_API DeviceResource
         : public DeviceObject
     {
         friend class Resource;

@@ -14,7 +14,7 @@ namespace AZ::RHI
 {
     //! A specialization of a scope attachment for msaa images. Provides
     //! access to the msaa image view and msaa image scope attachment descriptor.
-    class ResolveScopeAttachment final
+    class ATOM_RHI_PUBLIC_API ResolveScopeAttachment final
         : public ImageScopeAttachment
     {
     public:

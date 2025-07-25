@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Name/Name.h>
 
@@ -15,7 +15,7 @@ namespace AZ::RHI
 {
     //! Base class for any persistent resource in the RHI library. Provides a name, reference
     //! counting, and a common RTTI base class for all objects in the RHI.
-    class Object
+    class ATOM_RHI_PUBLIC_API Object
     {
     public:
         AZ_RTTI(Object, "{E43378F1-2331-4173-94B8-990ED20E6003}");

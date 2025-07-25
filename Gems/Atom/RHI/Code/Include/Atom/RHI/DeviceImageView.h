@@ -17,7 +17,7 @@ namespace AZ::RHI
     //! DeviceImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
     //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
     //! (mip levels / array slices). They can additionally override the base format of the image
-    class DeviceImageView
+    class ATOM_RHI_PUBLIC_API DeviceImageView
         : public DeviceResourceView
     {
     public:

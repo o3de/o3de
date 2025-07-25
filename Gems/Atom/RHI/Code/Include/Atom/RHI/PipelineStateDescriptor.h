@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/Base.h>
 #include <Atom/RHI/SpecializationConstant.h>
 
 namespace AZ::RHI
@@ -28,7 +29,7 @@ namespace AZ::RHI
     const uint32_t PipelineStateTypeCount = static_cast<uint32_t>(PipelineStateType::Count);
 
     //! A base class to pipeline state descriptor.
-    class PipelineStateDescriptor
+    class ATOM_RHI_PUBLIC_API PipelineStateDescriptor
     {
     public:
         AZ_RTTI(PipelineStateDescriptor, "{B334AE47-53CB-438C-B799-DCA542FF8D5D}");
@@ -66,7 +67,7 @@ namespace AZ::RHI
     //! byte code is likely shared by many PSOs and the serialization system would simply duplicate
     //! all of that data. However, the individual pieces are serializable, so a higher-level system
     //! could easily construct a PSO library.
-    class PipelineStateDescriptorForDispatch final
+    class ATOM_RHI_PUBLIC_API PipelineStateDescriptorForDispatch final
         : public PipelineStateDescriptor
     {
     public:
@@ -88,7 +89,7 @@ namespace AZ::RHI
     //! input assembly stream layout, render target attachment layout, and various render states.
     //!
     //! NOTE: This class does not serialize by design. See PipelineStateDescriptorForDispatch for details.
-    class PipelineStateDescriptorForDraw final
+    class ATOM_RHI_PUBLIC_API PipelineStateDescriptorForDraw final
         : public PipelineStateDescriptor
     {
     public:
@@ -121,7 +122,7 @@ namespace AZ::RHI
     };
 
     //! Describes state necessary to build a ray tracing pipeline state object. 
-    class PipelineStateDescriptorForRayTracing final
+    class ATOM_RHI_PUBLIC_API PipelineStateDescriptorForRayTracing final
         : public PipelineStateDescriptor
     {
     public:

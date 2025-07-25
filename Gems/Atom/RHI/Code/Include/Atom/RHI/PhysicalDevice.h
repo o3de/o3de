@@ -14,7 +14,7 @@
 
 namespace AZ::RHI
 {
-    class PhysicalDevice
+    class ATOM_RHI_PUBLIC_API PhysicalDevice
         : public Object
     {
     public:

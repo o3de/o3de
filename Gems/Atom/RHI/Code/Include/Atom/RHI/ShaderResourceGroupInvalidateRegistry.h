@@ -36,7 +36,7 @@ namespace AZ::RHI
     //! very expensive.
     //!
     //! The registry is not thread-safe. It needs to be externally synchronized.
-    class ShaderResourceGroupInvalidateRegistry
+    class ATOM_RHI_PUBLIC_API ShaderResourceGroupInvalidateRegistry
         : public ResourceInvalidateBus::MultiHandler
     {
     public:

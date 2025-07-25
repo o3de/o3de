@@ -32,7 +32,7 @@ namespace AZ::RHI
     //!
     //! NOTE: This bus is currently a singleton. That effectively forces FrameScheduler
     //! to be one as well. See [LY-83241] for more information.
-    class ResourceEventInterface
+    class ATOM_RHI_PUBLIC_API ResourceEventInterface
         : public AZ::EBusTraits
     {
     public:
