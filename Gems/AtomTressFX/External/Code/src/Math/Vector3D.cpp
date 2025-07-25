@@ -30,14 +30,6 @@
 
 namespace AMD
 {
-    Vector3::Vector3(const Vector3& other)
-    {
-        x = other.x;
-        y = other.y;
-        z = other.z;
-        w = other.w;
-    }
-
     Vector3::Vector3(const Vector3& begin, const Vector3& end)
     {
         x = end.x - begin.x;
@@ -89,16 +81,6 @@ namespace AMD
         {
             return Vector3(0.0f, 0.0f, 0.0f);
         }
-    }
-
-    Vector3& Vector3::operator=(const Vector3& other)
-    {
-        x = other.x;
-        y = other.y;
-        z = other.z;
-        w = other.w;
-
-        return *this;
     }
 
     Vector3& Vector3::operator=(float val)

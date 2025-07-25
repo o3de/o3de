@@ -13,17 +13,17 @@ namespace Archive
     // Implement byte storage multipliers
     inline namespace literals
     {
-        constexpr AZ::u64 operator"" _kib(AZ::u64 value)
+        constexpr AZ::u64 operator ""_kib(AZ::u64 value)
         {
             return value * (1 << 10);
         }
 
-        constexpr AZ::u64 operator"" _mib(AZ::u64 value)
+        constexpr AZ::u64 operator ""_mib(AZ::u64 value)
         {
             return value * (1 << 20);
         }
 
-        constexpr AZ::u64 operator"" _gib(AZ::u64 value)
+        constexpr AZ::u64 operator ""_gib(AZ::u64 value)
         {
             return value * (1 << 30);
         }
