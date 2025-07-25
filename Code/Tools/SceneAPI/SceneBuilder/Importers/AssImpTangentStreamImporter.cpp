@@ -118,12 +118,13 @@ namespace AZ
                     context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult tangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, m_defaultNodeName);
-                tangentResults = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(
+                    context, tangentStream, newIndex, m_defaultNodeName);
+                tangentResults = Events::Process(*dataPopulated);
 
                 if (tangentResults != Events::ProcessingResult::Failure)
                 {
-                    tangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
+                    tangentResults = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
                 return tangentResults;
             }
