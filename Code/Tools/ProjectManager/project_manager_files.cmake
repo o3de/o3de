@@ -63,6 +63,7 @@ set(FILES
     Source/ProjectExportWorker.cpp
     Source/ProjectExportController.h
     Source/ProjectExportController.cpp
+    Source/ProjectManagerBuses.h
     Source/UpdateProjectSettingsScreen.h
     Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h

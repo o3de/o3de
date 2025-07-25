@@ -6,10 +6,14 @@
  *
  */
 
-#include <ProjectManagerWindow.h>
-#include <PythonBindingsInterface.h>
-#include <ScreensCtrl.h>
-#include <DownloadController.h>
+#include "ProjectManagerWindow.h"
+#include "DownloadController.h"
+#include "ProjectManagerBuses.h"
+#include "PythonBindingsInterface.h"
+#include "ScreensCtrl.h"
+
+#include <QCloseEvent>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -61,5 +65,28 @@ namespace O3DE::ProjectManager
             const QString path = QString::fromUtf8(projectPath.Native().data(), aznumeric_cast<int>(projectPath.Native().size()));
             emit screensCtrl->NotifyCurrentProject(path);
         }
+    }
+
+    void ProjectManagerWindow::closeEvent(QCloseEvent* event)
+    {
+        bool canClose = true;
+        ProjectManagerUtilityRequestsBus::Broadcast(&ProjectManagerUtilityRequestsBus::Events::CanCloseProjectManager, canClose);
+
+        if (!canClose)
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(
+                this,
+                tr("Project action ongoing"),
+                tr("A project action is currently going on. Are you sure you want to exit?"),
+                QMessageBox::Yes | QMessageBox::No);
+
+            if (reply == QMessageBox::No)
+            {
+                event->ignore();
+                return;
+            }
+        }
+
+        QMainWindow::closeEvent(event);
     }
 } // namespace O3DE::ProjectManager
