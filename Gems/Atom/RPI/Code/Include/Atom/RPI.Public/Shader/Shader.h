@@ -52,13 +52,11 @@ namespace AZ
         //! 
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API Shader final
             : public Data::InstanceData
             , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");

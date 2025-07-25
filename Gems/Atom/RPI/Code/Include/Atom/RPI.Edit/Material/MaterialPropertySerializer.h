@@ -20,12 +20,9 @@ namespace AZ
         struct MaterialPropertySourceData;
         class MaterialPropertyValue;
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_EDIT_API JsonMaterialPropertySerializer
             : public BaseJsonSerializer
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
         public:
             AZ_RTTI(JsonMaterialPropertySerializer, "{1AFEC5BD-AB2E-4BDB-911B-80727EDA0C26}", BaseJsonSerializer);
             AZ_CLASS_ALLOCATOR_DECL;

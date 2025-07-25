@@ -34,11 +34,9 @@ namespace AZ
         //! Both of these overrides should be assigned at asset build time for the specific platform.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using StreamingImagePoolAssetCreator.
         //! See RPI::StreamingImagePool for runtime features based on this asset.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API StreamingImagePoolAsset final
             : public Data::AssetData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class StreamingImagePoolAssetCreator;
             friend class StreamingImagePoolAssetTester;
         public:

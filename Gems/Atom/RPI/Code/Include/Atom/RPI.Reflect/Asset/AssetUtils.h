@@ -218,14 +218,11 @@ namespace AZ
              //                              | StreaminImage::Destructor()                     
              //                              | AssetBus::Disconnect()                          
              //                              | AssetBus::lock(mutex) <- Deadlocked             
-             //                                                                                                           
-            AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+             //
             class ATOM_RPI_REFLECT_API AsyncAssetLoader :
                 private Data::AssetBus::Handler,
                 private SystemTickBus::Handler
             {
-                AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
             public:
                 AZ_RTTI(AZ::RPI::AssetUtils::AsyncAssetLoader, "{E0FB5B08-B97D-40DF-8478-226249C0B654}");
 

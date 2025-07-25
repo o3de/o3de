@@ -26,12 +26,10 @@ namespace AZ::RPI
     class Material;
 
     //! Manages system-wide initialization and support for material classes
-    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     class ATOM_RPI_PUBLIC_API MaterialSystem
         : public MaterialInstanceHandlerInterface::Registrar
         , public Data::AssetBus::Handler
     {
-        AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     public:
         static void Reflect(AZ::ReflectContext* context);
         static void GetAssetHandlers(AssetHandlerPtrList& assetHandlers);
