@@ -58,7 +58,7 @@ namespace EMotionFX
 
     bool ObjectId::IsValid() const
     {
-        return m_id != InvalidId;
+        return *this != InvalidId;
     }
 
     void ObjectId::SetInvalid()
@@ -69,6 +69,11 @@ namespace EMotionFX
     bool ObjectId::operator==(const ObjectId& rhs) const
     {
         return m_id == rhs.m_id;
+    }
+
+    bool ObjectId::operator==(AZ::u64 rhs) const
+    {
+        return m_id == rhs;
     }
 
     bool ObjectId::operator!=(const ObjectId& rhs) const

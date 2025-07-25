@@ -98,12 +98,12 @@ namespace AZStd
         {
             if constexpr (!is_void_v<T>)
             {
-                construct_at(addressof(this->m_storage.m_value), AZStd::forward<const U&>(rhs.value()));
+                AZStd::construct_at(addressof(this->m_storage.m_value), AZStd::forward<const U&>(rhs.value()));
             }
         }
         else
         {
-            construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<const G&>(rhs.error()));
+            AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<const G&>(rhs.error()));
         }
 
         this->m_hasValue = rhs.has_value();
@@ -119,12 +119,12 @@ namespace AZStd
         {
             if constexpr (!is_void_v<T>)
             {
-                construct_at(addressof(this->m_storage.m_value), AZStd::forward<U>(rhs.value()));
+                AZStd::construct_at(addressof(this->m_storage.m_value), AZStd::forward<U>(rhs.value()));
             }
         }
         else
         {
-            construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<G>(rhs.error()));
+            AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<G>(rhs.error()));
         }
 
         this->m_hasValue = rhs.has_value();
@@ -230,7 +230,7 @@ namespace AZStd
             }
             else
             {
-                construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<const G&>(err.error()));
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<const G&>(err.error()));
             }
             this->m_hasValue = false;
         }
@@ -258,7 +258,7 @@ namespace AZStd
             }
             else
             {
-                construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<G>(err.error()));
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::forward<G>(err.error()));
             }
             this->m_hasValue = false;
         }
@@ -282,7 +282,7 @@ namespace AZStd
             this->m_hasValue = true;
         }
 
-        return *construct_at(addressof(this->m_storage.m_value), AZStd::forward<Args>(args)...);
+        return *AZStd::construct_at(addressof(this->m_storage.m_value), AZStd::forward<Args>(args)...);
     }
 
     template<class T, class E>
@@ -300,7 +300,7 @@ namespace AZStd
             this->m_hasValue = true;
         }
 
-        return *construct_at(addressof(this->m_storage.m_value), il, AZStd::forward<Args>(args)...);
+        return *AZStd::construct_at(addressof(this->m_storage.m_value), il, AZStd::forward<Args>(args)...);
     }
 
     //! expected emplace for void type `expected<void, E>` specialization
@@ -339,17 +339,17 @@ namespace AZStd
                 {
                     E tmp(AZStd::move(rhs.m_storage.m_unexpected));
                     AZStd::destroy_at(addressof(rhs.m_storage.m_unexpected));
-                    construct_at(addressof(rhs.m_storage.m_value), AZStd::move(this->m_storage.m_value));
+                    AZStd::construct_at(addressof(rhs.m_storage.m_value), AZStd::move(this->m_storage.m_value));
                     AZStd::destroy_at(addressof(this->m_storage.m_value));
-                    construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(tmp));
+                    AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(tmp));
                 }
                 else
                 {
                     T tmp(AZStd::move(this->m_storage.m_value));
                     AZStd::destroy_at(addressof(this->m_storage.m_value));
-                    construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
+                    AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
                     AZStd::destroy_at(addressof(rhs.m_storage.m_unexpected));
-                    construct_at(addressof(rhs.m_storage.m_value), AZStd::move(tmp));
+                    AZStd::construct_at(addressof(rhs.m_storage.m_value), AZStd::move(tmp));
                 }
 
                 this->m_hasValue = false;

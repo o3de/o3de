@@ -192,7 +192,7 @@ namespace AzToolsFramework
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
         // The crc32 of the last consumed input event's channel id.
-        AZ::Crc32 m_lastConsumedInputChannelIdCrc32 = 0;
+        AZ::Crc32 m_lastConsumedInputChannelIdCrc32;
         // Where the mouse cursor was at the last cursor event.
         QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.

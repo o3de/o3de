@@ -214,12 +214,12 @@ namespace AzFramework
         return result;
     }
 
-    bool SpawnableIndexEntityIterator::operator==(const SpawnableIndexEntityIterator& rhs)
+    bool SpawnableIndexEntityIterator::operator==(const SpawnableIndexEntityIterator& rhs) const
     {
         return m_value.m_entity == rhs.m_value.m_entity && m_value.m_index == rhs.m_value.m_index;
     }
 
-    bool SpawnableIndexEntityIterator::operator!=(const SpawnableIndexEntityIterator& rhs)
+    bool SpawnableIndexEntityIterator::operator!=(const SpawnableIndexEntityIterator& rhs) const
     {
         return m_value.m_entity != rhs.m_value.m_entity || m_value.m_index != rhs.m_value.m_index;
     }

@@ -314,7 +314,7 @@ namespace Vegetation
             instanceData.m_masks.EnumerateWeights(
                 [this](AZ::Crc32 surfaceType, [[maybe_unused]] float weight)
                 {
-                    m_surfaceTagsToSnapToCombined.push_back(surfaceType);
+                    m_surfaceTagsToSnapToCombined.emplace_back(surfaceType);
                     return true;
                 });
 

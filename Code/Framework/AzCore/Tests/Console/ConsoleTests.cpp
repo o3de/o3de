@@ -50,6 +50,13 @@ namespace AZ
         ", Option2/5 sets the CVar to the Option2 value"
         ", Option3/6 sets the CVar to the Option3 value");
 
+    // Helper function to disambiguate between various operator== implementations with not exactly matching argument types in c++20.
+    template<typename T, typename S, typename = AZStd::enable_if_t<AZStd::is_integral_v<T> && AZStd::is_integral_v<S>>>
+    bool operator==(T lhs, const AZ::ConsoleDataWrapper<S, ConsoleThreadSafety<S>>& rhs)
+    {
+        return lhs == static_cast<T>(rhs);
+    }
+
     class ConsoleTests
         : public LeakDetectionFixture
     {

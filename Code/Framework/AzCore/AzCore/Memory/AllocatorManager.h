@@ -156,7 +156,7 @@ namespace AZ
 
         static constexpr int m_maxNumAllocators = 100;
         IAllocator*         m_allocators[m_maxNumAllocators];
-        volatile int        m_numAllocators;
+        int                 m_numAllocators;
         OutOfMemoryCBType   m_outOfMemoryListener;
         bool                m_isAllocatorLeaking;
         bool                m_defaultProfilingState = false;

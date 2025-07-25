@@ -975,7 +975,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_FirstPointFilteredOut_SurfacePointListRem
 
     // The surface tag to filter by. Any point with this tag will be kept, any point without this tag will be removed.
     AZ::Crc32 filterTag("keep_this_point");
-    AZStd::array<SurfaceData::SurfaceTag, 1> filterTags = { filterTag };
+    AZStd::array<SurfaceData::SurfaceTag, 1> filterTags = { SurfaceData::SurfaceTag(filterTag) };
 
     // Arbitrary number of output points to generate per input point.
     const uint32_t outputPointsPerInput = 3;

@@ -46,7 +46,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AZ::EntityId entityId,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
+        const AZ::Crc32& tag,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
     
         AZTF_API uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable);

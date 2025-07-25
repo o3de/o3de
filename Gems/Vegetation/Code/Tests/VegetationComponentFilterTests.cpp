@@ -71,7 +71,7 @@ namespace UnitTest
         const auto maskValue = AZ_CRC_CE("test_mask");
 
         Vegetation::SurfaceMaskFilterConfig config;
-        config.m_inclusiveSurfaceMasks.push_back(maskValue);
+        config.m_inclusiveSurfaceMasks.emplace_back(maskValue);
 
         Vegetation::SurfaceMaskFilterComponent* component = nullptr;
         auto entity = CreateEntity(config, &component, [](AZ::Entity* e)
@@ -93,7 +93,7 @@ namespace UnitTest
         {
             entity->Deactivate();
             config.m_inclusiveSurfaceMasks.clear();
-            config.m_exclusiveSurfaceMasks.push_back(maskValue);
+            config.m_exclusiveSurfaceMasks.emplace_back(maskValue);
             component->ReadInConfig(&config);
             entity->Activate();
 
@@ -108,7 +108,7 @@ namespace UnitTest
         Vegetation::SurfaceMaskDepthFilterConfig config;
         config.m_lowerDistance = -1000.0f;
         config.m_upperDistance = -0.5f;
-        config.m_depthComparisonTags.push_back(SurfaceData::Constants::s_unassignedTagCrc);
+        config.m_depthComparisonTags.emplace_back(SurfaceData::Constants::s_unassignedTagCrc);
 
         Vegetation::SurfaceMaskDepthFilterComponent* component = nullptr;
         auto entity = CreateEntity(config, &component, [](AZ::Entity* e)

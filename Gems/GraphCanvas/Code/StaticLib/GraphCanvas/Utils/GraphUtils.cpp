@@ -2455,7 +2455,7 @@ namespace GraphCanvas
                     // Find each of the connections that will be triggered by the current node
                     for (SlotId slotId : slotIds)
                     {
-                        if (IsSlotVisible(slotId) && IsSlotType(slotId, ConnectionType::CT_Output))
+                        if (IsSlotVisible(slotId) && IsSlotType(slotId, AZ::Crc32(ConnectionType::CT_Output)))
                         {
                             AZStd::vector< ConnectionId > connectionIds;
                             SlotRequestBus::EventResult(connectionIds, slotId, &SlotRequests::GetConnections);                            

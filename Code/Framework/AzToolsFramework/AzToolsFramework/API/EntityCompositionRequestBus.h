@@ -221,7 +221,7 @@ namespace AzToolsFramework
                     if (attribPair.first == AZ::Edit::Attributes::AppearsInAddComponentMenu)
                     {
                         PropertyAttributeReader reader(nullptr, attribPair.second);
-                        AZ::Crc32 classEntityType = 0;
+                        AZ::Crc32 classEntityType;
                         AZStd::vector<AZ::Crc32> classEntityTypes;
 
                         if (reader.Read<AZ::Crc32>(classEntityType))

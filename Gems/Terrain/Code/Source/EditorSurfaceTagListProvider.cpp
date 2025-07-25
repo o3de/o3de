@@ -26,12 +26,12 @@ namespace Terrain
             // Filter out all tags in use from the list of registered tags
             AZStd::erase_if(availableTags, [&tagsInUse](const auto& tag)-> bool
             {
-                return tagsInUse.contains(SurfaceData::SurfaceTag(tag.first));
+                return tagsInUse.contains(SurfaceData::SurfaceTag(AZ::Crc32(tag.first)));
             });
         }
 
         // Insert the current tag back if it was removed via tagsInUse
-        availableTags.emplace_back(AZ::u32(currentTag), currentTag.GetDisplayName());
+        availableTags.emplace_back(AZ::Crc32(currentTag), currentTag.GetDisplayName());
 
         // Sorting for consistency
         AZStd::sort(availableTags.begin(), availableTags.end(), [](const auto& lhs, const auto& rhs) {return lhs.second < rhs.second; });
