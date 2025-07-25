@@ -31,11 +31,9 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
-            External/Include
             Source
             Source/${gem_name}
         PRIVATE
-            External/Include
             Source
             Source/${gem_name}
     BUILD_DEPENDENCIES
@@ -44,6 +42,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::CommonFeaturesAtom.Static
             Gem::Atom_RPI.Public
+            3rdParty::meshoptimizer
 )
 
 # Here add ${gem_name} target, it depends on the ${gem_name}.Static

@@ -35,7 +35,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ICoordinateSystemRule.h>
-#include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IClothRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ITagRule.h>
@@ -43,9 +42,11 @@
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
+#include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
+#include <meshoptimizer.h>
 
 static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/SceneAPI/ModelBuilder/MismatchedVertexLayoutsAreErrors" };
  /**
@@ -85,10 +86,11 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(39);
+                    ->Version(40);
 
                 // v38 - Pad Skinning mesh buffers to respect appropriate alignment
                 // v39 - Automatically generate missing skinning data when skinned and unskinned data is mixed
+                // v40 - Add support for generating missing lods.
             }
         }
 
@@ -134,6 +136,63 @@ namespace AZ
             return -1;
         }
 
+        static void GenerateNextLod(ModelAssetBuilderComponent::ProductMeshContentList& lodMeshes, const     SceneAPI::SceneData::LodRule::AutoLodGenerationSettings& settings)
+        {
+            for (ModelAssetBuilderComponent::ProductMeshContent& mesh : lodMeshes)
+            {
+                AZStd::vector<uint32_t> newIndices;
+                newIndices.resize(mesh.m_indices.size());
+
+                float targetSimplifyThreshold = settings.m_indexThreshold;
+
+                float targetError = FLT_MAX;
+                if (settings.m_limitError)
+                {
+                    targetError = settings.m_targetError;
+                }
+
+                AZ::u32 simplifyOption = 0;
+
+                if (settings.m_lockBorder)
+                {
+                    simplifyOption |= meshopt_SimplifyLockBorder;
+                }
+
+                if (settings.m_sparse)
+                {
+                    simplifyOption |= meshopt_SimplifySparse;
+                }
+
+                if (settings.m_prune)
+                {
+                    simplifyOption |= meshopt_SimplifyPrune;
+                }
+                size_t targetIndexSize = size_t(mesh.m_indices.size() * targetSimplifyThreshold * 3) / 3;
+                float resultError = 0.0f;
+
+                size_t newIndicesSize;
+                if (settings.m_preserveTopology)
+                {
+                    newIndicesSize = meshopt_simplify(newIndices.data(), mesh.m_indices.data(), mesh.m_indices.size(), mesh.m_positions.data(), mesh.m_vertexCount, sizeof(float) * PositionFloatsPerVert, targetIndexSize, targetError, simplifyOption, &resultError);
+                }
+                else
+                {
+                    newIndicesSize = meshopt_simplifySloppy(newIndices.data(), mesh.m_indices.data(), mesh.m_indices.size(), mesh.m_positions.data(), mesh.m_vertexCount, sizeof(float) * PositionFloatsPerVert, targetIndexSize, targetError, &resultError);
+                }
+
+                newIndices.resize(newIndicesSize);
+                if (AZ::SceneAPI::Utilities::IsDebugEnabled())
+                {
+                    AZ_Info(ModelAssetBuilderComponent::s_builderName, "      meshopt_simplify result: indices %d, result error %f\n", 
+                    newIndicesSize, resultError);
+                }
+                mesh.m_indices = AZStd::move(newIndices);
+                // TODO: maybe this optimization can be applied for existing lods as well.
+                meshopt_optimizeVertexCache(mesh.m_indices.data(), mesh.m_indices.data(), newIndicesSize, mesh.m_vertexCount);
+                meshopt_optimizeOverdraw(mesh.m_indices.data(), mesh.m_indices.data(), newIndicesSize, mesh.m_positions.data(), mesh.m_vertexCount, sizeof(float) * PositionFloatsPerVert, 1.0f); 
+            }
+        }
+
         SceneAPI::Events::ProcessingResult ModelAssetBuilderComponent::BuildModel(ModelAssetBuilderContext& context)
         {
             {
@@ -144,6 +203,8 @@ namespace AZ
                 }
                 m_systemInputAssemblyBufferPoolId = assetIdOutcome.GetValue();
             }
+
+            bool autoLodGenerationEnabled = false;
 
             m_modelName = context.m_group.GetName();
 
@@ -163,7 +224,7 @@ namespace AZ
 
             AZStd::vector<SourceMeshContentList> sourceMeshContentListsByLod;
 
-            AZStd::shared_ptr<const SceneAPI::DataTypes::ILodRule> lodRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ILodRule>();
+            AZStd::shared_ptr<const SceneAPI::SceneData::LodRule> lodRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::SceneData::LodRule>();
             AZStd::vector<AZStd::vector<AZStd::string>> selectedMeshPathsByLod;
 
             // The Atom Model builder uses the optimized versions of meshes that are
@@ -182,6 +243,7 @@ namespace AZ
             if (lodRule)
             {
                 selectedMeshPathsByLod.resize(lodRule->GetLodCount());
+                autoLodGenerationEnabled = lodRule->IsAutoLodGenerationEnabled();
                 for (size_t lod = 0; lod < lodRule->GetLodCount(); ++lod)
                 {
                     selectedMeshPathsByLod[lod] = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(
@@ -344,7 +406,14 @@ namespace AZ
             // Then in each Lod we need to group all faces by material id.
             // All sub meshes with the same material id get merged
             AZStd::vector<Data::Asset<ModelLodAsset>> lodAssets;
-            lodAssets.resize(sourceMeshContentListsByLod.size());
+            if (autoLodGenerationEnabled)
+            {
+                lodAssets.resize(SceneAPI::SceneData::LodRule::m_maxLods);
+            }
+            else
+            {
+                lodAssets.resize(sourceMeshContentListsByLod.size());
+            }
 
             // in debug mode, start by outputting the lods we intend to actually export
             // do not do so if AZ_ENABLE_TRACING is not defined, since this would be creating variables and loops
@@ -391,9 +460,19 @@ namespace AZ
                 }
             }
 
-            uint32_t lodIndex = 0;
-            for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
+            uint32_t lodIndex;
+            ProductMeshContentList lodMeshes;
+            
+            for (lodIndex = 0; lodIndex < SceneAPI::SceneData::LodRule::m_maxLods; lodIndex++)
             {
+                if (lodIndex >= sourceMeshContentListsByLod.size() && !autoLodGenerationEnabled)
+                {
+                    break;
+                }
+                
+                // By default, we merge meshes that share the same material
+                bool canMergeMeshes = true;
+
                 ModelLodAssetCreator lodAssetCreator;
                 m_lodName = AZStd::string::format("lod%d", lodIndex);
                 AZStd::string lodAssetName = GetAssetFullName(ModelLodAsset::TYPEINFO_Uuid());
@@ -405,40 +484,50 @@ namespace AZ
                 }
 
                 {
-                    AZ::Outcome<ProductMeshContentList> productMeshListOutcome =
-                        SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
-
-                    if (!productMeshListOutcome.IsSuccess())
+                    AZ::Outcome<ProductMeshContentList> productMeshListOutcome;
+                    if (lodIndex >= sourceMeshContentListsByLod.size())
                     {
-                        return AZ::SceneAPI::Events::ProcessingResult::Failure;
-                    }
-                    ProductMeshContentList lodMeshes = productMeshListOutcome.GetValue();
-
-                    PadVerticesForSkinning(lodMeshes);
-
-                    // By default, we merge meshes that share the same material
-                    bool canMergeMeshes = true;
-
-                    AZStd::shared_ptr<const SceneAPI::SceneData::StaticMeshAdvancedRule> staticMeshAdvancedRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::SceneData::StaticMeshAdvancedRule>();
-                    if (staticMeshAdvancedRule && !staticMeshAdvancedRule->MergeMeshes())
-                    {
-                        AZ_Info(s_builderName, "        Merging meshes disabled by advanced mesh rule.\n");
-                        // If the merge meshes option is disabled in the advanced mesh rule, don't merge meshes
+                        // reuse lodMeshes from last available lod meshes, call meshopt_simplify to simplify the index buffer.
+                        GenerateNextLod(lodMeshes, lodRule->GetAutoLodGenerationSettings());
+                        AZ_Info(s_builderName, "        Merging meshes disabled for automatically generated lods.\n");
                         canMergeMeshes = false;
                     }
                     else
                     {
-                        for (const SourceMeshContent& sourceMesh : sourceMeshContentList)
+                        const SourceMeshContentList& sourceMeshContentList = sourceMeshContentListsByLod[lodIndex];
+
+                        productMeshListOutcome =
+                            SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
+
+                        if (!productMeshListOutcome.IsSuccess())
                         {
-                            if (sourceMesh.m_isMorphed)
+                            return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                        }
+                        lodMeshes = productMeshListOutcome.GetValue();
+
+                        PadVerticesForSkinning(lodMeshes);
+
+                        AZStd::shared_ptr<const SceneAPI::SceneData::StaticMeshAdvancedRule> staticMeshAdvancedRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::SceneData::StaticMeshAdvancedRule>();
+                        if (staticMeshAdvancedRule && !staticMeshAdvancedRule->MergeMeshes())
+                        {
+                            AZ_Info(s_builderName, "        Merging meshes disabled by advanced mesh rule.\n");
+                            // If the merge meshes option is disabled in the advanced mesh rule, don't merge meshes
+                            canMergeMeshes = false;
+                        }
+                        else
+                        {
+                            for (const SourceMeshContent& sourceMesh : sourceMeshContentList)
                             {
-                                // Merging meshes shuffles around the order of the vertices, but morph targets rely on having an index that tell them which vertices to morph
-                                // We do not merge morphed meshes so that this index is preserved and correct.
-                                // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
-                                // we could potentially enable merging meshes that are morphed. But for now, disable merging.
-                                canMergeMeshes = false;
-                                AZ_Info(s_builderName, "   Scene contains morph data, disabling mesh merge.\n");
-                                break;
+                                if (sourceMesh.m_isMorphed)
+                                {
+                                    // Merging meshes shuffles around the order of the vertices, but morph targets rely on having an index that tell them which vertices to morph
+                                    // We do not merge morphed meshes so that this index is preserved and correct.
+                                    // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
+                                    // we could potentially enable merging meshes that are morphed. But for now, disable merging.
+                                    canMergeMeshes = false;
+                                    AZ_Info(s_builderName, "   Scene contains morph data, disabling mesh merge.\n");
+                                    break;
+                                }
                             }
                         }
                     }
@@ -561,8 +650,6 @@ namespace AZ
                     return AZ::SceneAPI::Events::ProcessingResult::Failure;
                 }
                 lodAssets[lodIndex].SetHint(lodAssetName); // name will be used for file name when export asset
-
-                lodIndex++;
             }
             sourceMeshContentListsByLod.clear();
 
