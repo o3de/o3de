@@ -581,6 +581,13 @@ namespace EMotionFX
                     (
                         m_actorInstance->SetLocalSpaceScale(localTransform.m_scale);
                     )
+                    
+                    // If an object is flagged as BOUNDS_STATIC_BASED but has been moved, then its bounds must be updated.
+                    if (m_actorInstance->GetBoundsUpdateType() == ActorInstance::EBoundsType::BOUNDS_STATIC_BASED)
+                    {
+                        m_actorInstance->UpdateWorldTransform();
+                        m_actorInstance->UpdateBounds(m_actorInstance->GetLODLevel(), m_actorInstance->GetBoundsUpdateType());
+                    }
                 }
             }
         }
@@ -597,8 +604,18 @@ namespace EMotionFX
                 m_processLoadedAsset = false;
             }
 
-            if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
+            if (!m_actorInstance)
             {
+                return;
+            }
+
+            // If an ActorInstance is disabled but GetBoundsUpdateEnabled() is true, update only its bounds.
+            if (!m_actorInstance->GetIsEnabled())
+            {
+                if (m_actorInstance->GetBoundsUpdateEnabled() && m_renderActorInstance)
+                {
+                    m_renderActorInstance->UpdateBounds();
+                }
                 return;
             }
 
