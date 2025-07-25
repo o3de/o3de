@@ -40,7 +40,7 @@ namespace EMotionFX
         connect(m_resetButton, &QPushButton::clicked, this, &ActorJointPicker::OnResetClicked);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         hLayout->addWidget(m_label);
         hLayout->addStretch();
         hLayout->addWidget(m_pickButton);

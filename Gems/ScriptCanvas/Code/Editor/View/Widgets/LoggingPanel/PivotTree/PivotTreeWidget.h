@@ -163,7 +163,7 @@ namespace ScriptCanvasEditor
     private:
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 
     class PivotTreeWidget

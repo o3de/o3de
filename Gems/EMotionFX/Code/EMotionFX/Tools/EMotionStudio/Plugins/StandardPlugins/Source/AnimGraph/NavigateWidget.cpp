@@ -28,7 +28,7 @@ namespace EMStudio
         , m_plugin(plugin)
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(2);
         setLayout(mainLayout);
         mainLayout->setSizeConstraint(QLayout::SetNoConstraint);

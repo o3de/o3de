@@ -5985,7 +5985,7 @@ namespace AssetProcessor
         {
             // Remove invalid characters
             QString sourcePath = entry.c_str();
-            sourcePath.remove(QRegExp("[\\n\\r]"));
+            sourcePath.remove(QRegularExpression("[\\n\\r]"));
 
             QString scanFolderName;
             QString relativePathToFile;

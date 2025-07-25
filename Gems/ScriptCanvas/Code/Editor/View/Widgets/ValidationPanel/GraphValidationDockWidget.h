@@ -178,7 +178,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::ValidationSeverity m_severityFilter;
 
         QString m_filter;
-        QRegExp m_regex;
+        QRegularExpression m_regex;
     };
 
     //! Owns the model for each currently opened graph

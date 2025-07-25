@@ -14,7 +14,6 @@
 #include "PluginOptionsBus.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QScreen>
 #include <QSettings>

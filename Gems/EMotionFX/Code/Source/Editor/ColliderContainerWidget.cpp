@@ -527,7 +527,7 @@ namespace EMotionFX
         , m_colliderIcon(colliderIcon)
     {
         m_layout = new QVBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(s_layoutSpacing);
         setLayout(m_layout);
 
@@ -647,7 +647,7 @@ namespace EMotionFX
         connect(pasteNewColliderAction, &QAction::triggered, this, [this, index]() { PasteCollider(index, false); } );
 
         menu->addAction(pasteNewColliderAction);
-        menu->popup(event->globalPos());
+        menu->popup(event->globalPosition());
         event->accept();
     }
 

@@ -16,14 +16,13 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QApplication>
 #include <QComboBox>
 #include <QDebug>
-#include <QDesktopWidget>
 #include <QGraphicsDropShadowEffect>
 #include <QLineEdit>
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QToolButton>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+// #include <QtWidgets/private/qstylesheetstyle_p.h> // #GH_TODO
 AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
@@ -138,8 +137,9 @@ namespace AzQtComponents
 
                     case QEvent::DynamicPropertyChange:
                     {
-                        auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
-                        styleSheet->repolish(cbWidget);
+                        // #GH_TODO
+                        // auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
+                        // styleSheet->repolish(cbWidget);
                     }
                     break;
 

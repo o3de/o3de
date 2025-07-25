@@ -21,7 +21,7 @@ namespace EMStudio
         m_titleLabel->setStyleSheet("font-weight: bold;");
 
         QHBoxLayout* filenameLayout = new QHBoxLayout();
-        filenameLayout->setMargin(2);
+        filenameLayout->setContentsMargins(2, 2, 2, 2);
         filenameLayout->addWidget(m_titleLabel, 0, Qt::AlignTop);
 
         QVBoxLayout* vLayout = new QVBoxLayout();

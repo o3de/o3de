@@ -20,7 +20,7 @@ namespace QtForPython
     {
         AZ_TYPE_INFO(QtBootstrapParameters, "{4103CF43-6CF7-413D-B2C8-D511E23BAB50}");
 
-        //! The path of the Qt binary files such as qt5core.dll
+        //! The path of the Qt binary files such as qt6core.dll
         AZStd::string m_qtBinaryFolder;
 
         //! The path of the Qt plugins such as /qtlibs/plugins

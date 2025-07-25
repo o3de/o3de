@@ -138,7 +138,7 @@ namespace EMStudio
 
         m_eventDataCardsContainer = new QWidget();
         QVBoxLayout* eventDataCardsLayout = new QVBoxLayout(m_eventDataCardsContainer);
-        eventDataCardsLayout->setMargin(0);
+        eventDataCardsLayout->setContentsMargins(0, 0, 0, 0);
         eventDataCardsLayout->setContentsMargins(20, 0, 0, 0);
         eventDataCardsLayout->addWidget(m_emptyLabel);
 
@@ -150,7 +150,7 @@ namespace EMStudio
         m_topLevelEventDataCard->connect(m_topLevelEventDataCard, &AzQtComponents::Card::contextMenuRequested, this, [this](const QPoint& pos) { m_eventDataSelectionMenu->exec(pos); });
 
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(m_topLevelEventDataCard);
     }
 

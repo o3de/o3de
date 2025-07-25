@@ -12,7 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/functional.h>
 #include <QLineEdit>
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #endif
 
 namespace EMStudio
@@ -24,7 +24,7 @@ namespace EMStudio
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        explicit LineEditValidatable(QWidget* parent, const QRegExp& regExp = s_defaultRegExp);
+        explicit LineEditValidatable(QWidget* parent, const QRegularExpression& regExp = s_defaultRegExp);
         ~LineEditValidatable() override = default;
 
         void SetPreviousText(const QString& previousText);
@@ -33,7 +33,7 @@ namespace EMStudio
         void SetValidatorFunc(const AZStd::function<bool()>& func) { m_validatorFunc = func; }
         bool IsValid() const;
 
-        static const QRegExp s_defaultRegExp;
+        static const QRegularExpression s_defaultRegExp;
 
     signals:
         void TextEditingFinished();
@@ -48,8 +48,8 @@ namespace EMStudio
 
         QString m_previousText;
 
-        QRegExp m_validationExp;
-        QRegExpValidator m_lineValidator;
+        QRegularExpression m_validationExp;
+        QRegularExpressionValidator m_lineValidator;
         AZStd::function<bool()> m_validatorFunc;
     };
 } // namespace EMStudio

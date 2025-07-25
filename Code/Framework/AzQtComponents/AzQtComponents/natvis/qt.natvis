@@ -546,7 +546,7 @@
         {*((QPointF*)(d.is_shared ? d.data.shared-&gt;ptr
             : reinterpret_cast&lt;const void *&gt;(&amp;d.data.ptr)))}
     </DisplayString>
-    <DisplayString Condition="d.type == QMetaType::QRegExp">RegExp</DisplayString>
+    <DisplayString Condition="d.type == QMetaType::QRegularExpression">RegExp</DisplayString>
     <DisplayString Condition="d.type == QMetaType::QRegularExpression">RegularExpression</DisplayString>
     <DisplayString Condition="d.type == QMetaType::QVariantHash">
         {*((QHash&lt;QString,QVariant&gt;*)(d.is_shared ? d.data.shared-&gt;ptr

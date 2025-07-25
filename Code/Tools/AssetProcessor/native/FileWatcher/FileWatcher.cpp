@@ -206,7 +206,7 @@ bool FileWatcher::Filter(QString path, const WatchRoot& watchRoot)
     if (!watchRoot.m_recursive)
     {
         // filter out subtrees too.
-        QStringRef subRef = path.rightRef(path.length() - watchRoot.m_directory.length());
+        QString subRef = path.right(path.length() - watchRoot.m_directory.length());
         if ((subRef.indexOf('/') != -1) || (subRef.indexOf('\\') != -1))
         {
             return false; // filter this out.

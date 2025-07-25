@@ -70,7 +70,7 @@ namespace EMStudio
 
         // create the buttons layout
         QHBoxLayout* buttonsLayout = new QHBoxLayout();
-        buttonsLayout->setMargin(0);
+        buttonsLayout->setContentsMargins(0, 0, 0, 0);
 
         // create the OK button
         QPushButton* OKButton = new QPushButton("OK");

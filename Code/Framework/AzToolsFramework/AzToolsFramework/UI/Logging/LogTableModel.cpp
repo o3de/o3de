@@ -248,11 +248,27 @@ namespace AzToolsFramework
                 {
                     if (index.column() == ColumnKey)
                     {
-                        return (m_data.constBegin() +index.row()).key();
+                        int i = 0;
+                        for (auto it = m_data.keyBegin(); it != m_data.keyEnd(); ++it)
+                        {
+                            if (i == index.row())
+                            {
+                                return *it;
+                            }
+                            ++i;
+                        }
                     }
                     else if (index.column() == ColumnValue)
                     {
-                        return (m_data.constBegin() +index.row()).value();
+                        int i = 0;
+                        for (auto& value : m_data)
+                        {
+                            if (i == index.row())
+                            {
+                                return value;
+                            }
+                            ++i;
+                        }
                     }
 
                     break;

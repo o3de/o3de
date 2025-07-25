@@ -63,12 +63,12 @@ namespace AzToolsFramework
             QVariant rightData = sourceModel()->data(rightIndex);
 
             // make sure to compare the correct data types for sorting the current column
-            AZ_Assert(leftData.type() == rightData.type(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
-            if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::QString)
+            AZ_Assert(leftData.metaType() == rightData.metaType(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
+            if (leftData.userType() == QMetaType::QString)
             {
                 return leftData.toString() < rightData.toString();
             }
-            else if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::ULongLong)
+            else if (leftData.userType() == QMetaType::ULongLong)
             {
                 return leftData.toULongLong() < rightData.toULongLong();
             }

@@ -172,7 +172,7 @@ namespace AzQtComponents
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void mousePressEvent(QMouseEvent* mouseEvent) override;
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;

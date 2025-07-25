@@ -63,8 +63,6 @@ namespace O3DE::ProjectManager
 
         Start(AzFramework::Application::Descriptor());
 
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);

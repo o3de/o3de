@@ -35,7 +35,7 @@ namespace EMotionFX
     {
         QWidget* result = new QWidget(parent);
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(ColliderContainerWidget::s_layoutSpacing);
         result->setLayout(layout);
 

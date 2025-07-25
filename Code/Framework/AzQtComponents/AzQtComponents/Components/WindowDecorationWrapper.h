@@ -106,12 +106,12 @@ namespace AzQtComponents
         void closeEvent(QCloseEvent* ev) override;
         void showEvent(QShowEvent* ev) override;
         void hideEvent(QHideEvent* ev) override;
-        bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
         void changeEvent(QEvent* ev) override;
 
     private:
         friend class StyledDockWidget;
-        static bool handleNativeEvent(const QByteArray& eventType, void* message, long* result, const QWidget* widget);
+        static bool handleNativeEvent(const QByteArray& eventType, void* message, qintptr* result, const QWidget* widget);
         static QMargins win10TitlebarHeight(QWindow *w);
         static Qt::WindowFlags specialFlagsForOS();
         static void drawFrame(const QStyleOption *option, QPainter *painter, const QWidget *widget);

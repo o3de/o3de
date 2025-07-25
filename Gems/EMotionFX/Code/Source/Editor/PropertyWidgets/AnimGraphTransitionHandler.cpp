@@ -189,14 +189,14 @@ namespace EMotionFX
         m_mainLayout->addWidget(m_widget);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         m_widget->setLayout(vLayout);
 
         m_label = new QLabel();
         vLayout->addWidget(m_label);
 
         QGridLayout* transitionLayout = new QGridLayout();
-        transitionLayout->setMargin(0);
+        transitionLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->addLayout(transitionLayout);
         {
             m_removeButtons.clear();

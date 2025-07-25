@@ -67,7 +67,7 @@ namespace AzToolsFramework
                 const char* assetTypeName, bool multiselect = false, bool supportSelectingSources = false);
             static AssetSelectionModel AssetTypeSelection(
                 const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect = false, bool supportSelectingSources = false);
-            static AssetSelectionModel SourceAssetTypeSelection(const QRegExp& pattern, bool multiselect = false);
+            static AssetSelectionModel SourceAssetTypeSelection(const QRegularExpression& pattern, bool multiselect = false);
             static AssetSelectionModel EverythingSelection(bool multiselect = false);
 
         private:

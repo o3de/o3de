@@ -86,7 +86,7 @@ namespace EMStudio
 
         QWidget* containerWidget = new QWidget();
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         containerWidget->setLayout(vLayout);
 
         for (const CardElement& cardElement : cardElements)

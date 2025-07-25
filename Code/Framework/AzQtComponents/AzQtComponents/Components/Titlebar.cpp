@@ -17,7 +17,6 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QDockWidget>
 #include <QLabel>
 #include <QMenu>
@@ -213,7 +212,7 @@ namespace AzQtComponents
             // the screen because since floating windows are frameless, on
             // Windows 10 they end up taking up the entire screen when maximized
             // instead of respecting the available space (e.g. taskbar)
-            w->setGeometry(QApplication::desktop()->availableGeometry(w));
+            w->setGeometry(QApplication::primaryScreen()->availableGeometry());
         }
     }
 
@@ -1258,7 +1257,7 @@ namespace AzQtComponents
 
     int TitleBar::numButtons() const
     {
-        return m_buttons.size();
+        return static_cast<int>(m_buttons.size());
     }
 
     void TitleBar::setForceInactive(bool force)

@@ -25,7 +25,7 @@ CConsoleDialog::CConsoleDialog(QWidget* parent)
 {
     QVBoxLayout* outterLayout = new QVBoxLayout(this);
     outterLayout->addWidget(m_consoleWidget);
-    outterLayout->setMargin(0);
+    outterLayout->setContentsMargins(0, 0, 0, 0);
 
     setWindowTitle(LyViewPane::Console);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);

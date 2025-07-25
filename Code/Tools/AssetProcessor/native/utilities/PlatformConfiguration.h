@@ -13,7 +13,7 @@
 #include <QString>
 #include <QObject>
 #include <QHash>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QPair>
 #include <QVector>
 #include <QSet>
@@ -136,7 +136,7 @@ namespace AssetProcessor
     public:
         AZ_RTTI(PlatformConfiguration, "{9F0C465D-A3A6-417E-B69C-62CBD22FD950}", RecognizerConfiguration, IPathConversion);
 
-        typedef QPair<QRegExp, QString> RCSpec;
+        typedef QPair<QRegularExpression, QString> RCSpec;
         typedef QVector<RCSpec> RCSpecList;
 
     public:

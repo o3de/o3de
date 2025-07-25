@@ -20,7 +20,7 @@ namespace O3DE::ProjectManager
     {
         auto layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignTop);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
 
         m_titleLabel = new QLabel();

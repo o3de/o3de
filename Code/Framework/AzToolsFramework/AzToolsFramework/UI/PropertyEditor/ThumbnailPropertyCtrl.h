@@ -59,7 +59,7 @@ namespace AzToolsFramework
 
         bool event(QEvent* e) override;
         void paintEvent(QPaintEvent* e) override;
-        void enterEvent(QEvent* e) override;
+        void enterEvent(QEnterEvent* e) override;
         void leaveEvent(QEvent* e) override;
 
         Thumbnailer::SharedThumbnailKey m_key;

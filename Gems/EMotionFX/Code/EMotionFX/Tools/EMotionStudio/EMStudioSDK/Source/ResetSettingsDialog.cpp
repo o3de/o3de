@@ -56,10 +56,10 @@ namespace EMStudio
         topLabel->setStyleSheet("background-color: rgb(40, 40, 40); padding: 6px;");
         topLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         vLayout->addWidget(topLabel);
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(5);
+        layout->setContentsMargins(5, 5, 5, 5);
         layout->setSpacing(4);
         vLayout->addLayout(layout);
 

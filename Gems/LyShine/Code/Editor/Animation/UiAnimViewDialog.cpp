@@ -115,7 +115,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition());
                     return true;
                 }
 
@@ -228,7 +228,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
 
     QWidget* w = new QWidget();
     QVBoxLayout* l = new QVBoxLayout;
-    l->setMargin(0);
+    l->setContentsMargins(0, 0, 0, 0);
 
     m_wndSplitter = new QSplitter(w);
     m_wndSplitter->setOrientation(Qt::Horizontal);

@@ -68,7 +68,7 @@ ColorHexEdit::ColorHexEdit(QWidget* parent)
 
     m_edit = new QLineEdit(QStringLiteral("000000"), this);
     m_edit->setObjectName(QStringLiteral("colorhexedit"));
-    m_edit->setValidator(new QRegExpValidator(QRegExp(QStringLiteral("^[0-9A-Fa-f]{1,6}$")), this));
+    m_edit->setValidator(new QRegularExpressionValidator(QRegularExpression(QStringLiteral("^[0-9A-Fa-f]{1,6}$")), this));
     m_edit->setFixedWidth(52);
     LineEdit::setErrorIconEnabled(m_edit, false);
     connect(m_edit, &QLineEdit::textChanged, this, &ColorHexEdit::textChanged);

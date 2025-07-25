@@ -36,7 +36,7 @@ namespace AzToolsFramework::Prefab
         m_textLabel->setStyleSheet(QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
 
         QHBoxLayout* layout = new QHBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(0);
         layout->addWidget(m_iconButton);
         layout->addWidget(m_textLabel);

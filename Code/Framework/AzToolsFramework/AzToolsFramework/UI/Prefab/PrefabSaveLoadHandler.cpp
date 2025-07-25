@@ -709,7 +709,7 @@ namespace AzToolsFramework
                         nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Prefabs (*.prefab)"));
                 }
 
-                prefabSaveFileInfo = saveAs;
+                prefabSaveFileInfo = QFileInfo(saveAs);
                 prefabName = prefabSaveFileInfo.baseName();
                 if (saveAs.isEmpty())
                 {

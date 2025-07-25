@@ -39,7 +39,7 @@ namespace EMStudio
         }
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         // create the display button group
         m_searchWidget = new AzQtComponents::FilteredSearchWidget(this);

@@ -530,7 +530,7 @@ namespace GraphCanvas
     void BookmarkTableSortProxyModel::SetFilter(const QString& filter)
     {
         m_filter = filter;
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(m_filter, Qt::CaseInsensitive);
 
         invalidateFilter();
     }

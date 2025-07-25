@@ -33,7 +33,7 @@ namespace EMStudio
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &ParameterWidget::OnTextFilterChanged);
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         // create the tree widget
         m_treeWidget = new QTreeWidget();

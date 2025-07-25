@@ -124,8 +124,6 @@ int main(int argc, char **argv)
     QApplication::setOrganizationDomain("o3de.org");
     QApplication::setApplicationName("O3DEWidgetGallery");
 
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     qInstallMessageHandler(LogToDebug);

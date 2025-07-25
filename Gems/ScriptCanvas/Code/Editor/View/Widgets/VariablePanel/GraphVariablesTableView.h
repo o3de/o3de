@@ -9,7 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QSortFilterProxyModel>
 #include <QTableView>
@@ -129,7 +129,7 @@ namespace ScriptCanvasEditor
 
     private:
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
 
         ScriptCanvas::GraphVariable::Comparator m_variableComparator;
     };

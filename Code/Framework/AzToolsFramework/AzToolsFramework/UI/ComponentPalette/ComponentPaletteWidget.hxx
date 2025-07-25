@@ -78,7 +78,7 @@ namespace AzToolsFramework
         bool BranchHasNoChildren(QStandardItem* item);
         void SetExpanded(QModelIndex itemIndex);
 
-        QRegExp m_searchRegExp;
+        QRegularExpression m_searchRegExp;
         QFrame* m_searchFrame = nullptr;
         QLineEdit* m_searchText = nullptr;
         QTreeView* m_componentTree = nullptr;

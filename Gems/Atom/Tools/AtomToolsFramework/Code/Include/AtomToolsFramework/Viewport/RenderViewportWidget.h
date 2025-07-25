@@ -134,7 +134,7 @@ namespace AtomToolsFramework
 
         // QWidget overrides ...
         bool event(QEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 

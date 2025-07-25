@@ -28,7 +28,7 @@ namespace EMStudio
         : QWidget(parent)
     {
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         // Create the display button group.
         QHBoxLayout* displayLayout = new QHBoxLayout();

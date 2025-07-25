@@ -27,16 +27,16 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
     if (ind >= 0)
     {
         er = er.mid(ind + shift);
-        er.remove(QRegExp("^ *"));
+        er.remove(QRegularExpression("^ *"));
         if (er[0] == '(')
         {
             er = er.mid(1);
-            er.remove(QRegExp("^ *"));
+            er.remove(QRegularExpression("^ *"));
             ind = er.indexOf(")");
             if (ind > 0)
             {
                 er = er.mid(0, ind);
-                er.remove(QRegExp(" *$"));
+                er.remove(QRegularExpression(" *$"));
 
                 ind = er.indexOf(" ");
                 int ind2 = er.indexOf(",");
@@ -48,7 +48,7 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                 {
                     *x = er.mid(0, ind).toFloat();
                     er = er.mid(ind);
-                    er.remove(QRegExp("^[ ,]*"));
+                    er.remove(QRegularExpression("^[ ,]*"));
 
                     ind = er.indexOf(" ");
                     ind2 = er.indexOf(",");
@@ -60,7 +60,7 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                     {
                         *y = er.mid(0, ind).toFloat();
                         er = er.mid(ind);
-                        er.remove(QRegExp("^[ ,]*"));
+                        er.remove(QRegularExpression("^[ ,]*"));
                         if (er.length())
                         {
                             *z = er.toFloat();

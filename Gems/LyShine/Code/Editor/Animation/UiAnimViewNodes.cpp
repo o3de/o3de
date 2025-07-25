@@ -238,7 +238,6 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_matchCount = 0;
 
     qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();

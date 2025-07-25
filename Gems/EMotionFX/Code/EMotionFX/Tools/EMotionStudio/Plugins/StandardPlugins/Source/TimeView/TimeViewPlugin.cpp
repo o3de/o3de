@@ -142,7 +142,7 @@ namespace EMStudio
 
         // main content layout
         QGridLayout* mainLayout = new QGridLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(0);
 
         m_mainWidget->setLayout(mainLayout);
@@ -177,7 +177,7 @@ namespace EMStudio
         // scroll areas require an inner widget to hold the layout (instead of a layout directly).
         QWidget* innerWidget = new QWidget(bodyWidget);
         QHBoxLayout* bodyLayout = new QHBoxLayout();
-        bodyLayout->setMargin(0);
+        bodyLayout->setContentsMargins(0, 0, 0, 0);
         bodyLayout->setSpacing(0);
         innerWidget->setLayout(bodyLayout);
         bodyWidget->setWidget(innerWidget);
@@ -190,7 +190,7 @@ namespace EMStudio
         // Left
         auto* trackAndTrackDataWidget = new QWidget;
         QHBoxLayout* addTrackAndTrackDataLayout = new QHBoxLayout;
-        addTrackAndTrackDataLayout->setMargin(0);
+        addTrackAndTrackDataLayout->setContentsMargins(0, 0, 0, 0);
         addTrackAndTrackDataLayout->setSpacing(0);
         addTrackAndTrackDataLayout->addWidget(m_trackHeaderWidget->GetAddTrackWidget());
         m_trackHeaderWidget->GetAddTrackWidget()->setFixedWidth(175);
@@ -204,7 +204,7 @@ namespace EMStudio
         auto* contentContainer = new QWidget;
         auto* contentLayout = new QVBoxLayout;
         contentContainer->setLayout(contentLayout);
-        contentLayout->setMargin(0);
+        contentLayout->setContentsMargins(0, 0, 0, 0);
         contentLayout->setSpacing(0);
         contentLayout->addWidget(trackAndTrackDataWidget);
         contentLayout->addWidget(bodyWidget);

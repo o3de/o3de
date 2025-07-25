@@ -44,7 +44,7 @@ namespace EMStudio
         m_treeWidget->header()->setSectionsMovable(false);
 
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(m_searchWidget);
         layout->addWidget(m_treeWidget);
 

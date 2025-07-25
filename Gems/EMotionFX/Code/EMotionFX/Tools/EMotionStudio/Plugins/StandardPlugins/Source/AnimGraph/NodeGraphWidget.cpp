@@ -650,7 +650,7 @@ namespace EMStudio
         const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
 
         // check if we can start panning
-        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MidButton)
+        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MiddleButton)
         {
             // update button booleans
             if (event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton)
@@ -683,7 +683,7 @@ namespace EMStudio
                 }
             }
 
-            if (event->button() == Qt::MidButton)
+            if (event->button() == Qt::MiddleButton)
             {
                 m_middleMousePressed = true;
             }
@@ -1023,7 +1023,7 @@ namespace EMStudio
         }
 
         // middle mouse button
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_middleMousePressed = false;
             m_panning            = false;

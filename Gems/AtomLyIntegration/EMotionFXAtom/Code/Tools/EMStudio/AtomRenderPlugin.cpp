@@ -104,7 +104,7 @@ namespace EMStudio
         QVBoxLayout* verticalLayout = new QVBoxLayout(m_innerWidget);
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(1);
-        verticalLayout->setMargin(0);
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
 
         // Add the viewport widget
         m_animViewportWidget = new AnimViewportWidget(this);

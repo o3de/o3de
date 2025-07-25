@@ -15,7 +15,7 @@
 
 class QFileInfo;
 class QString;
-class QStringList;
+
 
 class CFileEnum
 {

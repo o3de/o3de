@@ -47,7 +47,7 @@ namespace EMStudio
         m_scrollArea             = new QScrollArea();
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(1);
         setLayout(mainLayout);
 
@@ -64,7 +64,7 @@ namespace EMStudio
             QVBoxLayout* verticalLayout = new QVBoxLayout();
             m_mainReflectedWidget->setLayout(verticalLayout);
             verticalLayout->setAlignment(Qt::AlignTop);
-            verticalLayout->setMargin(0);
+            verticalLayout->setContentsMargins(0, 0, 0, 0);
             verticalLayout->setSpacing(0);
             verticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
@@ -103,12 +103,12 @@ namespace EMStudio
                 m_conditionsWidget->setLayout(conditionsVerticalLayout);
                 m_conditionsWidget->setObjectName("EMFX.AttributesWindowWidget.NodeTransition.ConditionsWidget");
                 conditionsVerticalLayout->setAlignment(Qt::AlignTop);
-                conditionsVerticalLayout->setMargin(0);
+                conditionsVerticalLayout->setContentsMargins(0, 0, 0, 0);
                 conditionsVerticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
                 m_conditionsLayout = new QVBoxLayout();
                 m_conditionsLayout->setAlignment(Qt::AlignTop);
-                m_conditionsLayout->setMargin(0);
+                m_conditionsLayout->setContentsMargins(0, 0, 0, 0);
                 m_conditionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 conditionsVerticalLayout->addLayout(m_conditionsLayout);
 
@@ -129,12 +129,12 @@ namespace EMStudio
                 QVBoxLayout* actionVerticalLayout = new QVBoxLayout();
                 m_actionsWidget->setLayout(actionVerticalLayout);
                 actionVerticalLayout->setAlignment(Qt::AlignTop);
-                actionVerticalLayout->setMargin(0);
+                actionVerticalLayout->setContentsMargins(0, 0, 0, 0);
                 actionVerticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
                 m_actionsLayout = new QVBoxLayout();
                 m_actionsLayout->setAlignment(Qt::AlignTop);
-                m_actionsLayout->setMargin(0);
+                m_actionsLayout->setContentsMargins(0, 0, 0, 0);
                 m_actionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 actionVerticalLayout->addLayout(m_actionsLayout);
 
@@ -699,7 +699,7 @@ namespace EMStudio
         // show the menu at the given position
         if (menu.isEmpty() == false)
         {
-            menu.exec(event->globalPos());
+            menu.exec(event->globalPosition());
         }
     }
 

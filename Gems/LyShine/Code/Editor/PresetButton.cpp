@@ -35,7 +35,7 @@ PresetButton::PresetButton(const QString& defaultIconPath,
         &PresetButton::UpdateIcon);
 }
 
-void PresetButton::enterEvent(QEvent* ev)
+void PresetButton::enterEvent(QEnterEvent* ev)
 {
     m_isHovering = true;
 

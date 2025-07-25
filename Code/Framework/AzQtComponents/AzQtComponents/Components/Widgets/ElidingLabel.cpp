@@ -205,7 +205,7 @@ namespace AzQtComponents
     void ElidingLabel::setFilter(const QString& filter)
     {
         m_filterString = filter;
-        m_filterRegex = QRegExp(m_filterString, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(m_filterString, QRegularExpression::CaseInsensitiveOption);
     }
 
     bool ElidingLabel::TextMatchesFilter() const

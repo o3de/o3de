@@ -82,7 +82,7 @@ namespace EMotionFX
     {
         QHBoxLayout* hLayout = new QHBoxLayout(this);
 
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(hLayout);
         m_sourceNodeNameLabel = new QLabel("element A", this);
         layout()->addWidget(m_sourceNodeNameLabel);
@@ -152,7 +152,7 @@ namespace EMotionFX
     {
         QVBoxLayout* vLayout = new QVBoxLayout(parent);
 
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         QHBoxLayout* hHeaderLayout = new QHBoxLayout(this);

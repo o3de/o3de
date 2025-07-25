@@ -53,7 +53,7 @@ namespace ScriptCanvasEditor
     void LoggingWindowFilterModel::SetFilter(const QString& filter)
     {
         m_filter = filter;
-        m_logFilter.m_filter = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_logFilter.m_filter = QRegularExpression(m_filter, Qt::CaseInsensitive);
 
         invalidateFilter();
     }

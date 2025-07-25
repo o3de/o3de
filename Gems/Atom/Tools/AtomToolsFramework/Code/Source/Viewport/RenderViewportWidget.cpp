@@ -265,7 +265,7 @@ namespace AtomToolsFramework
     }
 
 
-    void RenderViewportWidget::enterEvent(QEvent* event)
+    void RenderViewportWidget::enterEvent(QEnterEvent* event)
     {
         if (const auto eventType = event->type();
             eventType == QEvent::Type::MouseMove)

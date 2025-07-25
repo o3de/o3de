@@ -87,7 +87,7 @@ namespace EMotionFX
         m_headerWidget = new QWidget();
         QHBoxLayout* nodeLayout = new QHBoxLayout();
         m_headerWidget->setLayout(nodeLayout);
-        nodeLayout->setMargin(0);
+        nodeLayout->setContentsMargins(0, 0, 0, 0);
         nodeLayout->setSpacing(0);
         mainLayout->addWidget(m_headerWidget);
 

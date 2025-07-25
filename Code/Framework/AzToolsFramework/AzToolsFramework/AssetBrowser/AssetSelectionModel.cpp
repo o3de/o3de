@@ -12,7 +12,7 @@
 
 #if !defined(Q_MOC_RUN)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <QRegExp>
+#include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -231,7 +231,7 @@ namespace AzToolsFramework
             return selection;
         }
 
-        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QRegExp& pattern, bool multiselect)
+        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QRegularExpression& pattern, bool multiselect)
         {
             QSharedPointer<RegExpFilter> patternFilter(new RegExpFilter());
             patternFilter->SetFilterPattern(pattern);

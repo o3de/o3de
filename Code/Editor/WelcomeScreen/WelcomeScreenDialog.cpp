@@ -174,7 +174,7 @@ bool WelcomeScreenDialog::IsValidLevelName(const QString& path)
         levelName = pathParts.at(pathParts.size() - 2);
     }
 
-    QRegExpValidator validator(QRegExp("^[a-zA-Z0-9_\\-./]*$"));
+    QRegularExpressionValidator validator(QRegularExpression("^[a-zA-Z0-9_\\-./]*$"));
 
     int pos = 0;
     return validator.validate(levelName, pos);

@@ -149,7 +149,7 @@ namespace O3DE::ProjectManager
         void OpenAndroidProjectGenerator(const QString& projectPath);
 
     private:
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
 
         void ShowReadyState();

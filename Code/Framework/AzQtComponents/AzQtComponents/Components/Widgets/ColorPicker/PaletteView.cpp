@@ -1019,13 +1019,13 @@ void PaletteView::paintEvent(QPaintEvent* event)
             option.state |= QStyle::State_HasFocus;
         }
 
-        itemDelegate(index)->paint(&painter, option, index);
+        itemDelegateForIndex(index)->paint(&painter, option, index);
     }
 
     if (!m_dropIndicatorRect.isNull())
     {
         QStyleOption option;
-        option.init(this);
+        option.initFrom(this);
         option.rect = m_dropIndicatorRect;
         style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &option, &painter, this);
     }
@@ -1374,8 +1374,8 @@ bool PaletteView::canDrop(QDropEvent* event)
 
 bool PaletteView::canDrop(QDropEvent* event, QModelIndex& index, int& row)
 {
-    index = indexAt(event->pos());
-    row = getRootRow(event->pos(), index);
+    index = indexAt(event->position().toPoint());
+    row = getRootRow(event->position().toPoint(), index);
 
     m_droppingOn = false;
     m_dropIndicatorRect = {};

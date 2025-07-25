@@ -2925,7 +2925,7 @@ namespace AzToolsFramework
                 }
                 }
                 statusIconLabel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-                statusIconLabel->setMargin(3);
+                statusIconLabel->setContentsMargins(3, 3, 3, 3);
                 statusIconLabel->setAlignment(Qt::AlignCenter);
 
                 QLabel* statusLabel = new QLabel();

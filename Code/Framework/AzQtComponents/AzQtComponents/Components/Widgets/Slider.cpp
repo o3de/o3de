@@ -94,11 +94,6 @@ CustomSlider::CustomSlider(Qt::Orientation orientation, QWidget *parent)
 {
 }
 
-void CustomSlider::initStyleOption(QStyleOptionSlider& option)
-{
-    QSlider::initStyleOption(&option);
-}
-
 void CustomSlider::mousePressEvent(QMouseEvent* ev)
 {
     Q_EMIT moveSlider(true);
@@ -284,7 +279,8 @@ int Slider::valueFromPos(const QPoint& pos) const
 QRect Slider::getVisibleGrooveRect() const
 {
     QStyleOptionSlider option;
-    m_slider->initStyleOption(option);
+    // #GH_TODO
+    // m_slider->initStyleOption(option);
 
     int handleThickness = m_slider->style()->pixelMetric(QStyle::PM_SliderThickness, &option, m_slider);
     QRect grooveRect = m_slider->style()->subControlRect(QStyle::CC_Slider, &option, QStyle::SC_SliderGroove, m_slider);
@@ -313,7 +309,8 @@ int Slider::getVisibleGrooveLength() const
 int Slider::getVisibleGrooveStart() const
 {
     QStyleOptionSlider option;
-    m_slider->initStyleOption(option);
+    // #GH_TODO
+    // m_slider->initStyleOption(option);
 
     int handleThickness = m_slider->style()->pixelMetric(QStyle::PM_SliderThickness, &option, m_slider);
     return handleThickness / 2;
@@ -718,7 +715,7 @@ void Slider::drawHandle(const QStyleOption* option, QPainter* painter, const Sli
 int Slider::styleHintAbsoluteSetButtons()
 {
     // Make sliders jump to the value when the user clicks on them instead of the Qt default of moving closer to the clicked location
-    return (Qt::LeftButton | Qt::MidButton | Qt::RightButton);
+    return (Qt::LeftButton | Qt::MiddleButton | Qt::RightButton);
 }
 
 

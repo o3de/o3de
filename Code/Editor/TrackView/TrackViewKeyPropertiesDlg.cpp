@@ -46,7 +46,7 @@ CTrackViewKeyPropertiesDlg::CTrackViewKeyPropertiesDlg(QWidget* hParentWnd)
     , m_sequence(nullptr)
 {
     QVBoxLayout* l = new QVBoxLayout();
-    l->setMargin(0);
+    l->setContentsMargins(0, 0, 0, 0);
     m_wndTrackProps = new CTrackViewTrackPropsDlg(this);
     l->addWidget(m_wndTrackProps);
     m_wndProps = new ReflectedPropertyControl(this);

@@ -192,7 +192,7 @@ void CFileChangeMonitor::NotifyListeners(const QString &path, SFileChangeInfo::E
 {
     for (const auto &glob : m_ignoreMasks)
     {
-        QRegExp exp(glob, Qt::CaseInsensitive, QRegExp::Wildcard);
+        QRegularExpression exp(glob, Qt::CaseInsensitive, QRegularExpression::Wildcard);
         if (path.contains(exp))
         {
             return; // mask matches, ignore event
