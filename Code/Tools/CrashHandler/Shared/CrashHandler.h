@@ -14,6 +14,11 @@
 #include <string>
 #include <vector>
 
+namespace crashpad
+{
+    class CrashpadClient;
+}
+
 namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
@@ -48,7 +53,7 @@ namespace CrashHandler
 
         virtual const char* GetProductName() const { return O3DEProductName; }
 
-        virtual bool CreateCrashHandlerDB(const std::string& reportPath) const;
+        virtual bool CreateCrashHandlerDB(const std::string& reportPath, bool manualCrashSubmission) const;
 
         virtual std::string GetCrashSubmissionURL() const { return{}; }
         virtual std::string GetCrashSubmissionToken() const { return{}; }
@@ -58,13 +63,21 @@ namespace CrashHandler
         virtual void GetBuildAnnotations(CrashHandlerAnnotations& annotations) const;
 
         virtual void GetUserAnnotations(CrashHandlerAnnotations& ) const {};
+
         // OS Dependent
         virtual std::string GetAppRootFromCWD() const;
         virtual void GetOSAnnotations(CrashHandlerAnnotations& annotations) const;
+        virtual void ClientInitialized(crashpad::CrashpadClient& client, bool manualCrashSubmission) const;
+        // ~ OS Dependent
+
         const std::string& GetConfigSubmissionToken() const;
+
     private:
         void ReadConfigFile();
+
+    private:
         std::string m_submissionToken;
+        std::string m_crashDbPath;
     };
 
 }
