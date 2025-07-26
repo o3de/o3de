@@ -77,8 +77,6 @@ namespace AZ::IO
     template class AZCORE_API_EXPORT BasicPath<AZStd::string>;
     template class AZCORE_API_EXPORT BasicPath<FixedMaxPathString>;
     template class AZCORE_API_EXPORT PathIterator<const PathView>;
-    template class AZCORE_API_EXPORT PathIterator<Path>;
-    template class AZCORE_API_EXPORT PathIterator<FixedMaxPath>;
 
     // Swap function instantiations
     template void AZCORE_API_EXPORT swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;

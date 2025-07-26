@@ -733,7 +733,6 @@ namespace AZ::IO
 
     private:
         friend class PathView;
-        friend class PathIterator<BasicPath>;
 
         string_type m_path;
         value_type m_preferred_separator = AZ_TRAIT_OS_PATH_SEPARATOR;
