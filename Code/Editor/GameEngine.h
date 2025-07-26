@@ -38,12 +38,10 @@ private:
     ISystemUserCallback* m_userCallback;
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 //! This class serves as a high-level wrapper for CryEngine game.
 class SANDBOX_API CGameEngine
     : public IEditorNotifyListener
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CGameEngine();
     ~CGameEngine(void);

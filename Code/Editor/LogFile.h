@@ -40,14 +40,12 @@ SANDBOX_API void LogV(const char* format, va_list argList);
 SANDBOX_API void Warning(const char* format, ...);
 SANDBOX_API void WarningV(const char* format, va_list argList);
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /*!
  *  CLogFile implements ILog interface.
  */
 class SANDBOX_API CLogFile
     : public ILogCallback
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     static const char* GetLogFileName();
     static void AttachListBox(QListWidget* hWndListBox);
