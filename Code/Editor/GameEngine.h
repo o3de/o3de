@@ -135,7 +135,6 @@ private:
     bool m_bJustCreated;
     bool m_bIgnoreUpdates;
     ISystem* m_pISystem;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
     AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
@@ -147,6 +146,5 @@ private:
     };
     EPendingGameMode m_ePendingGameMode;
     AZStd::unique_ptr<class ModalWindowDismisser> m_modalWindowDismisser;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

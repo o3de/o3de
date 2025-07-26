@@ -267,7 +267,6 @@ private:
 
     bool m_bAutoRecording;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //! Time range of active animation sequence.
     Range m_timeRange;
 
@@ -331,7 +330,6 @@ private:
 
     //! Listeners
     std::vector<IAnimationContextListener*> m_contextListeners;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif // CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H

@@ -119,14 +119,12 @@ namespace AZ
                 QCheckBox* GetQCheckBox();
                 QTreeView* GetQTreeView();
 
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZStd::vector<QStandardItem*> m_treeItems;
                 AZStd::set<Uuid> m_filterTypes;
                 AZStd::set<Crc32> m_filterVirtualTypes;
                 QScopedPointer<Ui::SceneGraphWidget> ui;
                 QScopedPointer<QStandardItemModel> m_treeModel;
                 AZStd::unique_ptr<DataTypes::ISceneNodeSelectionList> m_targetList;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 const Containers::Scene& m_scene;
 
                 size_t m_selectedCount;

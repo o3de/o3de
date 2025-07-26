@@ -33,13 +33,11 @@
 #include "Util/Variable.h"
 #include "CvarDPE.h"
 
+#include <Controls/ui_ConsoleSCB.h>
+
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 
 static void OnVariableUpdated(ICVar* pCVar);
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#include <Controls/ui_ConsoleSCB.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace ConsoleConstants
 {

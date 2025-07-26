@@ -38,10 +38,8 @@ namespace AZ
                 void OnAllJobsComplete();
 
             private:
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZStd::string m_sourceAssetPath;
                 AZStd::unique_ptr<JobWatcher> m_jobWatcher;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
         } // namespace SceneUI
     } //  namespace SceneAPI

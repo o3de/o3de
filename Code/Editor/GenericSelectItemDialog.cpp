@@ -11,9 +11,7 @@
 
 #include "GenericSelectItemDialog.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_GenericSelectItemDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CGenericSelectItemDialog dialog
 

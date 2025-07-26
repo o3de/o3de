@@ -48,9 +48,7 @@
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #endif //! defined(Q_MOC_RUN)
 
 // CViewportTitleDlg dialog

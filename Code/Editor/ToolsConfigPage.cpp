@@ -26,11 +26,8 @@
 #include "MainWindow.h"
 #include "ToolBox.h"
 
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_ToolsConfigPage.h>
 #include <ui_IconListDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace
 {

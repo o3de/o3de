@@ -53,23 +53,18 @@ public:
     static void ImportFromFile(QWidget* parentWindow);
 
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     const QWidget* m_parent;
     const QString m_group;
     const Snapshot m_defaults;
     bool m_shortcutsEnabled;
     Snapshot m_lastEnabledShortcuts; // just to avoid load/save IO from/to disk
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     void LoadFromSnapshot(const Snapshot& snapshot);
-
     QJsonObject ExportGroup();
     void ImportGroup(const QJsonObject& group);
     void ClearShortcutsAndAccelerators();
-private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
     static QVector<KeyboardCustomizationSettings*> m_instances;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif //CRYINCLUDE_EDITOR_KEYBOARD_CUSTOMIZATION_SETTINGS_H
