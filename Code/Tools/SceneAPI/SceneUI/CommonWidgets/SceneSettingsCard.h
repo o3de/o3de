@@ -70,12 +70,10 @@ private:
     friend class SceneSettingsCard;
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SCENE_UI_API SceneSettingsCard : public AzQtComponents::Card, public AZ::Debug::TraceMessageBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 public:
     enum class Layout

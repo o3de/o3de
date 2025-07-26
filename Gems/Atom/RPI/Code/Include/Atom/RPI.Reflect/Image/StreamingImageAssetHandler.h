@@ -17,12 +17,10 @@ namespace AZ
     namespace RPI
     {
         //! The StreamingImageAsset's handler with customized loading steps in LoadAssetData override.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API StreamingImageAssetHandler final
             : public AssetHandler<StreamingImageAsset>
             , private Data::AssetBus::MultiHandler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<StreamingImageAsset>;
         public:
             AZ_CLASS_ALLOCATOR(StreamingImageAssetHandler, AZ::SystemAllocator)

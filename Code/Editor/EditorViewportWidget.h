@@ -82,7 +82,6 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
 };
 
 //! EditorViewportWidget window
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
     : public QtViewport
@@ -99,7 +98,6 @@ class SANDBOX_API EditorViewportWidget final
     , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 
 public:

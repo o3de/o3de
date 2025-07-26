@@ -31,13 +31,11 @@ namespace AzToolsFramework {
     class ComponentEditorHeader;
 }
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 //ReflectedPropertyEditor-based implementation of the MFC CPropertyCtrl API
 class EDITOR_CORE_API ReflectedPropertyControl
     : public QWidget
     , public AzToolsFramework::IPropertyEditorNotify
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         Q_OBJECT
 public:
     //! For alternative undo.
@@ -276,11 +274,9 @@ private:
     void RemoveCustomPopup(const QString& text, T& customPopup);
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API TwoColumnPropertyControl
     : public QWidget
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 public:
     TwoColumnPropertyControl(QWidget* parent = nullptr);

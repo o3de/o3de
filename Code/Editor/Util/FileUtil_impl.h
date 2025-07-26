@@ -26,11 +26,9 @@
 #undef CopyFile
 #endif
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API CFileUtil_impl
     : public IFileUtil
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     bool ScanDirectory(const QString& path, const QString& fileSpec, FileArray& files, bool recursive = true, bool addDirAlso = false, ScanDirectoryUpdateCallBack updateCB = nullptr, bool bSkipPaks = false) override;
 

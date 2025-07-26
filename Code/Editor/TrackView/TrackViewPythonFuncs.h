@@ -29,14 +29,12 @@ namespace AzToolsFramework
     };
 
     //! Component to access the TrackView
-    AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     class SANDBOX_API TrackViewComponent final
         : public AZ::Component
         , public EditorLayerTrackViewRequestBus::Handler
     {
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     public:
         AZ_COMPONENT(TrackViewComponent, "{3CF943CC-6F10-4B19-88FC-CFB697558FFD}")
 

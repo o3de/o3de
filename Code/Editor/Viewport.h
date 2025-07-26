@@ -81,11 +81,9 @@ enum EStdCursor
     STD_CURSOR_LAST,
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API CViewport
     : public IDisplayViewport
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     typedef void(* DropCallback)(CViewport* viewport, int ptx, int pty, void* custom);
 

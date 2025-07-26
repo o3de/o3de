@@ -53,13 +53,11 @@ namespace AZ
         //! which can be used to render meshes at runtime.
         //! 
         //! Use a MaterialTypeAssetCreator to create a MaterialTypeAsset.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialTypeAsset
             : public AZ::Data::AssetData
             , public Data::AssetBus::MultiHandler
             , public AssetInitBus::Handler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
 
@@ -224,10 +222,8 @@ namespace AZ
             bool m_isNonSerializedDataInitialized = false;
         };
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialTypeAsset>;
         public:
             AZ_RTTI(MaterialTypeAssetHandler, "{08568C59-CB7A-4F8F-AFCD-0B69F645B43F}", Base);

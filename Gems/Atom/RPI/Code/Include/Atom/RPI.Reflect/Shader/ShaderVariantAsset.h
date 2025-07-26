@@ -20,11 +20,9 @@ namespace AZ
     {
         //! A ShaderVariantAsset contains the shader byte code for each shader stage (Vertex, Fragment, Tessellation, etc) for a given RHI::APIType (dx12, vulkan, metal, etc).
         //! One independent file per RHI::APIType.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderVariantAsset final
             : public Data::AssetData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderVariantAssetHandler;
             friend class ShaderVariantAssetCreator;
 
@@ -83,11 +81,9 @@ namespace AZ
 
         };
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ShaderVariantAssetHandler final
             : public AssetHandler<ShaderVariantAsset>
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ShaderVariantAsset>;
         public:
             ShaderVariantAssetHandler() = default;

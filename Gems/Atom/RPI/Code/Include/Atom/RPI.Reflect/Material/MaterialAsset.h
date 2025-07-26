@@ -35,12 +35,10 @@ namespace AZ
 
         //! MaterialAsset defines a single material, which can be used to create a Material instance for rendering at runtime.
         //! Use a MaterialAssetCreator to create a MaterialAsset.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialAsset
             : public AZ::Data::AssetData
             , public AssetInitBus::Handler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialVersionUpdates;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
@@ -167,12 +165,9 @@ namespace AZ
 
             bool m_isNonSerializedDataInitialized = false;
         };
-       
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialAssetHandler : public AssetHandler<MaterialAsset>
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialAsset>;
         public:
             AZ_RTTI(MaterialAssetHandler, "{949DFEF5-6E19-4C81-8CF0-C764F474CCDD}", Base);

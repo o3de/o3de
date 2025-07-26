@@ -87,7 +87,6 @@ public Q_SLOTS:
     void Update(int count);
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API MainWindow
     : public QMainWindow
@@ -95,7 +94,6 @@ class SANDBOX_API MainWindow
     , private AzToolsFramework::SourceControlNotificationBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 
 public:

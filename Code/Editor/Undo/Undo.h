@@ -135,14 +135,12 @@ private: // ------------------------------------------------------
     std::vector<IUndoObject*> m_undoObjects;
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /*!
  *  CUndoManager is keeping and operating on CUndo class instances.
  *  TODO: this class is superseded by AzToolsFramework::UndoSystem
  */
 class EDITOR_CORE_API CUndoManager
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CUndoManager();
     ~CUndoManager();

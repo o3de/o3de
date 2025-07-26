@@ -21,11 +21,9 @@
 #include "Include/SandboxAPI.h"
 #include "Include/ICommandManager.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API CEditorCommandManager
     : public ICommandManager
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     enum
     {

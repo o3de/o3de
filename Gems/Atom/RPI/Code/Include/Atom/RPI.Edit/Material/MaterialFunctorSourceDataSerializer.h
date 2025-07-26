@@ -18,12 +18,9 @@ namespace AZ
 
     namespace RPI
     {
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_EDIT_API JsonMaterialFunctorSourceDataSerializer
             : public BaseJsonSerializer
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
         public:
             AZ_RTTI(AZ::RPI::JsonMaterialFunctorSourceDataSerializer, "{56F2F0D8-165C-45BB-9FE7-54FA90148FE9}", BaseJsonSerializer);
             AZ_CLASS_ALLOCATOR_DECL;
