@@ -20,7 +20,8 @@ namespace AZ
 namespace AZ::RHI
 {
     class PlatformLimits;
-    class DeviceDescriptor
+
+    class ATOM_RHI_REFLECT_API DeviceDescriptor
     {
     public:
         AZ_RTTI(DeviceDescriptor, "{8446A34C-A079-44B8-A20F-45D9CAB1FAFD}");

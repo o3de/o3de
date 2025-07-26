@@ -14,7 +14,7 @@
 namespace AZ::RHI
 {
     // Used to serialize or deserialize PhysicalDeviceDriverInfo.
-    class JsonPhysicalDeviceDriverInfoSerializer : public BaseJsonSerializer
+    class ATOM_RHI_REFLECT_API JsonPhysicalDeviceDriverInfoSerializer : public BaseJsonSerializer
     {
     public:
         AZ_RTTI(AZ::RHI::JsonPhysicalDeviceDriverInfoSerializer, "{E7C48E1F-7483-4451-897D-34472611E824}", BaseJsonSerializer);

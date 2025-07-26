@@ -87,15 +87,4 @@ namespace AZ::RHI
     {
         Resource::Shutdown();
     }
-
-    void ImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout &deviceLayout)
-    {
-        MultiDeviceObject::IterateDevices(
-            deviceMask,
-            [this, deviceLayout](int deviceIndex)
-            {
-                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
-                return true;
-            });
-    }
 } // namespace AZ::RHI

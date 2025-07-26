@@ -26,7 +26,7 @@ namespace AZ::RHI
     //! Start by calling DrawPacketBuilder::Begin( )
     //! Then Set the necessary data and add a DrawRequest for each DrawItem
     //! Finalize the DrawPacket with a call to DrawPacketBuilder::End( )
-    class DrawPacketBuilder
+    class ATOM_RHI_PUBLIC_API DrawPacketBuilder
     {
     public:
         struct DrawRequest

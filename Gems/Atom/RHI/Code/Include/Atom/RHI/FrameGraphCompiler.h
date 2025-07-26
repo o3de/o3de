@@ -171,7 +171,7 @@ namespace AZ::RHI
     //! 
     //!  1) Derive transition barriers by walking the scope attachment chain on each frame attachment.
     //!  2) Derive queue fence values by walking the queue-centric scope graph.
-    class FrameGraphCompiler
+    class ATOM_RHI_PUBLIC_API FrameGraphCompiler
         : public Object
     {
     public:

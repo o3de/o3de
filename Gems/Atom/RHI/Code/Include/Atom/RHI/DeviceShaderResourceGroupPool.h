@@ -21,7 +21,7 @@ namespace AZ::RHI
     //! The platform-independent base class for ShaderResourceGroupPools. Platforms
     //! should inherit from this class to implement platform-dependent pooling of
     //! shader resource groups.
-    class DeviceShaderResourceGroupPool
+    class ATOM_RHI_PUBLIC_API DeviceShaderResourceGroupPool
         : public DeviceResourcePool
     {
         friend class DeviceShaderResourceGroup;

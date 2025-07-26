@@ -27,7 +27,7 @@ namespace AZ::RHI
     //!   Blend, Raster, and Depth-Stencil state.
     //! 
     //! - [Graphics Only] State to identify stream buffers to the fixed function input assembly unit.
-    class DevicePipelineState
+    class ATOM_RHI_PUBLIC_API DevicePipelineState
         : public DeviceObject
     {
     public:

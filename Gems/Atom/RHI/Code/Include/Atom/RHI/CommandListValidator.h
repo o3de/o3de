@@ -24,7 +24,7 @@ namespace AZ::RHI
     //! This is a utility for validating that resources are in a correct state to be used for
     //! graphics / compute / copy operations on a command list. It does by crawling ShaderResourceGroups
     //! and checking that the Scope has properly declared the relevant pools and attachments.
-    class CommandListValidator
+    class ATOM_RHI_PUBLIC_API CommandListValidator
     {
     public:
         CommandListValidator() = default;

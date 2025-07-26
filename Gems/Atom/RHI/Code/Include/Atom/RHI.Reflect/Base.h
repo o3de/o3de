@@ -24,7 +24,11 @@
 // you need to know which scope was executing right before the crash.
 //#define AZ_FORCE_CPU_GPU_INSYNC
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(RHI);
+#else
+AZ_DECLARE_BUDGET_SHARED(RHI);
+#endif
 
 //#define ENABLE_RHI_PROFILE_VERBOSE
 #ifdef ENABLE_RHI_PROFILE_VERBOSE
@@ -35,6 +39,19 @@ AZ_DECLARE_BUDGET(RHI);
 // Define ENABLE_RHI_PROFILE_VERBOSE to get verbose profile markers
 #define RHI_PROFILE_SCOPE_VERBOSE(...)
 #define RHI_PROFILE_FUNCTION_VERBOSE
+#endif
+
+#if defined(AZ_MONOLITHIC_BUILD)
+    #define ATOM_RHI_REFLECT_API
+    #define ATOM_RHI_REFLECT_API_EXPORT
+#else
+    #if defined(ATOM_RHI_REFLECT_EXPORTS)
+        #define ATOM_RHI_REFLECT_API        AZ_DLL_EXPORT
+        #define ATOM_RHI_REFLECT_API_EXPORT AZ_DLL_EXPORT
+    #else
+        #define ATOM_RHI_REFLECT_API        AZ_DLL_IMPORT
+        #define ATOM_RHI_REFLECT_API_EXPORT
+    #endif
 #endif
 
 inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
@@ -73,7 +90,7 @@ namespace AZ::RHI
             return s_isEnabled;
         }
     private:
-        static bool s_isEnabled;
+        ATOM_RHI_REFLECT_API static bool s_isEnabled;
     };
 
     template <typename T>

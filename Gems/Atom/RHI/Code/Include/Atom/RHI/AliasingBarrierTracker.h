@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
+#include <Atom/RHI/Base.h>
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -34,7 +35,7 @@ namespace AZ::RHI
     // overlaps each other, partially or totally. It doesn't add any type of synchronization between resources
     // that don't overlap. Resources must be added in order so the tracker knows which one is the source
     // and which one is the destination.
-    class AliasingBarrierTracker
+    class ATOM_RHI_PUBLIC_API AliasingBarrierTracker
     {
     public:
         AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator);

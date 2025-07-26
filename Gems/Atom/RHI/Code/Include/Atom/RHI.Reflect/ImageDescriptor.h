@@ -17,12 +17,12 @@
 
 namespace AZ::RHI
 {    
-    ImageBindFlags GetImageBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);        
+    ATOM_RHI_REFLECT_API ImageBindFlags GetImageBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
 
     //! Images are comprised of sub-resources corresponding to the number of mip-mip levels
     //! and array slices. Image data is stored as pixels in opaque swizzled formats. Images
     //! represent texture data to the shader.
-    struct ImageDescriptor
+    struct ATOM_RHI_REFLECT_API ImageDescriptor
     {
         AZ_TYPE_INFO(ImageDescriptor, "{D1FDAC7B-E9CF-4B2D-B1FB-646D3EE3159C}");
         static void Reflect(AZ::ReflectContext* context);

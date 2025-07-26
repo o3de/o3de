@@ -24,7 +24,7 @@ namespace AZ::RHI
 
     //! A base class for multi-device resource pools. This class facilitates registration of multi-device resources
     //! into the pool, and allows iterating child resource instances.
-    class ResourcePool : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API ResourcePool : public MultiDeviceObject
     {
         friend class Resource;
 

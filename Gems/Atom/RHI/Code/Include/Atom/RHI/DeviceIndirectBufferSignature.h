@@ -29,7 +29,7 @@ namespace AZ::RHI
     //!
     //! It also exposes implementation dependent offsets for the commands in
     //! a layout. This information is useful when writing commands into a buffer.
-    class DeviceIndirectBufferSignature :
+    class ATOM_RHI_PUBLIC_API DeviceIndirectBufferSignature :
         public DeviceObject
     {
         using Base = RHI::DeviceObject;

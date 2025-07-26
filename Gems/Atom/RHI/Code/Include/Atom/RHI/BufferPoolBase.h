@@ -15,7 +15,7 @@ namespace AZ::RHI
     //! A simple base class for buffer pools. This mainly exists so that various
     //! buffer pool implementations can have some type safety separate from other
     //! resource pool types.
-    class BufferPoolBase : public ResourcePool
+    class ATOM_RHI_PUBLIC_API BufferPoolBase : public ResourcePool
     {
     public:
         AZ_RTTI(BufferPoolBase, "{08EC3384-CC9F-4F04-B87E-0BB9D23F7CB0}", ResourcePool);

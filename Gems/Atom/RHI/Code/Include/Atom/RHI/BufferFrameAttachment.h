@@ -19,7 +19,7 @@ namespace AZ::RHI
     class BufferScopeAttachment;
 
     //! A specialization of Attachment for a buffer. Provides access to the buffer.
-    class BufferFrameAttachment
+    class ATOM_RHI_PUBLIC_API BufferFrameAttachment
         : public FrameAttachment
     {
     public:

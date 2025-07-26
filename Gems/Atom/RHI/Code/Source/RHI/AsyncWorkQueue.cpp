@@ -9,7 +9,7 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-AZ_DECLARE_BUDGET(RHI);
+AZ_DECLARE_BUDGET_SHARED(RHI);
 
 namespace AZ::RHI
 {

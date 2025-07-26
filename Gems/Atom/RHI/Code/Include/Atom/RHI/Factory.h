@@ -13,8 +13,8 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Console/IConsole.h>
 
-AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
-AZ_CVAR_EXTERNED(bool, r_enablePsoCaching);
+AZ_CVAR_API_EXTERNED(ATOM_RHI_PUBLIC_API, bool, r_gpuMarkersMergeGroups);
+AZ_CVAR_API_EXTERNED(ATOM_RHI_PUBLIC_API, bool, r_enablePsoCaching);
 
 namespace AZ::RHI
 {
@@ -66,7 +66,7 @@ namespace AZ::RHI
     //! A call to Get will return the active instance. In the event that it's unclear whether
     //! a platform instance exists, you must call IsReady to determine whether it's safe to
     //! call Get. Calling Get without a registered platform will result in an assert.
-    class Factory
+    class ATOM_RHI_PUBLIC_API Factory
     {
     public:
         AZ_TYPE_INFO(Factory, "{2C0231FD-DD11-4154-A4F5-177181E26D8E}");

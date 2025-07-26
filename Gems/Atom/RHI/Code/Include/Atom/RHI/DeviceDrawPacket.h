@@ -43,7 +43,7 @@ namespace AZ::RHI
     //!   - The packet is self-contained and does not reference external memory. Use DeviceDrawPacketBuilder to construct
     //!     an instance and either store in an RHI::Ptr or call 'delete' to release.
     //! 
-    class DeviceDrawPacket final : public AZStd::intrusive_base
+    class ATOM_RHI_PUBLIC_API DeviceDrawPacket final : public AZStd::intrusive_base
     {
         friend class DeviceDrawPacketBuilder;
         friend class UnitTest::DrawPacketTest;

@@ -19,7 +19,7 @@ namespace AZ::RHI
     //! A ImageView is a light-weight representation of a view onto a multi-device image.
     //! It holds a ConstPtr to a multi-device image as well as an ImageViewDescriptor
     //! Using both, single-device ImageViews can be retrieved
-    class ImageView : public ResourceView
+    class ATOM_RHI_PUBLIC_API ImageView : public ResourceView
     {
     public:
         AZ_RTTI(ImageView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);

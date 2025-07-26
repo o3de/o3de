@@ -19,7 +19,7 @@ namespace AZ::RHI
     //! RayTracingPipelineStateDescriptor
     //!
     //! Describes a ray tracing pipeline state.
-    class RayTracingPipelineStateDescriptor final
+    class ATOM_RHI_PUBLIC_API RayTracingPipelineStateDescriptor final
     {
     public:
         //! Returns the device-specific DeviceRayTracingPipelineStateDescriptor for the given index
@@ -44,7 +44,7 @@ namespace AZ::RHI
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations across multiple devices.
-    class RayTracingPipelineState : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API RayTracingPipelineState : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator, 0);

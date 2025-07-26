@@ -16,15 +16,20 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(RHI);
+#else
+AZ_DECLARE_BUDGET_SHARED(RHI);
+#endif
 
-AZ_CVAR_EXTERNED(bool, r_EnableAutoGpuMemDump); 
+AZ_CVAR_API_EXTERNED(ATOM_RHI_PUBLIC_API, bool, r_EnableAutoGpuMemDump);
 
 namespace AZ::RHI
 {
     // Forward declares
     struct TransientAttachmentStatistics;
-    class RHIMemoryStatisticsInterface
+
+    class ATOM_RHI_PUBLIC_API RHIMemoryStatisticsInterface
     {
     public:
         AZ_RTTI(RHIMemoryStatisticsInterface, "{C3789EE2-7922-434D-AC19-8A2D80194C0E}");

@@ -18,7 +18,7 @@
     //! polymorphic usage of views in a generic way.
     //! As the handling of the device-specific ResourceViews is more elaborate,
     //! this does not inherit from MultiDeviceObject but manages the DeviceResourceViews on its own
-    class ResourceView : public Object
+    class ATOM_RHI_PUBLIC_API ResourceView : public Object
     {
     public:
         // The resource owns a cache of resource views, and it needs access to the refcount

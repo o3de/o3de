@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/base.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
@@ -17,7 +18,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct Origin
+    struct ATOM_RHI_REFLECT_API Origin
     {
         AZ_TYPE_INFO(Origin, "{323EB88E-A2BF-421F-9CD4-B668CA246AAF}");
 

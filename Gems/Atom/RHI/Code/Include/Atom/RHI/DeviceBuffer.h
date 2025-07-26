@@ -19,7 +19,7 @@ namespace AZ::RHI
     
     //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
     //! manages the lifecycle of a buffer through a DeviceBufferPool.
-    class DeviceBuffer
+    class ATOM_RHI_PUBLIC_API DeviceBuffer
         : public DeviceResource
     {
         using Base = DeviceResource;

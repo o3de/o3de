@@ -20,7 +20,7 @@ namespace AZ::RHI
 
     //! Provides a view into a multi-device buffer, to be used as an indirect buffer. The content of the view is a contiguous
     //! list of commands sequences. Its device-specific buffers are provided to the RHI back-end at draw time.
-    class alignas(8) IndirectBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) IndirectBufferView
     {
     public:
         IndirectBufferView() = default;

@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/ResourceView.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ::RHI
@@ -25,7 +25,7 @@ namespace AZ::RHI
     //!
     //! The FrameAttachment owns the Attachment instance (i.e. the actual resource). The ScopeAttachment owns a view into that
     //! resource. A scope is able to utilize the view during compilation and execution.         
-    class ScopeAttachment
+    class ATOM_RHI_PUBLIC_API ScopeAttachment
     {
         friend class FrameGraphAttachmentDatabase;
     public:

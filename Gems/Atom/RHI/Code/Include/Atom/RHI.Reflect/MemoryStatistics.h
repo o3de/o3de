@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    struct MemoryStatistics
+    struct ATOM_RHI_REFLECT_API MemoryStatistics
     {
         struct Buffer
         {

@@ -53,7 +53,7 @@ namespace AZ::RHI
     //! To implement this class, assign the job policy specific to your platform, and every Begin call, use the provided
     //! AddGroup method to partition the FrameGraph into execution groups. Each group and context will have platform
     //! specific overrides.
-    class FrameGraphExecuter
+    class ATOM_RHI_PUBLIC_API FrameGraphExecuter
         : public Object
     {
     public:

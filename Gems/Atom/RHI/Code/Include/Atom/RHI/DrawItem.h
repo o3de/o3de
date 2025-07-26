@@ -27,7 +27,7 @@ namespace AZ::RHI
     template<typename T, typename NamespaceType>
     struct Handle;
 
-    struct DrawItem
+    struct ATOM_RHI_PUBLIC_API DrawItem
     {
         friend class DrawPacketBuilder;
 

@@ -26,7 +26,7 @@ namespace AZ::RHI
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
     //! @see DeviceImageView on how to interpret contents of an image.
-    class DeviceImage
+    class ATOM_RHI_PUBLIC_API DeviceImage
         : public DeviceResource
     {
         friend class DeviceImagePoolBase;

@@ -55,7 +55,7 @@ namespace AZ::RHI
     //! with it which matches the element within the shader. The data in a stream channel can be
     //! offset from the base of the parent StreamBufferView to interleave multiple channels within 
     //! the same buffer.
-    class StreamChannelDescriptor
+    class ATOM_RHI_REFLECT_API StreamChannelDescriptor
     {
     public:
         AZ_TYPE_INFO(StreamChannelDescriptor, "{BF99DCBE-C30B-443A-A92C-B07EE6F0FB1D}");
@@ -87,7 +87,7 @@ namespace AZ::RHI
     //! Describes an instance of a StreamBufferView within the stream layout. Each stream
     //! buffer provides new data to the shader at a specified step rate. The byte stride
     //! is the total width of a single element in the buffer stream.
-    class StreamBufferDescriptor
+    class ATOM_RHI_REFLECT_API StreamBufferDescriptor
     {
     public:
         AZ_TYPE_INFO(StreamBufferDescriptor, "{F1295422-9505-45EF-9E0D-47839B755F8C}");
@@ -118,7 +118,7 @@ namespace AZ::RHI
     //! This is provided to the RHI back-end at PSO compile time as part of the PipelineStateDescriptor.
     //!
     //! See InputStreamLayoutBuilder for a convenient way to construct InputStreamLayout objects.
-    class InputStreamLayout
+    class ATOM_RHI_REFLECT_API InputStreamLayout
     {
     public:
         AZ_TYPE_INFO(InputStreamLayout, "{2F628C89-76F7-458C-9DCE-2A2FFD4530E1}");

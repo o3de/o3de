@@ -7,6 +7,8 @@
  */
 
 #pragma once
+
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/optional.h>
 
 namespace AZ::RHI
@@ -24,5 +26,5 @@ namespace AZ::RHI
 
     // Read the RHI validation mode considering configurations,
     // cvars, command line options and registry settings.
-    ValidationMode ReadValidationMode();
+    ATOM_RHI_PUBLIC_API ValidationMode ReadValidationMode();
 }

@@ -26,7 +26,7 @@ namespace AZ::RHI
     //! specific window. This is done by initializing it with a device index, which sets the correspondings bit in the
     //! deviceMask. The need for a multi-device class arises from the interoperability within a multi-device context,
     //! especially attachments and the FrameGraph.
-    class SwapChain : public ImagePoolBase
+    class ATOM_RHI_PUBLIC_API SwapChain : public ImagePoolBase
     {
     public:
         AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);

@@ -22,7 +22,7 @@ namespace AZ
 namespace AZ::RHI
 {
     //! Image views map to a range of mips / array slices in an image.
-    struct ImageViewDescriptor
+    struct ATOM_RHI_REFLECT_API ImageViewDescriptor
     {
         AZ_TYPE_INFO(ImageViewDescriptor, "{7dc08a6e-5a1d-4730-b1fa-3a6e11bb7178}");
         AZ_CLASS_ALLOCATOR(ImageViewDescriptor, SystemAllocator);

@@ -20,7 +20,7 @@ namespace AZ::RHI
     class ShaderResourceGroup;
 
     //! Specifies the shader and any local root signature parameters that make up a record in the shader table
-    struct RayTracingShaderTableRecord
+    struct ATOM_RHI_PUBLIC_API RayTracingShaderTableRecord
     {
         explicit RayTracingShaderTableRecord(const Name& shaderExportName);
 
@@ -40,7 +40,7 @@ namespace AZ::RHI
     //! RayTracingShaderTableDescriptor
     //!
     //! Describes a ray tracing shader table.
-    class RayTracingShaderTableDescriptor
+    class ATOM_RHI_PUBLIC_API RayTracingShaderTableDescriptor
     {
     public:
         RayTracingShaderTableDescriptor() = default;
@@ -61,7 +61,7 @@ namespace AZ::RHI
 
     //! Shader Table
     //! Specifies the ray generation, miss, and hit shaders used during the ray tracing process
-    class RayTracingShaderTable : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API RayTracingShaderTable : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);

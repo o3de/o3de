@@ -9,6 +9,7 @@
 
 #include <AzCore/Utils/TypeHash.h>
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -27,10 +28,10 @@
 
     namespace ResourceViewCacheHelper
     {
-        Ptr<DeviceImageView> CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor);
-        Ptr<DeviceBufferView> CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor);
-        Ptr<ImageView> CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor);
-        Ptr<BufferView> CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor);
+        ATOM_RHI_PUBLIC_API Ptr<DeviceImageView> CreateView(const DeviceResource* resource, const ImageViewDescriptor& imageViewDescriptor);
+        ATOM_RHI_PUBLIC_API Ptr<DeviceBufferView> CreateView(const DeviceResource* resource, const BufferViewDescriptor& bufferViewDescriptor);
+        ATOM_RHI_PUBLIC_API Ptr<ImageView> CreateView(const Resource* resource, const ImageViewDescriptor& imageViewDescriptor);
+        ATOM_RHI_PUBLIC_API Ptr<BufferView> CreateView(const Resource* resource, const BufferViewDescriptor& bufferViewDescriptor);
 
         //! Helper struct to provide correct Type and creation method for (Device)Image/Bufferview
         template<typename Type, typename DescriptorType>

@@ -26,7 +26,7 @@ namespace AZ::RHI
     //! A DrawPacket is only intened to be contructed via the DrawPacketBuilder.
     //! Individual device-specific DrawPackets are allocated as packed data structures, referenced via RHI::Ptrs
     //! in a map, indexed by the device-index.
-    class DrawPacket final : public AZStd::intrusive_base
+    class ATOM_RHI_PUBLIC_API DrawPacket final : public AZStd::intrusive_base
     {
         friend class DrawPacketBuilder;
         friend class UnitTest::MultiDeviceDrawPacketTest;

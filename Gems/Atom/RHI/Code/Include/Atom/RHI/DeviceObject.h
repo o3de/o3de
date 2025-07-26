@@ -13,7 +13,7 @@ namespace AZ::RHI
 {
     //! A variant of Object associated with a Device instance. It holds a strong reference to
     //! the device and provides a simple accessor API.
-    class DeviceObject
+    class ATOM_RHI_PUBLIC_API DeviceObject
         : public Object
     {
     public:

@@ -66,10 +66,10 @@ namespace AZ::RHI
     //!     RHI::ResultCode result = layoutBuilder.End(layout);
     //!   @endcode
     //!
-    class RenderAttachmentLayoutBuilder
+    class ATOM_RHI_REFLECT_API RenderAttachmentLayoutBuilder
     {
     public:
-        class SubpassAttachmentLayoutBuilder
+        class ATOM_RHI_REFLECT_API SubpassAttachmentLayoutBuilder
         {
             friend class RenderAttachmentLayoutBuilder;
         public:

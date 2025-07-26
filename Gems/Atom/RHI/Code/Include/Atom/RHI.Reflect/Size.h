@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/base.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
@@ -17,7 +18,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct Size
+    struct ATOM_RHI_REFLECT_API Size
     {
         AZ_TYPE_INFO(Size, "{3B8DAD61-8AFA-4BB1-BCF8-179865D8C57B}");
 

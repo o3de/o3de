@@ -29,7 +29,7 @@ namespace AZ::RHI
 
     //! DeviceQuery resource for recording gpu data like occlusion, timestamp or pipeline statistics.
     //! Queries belong to a DeviceQueryPool and their types are determined by the pool.
-    class DeviceQuery
+    class ATOM_RHI_PUBLIC_API DeviceQuery
         : public DeviceResource
     {
         friend class DeviceQueryPool;

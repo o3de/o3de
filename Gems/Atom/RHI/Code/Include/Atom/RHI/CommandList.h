@@ -30,7 +30,7 @@ namespace AZ::RHI
         Count
     };
 
-    class CommandList
+    class ATOM_RHI_PUBLIC_API CommandList
     {
     public:
         /// Assigns a list of viewports to the raster stage of the graphics pipe.

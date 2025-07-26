@@ -12,7 +12,7 @@
 #include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Console/IConsole.h>
-AZ_CVAR_EXTERNED(bool, r_hdrOutput);
+AZ_CVAR_API_EXTERNED(ATOM_RHI_PUBLIC_API, bool, r_hdrOutput);
 
 namespace AZ::RHI
 {
@@ -23,7 +23,7 @@ namespace AZ::RHI
     //!
     //! The frame scheduler controls presentation of the swap chain. The user may attach a swap chain to a scope
     //! in order to render to the current image.
-    class DeviceSwapChain
+    class ATOM_RHI_PUBLIC_API DeviceSwapChain
         : public DeviceImagePoolBase
     {
     public:

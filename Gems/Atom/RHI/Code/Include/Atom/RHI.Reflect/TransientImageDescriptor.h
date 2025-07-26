@@ -14,7 +14,7 @@
 
 namespace AZ::RHI
 {
-    struct TransientImageDescriptor
+    struct ATOM_RHI_REFLECT_API TransientImageDescriptor
     {
         TransientImageDescriptor() = default;
 

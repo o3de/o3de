@@ -69,7 +69,7 @@ namespace AZ
 
         using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;
 
-        class StreamingImagePool : public ImagePoolBase
+        class ATOM_RHI_PUBLIC_API StreamingImagePool : public ImagePoolBase
         {
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);

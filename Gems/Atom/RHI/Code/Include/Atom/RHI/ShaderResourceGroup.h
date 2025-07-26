@@ -15,7 +15,7 @@ namespace AZ::RHI
 {
     //! This class is a platform-independent base class for a multi-device shader resource group. It has a
     //! pointer to the multi-device resource group pool, if the user initialized the group onto a pool.
-    class ShaderResourceGroup : public Resource
+    class ATOM_RHI_PUBLIC_API ShaderResourceGroup : public Resource
     {
         friend class ShaderResourceGroupPool;
 

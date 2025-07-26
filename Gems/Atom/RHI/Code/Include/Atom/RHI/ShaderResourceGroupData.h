@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! including ConstantsData and Samplers.
     //!
     //! This data structure holds strong references to the multi-device resource views bound onto it.
-    class ShaderResourceGroupData
+    class ATOM_RHI_PUBLIC_API ShaderResourceGroupData
     {
     public:
         //! By default creates an empty data structure. Must be initialized before use.

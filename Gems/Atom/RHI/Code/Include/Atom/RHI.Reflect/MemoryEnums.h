@@ -12,7 +12,7 @@
 namespace AZ::RHI
 {
     //! Describes the memory requirements for allocating a resource.
-    struct ResourceMemoryRequirements
+    struct ATOM_RHI_REFLECT_API ResourceMemoryRequirements
     {
         size_t m_alignmentInBytes = 0;
         size_t m_sizeInBytes = 0;

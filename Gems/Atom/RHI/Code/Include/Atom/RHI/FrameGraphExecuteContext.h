@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! (which is common for platforms which support multi-threaded submission), a scope will map to N execute contexts,
     //! where each context is a command list in the batch. Since commands are ordered, each context provides the index of
     //! the command list in the batch, as well as the total number of command lists in the batch.
-    class FrameGraphExecuteContext
+    class ATOM_RHI_PUBLIC_API FrameGraphExecuteContext
     {
     public:
         struct Descriptor

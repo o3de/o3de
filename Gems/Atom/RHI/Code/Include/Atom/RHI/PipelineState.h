@@ -23,7 +23,7 @@ namespace AZ::RHI
     //! and forwarding the call.
     //! A device-specific DevicePipelineState can be accessed by calling GetDevicePipelineState
     //! with the corresponding device index
-    class PipelineState : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API PipelineState : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);

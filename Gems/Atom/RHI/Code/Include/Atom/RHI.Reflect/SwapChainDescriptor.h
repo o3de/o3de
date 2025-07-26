@@ -21,7 +21,7 @@ namespace AZ::RHI
 {
     using WindowHandle = Handle<uint64_t, class Window>;
 
-    struct SwapChainDimensions
+    struct ATOM_RHI_REFLECT_API SwapChainDimensions
     {
         AZ_TYPE_INFO(SwapChainDimensions, "{1B1D266F-15FA-4EA6-B28C-B87467844617}");
 
@@ -38,7 +38,7 @@ namespace AZ::RHI
         Format m_imageFormat = Format::Unknown;
     };
 
-    class SwapChainDescriptor
+    class ATOM_RHI_REFLECT_API SwapChainDescriptor
         : public ResourcePoolDescriptor
     {
     public:

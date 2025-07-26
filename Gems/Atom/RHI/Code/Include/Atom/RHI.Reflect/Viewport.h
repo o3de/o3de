@@ -16,7 +16,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct Viewport
+    struct ATOM_RHI_REFLECT_API Viewport
     {
         AZ_TYPE_INFO(Viewport, "{69160593-B7C3-4E94-A397-CC0A34567698}");
         static void Reflect(AZ::ReflectContext* context);

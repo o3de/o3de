@@ -24,7 +24,7 @@ namespace AZ::RHI
     using PipelineStateHash = HashValue64;
 
     //! Used for storing a PipelineState object in a hash table structure (set, map, etc)
-    struct PipelineStateEntry
+    struct ATOM_RHI_PUBLIC_API PipelineStateEntry
     {
         PipelineStateEntry(
             PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
@@ -135,7 +135,7 @@ namespace AZ::RHI
     //!      pipelineStateCache->ReleaseLibrary(libraryHandle);
     //! @endcode
     //!
-    class PipelineStateCache final
+    class ATOM_RHI_PUBLIC_API PipelineStateCache final
         : public AZStd::intrusive_base
     {
         friend class UnitTest::MultiDevicePipelineStateTests;

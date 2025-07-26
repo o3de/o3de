@@ -81,9 +81,9 @@ namespace AZ::RHI
         Invalid
     );
 
-    void ReflectRenderStateEnums(ReflectContext* context);
+    ATOM_RHI_REFLECT_API void ReflectRenderStateEnums(ReflectContext* context);
 
-    struct RasterState
+    struct ATOM_RHI_REFLECT_API RasterState
     {
         AZ_TYPE_INFO(RasterState, "{57D4BE50-EBE2-4ABE-90A4-C99BF2EA43FB}");
         static void Reflect(ReflectContext* context);
@@ -101,7 +101,7 @@ namespace AZ::RHI
         uint32_t m_forcedSampleCount = 0;
     };
 
-    struct DepthState
+    struct ATOM_RHI_REFLECT_API DepthState
     {
         AZ_TYPE_INFO(DepthState, "{5F321456-052F-41F1-BD35-2D34CB26DD9D}");
         static void Reflect(ReflectContext* context);
@@ -113,7 +113,7 @@ namespace AZ::RHI
         ComparisonFunc m_func = ComparisonFunc::Less;
     };
 
-    struct StencilOpState
+    struct ATOM_RHI_REFLECT_API StencilOpState
     {
         AZ_TYPE_INFO(StencilOpState, "{6B0894AA-7FE9-4EB0-8171-FF0872CB9B7F}");
         static void Reflect(ReflectContext* context);
@@ -126,7 +126,7 @@ namespace AZ::RHI
         ComparisonFunc m_func = ComparisonFunc::Always;
     };
 
-    struct StencilState
+    struct ATOM_RHI_REFLECT_API StencilState
     {
         AZ_TYPE_INFO(StencilState, "{098EAE83-A3F3-4270-B7AC-ACD11366BBB9}");
         static void Reflect(ReflectContext* context);
@@ -140,7 +140,7 @@ namespace AZ::RHI
         StencilOpState m_backFace;
     };
 
-    struct DepthStencilState
+    struct ATOM_RHI_REFLECT_API DepthStencilState
     {
         AZ_TYPE_INFO(DepthStencilState, "{8AB45110-0727-4923-8098-B9926C1789FE}");
         static void Reflect(ReflectContext* context);
@@ -165,7 +165,7 @@ namespace AZ::RHI
         ColorWriteMaskAll = ColorWriteMaskRed | ColorWriteMaskGreen | ColorWriteMaskBlue | ColorWriteMaskAlpha
     };
     
-    struct TargetBlendState
+    struct ATOM_RHI_REFLECT_API TargetBlendState
     {
         AZ_TYPE_INFO(TargetBlendState, "{2CDF00FE-614D-44FC-929F-E6B50C348578}");
         static void Reflect(ReflectContext* context);
@@ -182,7 +182,7 @@ namespace AZ::RHI
         BlendOp m_blendAlphaOp = BlendOp::Add;
     };
 
-    struct BlendState
+    struct ATOM_RHI_REFLECT_API BlendState
     {
         AZ_TYPE_INFO(BlendState, "{EDB2333A-EF10-4A98-A157-B204E90FA179}");
         static void Reflect(ReflectContext* context);
@@ -194,7 +194,7 @@ namespace AZ::RHI
         AZStd::array<TargetBlendState, Limits::Pipeline::AttachmentColorCountMax> m_targets;
     };
 
-    struct RenderStates
+    struct ATOM_RHI_REFLECT_API RenderStates
     {
         AZ_TYPE_INFO(RenderStates, "{521D72D5-DD69-4380-B637-9CC3D8479D2B}");
         static void Reflect(ReflectContext* context);
@@ -218,28 +218,28 @@ namespace AZ::RHI
     //! Merges any render states in stateToMerge into the result state object. 
     //! The values in stateToMerge are only copied over into the result if they are
     //! not invalid (see also GetInvalidState below).
-    void MergeStateInto(const DepthState& stateToMerge, DepthState& result);
-    void MergeStateInto(const RasterState& stateToMerge, RasterState& result);
-    void MergeStateInto(const StencilOpState& stateToMerge, StencilOpState& result);
-    void MergeStateInto(const StencilState& stateToMerge, StencilState& result);
-    void MergeStateInto(const DepthStencilState& stateToMerge, DepthStencilState& result);
-    void MergeStateInto(const TargetBlendState& stateToMerge, TargetBlendState& result);
-    void MergeStateInto(const BlendState& stateToMerge, BlendState& result);
-    void MergeStateInto(const MultisampleState& stateToMerge, MultisampleState& result);
-    void MergeStateInto(const RenderStates& statesToMerge, RenderStates& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const DepthState& stateToMerge, DepthState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const RasterState& stateToMerge, RasterState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const StencilOpState& stateToMerge, StencilOpState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const StencilState& stateToMerge, StencilState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const DepthStencilState& stateToMerge, DepthStencilState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const TargetBlendState& stateToMerge, TargetBlendState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const BlendState& stateToMerge, BlendState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const MultisampleState& stateToMerge, MultisampleState& result);
+    ATOM_RHI_REFLECT_API void MergeStateInto(const RenderStates& statesToMerge, RenderStates& result);
 
     //! Mark each property in the render states to an invalid value.
     //! This set of functions can be typically used by MergeStateInto
     //! to filter out the actual properties that need to be overwritten.
-    const RasterState& GetInvalidRasterState();
-    const DepthState& GetInvalidDepthState();
-    const StencilOpState& GetInvalidStencilOpState();
-    const StencilState& GetInvalidStencilState();
-    const DepthStencilState& GetInvalidDepthStencilState();
-    const TargetBlendState& GetInvalidTargetBlendState();
-    const BlendState& GetInvalidBlendState();
-    const MultisampleState& GetInvalidMultisampleState();
-    const RenderStates& GetInvalidRenderStates();
+    ATOM_RHI_REFLECT_API const RasterState& GetInvalidRasterState();
+    ATOM_RHI_REFLECT_API const DepthState& GetInvalidDepthState();
+    ATOM_RHI_REFLECT_API const StencilOpState& GetInvalidStencilOpState();
+    ATOM_RHI_REFLECT_API const StencilState& GetInvalidStencilState();
+    ATOM_RHI_REFLECT_API const DepthStencilState& GetInvalidDepthStencilState();
+    ATOM_RHI_REFLECT_API const TargetBlendState& GetInvalidTargetBlendState();
+    ATOM_RHI_REFLECT_API const BlendState& GetInvalidBlendState();
+    ATOM_RHI_REFLECT_API const MultisampleState& GetInvalidMultisampleState();
+    ATOM_RHI_REFLECT_API const RenderStates& GetInvalidRenderStates();
 
     AZ_TYPE_INFO_SPECIALIZE(CullMode, "{AABEEE39-9185-4A9C-9BD7-229DAAAE885D}");
     AZ_TYPE_INFO_SPECIALIZE(FillMode, "{A164B54D-0A74-4F7C-89F3-032D6B6BF107}");

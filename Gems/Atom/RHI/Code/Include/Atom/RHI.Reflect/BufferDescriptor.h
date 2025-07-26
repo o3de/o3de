@@ -68,11 +68,11 @@ namespace AZ::RHI
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);
 
-    BufferBindFlags GetBufferBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
+    ATOM_RHI_REFLECT_API BufferBindFlags GetBufferBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
 
     //! A buffer corresponds to a region of linear memory and used for rendering operations.
     //! Its lifecycle is managed by buffer pools.
-    struct BufferDescriptor
+    struct ATOM_RHI_REFLECT_API BufferDescriptor
     {
         AZ_TYPE_INFO(BufferDescriptor, "{05321516-CDE4-451D-80A2-3D179AB3DB5D}");
 

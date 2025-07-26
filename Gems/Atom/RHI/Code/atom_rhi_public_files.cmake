@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/Atom/RHI/Base.h
     Include/Atom/RHI/Allocator.h
     Include/Atom/RHI/FreeListAllocator.h
     Include/Atom/RHI/LinearAllocator.h

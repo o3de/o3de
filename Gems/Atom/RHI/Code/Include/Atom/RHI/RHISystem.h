@@ -33,7 +33,7 @@ namespace AZ::RHI
         MultiDevice
     };
 
-    class RHISystem final
+    class ATOM_RHI_PUBLIC_API RHISystem final
         : public RHISystemInterface
         , public RHIMemoryStatisticsInterface
     {

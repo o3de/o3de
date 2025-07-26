@@ -6,6 +6,8 @@
  *
  */
 #pragma once
+
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
 
@@ -16,7 +18,7 @@ namespace AZ::RHI
     //! If that is not possible, it allocates in multiple smaller pieces, always trying
     //! to group as many queries in a consecutive manner as possible.
     //! This class is not thread safe.
-    class QueryPoolSubAllocator
+    class ATOM_RHI_PUBLIC_API QueryPoolSubAllocator
     {
     public:
         struct Allocation

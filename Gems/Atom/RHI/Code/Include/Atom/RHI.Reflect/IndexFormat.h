@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/base.h>
 
 namespace AZ::RHI
@@ -24,5 +25,5 @@ namespace AZ::RHI
     using IndexFormat = Internal::IndexFormat;
 
     //! @brief Returns the size of the given index format in bytes.
-    uint32_t GetIndexFormatSize(IndexFormat indexFormat);
+    ATOM_RHI_REFLECT_API uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 } // namespace AZ::RHI

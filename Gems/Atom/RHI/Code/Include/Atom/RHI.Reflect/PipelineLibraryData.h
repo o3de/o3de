@@ -45,7 +45,7 @@ namespace AZ::RHI
     //! Therefore, this class is designed to be immutable after creation and support reference counting.
     //! This allows the platform to safely hold a reference and guarantees that the memory is not mutated
     //! externally.
-    class PipelineLibraryData final
+    class ATOM_RHI_REFLECT_API PipelineLibraryData final
         : public AZStd::intrusive_base
     {
         friend class PipelineLibrary;

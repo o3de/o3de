@@ -16,7 +16,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class StreamingImagePoolDescriptor
+    class ATOM_RHI_REFLECT_API StreamingImagePoolDescriptor
         : public ResourcePoolDescriptor
     {
     public:
