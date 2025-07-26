@@ -256,7 +256,7 @@ namespace EMStudio
         connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos)
         {
             QMenu m;
-            auto action = m.addAction(tr("Remove track"), this, [=]
+            auto action = m.addAction(tr("Remove track"), this, [this]
             {
                 m_plugin->GetTrackDataWidget()->RemoveTrack(m_trackIndex);
             });

@@ -343,7 +343,7 @@ namespace Terrain
         // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
         // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
         // The solution is to enqueue texture update on the next tick.
-        auto postTickLambda = [=]()
+        auto postTickLambda = [=, this]()
         {
             OnAssetReadyPostTick(asset);
         };
@@ -389,7 +389,7 @@ namespace Terrain
     void TerrainSurfaceMaterialsListComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         // REMARK: See OnAssetReady for details on why we postpone the work on the next tick.
-        auto postTickLambda = [=]()
+        auto postTickLambda = [=, this]()
         {
             OnAssetReloadedPostTick(asset);
         };

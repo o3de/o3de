@@ -183,7 +183,7 @@ namespace AzToolsFramework
             // querying the asset database for the root folder
             m_databaseConnection->QueryScanFolderByDisplayName(
                 "root",
-                [=](ScanFolderDatabaseEntry& scanFolderDatabaseEntry)
+                [this](ScanFolderDatabaseEntry& scanFolderDatabaseEntry)
                 {
                     m_relativePath = scanFolderDatabaseEntry.m_scanFolder.c_str();
                     return true;

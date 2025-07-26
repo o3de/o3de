@@ -501,7 +501,7 @@ namespace AZ
 
                 // thisPtr makes sure the request holds an intrusive ptr to the current StreamingImage, so it doesn't get destroyed before
                 // the callback is executed
-                request.m_completeCallback = [=, thisPtr = RHI::Ptr<StreamingImage>(this)]()
+                request.m_completeCallback = [=, this, thisPtr = RHI::Ptr<StreamingImage>(this)]()
                 {
                     AZ_UNUSED(thisPtr);
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG

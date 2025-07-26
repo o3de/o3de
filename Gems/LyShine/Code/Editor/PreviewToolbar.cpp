@@ -50,7 +50,7 @@ PreviewToolbar::PreviewToolbar(EditorWindow* parent)
     QObject::connect(parent,
         &EditorWindow::EditorModeChanged,
         m_editButton,
-        [=](UiEditorMode mode)
+        [this](UiEditorMode mode)
         {
             m_editButton->setEnabled(mode == UiEditorMode::Preview);
         });

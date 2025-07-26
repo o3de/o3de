@@ -51,7 +51,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     AZStd::span<const AZ::Vector3> valuePointOffsets,
@@ -217,7 +217,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
@@ -232,7 +232,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
@@ -274,7 +274,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,
@@ -332,7 +332,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     [[maybe_unused]] AZStd::span<const AZ::Vector3> valuePointOffsets,

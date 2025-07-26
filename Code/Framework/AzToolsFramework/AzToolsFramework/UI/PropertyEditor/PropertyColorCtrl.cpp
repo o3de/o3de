@@ -212,7 +212,7 @@ namespace AzToolsFramework
         }
 
         connect(m_pColorDialog, &AzQtComponents::ColorPicker::currentColorChanged, this, 
-            [=](AZ::Color color)
+            [this](AZ::Color color)
         {
             color = TransformColor(color, m_config.m_colorPickerDialogColorSpaceId, m_config.m_propertyColorSpaceId);
             m_pColorDialog->setAlternateColorspaceValue(color);

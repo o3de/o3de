@@ -1110,7 +1110,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [=]
+    QTimer::singleShot(0, [=, this]
     {
         // If we are using the new docking, set the right dock area to be absolute
         // so that the inspector will be to the right of the viewport and console

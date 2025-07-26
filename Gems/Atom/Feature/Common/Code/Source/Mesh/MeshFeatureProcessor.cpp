@@ -1874,7 +1874,7 @@ namespace AZ
                 // If the asset was modified, reload it. This will also cause a model to change back to the default missing
                 // asset if it was removed, and it will replace the default missing asset with the real asset if it was added.
                 AZ::SystemTickBus::QueueFunction(
-                    [=, meshLoader = m_parent->m_meshLoader]() mutable
+                    [=, this, meshLoader = m_parent->m_meshLoader]() mutable
                     {
                         // Only trigger the reload if the meshLoader is still being used by something other than the lambda.
                         // If the lambda is the only owner, it will get destroyed after this queued call, so there's no point

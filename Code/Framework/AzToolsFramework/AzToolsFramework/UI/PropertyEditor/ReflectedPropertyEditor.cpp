@@ -1085,34 +1085,34 @@ namespace AzToolsFramework
         {
             newWidget = aznew PropertyRowWidget(m_containerWidget);
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerClear, m_editor,
-                [=](InstanceDataNode* node)
+                [=, this](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestClear(newWidget, node);
             }
             );
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerElementRemove, m_editor,
-                [=](InstanceDataNode* node)
+                [=, this](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestContainerRemoveItem(newWidget, node);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerAdd, m_editor,
-                [=](InstanceDataNode* node)
+                [=, this](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestContainerAddItem(newWidget, node);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onUserExpandedOrContracted, m_editor,
-                [=](InstanceDataNode* node, bool expanded)
+                [=, this](InstanceDataNode* node, bool expanded)
             {
                 m_editor->OnPropertyRowExpandedOrContracted(newWidget, node, expanded, true);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContextMenu, m_editor,
-                [=](InstanceDataNode* node, const QPoint& point)
+                [this](InstanceDataNode* node, const QPoint& point)
             {
                 if (m_ptrNotify)
                 {
