@@ -534,7 +534,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    QString testref = input.mid(0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(
@@ -559,7 +559,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    QString testref = input.mid(0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(
@@ -585,7 +585,7 @@ namespace AssetProcessor
 
         int slashIndex = searchTerm.lastIndexOf('/');
         int dashIndex = searchTerm.lastIndexOf('_');
-        QString searchTermWithNoSuffix = searchTermWithNoExtension;
+        QStringRef searchTermWithNoSuffix = searchTermWithNoExtension;
         if ((dashIndex != -1) && (slashIndex == -1) || (dashIndex > slashIndex))
         {
             searchTermWithNoSuffix = searchTermWithNoSuffix.mid(0, dashIndex);

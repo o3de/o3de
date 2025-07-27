@@ -26,7 +26,6 @@ namespace AssetProcessor
         : QObject(parent)
         , m_platformConfig(platformConfiguration)
         , m_registryBuiltOnce(false)
-        , m_registriesMutex(QMutex::Recursive)
     {
 
         for (const AssetBuilderSDK::PlatformInfo& info : m_platformConfig->GetEnabledPlatforms())

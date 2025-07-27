@@ -1121,7 +1121,7 @@ namespace GraphCanvas
             // If we move less than ~0.5% in both directions, we'll consider it an unintended move
             if ((m_initialClick - event->pos()).manhattanLength() <= (width() * 0.005f + height() * 0.005f))
             {
-                QContextMenuEvent ce(QContextMenuEvent::Mouse, event->pos(), event->globalPosition(), event->modifiers());
+                QContextMenuEvent ce(QContextMenuEvent::Mouse, event->pos(), event->globalPosition().toPoint(), event->modifiers());
                 QGraphicsView::contextMenuEvent(&ce);
                 return;
             }

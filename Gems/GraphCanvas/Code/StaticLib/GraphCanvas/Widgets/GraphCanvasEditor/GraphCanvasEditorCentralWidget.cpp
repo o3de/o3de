@@ -92,8 +92,8 @@ namespace GraphCanvas
                 m_initialDropMimeData.setData(mimeType, mimeData->data(mimeType));
             }
 
-            QPoint dropPosition = dropEvent->pos();
-            QPoint globalPosition = mapToGlobal(dropEvent->pos());
+            QPoint dropPosition = dropEvent->position().toPoint();
+            QPoint globalPosition = mapToGlobal(dropEvent->position().toPoint());
 
             AZ::EntityId graphId;
             AssetEditorRequestBus::EventResult(graphId, GetEditorId(), &AssetEditorRequests::CreateNewGraph);

@@ -21,7 +21,6 @@
 #include <QLayout>
 #include <QApplication>
 #include <QRect>
-#include <QDesktopWidget>
 #include <QMessageBox>
 #include <QRubberBand>
 #include <QCursor>
@@ -781,7 +780,7 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
 
     // If the dock widget is off screen (e.g. second monitor was disconnected),
     // restore its default state
-    if (QApplication::desktop()->screenNumber(newDockWidget) == -1)
+    if (QApplication::screenAt(newDockWidget->pos()))
     {
         const bool forceToDefault = true;
         newDockWidget->RestoreState(forceToDefault);
@@ -1119,8 +1118,8 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // before doing anything else, its height and width won't update until after this has all
         // been processed, so we need to resize the panes based on what the main window
         // height and width WILL be after maximized
-        int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
-        int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
+        int screenWidth = QApplication::primaryScreen()->size().width();
+        int screenHeight = QApplication::primaryScreen()->size().height();
 
         // Add the console view pane first
         m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
@@ -1640,7 +1639,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
         {
-            return pattern.exactMatch(pane.m_name) && pane.IsVisible();
+            return pattern.match(pane.m_name).hasMatch() && pane.IsVisible();
         });
 
     QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
@@ -1651,7 +1650,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
         auto optionsIt = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
         {
-            return pattern.exactMatch(pane.m_options.saveKeyName) && pane.IsVisible();
+                return pattern.match(pane.m_options.saveKeyName).hasMatch() && pane.IsVisible();
         });
 
         foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
