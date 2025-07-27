@@ -752,7 +752,7 @@ namespace AudioControls
                             const EACEControlType eControlType = pAudioSystemEditorImpl->ImplTypeToATLType(pAudioSystemControl->GetType());
 
                             // If dropped outside any folder, create a folder at the root to contain the new control
-                            const QModelIndex index = m_pProxyModel->mapToSource(m_pATLControlsTree->indexAt(pDropEvent->pos()));
+                            const QModelIndex index = m_pProxyModel->mapToSource(m_pATLControlsTree->indexAt(pDropEvent->position().toPoint()));
                             QStandardItem* pTargetItem = m_pTreeModel->itemFromIndex(index);
                             if (!pTargetItem)
                             {

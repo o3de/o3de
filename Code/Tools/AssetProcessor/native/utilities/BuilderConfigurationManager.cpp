@@ -117,7 +117,7 @@ namespace AssetProcessor
         thisParam = paramMap.find("params");
         if (thisParam != paramMap.end())
         {
-            QString patternString = thisParam->second.type() == QVariant::StringList ? thisParam->second.toStringList().join(",") : thisParam->second.toString();
+            QString patternString = thisParam->second.userType() == QMetaType::Type::QStringList ? thisParam->second.toStringList().join(",") : thisParam->second.toString();
             if (patternString.length())
             {
                 jobDesc.m_jobParameters.clear();
@@ -159,7 +159,7 @@ namespace AssetProcessor
         paramEntry = builderEntry->second.find("patterns");
         if (paramEntry != paramMap.end())
         {
-            QString patternString = paramEntry->second.type() == QVariant::StringList ? paramEntry->second.toStringList().join(",") : paramEntry->second.toString();
+            QString patternString = paramEntry->second.userType() == QMetaType::Type::QStringList ? paramEntry->second.toStringList().join(",") : paramEntry->second.toString();
             if (patternString.length())
             {
                 builderDesc.m_patterns.clear();

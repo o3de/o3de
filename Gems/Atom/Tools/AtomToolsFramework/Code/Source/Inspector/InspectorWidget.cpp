@@ -295,7 +295,7 @@ namespace AtomToolsFramework
             menu.addAction("Collapse", [this, groupName]() { CollapseGroup(groupName); })->setEnabled(IsGroupExpanded(groupName));
             menu.addAction("Expand All", [this]() { ExpandAll(); });
             menu.addAction("Collapse All", [this]() { CollapseAll(); });
-            menu.exec(event->globalPosition());
+            menu.exec(event->globalPosition().toPoint());
             return;
         }
     }

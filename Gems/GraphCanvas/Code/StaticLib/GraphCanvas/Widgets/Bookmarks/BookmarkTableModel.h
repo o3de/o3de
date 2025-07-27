@@ -12,7 +12,7 @@
 #include <qitemdelegate.h>
 #include <qobject.h>
 #include <qsortfilterproxymodel.h>
-#include <qregexp.h>
+#include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>

@@ -401,7 +401,7 @@ namespace AtomToolsFramework
         const QString basePathAndName = fileInfo.absoluteFilePath().left(fileInfo.absoluteFilePath().size() - extension.size());
         while (fileInfo.exists())
         {
-            fileInfo = QString("%1_%2%3").arg(basePathAndName).arg(++counter).arg(extension);
+            fileInfo = QFileInfo(QString("%1_%2%3").arg(basePathAndName).arg(++counter).arg(extension));
         }
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }

@@ -148,13 +148,13 @@ namespace GraphCanvas
         QString test = model->data(index).toString();
         
         bool showRow = false;
-        int regexIndex = m_filterRegex.indexIn(test);
 
-        if (regexIndex >= 0)
+        QRegularExpressionMatch match = m_filterRegex.match(test);
+        if (match.isValid())
         {
             showRow = true;
-            
-            AZStd::pair<int, int> highlight(regexIndex, m_filterRegex.matchedLength());
+
+            AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
             currentItem->SetHighlight(highlight);
         }
         else
@@ -242,7 +242,7 @@ namespace GraphCanvas
         // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
-            result = AZStd::min(result, sourceString.size());
+            result = AZStd::min<int>(result, sourceString.size());
         }
         return result;
     }
@@ -351,13 +351,13 @@ namespace GraphCanvas
             regExIgnoreWhitespace.append(QRegularExpression::escape(QString(m_filter[i])));
         }
         
-        m_filterRegex = QRegularExpression(regExIgnoreWhitespace, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(regExIgnoreWhitespace, QRegularExpression::CaseInsensitiveOption);
     }
 
     void NodePaletteSortFilterProxyModel::ClearFilter()
     {
         m_filter.clear();
-        m_filterRegex = QRegularExpression(m_filter, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(m_filter, QRegularExpression::CaseInsensitiveOption);
     }
 
     QCompleter* NodePaletteSortFilterProxyModel::GetCompleter()

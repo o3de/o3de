@@ -20,10 +20,6 @@
 #include <native/assetprocessor.h>
 #endif
 
-// Do this here, rather than EditorAssetSystemAPI.h so that we don't have to link against Qt5Core to
-// use EditorAssetSystemAPI.h
-Q_DECLARE_METATYPE(AzToolsFramework::AssetSystem::JobStatus);
-
 namespace AzToolsFramework
 {
     namespace AssetDatabase

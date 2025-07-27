@@ -62,7 +62,7 @@ void CClipboard::PutString(const QString& text, [[maybe_unused]] const QString& 
 //////////////////////////////////////////////////////////////////////////
 QString CClipboard::GetString() const
 {
-    if (s_pendingPut.type() == QVariant::String)
+    if (s_pendingPut.userType() == QMetaType::Type::QString)
     {
         return s_pendingPut.toString();
     }
@@ -88,7 +88,7 @@ void CClipboard::PutImage(const CImageEx& img)
 bool CClipboard::GetImage(CImageEx& img)
 {
     QImage image;
-    if (s_pendingPut.type() == QVariant::Image)
+    if (s_pendingPut.userType() == QMetaType::Type::QImage)
     {
         image = s_pendingPut.value<QImage>();
     }
@@ -121,12 +121,12 @@ bool CClipboard::GetImage(CImageEx& img)
 //////////////////////////////////////////////////////////////////////////
 void CClipboard::SendPendingPut()
 {
-    if (s_pendingPut.type() == QVariant::String)
+    if (s_pendingPut.userType() == QMetaType::Type::QString)
     {
         QString text = s_pendingPut.toString();
         QApplication::clipboard()->setText(text);
     }
-    else if (s_pendingPut.type() == QVariant::Image)
+    else if (s_pendingPut.userType() == QMetaType::Type::QImage)
     {
         QImage image = s_pendingPut.value<QImage>();
         QApplication::clipboard()->setImage(image);

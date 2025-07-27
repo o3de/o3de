@@ -52,11 +52,11 @@ namespace AssetProcessor
         SizeType finalPosition = GenericStream::ComputeSeekPosition(bytes, mode);
 
         AZ_Assert(finalPosition < INT_MAX, "Overflow of SizeType to int in ByteArrayStream.");
-        AZ_Assert(finalPosition <= m_activeArray->size(), "You cant seek beyond end of file");
+        AZ_Assert(finalPosition <= aznumeric_cast<SizeType>(m_activeArray->size()), "You cant seek beyond end of file");
 
         // safety clamp!
-        finalPosition = AZ::GetClamp<SizeType>(finalPosition, 0, static_cast<SizeType>(m_activeArray->size()));
-        m_currentPos = static_cast<int>(finalPosition);
+        finalPosition = AZ::GetClamp<SizeType>(finalPosition, 0, aznumeric_cast<SizeType>(m_activeArray->size()));
+        m_currentPos = aznumeric_cast<int>(finalPosition);
     }
 
     SizeType ByteArrayStream::Read(SizeType bytes, void* oBuffer)
@@ -69,7 +69,7 @@ namespace AssetProcessor
         int actualAvailableBytes = m_activeArray->size() - m_currentPos;
         if (actualAvailableBytes <= 0)
         {
-            return static_cast<SizeType>(0);
+            return aznumeric_cast<SizeType>(0);
         }
 
         const char* data = m_activeArray->constData();
@@ -77,9 +77,9 @@ namespace AssetProcessor
 
         AZ_Assert(bytes < std::numeric_limits<int>::max(), "Overflow in ByteArrayStream::Read.");
         // safety cast.
-        bytes = AZ::GetMin(static_cast<SizeType>(std::numeric_limits<int>::max()), bytes);
+        bytes = AZ::GetMin(aznumeric_cast<SizeType>(std::numeric_limits<int>::max()), bytes);
 
-        int bytesToRead = AZ::GetMin<int>(static_cast<int>(bytes), actualAvailableBytes);
+        int bytesToRead = AZ::GetMin<int>(aznumeric_cast<int>(bytes), actualAvailableBytes);
 
         memcpy(oBuffer, data, bytesToRead);
         m_currentPos += bytesToRead;
@@ -102,7 +102,7 @@ namespace AssetProcessor
         }
 
         SizeType intMaxSize = std::numeric_limits<int>::max();
-        SizeType finalSize = bytes + static_cast<SizeType>(m_currentPos);
+        SizeType finalSize = bytes + aznumeric_cast<SizeType>(m_currentPos);
         AZ_Assert(finalSize < intMaxSize, "Overflow in ByteArrayStream::Write");
         if (finalSize > intMaxSize)
         {
@@ -110,7 +110,7 @@ namespace AssetProcessor
             finalSize -= delta;
             bytes -= delta;
         }
-        int intSize = static_cast<int>(finalSize);
+        int intSize = aznumeric_cast<int>(finalSize);
         if (intSize > m_activeArray->capacity())
         {
             // grow the array, but let's be smart about it.
@@ -120,7 +120,7 @@ namespace AssetProcessor
             int growthAmount = intSize / 4;
 
             // don't allow overflow here either.
-            if (static_cast<SizeType>(growthAmount) + static_cast<SizeType>(intSize) >= intMaxSize)
+            if (aznumeric_cast<SizeType>(growthAmount) + aznumeric_cast<SizeType>(intSize) >= intMaxSize)
             {
                 growthAmount = 0;
             }
@@ -145,7 +145,7 @@ namespace AssetProcessor
             char* data = m_activeArray->data();
             data += m_currentPos;
             memcpy(data, iBuffer, bytes);
-            m_currentPos += static_cast<int>(bytes);
+            m_currentPos += aznumeric_cast<int>(bytes);
         }
 
         return bytes;
@@ -163,7 +163,7 @@ namespace AssetProcessor
             char* data = m_activeArray->data();
             data += m_currentPos;
             bytes = inputStream->Read(bytes, data);
-            m_currentPos += static_cast<int>(bytes);
+            m_currentPos += aznumeric_cast<int>(bytes);
         }
 
         return bytes;
@@ -171,12 +171,12 @@ namespace AssetProcessor
 
     SizeType    ByteArrayStream::GetCurPos() const
     {
-        return static_cast<SizeType>(m_currentPos);
+        return aznumeric_cast<SizeType>(m_currentPos);
     }
 
     SizeType    ByteArrayStream::GetLength() const
     {
-        return static_cast<SizeType>(m_activeArray->size());
+        return aznumeric_cast<SizeType>(m_activeArray->size());
     }
 
     QByteArray ByteArrayStream::GetArray() const

@@ -64,6 +64,6 @@ namespace AzToolsFramework
             AZStd::span<const AZ::ComponentServiceType> serviceFilter
         );
 
-        AZTF_API QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
+        AZTF_API QRegularExpression BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     }
 }
