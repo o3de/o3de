@@ -82,7 +82,7 @@ namespace AZ::IO
             m_mock.reset();
 
             TaskExecutor::SetInstance(nullptr);
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void MockForRead()
