@@ -38,11 +38,9 @@ struct S3DConnexionMessage
 };
 
 #if defined(AZ_PLATFORM_WINDOWS)
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API C3DConnexionDriver
     : public IPlugin
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     C3DConnexionDriver();
     ~C3DConnexionDriver();

@@ -30,13 +30,10 @@ namespace AZ
          * and ShaderVariantAssets.
          * The notifications of assets being loaded & ready are dispatched via ShaderVariantFinderNotificationBus.
          */
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ShaderVariantAsyncLoader final
             : public AZ::Interface<IShaderVariantFinder>::Registrar
             , public AZ::Data::AssetBus::MultiHandler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
         public:
             static constexpr char LogName[] = "ShaderVariantAsyncLoader";
             ~ShaderVariantAsyncLoader() { Shutdown(); }

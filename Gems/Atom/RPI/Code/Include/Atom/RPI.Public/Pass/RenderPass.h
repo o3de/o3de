@@ -35,12 +35,10 @@ namespace AZ
 
         //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that 
         //! implements rendering functionality (raster, compute, copy)
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API RenderPass :
             public Pass,
             public RHI::ScopeProducer
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             AZ_RPI_PASS(RenderPass);
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;

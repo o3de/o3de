@@ -35,11 +35,9 @@ namespace AZ
         //! a parent image mip slice to the local container slice index.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using ImageMipChainAssetCreator.
         //! See RPI::ImageMipChain for runtime features based on this asset.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ImageMipChainAsset final
             : public Data::AssetData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ImageMipChainAssetCreator;
             friend class ImageMipChainAssetHandler;
             friend class ImageMipChainAssetTester;
@@ -123,11 +121,9 @@ namespace AZ
             AZStd::vector<uint8_t, Allocator> m_imageData;
         };
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ImageMipChainAssetHandler final
             : public AssetHandler<ImageMipChainAsset>
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<ImageMipChainAsset>;
         public:
             ImageMipChainAssetHandler() = default;

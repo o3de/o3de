@@ -27,11 +27,9 @@ namespace AZ
     {
         class ModelAsset;
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API Model final
             : public Data::InstanceData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ModelSystem;
 
         public:

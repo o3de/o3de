@@ -25,12 +25,9 @@ namespace AZ
         //! Image assets are domain specific (e.g. streaming vs. attachments) so
         //! the details of how to source content for an image is defined by the specialized variant. The base
         //! class provides access to the RHI image and default image view.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API ImageAsset
             : public Data::AssetData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
         public:
             static constexpr const char* DisplayName{ "ImageAsset" };
             static constexpr const char* Group{ "Image" };

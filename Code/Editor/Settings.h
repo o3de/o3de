@@ -240,11 +240,10 @@ struct SSmartOpenDialogSettings
 /** Various editor settings.
 */
 AZ_CVAR_EXTERNED(int64_t, ed_backgroundSystemTickCap);
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
 struct SANDBOX_API SEditorSettings
     : AzToolsFramework::EditorSettingsAPIBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SEditorSettings();
     ~SEditorSettings() = default;
     void    Save(bool isEditorClosing = false);

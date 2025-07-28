@@ -384,7 +384,6 @@ struct IVariable
 // Smart pointer to this parameter.
 typedef _smart_ptr<IVariable> IVariablePtr;
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /**
  **************************************************************************************
  * CVariableBase implements IVariable interface and provide default implementation
@@ -396,7 +395,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVariableBase
     : public IVariable
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     virtual ~CVariableBase() {}
 
@@ -1741,13 +1739,11 @@ typedef _smart_ptr<IVarEnumList> IVarEnumListPtr;
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING;
 //! Selection list shown in combo box, for enumerated variable.
 template <class T>
 class CVarEnumListBase
     : public IVarEnumList
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CVarEnumListBase(){}
 
@@ -2044,11 +2040,9 @@ private:
 
 
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVarBlock
     : public IVariableContainer
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     // Dtor.
     virtual ~CVarBlock() {}

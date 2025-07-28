@@ -82,7 +82,6 @@ enum class COpenSameLevelOptions
     NotReopenIfSame
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
     : public QObject
@@ -91,7 +90,6 @@ class SANDBOX_API CCryEditApp
     , protected AzFramework::AssetSystemStatusBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     friend MainWindow;
     Q_OBJECT
 public:
