@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Color.h>
@@ -42,7 +43,7 @@ namespace AZ
         };
 
         //! Stores and converts between photometric data stored in various units like Lux, Lumens, and EV100
-        class PhotometricValue final
+        class ATOM_FEATURE_COMMON_API PhotometricValue final
         {
         public:
 
