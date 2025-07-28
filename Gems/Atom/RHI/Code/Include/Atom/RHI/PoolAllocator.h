@@ -25,7 +25,7 @@ namespace AZ::RHI
     //! to that memory and for the GPU to read it several frames later. The garbage collection latency can
     //! be set to match the maximum number of buffered frames, so the user can allocate and free at will
     //! without stomping over regions of memory being read.
-    class PoolAllocator final
+    class ATOM_RHI_PUBLIC_API PoolAllocator final
         : public Allocator
     {
     public:

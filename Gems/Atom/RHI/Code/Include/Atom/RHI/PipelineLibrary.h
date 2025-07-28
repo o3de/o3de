@@ -72,7 +72,7 @@ namespace AZ::RHI
     //! and forwarding the call.
     //! A device-specific DevicePipelineLibrary can be accessed by calling GetDevicePipelineLibrary
     //! with the corresponding device index
-    class PipelineLibrary : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API PipelineLibrary : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);

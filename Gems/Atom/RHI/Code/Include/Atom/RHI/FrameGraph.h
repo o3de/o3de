@@ -63,7 +63,7 @@ namespace AZ::RHI
     //!     1) You can traverse each "usage" of an attachment, from the first to the last scope (left / right).
     //!     2) You can traverse the list of attachments in a scope (up / down).
     //!     3) You can traverse the list of attachments matching the same type in a scope (up / down).
-    class FrameGraph final
+    class ATOM_RHI_PUBLIC_API FrameGraph final
     {
         friend class FrameGraphCompiler;
     public:

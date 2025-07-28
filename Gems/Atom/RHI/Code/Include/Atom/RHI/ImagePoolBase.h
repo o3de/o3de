@@ -15,7 +15,7 @@ namespace AZ::RHI
     //! A simple base class for multi-device image pools. This mainly exists so that various
     //! image pool implementations can have some type safety separate from other
     //! resource pool types.
-    class ImagePoolBase : public ResourcePool
+    class ATOM_RHI_PUBLIC_API ImagePoolBase : public ResourcePool
     {
     public:
         AZ_RTTI(ImagePoolBase, "{CAC2167A-D65A-493F-A450-FDE2B1A883B1}", ResourcePool);

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -25,7 +26,7 @@ namespace AZ::RHI
     //!   Channels maybe be stored in separate StreamBufferViews (each view having a separate StreamChannelDescriptor)
     //!   or interleaved in a single DeviceStreamBufferView (one view having multiple StreamChannelDescriptors).
     //! - The view will correspond to a single StreamBufferDescriptor.
-    class alignas(8) DeviceStreamBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) DeviceStreamBufferView
     {
     public:
         DeviceStreamBufferView() = default;

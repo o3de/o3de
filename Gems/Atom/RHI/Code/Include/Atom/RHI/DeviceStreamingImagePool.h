@@ -83,7 +83,7 @@ namespace AZ::RHI
 
     using DeviceStreamingImageExpandRequest = StreamingImageExpandRequestTemplate<DeviceImage>;
 
-    class DeviceStreamingImagePool
+    class ATOM_RHI_PUBLIC_API DeviceStreamingImagePool
         : public DeviceImagePoolBase
     {
     public:

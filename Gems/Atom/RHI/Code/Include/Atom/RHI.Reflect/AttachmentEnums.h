@@ -27,7 +27,7 @@ namespace AZ::RHI
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentAccess);
 
-    const char* ToString(ScopeAttachmentAccess attachmentAccess);
+    ATOM_RHI_REFLECT_API const char* ToString(ScopeAttachmentAccess attachmentAccess);
 
     //! Describes the underlying resource lifetime of an attachment with regards to the
     //! frame graph. Imported attachments are owned by the user and are persistent across
@@ -101,7 +101,7 @@ namespace AZ::RHI
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentUsageMask)
 
-    const char* ToString(ScopeAttachmentUsage attachmentUsage);
+    ATOM_RHI_REFLECT_API const char* ToString(ScopeAttachmentUsage attachmentUsage);
 
     //! Describes in which pipeline stages a Scope Attachment is used
     enum class ScopeAttachmentStage : uint32_t
@@ -157,14 +157,14 @@ namespace AZ::RHI
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScopeAttachmentStage);
 
     //! Returns a string describing a stage
-    AZStd::string ToString(ScopeAttachmentStage attachmentStage);
+    ATOM_RHI_REFLECT_API AZStd::string ToString(ScopeAttachmentStage attachmentStage);
 
     //! Returns a string describing a usage and an access
-    const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess);
+    ATOM_RHI_REFLECT_API const char* ToString(ScopeAttachmentUsage usage, ScopeAttachmentAccess acess);
 
     //! Modifies access to fit the constraints of the scope attachment usage. For example, a scope attachment
     //! with the usage 'Shader' and 'Write' access becomes a UAV under the hood, so it should be remapped to 'ReadWrite'.
-    ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
+    ATOM_RHI_REFLECT_API ScopeAttachmentAccess AdjustAccessBasedOnUsage(ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
 
     //! Describes the three major logical classes of GPU hardware queues. Each queue class is a superset
     //! of the next. Graphics can do everything, compute can do compute / copy, and copy can only do copy
@@ -186,7 +186,7 @@ namespace AZ::RHI
 
     const uint32_t HardwareQueueClassCount = static_cast<uint32_t>(HardwareQueueClass::Count);
 
-    const char* ToString(HardwareQueueClass hardwareClass);
+    ATOM_RHI_REFLECT_API const char* ToString(HardwareQueueClass hardwareClass);
 
     //! Describes hardware queues as a mask, where each bit represents the queue family.
     enum class HardwareQueueClassMask : uint32_t
@@ -200,16 +200,16 @@ namespace AZ::RHI
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::HardwareQueueClassMask)
 
     //! Returns the hardware queue class mask bit associated with the enum value.
-    HardwareQueueClassMask GetHardwareQueueClassMask(HardwareQueueClass hardwareQueueClass);
+    ATOM_RHI_REFLECT_API HardwareQueueClassMask GetHardwareQueueClassMask(HardwareQueueClass hardwareQueueClass);
 
     //! Returns the name associated with the hardware queue.
-    const char* GetHardwareQueueClassName(HardwareQueueClass hardwareQueueClass);
+    ATOM_RHI_REFLECT_API const char* GetHardwareQueueClassName(HardwareQueueClass hardwareQueueClass);
 
     //! Scans the bit mask and returns the most capable queue from the set.
-    HardwareQueueClass GetMostCapableHardwareQueue(HardwareQueueClassMask queueMask);
+    ATOM_RHI_REFLECT_API HardwareQueueClass GetMostCapableHardwareQueue(HardwareQueueClassMask queueMask);
 
     //! Returns whether the first queue is more capable than the second queue.
-    bool IsHardwareQueueMoreCapable(HardwareQueueClass queueA, HardwareQueueClass queueB);
+    ATOM_RHI_REFLECT_API bool IsHardwareQueueMoreCapable(HardwareQueueClass queueA, HardwareQueueClass queueB);
 
     //! Describes the action the hardware should use when loading an attachment prior to a scope.
     enum class AttachmentLoadAction : uint8_t
@@ -259,7 +259,7 @@ namespace AZ::RHI
         Uninitialized,
     };
 
-    const char* ToString(AZ::RHI::AttachmentType attachmentType);
+    ATOM_RHI_REFLECT_API const char* ToString(AZ::RHI::AttachmentType attachmentType);
 
     //! Describes the type of scope attachment for a QueryPool
     enum class QueryPoolScopeAttachmentType : uint8_t
@@ -287,5 +287,4 @@ namespace AZ::RHI
     AZ_TYPE_INFO_SPECIALIZE(AttachmentStoreAction, "{F580ED24-1537-47D8-90D6-2E620087BE14}");
     AZ_TYPE_INFO_SPECIALIZE(AttachmentType, "{41A254E8-C4BF-459A-80D8-5B959501943E}");
     AZ_TYPE_INFO_SPECIALIZE(ScopeAttachmentStage, "{9F875055-0DA2-49EC-A17F-4C18504A5297}");
-
 }

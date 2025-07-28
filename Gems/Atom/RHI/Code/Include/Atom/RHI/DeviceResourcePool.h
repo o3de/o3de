@@ -34,7 +34,7 @@ namespace AZ::RHI
 
     //! A base class for resource pools. This class facilitates registration of resources
     //! into the pool, and allows iterating child resource instances.
-    class DeviceResourcePool
+    class ATOM_RHI_PUBLIC_API DeviceResourcePool
         : public DeviceObject
         , public MemoryStatisticsEventBus::Handler
         , public FrameEventBus::Handler

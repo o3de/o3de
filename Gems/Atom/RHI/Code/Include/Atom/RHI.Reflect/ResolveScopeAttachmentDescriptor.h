@@ -12,7 +12,7 @@
 namespace AZ::RHI
 {
     //! Describes the binding of a resolve image attachment to a scope.
-    struct ResolveScopeAttachmentDescriptor
+    struct ATOM_RHI_REFLECT_API ResolveScopeAttachmentDescriptor
         : public ImageScopeAttachmentDescriptor
     {
         AZ_TYPE_INFO(ResolveScopeAttachmentDescriptor, "{8ADC8E2B-2221-487B-A13F-E14218292E39}");

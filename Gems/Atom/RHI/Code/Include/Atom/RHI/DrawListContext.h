@@ -24,7 +24,7 @@ namespace AZ::RHI
     //! of draw lists.
     //!
     //! Finally, in the consume phase, the context is immutable and lists are accessible via GetList.
-    class DrawListContext final
+    class ATOM_RHI_PUBLIC_API DrawListContext final
     {
     public:
         DrawListContext() = default;

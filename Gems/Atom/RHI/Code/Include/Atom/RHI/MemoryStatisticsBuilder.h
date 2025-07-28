@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -22,7 +23,7 @@ namespace AZ::RHI
         Detail
     };
 
-    class MemoryStatisticsBuilder
+    class ATOM_RHI_PUBLIC_API MemoryStatisticsBuilder
     {
     public:
         //! Begins a new statistics building pass. The MemoryStatistics struct is cleared and intermediate

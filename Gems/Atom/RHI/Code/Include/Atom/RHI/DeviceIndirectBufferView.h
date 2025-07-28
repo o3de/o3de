@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
@@ -17,7 +18,7 @@ namespace AZ::RHI
 
     //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
     //! list of commands sequences. It is provided to the RHI back-end at draw time.
-    class alignas(8) DeviceIndirectBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) DeviceIndirectBufferView
     {
     public:
         DeviceIndirectBufferView() = default;

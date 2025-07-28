@@ -33,7 +33,7 @@ namespace AZ::RHI
     struct TransientBufferDescriptor;
     struct ResolveScopeAttachmentDescriptor;
 
-    class FrameGraphAttachmentDatabase
+    class ATOM_RHI_PUBLIC_API FrameGraphAttachmentDatabase
     {
     public:
         FrameGraphAttachmentDatabase() = default;

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/Base.h>
 
 #include <AzCore/std/containers/vector.h>
 
@@ -37,7 +37,7 @@ namespace AZ::RHI
     };
 
     //! This allocator allocates tile groups from a page which is aligned by tiles.
-    class PageTileAllocator
+    class ATOM_RHI_PUBLIC_API PageTileAllocator
     {
     public:
         PageTileAllocator() = default;

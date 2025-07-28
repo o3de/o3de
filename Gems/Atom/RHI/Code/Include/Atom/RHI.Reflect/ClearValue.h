@@ -26,7 +26,7 @@ namespace AZ::RHI
         DepthStencil
     };
 
-    struct ClearDepthStencil
+    struct ATOM_RHI_REFLECT_API ClearDepthStencil
     {
         AZ_TYPE_INFO(ClearDepthStencil, "{CDD1AA45-DDBC-452E-92BF-BAD140A668E0}");
         static void Reflect(AZ::ReflectContext* context);
@@ -43,7 +43,7 @@ namespace AZ::RHI
     };
 
     //! Represents either a depth stencil, a float vector, or a uint vector clear value.
-    struct ClearValue
+    struct ATOM_RHI_REFLECT_API ClearValue
     {
         AZ_TYPE_INFO(ClearValue, "{a64f14ac-3012-4fd6-9224-4cd046eff2e2}");
 

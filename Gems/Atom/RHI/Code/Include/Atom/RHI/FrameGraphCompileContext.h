@@ -27,7 +27,7 @@ namespace AZ::RHI
     //! associated with the provided scope id, along with other query methods for
     //! accessing attachment resource data. This information can be used to
     //! compile ShaderResourceGroups.
-    class FrameGraphCompileContext
+    class ATOM_RHI_PUBLIC_API FrameGraphCompileContext
     {
     public:
         FrameGraphCompileContext() = default;

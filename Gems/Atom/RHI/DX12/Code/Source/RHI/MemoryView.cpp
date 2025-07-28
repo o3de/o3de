@@ -13,7 +13,7 @@
 #include <AzCore/std/string/string.h>
 #include <dx12ma/D3D12MemAlloc.h>
 
-AZ_DECLARE_BUDGET(RHI);
+AZ_DECLARE_BUDGET_SHARED(RHI);
 
 namespace AZ
 {

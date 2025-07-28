@@ -21,7 +21,7 @@ namespace AZ
 namespace AZ::RHI
 {
     //! Buffer views describe how to interpret a region of memory in a buffer.
-    struct BufferViewDescriptor
+    struct ATOM_RHI_REFLECT_API BufferViewDescriptor
     {
         AZ_TYPE_INFO(BufferViewDescriptor, "{AC5C4601-1824-434F-B070-B4A48DBDB437}");
         AZ_CLASS_ALLOCATOR(BufferViewDescriptor, SystemAllocator);

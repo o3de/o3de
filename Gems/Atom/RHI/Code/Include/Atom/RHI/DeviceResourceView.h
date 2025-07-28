@@ -19,7 +19,7 @@ namespace AZ::RHI
     //! NOTE: While initialization is separate from creation, explicit shutdown is not allowed
     //! for resource views. This is because the cost of dependency tracking with ShaderResourceGroups
     //! is too high. Instead, resource views are reference counted.
-    class DeviceResourceView
+    class ATOM_RHI_PUBLIC_API DeviceResourceView
         : public DeviceObject
         , public ResourceInvalidateBus::Handler
     {

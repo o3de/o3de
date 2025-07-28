@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
@@ -24,7 +25,7 @@ namespace AZ::RHI
     //! we don't make assumptions about the data or how the user wants to operate on the data, and the convenience
     //! operations boil down to thin wrappers for single calls to SetConstantRaw and GetConstantRaw. So these
     //! convenience functions are provided in situations that are "low-hanging-fruit".
-    class ConstantsData
+    class ATOM_RHI_PUBLIC_API ConstantsData
     {
     public:
         ConstantsData() = default;
@@ -126,55 +127,55 @@ namespace AZ::RHI
     }
 
     template <>
-    bool ConstantsData::SetConstant<bool>(ShaderInputConstantIndex inputIndex, const bool& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<bool>(ShaderInputConstantIndex inputIndex, const bool& value);
 
     template <>
-    bool ConstantsData::SetConstant<Matrix3x3>(ShaderInputConstantIndex inputIndex, const Matrix3x3& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Matrix3x3>(ShaderInputConstantIndex inputIndex, const Matrix3x3& value);
 
     template <>
-    bool ConstantsData::SetConstant<Matrix3x4>(ShaderInputConstantIndex inputIndex, const Matrix3x4& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Matrix3x4>(ShaderInputConstantIndex inputIndex, const Matrix3x4& value);
 
     template <>
-    bool ConstantsData::SetConstant<Matrix4x4>(ShaderInputConstantIndex inputIndex, const Matrix4x4& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Matrix4x4>(ShaderInputConstantIndex inputIndex, const Matrix4x4& value);
 
     template <>
-    bool ConstantsData::SetConstant<Vector2>(ShaderInputConstantIndex inputIndex, const Vector2& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Vector2>(ShaderInputConstantIndex inputIndex, const Vector2& value);
 
     template <>
-    bool ConstantsData::SetConstant<Vector3>(ShaderInputConstantIndex inputIndex, const Vector3& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Vector3>(ShaderInputConstantIndex inputIndex, const Vector3& value);
 
     template <>
-    bool ConstantsData::SetConstant<Vector4>(ShaderInputConstantIndex inputIndex, const Vector4& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Vector4>(ShaderInputConstantIndex inputIndex, const Vector4& value);
 
     template <>
-    bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value);
 
     template <>
-    bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::span<const bool> values);
+    ATOM_RHI_PUBLIC_API bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::span<const bool> values);
 
     template <>
-    bool ConstantsData::GetConstant<bool>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API bool ConstantsData::GetConstant<bool>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Matrix3x3 ConstantsData::GetConstant<Matrix3x3>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Matrix3x3 ConstantsData::GetConstant<Matrix3x3>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Matrix3x4 ConstantsData::GetConstant<Matrix3x4>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Matrix3x4 ConstantsData::GetConstant<Matrix3x4>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Matrix4x4 ConstantsData::GetConstant<Matrix4x4>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Matrix4x4 ConstantsData::GetConstant<Matrix4x4>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Vector2 ConstantsData::GetConstant<Vector2>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Vector2 ConstantsData::GetConstant<Vector2>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Vector3 ConstantsData::GetConstant<Vector3>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Vector3 ConstantsData::GetConstant<Vector3>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Vector4 ConstantsData::GetConstant<Vector4>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Vector4 ConstantsData::GetConstant<Vector4>(ShaderInputConstantIndex inputIndex) const;
 
     template <>
-    Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const;
+    ATOM_RHI_PUBLIC_API Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const;
 
     template <typename T, uint32_t matrixSize>
     bool ConstantsData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)

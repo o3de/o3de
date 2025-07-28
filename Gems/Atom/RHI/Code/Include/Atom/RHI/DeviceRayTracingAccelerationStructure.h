@@ -83,7 +83,7 @@ namespace AZ::RHI
     //! DeviceRayTracingBlas
     //!
     //! A DeviceRayTracingBlas is created from the information in the DeviceRayTracingBlasDescriptor.
-    class DeviceRayTracingBlas
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingBlas
         : public DeviceObject
     {
     public:
@@ -161,7 +161,7 @@ namespace AZ::RHI
     //! DeviceRayTracingTlas
     //!
     //! A DeviceRayTracingTlas is created from the information in the DeviceRayTracingTlasDescriptor.
-    class DeviceRayTracingTlas
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingTlas
         : public DeviceObject
     {
     public:

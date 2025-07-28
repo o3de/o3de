@@ -17,7 +17,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct Scissor
+    struct ATOM_RHI_REFLECT_API Scissor
     {
         AZ_TYPE_INFO(Scissor, "{A0D8D250-59DB-4940-93B4-92C0FA6911CC}");
         static void Reflect(AZ::ReflectContext* context);

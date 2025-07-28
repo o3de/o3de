@@ -38,7 +38,7 @@ namespace AZ::RHI
     using DrawListsByTag = AZStd::array<DrawList, RHI::Limits::Pipeline::DrawListTagCountMax>;
 
     /// Uniformly partitions the draw list and returns the sub-list denoted by the provided index.
-    DrawListView GetDrawListPartition(DrawListView drawList, size_t partitionIndex, size_t partitionCount);
+    ATOM_RHI_PUBLIC_API DrawListView GetDrawListPartition(DrawListView drawList, size_t partitionIndex, size_t partitionCount);
 
-    void SortDrawList(DrawList& drawList, DrawListSortType sortType);
+    ATOM_RHI_PUBLIC_API void SortDrawList(DrawList& drawList, DrawListSortType sortType);
 }
