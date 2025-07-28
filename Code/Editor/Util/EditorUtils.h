@@ -280,7 +280,7 @@ public:
 // better version of TokenizeString
 inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char aSeparator = ',')
 {
-    int crtPos = 0, lastPos = 0;
+    qsizetype crtPos = 0, lastPos = 0;
 
     while (true)
     {
@@ -288,7 +288,7 @@ inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char 
 
         if (-1 == crtPos)
         {
-            crtPos = rSrcStr.length();
+            crtPos = static_cast<int>(rSrcStr.length());
 
             if (crtPos != lastPos)
             {
@@ -507,7 +507,7 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
     // box and is much less ambiguous on other platforms.
 
     QByteArray data = str.toUtf8();
-    int length = data.length();
+    qsizetype length = data.length();
 
     if (length < 255)
     {

@@ -14,6 +14,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <QAction>
+#include <QActionGroup>
 #include <QCursor>
 #include <QMenu>
 

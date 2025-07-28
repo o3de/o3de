@@ -11,7 +11,7 @@
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 #include <QMenu>
-#include <qregexp.h>
+#include <QRegularExpression>
 #include <QSortFilterProxyModel>
 
 #include <AzCore/Component/Entity.h>

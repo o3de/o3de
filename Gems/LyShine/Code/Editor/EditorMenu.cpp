@@ -20,6 +20,7 @@
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <Util/PathUtil.h>
 
+#include <QActionGroup>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QUndoGroup>
@@ -256,7 +257,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         // list of shortcuts explicitly.
         {
             action->setShortcuts(QList<QKeySequence>{AzQtComponents::RedoKeySequence,
-                                                     QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Z),
+                                                     QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_Z),
                                                      QKeySequence(QKeySequence::Redo)});
         }
 
@@ -337,8 +338,8 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         {
             QAction* action = new QAction("Paste as c&hild", this);
             {
-                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_V),
-                                                         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_V)});
+                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V),
+                                                         QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V)});
             }
             action->setEnabled(canvasLoaded && thereIsContentInTheClipboard && itemsAreSelected);
             QObject::connect(action,

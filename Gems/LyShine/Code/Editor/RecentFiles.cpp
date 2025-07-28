@@ -43,7 +43,7 @@ void WriteRecentFiles(const QStringList& recentFiles)
 
     settings.beginGroup(UICANVASEDITOR_NAME_SHORT);
     settings.beginWriteArray(UICANVASEDITOR_SETTINGS_RECENT_FILES_KEY);
-    int count = std::min(recentFiles.size(),
+    int count = std::min(static_cast<int>(recentFiles.size()),
             UICANVASEDITOR_SETTINGS_RECENT_FILES_COUNT_MAX);
 
     // QSettings -> QStringList.

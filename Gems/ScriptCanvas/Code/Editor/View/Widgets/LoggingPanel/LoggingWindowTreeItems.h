@@ -12,6 +12,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QIcon>
 #include <QTime>
 #include <QTimer>
+#include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/NamedEntityId.h>
@@ -39,7 +40,7 @@ namespace ScriptCanvasEditor
 
         bool IsEmpty() const
         {
-            return m_filter.isEmpty();
+            return m_filter.isValid();
         }
 
     };

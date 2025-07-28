@@ -19,7 +19,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScreen>
-#include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
 
