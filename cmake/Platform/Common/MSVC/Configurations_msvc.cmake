@@ -129,13 +129,13 @@ ly_append_configurations_options(
 # More details about the compiler cache can be found in CompilerCache.cmake
 
 if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true") AND NOT O3DE_SCRIPT_ONLY)
-    o3de_compiler_cache_activation() # Activates the compiler cache
+    o3de_compiler_cache_activation(cache_exe_path) # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
     cmake_policy(SET CMP0141 NEW)
     set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
-    set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
-    set(CMAKE_CXX_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
+    set(CMAKE_C_COMPILER_LAUNCHER ${cache_exe_path})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${cache_exe_path})
 
     # Fallback to compiler flags if the debug format doesn't work, which can depend on CMake version
     ly_append_configurations_options(
