@@ -61,7 +61,7 @@ namespace FileHelpers
 
     QString GetAppDataPath()
     {
-        QStringList appDataDirs(QStandardPaths::standardLocations(QStandardPaths::DataLocation));
+        QStringList appDataDirs(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation));
         return appDataDirs.empty() ? QString() : appDataDirs.first();
     }
 

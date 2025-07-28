@@ -21,10 +21,6 @@
 #include <QPointer>
 #include <QMenu>
 
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/qwinfunctions.h>
-#endif
-
 #include <AzCore/Math/Uuid.h>
 #include <IEditor.h>
 #endif

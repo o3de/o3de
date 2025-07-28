@@ -467,7 +467,7 @@ bool CLevelFileDialog::ValidateLevelPath(const QString& levelPath) const
     if (splittedPath.size() > 1)
     {
         QString currentPath = (Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str();
-        for (size_t i = 0; i < splittedPath.size() - 1; ++i)
+        for (qsizetype i = 0; i < splittedPath.size() - 1; ++i)
         {
             currentPath += "/" + splittedPath[static_cast<int>(i)];
 

@@ -128,7 +128,8 @@ namespace ScriptCanvasEditor
             AZStd::string filterPattern;
             if (attrValue->Read<AZStd::string>(filterPattern))
             {
-                GUI->SetSourceAssetFilterPattern(QRegularExpression(filterPattern.c_str(), Qt::CaseInsensitive, QRegularExpression::Wildcard));
+                GUI->SetSourceAssetFilterPattern(
+                    QRegularExpression(filterPattern.c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption));
             }
         }
     }

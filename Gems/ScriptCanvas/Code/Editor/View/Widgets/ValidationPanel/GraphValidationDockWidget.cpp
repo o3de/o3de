@@ -547,7 +547,7 @@ namespace ScriptCanvasEditor
         if (m_filter != escapedString)
         {
             m_filter = escapedString;
-            m_regex = QRegularExpression(m_filter, Qt::CaseInsensitive);
+            m_regex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
             invalidateFilter();
         }

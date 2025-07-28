@@ -47,6 +47,7 @@
 #include "EditorCommon.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -115,7 +116,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPosition());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 

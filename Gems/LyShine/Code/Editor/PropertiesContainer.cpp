@@ -171,7 +171,7 @@ void PropertiesContainer::resizeEvent(QResizeEvent* event)
 
 void PropertiesContainer::contextMenuEvent(QContextMenuEvent* event)
 {
-    OnDisplayUiComponentEditorMenu(event->globalPosition());
+    OnDisplayUiComponentEditorMenu(event->globalPos());
     event->accept();
 }
 
@@ -220,7 +220,7 @@ bool PropertiesContainer::HandleSelectionEvents(QObject* object, QEvent* event)
         return false;
     }
 
-    const QRect globalRect(mouseEvent->globalPosition(), mouseEvent->globalPosition());
+    const QRect globalRect(mouseEvent->globalPosition().toPoint(), mouseEvent->globalPosition().toPoint());
 
     //reject input outside of the inspector's component list
     if (!DoesOwnFocus() ||

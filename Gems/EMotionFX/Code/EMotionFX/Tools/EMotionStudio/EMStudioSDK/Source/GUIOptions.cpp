@@ -177,7 +177,6 @@ namespace EMStudio
         }
         else
         {
-            QDesktopWidget desktopWidget;
             const QRect primaryScreenRect = QApplication::primaryScreen()->availableGeometry();
             const int posX = (primaryScreenRect.width() / 2) - (sizeX / 2);
             const int posY = (primaryScreenRect.height() / 2) - (sizeY / 2);

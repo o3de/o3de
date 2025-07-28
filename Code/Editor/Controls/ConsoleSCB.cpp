@@ -291,7 +291,7 @@ void ConsoleLineEdit::DisplayHistory(bool bForward)
     const int newHistoryIndex = static_cast<int>(m_historyIndex) + increment;
 
     m_bReusedHistory = false;
-    m_historyIndex = static_cast<unsigned int>(clamp_tpl(newHistoryIndex, 0, m_history.size() - 1));
+    m_historyIndex = static_cast<unsigned int>(clamp_tpl(newHistoryIndex, 0, static_cast<int>(m_history.size()) - 1));
 
     setText(m_history[m_historyIndex]);
 }

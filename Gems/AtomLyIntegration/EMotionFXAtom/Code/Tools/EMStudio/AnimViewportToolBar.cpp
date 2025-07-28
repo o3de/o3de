@@ -8,6 +8,7 @@
 
 #include <QToolButton>
 #include <QPushButton>
+#include <QActionGroup>
 #include <QMenu>
 #include <QSettings>
 #include <EMStudio/AtomRenderPlugin.h>

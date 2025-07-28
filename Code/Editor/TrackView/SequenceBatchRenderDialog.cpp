@@ -375,7 +375,7 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
     }
     // cvars
     QString cvarsText;
-    for (size_t i = 0; i < item.cvars.size(); ++i)
+    for (qsizetype i = 0; i < item.cvars.size(); ++i)
     {
         cvarsText += item.cvars[static_cast<int>(i)];
         cvarsText += "\r\n";
@@ -1646,7 +1646,7 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
             itemNode->setAttr("format", item.imageFormat.toUtf8().data());
 
             // cvars
-            for (size_t k = 0; k < item.cvars.size(); ++k)
+            for (qsizetype k = 0; k < item.cvars.size(); ++k)
             {
                 itemNode->newChild("cvar")->setContent(item.cvars[static_cast<int>(k)].toUtf8().data());
             }

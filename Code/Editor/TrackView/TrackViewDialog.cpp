@@ -16,6 +16,7 @@
 
 // Qt
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -1635,7 +1636,7 @@ bool CTrackViewDialog::event(QEvent* e)
 }
 
 #if defined(AZ_PLATFORM_WINDOWS)
-bool CTrackViewDialog::nativeEvent(const QByteArray &eventType, void *message, [[maybe_unused]] long *result)
+bool CTrackViewDialog::nativeEvent(const QByteArray &eventType, void *message, [[maybe_unused]] qintptr *result)
 {
     /* On Windows, eventType is set to "windows_generic_MSG" for messages sent to toplevel windows, and "windows_dispatcher_MSG" for
     system - wide messages such as messages from a registered hot key.In both cases, the message can be casted to a MSG pointer.

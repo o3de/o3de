@@ -30,9 +30,6 @@
 #include <QScrollBar>
 #include <QStaticText>
 #include <QToolTip>
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/QtWin>
-#endif
 
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 

@@ -8,6 +8,11 @@
 #include "EditorCommon.h"
 #include "AlignToolbarSection.h"
 
+#include <QAction>
+#include <QActionGroup>
+#include <QIcon>
+#include <QString>
+
 ModeToolbar::ModeToolbar(EditorWindow* parent)
     : QToolBar("Mode Toolbar", parent)
     , m_group(nullptr)

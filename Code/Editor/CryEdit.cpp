@@ -1750,7 +1750,7 @@ inline void ExtractMenuName(QString& str)
     // cut the string
     for (int i = 0; i < str.length(); i++)
     {
-        if (str[i] == 9)
+        if (str[i].toLatin1() == 9)
         {
             str = str.left(i);
         }

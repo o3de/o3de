@@ -108,7 +108,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent * event) override;
     void dropEvent(QDropEvent* ev) override;
     QStringList mimeTypes() const override;
-    QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const override;
+    QMimeData *mimeData(const QList<QTreeWidgetItem*>& items) const override;
 
 private:
 
