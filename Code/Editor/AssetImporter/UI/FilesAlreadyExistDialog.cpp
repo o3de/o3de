@@ -14,9 +14,7 @@
 #include <QPushButton>
 #include <QStyle>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AssetImporter/UI/ui_FilesAlreadyExistDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 FilesAlreadyExistDialog::FilesAlreadyExistDialog(QString message ,int numberOfFiles, QWidget* parent)
     : QDialog(parent)

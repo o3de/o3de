@@ -48,9 +48,8 @@ public:
     void WriteList();
 
     static const int Max = 12;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
     QStringList m_arrNames;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QSettings m_settings;
 };
 
@@ -82,14 +81,12 @@ enum class COpenSameLevelOptions
     NotReopenIfSame
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
     : public QObject
     , protected AzFramework::AssetSystemInfoBus::Handler
     , protected EditorIdleProcessingBus::Handler
     , protected AzFramework::AssetSystemStatusBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend MainWindow;
     Q_OBJECT
 public:
@@ -305,9 +302,7 @@ private:
     CCryDocManager* m_pDocManager = nullptr;
 
 // Disable warning for dll export since this member won't be used outside this class
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
     // Optional Uri to start an external lua debugger. If not specified,
@@ -325,9 +320,7 @@ private:
     static constexpr AZStd::string_view LuaDebuggerUriRegistryKey = "/O3DE/Lua/Debugger/Uri";
 
     struct PythonOutputHandler;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);

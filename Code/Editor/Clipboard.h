@@ -52,11 +52,9 @@ private:
     // Resolves the last request Put operation
     void SendPendingPut();
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     static XmlNodeRef m_node;
     static QString m_title;
     static QVariant s_pendingPut;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     QWidget* m_parent;
     QTimer m_putDebounce;

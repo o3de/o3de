@@ -87,13 +87,11 @@ public Q_SLOTS:
     void Update(int count);
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API MainWindow
     : public QMainWindow
     , public IEditorNotifyListener
     , private AzToolsFramework::SourceControlNotificationBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Q_OBJECT
 
 public:
@@ -224,14 +222,12 @@ private:
 
     CLayoutWnd* m_pLayoutWnd;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
     QTimer* m_connectionLostTimer;
 
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
 
     EditorActionsHandler m_editorActionsHandler;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static MainWindow* m_instance;
 

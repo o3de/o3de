@@ -344,10 +344,7 @@ enum EMenuItem
 
 // The 'MI' represents a Menu Item.
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TrackViewNodes.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
 
 CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent /* = 0 */)
     : QWidget(hParentWnd)

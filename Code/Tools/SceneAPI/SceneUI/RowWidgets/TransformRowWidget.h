@@ -58,11 +58,9 @@ namespace AZ
                 void SetScale(const float scale);
 
             private:
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZ::Vector3 m_translation;
                 AZ::Vector3 m_rotation;
                 float m_scale;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
 
             class TransformRowWidget : public QWidget

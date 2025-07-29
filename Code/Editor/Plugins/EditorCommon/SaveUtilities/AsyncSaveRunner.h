@@ -126,11 +126,9 @@ namespace AZ
 
     private:
         AsyncSaveRunner& m_owner;
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::vector<AZStd::shared_ptr<SaveOperationCache>> m_allSaveOperations;
         SaveCompleteCallback m_onSaveComplete;
         AZStd::atomic<size_t> m_completedCount;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         bool m_currentSaveResult = true;
     };
 
@@ -155,14 +153,12 @@ namespace AZ
         friend class SaveOperationController;
         void HandleRunnerFinished(SaveOperationController* runner, bool success);
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::vector<AZStd::shared_ptr<SaveOperationController>> m_allSaveControllers;
         SaveCompleteCallback m_onSaveAllComplete;
         AZStd::shared_ptr<ActionOutput> m_actionOutput;
         // If controller order is random this keeps track of the number of completed tasks, if the order is sequential it
         //      keeps track of the currently executing controller.
         AZStd::atomic<size_t> m_counter;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         ControllerOrder m_order;
         bool m_allWereSuccessfull = true;
     };

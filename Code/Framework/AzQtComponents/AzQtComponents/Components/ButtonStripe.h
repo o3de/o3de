@@ -38,9 +38,7 @@ namespace AzQtComponents
     private:
         QGridLayout* const m_gridLayout;
         QButtonGroup* const m_buttonGroup;
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         QList<QPushButton*> m_buttons;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 } // namespace AzQtComponents
 

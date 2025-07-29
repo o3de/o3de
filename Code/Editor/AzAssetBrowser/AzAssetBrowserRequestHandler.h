@@ -40,7 +40,6 @@ namespace AzToolsFramework
 
 // this also triggers a MEMBER warning on the actual EBus Handler we derive from
 // because it has members like m_node.
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 class AzAssetBrowserWindow;
 
@@ -97,6 +96,3 @@ protected:
     AzAssetBrowserWindow* FindAzAssetBrowserWindow(QWidget* widgetToStartSearchFrom);
     AzAssetBrowserWindow* FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget);
 };
-
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-

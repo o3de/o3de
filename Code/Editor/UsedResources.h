@@ -22,8 +22,6 @@ public:
     CUsedResources();
     void Add(const char* pResourceFileName);
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     TResourceFiles files;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 #endif // CRYINCLUDE_EDITOR_USEDRESOURCES_H

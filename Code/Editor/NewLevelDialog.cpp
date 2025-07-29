@@ -20,10 +20,7 @@
 #include <QToolButton>
 #include <QListWidgetItem>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_NewLevelDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
 
 // Folder in which levels are stored
 static const char kNewLevelDialog_LevelsFolder[] = "Levels";

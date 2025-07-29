@@ -24,10 +24,7 @@
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TrackViewTrackPropsDlg.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
 
 void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
 {

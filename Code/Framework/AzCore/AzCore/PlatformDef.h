@@ -113,13 +113,6 @@
 #define AZ_POP_DISABLE_WARNING                          \
     __pragma(warning(pop))
 
-
-/// Disables a warning for dll exported classes which has non dll-exported members as this can cause ABI issues if the layout of those classes differs between dlls.
-/// QT classes such as QList, QString, QMap, etc... and Cry Math classes such Vec3, Quat, Color don't dllexport their interfaces
-/// Therefore this macro can be used to disable the warning when caused by 3rdParty libraries
-#define AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING AZ_POP_DISABLE_WARNING
-
 #   define AZ_FORCE_INLINE  __forceinline
 
 /// Pointer will be aliased.
@@ -183,9 +176,6 @@
     _Pragma("GCC diagnostic pop")
 
 #endif // defined(AZ_COMPILER_CLANG)
-
-#define AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #   define AZ_FORCE_INLINE  inline
 

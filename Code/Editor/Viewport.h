@@ -252,13 +252,11 @@ public:
 protected:
     CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Screen Matrix
     Matrix34 m_screenTM;
     int m_nCurViewportID;
     // Final game view matrix before dropping back to editor
     Matrix34 m_gameTM;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     // Custom drop callback (Leroy@Conffx)
     DropCallback m_dropCallback;
@@ -444,7 +442,6 @@ public:
     void setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir) override;
 
     QPoint m_vp;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Vec3 m_raySrc;
     Vec3 m_rayDir;
 
@@ -453,7 +450,6 @@ public:
     // during the SScopedCurrentContext count check of m_cameraSetForWidgetRenderingCount.
     int m_processingMouseCallbacksCounter = 0;
 
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 protected:
     friend class CViewManager;
     bool IsVectorInValidRange(const Vec3& v) const { return fabs(v.x) < 1e+8 && fabs(v.y) < 1e+8 && fabs(v.z) < 1e+8; }
@@ -498,9 +494,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     float m_selectionTolerance;
     QMenu m_cViewMenu;
@@ -537,11 +531,8 @@ protected:
 
     QRect m_rcClient;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
     typedef std::vector<_smart_ptr<IPostRenderer> > PostRenderers;
     PostRenderers   m_postRenderers;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 protected:
     bool m_mouseCaptured = false;

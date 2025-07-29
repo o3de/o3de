@@ -302,7 +302,6 @@ struct SANDBOX_API SEditorSettings
     //////////////////////////////////////////////////////////////////////////
     SViewportsSettings viewports;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     SToolViewSettings toolViewSettings;
 
     //////////////////////////////////////////////////////////////////////////
@@ -383,7 +382,6 @@ struct SANDBOX_API SEditorSettings
 
     // Object Highlight Settings
     SObjectColors objectColorSettings;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     SSmartOpenDialogSettings smartOpenSettings;
 

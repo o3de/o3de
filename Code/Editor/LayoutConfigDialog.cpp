@@ -14,9 +14,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/StyleManager.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_LayoutConfigDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 class LayoutConfigModel
     : public QAbstractListModel

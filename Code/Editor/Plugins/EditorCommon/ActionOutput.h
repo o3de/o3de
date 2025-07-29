@@ -46,10 +46,8 @@ namespace AZ
     private:
         AZStd::string BuildMessage(const IssueToDetails& issues) const;
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         IssueToDetails m_errorToDetails;
         IssueToDetails m_warningToDetails;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         int m_errorCount;
         int m_warningCount;
     };

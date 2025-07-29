@@ -82,7 +82,6 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
 };
 
 //! EditorViewportWidget window
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
     : public QtViewport
     , public AzFramework::ViewportBorderRequestBus::Handler
@@ -97,7 +96,6 @@ class SANDBOX_API EditorViewportWidget final
     , private AZ::RPI::SceneNotificationBus::Handler
     , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Q_OBJECT
 
 public:
@@ -302,8 +300,6 @@ private:
     // Members ...
     friend class AZ::ViewportHelpers::EditorEntityNotifications;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
     // Singleton for the primary viewport
     static EditorViewportWidget* m_pPrimaryViewport;
 
@@ -386,6 +382,4 @@ private:
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
     mutable Matrix34 m_viewTmStorage;
-
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

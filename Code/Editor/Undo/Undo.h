@@ -253,13 +253,10 @@ private: // ---------------------------------------------------------------
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
     std::list<CUndoStep*>      m_undoStack;
     std::list<CUndoStep*>      m_redoStack;
 
     std::vector<IUndoManagerListener*> m_listeners;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class CScopedSuspendUndo
