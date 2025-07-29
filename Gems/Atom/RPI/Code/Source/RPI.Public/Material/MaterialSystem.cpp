@@ -692,8 +692,17 @@ namespace AZ::RPI
         if (m_sceneMaterialSrgShaderAsset)
         {
             AZ::Data::AssetBus::Handler::BusDisconnect(m_sceneMaterialSrgShaderAsset.GetId());
-            m_sceneMaterialSrgShaderAsset->Release();
+            m_sceneMaterialSrgShaderAsset.Reset();
         }
+        if (m_sceneMaterialSrg)
+        {
+            m_sceneMaterialSrg.reset();
+        }
+        if (m_materialTypeBufferIndicesBuffer)
+        {
+            m_materialTypeBufferIndicesBuffer.reset();
+        }
+        m_materialTypeData.clear();
         MaterialInstanceHandlerInterface::Unregister(this);
         Data::InstanceDatabase<Material>::Destroy();
     }
