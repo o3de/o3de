@@ -72,7 +72,7 @@ namespace AssetProcessor
 
     bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegularExpression& filter, const AZ::Uuid& filterAsUuid) const
     {
-        if (filter.isEmpty())
+        if (!filter.isValid())
         {
             // Match everything if there is no filter.
             return true;

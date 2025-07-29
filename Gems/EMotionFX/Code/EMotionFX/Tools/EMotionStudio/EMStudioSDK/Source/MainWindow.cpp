@@ -369,7 +369,7 @@ namespace EMStudio
             tr("Redo"),
             this,
             &MainWindow::OnRedo,
-            QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z)
+            QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z)
         );
         m_redoAction->setObjectName("EMFX.MainWindow.RedoAction");
         m_undoAction->setDisabled(true);
@@ -2487,7 +2487,7 @@ namespace EMStudio
                     fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
                 }
             }
-            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            LoadFiles(fileNames, event->position().x(), event->position().y());
             event->acceptProposedAction();
 
         }

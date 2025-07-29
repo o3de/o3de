@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Source/Editor/ui_AudioControlsEditorMainWindow.h>
 #include <ATLControlsModel.h>
 #include <ATLControlsPanel.h>
 #include <AudioControlsEditorPlugin.h>
@@ -50,7 +51,8 @@ namespace AudioControls
     {
         InitACEResources();
 
-        setupUi(this);
+        m_gui = azcreate(Ui::MainWindow, ());
+        m_gui->setupUi(this);
 
         m_pATLModel = CAudioControlsEditorPlugin::GetATLModel();
         IAudioSystemEditor* pAudioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
@@ -60,21 +62,21 @@ namespace AudioControls
             m_pInspectorPanel = new CInspectorPanel(m_pATLModel);
             m_pAudioSystemPanel = new CAudioSystemPanel();
 
-            CDockTitleBarWidget* pTitleBar = new CDockTitleBarWidget(m_pATLControlsDockWidget);
-            m_pATLControlsDockWidget->setTitleBarWidget(pTitleBar);
+            CDockTitleBarWidget* pTitleBar = new CDockTitleBarWidget(m_gui->m_pATLControlsDockWidget);
+            m_gui->m_pATLControlsDockWidget->setTitleBarWidget(pTitleBar);
 
-            pTitleBar = new CDockTitleBarWidget(m_pInspectorDockWidget);
-            m_pInspectorDockWidget->setTitleBarWidget(pTitleBar);
+            pTitleBar = new CDockTitleBarWidget(m_gui->m_pInspectorDockWidget);
+            m_gui->m_pInspectorDockWidget->setTitleBarWidget(pTitleBar);
 
-            pTitleBar = new CDockTitleBarWidget(m_pMiddlewareDockWidget);
-            m_pMiddlewareDockWidget->setTitleBarWidget(pTitleBar);
+            pTitleBar = new CDockTitleBarWidget(m_gui->m_pMiddlewareDockWidget);
+            m_gui->m_pMiddlewareDockWidget->setTitleBarWidget(pTitleBar);
 
             // Custom title based on Middleware name
-            m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
+            m_gui->m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
 
-            m_pATLControlsDockLayout->addWidget(m_pATLControlsPanel);
-            m_pInspectorDockLayout->addWidget(m_pInspectorPanel);
-            m_pMiddlewareDockLayout->addWidget(m_pAudioSystemPanel);
+            m_gui->m_pATLControlsDockLayout->addWidget(m_pATLControlsPanel);
+            m_gui->m_pInspectorDockLayout->addWidget(m_pInspectorPanel);
+            m_gui->m_pMiddlewareDockLayout->addWidget(m_pAudioSystemPanel);
 
             Update();
 
@@ -194,7 +196,7 @@ namespace AudioControls
         if (pAudioSystemImpl)
         {
             StartWatchingFolder(pAudioSystemImpl->GetDataPath().LexicallyNormal().Native());
-            m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
+            m_gui->m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
         }
     }
 

@@ -191,7 +191,7 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
         return AZ::Uuid::CreateNull();
     }
 
-    QStringRef extension = filename.midRef(dotIndex);
+    QString extension = filename.mid(dotIndex);
     for (const auto& pair : m_extensionToAssetType)
     {
         QString qExtensions = pair.first.c_str();
@@ -628,7 +628,7 @@ void AssetCatalogModel::BuildFilter(QStringList& criteriaList, AzToolsFramework:
                 filter += "(?=.*" + text + ")"; //  Using Lookaheads to produce an "and" effect.
             }
 
-            SetFilterRegExp(tag.toStdString().c_str(), QRegularExpression(filter, Qt::CaseInsensitive));
+            SetFilterRegExp(tag.toStdString().c_str(), QRegularExpression(filter, QRegularExpression::PatternOption::CaseInsensitiveOption));
         }
     }
 }
@@ -666,7 +666,7 @@ void AssetCatalogModel::ApplyFilter(QStandardItem* parent)
     for (int i = 0; i < parent->rowCount(); i++)
     {
         QStandardItem* child = parent->child(i);
-        if (m_filtersRegExp["name"].isEmpty())
+        if (!m_filtersRegExp["name"].isValid())
         {
             child->setData(true, AssetCatalogEntry::VisibilityRole);
         }

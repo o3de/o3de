@@ -623,7 +623,7 @@ namespace EMotionFX
 
         int ypos = event->globalY();
         int index = 0;
-        int curpos = mapToGlobal({0,0}).y();
+        int curpos = mapToGlobal(QPoint{0,0}).y();
         for (const ColliderWidget* card : m_colliderWidgets)
         {
             if (!card->GetActor())
@@ -631,7 +631,7 @@ namespace EMotionFX
                 break;
             }
 
-            curpos = card->mapToGlobal({0,0}).y();
+            curpos = card->mapToGlobal(QPoint{0,0}).y();
             if (curpos > ypos)
             {
                 break;
@@ -647,7 +647,7 @@ namespace EMotionFX
         connect(pasteNewColliderAction, &QAction::triggered, this, [this, index]() { PasteCollider(index, false); } );
 
         menu->addAction(pasteNewColliderAction);
-        menu->popup(event->globalPosition());
+        menu->popup(event->globalPos());
         event->accept();
     }
 

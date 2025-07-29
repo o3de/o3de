@@ -24,7 +24,7 @@ namespace EMStudio
         {
         }
 
-        virtual bool nativeEventFilter(const QByteArray& /*eventType*/, void* message, long* /*result*/) Q_DECL_OVERRIDE;
+        virtual bool nativeEventFilter(const QByteArray& /*eventType*/, void* message, qintptr* /*result*/) Q_DECL_OVERRIDE;
 
     private:
         [[maybe_unused]] MainWindow* m_mainWindow;

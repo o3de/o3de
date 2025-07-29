@@ -122,7 +122,10 @@ namespace EMStudio
                 setRowHidden(newRowIndex, false);
 
                 // custom resize of the column to be efficient
-                const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                QStyleOptionViewItem option;
+                initViewItemOption(&option);
+
+                const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                 m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 SetColumnWidthToTakeWholeSpace();
             }
@@ -168,7 +171,10 @@ namespace EMStudio
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
-                    const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                    QStyleOptionViewItem option;
+                    initViewItemOption(&option);
+
+                    const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                     m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
@@ -214,7 +220,10 @@ namespace EMStudio
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
-                    const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                    QStyleOptionViewItem option;
+                    initViewItemOption(&option);
+
+                    const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                     m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
@@ -384,7 +393,7 @@ namespace EMStudio
         // execute the menu
         if (menu.isEmpty() == false)
         {
-            menu.exec(event->globalPosition());
+            menu.exec(event->globalPos());
         }
     }
 
