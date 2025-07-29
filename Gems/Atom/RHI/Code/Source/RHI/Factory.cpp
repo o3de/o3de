@@ -26,17 +26,17 @@ AZ_CVAR(
 
 namespace AZ::RHI
 {
-    uint32_t Factory::GetComponentService()
+    Crc32 Factory::GetComponentService()
     {
         return AZ_CRC_CE("RHIService");
     }
 
-    uint32_t Factory::GetManagerComponentService()
+    Crc32 Factory::GetManagerComponentService()
     {
         return AZ_CRC_CE("RHIManagerService");
     }
 
-    uint32_t Factory::GetPlatformService()
+    Crc32 Factory::GetPlatformService()
     {
         return AZ_CRC_CE("RHIPlatformService");
     }

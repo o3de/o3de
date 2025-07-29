@@ -671,8 +671,8 @@ namespace UnitTest
         }
 
         // Store each AddressTypeElement version's delimiters seperately from the class so our tests don't auto update to a new version if these delimiters change in V2+
-        static constexpr const char* V1AddressTypeElementPathDelimiter = "/";
-        static constexpr const char* V1AddressTypeElementVersionDelimiter = AZ::DataPatchInternal::VersionDelimiter; // utf-8 for <middledot>
+        static inline const char* V1AddressTypeElementPathDelimiter = AZ::DataPatchInternal::PathDelimiter;
+        static inline const char* V1AddressTypeElementVersionDelimiter = AZ::DataPatchInternal::VersionDelimiter; // utf-8 for <middledot>
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
         DataPatchInternal::AddressTypeSerializer* m_addressTypeSerializer;

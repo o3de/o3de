@@ -2066,7 +2066,7 @@ namespace AzToolsFramework
             {
                 // Set the edit data for the key prompt
                 AZ::Edit::ElementData syntheticData;
-                syntheticData.m_elementId = 0;
+                syntheticData.m_elementId = AZ::Crc32();
                 syntheticData.m_name = message;
                 syntheticData.m_description = "";
 

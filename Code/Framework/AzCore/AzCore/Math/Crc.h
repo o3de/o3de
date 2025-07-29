@@ -66,7 +66,7 @@ namespace AZ
         /**
          * Initializes from an int.
          */
-        constexpr Crc32(AZ::u32 value) : m_value{ value } {}
+        explicit constexpr Crc32(AZ::u32 value) : m_value{ value } {}
 
         /**
          * Calculates the value from a string.
@@ -79,7 +79,7 @@ namespace AZ
         Crc32(const void* data, size_t size, bool forceLowerCase = false);
         template<class ByteType, class = AZStd::enable_if_t<sizeof(ByteType) == 1>>
         constexpr Crc32(const ByteType* data, size_t size, bool forceLowerCase = false);
-        constexpr Crc32(AZStd::span<const AZStd::byte> inputSpan);
+        explicit constexpr Crc32(AZStd::span<const AZStd::byte> inputSpan);
 
         constexpr void Add(AZStd::string_view view);
         void Add(const void* data, size_t size, bool forceLowerCase = false);
@@ -89,6 +89,7 @@ namespace AZ
         constexpr void Add(AZStd::span<const AZStd::byte> inputSpan);
 
         constexpr operator u32() const               { return m_value; }
+        constexpr u32 GetValue() const               { return m_value; }
 
         constexpr bool operator==(Crc32 rhs) const   { return (m_value == rhs.m_value); }
         constexpr bool operator!=(Crc32 rhs) const   { return (m_value != rhs.m_value); }

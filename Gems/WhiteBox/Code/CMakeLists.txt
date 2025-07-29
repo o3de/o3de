@@ -103,6 +103,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::OpenMesh # Needs to be public, so that the below .Editor gem module includes the lib.
     )
 
+    target_compile_options(${gem_name}.Editor.Static ${O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION})
+
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
 

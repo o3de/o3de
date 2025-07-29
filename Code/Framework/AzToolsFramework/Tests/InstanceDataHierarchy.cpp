@@ -1290,7 +1290,7 @@ namespace UnitTest
             EXPECT_EQ(it->GetElementEditMetadata(), nullptr);
 
             ++it;
-            Crc32 uiHandler = 0;
+            Crc32 uiHandler;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC_CE("TestHandler"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
@@ -1301,7 +1301,7 @@ namespace UnitTest
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "data");
 
             ++it;
-            uiHandler = 0;
+            uiHandler = Crc32();
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC_CE("TestHandler2"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");

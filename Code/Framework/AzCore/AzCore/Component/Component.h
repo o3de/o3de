@@ -33,7 +33,7 @@ namespace AZ
     class Entity;
     class ComponentDescriptor;
 
-    typedef AZ::u32 ComponentServiceType;       ///< ID of a user-defined component service. The system uses it to build a dependency tree.
+    typedef AZ::Crc32 ComponentServiceType; ///< ID of a user-defined component service. The system uses it to build a dependency tree.
     using ImmutableEntityVector = AZStd::vector<AZ::Entity const *>;
 
     using ComponentTypeList = AZStd::vector<Uuid>; ///< List of Component class type IDs.

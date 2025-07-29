@@ -69,7 +69,7 @@ namespace AZ::DocumentPropertyEditor
 
     AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
-        AZ::Crc32 crc = 0;
+        AZ::Crc32 crc;
         if (value.IsString())
         {
             AZStd::string_view valueString = value.GetString();
@@ -83,12 +83,12 @@ namespace AZ::DocumentPropertyEditor
         AZ::Name result;
         AZ::AttributeReader reader(instanceObject.m_address, attribute);
 
-        AZ::Crc32 valueCrc = 0;
+        AZ::Crc32 valueCrc;
         if (!reader.Read<AZ::Crc32>(valueCrc))
         {
             AZ::u32 valueU32 = 0;
             reader.Read<AZ::u32>(valueU32);
-            valueCrc = valueU32;
+            valueCrc = Crc32(valueU32);
         }
 
         if (static_cast<AZ::u32>(valueCrc) != 0)

@@ -80,7 +80,7 @@ namespace Vegetation
         return o;
     }
 
-    bool AreaSystemComponent::ViewRect::operator==(const ViewRect& b)
+    bool AreaSystemComponent::ViewRect::operator==(const ViewRect& b) const
     {
         return m_x == b.m_x && m_y == b.m_y && m_width == b.m_width && m_height == b.m_height;
     }
@@ -90,7 +90,7 @@ namespace Vegetation
         return static_cast<size_t>(m_height * m_width);
     }
 
-    bool AreaSystemComponent::ViewRect::operator!=(const ViewRect& b)
+    bool AreaSystemComponent::ViewRect::operator!=(const ViewRect& b) const
     {
         return m_x != b.m_x || m_y != b.m_y || m_width != b.m_width || m_height != b.m_height;
     }

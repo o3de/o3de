@@ -28,20 +28,20 @@ namespace SurfaceData
         {
         }
 
-        SurfaceTag(const AZStd::string& value)
+        explicit SurfaceTag(const AZStd::string& value)
             : m_surfaceTagCrc(AZ::Crc32(value.data()))
         {
         }
 
-        SurfaceTag(const AZ::Crc32& value)
+        explicit SurfaceTag(const AZ::Crc32& value)
             : m_surfaceTagCrc(value)
         {
         }
 
         AZ_INLINE bool operator==(const SurfaceTag& other) const;
+        AZ_INLINE bool operator!=(const SurfaceTag& other) const;
         AZ_INLINE bool operator<(const SurfaceTag& other) const;
         AZ_INLINE operator AZ::Crc32() const;
-        AZ_INLINE operator AZ::u32() const;
 
         void SetTag(const AZStd::string& value)
         {
@@ -65,6 +65,11 @@ namespace SurfaceData
         return other.m_surfaceTagCrc == m_surfaceTagCrc;
     }
 
+    AZ_INLINE bool SurfaceTag::operator!=(const SurfaceTag& other) const
+    {
+        return other.m_surfaceTagCrc != m_surfaceTagCrc;
+    }
+
     AZ_INLINE bool SurfaceTag::operator<(const SurfaceTag& other) const
     {
         return other.m_surfaceTagCrc < m_surfaceTagCrc;
@@ -74,9 +79,17 @@ namespace SurfaceData
     {
         return static_cast<AZ::Crc32>(m_surfaceTagCrc);
     }
-
-    AZ_INLINE SurfaceTag::operator AZ::u32() const
-    {
-        return m_surfaceTagCrc;
-    }
 }
+
+namespace AZStd
+{
+    template<>
+    struct hash<SurfaceData::SurfaceTag>
+    {
+        size_t operator()(const SurfaceData::SurfaceTag& tag) const
+        {
+            AZStd::hash<AZ::Crc32> hasher;
+            return hasher(AZ::Crc32(tag));
+        }
+    };
+} // namespace AZStd

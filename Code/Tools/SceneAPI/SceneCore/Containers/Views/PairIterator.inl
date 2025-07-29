@@ -67,13 +67,13 @@ namespace AZ
                 }
 
                 template<typename FirstIterator, typename SecondIterator>
-                bool PairIterator<FirstIterator, SecondIterator, AZStd::input_iterator_tag>::operator==(const typename super::RootIterator& rhs) const
+                bool PairIterator<FirstIterator, SecondIterator, AZStd::input_iterator_tag>::operator==(const PairIterator& rhs) const
                 {
                     return super::m_first == rhs.m_first && super::m_second == rhs.m_second;
                 }
 
                 template<typename FirstIterator, typename SecondIterator>
-                bool PairIterator<FirstIterator, SecondIterator, AZStd::input_iterator_tag>::operator!=(const typename super::RootIterator& rhs) const
+                bool PairIterator<FirstIterator, SecondIterator, AZStd::input_iterator_tag>::operator!=(const PairIterator& rhs) const
                 {
                     return super::m_first != rhs.m_first || super::m_second != rhs.m_second;
                 }

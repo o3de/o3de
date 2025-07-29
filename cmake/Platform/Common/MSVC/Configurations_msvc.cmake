@@ -24,6 +24,10 @@ set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS "")
 # those 3rd Party targets ONLY.
 set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 
+# C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
+# This is problematic if 3rd-party libraries use such operations in header files.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
@@ -81,6 +85,7 @@ ly_append_configurations_options(
         #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
         /we4774 # 'string' : format string expected in argument number is not a string literal
         /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
+        #/we4855 # implicit capture of 'this' via '[=]' is deprecated in 'version' TODO(c++20): Enable this
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
         /we5233 # explicit lambda capture 'identifier' is not used

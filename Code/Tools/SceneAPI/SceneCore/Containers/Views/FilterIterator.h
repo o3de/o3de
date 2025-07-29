@@ -109,8 +109,8 @@ namespace AZ
                     FilterIterator(Iterator iterator, Iterator end, const typename super::Predicate& predicate);
                     FilterIterator(const FilterIterator& rhs) = default;
 
-                    bool operator==(const typename super::RootIterator& rhs) const;
-                    bool operator!=(const typename super::RootIterator& rhs) const;
+                    bool operator==(const FilterIterator& rhs) const;
+                    bool operator!=(const FilterIterator& rhs) const;
 
                     typename super::reference operator*() const;
                     typename super::pointer operator->() const;

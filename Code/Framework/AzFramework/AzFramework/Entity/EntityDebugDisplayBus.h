@@ -32,7 +32,7 @@ class ITexture;
 
 namespace AzFramework
 {
-    inline constexpr AZ::s32 g_defaultSceneEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId"); // default id to draw to all viewports in the default scene
+    constexpr AZ::Crc32 g_defaultSceneEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId"); // default id to draw to all viewports in the default scene
 
     // Notes:
     //   Don't change the xxxShift values, they need to match the values from legacy cry rendering

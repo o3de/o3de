@@ -122,8 +122,8 @@ namespace AZ
                     typename super::reference operator*() const;
                     typename super::pointer operator->() const;
 
-                    bool operator==(const typename super::RootIterator& rhs) const;
-                    bool operator!=(const typename super::RootIterator& rhs) const;
+                    bool operator==(const ConvertIterator& rhs) const;
+                    bool operator!=(const ConvertIterator& rhs) const;
 
                 protected:
                     // Used for pointer casts that don't require an intermediate value.
