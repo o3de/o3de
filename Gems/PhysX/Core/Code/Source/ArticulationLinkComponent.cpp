@@ -550,11 +550,7 @@ namespace PhysX
 
         PHYSX_SCENE_READ_LOCK(pxScene);
 
-        if (!m_articulation)
-        {
-            return;
-        }
-        if (m_articulation->isSleeping())
+        if (!m_articulation || m_articulation->isSleeping())
         {
             return;
         }
