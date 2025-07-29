@@ -374,7 +374,7 @@ namespace ScriptCanvasEditor
         {
             if (event->button() == Qt::MiddleButton)
             {
-                int tabIndex = tabAt(event->localPos().toPoint());
+                int tabIndex = tabAt(event->position().toPoint());
 
                 if (tabIndex >= 0)
                 {

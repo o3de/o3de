@@ -88,7 +88,7 @@ namespace AZ
 
                 // Create a table widget that will be filled with all of the data and options for each exported material
                 QTableWidget* tableWidget = new QTableWidget(&dialog);
-                tableWidget->setColumnCount(headerLabels.size());
+                tableWidget->setColumnCount((int)headerLabels.size());
                 tableWidget->setRowCount((int)exportItems.size());
                 tableWidget->setHorizontalHeaderLabels(headerLabels);
                 tableWidget->setSortingEnabled(false);
@@ -162,12 +162,12 @@ namespace AZ
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
                     QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&dialog, &exportItem, materialFileWidget, overwriteCheckBox]() {
-                        QFileInfo fileInfo = AzQtComponents::FileDialog::GetSaveFileName(&dialog,
+                        QFileInfo fileInfo = QFileInfo(AzQtComponents::FileDialog::GetSaveFileName(&dialog,
                             QString("Select Material Filename"),
                             exportItem.GetExportPath().c_str(),
                             QString("Material (*.material)"),
                             nullptr,
-                            QFileDialog::DontConfirmOverwrite);
+                            QFileDialog::DontConfirmOverwrite));
 
                         // Only update the export data if a valid path and filename was selected
                         if (!fileInfo.absoluteFilePath().isEmpty())

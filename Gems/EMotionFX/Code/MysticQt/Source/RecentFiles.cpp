@@ -40,7 +40,7 @@ namespace MysticQt
                 QAction* action = activeAction();
                 if (action)
                 {
-                    QToolTip::showText(helpEvent->globalPosition(), action->toolTip(), m_parent);
+                    QToolTip::showText(helpEvent->globalPos(), action->toolTip(), m_parent);
                 }
             }
             else
@@ -200,9 +200,9 @@ namespace MysticQt
     {
         m_maxNumRecentFiles = numRecentFiles;
 
-        if (m_recentFiles.size() > m_maxNumRecentFiles)
+        if (static_cast<size_t>(m_recentFiles.size()) > m_maxNumRecentFiles)
         {
-            while (m_recentFiles.size() > m_maxNumRecentFiles)
+            while (static_cast<size_t>(m_recentFiles.size()) > m_maxNumRecentFiles)
             {
                 m_recentFiles.removeLast();
             }

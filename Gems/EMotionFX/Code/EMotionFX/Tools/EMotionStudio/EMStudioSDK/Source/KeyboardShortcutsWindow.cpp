@@ -303,7 +303,7 @@ namespace EMStudio
     void KeyboardShortcutsWindow::contextMenuEvent(QContextMenuEvent* event)
     {
         // find the table widget item at the clicked position
-        QTableWidgetItem* clickedItem = m_tableWidget->itemAt(m_tableWidget->viewport()->mapFromGlobal(event->globalPosition()));
+        QTableWidgetItem* clickedItem = m_tableWidget->itemAt(m_tableWidget->viewport()->mapFromGlobal(event->globalPos()));
         if (clickedItem == nullptr)
         {
             return;
@@ -328,7 +328,7 @@ namespace EMStudio
         connect(newKeyAction, &QAction::triggered, this, &KeyboardShortcutsWindow::OnAssignNewKey);
 
         // show the menu at the given position
-        menu.exec(event->globalPosition());
+        menu.exec(event->globalPos());
     }
 
 

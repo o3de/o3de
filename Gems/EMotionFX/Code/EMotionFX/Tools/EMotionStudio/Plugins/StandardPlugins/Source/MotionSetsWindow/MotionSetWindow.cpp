@@ -1687,7 +1687,7 @@ namespace EMStudio
 
 
     // return the mime data
-    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
+    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*>& items) const
     {
         EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (motionSet == nullptr)

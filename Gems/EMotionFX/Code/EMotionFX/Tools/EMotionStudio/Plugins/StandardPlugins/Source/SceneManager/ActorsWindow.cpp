@@ -527,7 +527,7 @@ namespace EMStudio
         }
 
         // show the menu at the given position
-        menu.exec(event->globalPosition());
+        menu.exec(event->globalPos());
     }
 
 
