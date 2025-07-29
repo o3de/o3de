@@ -13,8 +13,6 @@ namespace AZ::IO
         : m_indicesPrevious(AZStd::make_unique<T[]>(size))
         , m_indicesNext(AZStd::make_unique<T[]>(size))
         , m_size(size)
-        , m_front(0)
-        , m_back(size - 1)
     {
         AZ_Assert(size > 2, "At least 2 entries are needed in order to have a separate front and back.");
         AZ_Assert(size < AZStd::numeric_limits<T>::max() - 1, "Size too large for Recently Used Index with the provided type.");
@@ -59,6 +57,8 @@ namespace AZ::IO
     template<typename T>
     void RecentlyUsedIndex<T>::FlushAll()
     {
+        m_front = 0;
+        m_back = m_size - 1;
         m_indicesPrevious[0] = InvalidIndex;
         for (T i = 1; i < m_size; ++i)
         {
