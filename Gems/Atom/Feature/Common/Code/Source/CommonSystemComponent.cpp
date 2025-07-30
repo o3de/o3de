@@ -75,6 +75,7 @@
 #include <PostProcessing/SMAAFeatureProcessor.h>
 #include <PostProcessing/SMAANeighborhoodBlendingPass.h>
 #include <PostProcessing/SsaoPasses.h>
+#include <PostProcessing/GtaoPasses.h>
 #include <PostProcessing/SubsurfaceScatteringPass.h>
 #include <PostProcessing/TaaPass.h>
 #include <PostProcessing/VignettePass.h>
@@ -279,6 +280,10 @@ namespace AZ
             // Add SSAO passes
             passSystem->AddPassCreator(Name("SsaoParentPass"), &SsaoParentPass::Create);
             passSystem->AddPassCreator(Name("SsaoComputePass"), &SsaoComputePass::Create);
+
+            // Add GTAO passes
+            passSystem->AddPassCreator(Name("GtaoParentPass"), &GtaoParentPass::Create);
+            passSystem->AddPassCreator(Name("GtaoComputePass"), &GtaoComputePass::Create);
 
             // Add Subsurface Scattering pass
             passSystem->AddPassCreator(Name("SubsurfaceScatteringPass"), &RPI::SubsurfaceScatteringPass::Create);

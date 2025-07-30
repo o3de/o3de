@@ -1,0 +1,300 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#define THREADS 16
+#define NUM_THREADS (THREADS * THREADS)
+
+#define GTAO_MAX_SCREEN_RADIUS 256
+
+// Todo: Instead of hardcoding the following values, they should be variable with quality settings
+// How many samples we use in search for the best angle
+#define GTAO_NUM_TAPS 8
+
+// How many slices of the hemisphere that we use for angle search
+#define GTAO_NUM_SLICES 8
+
+// `PI` is already defined in `Math.azsli`
+#define PI_HALF (PI / 2)
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_linearDepth;
+    RWTexture2D<float> m_gtaoOutput;
+
+    // Must match the struct in GtaoPasses.cpp
+    struct GtaoConstants
+    {
+        // The texture dimensions of GTAO output
+        uint2 m_outputSize;
+
+        // The size of a pixel relative to screenspace UV
+        // Calculated by taking the inverse of the texture dimensions
+        float2 m_pixelSize;
+    
+        // The size of half a pixel relative to screenspace UV
+        float2 m_halfPixelSize;
+
+        // The strength of the GTAO effect
+        float m_strength;
+
+        // Power of the GTAO effect
+        float m_power;
+
+        // World radius of effect
+        float m_worldRadius;
+
+        // Max pixel depth where AO effect is still calculated
+        float m_maxDepth;
+
+        // A heuristic to bias occlusion for thin or thick objects
+        float m_thicknessBlend;
+
+        // FOV scale to adjust the world radius with
+        float m_fovScale;
+
+    };
+    GtaoConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+// Fast approximation of arccos
+float acosFast(float x)
+{
+    float absX = abs(x);
+    float res = -0.156583 * absX + PI_HALF;
+    res *= sqrt(1.0 - absX);
+    return x >= 0 ? res : PI - res;
+}
+
+// Lookup the linear depth, UV instead of int coords are used since 
+// the depth texture may not be in the same resolution as the output texture
+float LookupLinearDepth(float2 uv){
+    return PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv, 0).r;
+}
+
+// Return the smaller diff between mid and left/right
+float TakeSmallerAbsDelta(float left, float mid, float right)
+{
+	float a = mid - left;
+	float b = right - mid;
+
+	return (abs(a) < abs(b)) ? a : b;
+}
+
+// Reconstruct normal from depth texture since there isn't a normal buffer in forward rendering
+// We won't need to do this any more if deferred/visibility shading is added. 
+float3 ConstructNormalFromDepth(in float pixelDepth, float2 uv){
+    // could use a modified version of GatherSceneDepth later on
+	float depthLeft = LookupLinearDepth(uv + PassSrg::m_constants.m_pixelSize * float2(-1, 0));
+	float depthTop = LookupLinearDepth(uv + PassSrg::m_constants.m_pixelSize * float2(0, -1));
+	float depthRight = LookupLinearDepth(uv + PassSrg::m_constants.m_pixelSize * float2(1, 0));
+	float depthBottom = LookupLinearDepth(uv + PassSrg::m_constants.m_pixelSize * float2(0, 1));
+
+	// Get the smaller depth diff
+	float ddx = TakeSmallerAbsDelta(depthLeft, pixelDepth, depthRight);
+	float ddy = TakeSmallerAbsDelta(depthTop, pixelDepth, depthBottom);
+
+	// Construct tangent and bitangent to get the normal
+	float3 MidPoint = ViewSrg::GetViewSpacePosition(uv, pixelDepth);
+	float3 Right = ViewSrg::GetViewSpacePosition(uv + PassSrg::m_constants.m_pixelSize * float2(1, 0), pixelDepth + ddx) - MidPoint;
+	float3 Down = ViewSrg::GetViewSpacePosition(uv + PassSrg::m_constants.m_pixelSize * float2(0, 1), pixelDepth + ddy) - MidPoint;
+
+	return normalize(cross(Right, Down));
+}
+
+// compute the inner integration given azimuth.
+float ComputeInnerIntegral(float2 Angles, float2 ScreenDir, float3 ViewDir, float3 ViewSpaceNormal)
+{
+    // Given the angles found in the search plane we need to project the View Space Normal onto the plane defined by the search axis and the View Direction and perform the inner integrate
+    float3 PlaneNormal = normalize(cross(float3(ScreenDir.xy, 0), ViewDir));
+    float3 Perp = cross(ViewDir, PlaneNormal);
+    float3 ProjNormal = ViewSpaceNormal - PlaneNormal * dot(ViewSpaceNormal, PlaneNormal);
+
+    float LenProjNormal = length(ProjNormal) + 0.000001f;
+    float RecipMag = 1.0f / (LenProjNormal);
+
+    float CosAng = dot(ProjNormal, Perp) * RecipMag;    
+    float Gamma = acosFast(CosAng) - PI_HALF;                
+    float CosGamma = dot(ProjNormal, ViewDir) * RecipMag;
+    float SinGamma = CosAng * -2.0f;                    
+
+    // clamp to normal hemisphere 
+    Angles.x = Gamma + max(-Angles.x - Gamma, -(PI_HALF));
+    Angles.y = Gamma + min( Angles.y - Gamma,  (PI_HALF));
+
+    float AO = ( (LenProjNormal) *  0.25 * 
+                        ( (Angles.x * SinGamma + CosGamma - cos((2.0 * Angles.x) - Gamma)) +
+                            (Angles.y * SinGamma + CosGamma - cos((2.0 * Angles.y) - Gamma)) ));
+    return AO;
+}
+
+// search for horizon lines in screen space
+float2 SearchForLargestAngleDual(float2 BaseUV, float2 ScreenDir, float PixelRadius, float InitialOffset, float3 ViewPos, float3 ViewDir, float AttenFactor)
+{
+    float SceneDepth, LenSq, OOLen, Ang, FallOff;
+    float3 V;
+    float2 SceneDepths = 0;
+
+    float2 BestAng = float2(-1,-1);
+    float Thickness = PassSrg::m_constants.m_thicknessBlend;
+
+    [unroll]
+    for(uint i = 0; i < GTAO_NUM_TAPS; i++)
+    {
+        float fi = (float) i;
+        float s = (fi + InitialOffset) / (GTAO_NUM_TAPS + 1);
+        s = s * s;
+        float2 sampleOffset = ScreenDir * max(PixelRadius * s, (fi + 1));
+        float2 UVOffset = PassSrg::m_constants.m_pixelSize * sampleOffset;  
+
+        UVOffset.y *= -1;
+        float4 UV2 = BaseUV.xyxy + float4( UVOffset.xy, -UVOffset.xy);
+
+        // Positive Direction
+        SceneDepths.x = LookupLinearDepth(UV2.xy);
+        SceneDepths.y = LookupLinearDepth(UV2.zw);
+
+        V = ViewSrg::GetViewSpacePosition(UV2.xy, SceneDepths.x) - ViewPos;
+        LenSq = dot(V,V);
+        OOLen = rsqrt(LenSq + 0.0001);
+        Ang = dot(V,ViewDir) * OOLen;
+
+        FallOff = saturate(LenSq * AttenFactor);  
+        Ang = lerp(Ang, BestAng.x, FallOff);
+
+        BestAng.x = ( Ang > BestAng.x ) ? Ang : lerp( Ang, BestAng.x, Thickness );  
+
+        // Negative Direction
+        V = ViewSrg::GetViewSpacePosition(UV2.zw, SceneDepths.y) - ViewPos;
+        LenSq = dot(V,V);
+        OOLen = rsqrt(LenSq + 0.0001);
+        Ang = dot(V,ViewDir) * OOLen;
+
+        FallOff = saturate(LenSq * AttenFactor);  
+        Ang = lerp(Ang, BestAng.y, FallOff);
+
+        BestAng.y = ( Ang > BestAng.y ) ? Ang : lerp( Ang, BestAng.y, Thickness );  
+    }
+
+    BestAng.x = acosFast(clamp(BestAng.x, -1.0,  1.0));
+    BestAng.y = acosFast(clamp(BestAng.y, -1.0,  1.0));
+
+    return BestAng;
+}
+
+// multi-bounce approximating 
+// float MultiBounce(float AO,float3 albedo)
+// {
+//     float3 a = 2.0404 * albedo - 0.3324;
+//     float3 b = -4.7951 * albedo + 0.6417;
+//     float3 c = 2.7552 * albedo + 0.6903;
+
+//     return max(AO, ((AO * a + b) * AO + c) * AO);
+// }
+
+// Interleaved gradient function from Jimenez 2014
+// Use integer coordinates rather than UV since UV varies too little
+float InterleavedGradientNoise(float2 coords)
+{
+    float f = dot(float2(0.06711056f, 0.00583715f), coords);
+    return frac(52.9829189f * frac(f));
+}
+
+float2 GetRandomAngleOffset(uint2 coords)
+{
+	coords.y = 4096 - coords.y;
+	float Angle  = InterleavedGradientNoise(float2(coords));
+	float Offset = 0.25 * (( coords.y - coords.x) & 3);
+	return float2(Angle, Offset);
+}
+
+[numthreads(THREADS, THREADS, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID, 
+    uint3 groupID : SV_GroupID, 
+    uint groupIndex : SV_GroupIndex)
+{
+    const uint2 pixelCoord = dispatchThreadID.xy;
+    // Calculate uv of the pixel center
+    float2 uv = mad(pixelCoord, PassSrg::m_constants.m_pixelSize, PassSrg::m_constants.m_halfPixelSize);
+
+    // Give a offset to avoid getting onto pixel edge when sampling half resolution
+    uv += 0.125 * PassSrg::m_constants.m_pixelSize;
+
+    // Prepare view space data
+    float linearDepth = LookupLinearDepth(uv);
+    if (linearDepth > PassSrg::m_constants.m_maxDepth)
+	{		
+		PassSrg::m_gtaoOutput[pixelCoord] = 1.0;
+        return;
+	}
+
+    float3 normalVS = ConstructNormalFromDepth(linearDepth, uv);
+    float3 viewPos = ViewSrg::GetViewSpacePosition(uv, linearDepth);
+    float3 viewDir = normalize(-viewPos);
+
+    const float2 randomAngleOffset = GetRandomAngleOffset(pixelCoord);
+    float offset = randomAngleOffset.y;
+
+    // Get a random direction on the hemisphere
+    float2 screenDir;
+    sincos(randomAngleOffset.x, screenDir.y, screenDir.x);
+
+    // A fast way of calculating the next direction of the slice after an iteration
+    const float deltaAngle = PI / GTAO_NUM_SLICES;
+	const float sinDeltaAngle = sin(deltaAngle), cosDeltaAngle = cos(deltaAngle);
+
+    float adjustedWorldRadius = PassSrg::m_constants.m_worldRadius * PassSrg::m_constants.m_fovScale;
+    const float pixelRadius = max(min(adjustedWorldRadius / viewPos.z, GTAO_MAX_SCREEN_RADIUS), GTAO_NUM_SLICES);
+    const float stepRadius = pixelRadius / ((float)GTAO_NUM_SLICES + 1);
+    const float attenFactor = 2.0 / (PassSrg::m_constants.m_worldRadius * PassSrg::m_constants.m_worldRadius);
+
+    float sum = 0;
+
+    // Calculate AO values for each slice respectively
+    [unroll]
+    for(int slice = 0; slice < GTAO_NUM_SLICES; slice++){
+		float2 bestAng = SearchForLargestAngleDual(uv, screenDir, stepRadius, offset, viewPos, viewDir, attenFactor);
+		sum += ComputeInnerIntegral(bestAng, screenDir, viewDir, normalVS);
+
+		// Fast calculation for rotation
+		float2 tmpDir = screenDir;
+		screenDir.x = tmpDir.x * cosDeltaAngle - tmpDir.y * sinDeltaAngle;
+		screenDir.y = tmpDir.x * sinDeltaAngle + tmpDir.y * cosDeltaAngle;
+        offset = frac(offset + 0.617);
+	}
+    
+    sum /= GTAO_NUM_SLICES;
+
+    // Maybe TODO: Add fade out like Unreal does
+    // Since the original SSAO shader doesn't use fade out, so it's also not added here, correspondingly
+
+    float output = 1 - (1 - pow(abs(sum), 0.5 * PassSrg::m_constants.m_power)) * PassSrg::m_constants.m_strength;
+
+    // Gamma compensation
+    // Not sure if it's needed here, so comment it out for the moment
+    // output = pow(output, 2.2f);
+
+    // Output
+    PassSrg::m_gtaoOutput[pixelCoord] = output;
+}

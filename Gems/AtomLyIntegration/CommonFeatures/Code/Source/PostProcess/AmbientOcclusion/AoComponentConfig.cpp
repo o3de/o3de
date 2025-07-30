@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/AmbientOcclusion/AoComponentConfiguration.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -14,24 +14,27 @@ namespace AZ
 {
     namespace Render
     {
-        void SsaoComponentConfig::Reflect(ReflectContext* context)
+        void AoComponentConfig::Reflect(ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponentConfig, ComponentConfig>()
+                serializeContext->Class<AoComponentConfig, ComponentConfig>()
                     ->Version(0)
 
                     // Auto-gen serialize context code...
-#define SERIALIZE_CLASS SsaoComponentConfig
+#define SERIALIZE_CLASS AoComponentConfig
 #include <Atom/Feature/ParamMacros/StartParamSerializeContext.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef SERIALIZE_CLASS
-                    ;
+                ;
             }
         }
 
-        void SsaoComponentConfig::CopySettingsFrom(SsaoSettingsInterface* settings)
+        void AoComponentConfig::CopySettingsFrom(AoSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -40,12 +43,15 @@ namespace AZ
 
 #define COPY_SOURCE settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsFrom.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_SOURCE
         }
 
-        void SsaoComponentConfig::CopySettingsTo(SsaoSettingsInterface* settings)
+        void AoComponentConfig::CopySettingsTo(AoSettingsInterface* settings)
         {
             if (!settings)
             {
@@ -54,7 +60,10 @@ namespace AZ
 
 #define COPY_TARGET settings
 #include <Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef COPY_TARGET
         }
