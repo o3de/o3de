@@ -1253,7 +1253,7 @@ namespace EMStudio
 
     void ParameterWindow::contextMenuEvent(QContextMenuEvent* event)
     {
-        RequestPropertyContextMenu(nullptr, event->globalPosition());
+        RequestPropertyContextMenu(nullptr, event->globalPos());
     }
 
 

@@ -391,7 +391,7 @@ namespace EMStudio
 
         if (!menu.isEmpty())
         {
-            menu.exec(event->globalPosition());
+            menu.exec(event->globalPos());
         }
     }
 
