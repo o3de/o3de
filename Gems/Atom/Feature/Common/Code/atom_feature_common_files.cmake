@@ -171,8 +171,8 @@ set(FILES
     Source/PostProcess/MotionBlur/MotionBlurSettings.h
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
-    Source/PostProcess/Ssao/SsaoSettings.cpp
-    Source/PostProcess/Ssao/SsaoSettings.h
+    Source/PostProcess/AmbientOcclusion/AoSettings.cpp
+    Source/PostProcess/AmbientOcclusion/AoSettings.h
     Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
     Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
     Source/PostProcess/Vignette/VignetteSettings.cpp
@@ -221,6 +221,8 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/GtaoPasses.cpp
+    Source/PostProcessing/GtaoPasses.h
     Source/PostProcessing/HDRColorGradingPass.cpp
     Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp

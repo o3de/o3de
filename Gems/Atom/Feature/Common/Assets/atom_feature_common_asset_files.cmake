@@ -142,6 +142,8 @@ set(FILES
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/FullscreenShadow.pass
+    Passes/GtaoCompute.pass
+    Passes/GtaoParent.pass
     Passes/HDRColorGrading.pass
     Passes/ImGui.pass
     Passes/KawaseShadowBlur.pass
@@ -572,6 +574,8 @@ set(FILES
     Shaders/PostProcessing/FilmGrain.shader
     Shaders/PostProcessing/FullscreenCopy.azsl
     Shaders/PostProcessing/FullscreenCopy.shader
+    Shaders/PostProcessing/GtaoCompute.azsl
+    Shaders/PostProcessing/GtaoCompute.shader
     Shaders/PostProcessing/HDRColorGrading.azsl
     Shaders/PostProcessing/HDRColorGrading.shader
     Shaders/PostProcessing/LookModificationTransform.azsl

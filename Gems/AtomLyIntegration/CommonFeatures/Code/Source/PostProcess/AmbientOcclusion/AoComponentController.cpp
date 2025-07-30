@@ -10,31 +10,34 @@
 
 #include <Atom/RPI.Public/Scene.h>
 
-#include <PostProcess/Ssao/SsaoComponentController.h>
+#include <PostProcess/AmbientOcclusion/AoComponentController.h>
 
 namespace AZ
 {
     namespace Render
     {
-        void SsaoComponentController::Reflect(ReflectContext* context)
+        void AoComponentController::Reflect(ReflectContext* context)
         {
-            SsaoComponentConfig::Reflect(context);
+            AoComponentConfig::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponentController>()
+                serializeContext->Class<AoComponentController>()
                     ->Version(0)
-                    ->Field("Configuration", &SsaoComponentController::m_configuration);
+                    ->Field("Configuration", &AoComponentController::m_configuration);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<SsaoRequestBus>("SsaoRequestBus")
+                behaviorContext->EBus<AoRequestBus>("AoRequestBus")
 
                     // Auto-gen behavior context...
-#define PARAM_EVENT_BUS SsaoRequestBus::Events
+#define PARAM_EVENT_BUS AoRequestBus::Events
 #include <Atom/Feature/ParamMacros/StartParamBehaviorContext.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef PARAM_EVENT_BUS
 
@@ -42,27 +45,27 @@ namespace AZ
             }
         }
 
-        void SsaoComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        void AoComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("SsaoService"));
+            provided.push_back(AZ_CRC_CE("AoService"));
         }
 
-        void SsaoComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        void AoComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("SsaoService"));
+            incompatible.push_back(AZ_CRC_CE("AoService"));
         }
 
-        void SsaoComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        void AoComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("PostFXLayerService"));
         }
 
-        SsaoComponentController::SsaoComponentController(const SsaoComponentConfig& config)
+        AoComponentController::AoComponentController(const AoComponentConfig& config)
             : m_configuration(config)
         {
         }
 
-        void SsaoComponentController::Activate(EntityId entityId)
+        void AoComponentController::Activate(EntityId entityId)
         {
             m_entityId = entityId;
 
@@ -72,20 +75,20 @@ namespace AZ
                 m_postProcessInterface = fp->GetOrCreateSettingsInterface(m_entityId);
                 if (m_postProcessInterface)
                 {
-                    m_ssaoSettingsInterface = m_postProcessInterface->GetOrCreateSsaoSettingsInterface();
+                    m_ssaoSettingsInterface = m_postProcessInterface->GetOrCreateAoSettingsInterface();
                     OnConfigChanged();
                 }
             }
-            SsaoRequestBus::Handler::BusConnect(m_entityId);
+            AoRequestBus::Handler::BusConnect(m_entityId);
         }
 
-        void SsaoComponentController::Deactivate()
+        void AoComponentController::Deactivate()
         {
-            SsaoRequestBus::Handler::BusDisconnect(m_entityId);
+            AoRequestBus::Handler::BusDisconnect(m_entityId);
 
             if (m_postProcessInterface)
             {
-                m_postProcessInterface->RemoveSsaoSettingsInterface();
+                m_postProcessInterface->RemoveAoSettingsInterface();
             }
 
             m_postProcessInterface = nullptr;
@@ -95,18 +98,18 @@ namespace AZ
 
         // Getters & Setters...
 
-        void SsaoComponentController::SetConfiguration(const SsaoComponentConfig& config)
+        void AoComponentController::SetConfiguration(const AoComponentConfig& config)
         {
             m_configuration = config;
             OnConfigChanged();
         }
 
-        const SsaoComponentConfig& SsaoComponentController::GetConfiguration() const
+        const AoComponentConfig& AoComponentController::GetConfiguration() const
         {
             return m_configuration;
         }
 
-        void SsaoComponentController::OnConfigChanged()
+        void AoComponentController::OnConfigChanged()
         {
             if (m_ssaoSettingsInterface)
             {
@@ -120,11 +123,11 @@ namespace AZ
         // from the settings class to set the local configuration. This is in case the settings class
         // applies some custom logic that results in the set value being different from the input
 #define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \
-        ValueType SsaoComponentController::Get##Name() const                                            \
+        ValueType AoComponentController::Get##Name() const                                            \
         {                                                                                               \
             return m_configuration.MemberName;                                                          \
         }                                                                                               \
-        void SsaoComponentController::Set##Name(ValueType val)                                          \
+        void AoComponentController::Set##Name(ValueType val)                                          \
         {                                                                                               \
             if(m_ssaoSettingsInterface)                                                                 \
             {                                                                                           \
@@ -139,11 +142,11 @@ namespace AZ
         }                                                                                               \
 
 #define AZ_GFX_COMMON_OVERRIDE(ValueType, Name, MemberName, OverrideValueType)                          \
-        OverrideValueType SsaoComponentController::Get##Name##Override() const                          \
+        OverrideValueType AoComponentController::Get##Name##Override() const                          \
         {                                                                                               \
             return m_configuration.MemberName##Override;                                                \
         }                                                                                               \
-        void SsaoComponentController::Set##Name##Override(OverrideValueType val)                        \
+        void AoComponentController::Set##Name##Override(OverrideValueType val)                        \
         {                                                                                               \
             m_configuration.MemberName##Override = val;                                                 \
             if(m_ssaoSettingsInterface)                                                                 \
@@ -154,7 +157,10 @@ namespace AZ
         }                                                                                               \
 
 #include <Atom/Feature/ParamMacros/MapAllCommon.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
 

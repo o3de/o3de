@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <PostProcess/Ssao/SsaoSettings.h>
+#include <PostProcess/AmbientOcclusion/AoSettings.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 namespace AZ
@@ -26,31 +26,34 @@ namespace AZ
     namespace Render
     {
 
-        SsaoSettings::SsaoSettings(PostProcessFeatureProcessor* featureProcessor)
+        AoSettings::AoSettings(PostProcessFeatureProcessor* featureProcessor)
             : PostProcessBase(featureProcessor)
         {
         }
 
-        void SsaoSettings::OnConfigChanged()
+        void AoSettings::OnConfigChanged()
         {
             m_parentSettings->OnConfigChanged();
         }
 
-        void SsaoSettings::ApplySettingsTo(SsaoSettings* target, float alpha) const
+        void AoSettings::ApplySettingsTo(AoSettings* target, float alpha) const
         {
-            AZ_Assert(target != nullptr, "SsaoSettings::ApplySettingsTo called with nullptr as argument.");
+            AZ_Assert(target != nullptr, "AoSettings::ApplySettingsTo called with nullptr as argument.");
 
             // Auto-gen code to blend individual params based on their override value onto target settings
 #define OVERRIDE_TARGET target
 #define OVERRIDE_ALPHA alpha
 #include <Atom/Feature/ParamMacros/StartOverrideBlend.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef OVERRIDE_TARGET
 #undef OVERRIDE_ALPHA
         }
 
-        void SsaoSettings::Simulate(float deltaTime)
+        void AoSettings::Simulate(float deltaTime)
         {
             m_deltaTime = deltaTime;
         }

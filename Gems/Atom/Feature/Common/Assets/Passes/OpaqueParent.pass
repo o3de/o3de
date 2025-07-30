@@ -523,8 +523,8 @@
                     }
                 },
                 {
-                    "Name": "Ssao",
-                    "TemplateName": "SsaoParentTemplate",
+                    "Name": "Ao",
+                    "TemplateName": "GtaoParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Modulate",
@@ -549,7 +549,7 @@
                         {
                             "LocalSlot": "InputDiffuse",
                             "AttachmentRef": {
-                                "Pass": "Ssao",
+                                "Pass": "Ao",
                                 "Attachment": "Output"
                             }
                         },

@@ -7,32 +7,32 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <PostProcess/Ssao/SsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/AoComponent.h>
 
 namespace AZ
 {
     namespace Render
     {
 
-        SsaoComponent::SsaoComponent(const SsaoComponentConfig& config)
+        AoComponent::AoComponent(const AoComponentConfig& config)
             : BaseClass(config)
         {
         }
 
-        void SsaoComponent::Reflect(AZ::ReflectContext* context)
+        void AoComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
 
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<SsaoComponent, BaseClass>();
+                serializeContext->Class<AoComponent, BaseClass>();
             }
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<SsaoComponent>()->RequestBus("SsaoRequestBus");
+                behaviorContext->Class<AoComponent>()->RequestBus("AoRequestBus");
 
-                behaviorContext->ConstantProperty("SsaoComponentTypeId", BehaviorConstant(Uuid(Ssao::SsaoComponentTypeId)))
+                behaviorContext->ConstantProperty("AoComponentTypeId", BehaviorConstant(Uuid(Ao::AoComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
             }

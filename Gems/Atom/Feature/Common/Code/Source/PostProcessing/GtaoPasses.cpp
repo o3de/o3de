@@ -9,9 +9,9 @@
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcess/AmbientOcclusion/AoSettings.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
-#include <PostProcessing/SsaoPasses.h>
+#include <PostProcessing/GtaoPasses.h>
 #include <AzCore/Math/MathUtils.h>
-#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoConstants.h>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoConstants.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -20,19 +20,19 @@ namespace AZ
 {
     namespace Render
     {
-        // --- SSAO Parent Pass ---
+        // --- GTAO Parent Pass ---
 
-        RPI::Ptr<SsaoParentPass> SsaoParentPass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<GtaoParentPass> GtaoParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<SsaoParentPass> pass = aznew SsaoParentPass(descriptor);
+            RPI::Ptr<GtaoParentPass> pass = aznew GtaoParentPass(descriptor);
             return AZStd::move(pass);
         }
 
-        SsaoParentPass::SsaoParentPass(const RPI::PassDescriptor& descriptor)
+        GtaoParentPass::GtaoParentPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         { }
 
-        bool SsaoParentPass::IsEnabled() const
+        bool GtaoParentPass::IsEnabled() const
         {
             if (!ParentPass::IsEnabled())
             {
@@ -59,28 +59,28 @@ namespace AZ
             {
                 return true;
             }
-            return aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::SSAO;
+            return aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::GTAO;
         }
 
-        void SsaoParentPass::InitializeInternal()
+        void GtaoParentPass::InitializeInternal()
         {
             ParentPass::InitializeInternal();
 
-            m_blurParentPass = FindChildPass(Name("SsaoBlur"))->AsParent();
-            AZ_Assert(m_blurParentPass, "[SsaoParentPass] Could not retrieve parent blur pass.");
+            m_blurParentPass = FindChildPass(Name("GtaoBlur"))->AsParent();
+            AZ_Assert(m_blurParentPass, "[GtaoParentPass] Could not retrieve parent blur pass.");
 
             m_blurHorizontalPass = azrtti_cast<FastDepthAwareBlurHorPass*>(m_blurParentPass->FindChildPass(Name("HorizontalBlur")).get());
             m_blurVerticalPass = azrtti_cast<FastDepthAwareBlurVerPass*>(m_blurParentPass->FindChildPass(Name("VerticalBlur")).get());
             m_downsamplePass = FindChildPass(Name("DepthDownsample")).get();
             m_upsamplePass = FindChildPass(Name("Upsample")).get();
 
-            AZ_Assert(m_blurHorizontalPass, "[SsaoParentPass] Could not retrieve horizontal blur pass.");
-            AZ_Assert(m_blurVerticalPass, "[SsaoParentPass] Could not retrieve vertical blur pass.");
-            AZ_Assert(m_downsamplePass, "[SsaoParentPass] Could not retrieve downsample pass.");
-            AZ_Assert(m_upsamplePass, "[SsaoParentPass] Could not retrieve upsample pass.");
+            AZ_Assert(m_blurHorizontalPass, "[GtaoParentPass] Could not retrieve horizontal blur pass.");
+            AZ_Assert(m_blurVerticalPass, "[GtaoParentPass] Could not retrieve vertical blur pass.");
+            AZ_Assert(m_downsamplePass, "[GtaoParentPass] Could not retrieve downsample pass.");
+            AZ_Assert(m_upsamplePass, "[GtaoParentPass] Could not retrieve upsample pass.");
         }
 
-        void SsaoParentPass::FrameBeginInternal(FramePrepareParams params)
+        void GtaoParentPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
@@ -93,9 +93,9 @@ namespace AZ
                     AoSettings* aoSettings = postProcessSettings->GetAoSettings();
                     if (aoSettings)
                     {
-                        bool ssaoEnabled = aoSettings->GetEnabled();
-                        bool blurEnabled = ssaoEnabled && aoSettings->GetEnableBlur();
-                        bool downsampleEnabled = ssaoEnabled && aoSettings->GetEnableDownsample();
+                        bool gtaoEnabled = aoSettings->GetEnabled();
+                        bool blurEnabled = gtaoEnabled && aoSettings->GetEnableBlur();
+                        bool downsampleEnabled = gtaoEnabled && aoSettings->GetEnableDownsample();
 
                         m_blurParentPass->SetEnabled(blurEnabled);
                         if (blurEnabled)
@@ -117,24 +117,24 @@ namespace AZ
             ParentPass::FrameBeginInternal(params);
         }
 
-        // --- SSAO Compute Pass ---
+        // --- GTAO Compute Pass ---
 
-        RPI::Ptr<SsaoComputePass> SsaoComputePass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<GtaoComputePass> GtaoComputePass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<SsaoComputePass> pass = aznew SsaoComputePass(descriptor);
+            RPI::Ptr<GtaoComputePass> pass = aznew GtaoComputePass(descriptor);
             return AZStd::move(pass);
         }
 
-        SsaoComputePass::SsaoComputePass(const RPI::PassDescriptor& descriptor)
+        GtaoComputePass::GtaoComputePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         { }
 
-        void SsaoComputePass::FrameBeginInternal(FramePrepareParams params)
+        void GtaoComputePass::FrameBeginInternal(FramePrepareParams params)
         {
-            // Must match the struct in SsaoCompute.azsl
-            struct SsaoConstants
+            // Must match the struct in GtaoCompute.azsl
+            struct GtaoConstants
             {
-                // The texture dimensions of SSAO output
+                // The texture dimensions of GTAO output
                 AZStd::array<u32, 2> m_outputSize;
 
                 // The size of a pixel relative to screenspace UV
@@ -144,13 +144,25 @@ namespace AZ
                 // The size of half a pixel relative to screenspace UV
                 AZStd::array<float, 2> m_halfPixelSize;
 
-                // The strength of the SSAO effect
-                float m_strength = Ssao::DefaultSsaoStrength;
+                // The strength of the GTAO effect
+                float m_strength = Gtao::DefaultGtaoStrength;
 
-                // The sampling radius calculated in screen UV space
-                float m_samplingRadius = Ssao::DefaultSsaoSamplingRadius;
+                // Power of the GTAO effect
+                float m_power = Gtao::DefaultGtaoPower;
 
-            } ssaoConstants{};
+                // World radius of effect
+                float m_worldRadius = Gtao::DefaultGtaoWorldRadius;
+
+                // Max pixel depth where AO effect is still calculated
+                float m_maxDepth = Gtao::DefaultGtaoMaxDepth;
+
+                // A heuristic to bias occlusion for thin or thick objects
+                float m_thicknessBlend = Gtao::DefaultGtaoThicknessBlend;
+
+                // FOV correction factor for world radius
+                float m_fovScale;
+
+            } gtaoConstants{};
 
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
@@ -163,35 +175,42 @@ namespace AZ
                     AoSettings* aoSettings = postProcessSettings->GetAoSettings();
                     if (aoSettings)
                     {
-                        if (aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::SSAO)
+                        if (aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::GTAO)
                         {
-                            ssaoConstants.m_strength = aoSettings->GetSsaoStrength();
-                            ssaoConstants.m_samplingRadius = aoSettings->GetSsaoSamplingRadius();
+                            gtaoConstants.m_strength = aoSettings->GetGtaoStrength();
+                            gtaoConstants.m_power = aoSettings->GetGtaoPower();
+                            gtaoConstants.m_worldRadius = aoSettings->GetGtaoWorldRadius();
+                            gtaoConstants.m_maxDepth = aoSettings->GetGtaoMaxDepth();
+                            gtaoConstants.m_thicknessBlend = aoSettings->GetGtaoThicknessBlend();
                         }
                         else
                         {
-                            ssaoConstants.m_strength = 0.0f;
+                            gtaoConstants.m_strength = 0.0f;
                         }
                     }
                 }
             }
 
-            AZ_Assert(GetOutputCount() > 0, "SsaoComputePass: No output bindings!");
+            AZ_Assert(GetOutputCount() > 0, "GtaoComputePass: No output bindings!");
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
-            AZ_Assert(outputAttachment != nullptr, "SsaoComputePass: Output binding has no attachment!");
+            AZ_Assert(outputAttachment != nullptr, "GtaoComputePass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
 
-            ssaoConstants.m_outputSize[0] = size.m_width;
-            ssaoConstants.m_outputSize[1] = size.m_height;
+            // Element 0, 0 of the projection matrix is equal to `1/tan(fovX/2)`
+            float invTanHalfFovX = view->GetViewToClipMatrix().GetElement(0, 0);
+            gtaoConstants.m_fovScale = invTanHalfFovX * float(size.m_height);
 
-            ssaoConstants.m_pixelSize[0] = 1.0f / float(size.m_width);
-            ssaoConstants.m_pixelSize[1] = 1.0f / float(size.m_height);
+            gtaoConstants.m_outputSize[0] = size.m_width;
+            gtaoConstants.m_outputSize[1] = size.m_height;
 
-            ssaoConstants.m_halfPixelSize[0] = 0.5f * ssaoConstants.m_pixelSize[0];
-            ssaoConstants.m_halfPixelSize[1] = 0.5f * ssaoConstants.m_pixelSize[1];
+            gtaoConstants.m_pixelSize[0] = 1.0f / float(size.m_width);
+            gtaoConstants.m_pixelSize[1] = 1.0f / float(size.m_height);
 
-            m_shaderResourceGroup->SetConstant(m_constantsIndex, ssaoConstants);
+            gtaoConstants.m_halfPixelSize[0] = 0.5f * gtaoConstants.m_pixelSize[0];
+            gtaoConstants.m_halfPixelSize[1] = 0.5f * gtaoConstants.m_pixelSize[1];
+
+            m_shaderResourceGroup->SetConstant(m_constantsIndex, gtaoConstants);
 
             RPI::ComputePass::FrameBeginInternal(params);
         }

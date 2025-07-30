@@ -7,24 +7,24 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <PostProcess/Ssao/EditorSsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/EditorAoComponent.h>
 
 namespace AZ
 {
     namespace Render
     {
-        void EditorSsaoComponent::Reflect(AZ::ReflectContext* context)
+        void EditorAoComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorSsaoComponent, BaseClass>()
+                serializeContext->Class<EditorAoComponent, BaseClass>()
                     ->Version(2);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorSsaoComponent>(
+                    editContext->Class<EditorAoComponent>(
                         "SSAO", "Controls SSAO.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
@@ -35,59 +35,71 @@ namespace AZ
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/ssao/") // [GFX TODO][ATOM-2672][PostFX] need create page for PostProcessing.
                         ;
 
-                    editContext->Class<SsaoComponentController>(
-                        "SsaoComponentController", "")
+                    editContext->Class<AoComponentController>(
+                        "AoComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &SsaoComponentController::m_configuration, "Configuration", "")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &AoComponentController::m_configuration, "Configuration", "")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
-                    editContext->Class<SsaoComponentConfig>("SsaoComponentConfig", "")
+                    editContext->Class<AoComponentConfig>("AoComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
-                            &SsaoComponentConfig::m_enabled,
+                            &AoComponentConfig::m_enabled,
                             "Enable SSAO",
                             "Enable SSAO.")
 
-                        ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_strength,
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_ssaoStrength,
                             "SSAO Strength",
                             "Multiplier for how much strong SSAO appears.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
 
-                        ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_samplingRadius,
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoStrength,
+                            "GTAO Strength",
+                            "Multiplier for how much strong GTAO appears.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 2.0f)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoPower,
+                            "GTAO Power",
+                            "Power factor for how much strong GTAO appears.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 5.0f)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_ssaoSamplingRadius,
                             "Sampling Radius",
                             "The sampling radius of the SSAO effect in screen UV space")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 0.25f)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
-                            &SsaoComponentConfig::m_enableBlur,
+                            &AoComponentConfig::m_enableBlur,
                             "Enable Blur",
-                            "Enables SSAO Blur")
+                            "Enables AO Blur")
 
-                        ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurConstFalloff,
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_blurConstFalloff,
                             "Blur Strength",
                             "Affects how strong the blur is. Recommended value is 0.67")
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 0.95f)
 
-                        ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurDepthFalloffStrength,
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_blurDepthFalloffStrength,
                             "Blur Sharpness",
                             "Affects how sharp the SSAO blur appears around edges. Recommended value is 50")
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 400.0f)
 
-                        ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurDepthFalloffThreshold,
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_blurDepthFalloffThreshold,
                             "Blur Edge Threshold",
                             "Affects the threshold needed for the blur algorithm to detect an edge. Recommended to be left at 0.")
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 1.0f)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
-                            &SsaoComponentConfig::m_enableDownsample,
+                            &AoComponentConfig::m_enableDownsample,
                             "Enable Downsample",
                             "Enables depth downsampling before SSAO. Slightly lower quality but 2x as fast as regular SSAO.")
 
@@ -97,9 +109,12 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         // Auto-gen editor context settings for overrides
-#define EDITOR_CLASS SsaoComponentConfig
+#define EDITOR_CLASS AoComponentConfig
 #include <Atom/Feature/ParamMacros/StartOverrideEditorContext.inl>
-#include <Atom/Feature/PostProcess/Ssao/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoParams.inl>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoParams.inl>
+
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 #undef EDITOR_CLASS
                             ;
@@ -108,20 +123,20 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<EditorSsaoComponent>()->RequestBus("SsaoRequestBus");
+                behaviorContext->Class<EditorAoComponent>()->RequestBus("AoRequestBus");
 
-                behaviorContext->ConstantProperty("EditorSsaoComponentTypeId", BehaviorConstant(Uuid(Ssao::EditorSsaoComponentTypeId)))
+                behaviorContext->ConstantProperty("EditorAoComponentTypeId", BehaviorConstant(Uuid(Ao::EditorAoComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
         }
 
-        EditorSsaoComponent::EditorSsaoComponent(const SsaoComponentConfig& config)
+        EditorAoComponent::EditorAoComponent(const AoComponentConfig& config)
             : BaseClass(config)
         {
         }
 
-        u32 EditorSsaoComponent::OnConfigurationChanged()
+        u32 EditorAoComponent::OnConfigurationChanged()
         {
             m_controller.OnConfigChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;

@@ -329,6 +329,14 @@
                 "Path": "Passes/SsaoCompute.pass"
             },
             {
+                "Name": "GtaoParentTemplate",
+                "Path": "Passes/GtaoParent.pass"
+            },
+            {
+                "Name": "GtaoComputeTemplate",
+                "Path": "Passes/GtaoCompute.pass"
+            },
+            {
                 "Name": "ReflectionsParentPassTemplate",
                 "Path": "Passes/Reflections.pass"
             },
