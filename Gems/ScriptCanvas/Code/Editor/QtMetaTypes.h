@@ -15,7 +15,6 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 // VariableId is a UUID typedef for now. So we don't want to double reflect the UUID.
-Q_DECLARE_METATYPE(AZ::Uuid);
 Q_DECLARE_METATYPE(AZ::Data::AssetId);
 Q_DECLARE_METATYPE(ScriptCanvas::Data::Type);
 Q_DECLARE_METATYPE(ScriptCanvas::VariableId);
