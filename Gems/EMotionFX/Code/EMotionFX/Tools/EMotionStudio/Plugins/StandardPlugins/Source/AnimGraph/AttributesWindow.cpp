@@ -699,7 +699,7 @@ namespace EMStudio
         // show the menu at the given position
         if (menu.isEmpty() == false)
         {
-            menu.exec(event->globalPosition());
+            menu.exec(event->globalPos());
         }
     }
 

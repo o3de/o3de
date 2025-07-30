@@ -511,7 +511,7 @@ namespace EMStudio
         }
 
         // show the menu at the given position
-        menu->popup(event->globalPosition());
+        menu->popup(event->globalPos());
         connect(menu, &QMenu::triggered, menu, &QMenu::deleteLater);
     }
 

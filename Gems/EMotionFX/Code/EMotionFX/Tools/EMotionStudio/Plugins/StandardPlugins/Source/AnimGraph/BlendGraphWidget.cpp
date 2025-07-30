@@ -170,7 +170,7 @@ namespace EMStudio
         }
 
         // calculate the drop position
-        QPoint localPos = LocalToGlobal(event->pos());
+        QPoint localPos = LocalToGlobal(event->position().toPoint());
 
         // Dragged from node palette
         if (event->mimeData()->hasFormat(BlendGraphMimeEvent::BlendGraphMimeEventType))
@@ -698,7 +698,7 @@ namespace EMStudio
         {
             if (event->button() == Qt::RightButton)
             {
-                OnContextMenuEvent(event->pos(), event->globalPosition(), m_plugin->GetActionFilter());
+                OnContextMenuEvent(event->position().toPoint(), event->globalPosition().toPoint(), m_plugin->GetActionFilter());
                 //setCursor( Qt::ArrowCursor );
             }
         }
@@ -1453,7 +1453,7 @@ namespace EMStudio
 
                 QPoint localPos     = helpEvent->pos();
                 QPoint globalPos    = LocalToGlobal(localPos);
-                QPoint tooltipPos   = helpEvent->globalPosition();
+                QPoint tooltipPos   = helpEvent->globalPos();
 
                 // find the connection at the mouse position
                 NodeConnection* connection = m_activeGraph->FindConnection(globalPos);

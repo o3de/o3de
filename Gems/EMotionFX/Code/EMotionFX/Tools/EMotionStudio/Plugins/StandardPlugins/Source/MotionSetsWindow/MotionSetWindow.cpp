@@ -1643,7 +1643,7 @@ namespace EMStudio
         connect(removeSelectedMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnRemoveMotions);
 
         // execute the menu
-        menu.exec(event->globalPosition());
+        menu.exec(event->globalPos());
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

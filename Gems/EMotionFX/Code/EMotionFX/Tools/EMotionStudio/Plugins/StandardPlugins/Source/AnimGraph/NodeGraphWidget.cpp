@@ -516,30 +516,30 @@ namespace EMStudio
         {
             // handle mouse wrapping, to enable smoother panning
             bool mouseWrapped = false;
-            if (event->x() > (int32)width())
+            if (event->position().x() > (int32)width())
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX() - width(), event->globalY()));
-                m_mouseLastPos = QPoint(event->x() - width(), event->y());
+                QCursor::setPos(QPoint(event->globalPosition().x() - width(), event->globalPosition().y()));
+                m_mouseLastPos = QPoint(event->position().x() - width(), event->position().y());
             }
-            else if (event->x() < 0)
+            else if (event->position().x() < 0)
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX() + width(), event->globalY()));
-                m_mouseLastPos = QPoint(event->x() + width(), event->y());
+                QCursor::setPos(QPoint(event->globalPosition().x() + width(), event->globalPosition().y()));
+                m_mouseLastPos = QPoint(event->position().x() + width(), event->position().y());
             }
 
-            if (event->y() > (int32)height())
+            if (event->position().y() > (int32)height())
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX(), event->globalY() - height()));
-                m_mouseLastPos = QPoint(event->x(), event->y() - height());
+                QCursor::setPos(QPoint(event->globalPosition().x(), event->globalPosition().y() - height()));
+                m_mouseLastPos = QPoint(event->position().x(), event->position().y() - height());
             }
-            else if (event->y() < 0)
+            else if (event->position().y() < 0)
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX(), event->globalY() + height()));
-                m_mouseLastPos = QPoint(event->x(), event->y() + height());
+                QCursor::setPos(QPoint(event->globalPosition().x(), event->globalPosition().y() + height()));
+                m_mouseLastPos = QPoint(event->position().x(), event->position().y() + height());
             }
 
             // don't apply the delta, if mouse has been wrapped
