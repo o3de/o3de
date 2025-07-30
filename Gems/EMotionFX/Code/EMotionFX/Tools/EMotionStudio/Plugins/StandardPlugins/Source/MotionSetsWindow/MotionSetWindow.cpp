@@ -25,7 +25,6 @@
 #include <QSplitter>
 #include <QClipboard>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <MCore/Source/LogManager.h>
@@ -216,10 +215,10 @@ namespace EMStudio
         // create the main aidget and put it to the dialog stack
         QVBoxLayout* layout = new QVBoxLayout();
         setLayout(layout);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout* tableLayout = new QVBoxLayout();
-        tableLayout->setMargin(0);
+        tableLayout->setContentsMargins(0, 0, 0, 0);
         tableLayout->setSpacing(2);
 
         QToolBar* toolBar = new QToolBar(this);
@@ -1688,7 +1687,7 @@ namespace EMStudio
 
 
     // return the mime data
-    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
+    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*>& items) const
     {
         EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (motionSet == nullptr)

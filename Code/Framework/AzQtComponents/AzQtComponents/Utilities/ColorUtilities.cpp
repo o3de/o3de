@@ -79,7 +79,7 @@ namespace AzQtComponents
         static const char Format = 'f';
         static const int Precision = 3;
 
-        qreal R, G, B, A;
+        float R, G, B, A;
         color.getRgbF(&R, &G, &B, &A);
         auto colorStr =
             includeAlphaChannel

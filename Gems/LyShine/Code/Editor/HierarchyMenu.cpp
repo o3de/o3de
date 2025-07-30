@@ -157,8 +157,8 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy,
         {
             action = new QAction(QIcon(":/Icons/Eye_Open.png"), ("Paste as child"), this);
             {
-                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_V),
-                                                         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_V)});
+                action->setShortcuts(QList<QKeySequence>{QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V),
+                                                         QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V)});
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             }
             QObject::connect(action,

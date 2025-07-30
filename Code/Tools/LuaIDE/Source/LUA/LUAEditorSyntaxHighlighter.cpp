@@ -11,6 +11,8 @@
 #include "LUAEditorStyleMessages.h"
 #include "LUAEditorBlockState.h"
 
+#include <QStringView>
+
 namespace LUAEditor
 {
     namespace
@@ -128,7 +130,10 @@ namespace LUAEditor
         void Reset();
 
         int CurrentLength() const { return m_currentChar - m_start + 1; }
-        QStringRef CurrentString() const { return QStringRef(m_currentString, m_start, CurrentLength()); }
+        QStringView CurrentString() const
+        {
+            return QStringView(m_currentString->data() + m_start, CurrentLength());
+        }
         const QString* GetFullLine() const { return m_currentString; }
 
         QTBlockState GetSaveState() const;
@@ -374,7 +379,7 @@ namespace LUAEditor
             return;
         }
 
-        QStringRef token = machine.CurrentString();
+        QStringView token = machine.CurrentString();
         if (token.endsWith(m_bracketEnd))
         {
             if (machine.GetFullLine()->size() >= token.size())
@@ -403,7 +408,7 @@ namespace LUAEditor
     void NumberParserState::Parse(LUASyntaxHighlighter::StateMachine& machine, const QChar& nextChar)
     {
         auto currentString = machine.CurrentString();
-        if (currentString.endsWith("--"))
+        if (currentString.endsWith(QString("--")))
         {
             machine.SetState(ParserStates::ShortComment, 1);
             return;
@@ -488,11 +493,11 @@ namespace LUAEditor
             }
         }
 
-        if (m_bracketLevel == 0 && nextChar == '\'' && !machine.CurrentString().endsWith("\\'"))
+        if (m_bracketLevel == 0 && nextChar == '\'' && !machine.CurrentString().endsWith(QString("\\'")))
         {
             m_endNextChar = true;
         }
-        if (m_bracketLevel == 1 && nextChar == '"' && !machine.CurrentString().endsWith("\\\""))
+        if (m_bracketLevel == 1 && nextChar == '"' && !machine.CurrentString().endsWith(QString("\\\"")))
         {
             m_endNextChar = true;
         }
@@ -682,14 +687,18 @@ namespace LUAEditor
         QTextCharFormat spaceFormat = QTextCharFormat();
         spaceFormat.setForeground(colors->GetTextWhitespaceColor());
 
-        QRegExp tabsAndSpaces("( |\t)+");
-        int index = tabsAndSpaces.indexIn(text);
+        // #GH_TODO
+        /*
+        QRegularExpression tabsAndSpaces("( |\t)+");
+        QRegularExpressionMatch match = tabsAndSpaces.match(text);
+        int index = match.capturedTexts().size();
         while (index >= 0)
         {
-            int length = tabsAndSpaces.matchedLength();
+            int length = match.capturedTexts().at(index).length();
             setFormat(index, length, spaceFormat);
             index = tabsAndSpaces.indexIn(text, index + length);
         }
+        */
 
         QTBlockState prevState;
         prevState.m_qtBlockState = previousBlockState();

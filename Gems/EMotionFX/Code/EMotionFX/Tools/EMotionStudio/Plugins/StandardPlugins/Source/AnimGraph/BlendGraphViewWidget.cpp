@@ -427,7 +427,7 @@ namespace EMStudio
         QVBoxLayout* verticalLayout = new QVBoxLayout(this);
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(0);
-        verticalLayout->setMargin(2);
+        verticalLayout->setContentsMargins(2, 2, 2, 2);
 
         // Create toolbars
         CreateActions();

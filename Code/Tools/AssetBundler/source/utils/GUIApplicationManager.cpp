@@ -161,9 +161,6 @@ namespace AssetBundler
 
         QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
-        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
         m_isInitializing = false;
 
         // Create the actual Qt Application

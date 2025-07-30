@@ -57,7 +57,7 @@ namespace AzToolsFramework
         setMinimumSize(60, 24);
 
         QHBoxLayout* frameLayout = new QHBoxLayout(this);
-        frameLayout->setMargin(0);
+        frameLayout->setContentsMargins(0, 0, 0, 0);
         frameLayout->setSpacing(4);
         frameLayout->setContentsMargins(4, 1, 4, 1);
 
@@ -102,7 +102,7 @@ namespace AzToolsFramework
     }
 
 
-    void SearchCriteriaButton::enterEvent(QEvent* event)
+    void SearchCriteriaButton::enterEvent(QEnterEvent* event)
     {
         (void)event;
         m_mouseHover = true;

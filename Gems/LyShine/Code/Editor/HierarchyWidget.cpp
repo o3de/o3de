@@ -571,7 +571,7 @@ void HierarchyWidget::dropEvent(QDropEvent* ev)
     }
     else if (AssetDropHelpers::DoesMimeDataContainSliceOrComponentAssets(ev->mimeData()))
     {
-        DropMimeDataAssetsAtHierarchyPosition(ev->mimeData(), ev->pos());
+        DropMimeDataAssetsAtHierarchyPosition(ev->mimeData(), ev->position().toPoint());
 
         ev->setDropAction(Qt::CopyAction);
         ev->accept();
@@ -591,7 +591,7 @@ QStringList HierarchyWidget::mimeTypes() const
     return list;
 }
 
-QMimeData* HierarchyWidget::mimeData(const QList<QTreeWidgetItem*> items) const
+QMimeData* HierarchyWidget::mimeData(const QList<QTreeWidgetItem*>& items) const
 {
     AzToolsFramework::EditorEntityIdContainer entityIdList;
     for (auto i : items)

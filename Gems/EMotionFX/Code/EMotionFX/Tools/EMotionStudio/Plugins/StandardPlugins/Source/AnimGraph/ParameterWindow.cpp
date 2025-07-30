@@ -211,7 +211,7 @@ namespace EMStudio
         m_verticalLayout = new QVBoxLayout();
         m_verticalLayout->setObjectName("StyledWidget");
         m_verticalLayout->setSpacing(2);
-        m_verticalLayout->setMargin(0);
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
         m_verticalLayout->addWidget(toolBar);
         m_verticalLayout->addWidget(m_treeWidget);

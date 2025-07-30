@@ -153,7 +153,6 @@ void CEditorImpl::Initialize()
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     // Prevents (native) sibling widgets from causing problems with docked QOpenGLWidgets on Windows

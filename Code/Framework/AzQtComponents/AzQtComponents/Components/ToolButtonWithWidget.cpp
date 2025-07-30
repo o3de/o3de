@@ -29,7 +29,7 @@ namespace AzQtComponents
     {
         auto layout = new QHBoxLayout(this);
         layout->setSpacing(0);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(m_button);
         layout->addWidget(m_widget);
         m_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));

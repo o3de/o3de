@@ -227,7 +227,7 @@ namespace EMStudio
         // create the main aidget and put it to the dialog stack
         QVBoxLayout* layout = new QVBoxLayout();
         setLayout(layout);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(2);
 
         m_motionSetsTree = new QTreeWidget();

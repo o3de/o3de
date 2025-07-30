@@ -27,7 +27,7 @@ namespace EMotionFX
         , m_stateMachine(stateMachine)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
 
         m_pickButton = new QPushButton(this);
         connect(m_pickButton, &QPushButton::clicked, this, &TransitionStateFilterPicker::OnPickClicked);

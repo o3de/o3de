@@ -91,7 +91,7 @@ namespace O3DE::ProjectManager
             m_verticalLayout->addWidget(m_advancedSettingWidget);
 
             QVBoxLayout* advancedSettingsLayout = new QVBoxLayout();
-            advancedSettingsLayout->setMargin(0);
+            advancedSettingsLayout->setContentsMargins(0, 0, 0, 0);
             advancedSettingsLayout->setAlignment(Qt::AlignTop);
             m_advancedSettingWidget->setLayout(advancedSettingsLayout);
 

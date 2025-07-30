@@ -69,7 +69,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QTextEdit>
 #include <QToolButton>
 #include <QtGui/private/qscreen_p.h>
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+// #include <QtWidgets/private/qstylesheetstyle_p.h> // #GH_TODO
 AZ_POP_DISABLE_WARNING
 
 #include <QtWidgets/private/qstylehelper_p.h>
@@ -638,7 +638,8 @@ namespace AzQtComponents
                 // If you really don't want this, add the g_treeViewDisableDefaultArrorPainting class to your object.
                 // I.e. Style::addClass(aQTreeView, g_treeViewDisableDefaultArrorPainting);
 #if !defined(AZ_PLATFORM_LINUX)
-
+                // #GH_TODO
+                /*
                 if (qobject_cast<const QTreeView*>(widget) && !hasClass(widget, g_treeViewDisableDefaultArrorPainting))
                 {
                     QStyleSheetStyle* styleSheetStyle = qobject_cast<QStyleSheetStyle*>(baseStyle());
@@ -653,6 +654,7 @@ namespace AzQtComponents
                         }
                     }
                 }
+                */
 #endif // !defined(AZ_PLATFORM_LINUX)
             }
             break;
@@ -1103,6 +1105,8 @@ namespace AzQtComponents
                 break;
             }
 
+            // #GH_TODO
+            /*
             case QStyle::PM_MenuHPlacementOffset:
             {
                 const int hOffset = Menu::horizontalShadowMargin(this, option, widget, m_data->menuConfig);
@@ -1122,6 +1126,7 @@ namespace AzQtComponents
                 }
                 break;
             }
+            */
 
             case QStyle::PM_MenuButtonIndicator:
             {

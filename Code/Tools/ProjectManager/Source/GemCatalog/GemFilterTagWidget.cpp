@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         : QWidget(parent)
     {
         m_layout = new QHBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
         setLayout(m_layout);
     }
@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setAlignment(Qt::AlignLeft);
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         hLayout->setSpacing(8);
 
         for(const QString& tag : tags)

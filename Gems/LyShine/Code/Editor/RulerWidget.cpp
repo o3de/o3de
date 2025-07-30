@@ -95,7 +95,7 @@ void RulerWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 void RulerWidget::mousePressEvent(QMouseEvent* ev)
 {
     // start a drag interaction to create a guide
-    AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+    AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPosition().toPoint());
     float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
     AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
     bool isVertical = m_orientation == Orientation::Vertical;
@@ -108,7 +108,7 @@ void RulerWidget::mouseMoveEvent(QMouseEvent* ev)
     // We only get the events if the mouse is pressed down. So we only get here when adding a ruler.
     if (m_dragInteraction)
     {
-        AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPos());
+        AZ::Vector2 localMousePos = QtHelpers::MapGlobalPosToLocalVector2(m_editorWindow->GetViewport(), ev->globalPosition().toPoint());
         float dpiScaleFactor = m_editorWindow->GetViewport()->WidgetToViewportFactor();
         AZ::Vector2 viewportMousePos = localMousePos * dpiScaleFactor;
 
@@ -116,7 +116,7 @@ void RulerWidget::mouseMoveEvent(QMouseEvent* ev)
     }
 
     // SetCursorPos does not get called from the viewport while we are dragging from the ruler so update both rulers from here
-    m_editorWindow->GetViewport()->SetRulerCursorPositions(ev->globalPos());
+    m_editorWindow->GetViewport()->SetRulerCursorPositions(ev->globalPosition().toPoint());
 }
 
 void RulerWidget::mouseReleaseEvent(QMouseEvent* ev)

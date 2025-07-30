@@ -687,8 +687,9 @@ namespace AssetProcessor
 
         for (const QString& patternsToSkip : s_filePatternsToSkip)
         {
-            QRegExp skipRegex(patternsToSkip, Qt::CaseInsensitive, QRegExp::RegExp);
-            if (skipRegex.exactMatch(outputFilename))
+            QRegularExpression skipRegex(patternsToSkip);
+            skipRegex.setPatternOptions(QRegularExpression::PatternOption::CaseInsensitiveOption);
+            if (skipRegex.match(outputFilename).hasMatch())
             {
                 return true;
             }

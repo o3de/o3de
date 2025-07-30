@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>VariableConfigurationWidget</class>
- <widget class="QWidget" name="VariableConfigurationWidget">
+ <widget class="QDialog" name="VariableConfigurationWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

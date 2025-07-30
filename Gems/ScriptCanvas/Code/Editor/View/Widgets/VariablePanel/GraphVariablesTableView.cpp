@@ -1005,8 +1005,8 @@ namespace ScriptCanvasEditor
 
     void GraphVariablesModelSortFilterProxyModel::SetFilter(const QString& filter)
     {
-        m_filter = QRegExp::escape(filter);
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_filter = QRegularExpression::escape(filter);
+        m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         invalidateFilter();
     }

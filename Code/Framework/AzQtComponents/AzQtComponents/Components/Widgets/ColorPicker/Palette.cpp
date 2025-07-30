@@ -17,6 +17,8 @@
 #include <QDebug>
 #include <unordered_set>
 
+// #GH_TODO
+/*
 static QDataStream& operator<<(QDataStream& out, const AZ::Color& color)
 {
     out << static_cast<float>(color.GetR());
@@ -33,6 +35,7 @@ static QDataStream& operator>>(QDataStream& in, AZ::Color& color)
     color.Set(r, g, b, a);
     return in;
 }
+*/
 
 namespace AzQtComponents
 {
@@ -252,16 +255,22 @@ void Palette::insertColorsIgnoringDuplicates(int index, QVector<AZ::Color>::cons
     }
 }
 
-QDataStream& operator<<(QDataStream& out, const Palette& palette)
+/*
+QDataStream& operator<<(QDataStream& out, const Palette&)
 {
-    out << palette.m_colors;
+    // #GH_TODO
+    // out << palette.m_colors;
     return out;
 }
+*/
 
-QDataStream& operator>>(QDataStream& in, Palette& palette)
+/*
+QDataStream& operator>>(QDataStream& in, Palette&)
 {
-    in >> palette.m_colors;
+    // #GH_TODO
+    // in >> palette.m_colors;
     return in;
 }
+*/
 
 }

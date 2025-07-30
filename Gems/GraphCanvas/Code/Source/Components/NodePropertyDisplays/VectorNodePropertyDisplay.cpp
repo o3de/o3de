@@ -359,7 +359,7 @@ namespace GraphCanvas
 
             QHBoxLayout* layout = new QHBoxLayout(m_widgetContainer);
             layout->setAlignment(Qt::AlignLeft);
-            layout->setMargin(0);
+            layout->setContentsMargins(0, 0, 0, 0);
             layout->setSpacing(0);
             layout->setContentsMargins(0, 0, 0, 0);
 

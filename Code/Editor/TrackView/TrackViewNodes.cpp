@@ -58,7 +58,7 @@ CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CTrackViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -110,7 +110,7 @@ protected:
 
     void dragMoveEvent(QDragMoveEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
@@ -148,7 +148,7 @@ protected:
 
     void dropEvent(QDropEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
@@ -363,7 +363,6 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     m_matchCount = 0;
 
     qRegisterMetaType<CTrackViewNodePtr>("CTrackViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CTrackViewNodePtr>("CTrackViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();

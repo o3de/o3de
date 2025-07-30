@@ -38,7 +38,7 @@ namespace EMotionFX
         : QWidget(parent)
     {
         auto* mainLayout = new QVBoxLayout;
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setContentsMargins(0, 5, 0, 0);
         mainLayout->setSpacing(0);
         auto* propertyCard = new AzQtComponents::Card;
@@ -267,7 +267,7 @@ namespace EMotionFX
         QFrame* newFrame = new QFrame{ this };
         newFrame->setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
         newFrame->setFixedWidth(this->width());
-        newFrame->move({ this->mapToGlobal({ 0, 0 + height() }) });
+        newFrame->move({ this->mapToGlobal(QPoint{ 0, 0 + height() }) });
         auto* treeView = new AddCollidersPallete(newFrame);
         treeView->setModel(model);
         treeView->setObjectName("EMotionFX.SkeletonOutlinerPlugin.AddCollidersButton.TreeView");

@@ -25,7 +25,7 @@ AZ_POP_DISABLE_WARNING
 #include <QWidget>
 #include <QDebug>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+// #include <QtWidgets/private/qstylesheetstyle_p.h> // #GH_TODO
 
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
@@ -108,24 +108,32 @@ namespace AzQtComponents
             return nullptr;
         }
 
+        // #GH_TODO
+        /*
         if (!QApplication::testAttribute(Qt::AA_ManualStyleSheetStyle))
         {
             qFatal("StyleManager::styleSheetStyle has not been implemented for automatically created QStyleSheetStyles");
             return nullptr;
         }
+        */
 
         return s_instance->m_styleSheetStyle;
     }
 
     QStyle *StyleManager::baseStyle(const QWidget *widget)
     {
+        // #GH_TODO
+        /*
         const auto sss = styleSheetStyle(widget);
         return sss ? sss->baseStyle() : nullptr;
+        */
+        return widget->style();
     }
 
-    void StyleManager::repolishStyleSheet(QWidget* widget)
+    void StyleManager::repolishStyleSheet(QWidget*)
     {
-        StyleManager::styleSheetStyle(widget)->repolish(widget);
+        // #GH_TODO
+        // StyleManager::styleSheetStyle(widget)->repolish(widget);
     }
 
     StyleManager::StyleManager(QObject* parent)
@@ -161,8 +169,11 @@ namespace AzQtComponents
         }
         s_instance = this;
 
+        // #GH_TOOD
+        /*
         QApplication::setAttribute(Qt::AA_ManualStyleSheetStyle, true);
         QApplication::setAttribute(Qt::AA_PropagateStyleToChildren, true);
+        */
 
         connect(application, &QCoreApplication::aboutToQuit, this, &StyleManager::cleanupStyles);
 
@@ -181,12 +192,13 @@ namespace AzQtComponents
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
+        // #GH_TODO
         // Style is chained as: Style -> QStyleSheetStyle -> native, meaning any CSS limitation can be tackled in Style.cpp
-        m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());
-        m_style = new Style(m_styleSheetStyle);
+        // m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());
+        // m_style = new Style(m_styleSheetStyle);
 
         QApplication::setStyle(m_style);
-        m_style->setParent(this);
+        // m_style->setParent(this); // #GH_TODO
         refresh();
 
         connect(m_stylesheetCache, &StyleSheetCache::styleSheetsChanged, this, [this]
@@ -258,8 +270,11 @@ namespace AzQtComponents
 
     void StyleManager::refresh()
     {
+        // #GH_TODO
+        /*
         const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
         m_styleSheetStyle->setGlobalSheet(globalStyleSheet);
+        */
 
         // Iterate widgets and update the stylesheet (the base style has already been set)
         auto i = m_widgetToStyleSheetMap.constBegin();

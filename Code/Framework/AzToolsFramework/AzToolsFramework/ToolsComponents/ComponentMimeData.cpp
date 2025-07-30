@@ -9,6 +9,7 @@
 #include <QMimeData>
 #include <QDataStream>
 #include <QClipboard>
+#include <QIODevice>
 #include <QApplication>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/ByteContainerStream.h>

@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
         connect(m_gemRepoModel, &GemRepoModel::ShowToastNotification, this, &GemRepoScreen::ShowStandardToastNotification);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
@@ -301,7 +301,7 @@ namespace O3DE::ProjectManager
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setAlignment(Qt::AlignHCenter);
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(0);
         contentFrame->setLayout(vLayout);
 
@@ -316,7 +316,7 @@ namespace O3DE::ProjectManager
 
         // Size hint for button is wrong so horizontal layout with stretch is used to center it
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         hLayout->setSpacing(0);
 
         hLayout->addStretch();
@@ -346,20 +346,20 @@ namespace O3DE::ProjectManager
         QFrame* contentFrame = new QFrame(this);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
         hLayout->setSpacing(0);
         contentFrame->setLayout(hLayout);
 
         hLayout->addSpacing(middleLayoutIndent);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
-        middleVLayout->setMargin(0);
+        middleVLayout->setContentsMargins(0, 0, 0, 0);
         middleVLayout->setSpacing(0);
 
         middleVLayout->addSpacing(30);
 
         QHBoxLayout* topMiddleHLayout = new QHBoxLayout();
-        topMiddleHLayout->setMargin(0);
+        topMiddleHLayout->setContentsMargins(0, 0, 0, 0);
         topMiddleHLayout->setSpacing(0);
 
         m_lastAllUpdateLabel = new QLabel(tr("Last Updated: Never"), this);

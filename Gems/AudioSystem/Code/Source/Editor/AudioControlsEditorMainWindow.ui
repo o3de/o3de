@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <widget class="AudioControls::CAudioControlsEditorWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -184,6 +184,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+    <customwidget>
+        <class>AudioControls::CAudioControlsEditorWindow</class>
+        <extends>QMainWindow</extends>
+        <header>AudioControlsEditorWindow.h</header>
+    </customwidget>
+ </customwidgets>
  <resources>
   <include location="AudioControlsEditorUI.qrc"/>
  </resources>

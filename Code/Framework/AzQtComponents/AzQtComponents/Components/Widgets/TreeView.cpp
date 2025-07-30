@@ -19,7 +19,7 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+// #include <QtWidgets/private/qstylesheetstyle_p.h> // #GH_TODO
 
 namespace AzQtComponents
 {
@@ -46,7 +46,8 @@ namespace AzQtComponents
                         auto styleSheet = StyleManager::styleSheetStyle(widget);
                         if (styleSheet)
                         {
-                            styleSheet->repolish(widget);
+                            // #GH_TODO
+                            // styleSheet->repolish(widget);
                         }
                         widget->update();
                         break;

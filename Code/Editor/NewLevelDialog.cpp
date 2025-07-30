@@ -76,8 +76,8 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     InitTemplateListWidget();
 
     // Level name only supports ASCII characters
-    QRegExp rx("[_a-zA-Z0-9-]+");
-    QValidator* validator = new QRegExpValidator(rx, this);
+    QRegularExpression rx("[_a-zA-Z0-9-]+");
+    QValidator* validator = new QRegularExpressionValidator(rx, this);
     ui->LEVEL->setValidator(validator);
 
     validator = new LevelFolderValidator(this);
@@ -297,7 +297,7 @@ void CNewLevelDialog::OnLevelNameChange()
 {
     UpdateData(true);
 
-    // QRegExpValidator means the string will always be valid as long as it's not empty:
+    // QRegularExpressionValidator means the string will always be valid as long as it's not empty:
     bool valid = !m_level.isEmpty() && ValidateLevel();
     if (valid)
     {
@@ -308,7 +308,7 @@ void CNewLevelDialog::OnLevelNameChange()
         {
             valid = false;
 
-            int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+            qsizetype levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
             QMessageBox::warning(this, tr("Unable to Save Level"), QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength), QMessageBox::Ok, QMessageBox::Ok);
         }
     }

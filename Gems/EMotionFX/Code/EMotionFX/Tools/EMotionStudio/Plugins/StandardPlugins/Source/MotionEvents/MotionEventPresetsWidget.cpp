@@ -54,7 +54,7 @@ namespace EMStudio
         // create the layouts
         QVBoxLayout* layout = new QVBoxLayout();
         QHBoxLayout* ioButtonsLayout = new QHBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setSpacing(2);
 
         // create the table widget

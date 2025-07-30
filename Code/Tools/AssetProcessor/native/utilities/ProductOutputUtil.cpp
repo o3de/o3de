@@ -168,7 +168,7 @@ namespace AssetProcessor
         }
 
         // Remove the prefix and update
-        QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + currentPrefix.size()));
+        QString unprefixedString = filename.mid(static_cast<int>(prefixPos + currentPrefix.size()));
         newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) / (newPrefix + unprefixedString.toUtf8().constData()))
                       .StringAsPosix();
 

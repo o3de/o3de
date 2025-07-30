@@ -70,7 +70,7 @@ namespace MaterialCanvas
         auto viewPortAndToolbar = new QWidget(this);
         viewPortAndToolbar->setLayout(new QVBoxLayout(viewPortAndToolbar));
         viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
-        viewPortAndToolbar->layout()->setMargin(0);
+        viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
         viewPortAndToolbar->layout()->setSpacing(0);
         viewPortAndToolbar->layout()->addWidget(m_toolBar);
         viewPortAndToolbar->layout()->addWidget(m_materialViewport);

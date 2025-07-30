@@ -27,13 +27,13 @@ namespace O3DE::ProjectManager
         setAttribute(Qt::WA_DeleteOnClose);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setContentsMargins(25, 10, 25, 10);
         vLayout->setSizeConstraint(QLayout::SetFixedSize);
         setLayout(vLayout);
 
         QHBoxLayout* instructionLayout = new QHBoxLayout();
-        instructionLayout->setMargin(0);
+        instructionLayout->setContentsMargins(0, 0, 0, 0);
 
         QLabel* instructionIconLabel = new QLabel();
         instructionIconLabel->setPixmap(QIcon(":/Info.svg").pixmap(32, 32));

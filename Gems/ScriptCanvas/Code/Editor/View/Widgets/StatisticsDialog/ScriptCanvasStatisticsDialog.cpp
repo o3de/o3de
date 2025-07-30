@@ -139,7 +139,7 @@ namespace ScriptCanvasEditor
     void ScriptCanvasAssetNodeUsageFilterModel::SetFilter(const QString& filterName)
     {
         m_filter = filterName;
-        m_regex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_regex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         invalidate();
     }

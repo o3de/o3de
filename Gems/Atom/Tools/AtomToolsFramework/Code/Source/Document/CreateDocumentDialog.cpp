@@ -87,8 +87,8 @@ namespace AtomToolsFramework
                 m_targetSelectionBrowser,
                 [this, supportedExtensions]()
                 {
-                    UpdateTargetPath(AzQtComponents::FileDialog::GetSaveFileName(
-                        this, m_targetLabel, m_targetPath, QString("(*.%1)").arg(supportedExtensions.join(");;(*."))));
+                    UpdateTargetPath(QFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
+                        this, m_targetLabel, m_targetPath, QString("(*.%1)").arg(supportedExtensions.join(");;(*.")))));
                 });
         }
         else

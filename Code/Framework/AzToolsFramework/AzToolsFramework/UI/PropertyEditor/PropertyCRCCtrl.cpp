@@ -10,8 +10,8 @@
 
 #include <AzCore/Math/Crc.h>
 
-#include <QRegExp>
-#include <QRegExpValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QString>
@@ -24,8 +24,8 @@ namespace AzToolsFramework
     {
         setFocusPolicy(Qt::StrongFocus);
         
-        QRegExp hexes("(0x)?([0-9a-fA-F]{1,8})", Qt::CaseInsensitive);
-        QRegExpValidator *validator = new QRegExpValidator(hexes, this);
+        QRegularExpression hexes("(0x)?([0-9a-fA-F]{1,8})", QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionValidator *validator = new QRegularExpressionValidator(hexes, this);
 
         m_lineEdit = new QLineEdit(this);
         m_lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -101,10 +101,11 @@ namespace AzToolsFramework
     void PropertyCRCCtrl::onLineEditChange(QString newText)
     {
         // parse newText.
-        QRegExp hexes("(0x)?([0-9a-fA-F]{1,8})", Qt::CaseInsensitive);
-        if (hexes.exactMatch(newText) && hexes.captureCount() > 1)
+        QRegularExpression hexes("(0x)?([0-9a-fA-F]{1,8})", QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatch match = hexes.match(newText);
+        if (match.hasMatch() && hexes.captureCount() > 1)
         {
-            QString actualCap = hexes.cap(2);
+            const QString& actualCap = match.capturedTexts().at(2);
             // this will be a string like FF11BB
             bool ok = false;
             AZ::u32 newValue = actualCap.toUInt(&ok, 16);

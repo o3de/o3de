@@ -32,7 +32,7 @@ namespace EMStudio
     void MotionEventWidget::Init()
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(m_editor, 0, Qt::AlignTop);
     }
 

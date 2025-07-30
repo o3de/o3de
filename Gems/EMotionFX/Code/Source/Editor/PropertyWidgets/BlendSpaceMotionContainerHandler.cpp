@@ -169,7 +169,7 @@ namespace EMotionFX
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setSpacing(0);
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(mainLayout);
     }
 
@@ -492,7 +492,7 @@ namespace EMotionFX
             QWidget* motionsWidget = new QWidget(m_containerWidget);
             motionsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             QGridLayout* motionsLayout = new QGridLayout();
-            motionsLayout->setMargin(0);
+            motionsLayout->setContentsMargins(0, 0, 0, 0);
 
             const size_t motionCount = m_motions.size();
             for (size_t i = 0; i < motionCount; ++i)

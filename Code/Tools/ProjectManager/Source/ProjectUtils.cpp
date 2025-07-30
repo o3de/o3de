@@ -633,7 +633,7 @@ namespace O3DE::ProjectManager
             QTextEdit* detailTextEdit = new QTextEdit(commandOutput, &dialog);
             detailTextEdit->setReadOnly(true);
             layout->addWidget(detailTextEdit);
-            layout->setMargin(0);
+            layout->setContentsMargins(0, 0, 0, 0);
             progressLabel->setLayout(layout);
             progressLabel->setMinimumHeight(150);
             dialog.setLabel(progressLabel);

@@ -108,7 +108,7 @@ namespace EMStudio
         : QDialog(parent)
     {
         QHBoxLayout* mainLayout = new QHBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
 
         m_textEdit = new QTextEdit();
         m_textEdit->setTextInteractionFlags(Qt::NoTextInteraction | Qt::TextSelectableByMouse);
@@ -293,7 +293,7 @@ namespace EMStudio
         menuWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
         QHBoxLayout* menuLayout = new QHBoxLayout(menuWidget);
-        menuLayout->setMargin(0);
+        menuLayout->setContentsMargins(0, 0, 0, 0);
         menuLayout->setSpacing(0);
 
         QMenuBar* menuBar = new QMenuBar(menuWidget);
@@ -369,7 +369,7 @@ namespace EMStudio
             tr("Redo"),
             this,
             &MainWindow::OnRedo,
-            QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z)
+            QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z)
         );
         m_redoAction->setObjectName("EMFX.MainWindow.RedoAction");
         m_undoAction->setDisabled(true);
@@ -2487,7 +2487,7 @@ namespace EMStudio
                     fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
                 }
             }
-            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            LoadFiles(fileNames, event->position().x(), event->position().y());
             event->acceptProposedAction();
 
         }

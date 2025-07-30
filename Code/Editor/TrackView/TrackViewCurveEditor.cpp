@@ -23,7 +23,7 @@ TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)
 {
     m_widget = new CTrackViewCurveEditor(this);
     QVBoxLayout* l = new QVBoxLayout;
-    l->setMargin(0);
+    l->setContentsMargins(0, 0, 0, 0);
     l->addWidget(m_widget);
     setLayout(l);
 }
