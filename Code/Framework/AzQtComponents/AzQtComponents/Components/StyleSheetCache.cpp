@@ -304,17 +304,16 @@ void MiniLessParser::parseLine(const QString& line)
     m_state = State::Default;
 }
 
-int MiniLessParser::parseForImportStatement([[maybe_unused]] const QString& line)
+int MiniLessParser::parseForImportStatement(const QString& line)
 {
-    // #GH_TODO
-    /*
     QString importName;
     int ret = 0;
-    int pos = m_importStatement.indexIn(line, 0);
+    QRegularExpressionMatch match = m_importStatement.match(line);
+    int pos = match.capturedTexts().size();
     if (pos != -1)
     {
-        importName = m_importStatement.cap(1);
-        ret = m_importStatement.cap(0).size();
+        importName = match.capturedTexts().at(1);
+        ret = match.capturedTexts().at(0).size();
 
         if (!importName.isEmpty())
         {
@@ -330,8 +329,6 @@ int MiniLessParser::parseForImportStatement([[maybe_unused]] const QString& line
     }
 
     return ret;
-    */
-    return -1;
 }
 
 QString StyleSheetCache::preprocess(QString styleFileName, QString loadedStyleSheet)
