@@ -7,6 +7,8 @@
  */
 
 
+#include "AzCore/base.h"
+#include <AzCore/IO/FileIO.h>
 #include "EditorDefs.h"
 
 #include "SettingsManagerDialog.h"
@@ -82,30 +84,52 @@ void CSettingsManagerDialog::OnReadBtnClick()
 
     if (importFileSelectionDialog.exec())
     {
-        m_importFileStr = importFileSelectionDialog.selectedFiles().first();
+        const QString importedFile = importFileSelectionDialog.selectedFiles().first();
+        m_importFileStr = importedFile;
 
         ui->m_layoutListBox->clear();
 
-        TToolNamesMap toolNames;
-        XmlNodeRef dummyNode = nullptr;
-
-        GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(toolNames, dummyNode, m_importFileStr);
-
-        if (!toolNames.empty())
+        AZ::IO::FileIOStream fileStream;
+        if (!fileStream.Open(importedFile.toUtf8().data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
         {
-            TToolNamesMap::const_iterator tIt = toolNames.begin();
+            AZ_Warning("CSettingsManagerDialog", false, "Failed to open layout file ( %s ).\n", importedFile.toUtf8().data());
+            return;
+        }
 
-            for (; tIt != toolNames.end(); ++tIt)
+        if (!fileStream.CanRead())
+        {
+            AZ_Warning("CSettingsManagerDialog", false, "Failed to read layout file ( %s ).\n", importedFile.toUtf8().data());
+            return;
+        }
+
+        AZ::IO::SizeType length = fileStream.GetLength();
+
+        if (length == 0)
+        {
+            return;
+        }
+
+        AZStd::vector<char> charBuffer;
+        charBuffer.resize_no_construct(length + 1);
+        fileStream.Read(length, charBuffer.data());
+        charBuffer.back() = 0;
+
+        AZ::rapidxml::xml_document<char> document;
+        if (!document.parse<0>(charBuffer.data()))
+        {
+            return;
+        }
+
+        auto layoutNames = GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(document);
+        for (auto& en : layoutNames)
+        {
+            if (!en.humanReadable.isEmpty())
             {
-                if (!tIt->second.isEmpty())
-                {
-                    ui->m_layoutListBox->addItem(tIt->second);
-                }
-                else
-                if (!tIt->first.isEmpty())
-                {
-                    ui->m_layoutListBox->addItem(tIt->first);
-                }
+                ui->m_layoutListBox->addItem(en.humanReadable);
+            }
+            else if (!en.key.isEmpty())
+            {
+                ui->m_layoutListBox->addItem(en.key);
             }
         }
 
@@ -129,7 +153,6 @@ void CSettingsManagerDialog::OnExportBtnClick()
 
 void CSettingsManagerDialog::OnImportBtnClick()
 {
-    QString importFileStr = m_importFileStr;
     bool bImportSettings = ui->m_importSettingsChk->isChecked();
 
     QString ask = tr("This will close all opened Views. Make sure to save your projects and backup layout before continuing");
@@ -150,18 +173,139 @@ void CSettingsManagerDialog::OnImportBtnClick()
         }
     }
 
+    AZ::IO::FileIOStream fileStream;
+    if (!fileStream.Open(m_importFileStr.toUtf8().data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary))
+    {
+        AZ_Warning("CSettingsManagerDialog", false, "Failed to open layout file ( %s ).\n", m_importFileStr.toUtf8().data());
+        return;
+    }
+
+    if (!fileStream.CanRead())
+    {
+        AZ_Warning("CSettingsManagerDialog", false, "Failed to read layout file ( %s ).\n", m_importFileStr.toUtf8().data());
+        return;
+    }
+
+    AZ::IO::SizeType length = fileStream.GetLength();
+
+    if (length == 0)
+    {
+        return;
+    }
+
+    AZStd::vector<char> charBuffer;
+    charBuffer.resize_no_construct(length + 1);
+    fileStream.Read(length, charBuffer.data());
+    charBuffer.back() = 0;
+
+    AZ::rapidxml::xml_document<char> document;
+    if (!document.parse<0>(charBuffer.data()))
+    {
+        return;
+    }
+
     // Import Settings
     if (bImportSettings)
     {
-        ImportSettings(importFileStr);
+        ImportSettings(m_importFileStr);
     }
 
     QtViewPaneManager::instance()->CloseAllNonStandardPanes();
 
     // Import layout
-    if (!layouts.isEmpty())
+    if (layouts.isEmpty())
     {
-        ImportLayouts(importFileStr, layouts);
+        return;
+    }
+    auto viewPaneManager = QtViewPaneManager::instance();
+    auto settingsManager = GetIEditor()->GetSettingsManager();
+
+    settingsManager->UpdateLayoutNode();
+    TToolNamesMap& allToolNames = *settingsManager->GetToolNames();
+    if (allToolNames.empty())
+    {
+        return;
+    }
+
+
+    TToolNamesMap toolNames;
+    for (const QString& layoutStr : layouts)
+    {
+        auto it = AZStd::find_if(
+            allToolNames.begin(),
+            allToolNames.end(),
+            [&](const std::pair<QString, QString>& v)
+            {
+                return layoutStr == v.second;
+            });
+
+        if (it == allToolNames.end())
+        {
+            continue;
+        }
+
+        toolNames.insert(*it);
+    }
+    auto it = toolNames.find(QStringLiteral(MAINFRM_LAYOUT_NORMAL));
+    if (it == toolNames.end())
+    {
+        it = toolNames.find(QStringLiteral(MAINFRM_LAYOUT_PREVIEW));
+    }
+
+    AZStd::vector<struct CSettingsManager::FilterNameResult> filterResults = CSettingsManager::FilterMatchingLayoutNodes(document, toolNames);
+    if (it != toolNames.end())
+    {
+        const QString& className = it->first;
+        auto dockingLayoutNode = AZStd::find_if(
+            filterResults.begin(),
+            filterResults.end(),
+            [&className](struct CSettingsManager::FilterNameResult& res)
+            {
+                return res.key == className;
+            });
+        if (dockingLayoutNode != filterResults.end())
+        {
+            viewPaneManager->DeserializeLayout(dockingLayoutNode->node);
+        }
+    }
+    for (it = toolNames.begin(); it != toolNames.end(); ++it)
+    {
+        const QString& className = it->first;
+        const QString& paneName = it->second;
+
+        if (className == QStringLiteral(MAINFRM_LAYOUT_NORMAL) || className == QStringLiteral(MAINFRM_LAYOUT_PREVIEW))
+        {
+            continue;
+        }
+
+        auto dockingLayoutNode = AZStd::find_if(
+            filterResults.begin(),
+            filterResults.end(),
+            [&className](struct CSettingsManager::FilterNameResult& res)
+            {
+                return res.key == className;
+            });
+
+        if (dockingLayoutNode == filterResults.end())
+        {
+            continue;
+        }
+
+        auto toolPanel = FindViewPane<QMainWindow>(paneName);
+        if (!toolPanel)
+        {
+            continue;
+        }
+
+
+        for (auto* it = dockingLayoutNode->node; it; it->next_sibling())
+        {
+            if (azstricmp(it->name(), "WindowState"))
+            {
+                toolPanel->restoreState(QByteArray::fromHex(it->value()));
+                break;
+            }
+        }
     }
 }
 
@@ -170,94 +314,6 @@ void CSettingsManagerDialog::ImportSettings(QString file)
     if (QFile::exists(file))
     {
         GetIEditor()->GetSettingsManager()->ImportSettings(file);
-    }
-}
-
-void CSettingsManagerDialog::ImportLayouts(QString file, const QStringList& layouts)
-{
-    auto viewPaneManager = QtViewPaneManager::instance();
-
-    if (!layouts.isEmpty())
-    {
-        TToolNamesMap& allToolNames = *GetIEditor()->GetSettingsManager()->GetToolNames();
-        if (allToolNames.empty())
-        {
-            return;
-        }
-
-        TToolNamesMap toolNames;
-
-        for (const QString& layoutStr : layouts)
-        {
-            auto it = std::find_if(allToolNames.begin(), allToolNames.end(),
-                            [&](const std::pair<QString, QString>& v)
-                            {
-                                return layoutStr == v.second;
-                            });
-
-            if (it == allToolNames.end())
-            {
-                continue;
-            }
-
-            toolNames.insert(*it);
-        }
-
-        // Remove previous tool node
-        XmlNodeRef layoutNode = XmlHelpers::CreateXmlNode(EDITOR_LAYOUT_NODE);
-
-        // Find in file and add selected tool node
-        GetIEditor()->GetSettingsManager()->GetMatchingLayoutNames(toolNames, layoutNode, file);
-
-        // restore main window layout
-
-        auto it = toolNames.find(QStringLiteral(MAINFRM_LAYOUT_NORMAL));
-        if (it == toolNames.end())
-        {
-            it = toolNames.find(QStringLiteral(MAINFRM_LAYOUT_PREVIEW));
-        }
-
-        if (it != toolNames.end())
-        {
-            const QString& className = it->first;
-
-            XmlNodeRef dockingLayoutNode = layoutNode->findChild(className.toUtf8().data());
-            if (dockingLayoutNode)
-            {
-                viewPaneManager->DeserializeLayout(dockingLayoutNode);
-            }
-        }
-
-        // restore tool panes layouts
-
-        for (it = toolNames.begin(); it != toolNames.end(); ++it)
-        {
-            const QString& className = it->first;
-            const QString& paneName = it->second;
-
-            if (className == QStringLiteral(MAINFRM_LAYOUT_NORMAL) || className == QStringLiteral(MAINFRM_LAYOUT_PREVIEW))
-            {
-                continue;
-            }
-
-            XmlNodeRef dockingLayoutNode = layoutNode->findChild(className.toUtf8().data());
-            if (!dockingLayoutNode)
-            {
-                continue;
-            }
-
-            auto toolPanel = FindViewPane<QMainWindow>(paneName);
-            if (!toolPanel)
-            {
-                continue;
-            }
-
-            XmlNodeRef windowStateNode = dockingLayoutNode->findChild("WindowState");
-            if (windowStateNode)
-            {
-                toolPanel->restoreState(QByteArray::fromHex(windowStateNode->getContent()));
-            }
-        }
     }
 }
 
