@@ -1,11 +1,14 @@
 {
-    "repo_name":"${Name}",
-    "origin":"Origin for the ${Name} Gem Repository",
+    "repo_name": "${Name}",
     "repo_uri": "${RepoURI}",
-    "summary": "A Gem Repository with a single Gem in the root of the repository.",
-    "additional_info": "Additional info for ${Name}",
+    "$schemaVersion": "1.0.0",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "summary": "${Summary}",
+    "additional_info": "${AdditionalInfo}",
     "last_updated": "",
-    "gems": [
-        "${RepoURI}"
-    ]
+    "gems_data": [],
+    "projects_data": [],
+    "templates_data": [],
+    "repos": []
 }
