@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
@@ -38,7 +39,7 @@ namespace AZ
         //! and the index of the target vertex that is going to be modified
         //! The morph target pass will read these values, apply a weight, and write the accumulated deltas
         //! to an intermediate buffer that will be consumed by the skinning pass
-        class MorphTargetInputBuffers
+        class ATOM_FEATURE_COMMON_API MorphTargetInputBuffers
             : public AZStd::intrusive_base
         {
         public:

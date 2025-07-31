@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
@@ -23,7 +24,7 @@ namespace AZ
         struct RayTracingPassData;
 
         //! This pass executes a raytracing shader as specified in the PassData.
-        class RayTracingPass
+        class ATOM_FEATURE_COMMON_API RayTracingPass
             : public RPI::RenderPass
             , private RPI::ShaderReloadNotificationBus::MultiHandler
         {

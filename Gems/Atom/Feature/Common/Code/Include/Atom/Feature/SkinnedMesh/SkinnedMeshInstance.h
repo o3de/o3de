@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 #include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -24,7 +25,7 @@ namespace AZ
 
         //! SkinnedMeshInstance contains the data that is needed to represent the output from skinning a single instance of a skinned mesh.
         //! It does not contain the actual skinned vertex data, but rather views into the buffers that do contain the data, which are owned by the SkinnedMeshOutputStreamManager
-        class SkinnedMeshInstance
+        class ATOM_FEATURE_COMMON_API SkinnedMeshInstance
             : public AZStd::intrusive_base
         {
         public:

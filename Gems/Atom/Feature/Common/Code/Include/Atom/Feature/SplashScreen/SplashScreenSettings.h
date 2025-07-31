@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -14,7 +15,7 @@ namespace AZ::Render
 {
     //! Splash screen settings that describe how to render.
     //! The settings will be retrieved from setting registry: splash_screen.setreg.
-    class SplashScreenSettings
+    class ATOM_FEATURE_COMMON_API SplashScreenSettings
     {
     public:
         AZ_RTTI(AZ::Render::SplashScreenSettings, "{4B441F73-8F72-4DCA-9451-416C40693487}");

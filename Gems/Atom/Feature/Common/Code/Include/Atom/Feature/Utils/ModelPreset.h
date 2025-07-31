@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <Atom/Feature/Base.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
@@ -22,7 +23,7 @@ namespace AZ
     namespace Render
     {
         //! ModelPreset describes a model that can be displayed in the viewport
-        struct ModelPreset final
+        struct ATOM_FEATURE_COMMON_API ModelPreset final
         {
             AZ_TYPE_INFO(AZ::Render::ModelPreset, "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}");
             AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator);
