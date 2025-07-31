@@ -25,6 +25,15 @@ namespace AZ
                 SSAO,
                 GTAO,
             };
+
+            enum class GtaoQualityLevel : uint8_t
+            {
+                SuperLow,
+                Low,
+                Medium,
+                High,
+                SuperHigh,
+            };
         }
 
 

@@ -129,6 +129,46 @@ namespace AZ
             : RPI::ComputePass(descriptor)
         { }
 
+        void GtaoComputePass::InitializeInternal()
+        {
+            ComputePass::InitializeInternal();
+
+            InitializeShaderVariant();
+        }
+
+        void GtaoComputePass::InitializeShaderVariant()
+        {
+            AZ_Assert(m_shader != nullptr, "GtaoComputePass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+
+            AZStd::vector<RPI::ShaderOptionValue> options =
+            {
+                RPI::ShaderOptionValue(Ao::GtaoQualityLevel::SuperLow),
+                RPI::ShaderOptionValue(Ao::GtaoQualityLevel::Low),
+                RPI::ShaderOptionValue(Ao::GtaoQualityLevel::Medium),
+                RPI::ShaderOptionValue(Ao::GtaoQualityLevel::High),
+                RPI::ShaderOptionValue(Ao::GtaoQualityLevel::SuperHigh),
+            };
+
+            // Caching all pipeline state for each shader variation for performance reason.
+            for (auto shaderVariantIndex = 0; shaderVariantIndex < options.size(); ++shaderVariantIndex)
+            {
+                auto shaderOption = m_shader->CreateShaderOptionGroup();
+                shaderOption.SetValue(m_qualityLevelShaderVariantOptionName, options.at(shaderVariantIndex));
+                PreloadShaderVariantForDispatch(m_shader, shaderOption);
+            }
+
+            m_needToUpdateShaderVariant = true;
+        }
+
+        void GtaoComputePass::SetQualityLevel(Ao::GtaoQualityLevel qualityLevel)
+        {
+            if (qualityLevel != m_qualityLevel)
+            {
+                m_qualityLevel = qualityLevel;
+                m_needToUpdateShaderVariant = true;
+            }
+        }
+
         void GtaoComputePass::FrameBeginInternal(FramePrepareParams params)
         {
             // Must match the struct in GtaoCompute.azsl
@@ -145,19 +185,19 @@ namespace AZ
                 AZStd::array<float, 2> m_halfPixelSize;
 
                 // The strength of the GTAO effect
-                float m_strength = Gtao::DefaultGtaoStrength;
+                float m_strength = Ao::DefaultGtaoStrength;
 
                 // Power of the GTAO effect
-                float m_power = Gtao::DefaultGtaoPower;
+                float m_power = Ao::DefaultGtaoPower;
 
                 // World radius of effect
-                float m_worldRadius = Gtao::DefaultGtaoWorldRadius;
+                float m_worldRadius = Ao::DefaultGtaoWorldRadius;
 
                 // Max pixel depth where AO effect is still calculated
-                float m_maxDepth = Gtao::DefaultGtaoMaxDepth;
+                float m_maxDepth = Ao::DefaultGtaoMaxDepth;
 
                 // A heuristic to bias occlusion for thin or thick objects
-                float m_thicknessBlend = Gtao::DefaultGtaoThicknessBlend;
+                float m_thicknessBlend = Ao::DefaultGtaoThicknessBlend;
 
                 // FOV correction factor for world radius
                 float m_fovScale;
@@ -177,6 +217,8 @@ namespace AZ
                     {
                         if (aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::GTAO)
                         {
+                            SetQualityLevel(aoSettings->GetGtaoQuality());
+
                             gtaoConstants.m_strength = aoSettings->GetGtaoStrength();
                             gtaoConstants.m_power = aoSettings->GetGtaoPower();
                             gtaoConstants.m_worldRadius = aoSettings->GetGtaoWorldRadius();
@@ -215,5 +257,43 @@ namespace AZ
             RPI::ComputePass::FrameBeginInternal(params);
         }
 
+        void GtaoComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "GtaoComputePass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
+
+            if (m_needToUpdateShaderVariant)
+            {
+                UpdateCurrentShaderVariant();
+            }
+
+            CompileShaderVariant(m_shaderResourceGroup);
+            ComputePass::CompileResources(context);
+        }
+
+        void GtaoComputePass::UpdateCurrentShaderVariant()
+        {
+            AZ_Assert(m_shader != nullptr, "GtaoComputePass %s has a null shader when calling UpdateCurrentShaderVariant.", GetPathName().GetCStr());
+
+            auto shaderOption = m_shader->CreateShaderOptionGroup();
+            // Decide which shader to use.
+            shaderOption.SetValue(m_qualityLevelShaderVariantOptionName, RPI::ShaderOptionValue(m_qualityLevel));
+
+            UpdateShaderVariant(shaderOption);
+
+            m_needToUpdateShaderVariant = false;
+        }
+
+        void GtaoComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "GtaoComputePass %s has a null shader resource group when calling Execute.", GetPathName().GetCStr());
+
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            SetSrgsForDispatch(context);
+
+            m_dispatchItem.SetPipelineState(GetPipelineStateFromShaderVariant());
+
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
+        }
     }   // namespace Render
 }   // namespace AZ

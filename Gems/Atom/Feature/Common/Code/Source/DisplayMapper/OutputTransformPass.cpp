@@ -176,7 +176,7 @@ namespace AZ
                         shaderOption.SetValue(
                             m_ldrGradingLutShaderVariantOptionName, doLdrGradingTypes[colorGradingIndex]);
 
-                        PreloadShaderVariant(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
+                        PreloadShaderVariantForDraw(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
                     }
                 }
             }

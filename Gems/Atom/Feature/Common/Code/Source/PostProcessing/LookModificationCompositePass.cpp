@@ -43,7 +43,7 @@ namespace AZ
             ConsoleFunctorFlags::Null,
             "This can be increased to deal with particularly tricky luts. Range (0-2). 0 (default) - Standard linear sampling. 1 - 7 tap b-spline sampling. 2 - 19 tap b-spline sampling."
         );
-        
+
         RPI::Ptr<LookModificationCompositePass> LookModificationCompositePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LookModificationCompositePass> pass = aznew LookModificationCompositePass(descriptor);
@@ -112,7 +112,7 @@ namespace AZ
                 shaderOption.SetValue(m_exposureShaderVariantOptionName, options.at(shaderVariantIndex).m_enableExposureControl);
                 shaderOption.SetValue(m_colorGradingShaderVariantOptionName, options.at(shaderVariantIndex).m_enableColorGrading);
                 shaderOption.SetValue(m_lutSampleQualityShaderVariantOptionName, options.at(shaderVariantIndex).m_lutSampleQuality);
-                PreloadShaderVariant(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
+                PreloadShaderVariantForDraw(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
             }
 
             m_needToUpdateShaderVariant = true;
@@ -232,7 +232,7 @@ namespace AZ
             shaderOption.SetValue(m_exposureShaderVariantOptionName, m_exposureControlEnabled ? AZ::Name("true") : AZ::Name("false"));
             shaderOption.SetValue(m_colorGradingShaderVariantOptionName, m_colorGradingLutEnabled ? AZ::Name("true") : AZ::Name("false"));
             shaderOption.SetValue(m_lutSampleQualityShaderVariantOptionName, RPI::ShaderOptionValue(m_sampleQuality));
-            
+
             UpdateShaderVariant(shaderOption);
 
             m_needToUpdateShaderVariant = false;
@@ -258,7 +258,7 @@ namespace AZ
         {
             m_colorGradingShaperParams = shaperParams;
         }
-        
+
         void LookModificationCompositePass::SetSampleQuality(SampleQuality sampleQuality)
         {
             m_sampleQuality = sampleQuality;

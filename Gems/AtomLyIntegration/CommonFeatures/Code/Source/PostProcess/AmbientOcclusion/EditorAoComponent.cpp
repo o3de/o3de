@@ -23,6 +23,19 @@ namespace AZ
             };
         }
 
+        using GtaoQualityLevelComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<Ao::GtaoQualityLevel>>;
+        static GtaoQualityLevelComboBoxVec PopulateGtaoQualityLevelList()
+        {
+            return GtaoQualityLevelComboBoxVec
+            {
+                { Ao::GtaoQualityLevel::SuperLow, "Super Low" },
+                { Ao::GtaoQualityLevel::Low, "Low" },
+                { Ao::GtaoQualityLevel::Medium, "Medium" },
+                { Ao::GtaoQualityLevel::High, "High" },
+                { Ao::GtaoQualityLevel::SuperHigh, "Super High" },
+            };
+        }
+
         void EditorAoComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -72,49 +85,56 @@ namespace AZ
                             "Multiplier for how much strong SSAO appears.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsSsao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsSsaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_ssaoSamplingRadius,
-                            "Sampling Radius",
+                            "SSAO Sampling Radius",
                             "The sampling radius of the SSAO effect in screen UV space")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 0.25f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsSsao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsSsaoInactive)
+
+                        ->DataElement(Edit::UIHandlers::ComboBox,
+                            &AoComponentConfig::m_gtaoQuality,
+                            "GTAO Quality",
+                            "The quality level for the GTAO effect.")
+                            ->Attribute(Edit::Attributes::EnumValues, &PopulateGtaoQualityLevelList)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoStrength,
                             "GTAO Strength",
                             "Multiplier for how much strong GTAO appears.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoPower,
                             "GTAO Power",
                             "Power factor for how much strong GTAO appears.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 5.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoWorldRadius,
-                            "World Radius",
+                            "GTAOWorld Radius",
                             "Sampling radius in world units.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 5.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoThicknessBlend,
-                            "Thickness Blend",
+                            "GTAO Thickness Blend",
                             "Blend factor for thickness.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 1.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoMaxDepth,
-                            "Max Depth",
+                            "GTAO Max Depth",
                             "Max depth for GTAO effect.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 1000.0f)
-                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &AoComponentConfig::m_enableBlur,

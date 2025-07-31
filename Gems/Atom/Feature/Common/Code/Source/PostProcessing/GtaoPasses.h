@@ -9,6 +9,8 @@
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <PostProcessing/PostProcessingShaderOptionBase.h>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoSettingsInterface.h>
 
 namespace AZ
 {
@@ -48,7 +50,8 @@ namespace AZ
 
         // Computer shader pass that calculates GTAO from a linear depth buffer
         class GtaoComputePass final
-            : public RPI::ComputePass
+            : public RPI::ComputePass,
+              public PostProcessingShaderOptionBase
         {
             AZ_RPI_PASS(GtaoComputePass);
 
@@ -60,15 +63,28 @@ namespace AZ
             //! Creates an GtaoComputePass
             static RPI::Ptr<GtaoComputePass> Create(const RPI::PassDescriptor& descriptor);
 
+            void SetQualityLevel(Ao::GtaoQualityLevel qualityLevel);
+
         protected:
             // Behavior functions override...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
             GtaoComputePass(const RPI::PassDescriptor& descriptor);
+            void InitializeShaderVariant();
+            void UpdateCurrentShaderVariant();
+
+            // Scope producer functions...
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+
+            Ao::GtaoQualityLevel m_qualityLevel = Ao::GtaoQualityLevel::Medium;
+            const AZ::Name m_qualityLevelShaderVariantOptionName{ "o_qualityLevel" };
+            bool m_needToUpdateShaderVariant = true;
 
             // SRG binding indices...
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };
-    }   // namespace Render
-}   // namespace AZ
+    } // namespace Render
+} // namespace AZ

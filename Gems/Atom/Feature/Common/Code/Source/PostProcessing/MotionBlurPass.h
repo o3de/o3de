@@ -8,13 +8,16 @@
 #pragma once
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
+#include <PostProcessing/PostProcessingShaderOptionBase.h>
+#include <Atom/Feature/PostProcess/MotionBlur/MotionBlurSettingsInterface.h>
 
 namespace AZ
 {
     namespace Render
     {
         // Class for controlling MotionBlur effect
-        class MotionBlurPass final : public RPI::ComputePass
+        class MotionBlurPass final : public RPI::ComputePass,
+                                     public PostProcessingShaderOptionBase
         {
             AZ_RPI_PASS(MotionBlurPass);
 
@@ -27,14 +30,25 @@ namespace AZ
 
             bool IsEnabled() const override;
 
+            void SetSampleQuality(MotionBlur::SampleQuality sampleQuality);
+
         protected:
             // Behavior functions override...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
             MotionBlurPass(const RPI::PassDescriptor& descriptor);
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
+
+            // Scope producer functions...
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+
+            MotionBlur::SampleQuality m_sampleQuality = MotionBlur::SampleQuality::High;
+            const AZ::Name m_sampleQualityShaderVariantOptionName{ "o_sampleQuality" };
+            bool m_needToUpdateShaderVariant = true;
 
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };
