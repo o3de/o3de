@@ -2551,7 +2551,26 @@ namespace ScriptCanvas
             {
                 start->AddChild({ outSlots[0], {}, nullptr });
 
-                ParseExecutionMultipleOutSyntaxSugar(start, outNodes, outSlots);
+                // Sort the out node connections to ensure that implicit execution connections are always parsed first
+                EndpointsResolved sortedExecutionOutNodes;
+                for (const EndpointResolved& endpoint : outNodes)
+                {
+                    // If this connection is implicit, only parse it if the recieving node has parsed all of its implicit
+                    // connections already
+                    if (endpoint.second->CreatesImplicitConnections() && !HasUnparsedImplicitConnections(outSlots[0], endpoint.second))
+                    {
+                        sortedExecutionOutNodes.emplace_back(endpoint);
+                    }
+                }
+                for (const EndpointResolved& endpoint : outNodes)
+                {
+                    if (!endpoint.second->CreatesImplicitConnections())
+                    {
+                        sortedExecutionOutNodes.emplace_back(endpoint);
+                    }
+                }
+
+                ParseExecutionMultipleOutSyntaxSugar(start, sortedExecutionOutNodes, outSlots);
                 PostParseProcess(start);
                 PostParseErrorDetect(start);
 
@@ -3791,7 +3810,8 @@ namespace ScriptCanvas
 
             for (size_t childIndex = 0; childIndex < executionOutNodes.size(); ++childIndex)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(childIndex), *outSlots[childIndex], executionOutNodes[childIndex]);
+                ParseExecutionFunctionRecurse(
+                    execution, execution->ModChild(childIndex), *outSlots[childIndex], executionOutNodes[childIndex]);
 
                 if (!IsErrorFree())
                 {
@@ -3808,6 +3828,21 @@ namespace ScriptCanvas
 
         bool AbstractCodeModel::HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot)
         {
+            // Don't ever ignore connections when the node connected to the input slot has no non-reference connections
+            AZStd::vector<const Slot*> inputSlots = inSlot->GetNode()->GetCorrespondingDataSlots(inSlot);
+            bool hasDataInConnection = false;
+            for (auto inputSlot : inputSlots)
+            {
+                if (inputSlot->IsConnected() && !inputSlot->IsVariableReference())
+                {
+                    hasDataInConnection = true;
+                }
+            }
+            if (!hasDataInConnection)
+            {
+                return false;
+            }
+
             if (inSlot->CreatesImplicitConnections())
             {
                 // Get each endpoint connected to the input slot
