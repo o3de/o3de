@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         m_closeButton->setIconSize(QSize(12, 12));
         m_closeButton->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
         layout->addWidget(m_closeButton);
-        connect(m_closeButton, &QPushButton::clicked, this, [=]{ emit RemoveClicked(); });
+        connect(m_closeButton, &QPushButton::clicked, this, [this]{ emit RemoveClicked(); });
     }
 
     QString FilterTagWidget::text() const

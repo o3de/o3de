@@ -146,7 +146,7 @@ namespace AZ
             // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
             // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
             // The solution is to enqueue texture update on the next tick.
-            auto postTickLambda = [=]()
+            auto postTickLambda = [=, this]()
             {
                 if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
                 {

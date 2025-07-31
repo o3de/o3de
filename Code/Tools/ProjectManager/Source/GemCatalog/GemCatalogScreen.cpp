@@ -98,7 +98,7 @@ namespace O3DE::ProjectManager
         connect(
             m_gemInspector,
             &GemInspector::TagClicked,
-            [=](const Tag& tag)
+            [this](const Tag& tag)
             {
                 SelectGem(tag.id);
             });

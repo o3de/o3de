@@ -237,7 +237,7 @@ namespace O3DE::ProjectManager
         gemSetupLayout->addWidget(m_gemTemplateLocation);
         m_gemTemplateLocation->setEnabled(false);
 
-        connect(m_formFolderRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+        connect(m_formFolderRadioButton, &QRadioButton::toggled, this, [this](bool checked){
             m_gemTemplateLocation->setEnabled(checked);
         });
 

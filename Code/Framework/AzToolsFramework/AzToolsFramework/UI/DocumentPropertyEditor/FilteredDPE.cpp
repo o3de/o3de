@@ -22,7 +22,7 @@ namespace AzToolsFramework
         QObject::connect(
             m_ui->m_searchBox,
             &QLineEdit::textChanged,
-            [=](const QString& filterText)
+            [this](const QString& filterText)
             {
                 m_filterAdapter->SetFilterString(filterText.toUtf8().data());
             });
