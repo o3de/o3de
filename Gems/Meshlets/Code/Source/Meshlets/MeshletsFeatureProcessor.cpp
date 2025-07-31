@@ -94,7 +94,7 @@ namespace AZ
 
         void MeshletsFeatureProcessor::Activate()
         {
-            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessor>();
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessorInterface>();
             AZ_Assert(m_transformServiceFeatureProcessor, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             EnableSceneNotification();
