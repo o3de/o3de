@@ -113,9 +113,9 @@ public:
     {
         Set(m_sDefault.c_str());
     }
-    void Set(const char* s) override;
-    void Set(float f) override;
-    void Set(int i) override;
+    void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) override;
     int GetType() override { return CVAR_STRING; }
 
 private: // --------------------------------------------------------------------------------------------
@@ -144,9 +144,9 @@ public:
     float GetFVal() const override { return (float)GetIVal(); }
     const char* GetString() const override;
     void ResetImpl() override { Set(m_iDefault); }
-    void Set(const char* s) override;
-    void Set(float f) override;
-    void Set(int i) override;
+    void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) override;
     int GetType() override { return CVAR_INT; }
 protected: // --------------------------------------------------------------------------------------------
 
@@ -174,9 +174,9 @@ public:
     float GetFVal() const override { return m_fValue; }
     const char* GetString() const override;
     void ResetImpl() override { Set(m_fDefault); }
-    void Set(const char* s) override;
-    void Set(float f) override;
-    void Set(int i) override;
+    void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) override;
     int GetType() override { return CVAR_FLOAT; }
 
 protected:
@@ -217,9 +217,9 @@ public:
     float GetFVal() const override { return (float)m_iValue; }
     const char* GetString() const override;
     void ResetImpl() override { Set(m_iDefault); }
-    void Set(const char* s) override;
-    void Set(float f) override;
-    void Set(int i) override;
+    void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) override;
     int GetType() override { return CVAR_INT; }
 
 private: // --------------------------------------------------------------------------------------------
@@ -254,16 +254,16 @@ public:
         return m_sValue.c_str();
     }
     void ResetImpl() override { Set(m_sDefault.c_str()); }
-    void Set(const char* s) override;
-    void Set(float f) override
+    void Set(const char* s, const Cry::SetCVarOptions& setCvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& setCvarArgs = {}) override
     {
         AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%g", f);
-        Set(s.c_str());
+        Set(s.c_str(), setCvarArgs);
     }
-    void Set(int i) override
+    void Set(int i, const Cry::SetCVarOptions& setCvarArgs = {}) override
     {
         AZStd::fixed_string<32> s = AZStd::fixed_string<32>::format("%d", i);
-        Set(s.c_str());
+        Set(s.c_str(), setCvarArgs);
     }
     int GetType() override { return CVAR_STRING; }
 
@@ -295,9 +295,9 @@ public:
     float GetFVal() const override { return m_fValue; }
     const char* GetString() const override;
     void ResetImpl() override { Set(m_fDefault); }
-    void Set(const char* s) override;
-    void Set(float f) override;
-    void Set(int i) override;
+    void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) override;
+    void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) override;
     int GetType() override { return CVAR_FLOAT; }
 
 protected:

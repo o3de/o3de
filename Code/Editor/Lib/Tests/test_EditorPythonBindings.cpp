@@ -48,7 +48,7 @@ namespace EditorPythonBindingsUnitTests
         {
             m_cvarType = cvarType;
             ON_CALL(m_cvarMock, GetType()).WillByDefault(Return(m_cvarType));
-            ON_CALL(m_cvarMock, Set(A<T>())).WillByDefault(Invoke(func));
+            ON_CALL(m_cvarMock, SetImpl(A<T>())).WillByDefault(Invoke(func));
             ON_CALL(m_console, GetCVar(_)).WillByDefault(Return(&m_cvarMock));
             ON_CALL(m_system, GetIConsole()).WillByDefault(Return(&m_console));
             ON_CALL(m_editorMock, GetSystem()).WillByDefault(Return(&m_system));
