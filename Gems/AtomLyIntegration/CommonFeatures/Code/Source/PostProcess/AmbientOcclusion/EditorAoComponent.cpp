@@ -116,7 +116,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &AoComponentConfig::IsGtaoInactive)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoWorldRadius,
-                            "GTAOWorld Radius",
+                            "GTAO World Radius",
                             "Sampling radius in world units.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 5.0f)
