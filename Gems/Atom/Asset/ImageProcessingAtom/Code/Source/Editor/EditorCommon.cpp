@@ -333,7 +333,7 @@ namespace ImageProcessingAtomEditor
         }
 
         TextureSettings& texSetting = GetMultiplatformTextureSetting();
-        for (auto& it = ++ m_settingsMap.begin(); it != m_settingsMap.end(); ++it)
+        for (auto it = ++ m_settingsMap.begin(); it != m_settingsMap.end(); ++it)
         {
             const PlatformName defaultPlatform = BuilderSettingManager::s_defaultPlatform;
             if (it->first != defaultPlatform)

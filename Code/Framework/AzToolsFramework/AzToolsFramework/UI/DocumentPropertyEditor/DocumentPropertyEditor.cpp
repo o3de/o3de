@@ -1435,7 +1435,7 @@ namespace AzToolsFramework
         // from disk (in settings constructor)
         m_dpeSettings.reset();
         m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
-            m_adapter->CreateExpanderSettings(m_adapter.get(), keyStr, propertyEditorName));
+            m_adapter->CreateExpanderSettings(m_adapter.get(), keyStr.c_str(), propertyEditorName));
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
