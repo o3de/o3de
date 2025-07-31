@@ -112,7 +112,6 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // All material previews use the same model and lighting preset assets
@@ -134,7 +133,6 @@ namespace AZ
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
@@ -233,6 +231,18 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OnSystemTick()
         {
+            if (m_materialPreviewModelAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+            {
+                m_materialPreviewModelAsset.QueueLoad();
+                return;
+            }
+
+            if (m_materialPreviewLightingPresetAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+            {
+                m_materialPreviewModelAsset.QueueLoad();
+                return;
+            }
+
             auto previewRenderer = AZ::Interface<AtomToolsFramework::PreviewRendererInterface>::Get();
             if (!previewRenderer || !m_materialPreviewModelAsset.IsReady() || !m_materialPreviewLightingPresetAsset.IsReady())
             {
@@ -299,12 +309,6 @@ namespace AZ
 
             m_materialPreviewRequests.clear();
             AZ::SystemTickBus::Handler::BusDisconnect();
-        }
-
-        void EditorMaterialSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-        {
-            m_materialPreviewModelAsset.QueueLoad();
-            m_materialPreviewLightingPresetAsset.QueueLoad();
         }
 
         void EditorMaterialSystemComponent::OnRenderMaterialPreviewRendered(

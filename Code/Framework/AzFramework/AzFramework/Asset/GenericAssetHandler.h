@@ -5,9 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H
-#define AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H
-
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -15,7 +12,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -71,11 +67,20 @@ namespace AzFramework
     * This being in the heirarchy allows you to easily ask whether a particular handler derives from this type and thus is a
     * GenericAssetHandler.
     */
-    class GenericAssetHandlerBase : public AZ::Data::AssetHandler
+    class AZF_API GenericAssetHandlerBase : public AZ::Data::AssetHandler
     {
     public:
         AZ_RTTI(GenericAssetHandlerBase, "{B153B8B5-25CC-4BB7-A2BD-9A47ECF4123C}", AZ::Data::AssetHandler);
         virtual ~GenericAssetHandlerBase() = default;
+
+        // This function is called when an asset is requested but not found in the catalog.
+        // This default implementation will block until the asset is compiled by the asset system (This has no
+        // effect in release builds or if the asset is already compiled).
+        // Overriding this function will allow you to do more complex things like returning a fallback or placeholder
+        // asset, or a different asset to indicate different kinds of problems with the data, or to allow async background
+        // compilation.  See the body of this function for more information.
+        AZ::Data::AssetId AssetMissingInCatalog(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
+
     };
 
     template <typename AssetType>
@@ -117,7 +122,7 @@ namespace AzFramework
             AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AssetType>::Uuid());
         }
 
-        ~GenericAssetHandler()
+        virtual ~GenericAssetHandler()
         {
             AZ::AssetTypeInfoBus::Handler::BusDisconnect();
         }
@@ -243,4 +248,3 @@ namespace AzFramework
     };
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H

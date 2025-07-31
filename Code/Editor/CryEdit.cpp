@@ -39,6 +39,7 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QUrlQuery>
+#include <QThread>
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
@@ -61,6 +62,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Network/SocketConnection.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
@@ -153,6 +155,8 @@ static const char O3DEEditorClassName[] = "O3DEEditorClass";
 static const char O3DEApplicationName[] = "O3DEApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
+
+AzToolsFramework::ProgressShield* CCryEditApp::s_progressShield = nullptr;
 
 namespace Platform
 {
@@ -1562,6 +1566,8 @@ bool CCryEditApp::InitInstance()
     // It will be launched if not running
     ConnectToAssetProcessor();
 
+    AzFramework::SocketConnection::SetKeepAliveCallback(SocketConnectionKeepAliveCallback);
+
     CCryEditApp::OutputStartupMessage(QString("Initializing Game System..."));
 
     auto initGameSystemOutcome = InitGameSystem(mainWindowWrapperHwnd);
@@ -1964,6 +1970,8 @@ bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
 
 int CCryEditApp::ExitInstance(int exitCode)
 {
+    AzFramework::SocketConnection::SetKeepAliveCallback(nullptr);
+
     if (m_pEditor)
     {
         m_pEditor->OnBeginShutdownSequence();
@@ -3264,6 +3272,74 @@ void CCryEditApp::OnOpenProceduralMaterialEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::SubstanceEditor);
 }
+
+// Now that we're connected, attach a hearbeat function
+void CCryEditApp::SocketConnectionKeepAliveCallback(bool operationIsComplete)
+{
+    if (QApplication::instance()->thread() != QThread::currentThread())
+    {
+        return; // only do anything if we're actually blocking the gui thread
+    }
+
+    // show a progress shield.
+    static bool s_isFirstCall = true;
+    static AZStd::chrono::steady_clock::time_point timeSinceFirstAppearing;
+
+    if (!operationIsComplete)
+    {
+        if (s_isFirstCall)
+        {
+            s_isFirstCall = false;
+            timeSinceFirstAppearing = AZStd::chrono::steady_clock::now();
+        }
+
+        // 2 seconds is most operating systems limit on how long a process can not respond before being considered unresponsive.
+        // Give it 1.5 seconds.
+        if (AZStd::chrono::steady_clock::now() < timeSinceFirstAppearing + AZStd::chrono::milliseconds(1500))
+        {
+            // we have not yet waited long enough to show the shield, this prevents flicker when
+            // a lot of assets are quickly processing.
+            return;
+        }
+
+        QWidget* target = QApplication::activeWindow();
+
+        if (!target)
+        {
+            target = g_splashScreen;
+            if (!target)
+            {
+                CCryEditApp::OutputStartupMessage(QString("First-time Asset Processing..."));
+                return; // no window to attach to.
+            }
+        }
+
+        if (!CCryEditApp::s_progressShield)
+        {
+            CCryEditApp::s_progressShield = new AzToolsFramework::ProgressShield(target);
+            CCryEditApp::s_progressShield->show();
+            CCryEditApp::s_progressShield->setProgress(0, 0, "Processing critical assets...");
+        }
+
+        if ((CCryEditApp::s_progressShield->parent() != target) && (target != s_progressShield))
+        {
+            CCryEditApp::s_progressShield->setParent(target);
+            CCryEditApp::s_progressShield->show();
+        }
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+    else
+    {
+        s_isFirstCall = true;
+        // op is complete, remove the shield
+        if (CCryEditApp::s_progressShield)
+        {
+            CCryEditApp::s_progressShield->hide();
+            CCryEditApp::s_progressShield->deleteLater();
+            CCryEditApp::s_progressShield = nullptr;
+        }
+    }
+};
 
 namespace Editor
 {

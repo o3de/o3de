@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
     bool ProgressShield::eventFilter(QObject* obj, QEvent* event)
     {
-        if (event->type() == QEvent::Resize)
+        if ((event->type() == QEvent::Resize) || (event->type() == QEvent::Move))
         {
             UpdateGeometry();
         }

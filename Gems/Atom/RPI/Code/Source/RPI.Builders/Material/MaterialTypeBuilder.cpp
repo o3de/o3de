@@ -161,6 +161,8 @@ namespace AZ
             outputJobDescriptor.m_jobKey = PipelineStageJobKey;
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
+            outputJobDescriptor.m_critical = true;
+            outputJobDescriptor.m_priority = 3; // we'd like this job to process before other jobs that might depend on it's outputs.
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
 
