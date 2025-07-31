@@ -97,7 +97,7 @@ namespace CrashHandler
 #endif
     }
 
-    bool CrashHandlerBase::CreateCrashHandlerDB(const std::string& reportPath) const
+    bool CrashHandlerBase::CreateCrashHandlerDB(const std::string& reportPath, bool manualCrashSubmission) const
     {
         AZ_TracePrintf("CrashReporting", "Creating new crash dump db at %s", reportPath.c_str());
 
@@ -112,7 +112,7 @@ namespace CrashHandler
         std::unique_ptr<crashpad::CrashReportDatabase> crashDb = crashpad::CrashReportDatabase::Initialize(db);
         if (crashDb)
         {
-            return crashDb->GetSettings()->SetUploadsEnabled(true);
+            return crashDb->GetSettings()->SetUploadsEnabled(!manualCrashSubmission);
         }
         return false;
     }
@@ -167,7 +167,8 @@ namespace CrashHandler
         std::string url{ crashUrl.length() ? crashUrl : GetCrashSubmissionURL() };
         std::string token{ crashToken.length() ? crashToken : GetCrashSubmissionToken() };
 
-        if (url.empty())
+        const bool manualCrashSubmission = url.empty();
+        if (manualCrashSubmission)
         {
             url = manualReportUrl;
         }
@@ -192,8 +193,8 @@ namespace CrashHandler
             AppendSep(lyAppRoot);
         }
 
-        std::string dbPath = GetCrashReportFolder(lyAppRoot);
-        std::string disableFilePath{ dbPath + disableFile };
+        m_crashDbPath = GetCrashReportFolder(lyAppRoot);
+        std::string disableFilePath{ m_crashDbPath + disableFile };
 
         if (AZ::IO::SystemFile::Exists(disableFilePath.c_str()))
         {
@@ -205,12 +206,12 @@ namespace CrashHandler
 #if AZ_TRAIT_CRASHHANDLER_CONVERT_MULTIBYTE_CHARS
         wchar_t pathStr[AZ_MAX_PATH_LEN];
         size_t chars_converted{ 0 };
-        mbstowcs_s(&chars_converted, pathStr, dbPath.c_str(), dbPath.length());
+        mbstowcs_s(&chars_converted, pathStr, m_crashDbPath.c_str(), m_crashDbPath.length());
         base::FilePath db{ pathStr };
 #else
         base::FilePath db{ dbPath };
 #endif
-        if (!CreateCrashHandlerDB(dbPath))
+        if (!CreateCrashHandlerDB(m_crashDbPath, manualCrashSubmission))
         {
             AZ_Warning("CrashReporting", false, "Failed to create crash dump path.");
         }
@@ -276,7 +277,13 @@ namespace CrashHandler
 
         static AZ::EnvironmentVariable<bool> envVar = AZ::Environment::CreateVariable<bool>(crashHandlerEnvVar, true);
 
-        AZ_TracePrintf("CrashReporting", "Initialized Crash Handler Successfully.  Crash dumps written to %s.  Handler at %s.", dbPath.c_str(), crashHandlerPath.c_str());
+        ClientInitialized(client, manualCrashSubmission);
+
+        AZ_TracePrintf(
+            "CrashReporting",
+            "Initialized Crash Handler Successfully.  Crash dumps written to %s.  Handler at %s.",
+            m_crashDbPath.c_str(),
+            crashHandlerPath.c_str());
     }
 
     void CrashHandlerBase::AddAnnotation(const std::string& keyName, const std::string& valueStr)
