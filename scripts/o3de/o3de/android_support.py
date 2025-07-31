@@ -1854,7 +1854,7 @@ class AndroidProjectGenerator(object):
             return Path(source_path)
 
         game_gem_resources = self._project_path / 'Gem' / 'Resources'
-        if game_gem_resources.is_dir(game_gem_resources):
+        if game_gem_resources.is_dir():
             # If the source is relative and the game gem's resource is present, construct the path based on that
             return game_gem_resources / source_path
 
@@ -1895,7 +1895,7 @@ class AndroidProjectGenerator(object):
         for resolution in ANDROID_RESOLUTION_SETTINGS:
 
             target_directory = dst_resource_path / f'{MIPMAP_PATH_PREFIX}-{resolution}'
-            target_directory.mkdir(parent=True, exist_ok=True)
+            target_directory.mkdir(parents=True, exist_ok=True)
 
             # get the current resolution icon override
             icon_source = icon_overrides.get(resolution, default_icon)
@@ -1937,7 +1937,31 @@ class AndroidProjectGenerator(object):
         if not splash_overrides:
             return
 
-        orientation = az_android_package_env['ORIENTATION']
+        orientation_source = az_android_package_env['ANDROID_SCREEN_ORIENTATION']
+        orientation = ORIENTATION_LANDSCAPE
+
+        # Check orientation type and convert if needed
+        if isinstance(orientation_source, str):
+            if orientation_source not in ORIENTATION_MAPPING:
+                raise AndroidToolError(
+                    f'Invalid orientation "{orientation}" in android_project.json. '
+                    f'Expected one of: {list(ORIENTATION_MAPPING.keys())}'
+                )
+            orientation = ORIENTATION_MAPPING[orientation_source]
+        elif isinstance(orientation_source, int):
+            VALID_ORIENTATIONS = {ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT, ORIENTATION_ALL}
+            if orientation_source not in VALID_ORIENTATIONS:
+                raise AndroidToolError(
+                    f'Invalid numeric orientation "{orientation}" in android_project.json. '
+                    f'Expected one of: {VALID_ORIENTATIONS}'
+                )
+            orientation = orientation_source
+        else:
+            raise AndroidToolError(
+                f'ANDROID_SCREEN_ORIENTATION must be a string or int in android_project.json. '
+                f'Got: {type(orientation).__name__}'
+            )
+
         drawable_path_prefix = 'drawable-'
 
         for orientation_flag, orientation_key in ORIENTATION_FLAG_TO_KEY_MAP.items():
