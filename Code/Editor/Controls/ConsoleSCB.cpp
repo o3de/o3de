@@ -358,7 +358,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->lineEditFind, &QLineEdit::returnPressed, this, &CConsoleSCB::findNext);
 
-    connect(ui->closeButton, &QPushButton::clicked, [=]
+    connect(ui->closeButton, &QPushButton::clicked, [this]
     {
         ui->findBar->setVisible(false);
     });
@@ -366,7 +366,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     connect(ui->findPrevButton, &QPushButton::clicked, this, &CConsoleSCB::findPrevious);
     connect(ui->findNextButton, &QPushButton::clicked, this, &CConsoleSCB::findNext);
 
-    connect(ui->lineEditFind, &QLineEdit::textChanged, [=](auto text)
+    connect(ui->lineEditFind, &QLineEdit::textChanged, [this](auto text)
     {
         m_highlighter->setSearchTerm(text);
     });

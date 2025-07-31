@@ -54,7 +54,6 @@ ly_append_configurations_options(
         -Wno-undefined-var-template
         -fno-relaxed-template-template-args
         -Wno-deprecated-no-relaxed-template-template-args
-        -Wno-deprecated-this-capture # TODO(c++20): Remove this
         -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
 
         ###################

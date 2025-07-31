@@ -145,7 +145,7 @@ void CSequenceBatchRenderDialog::reject()
 void CSequenceBatchRenderDialog::OnInitDialog()
 {
     QAction* browseAction = m_ui->m_destinationEdit->addAction(style()->standardPixmap(QStyle::SP_DirOpenIcon), QLineEdit::TrailingPosition);
-    connect(browseAction, &QAction::triggered, this, [=]()
+    connect(browseAction, &QAction::triggered, this, [this]()
     {
         const QString dir = QFileDialog::getExistingDirectory(this);
         if (!dir.isEmpty())
