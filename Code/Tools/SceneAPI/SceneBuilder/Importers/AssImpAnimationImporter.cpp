@@ -376,6 +376,10 @@ namespace AZ
                             }
                         }
                     }
+                    else
+                    {
+                        combinedAnimations.emplace(AZStd::move(animation));
+                    }
                 }
 
                 if (!combinedAnimations.empty())
