@@ -13,7 +13,11 @@
 #include <AzCore/std/string/string.h>
 #include <dx12ma/D3D12MemAlloc.h>
 
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_BUDGET(RHI);
+#else
 AZ_DECLARE_BUDGET_SHARED(RHI);
+#endif
 
 namespace AZ
 {
