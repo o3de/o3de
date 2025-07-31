@@ -18,17 +18,10 @@
 
 #define GTAO_MAX_SCREEN_RADIUS 256
 
-// Todo: Instead of hardcoding the following values, they should be variable with quality settings
-// How many samples we use in search for the best angle
-#define GTAO_NUM_TAPS 8
-
-// How many slices of the hemisphere that we use for angle search
-#define GTAO_NUM_SLICES 8
-
 // `PI` is already defined in `Math.azsli`
 #define PI_HALF (PI / 2)
 
-ShaderResourceGroup PassSrg : SRG_PerPass
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float> m_linearDepth;
     RWTexture2D<float> m_gtaoOutput;
@@ -77,6 +70,14 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 }
+
+// 0 - Super Low, 2 slices, 4 taps per slice
+// 1 - Low, 4 slices, 6 taps per slice
+// 2 - Medium, 8 slices, 8 taps per slice
+// 3 - High, 12 slices, 12 taps per slice
+// 4 - Super High, 16 slices, 20 taps per slice
+[[range(0, 4)]]
+option int o_qualityLevel = 2;
 
 // Fast approximation of arccos
 float acosFast(float x)
@@ -150,7 +151,7 @@ float ComputeInnerIntegral(float2 Angles, float2 ScreenDir, float3 ViewDir, floa
 }
 
 // search for horizon lines in screen space
-float2 SearchForLargestAngleDual(float2 BaseUV, float2 ScreenDir, float PixelRadius, float InitialOffset, float3 ViewPos, float3 ViewDir, float AttenFactor)
+float2 SearchForLargestAngleDual(in uint numTaps, float2 BaseUV, float2 ScreenDir, float PixelRadius, float InitialOffset, float3 ViewPos, float3 ViewDir, float AttenFactor)
 {
     float SceneDepth, LenSq, OOLen, Ang, FallOff;
     float3 V;
@@ -160,10 +161,10 @@ float2 SearchForLargestAngleDual(float2 BaseUV, float2 ScreenDir, float PixelRad
     float Thickness = PassSrg::m_constants.m_thicknessBlend;
 
     [unroll]
-    for(uint i = 0; i < GTAO_NUM_TAPS; i++)
+    for(uint i = 0; i < numTaps; i++)
     {
         float fi = (float) i;
-        float s = (fi + InitialOffset) / (GTAO_NUM_TAPS + 1);
+        float s = (fi + InitialOffset) / (numTaps + 1);
         s = s * s;
         float2 sampleOffset = ScreenDir * max(PixelRadius * s, (fi + 1));
         float2 UVOffset = PassSrg::m_constants.m_pixelSize * sampleOffset;  
@@ -260,21 +261,45 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID,
     float2 screenDir;
     sincos(randomAngleOffset.x, screenDir.y, screenDir.x);
 
+    uint numSlices, numTaps;
+    switch (o_qualityLevel){
+        case 0:
+            numSlices = 2;
+            numTaps = 4;
+            break;
+        case 1:
+            numSlices = 4;
+            numTaps = 6;
+            break;
+        case 2:
+            numSlices = 8;
+            numTaps = 8;
+            break;
+        case 3:
+            numSlices = 12;
+            numTaps = 12;
+            break;
+        case 4:
+            numSlices = 16;
+            numTaps = 20;
+            break;
+    }
+
     // A fast way of calculating the next direction of the slice after an iteration
-    const float deltaAngle = PI / GTAO_NUM_SLICES;
+    const float deltaAngle = PI / numSlices;
 	const float sinDeltaAngle = sin(deltaAngle), cosDeltaAngle = cos(deltaAngle);
 
     float adjustedWorldRadius = PassSrg::m_constants.m_worldRadius * PassSrg::m_constants.m_fovScale;
-    const float pixelRadius = max(min(adjustedWorldRadius / viewPos.z, GTAO_MAX_SCREEN_RADIUS), GTAO_NUM_SLICES);
-    const float stepRadius = pixelRadius / ((float)GTAO_NUM_SLICES + 1);
+    const float pixelRadius = max(min(adjustedWorldRadius / viewPos.z, GTAO_MAX_SCREEN_RADIUS), numSlices);
+    const float stepRadius = pixelRadius / ((float)numSlices + 1);
     const float attenFactor = 2.0 / (PassSrg::m_constants.m_worldRadius * PassSrg::m_constants.m_worldRadius);
 
     float sum = 0;
 
     // Calculate AO values for each slice respectively
     [unroll]
-    for(int slice = 0; slice < GTAO_NUM_SLICES; slice++){
-		float2 bestAng = SearchForLargestAngleDual(uv, screenDir, stepRadius, offset, viewPos, viewDir, attenFactor);
+    for(uint slice = 0; slice < numSlices; slice++){
+		float2 bestAng = SearchForLargestAngleDual(numTaps, uv, screenDir, stepRadius, offset, viewPos, viewDir, attenFactor);
 		sum += ComputeInnerIntegral(bestAng, screenDir, viewDir, normalVS);
 
 		// Fast calculation for rotation
@@ -284,7 +309,7 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID,
         offset = frac(offset + 0.617);
 	}
     
-    sum /= GTAO_NUM_SLICES;
+    sum /= numSlices;
 
     // Maybe TODO: Add fade out like Unreal does
     // Since the original SSAO shader doesn't use fade out, so it's also not added here, correspondingly

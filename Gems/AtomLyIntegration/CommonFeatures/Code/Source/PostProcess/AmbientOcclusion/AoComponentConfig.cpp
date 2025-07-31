@@ -68,14 +68,14 @@ namespace AZ
 #undef COPY_TARGET
         }
 
-        bool AoComponentConfig::IsSsao()
+        bool AoComponentConfig::IsSsaoInactive()
         {
-            return m_aoMethod == Ao::AoMethodType::SSAO;
+            return m_aoMethod != Ao::AoMethodType::SSAO;
         }
 
-        bool AoComponentConfig::IsGtao()
+        bool AoComponentConfig::IsGtaoInactive()
         {
-            return m_aoMethod == Ao::AoMethodType::GTAO;
+            return m_aoMethod != Ao::AoMethodType::GTAO;
         }
     } // namespace Render
 } // namespace AZ

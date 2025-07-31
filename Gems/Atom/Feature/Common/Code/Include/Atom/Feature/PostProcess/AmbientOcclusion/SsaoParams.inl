@@ -12,9 +12,9 @@
 // --- SSAO COMPUTE ---
 
 // The strength multiplier for the SSAO effect
-AZ_GFX_FLOAT_PARAM(SsaoStrength, m_ssaoStrength, Ssao::DefaultSsaoStrength)
+AZ_GFX_FLOAT_PARAM(SsaoStrength, m_ssaoStrength, Ao::DefaultSsaoStrength)
 AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, SsaoStrength, m_ssaoStrength)
 
 // The sampling radius calculated in screen UV space
-AZ_GFX_FLOAT_PARAM(SsaoSamplingRadius, m_ssaoSamplingRadius, Ssao::DefaultSsaoSamplingRadius)
+AZ_GFX_FLOAT_PARAM(SsaoSamplingRadius, m_ssaoSamplingRadius, Ao::DefaultSsaoSamplingRadius)
 AZ_GFX_FLOAT_PARAM_FLOAT_OVERRIDE(float, SsaoSamplingRadius, m_ssaoSamplingRadius)

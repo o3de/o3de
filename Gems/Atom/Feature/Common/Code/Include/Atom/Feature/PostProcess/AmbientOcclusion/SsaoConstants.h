@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace Render
     {
-        namespace Ssao
+        namespace Ao
         {
             static constexpr float DefaultSsaoStrength = 1.0f;
             static constexpr float DefaultSsaoSamplingRadius = 0.05f;

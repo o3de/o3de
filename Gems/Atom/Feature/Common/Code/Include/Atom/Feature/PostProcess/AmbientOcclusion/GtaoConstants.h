@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Render
     {
-        namespace Gtao
+        namespace Ao
         {
             static constexpr float DefaultGtaoStrength = 1.0f;
             static constexpr float DefaultGtaoPower = 1.0f;

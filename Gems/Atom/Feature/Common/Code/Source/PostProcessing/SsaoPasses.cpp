@@ -145,10 +145,10 @@ namespace AZ
                 AZStd::array<float, 2> m_halfPixelSize;
 
                 // The strength of the SSAO effect
-                float m_strength = Ssao::DefaultSsaoStrength;
+                float m_strength = Ao::DefaultSsaoStrength;
 
                 // The sampling radius calculated in screen UV space
-                float m_samplingRadius = Ssao::DefaultSsaoSamplingRadius;
+                float m_samplingRadius = Ao::DefaultSsaoSamplingRadius;
 
             } ssaoConstants{};
 
