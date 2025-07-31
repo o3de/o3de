@@ -164,6 +164,9 @@ namespace AzToolsFramework
             //! @param filter A user provided filter used to decide whether an entity should be detached. Returns true to detach.
             void RemoveEntitiesInHierarchy(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
+            //! Detaches entities based on a user provided filter. Returns true to detach.
+            void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
+
             //! Adds a new nested instance.
             //! @param instance The new nested instance.
             //! @return Reference to the new nested instance.
@@ -339,9 +342,6 @@ namespace AzToolsFramework
 
             //! Unregisters and erases all entities owned by this instance.
             void ClearEntities();
-
-            //! Detaches entities based on a user provided filter. Returns true to detach.
-            void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
             //! Functions for get-entity implementation.
             //! @{
