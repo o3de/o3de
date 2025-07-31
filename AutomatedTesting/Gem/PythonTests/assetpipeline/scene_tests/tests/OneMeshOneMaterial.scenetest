@@ -34,6 +34,11 @@
                     "asset_type": "51f376140d774f369ac67ed70a0ac868"
                 },
                 {
+                    "product_name": "onemeshonematerial/onemeshonematerial.fbx.abdata.json", 
+                    "sub_id": 0, 
+                    "asset_type": "00000000000000000000000000000000"
+                },
+                {
                     "product_name": "onemeshonematerial/onemeshonematerial_fbx.procprefab",
                     "sub_id": -1819295853,
                     "asset_type": "9b7c8459471e4eada3637990cc4065a9"
