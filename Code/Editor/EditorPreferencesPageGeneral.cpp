@@ -31,9 +31,10 @@
 void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<GeneralSettings>()
-        ->Version(3)
+        ->Version(4)
         ->Field("PreviewPanel", &GeneralSettings::m_previewPanel)
         ->Field("EnableSourceControl", &GeneralSettings::m_enableSourceControl)
+        ->Field("EditorTheme", &GeneralSettings::m_editorTheme)
         ->Field("ClearConsole", &GeneralSettings::m_clearConsoleOnGameModeStart)
         ->Field("ConsoleBackgroundColorTheme", &GeneralSettings::m_consoleBackgroundColorTheme)
         ->Field("AutoloadLastLevel", &GeneralSettings::m_autoLoadLastLevel)
@@ -73,6 +74,10 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         editContext->Class<GeneralSettings>("General Settings", "General Editor Preferences")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_previewPanel, "Show Geometry Preview Panel", "Show Geometry Preview Panel")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSourceControl, "Enable Source Control", "Enable Source Control")
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralSettings::m_editorTheme, "Editor Theme", "Editor Theme")
+                ->EnumAttribute(AzQtComponents::EditorTheme::Original, "Original")
+                ->EnumAttribute(AzQtComponents::EditorTheme::Light, "Light")
+                ->EnumAttribute(AzQtComponents::EditorTheme::Dark, "Dark")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_clearConsoleOnGameModeStart, "Clear Console at game startup", "Clear Console when game mode starts")
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralSettings::m_consoleBackgroundColorTheme, "Console Background", "Console Background")
@@ -155,6 +160,12 @@ void CEditorPreferencesPage_General::OnApply()
         MainWindow::instance()->AdjustToolBarIconSize(m_generalSettings.m_toolbarIconSize);
     }
 
+    if (gSettings.gui.editorTheme != m_generalSettings.m_editorTheme)
+    {
+        gSettings.gui.editorTheme = m_generalSettings.m_editorTheme;
+        AzQtComponents::StyleManager::setThemeProperties(m_generalSettings.m_editorTheme);
+    }
+
     //prefabs
     gSettings.levelSaveSettings.saveAllPrefabsPreference = m_levelSaveSettings.m_saveAllPrefabsPreference;
 
@@ -169,6 +180,7 @@ void CEditorPreferencesPage_General::InitializeSettings()
     //general settings
     m_generalSettings.m_previewPanel = gSettings.bPreviewGeometryWindow;
     m_generalSettings.m_enableSourceControl = gSettings.enableSourceControl;
+    m_generalSettings.m_editorTheme = gSettings.gui.editorTheme;
     m_generalSettings.m_clearConsoleOnGameModeStart = gSettings.clearConsoleOnGameModeStart;
     m_generalSettings.m_consoleBackgroundColorTheme = gSettings.consoleBackgroundColorTheme;
     m_generalSettings.m_bShowTimeInConsole = gSettings.bShowTimeInConsole;

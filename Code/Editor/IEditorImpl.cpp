@@ -579,11 +579,6 @@ float CEditorImpl::GetTerrainElevation(float x, float y)
     return terrainElevation;
 }
 
-const QColor& CEditorImpl::GetColorByName(const QString& name)
-{
-    return m_QtApplication->GetColorByName(name);
-}
-
 const QtViewPane* CEditorImpl::OpenView(QString sViewClassName, bool reuseOpened)
 {
     auto openMode = reuseOpened ? QtViewPane::OpenMode::None : QtViewPane::OpenMode::MultiplePanes;

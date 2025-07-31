@@ -62,15 +62,10 @@ namespace AzQtComponents
         Q_PROPERTY(bool editable READ isEditable WRITE setEditable)
 
     public:
-        //! Style configuration for the Breadcrumbs class.
-        struct Config
-        {
-            QString disabledLinkColor;  //!< Color for disabled links. Must be a string using the hex format #rrggbb.
-            QString linkColor;          //!< Color for links. Must be a string using the hex format #rrggbb.
-        };
-
         explicit BreadCrumbs(QWidget* parent = nullptr);
         ~BreadCrumbs();
+
+        static void initialize();
 
         //! Returns true if it is possible to move back in the navigation stack, false otherwise.
         bool isBackAvailable() const;
@@ -118,13 +113,6 @@ namespace AzQtComponents
         //! Size hint reports the space that would be taken if the whole
         //! path would be shown.
         QSize sizeHint() const override;
-
-        //! Sets the Breadcrumbs style configuration.
-        //! @param settings The settings object to load the configuration from.
-        //! @return The new configuration of the Breadcrumbs.
-        static Config loadConfig(QSettings& settings);
-        //! Gets the default Breadcrumbs style configuration.
-        static Config defaultConfig();
 
     public Q_SLOTS:
         //! Pushes a path to be shown in the Breadcrumbs widget.
@@ -198,7 +186,6 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_backPaths': class 'QStack<QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::BreadCrumbs'
         QStack<QString> m_backPaths;
         QStack<QString> m_forwardPaths;
-        Config m_config;
         QStringList m_truncatedPaths;
         QPointer<QMenu> m_contextMenu = nullptr;
         AZ_POP_DISABLE_WARNING
@@ -212,10 +199,13 @@ namespace AzQtComponents
         QVector<QString> m_currentPathIcons;
         AZ_POP_DISABLE_WARNING
 
+        inline static QColor s_disabledLinkColor = QColor("#999999");
+        inline static QColor s_linkColor = QColor("#FFFFFF");
+
         friend class Style;
 
         // methods used by Style
-        static bool polish(Style* style, QWidget* widget, const Config& config);
+        static bool polish(Style* style, QWidget* widget);
     };
 
 } // namespace AzQtComponents

@@ -23,6 +23,11 @@ namespace AZ
     class SerializeContext;
 }
 
+namespace AzQtComponents
+{
+    enum class EditorTheme;
+}
+
 class CEditorPreferencesPage_General
     : public IPreferencesPage
 {
@@ -50,6 +55,7 @@ private:
 
         bool m_previewPanel;
         bool m_enableSourceControl = false;
+        AzQtComponents::EditorTheme m_editorTheme;
         bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;

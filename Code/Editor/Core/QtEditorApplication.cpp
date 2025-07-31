@@ -403,11 +403,6 @@ namespace Editor
         return m_isMovingOrResizing;
     }
 
-    const QColor& EditorQtApplication::GetColorByName(const QString& name)
-    {
-        return m_stylesheet->GetColorByName(name);
-    }
-
     bool EditorQtApplication::IsActive()
     {
         return applicationState() == Qt::ApplicationActive;
