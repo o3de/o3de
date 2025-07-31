@@ -73,6 +73,7 @@ namespace OpenMesh
 AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
 AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations") // OpenMesh\Core\Utils\PropertyManager.hh uses deprecated functions
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional expression is constant.
+AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-literal-operator") // OpenMesh\Core\Geometry\Vector11T.hh uses deprecated literal operator
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/SR_binary.hh>
 #include <OpenMesh/Core/IO/importer/ImporterT.hh>
@@ -80,6 +81,7 @@ AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // Conditional express
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/GenProg.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
+AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING
 AZ_POP_DISABLE_WARNING

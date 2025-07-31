@@ -269,7 +269,7 @@ namespace AzToolsFramework
             return m_entryType;
         }
 
-        inline constexpr auto operator"" _hash(const char* str, size_t len)
+        inline constexpr auto operator ""_hash(const char* str, size_t len)
         {
             return AZStd::hash<AZStd::string_view>{}(AZStd::string_view{ str, len });
         }
