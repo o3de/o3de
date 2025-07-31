@@ -368,6 +368,8 @@ set(FILES
     Math/Random.h
     Math/Ray.cpp
     Math/Ray.h
+    Math/RayIntersection.h
+    Math/RayIntersection.inl
     Math/Sfmt.cpp
     Math/Sfmt.h
     Math/ShapeIntersection.cpp

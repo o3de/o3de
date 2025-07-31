@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/base.h>
+#include <AzCore/std/containers/array.h>
 #include "EMotionFXConfig.h"
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
@@ -25,6 +27,12 @@ namespace AZ::RPI
 {
     class ModelLodAsset;
 }
+
+namespace AZ
+{
+    class Ray;
+    class Transform;
+} // namespace AZ
 
 namespace EMotionFX
 {
@@ -412,6 +420,8 @@ namespace EMotionFX
         //---------------------------------------------------
 
         /**
+         * O3DE_DEPRECATION_NOTICE(GHI-XX)
+         * @deprecated use the variant with AZ::Ray and AZ::Transform
          * Checks for an intersection between the mesh and a given ray.
          * @param transform The transformation of the mesh.
          * @param ray The ray to test with.
@@ -420,6 +430,16 @@ namespace EMotionFX
         bool Intersects(const Transform& transform, const MCore::Ray& ray);
 
         /**
+         * Checks for an intersection between the mesh and a given ray.
+         * @param transform The transformation of the mesh.
+         * @param ray The ray to test with.
+         * @result Returns true when an intersection has occurred, otherwise false.
+         */
+        bool Intersects(const AZ::Transform& transform, const AZ::Ray& ray);
+
+        /**
+         * O3DE_DEPRECATION_NOTICE(GHI-XX)
+         * @deprecated use the variant with AZ::Ray and AZ::Transform
          * Check for an intersection between the mesh a given ray, and calculate the closest intersection point.
          * If you do NOT need to know the intersection point, use the other Intersects method, because that one is faster, since it doesn't need to calculate
          * the closest intersection point.
@@ -434,6 +454,21 @@ namespace EMotionFX
          * @result Returns true when an intersection has occurred, otherwise false.
          */
         bool Intersects(const Transform& transform, const MCore::Ray& ray, AZ::Vector3* outIntersect, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outIndices = nullptr);
+
+        /**
+         * Check for an intersection between the mesh a given ray, and calculate the closest intersection point.
+         * If you do NOT need to know the intersection point, use the other Intersects method, because that one is faster, since it doesn't need to calculate
+         * the closest intersection point.
+         * The intersection point returned is in object space.
+         * @param transform The transformation of the mesh.
+         * @param ray The ray to test with.
+         * @param[out] hitPoint A pointer to the vector to store the intersection point in, in case of a collision (nullptr allowed).
+         * @param[out] barycentricUV A barceyntric coordinate, to be used to interpolate values on the triangle (nullptr allowed).
+         * @param[out] hitIndecies A AZStd::array of 3 integers, which will contain the 3 vertex indices of the closest intersecting triangle. Even on polygon meshes with polygons of more than 3 vertices three indices are returned. In that case the indices represent a sub-triangle inside the polygon.
+         *                   A value of nullptr is allowed, which will skip storing the resulting triangle indices.
+         * @result Returns true when an intersection has occurred, otherwise false.
+         */
+        bool Intersects(const AZ::Transform& transform, const AZ::Ray& ray, AZ::Vector3& hitPoint, AZ::Vector2& barycentricUV, AZStd::array<AZ::u32, 3>& hitIndecies);
 
         //---------------------------------------------------
 
