@@ -17,10 +17,10 @@ namespace AZ
         namespace Gtao
         {
             static constexpr float DefaultGtaoStrength = 1.0f;
-            static constexpr float DefaultGtaoPower = 0.05f;
+            static constexpr float DefaultGtaoPower = 1.0f;
 
-            static constexpr float DefaultGtaoWorldRadius = 1.0f;
-            static constexpr float DefaultGtaoMaxDepth = 90.f;
+            static constexpr float DefaultGtaoWorldRadius = 2.0f;
+            static constexpr float DefaultGtaoMaxDepth = 250.0f;
             static constexpr float DefaultGtaoThicknessBlend = 0.5f;
         }
     }

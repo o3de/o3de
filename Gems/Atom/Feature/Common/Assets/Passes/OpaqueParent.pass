@@ -482,7 +482,7 @@
                 },
                 {
                     "Name": "Ao",
-                    "TemplateName": "GtaoParentTemplate",
+                    "TemplateName": "AoParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Modulate",
