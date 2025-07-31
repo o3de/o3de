@@ -7,11 +7,11 @@
  */
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
-#include <PostProcess/Ssao/SsaoSettings.h>
+#include <PostProcess/AmbientOcclusion/AoSettings.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <PostProcessing/SsaoPasses.h>
 #include <AzCore/Math/MathUtils.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoConstants.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -54,12 +54,12 @@ namespace AZ
             {
                 return true;
             }
-            const SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-            if (!ssaoSettings)
+            const AoSettings* aoSettings = postProcessSettings->GetAoSettings();
+            if (!aoSettings)
             {
                 return true;
             }
-            return ssaoSettings->GetEnabled();
+            return aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::SSAO;
         }
 
         void SsaoParentPass::InitializeInternal()
@@ -90,19 +90,19 @@ namespace AZ
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                 if (postProcessSettings)
                 {
-                    SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-                    if (ssaoSettings)
+                    AoSettings* aoSettings = postProcessSettings->GetAoSettings();
+                    if (aoSettings)
                     {
-                        bool ssaoEnabled = ssaoSettings->GetEnabled();
-                        bool blurEnabled = ssaoEnabled && ssaoSettings->GetEnableBlur();
-                        bool downsampleEnabled = ssaoEnabled && ssaoSettings->GetEnableDownsample();
+                        bool ssaoEnabled = aoSettings->GetEnabled();
+                        bool blurEnabled = ssaoEnabled && aoSettings->GetEnableBlur();
+                        bool downsampleEnabled = ssaoEnabled && aoSettings->GetEnableDownsample();
 
                         m_blurParentPass->SetEnabled(blurEnabled);
                         if (blurEnabled)
                         {
-                            float constFalloff = ssaoSettings->GetBlurConstFalloff();
-                            float depthFalloffThreshold = ssaoSettings->GetBlurDepthFalloffThreshold();
-                            float depthFalloffStrength = ssaoSettings->GetBlurDepthFalloffStrength();
+                            float constFalloff = aoSettings->GetBlurConstFalloff();
+                            float depthFalloffThreshold = aoSettings->GetBlurDepthFalloffThreshold();
+                            float depthFalloffStrength = aoSettings->GetBlurDepthFalloffStrength();
 
                             m_blurHorizontalPass->SetConstants(constFalloff, depthFalloffThreshold, depthFalloffStrength);
                             m_blurVerticalPass->SetConstants(constFalloff, depthFalloffThreshold, depthFalloffStrength);
@@ -145,10 +145,10 @@ namespace AZ
                 AZStd::array<float, 2> m_halfPixelSize;
 
                 // The strength of the SSAO effect
-                float m_strength = Ssao::DefaultStrength;
+                float m_strength = Ao::DefaultSsaoStrength;
 
-                // The sampling radius calculated in screen UV space 
-                float m_samplingRadius = Ssao::DefaultSamplingRadius;
+                // The sampling radius calculated in screen UV space
+                float m_samplingRadius = Ao::DefaultSsaoSamplingRadius;
 
             } ssaoConstants{};
 
@@ -160,13 +160,13 @@ namespace AZ
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                 if (postProcessSettings)
                 {
-                    SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-                    if (ssaoSettings)
+                    AoSettings* aoSettings = postProcessSettings->GetAoSettings();
+                    if (aoSettings)
                     {
-                        if (ssaoSettings->GetEnabled())
+                        if (aoSettings->GetEnabled() && aoSettings->GetAoMethod() == Ao::AoMethodType::SSAO)
                         {
-                            ssaoConstants.m_strength = ssaoSettings->GetStrength();
-                            ssaoConstants.m_samplingRadius = ssaoSettings->GetSamplingRadius();
+                            ssaoConstants.m_strength = aoSettings->GetSsaoStrength();
+                            ssaoConstants.m_samplingRadius = aoSettings->GetSsaoSamplingRadius();
                         }
                         else
                         {

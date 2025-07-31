@@ -30,7 +30,7 @@
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
-#include <PostProcess/Ssao/SsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/AoComponent.h>
 #include <PostProcess/LookModification/LookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/RadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
@@ -73,7 +73,7 @@
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
-#include <PostProcess/Ssao/EditorSsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/EditorAoComponent.h>
 #include <PostProcess/LookModification/EditorLookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/EditorRadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
@@ -117,7 +117,7 @@ namespace AZ
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
-                        SsaoComponent::CreateDescriptor(),
+                        AoComponent::CreateDescriptor(),
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
                         HDRiSkyboxComponent::CreateDescriptor(),
@@ -158,7 +158,7 @@ namespace AZ
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),
-                        EditorSsaoComponent::CreateDescriptor(),
+                        EditorAoComponent::CreateDescriptor(),
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),
                         EditorHDRiSkyboxComponent::CreateDescriptor(),

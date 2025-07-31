@@ -27,12 +27,16 @@ namespace AZ
             ~PostProcessingShaderOptionBase() = default;
 
         protected:
-            //! Creates the PSO for ShaderOption and save it as a cache.
-            void PreloadShaderVariant(
+            //! Creates the PSO for ShaderOption and save it as a cache. Use this for raster passes.
+            void PreloadShaderVariantForDraw(
                 const Data::Instance<AZ::RPI::Shader>& shader,
                 const RPI::ShaderOptionGroup& shaderOption,
                 const RHI::RenderAttachmentConfiguration& renderAttachmentConfiguration,
                 const RHI::MultisampleState& multisampleState);
+            //! Creates the PSO for ShaderOption and save it as a cache. Use this for compute passes.
+            void PreloadShaderVariantForDispatch(
+                const Data::Instance<AZ::RPI::Shader>& shader,
+                const RPI::ShaderOptionGroup& shaderOption);
 
             //! Update shaderVariant. Used when the shader is switched.
             void UpdateShaderVariant(const AZ::RPI::ShaderOptionGroup& shaderOption);
