@@ -65,6 +65,7 @@ private:
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
         bool m_panInvertedY;
+        bool m_zoomInverted;
         bool m_rotateSmoothing;
         bool m_translateSmoothing;
         bool m_goToPositionInstantly;

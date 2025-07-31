@@ -227,6 +227,11 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeedScaled();
         };
 
+        m_firstPersonScrollCamera->m_invertZoomFn = []
+        {
+            return SandboxEditor::CameraZoomInverted();
+        };
+
         const auto focusPivotFn = []() -> AZStd::optional<AZ::Vector3>
         {
             // use the manipulator transform as the pivot point
@@ -366,6 +371,11 @@ namespace SandboxEditor
         m_orbitScrollDollyCamera->m_scrollSpeedFn = []
         {
             return SandboxEditor::CameraScrollSpeedScaled();
+        };
+
+        m_orbitScrollDollyCamera->m_invertZoomFn = []
+        {
+            return SandboxEditor::CameraZoomInverted();
         };
 
         m_orbitMotionDollyCamera = AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());

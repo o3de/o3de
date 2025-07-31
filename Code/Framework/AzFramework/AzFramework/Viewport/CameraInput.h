@@ -625,6 +625,7 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
+        AZStd::function<bool()> m_invertZoomFn;
     };
 
     //! A camera input to handle motion deltas that can modify the camera offset.
@@ -658,6 +659,7 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
+        AZStd::function<bool()> m_invertZoomFn;
     };
 
     //! A camera input that doubles as its own set of camera inputs.
