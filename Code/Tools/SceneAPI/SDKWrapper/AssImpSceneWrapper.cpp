@@ -11,6 +11,7 @@
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
+#include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
 #include <assimp/postprocess.h>
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -40,7 +41,7 @@ namespace AZ
         }
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-        void signal_handler([[maybe_unused]] int signal) 
+        void signal_handler([[maybe_unused]] int signal)
         {
             AZ_TracePrintf(
                 SceneAPI::Utilities::ErrorWindow,
@@ -113,11 +114,6 @@ namespace AZ
             return true;
         }
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
-        {
-            return LoadSceneFromFile(fileName.c_str(), importSettings);
-        }
-
         const std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode() const
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
@@ -171,6 +167,9 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const
         {
+            // technically not true. According to https://the-asset-importer-lib-documentation.readthedocs.io/en/latest/usage/use_the_lib.html#introduction
+            // data provided by AssImp is +Y upwards
+            // We leave the old default value to maintain backward compatibility
             AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Z, 1);
             int32_t upVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("UpAxis", upVectorRead);
@@ -181,6 +180,9 @@ namespace AZ
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetFrontVectorAndSign() const
         {
+            // technically not true. According to https://the-asset-importer-lib-documentation.readthedocs.io/en/latest/usage/use_the_lib.html#introduction
+            // data provided by AssImp is +Z towards viewer
+            // We leave the old default value to maintain backward compatibility
             AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> result(AxisVector::Y, 1);
             int32_t frontVectorRead(static_cast<int32_t>(result.first));
             m_assImpScene->mMetaData->Get("FrontAxis", frontVectorRead);
@@ -198,6 +200,99 @@ namespace AZ
             result.first = static_cast<AssImpSceneWrapper::AxisVector>(rightVectorRead);
             return result;
         }
-    }//namespace AssImpSDKWrapper
 
+        AZStd::optional<SceneAPI::DataTypes::MatrixType> AssImpSceneWrapper::UseForcedRootTransform() const
+        {
+            // AssImp automatically converts all incoming scenes to Y-up coordinate system internally, regardless of their original orientation.
+            // It does this by either applying an identity matrix (if the scene was already Y-up) or a space-transforming root matrix.
+            // This means all AssImp data can be assumed to be Y-up.
+            // 
+            // Previously, O3DE ignored this root transform and assumed source data was Z-up, leading to incorrect orientations.
+            // The AssImpReadRootTransform flag was added to handle this properly for new projects while maintaining compatibility
+            // with existing projects that had manually counter-rotated assets to compensate for the incorrect behavior.
+            static constexpr const char* s_ReadRootTransformKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
+            bool readRootTransform = false;
+            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                settingsRegistry->Get(readRootTransform, s_ReadRootTransformKey);
+            }
+
+            // for FBX, root transform is not converted where there are no meshes in the scene.
+            if ((m_assImpScene->mFlags | AI_SCENE_FLAGS_INCOMPLETE) && m_assImpScene->mMetaData->HasKey("UpAxis"))
+            {
+                readRootTransform = false;
+            }
+            if (!readRootTransform)
+            {
+                return AZStd::nullopt;
+            }
+
+            SceneAPI::DataTypes::MatrixType rootTransform = AssImpTypeConverter::ToTransform(m_assImpScene->mRootNode->mTransformation);
+            /* Check if metadata has information about "UnitScaleFactor" or "OriginalUnitScaleFactor".
+             * This particular metadata is FBX format only. */
+            if (!m_assImpScene->mMetaData->HasKey("UnitScaleFactor") &&
+                !m_assImpScene->mMetaData->HasKey("OriginalUnitScaleFactor"))
+            {
+                // Some file formats (like DAE) embed the scale in the root transformation, so extract that scale from here.
+                auto unitSizeInMeters = rootTransform.ExtractScale().GetMaxElement();
+                rootTransform /= unitSizeInMeters;
+            }
+
+            AZ::Matrix3x4 adjustmatrix = AZ::Matrix3x4::CreateZero();
+            // for FBX, root transform is not converted where there are no meshes in the scene.
+            if ((m_assImpScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)
+                && m_assImpScene->mMetaData->HasKey("UpAxis"))
+            {
+                auto upAxisAndSign = GetUpVectorAndSign();
+                auto frontAxisAndSign = GetFrontVectorAndSign();
+                auto rightAxisAndSign = GetRightVectorAndSign();
+
+                // Set transform matrix with basis vector (-right, front, up)
+                adjustmatrix.SetElement(0, (int)rightAxisAndSign.first, -(float)rightAxisAndSign.second);
+                adjustmatrix.SetElement(1, (int)frontAxisAndSign.first, (float)frontAxisAndSign.second);
+                adjustmatrix.SetElement(2, (int)upAxisAndSign.first, (float)upAxisAndSign.second);
+            }
+            else
+            {
+                // AssImp SDK internally uses a Y-up coordinate system, so we need to adjust the coordinate system to match the O3DE coordinate system (Z-up).
+                adjustmatrix = AZ::Matrix3x4::CreateFromRows(
+                    AZ::Vector4(-1, 0, 0, 0),
+                    AZ::Vector4(0, 0, 1, 0),
+                    AZ::Vector4(0, 1, 0, 0)
+                );
+            }
+            return SceneAPI::DataTypes::MatrixType(adjustmatrix * rootTransform);
+        }
+
+        float AssImpSceneWrapper::GetUnitSizeInMeters() const
+        {
+            float unitSizeInMeters;
+            float originalUnitSizeInMeters;
+            /* Check if metadata has information about "UnitScaleFactor" or "OriginalUnitScaleFactor".
+             * This particular metadata is FBX format only. */
+            if (m_assImpScene->mMetaData->HasKey("UnitScaleFactor") || m_assImpScene->mMetaData->HasKey("OriginalUnitScaleFactor"))
+            {
+                // If either metadata piece is not available, the default of 1 will be used.
+                m_assImpScene->mMetaData->Get("UnitScaleFactor", unitSizeInMeters);
+                m_assImpScene->mMetaData->Get("OriginalUnitScaleFactor", originalUnitSizeInMeters);
+
+                /* Conversion factor for converting from centimeters to meters.
+                 * This applies to an FBX format in which the default unit is a centimeter. */
+                unitSizeInMeters = unitSizeInMeters * .01f;
+            }
+            else
+            {
+                // Some file formats (like DAE) embed the scale in the root transformation, so extract that scale from here.
+                auto rootTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(m_assImpScene->mRootNode->mTransformation);
+                unitSizeInMeters = rootTransform.ExtractScale().GetMaxElement();
+            }
+            return unitSizeInMeters;
+        }
+
+        AZ::Aabb AssImpSceneWrapper::GetAABB() const
+        {
+            return AZ::Aabb::CreateFromMinMaxValues(
+                m_aabb.mMin.x, m_aabb.mMin.y, m_aabb.mMin.z, m_aabb.mMax.x, m_aabb.mMax.y, m_aabb.mMax.z);
+        }
+    } // namespace AssImpSDKWrapper
 } // namespace AZ

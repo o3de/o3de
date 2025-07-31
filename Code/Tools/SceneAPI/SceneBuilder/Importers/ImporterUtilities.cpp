@@ -9,6 +9,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <SceneAPI/SceneBuilder/ImportContexts/ImportContextProvider.h>
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -42,17 +43,26 @@ namespace AZ
                 dataPopulated.m_scene.GetGraph().SetContent(dataPopulated.m_currentGraphPosition,
                     AZStd::move(dataPopulated.m_graphData));
 
-                if (azrtti_istypeof<AssImpSceneDataPopulatedContext>(dataPopulated))
+                // Use context provider to create the appropriate context objects
+                AZStd::shared_ptr<SceneNodeAppendedContextBase> nodeAppended =
+                    dataPopulated.m_contextProvider->CreateSceneNodeAppendedContext(dataPopulated, dataPopulated.m_currentGraphPosition);
+                if (nodeAppended)
                 {
-                    AssImpSceneDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneDataPopulatedContext*>(&dataPopulated);
-                    AssImpSceneNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
-                    nodeResults += Events::Process(nodeAppended);
+                    nodeResults += Events::Process(*nodeAppended);
 
-                    AssImpSceneNodeAddedAttributesContext addedAttributes(nodeAppended);
-                    nodeResults += Events::Process(addedAttributes);
+                    AZStd::shared_ptr<SceneNodeAddedAttributesContextBase> addedAttributes =
+                        dataPopulated.m_contextProvider->CreateSceneNodeAddedAttributesContext(*nodeAppended);
+                    if (addedAttributes)
+                    {
+                        nodeResults += Events::Process(*addedAttributes);
 
-                    AssImpSceneNodeFinalizeContext finalizeNode(addedAttributes);
-                    nodeResults += Events::Process(finalizeNode);
+                        AZStd::shared_ptr<SceneNodeFinalizeContextBase> finalizeNode =
+                            dataPopulated.m_contextProvider->CreateSceneNodeFinalizeContext(*addedAttributes);
+                        if (finalizeNode)
+                        {
+                            nodeResults += Events::Process(*finalizeNode);
+                        }
+                    }
                 }
 
                 return nodeResults.GetResult();
@@ -71,11 +81,12 @@ namespace AZ
 
                 dataPopulated.m_scene.GetGraph().SetContent(dataPopulated.m_currentGraphPosition,
                     AZStd::move(dataPopulated.m_graphData));
-                if (azrtti_istypeof<AssImpSceneAttributeDataPopulatedContext>(dataPopulated))
+                // Use context provider to create the appropriate attribute node context
+                AZStd::shared_ptr<SceneAttributeNodeAppendedContextBase> nodeAppended =
+                    dataPopulated.m_contextProvider->CreateSceneAttributeNodeAppendedContext(dataPopulated, dataPopulated.m_currentGraphPosition);
+                if (nodeAppended)
                 {
-                    AssImpSceneAttributeDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneAttributeDataPopulatedContext*>(&dataPopulated);
-                    AssImpSceneAttributeNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
-                    nodeResults += Events::Process(nodeAppended);
+                    nodeResults += Events::Process(*nodeAppended);
                 }
 
                 return nodeResults.GetResult();

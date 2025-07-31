@@ -116,12 +116,12 @@ namespace AZ
                     context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult bitangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, bitangentStream, newIndex, m_defaultNodeName);
-                bitangentResults = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, bitangentStream, newIndex, m_defaultNodeName);
+                bitangentResults = Events::Process(*dataPopulated);
 
                 if (bitangentResults != Events::ProcessingResult::Failure)
                 {
-                    bitangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
+                    bitangentResults = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
                 return bitangentResults;
             }
