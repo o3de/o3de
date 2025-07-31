@@ -51,8 +51,10 @@ def Menus_EditMenuOptions_Work():
         ("Modify", "Transform Mode", "Move"),
         ("Modify", "Transform Mode", "Rotate"),
         ("Modify", "Transform Mode", "Scale"),
-        ("Editor Settings", "Global Preferences"),
-        ("Editor Settings", "Editor Settings Manager"),
+        ("Editor Settings", "Global Preferences..."),
+        ("Editor Settings", "Editor Settings Manager..."),
+        ("Editor Settings", "Edit Project Settings...",),
+        ("Editor Settings", "Edit Platform Settings...",)
         # The following menu options are temporarily disabled due to https://github.com/o3de/o3de/issues/6746
         #("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
         #("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
