@@ -34,6 +34,7 @@ namespace EMStudio
     private slots:
         void OnFocusChanged(const QModelIndex& newFocusIndex, const QModelIndex& newFocusParent, const QModelIndex& oldFocusIndex, const QModelIndex& oldFocusParent);
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+        void ClearModelIndex();
         void OnBreadCrumbsLinkClicked(const QString& linkPath, int linkIndex);
 
     private:
