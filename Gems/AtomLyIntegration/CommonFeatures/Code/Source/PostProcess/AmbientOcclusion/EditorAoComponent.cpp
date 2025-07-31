@@ -13,6 +13,16 @@ namespace AZ
 {
     namespace Render
     {
+        using AoMethodComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<Ao::AoMethodType>>;
+        static AoMethodComboBoxVec PopulateAoMethodList()
+        {
+            return AoMethodComboBoxVec
+            {
+                { Ao::AoMethodType::SSAO, "SSAO" },
+                { Ao::AoMethodType::GTAO, "GTAO" },
+            };
+        }
+
         void EditorAoComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -25,7 +35,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorAoComponent>(
-                        "SSAO", "Controls SSAO.")
+                        "Ambient Occlusion", "Controls Ambient Occlusion.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
@@ -48,32 +58,63 @@ namespace AZ
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &AoComponentConfig::m_enabled,
-                            "Enable SSAO",
-                            "Enable SSAO.")
+                            "Enable AO",
+                            "Enable AO.")
+
+                        ->DataElement(Edit::UIHandlers::ComboBox,
+                            &AoComponentConfig::m_aoMethod,
+                            "AO Method",
+                            "The method used for AO calculation.")
+                            ->Attribute(Edit::Attributes::EnumValues, &PopulateAoMethodList)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_ssaoStrength,
                             "SSAO Strength",
                             "Multiplier for how much strong SSAO appears.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
-
-                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoStrength,
-                            "GTAO Strength",
-                            "Multiplier for how much strong GTAO appears.")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 2.0f)
-
-                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoPower,
-                            "GTAO Power",
-                            "Power factor for how much strong GTAO appears.")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 5.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsSsao)
 
                         ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_ssaoSamplingRadius,
                             "Sampling Radius",
                             "The sampling radius of the SSAO effect in screen UV space")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 0.25f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsSsao)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoStrength,
+                            "GTAO Strength",
+                            "Multiplier for how much strong GTAO appears.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 2.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoPower,
+                            "GTAO Power",
+                            "Power factor for how much strong GTAO appears.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 5.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoWorldRadius,
+                            "World Radius",
+                            "Sampling radius in world units.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 5.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoThicknessBlend,
+                            "Thickness Blend",
+                            "Blend factor for thickness.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 1.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
+
+                        ->DataElement(Edit::UIHandlers::Slider, &AoComponentConfig::m_gtaoMaxDepth,
+                            "Max Depth",
+                            "Max depth for GTAO effect.")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 1000.0f)
+                            ->Attribute(Edit::Attributes::Visibility, &AoComponentConfig::IsGtao)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &AoComponentConfig::m_enableBlur,

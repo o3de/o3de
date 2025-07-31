@@ -179,6 +179,8 @@ set(FILES
     Source/PostProcess/Vignette/VignetteSettings.h
     Source/PostProcess/LookModification/LookModificationSettings.cpp
     Source/PostProcess/LookModification/LookModificationSettings.h
+    Source/PostProcessing/AoParentPass.cpp
+    Source/PostProcessing/AoParentPass.h
     Source/PostProcessing/BlendColorGradingLutsPass.h
     Source/PostProcessing/BlendColorGradingLutsPass.cpp
     Source/PostProcessing/DepthOfFieldPencilMap.h

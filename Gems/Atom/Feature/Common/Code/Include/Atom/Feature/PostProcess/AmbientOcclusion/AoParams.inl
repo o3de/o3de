@@ -16,7 +16,7 @@ AZ_GFX_BOOL_PARAM(Enabled, m_enabled, true)
 AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(bool, Enabled, m_enabled)
 
 // Which AO method to use
-AZ_GFX_COMMON_PARAM(AZ::Render::Ao::AoMethodType, AoMethod, m_aoMethod, AZ::Render::Ao::AoMethodType::GTAO)
+AZ_GFX_COMMON_PARAM(AZ::Render::Ao::AoMethodType, AoMethod, m_aoMethod, AZ::Render::Ao::AoMethodType::SSAO)
 AZ_GFX_ANY_PARAM_BOOL_OVERRIDE(AZ::Render::Ao::AoMethodType, AoMethod, m_aoMethod)
 
 // --- AO BLUR ---

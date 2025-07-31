@@ -42,6 +42,9 @@ namespace AZ
 
             void CopySettingsFrom(AoSettingsInterface* settings);
             void CopySettingsTo(AoSettingsInterface* settings);
+
+            bool IsSsao();
+            bool IsGtao();
         };
     }
 }
