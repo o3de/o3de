@@ -124,9 +124,8 @@ namespace AZ::Dom
     }
 
     Value::Value(Value&& value) noexcept
+        : m_value(AZStd::move(value.m_value))
     {
-        memcpy(this, &value, sizeof(Value));
-        memset(&value, 0, sizeof(Value));
     }
 
     Value::Value(AZStd::string_view stringView, bool copy)
@@ -273,9 +272,7 @@ namespace AZ::Dom
 
     Value& Value::operator=(Value&& other) noexcept
     {
-        SetNull();
-        memcpy(this, &other, sizeof(Value));
-        memset(&other, 0, sizeof(Value));
+        m_value = AZStd::move(other.m_value);
         return *this;
     }
 
@@ -298,10 +295,7 @@ namespace AZ::Dom
 
     void Value::Swap(Value& other) noexcept
     {
-        AZStd::aligned_storage_for_t<Value> temp;
-        memcpy(&temp, this, sizeof(Value));
-        memcpy(this, &other, sizeof(Value));
-        memcpy(&other, &temp, sizeof(Value));
+        AZStd::swap(m_value, other.m_value);
     }
 
     Type Dom::Value::GetType() const

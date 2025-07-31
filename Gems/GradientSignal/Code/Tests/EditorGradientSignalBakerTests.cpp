@@ -23,7 +23,12 @@
 #include <Tests/GradientSignalTestFixtures.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
+// Clang20 on Windows complains about the expression "(begin - &*context_.begin())" in OpenImageIo/detail/fmt/core.h:2716 not being a
+// constant expression, but other compilers dont. To fix this without needing to update the library, define an empty FMT_CONSTEVAL macro,
+// which disables constexpr format strings for the library entirely
+#define FMT_CONSTEVAL
 #include <OpenImageIO/imageio.h>
+#undef FMT_CONSTEVAL
 AZ_POP_DISABLE_WARNING
 
 
