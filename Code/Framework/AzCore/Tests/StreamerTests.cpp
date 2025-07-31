@@ -19,6 +19,8 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzTest/GemTestEnvironment.h>
 
 namespace AZ::IO
@@ -256,6 +258,7 @@ namespace AZ::IO
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_useExistingAllocator = true;
             auto m_systemEntity = m_application->Create(appDesc);
+            m_systemEntity->AddComponent(aznew AZ::TaskGraphSystemComponent());
             m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
             m_systemEntity->Init();
             m_systemEntity->Activate();

@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Math/Crc.h>
 
 namespace AZ
 {
@@ -27,6 +28,8 @@ namespace AZ
     }
     class TaskExecutor;
     class TaskGraph;
+
+    inline constexpr AZ::Crc32 TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
     class TaskGraphActiveInterface
     {

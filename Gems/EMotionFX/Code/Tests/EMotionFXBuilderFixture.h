@@ -61,6 +61,7 @@ namespace EMotionFX
     using EMotionFXBuilderFixture = ComponentFixture<
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         BuilderMockComponent
     >;

@@ -15,6 +15,7 @@ namespace EMotionFX::MotionMatching
     using Fixture = ComponentFixture<
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         EMotionFX::Integration::SystemComponent,
         MotionMatchingSystemComponent

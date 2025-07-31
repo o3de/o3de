@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <Tests/TestEnvironment.h>
 #include <Source/GraphModelSystemComponent.h>
 
@@ -178,6 +179,7 @@ namespace GraphModelIntegrationTest
         m_systemEntity = m_application->Create(appDesc, startupParams);
         m_systemEntity->AddComponent(aznew AZ::AssetManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
+        m_systemEntity->AddComponent(aznew AZ::TaskGraphSystemComponent());
         m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
         m_systemEntity->AddComponent(aznew GraphModel::GraphModelSystemComponent());
 
