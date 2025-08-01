@@ -42,11 +42,6 @@ real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 light
     return diffuse;
 }
 
-real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight, uint viewIndex)
-{
-    return GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight, 0);
-}
-
 real3 GetSpecularLighting(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight, uint viewIndex)
 {
     real3 specular = SpecularGGX(lightingData.dirToCamera[viewIndex], dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(viewIndex), surface.roughnessA2, lightingData.multiScatterCompensation);

@@ -10,10 +10,9 @@
 #include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
 #include <RayTracingDebugCommon.azsli>
 
-VertexData GetVertexData(float2 barycentrics)
+VsInput GetVertexData(float2 barycentrics)
 {
-    RayTracingSceneSrg::MeshInfo meshInfo = RayTracingSceneSrg::m_meshInfo[NonUniformResourceIndex(InstanceIndex())];
-    return GetHitInterpolatedVertexData(meshInfo, barycentrics);
+    return GetHitInterpolatedVertexData(InstanceID(), PrimitiveIndex(), barycentrics);
 }
 
 float3 GetBarycentricColor(float2 barycentrics)
@@ -23,14 +22,28 @@ float3 GetBarycentricColor(float2 barycentrics)
 
 float3 GetNormalColor(float2 barycentrics)
 {
-    VertexData vertexData = GetVertexData(barycentrics);
-    return vertexData.m_normal * 0.5f + 0.5f;
+    VsInput vertexData = GetVertexData(barycentrics);
+    return vertexData.normal * 0.5f + 0.5f;
 }
 
 float3 GetUVColor(float2 barycentrics)
 {
-    VertexData vertexData = GetVertexData(barycentrics);
-    return float3(vertexData.m_uv, 0.f);
+    VsInput vertexData = GetVertexData(barycentrics);
+    return float3(vertexData.uv0, 0.f);
+}
+
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+float3 GetFallbackPBRAlbedo(float2 barycentrics)
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+    VsInput vertexData = GetVertexData(barycentrics);
+
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, vertexData.uv0);
+    return textureData.m_baseColor;
 }
 
 [shader("closesthit")]
@@ -44,6 +57,7 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
     case RayTracingDebugViewMode::Barycentrics:   payload.m_color = GetBarycentricColor(attrib.barycentrics); break;
     case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.barycentrics);      break;
     case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.barycentrics);          break;
+    case RayTracingDebugViewMode::FallbackPBRAlbedo:    payload.m_color = GetFallbackPBRAlbedo(attrib.barycentrics); break;
     default:                                      payload.m_noData = true;                                    break;
     }
 }

@@ -24,6 +24,7 @@ ly_add_target(
             Source
             ${pal_source_dir}
             3rdParty/ACES
+            ../Assets/ShaderLib  # allow including .azsli - files from ShaderLib in c++
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -58,6 +59,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            ${gem_name}.Private.Object
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static

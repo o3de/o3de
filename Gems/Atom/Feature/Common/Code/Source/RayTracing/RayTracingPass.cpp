@@ -163,9 +163,6 @@ namespace AZ
             const auto& sceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene);
             m_requiresSceneSrg = (sceneSrgLayout != nullptr);
 
-            const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
-            m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
-
             const auto& rayTracingSceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingSceneSrgBindingSlot);
             m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
 
@@ -552,11 +549,6 @@ namespace AZ
             if (m_requiresSceneSrg)
             {
                 m_rayTracingSRGsToBind.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
-            }
-
-            if (m_requiresRayTracingMaterialSrg)
-            {
-                m_rayTracingSRGsToBind.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup());
             }
         }
 

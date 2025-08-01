@@ -23,6 +23,7 @@ enum class RayTracingDebugViewMode
     Barycentrics,
     Normals,
     UVs,
+    FallbackPBRAlbedo,
 };
 
 RayTracingDebugViewMode GetRayTracingDebugViewMode()

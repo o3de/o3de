@@ -61,7 +61,7 @@ class LightingData
     real diffuseAmbientOcclusion;
     real specularOcclusion;
 
-    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS]);
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS], float brdfMipLevel = 0);
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting();
     void FinalizeLighting(real3 transmissionTint);
@@ -70,7 +70,7 @@ class LightingData
     real GetSpecularNdotV(uint i) { return NdotV[i]; }
 };
 
-void LightingData::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS])
+void LightingData::Init(float3 positionWS, real3 specularNormal, real roughnessLinear, float3 viewPosition[MAX_SHADING_VIEWS], float brdfMipLevel)
 {
     diffuseLighting = real3(0.0, 0.0, 0.0);
     translucentBackLighting = real3(0.0, 0.0, 0.0);
@@ -88,7 +88,11 @@ void LightingData::Init(float3 positionWS, real3 specularNormal, real roughnessL
 
         // sample BRDF map (indexed by smoothness values rather than roughness)
         real2 brdfUV = real2(NdotV[i], (1.0 - roughnessLinear));
+#ifdef CS_SAMPLERS
+        brdf[i] = real2(PassSrg::m_brdfMap.SampleLevel(PassSrg::LinearSampler, brdfUV, brdfMipLevel).rg);
+#else
         brdf[i] = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
+#endif
     }
 }
 

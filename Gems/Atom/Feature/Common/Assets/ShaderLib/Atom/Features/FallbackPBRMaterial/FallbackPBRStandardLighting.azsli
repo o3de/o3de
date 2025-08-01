@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial_Defines.azsli>
+#include <Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial.azsli>
+
+#include <Atom/Features/MeshInfo/MeshInfoUtil.azsli>
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+
+
+Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler, float4x4 viewProjectionMatrix)
+{
+    Surface surface = (Surface)0;
+
+    MeshInfo meshInfo;
+    if (!GetMeshInfoEntry(meshInfoIndex, meshInfo))
+    {
+        return surface;
+    }
+
+    VsInput objectVertex;
+    LoadInterpolatedVertexData(meshInfo, triangleId, barycentrics, objectVertex);
+
+    VsOutput vertex = EvaluateVertexGeometry(objectVertex, meshInfo.m_objectIdForTransform, viewProjectionMatrix);
+    PixelGeometryData geoData = EvaluatePixelGeometry(vertex, meshInfo.m_objectIdForTransform);
+
+    MaterialInfo materialInfo;
+    if (!GetMaterialInfoEntry(meshInfoIndex, materialInfo))
+    {
+        return surface;
+    }
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, linearSampler, geoData.uvs[0]);
+    surface = EvaluateSurface(geoData, textureData, meshInfo.m_lightingChannels);
+    return surface;
+}
+
+#ifndef PIPELINE_HAS_VIEW_SRG
+#define PIPELINE_HAS_VIEW_SRG 1
+#endif
+
+#if PIPELINE_HAS_VIEW_SRG
+Surface GetFallbackPBRStandardSurface(int meshInfoIndex, int triangleId, float3 barycentrics, sampler linearSampler)
+{
+    return GetFallbackPBRStandardSurface(meshInfoIndex, triangleId, barycentrics, linearSampler, ViewSrg::m_viewProjectionMatrix);
+}
+#endif // PIPELINE_HAS_VIEW_SRG

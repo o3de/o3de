@@ -36,12 +36,13 @@ namespace AZ
         MeshDrawPacket::MeshDrawPacket(
             ModelLod& modelLod,
             size_t modelLodMeshIndex,
+            int32_t meshInfoIndex,
             Data::Instance<Material> materialOverride,
             Data::Instance<ShaderResourceGroup> objectSrg,
-            const MaterialModelUvOverrideMap& materialModelUvMap
-        )
+            const MaterialModelUvOverrideMap& materialModelUvMap)
             : m_modelLod(&modelLod)
             , m_modelLodMeshIndex(modelLodMeshIndex)
+            , m_meshInfoIndex(meshInfoIndex)
             , m_objectSrg(objectSrg)
             , m_material(materialOverride)
             , m_materialModelUvMap(materialModelUvMap)
@@ -450,6 +451,11 @@ namespace AZ
                         // to the shader constant.
                         RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_modelLodMeshIndex"));
                         drawSrg->SetConstant(nameIndex, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
+                    }
+                    {
+                        // Pass MeshInfoIndex to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_meshInfoIndex");
+                        drawSrg->SetConstant(nameIndex, m_meshInfoIndex);
                     }
 
                     // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?

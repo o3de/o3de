@@ -37,6 +37,11 @@ namespace AZ::RHI
     struct BufferViewDescriptor;
 }
 
+namespace AZ::Render
+{
+    class MeshFeatureProcessor;
+}
+
 namespace Terrain
 {
 
@@ -345,5 +350,8 @@ namespace Terrain
 
 
         AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+
+        // Cached MeshFeatureProcessor
+        AZ::Render::MeshFeatureProcessorInterface* m_meshfeatureProcessor;
     };
 }
