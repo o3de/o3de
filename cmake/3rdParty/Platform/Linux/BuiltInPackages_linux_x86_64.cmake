@@ -32,7 +32,7 @@ ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux                
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev2-linux         TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH c8a9f1d9d6c9f8c3defdbc3761ba391d175b1cb62a70473183af1eaeaef70c36)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-linux                          TARGETS OpenEXR Imath               PACKAGE_HASH fcbac68cfb4e3b694580bc3741443e111aced5f08fde21a92e0c768e8803c7af)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1t-rev1-linux                         TARGETS OpenSSL                     PACKAGE_HASH 63aea898b7afe8faccd0c7261e62d2f8b7b870f678a4520d5be81e5815542b39)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev2-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH c0fa3034c88b5ad4efb81fd1f961ab52f9eddfb80506fd06ab7bd3dc857e5950)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.8.2505.1-o3de-rev1-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH af87fd77f71a1b8d04241dfcfa4aded7081ee5eb5a764b096238f3e27a5146f2)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-linux                   TARGETS SPIRVCross                  PACKAGE_HASH 9df035eabcb33c95a940afb0dbdd0781465d4e2d8ba4d5ca874f9ee3fb2295fc)
 ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-linux                           TARGETS azslc                       PACKAGE_HASH 0b7bbda949f0991adccbca3fb91e5373180d43c54ed7740ad6d54c1c72dce661)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-linux                            TARGETS ZLIB                        PACKAGE_HASH 9be5ea85722fc27a8645a9c8a812669d107c68e6baa2ca0740872eaeb6a8b0fc)
