@@ -192,8 +192,8 @@ jobs:
         working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
         timeout-minutes: 330
         run: |
-          $env:LY_PACKAGE_SERVER_URLS = "${{ vars.LY_PACKAGE_SERVER_URLS }}"
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+          $env:LY_PACKAGE_SERVER_URLS = "${{ vars.LY_PACKAGE_SERVER_URLS }}"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp"
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
