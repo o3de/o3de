@@ -32,10 +32,6 @@ on:
       last_artifact:
         required: false
         type: boolean
-      package_server_urls:
-        required: false
-        type: string
-        description: "Package server URLs for downloading dependencies"
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -205,7 +201,7 @@ jobs:
         timeout-minutes: 330
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
-          $env:LY_PACKAGE_SERVER_URLS = "${{ inputs.package_server_urls || vars.LY_PACKAGE_SERVER_URLS }}"
+          $env:LY_PACKAGE_SERVER_URLS = "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
