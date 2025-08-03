@@ -62,6 +62,7 @@ jobs:
             platform: Windows
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }} # If CLEAN_ARTIFACTS is false, then this returns true
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
     
     Windows-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -73,6 +74,7 @@ jobs:
             image: windows-2022
             platform: Windows
             type: asset_profile
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
     Windows-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -84,6 +86,7 @@ jobs:
             image: windows-2022
             platform: Windows
             type: test_cpu_profile
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
     Windows-Release:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -95,6 +98,7 @@ jobs:
             platform: Windows
             type: release
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
 #### Linux Build ####
     Linux-Profile:
@@ -107,6 +111,7 @@ jobs:
             platform: Linux
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
     Linux-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -118,6 +123,7 @@ jobs:
             image: ubuntu-22.04
             platform: Linux
             type: asset_profile
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
     Linux-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -130,6 +136,7 @@ jobs:
             platform: Linux
             type: test_profile
             desktop: true
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
 #### Android Build ####
     Android-Profile:
@@ -142,6 +149,7 @@ jobs:
             platform: Android
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
 
     Android-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -153,6 +161,7 @@ jobs:
             platform: Android
             type: asset_profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}
             
     Android-Gradle:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -164,3 +173,4 @@ jobs:
             platform: Android
             type: gradle
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            package_server_urls: ${{ vars.LY_PACKAGE_SERVER_URLS }}

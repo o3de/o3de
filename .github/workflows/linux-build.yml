@@ -14,27 +14,31 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      compiler: 
+      compiler:
         required: true
         type: string
-      config: 
+      config:
         required: true
         type: string
-      image: 
+      image:
         required: true
         type: string
-      platform: 
+      platform:
         required: true
         type: string
-      type: 
+      type:
         required: true
         type: string
-      last_artifact: 
+      last_artifact:
         required: false
         type: boolean
       desktop:
         required: false
         type: boolean
+      package_server_urls:
+        required: false
+        type: string
+        description: "Package server URLs for downloading dependencies"
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -180,7 +184,7 @@ jobs:
         timeout-minutes: 330
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
-          export LY_PACKAGE_SERVER_URLS="${{ vars.LY_PACKAGE_SERVER_URLS }}"
+          export LY_PACKAGE_SERVER_URLS="${{ inputs.package_server_urls || vars.LY_PACKAGE_SERVER_URLS }}"
           export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
           export CXX=${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
           export CMAKE_C_COMPILER_LAUNCHER=ccache
