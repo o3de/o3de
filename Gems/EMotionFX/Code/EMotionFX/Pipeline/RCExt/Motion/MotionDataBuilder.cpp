@@ -303,11 +303,13 @@ namespace EMotionFX
                 const size_t sceneFrameCount = aznumeric_caster(animation->GetKeyFrameCount());
                 size_t startFrame = 0;
                 size_t endFrame = 0;
+                float playbackSpeed = 1.0f;
                 if (motionGroup.GetRuleContainerConst().ContainsRuleOfType<const Rule::MotionRangeRule>())
                 {
                     AZStd::shared_ptr<const Rule::MotionRangeRule> motionRangeRule = motionGroup.GetRuleContainerConst().FindFirstByType<const Rule::MotionRangeRule>();
                     startFrame = aznumeric_caster(motionRangeRule->GetStartFrame());
                     endFrame = aznumeric_caster(motionRangeRule->GetEndFrame());
+                    playbackSpeed = motionRangeRule->GetPlaybackSpeed();
 
                     // Sanity check
                     if (startFrame >= sceneFrameCount)
@@ -319,6 +321,11 @@ namespace EMotionFX
                     {
                         AZ_TracePrintf(SceneUtil::WarningWindow, "End frame %d is greater or equal than the actual number of frames %d in animation. Clamping the end frame to %d\n", endFrame, sceneFrameCount, sceneFrameCount - 1);
                         endFrame = sceneFrameCount - 1;
+                    }
+                    if (playbackSpeed == 0.0f)
+                    {
+                        AZ_TracePrintf(SceneUtil::WarningWindow, "Playback speed can not be 0, defaulting to 1.\n");
+                        playbackSpeed = 1.0f;
                     }
                 }
                 else
@@ -343,7 +350,7 @@ namespace EMotionFX
                 const SceneAPIMatrixType bindSpaceLocalTransform = GetLocalSpaceBindPose(graph, rootBoneNodeIndex, boneNodeIndex, nodeTransform, nodeBone);
 
                 // Get the time step and make sure it didn't change compared to other joint animations.
-                const double timeStep = animation->GetTimeStepBetweenFrames();
+                const double timeStep = animation->GetTimeStepBetweenFrames() * AZ::Abs(playbackSpeed);
                 lowestTimeStep = AZ::GetMin<double>(timeStep, lowestTimeStep);
 
                 AZ::SceneAPI::DataTypes::MatrixType sampleFrameTransformInverse;
@@ -361,7 +368,7 @@ namespace EMotionFX
                 for (size_t frame = 0; frame < numFrames; ++frame)
                 {
                     const float time = aznumeric_cast<float>(frame * timeStep);
-                    SceneAPIMatrixType boneTransform = animation->GetKeyFrame(frame + startFrame);
+                    SceneAPIMatrixType boneTransform = animation->GetKeyFrame((playbackSpeed > 0) ? (frame + startFrame) : (endFrame - frame));
                     if (additiveRule)
                     {
                         // For additive motion, we stores the relative transform.
