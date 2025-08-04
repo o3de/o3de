@@ -97,12 +97,11 @@ namespace AZ::AzGenericTypeInfo::Internal
     template<template<class, auto> class T, class = void>
     inline constexpr bool ExactClassAutoMatch = true;
 
-#if defined(AZ_COMPILER_MSVC)
     template<template<class, auto, class> class T>
-    using ClassAutoHasDefaultParam = void;
+    inline constexpr void ClassAutoHasDefaultParam() {}
+
     template<template<class, auto> class T>
     inline constexpr bool ExactClassAutoMatch<T, decltype(ClassAutoHasDefaultParam<T>())> = false;
-#endif
 
     template<template<class, auto> class T>
     auto GetTemplateIdentity() ->
