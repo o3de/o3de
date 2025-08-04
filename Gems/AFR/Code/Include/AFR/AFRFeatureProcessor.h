@@ -23,6 +23,7 @@ namespace AZ
 
 namespace AFR
 {
+    //! This feature processor alternates the rendered frames over the available GPUs to achieve alternate frame rendering
     class AFRFeatureProcessor
         : public AZ::RPI::FeatureProcessor
         , public AZ::RHI::FrameEventBus::Handler
