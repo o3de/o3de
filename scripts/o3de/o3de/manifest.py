@@ -136,28 +136,24 @@ def get_default_o3de_manifest_json_data() -> dict:
     default_restricted_engine_folder.mkdir(parents=True, exist_ok=True)
     default_restricted_templates_folder = default_restricted_folder / 'Templates'
     default_restricted_templates_folder.mkdir(parents=True, exist_ok=True)
-    default_restricted_engine_folder_json = default_restricted_engine_folder / 'restricted.json'
-    if not default_restricted_engine_folder_json.is_file():
-        with default_restricted_engine_folder_json.open('w') as s:
-            restricted_json_data = {}
-            restricted_json_data.update({'restricted_name': 'o3de'})
-            s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
-    json_data = {}
-    json_data.update({'o3de_manifest_name': f'{username}'})
-    json_data.update({'origin': o3de_folder.as_posix()})
-    json_data.update({'default_engines_folder': default_engines_folder.as_posix()})
-    json_data.update({'default_projects_folder': default_projects_folder.as_posix()})
-    json_data.update({'default_gems_folder': default_gems_folder.as_posix()})
-    json_data.update({'default_templates_folder': default_templates_folder.as_posix()})
-    json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
-    json_data.update({'default_third_party_folder': default_third_party_folder.as_posix()})
-    json_data.update({'projects': []})
-    json_data.update({'external_subdirectories': []})
-    json_data.update({'templates': []})
-    json_data.update({'restricted': [default_restricted_engine_folder.as_posix()]})
-    json_data.update({'repos': []})
-    json_data.update({'engines': []})
+    json_data = {
+        'o3de_manifest_name': f'{username}',
+        'origin': o3de_folder.as_posix(),
+        'default_engines_folder': default_engines_folder.as_posix(),
+        'default_projects_folder': default_projects_folder.as_posix(),
+        'default_gems_folder': default_gems_folder.as_posix(),
+        'default_templates_folder': default_templates_folder.as_posix(),
+        'default_restricted_folder': default_restricted_folder.as_posix(),
+        'default_third_party_folder': default_third_party_folder.as_posix(),
+        'engines': [],
+        'projects': [],
+        'external_subdirectories': [],
+        'templates': [],
+        'restricted': [],
+        'repos': []
+    }
+
     return json_data
 
 def get_o3de_manifest() -> pathlib.Path:

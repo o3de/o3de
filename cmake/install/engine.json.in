@@ -1,6 +1,5 @@
 {
     "engine_name": "@O3DE_INSTALL_ENGINE_NAME@",
-    "restricted_name": "@O3DE_INSTALL_ENGINE_NAME@",
     "display_version": "@O3DE_INSTALL_DISPLAY_VERSION_STRING@",
     "version": "@O3DE_INSTALL_VERSION_STRING@",
     "api_versions": @O3DE_INSTALL_API_VERSIONS@,
