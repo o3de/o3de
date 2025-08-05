@@ -47,43 +47,6 @@ namespace AZ
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
 
-        void FrameCaptureError::Reflect(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<FrameCaptureError>()
-                    ->Version(1)
-                    ->Field("ErrorMessage", &FrameCaptureError::m_errorMessage);
-            }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<FrameCaptureError>("FrameCaptureError")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils")
-                    ->Property("ErrorMessage", BehaviorValueProperty(&FrameCaptureError::m_errorMessage))
-                        ->Attribute(AZ::Script::Attributes::Alias, "error_message");
-            }
-        }
-        void FrameCaptureTestError::Reflect(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<FrameCaptureTestError>()
-                    ->Version(1)
-                    ->Field("ErrorMessage", &FrameCaptureTestError::m_errorMessage);
-            }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<FrameCaptureTestError>("FrameCaptureTestError")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils")
-                    ->Property("ErrorMessage", BehaviorValueProperty(&FrameCaptureTestError::m_errorMessage))
-                        ->Attribute(AZ::Script::Attributes::Alias, "error_message");
-            }
-        }
-
         AZ_CVAR(unsigned int,
             r_pngCompressionLevel,
             3, // A compression level of 3 seems like the best default in terms of file size and saving speeds

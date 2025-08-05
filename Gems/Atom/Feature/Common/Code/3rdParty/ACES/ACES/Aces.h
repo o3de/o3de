@@ -87,6 +87,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -180,10 +181,10 @@ namespace AZ
             PerceptualQuantizer = 2
         };
 
-        SegmentedSplineParamsC9 GetAcesODTParameters(OutputDeviceTransformType odtType);
-        ShaperParams GetLog2ShaperParameters(float minStops, float maxStops);
-        ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType);
-        Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type);
+        ATOM_FEATURE_COMMON_API SegmentedSplineParamsC9 GetAcesODTParameters(OutputDeviceTransformType odtType);
+        ATOM_FEATURE_COMMON_API ShaperParams GetLog2ShaperParameters(float minStops, float maxStops);
+        ATOM_FEATURE_COMMON_API ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType);
+        ATOM_FEATURE_COMMON_API Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type);
 
     }   // namespace Render
 
