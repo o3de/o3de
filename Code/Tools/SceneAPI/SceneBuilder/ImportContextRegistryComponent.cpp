@@ -9,7 +9,9 @@
 #include "ImportContextRegistryComponent.h"
 #include "ImportContexts/AssImpImportContextProvider.h"
 
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 
 namespace AZ
 {
