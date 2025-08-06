@@ -52,8 +52,6 @@ ly_append_configurations_options(
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
-        -fno-relaxed-template-template-args
-        -Wno-deprecated-no-relaxed-template-template-args
         -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
 
         ###################
