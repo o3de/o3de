@@ -520,6 +520,11 @@ namespace UnitTest
         ReverseMoveOnly(ReverseMoveOnly&&) = default;
         ReverseMoveOnly& operator=(ReverseMoveOnly&&) = default;
 
+        constexpr explicit ReverseMoveOnly(int value)
+            : m_value{ value }
+        {
+        }
+
         friend bool operator==(const ReverseMoveOnly& left, const ReverseMoveOnly& right)
         {
             return left.m_value == right.m_value;
@@ -614,6 +619,11 @@ namespace UnitTest
             MoveOnly(MoveOnly&&) = default;
             MoveOnly& operator=(MoveOnly&&) = default;
 
+            constexpr explicit MoveOnly(int value)
+                : m_value{ value }
+            {
+            }
+
             int m_value{};
         };
         AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
@@ -655,6 +665,11 @@ namespace UnitTest
             MoveOnly& operator=(const MoveOnly&) = delete;
             MoveOnly(MoveOnly&&) = default;
             MoveOnly& operator=(MoveOnly&&) = default;
+
+            constexpr explicit MoveOnly(int value)
+                : m_value{ value }
+            {
+            }
 
             int m_value{};
         };
@@ -699,6 +714,11 @@ namespace UnitTest
             MoveOnly(MoveOnly&&) = default;
             MoveOnly& operator=(MoveOnly&&) = default;
 
+            constexpr explicit MoveOnly(int value)
+                : m_value{ value }
+            {
+            }
+
             int m_value{};
         };
         AZStd::array testArray{ MoveOnly{0}, MoveOnly{1}, MoveOnly{2} , MoveOnly{3} , MoveOnly{5},
@@ -739,6 +759,11 @@ namespace UnitTest
             MoveOnly& operator=(const MoveOnly&) = delete;
             MoveOnly(MoveOnly&&) = default;
             MoveOnly& operator=(MoveOnly&&) = default;
+
+            constexpr explicit MoveOnly(int value)
+                : m_value{ value }
+            {
+            }
 
             int m_value{};
         };

@@ -31,10 +31,13 @@ namespace O3DE::ProjectManager
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectExportWorker::ExportProject);
         connect(m_worker, &ProjectExportWorker::Done, this, &ProjectExportController::HandleResults);
         connect(m_worker, &ProjectExportWorker::UpdateProgress, this, &ProjectExportController::UpdateUIProgress);
+
+        ProjectManagerUtilityRequestsBus::Handler::BusConnect();
     }
 
     ProjectExportController::~ProjectExportController()
     {
+        ProjectManagerUtilityRequestsBus::Handler::BusDisconnect();
         m_workerThread.requestInterruption();
         m_workerThread.quit();
         m_workerThread.wait();
@@ -170,5 +173,11 @@ namespace O3DE::ProjectManager
     {
         m_workerThread.quit();
         emit Done(false);
+    }
+
+    void ProjectExportController::CanCloseProjectManager(bool& result) const
+    {
+        // Always return false because ProjectExportController only exists when exporting a project
+        result = false;
     }
 } // namespace O3DE::ProjectManager

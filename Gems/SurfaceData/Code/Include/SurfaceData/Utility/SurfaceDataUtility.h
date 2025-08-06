@@ -90,7 +90,7 @@ namespace SurfaceData
         AZ::Vector3& outPosition, AZ::Vector3& outNormal);
 
     template<typename SourceContainer>
-    AZ_INLINE bool HasMatchingTag(const SourceContainer& sourceTags, const AZ::Crc32& sampleTag)
+    AZ_INLINE bool HasMatchingTag(const SourceContainer& sourceTags, const SurfaceTag& sampleTag)
     {
         return AZStd::find(sourceTags.begin(), sourceTags.end(), sampleTag) != sourceTags.end();
     }
@@ -113,7 +113,7 @@ namespace SurfaceData
     {
         for (const auto& sourceTag : sourceTags)
         {
-            if (sourceTag != Constants::s_unassignedTagCrc)
+            if (AZ::Crc32(sourceTag) != Constants::s_unassignedTagCrc)
             {
                 return true;
             }

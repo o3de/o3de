@@ -764,7 +764,7 @@ namespace UnitTest
         ActivateEntity(surfaceEntity.get());
 
         GradientSignal::SurfaceMaskGradientConfig config;
-        config.m_surfaceTagList.push_back(AZ_CRC_CE("test_mask"));
+        config.m_surfaceTagList.emplace_back(AZ_CRC_CE("test_mask"));
 
         auto entity = CreateEntity();
         entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);
@@ -789,7 +789,7 @@ namespace UnitTest
         };
 
         GradientSignal::SurfaceMaskGradientConfig config;
-        config.m_surfaceTagList.push_back(AZ_CRC_CE("test_mask"));
+        config.m_surfaceTagList.emplace_back(AZ_CRC_CE("test_mask"));
 
         auto entity = CreateEntity();
         entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);

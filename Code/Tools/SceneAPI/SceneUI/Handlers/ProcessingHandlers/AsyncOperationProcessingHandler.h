@@ -39,11 +39,9 @@ namespace AZ
                 void OnBackgroundOperationComplete();
 
             private:
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZStd::function<void()> m_operationToRun;
                 AZStd::function<void()> m_onComplete;
                 QThread* m_thread = nullptr;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
         }
     }

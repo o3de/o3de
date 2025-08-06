@@ -25,9 +25,7 @@
 // Editor
 #include "LyViewPaneNames.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AssetEditor/ui_AssetEditorWindow.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace AssetEditorUtils
 {

@@ -82,6 +82,9 @@ function(GetOpenMesh)
             ${O3DE_COMPILE_OPTION_DISABLE_WARNINGS}     # OpenMesh does not pass Warning Level 4
             ${O3DE_COMPILE_OPTION_EXPORT_SYMBOLS}       # OpenMesh requires symbols to be exported.
             ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})   # OpenMesh requires Exceptions enabled in it, and things that use it
+
+        target_compile_definitions(${OpenMesh_Target}
+            PRIVATE WIN32_LEAN_AND_MEAN)                # Fix compile errors in Windows kit header files
                 
         # this block makes sure that in IDEs like Visual Studio, they show up in the "External" subfolder under the gem.
         get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")

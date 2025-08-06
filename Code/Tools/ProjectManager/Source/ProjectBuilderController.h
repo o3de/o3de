@@ -13,6 +13,8 @@
 #include <QThread>
 #endif
 
+#include "ProjectManagerBuses.h"
+
 QT_FORWARD_DECLARE_CLASS(QProcess)
 
 namespace O3DE::ProjectManager
@@ -20,7 +22,9 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ProjectButton)
     QT_FORWARD_DECLARE_CLASS(ProjectBuilderWorker)
 
-    class ProjectBuilderController : public QObject
+    class ProjectBuilderController
+        : public QObject
+        , public ProjectManagerUtilityRequestsBus::Handler
     {
         Q_OBJECT
 
@@ -42,6 +46,10 @@ namespace O3DE::ProjectManager
     signals:
         void Done(bool success = true);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
+
+    private:
+        // ProjectManagerUtilityRequests overrides...
+        void CanCloseProjectManager(bool& result) const override;
 
     private:
         ProjectInfo m_projectInfo;

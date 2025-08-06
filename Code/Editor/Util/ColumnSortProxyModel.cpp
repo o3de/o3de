@@ -132,7 +132,7 @@ void ColumnSortProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
     connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &ColumnSortProxyModel::SortModel);
     connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, &ColumnSortProxyModel::SortModel);
     connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &ColumnSortProxyModel::beginResetModel);
-    connect(sourceModel, &QAbstractItemModel::modelReset, this, [=]()
+    connect(sourceModel, &QAbstractItemModel::modelReset, this, [this]()
         {
             { QSignalBlocker sb(this);
               SortModel();

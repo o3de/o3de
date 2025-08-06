@@ -462,7 +462,7 @@ namespace AZ
                         if (classData->m_converter)
                         {
                             AZStd::string error = AZStd::string::format("Converter failed for element '%s'(0x%x) with deprecated class ID '%s'.  File %s",
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(),
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(),
                                 GetStreamFilename());
                             
                             m_errorLogger.ReportError(error.c_str());
@@ -495,7 +495,7 @@ namespace AZ
                             AZStd::string error = AZStd::string::format(
                                 "Element '%s'(0x%x) with class ID '%s' found in '%s' is not registered with the serializer!\n"
                                 "If this class was removed, consider using serializeContext->ClassDeprecate(...) to register classes as having been deprecated to avoid this error.  File %s\n",
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo ? parentClassInfo->m_name : "ROOT",
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo ? parentClassInfo->m_name : "ROOT",
                                 GetStreamFilename());
                             m_errorLogger.ReportError(error.c_str());
 
@@ -645,7 +645,7 @@ namespace AZ
                                     {
                                         // Name matched but wrong type, this is an error when conversion function is not supplied.
                                         AZStd::string error = AZStd::string::format("Element '%s'(0x%x) in class '%s' is of type %s and cannot be downcasted to type %s.  File %s",
-                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc, parentClassInfo->m_name,
+                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), parentClassInfo->m_name,
                                             element.m_id.ToString<AZStd::string>().c_str(), childElement->m_typeId.ToString<AZStd::string>().c_str(),
                                             GetStreamFilename());
 
@@ -671,7 +671,7 @@ namespace AZ
                                     {
                                         // Name matched but wrong type, this is an error when conversion function is not supplied.
                                         AZStd::string error = AZStd::string::format("Element '%s'(0x%x) in class '%s' is of type %s but needs to be type %s.  File %s",
-                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc, parentClassInfo->m_name,
+                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), parentClassInfo->m_name,
                                             element.m_id.ToString<AZStd::string>().c_str(), childElement->m_typeId.ToString<AZStd::string>().c_str(),
                                             GetStreamFilename());
 
@@ -688,7 +688,7 @@ namespace AZ
                         if (classElement == nullptr)
                         {
                             AZStd::string error = AZStd::string::format("Element '%s'(0x%x) of type %s is not registered as part of class '%s'. Data will be discarded.  File %s", 
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo->m_name,
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo->m_name,
                                 GetStreamFilename());
                             
                             if (m_filterDesc.m_flags & FILTERFLAG_STRICT)
@@ -828,7 +828,7 @@ namespace AZ
                         !classData->m_serializer->Load(dataAddress, *currentStream, element.m_version, element.m_dataType == SerializeContext::DataElement::DT_BINARY_BE))
                     {
                         AZStd::string error = AZStd::string::format("Serializer failed for %s '%s'(0x%x).  File %s", 
-                            classData->m_name, element.m_name ? element.m_name : "NULL", element.m_nameCrc,
+                            classData->m_name, element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(),
                             GetStreamFilename());
 
                         result = result && ((m_filterDesc.m_flags & FILTERFLAG_STRICT) == 0);  // in strict mode, this is a complete failure.
@@ -1037,7 +1037,7 @@ namespace AZ
             AZ_Assert(element.m_stream != nullptr, "You must provide a stream to store the values!");
             element.m_version = 0;
             element.m_name = nullptr;
-            element.m_nameCrc = 0;
+            element.m_nameCrc = Crc32();
             element.m_dataSize = 0;
             element.m_buffer.clear();
             element.m_stream->Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
@@ -1312,7 +1312,7 @@ namespace AZ
                     nBytesRead = m_stream->Read(sizeof(nameCrc), &nameCrc);
                     AZ_Assert(nBytesRead == sizeof(nameCrc), "Failed trying to read binary element nameCrc!");
                     AZStd::endian_swap(nameCrc);
-                    element.m_nameCrc = nameCrc;
+                    element.m_nameCrc = Crc32(nameCrc);
                 }
 
                 // Read version

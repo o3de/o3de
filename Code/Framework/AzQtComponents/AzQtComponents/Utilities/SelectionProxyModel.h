@@ -54,9 +54,7 @@ namespace AzQtComponents
 
         // Contains the chain of proxy models that leads us to the real model. The outer-most proxy model
         // comes first and is followed by inner proxy models.
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         QVector<QAbstractProxyModel*> m_proxyModels;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         QItemSelectionModel* m_sourceSelectionModel;
     };
 } // namespace AzQtComponents

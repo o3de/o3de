@@ -25,7 +25,7 @@ namespace AZ
 
             const char* GetElementName([[maybe_unused]] int index = 0) override { return "m_data"; }
 
-            u32 GetElementNameCrC([[maybe_unused]] int index = 0) override { return AZ_CRC_CE("m_data"); }
+            Crc32 GetElementNameCrC([[maybe_unused]] int index = 0) override { return AZ_CRC_CE("m_data"); }
 
             /// Null if element with this name can't be found.
             const SerializeContext::ClassElement* GetElement(u32) const override

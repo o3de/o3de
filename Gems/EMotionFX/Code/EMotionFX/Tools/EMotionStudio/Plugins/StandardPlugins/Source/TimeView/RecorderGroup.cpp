@@ -35,21 +35,21 @@ namespace EMStudio
         {
             QMenu* recordOptionsMenu = new QMenu(toolbar);
             recordOptionsMenu->addAction(tr("Recording options"))->setEnabled(false);
-            m_recordMotionsOnly = recordOptionsMenu->addAction(tr("Record motions only"), toolbar, [=] {
+            m_recordMotionsOnly = recordOptionsMenu->addAction(tr("Record motions only"), toolbar, [this] {
                 m_recordStatesOnly->setChecked(false);
                 m_recordAllNodes->setChecked(false);
                 });
             m_recordMotionsOnly->setCheckable(true);
             m_recordMotionsOnly->setChecked(true);
 
-            m_recordStatesOnly = recordOptionsMenu->addAction(tr("Record states only"), toolbar, [=] {
+            m_recordStatesOnly = recordOptionsMenu->addAction(tr("Record states only"), toolbar, [this] {
                 m_recordMotionsOnly->setChecked(false);
                 m_recordAllNodes->setChecked(false);
                 });
             m_recordStatesOnly->setCheckable(true);
             m_recordStatesOnly->setChecked(false);
 
-            m_recordAllNodes = recordOptionsMenu->addAction(tr("Record all nodes"), toolbar, [=] {
+            m_recordAllNodes = recordOptionsMenu->addAction(tr("Record all nodes"), toolbar, [this] {
                 m_recordMotionsOnly->setChecked(false);
                 m_recordStatesOnly->setChecked(false);
                 });

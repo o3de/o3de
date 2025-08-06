@@ -62,7 +62,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         LinkStore m_source;
         LinkStore m_target;
-        uint32_t m_tag;
+        AZ::Crc32 m_tag;
         AzFramework::Spawnable::EntityAliasType m_aliasType;
         EntityAliasSpawnableLoadBehavior m_loadBehavior;
     };

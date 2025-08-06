@@ -352,7 +352,7 @@ namespace AZStd
                 {
                     for (; first != last; ++result, ++first)
                     {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
+                        AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
                     }
 
                     return result;
@@ -370,7 +370,7 @@ namespace AZStd
         {
             for (; first != last; ++result, ++first)
             {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
+                AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), *first);
             }
 
             return result;
@@ -515,7 +515,7 @@ namespace AZStd::Internal
                 {
                     for (; first != last; ++result, ++first)
                     {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
+                        AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
                     }
 
                     return result;
@@ -533,7 +533,7 @@ namespace AZStd::Internal
         {
             for (; first != last; ++result, ++first)
             {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
+                AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(result)), ::AZStd::move(*first));
             }
 
             return result;
@@ -677,7 +677,7 @@ namespace AZStd
                 {
                     for (; first != last; ++first)
                     {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
+                        AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
                     }
                 }
                 else
@@ -690,7 +690,7 @@ namespace AZStd
         {
             for (; first != last; ++first)
             {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
+                AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
             }
         }
     }
@@ -712,7 +712,7 @@ namespace AZStd
                 {
                     for (; numElements--; ++first)
                     {
-                        construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
+                        AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
                     }
                 }
                 else
@@ -725,7 +725,7 @@ namespace AZStd
         {
             for (; numElements--; ++first)
             {
-                construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
+                AZStd::construct_at(static_cast<iter_value_t<ForwardIterator>*>(to_address(first)), value);
             }
         }
     }

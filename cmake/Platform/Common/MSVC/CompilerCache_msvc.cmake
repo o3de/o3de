@@ -33,7 +33,7 @@
 # - This is primarily used for AR/CI processes but can also be used for local builds
 #
 
-function(o3de_compiler_cache_activation)
+function(o3de_compiler_cache_activation CACHE_EXE_PATH)
     message(STATUS "[COMPILER CACHE] Cache is enabled")
 
     # Check for custom compiler cache path, CMake variable takes precedence over environment
@@ -81,6 +81,12 @@ function(o3de_compiler_cache_activation)
 
     message(STATUS "[COMPILER CACHE] Found at ${cache_exe}, using it for this build")
 
-    # Copy cache executable as an alternative cl.exe. This will act as a wrapper for the real cl.exe
-    file(COPY_FILE ${cache_exe} ${CMAKE_BINARY_DIR}/cl.exe ONLY_IF_DIFFERENT)
+    if(CMAKE_GENERATOR MATCHES "^Ninja.*") # "Ninja" or "Ninja Multi-Config"
+        set(${CACHE_EXE_PATH} ${cache_exe} PARENT_SCOPE)
+    else()
+        # Copy cache executable as an alternative cl.exe. This will act as a wrapper for the real cl.exe
+        set(copied_cache_exe ${CMAKE_BINARY_DIR}/cl.exe)
+        file(COPY_FILE ${cache_exe} ${copied_cache_exe} ONLY_IF_DIFFERENT)
+        set(${CACHE_EXE_PATH} ${copied_cache_exe} PARENT_SCOPE)
+    endif()
 endfunction()

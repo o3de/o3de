@@ -2264,7 +2264,7 @@ namespace AssetBundler
                 {
                     // Metric event has already been sent
                     AZ_Error(AppWindowName, false, overrideOutcome.GetError().c_str());
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
 
@@ -2275,7 +2275,7 @@ namespace AssetBundler
                 {
                     AZ_Error(AssetBundler::AppWindowName, false, "Bundle ( %s ) already exists, running this command would perform a destructive overwrite.\n\n"
                         "Run your command again with the ( --%s ) arg if you want to save over the existing file.", bundleFilePath.AbsolutePath().c_str(), AllowOverwritesFlag);
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
 
@@ -2285,7 +2285,7 @@ namespace AssetBundler
                 if (!result)
                 {
                     AZ_Error(AssetBundler::AppWindowName, false, "Unable to create bundle, target Bundle file path is ( %s ).", bundleFilePath.AbsolutePath().c_str());
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
                 AZ_TracePrintf(AssetBundler::AppWindowName, "Bundle ( %s ) created successfully!\n", bundleFilePath.AbsolutePath().c_str());
@@ -2557,7 +2557,7 @@ namespace AssetBundler
             {
                 AZ_Error(AssetBundler::AppWindowName, false, "Asset List file ( %s ) already exists, running this command would perform a destructive overwrite.\n\n"
                     "Run your command again with the ( --%s ) arg if you want to save over the existing file.\n", assetListFileAbsolutePath.c_str(), AllowOverwritesFlag);
-                failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                 return;
             }
 
@@ -2573,7 +2573,7 @@ namespace AssetBundler
             if (!m_assetSeedManager->SaveAssetFileInfo(assetListFileAbsolutePath, platformFlag, exclusionList, debugListFileAbsolutePath, wildcardPatternExclusionList))
             {
                 AZ_Error(AssetBundler::AppWindowName, false, "Unable to save Asset List file to ( %s ).\n", assetListFileAbsolutePath.c_str());
-                failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                 return;
             }
 

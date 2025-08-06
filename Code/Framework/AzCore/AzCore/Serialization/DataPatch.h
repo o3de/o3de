@@ -21,9 +21,9 @@ namespace AZ
     {
         class AddressTypeSerializer;
 
-        static constexpr const char PathDelimiter[] = "/";
-        static constexpr const char VersionDelimiter[] = u8"\u00B7"; // utf-8 for <middledot>
-        
+        static inline const char* PathDelimiter = "/";
+        static inline const char* VersionDelimiter = reinterpret_cast<const char*>(u8"\u00B7"); // utf-8 for <middledot>
+
         // Class to store information used in determining version, typeId and location in patch hierarchy for each class element examined between patch target (root) and patched element (leaf)
         class AZCORE_API AddressTypeElement
         {

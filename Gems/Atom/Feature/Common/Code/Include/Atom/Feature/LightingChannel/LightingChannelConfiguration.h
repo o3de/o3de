@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -18,7 +19,7 @@ namespace AZ
     {
         const uint32_t LightingChannelsCount = 5;
 
-        struct LightingChannelConfiguration
+        struct ATOM_FEATURE_COMMON_API LightingChannelConfiguration
         {
             AZ_TYPE_INFO(LightingChannelConfiguration, "{7FFD6D01-BABE-FE35-612F-63A30925E5F7}");
 

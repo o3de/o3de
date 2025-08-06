@@ -33,13 +33,11 @@
 #include "Util/Variable.h"
 #include "CvarDPE.h"
 
+#include <Controls/ui_ConsoleSCB.h>
+
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 
 static void OnVariableUpdated(ICVar* pCVar);
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#include <Controls/ui_ConsoleSCB.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace ConsoleConstants
 {
@@ -360,7 +358,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->lineEditFind, &QLineEdit::returnPressed, this, &CConsoleSCB::findNext);
 
-    connect(ui->closeButton, &QPushButton::clicked, [=]
+    connect(ui->closeButton, &QPushButton::clicked, [this]
     {
         ui->findBar->setVisible(false);
     });
@@ -368,7 +366,7 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     connect(ui->findPrevButton, &QPushButton::clicked, this, &CConsoleSCB::findPrevious);
     connect(ui->findNextButton, &QPushButton::clicked, this, &CConsoleSCB::findNext);
 
-    connect(ui->lineEditFind, &QLineEdit::textChanged, [=](auto text)
+    connect(ui->lineEditFind, &QLineEdit::textChanged, [this](auto text)
     {
         m_highlighter->setSearchTerm(text);
     });

@@ -29,10 +29,7 @@
 #include "TrackViewDialog.h"
 #include "QtUI/ColorButton.h"
 
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TVCustomizeTrackColorsDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #define TRACKCOLOR_ENTRY_PREFIX ("TrackColor")
 #define TRACKCOLOR_FOR_OTHERS_ENTRY ("TrackColorForOthers")

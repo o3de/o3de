@@ -70,9 +70,7 @@ namespace AzQtComponents
         QTimer m_lifeSpan;
         uint32_t m_borderRadius = 0;
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::chrono::milliseconds m_fadeDuration;
         QScopedPointer<Ui::ToastNotification> m_ui;        
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 } // namespace AzQtComponents

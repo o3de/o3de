@@ -134,7 +134,7 @@ namespace AZ
             relativePath = cubeMapRelativePath;
 
             // callback from the EnvironmentCubeMapPass when the cubemap render is complete
-            RenderCubeMapCallback renderCubeMapCallback = [=](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
+            RenderCubeMapCallback renderCubeMapCallback = [=, this](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
             {
                 // write the cubemap data to the .dds file
                 WriteOutputFile(cubeMapFullPath.c_str(), cubeMapFaceTextureData, cubeMapTextureFormat);

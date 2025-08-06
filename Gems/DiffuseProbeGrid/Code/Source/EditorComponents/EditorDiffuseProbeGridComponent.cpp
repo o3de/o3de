@@ -564,7 +564,7 @@ namespace AZ
             SetDirty();
 
             // callback for the texture readback
-            DiffuseProbeGridBakeTexturesCallback bakeTexturesCallback = [=](
+            DiffuseProbeGridBakeTexturesCallback bakeTexturesCallback = [=, this](
                 DiffuseProbeGridTexture irradianceTexture,
                 DiffuseProbeGridTexture distanceTexture,
                 DiffuseProbeGridTexture probeDataTexture)

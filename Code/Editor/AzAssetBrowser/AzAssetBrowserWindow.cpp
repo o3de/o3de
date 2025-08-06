@@ -32,12 +32,9 @@
 #include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 
 // Editor
+#include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "LyViewPaneNames.h"
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_API_EXTERNED(AZTF_API, bool, ed_useNewAssetBrowserListView);
 

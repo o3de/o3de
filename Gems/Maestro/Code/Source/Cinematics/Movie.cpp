@@ -74,7 +74,7 @@ struct SMovieSequenceAutoComplete
 #endif //#if !defined(_RELEASE)
 
 #if !defined(_RELEASE)
-static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
+[[maybe_unused]] static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 // Serialization for animation nodes & param types

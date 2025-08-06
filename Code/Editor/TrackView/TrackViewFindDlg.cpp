@@ -15,9 +15,7 @@
 #include "TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TrackViewFindDlg.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "Maestro/Types/AnimNodeType.h"
 
 // CTrackViewFindDlg dialog

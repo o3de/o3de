@@ -79,11 +79,9 @@ namespace AZ
                 void BuildPages();
                 void AddPage(const QString& category, ManifestWidgetPage* page);
 
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 PageList m_pages;
                 QScopedPointer<Ui::ManifestWidget> ui;
                 AZStd::shared_ptr<Containers::Scene> m_scene;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 SerializeContext* m_serializeContext;
             };
         } // namespace UI

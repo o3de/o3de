@@ -504,7 +504,7 @@ namespace Terrain
             point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
 
             // Get the material index for the surface type. If we can't find it, use the default material.
-            if (const auto& entry = surfaceTagToMaterialIndexLookup.find(surfaceWeight.m_surfaceType);
+            if (const auto& entry = surfaceTagToMaterialIndexLookup.find(SurfaceData::SurfaceTag(surfaceWeight.m_surfaceType));
                 entry != surfaceTagToMaterialIndexLookup.end())
             {
                 point.m_materialIndex = entry->second;

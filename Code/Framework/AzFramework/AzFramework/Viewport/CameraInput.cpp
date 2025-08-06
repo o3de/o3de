@@ -724,6 +724,11 @@ namespace AzFramework
         {
             return 0.03f;
         };
+
+        m_invertZoomFn = []() constexpr
+        {
+            return false;
+        };
     }
 
     bool OrbitScrollDollyCameraInput::HandleEvents(
@@ -770,7 +775,7 @@ namespace AzFramework
         const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
-        const auto nextCamera = OrbitDolly(targetCamera, aznumeric_cast<float>(scrollDelta) * m_scrollSpeedFn());
+        const auto nextCamera = OrbitDolly(targetCamera, aznumeric_cast<float>(scrollDelta * Invert(m_invertZoomFn())) * m_scrollSpeedFn());
         EndActivation();
         return nextCamera;
     }
@@ -811,6 +816,11 @@ namespace AzFramework
         {
             return 0.02f;
         };
+
+        m_invertZoomFn = []() constexpr
+        {
+            return false;
+        };
     }
 
     bool LookScrollTranslationCameraInput::HandleEvents(
@@ -835,7 +845,7 @@ namespace AzFramework
         const auto translation_basis = LookTranslation(nextCamera);
         const auto axisY = translation_basis.GetBasisY();
 
-        nextCamera.m_pivot += axisY * scrollDelta * m_scrollSpeedFn();
+        nextCamera.m_pivot += axisY * aznumeric_cast<float>(scrollDelta * Invert(m_invertZoomFn())) * m_scrollSpeedFn();
 
         EndActivation();
 

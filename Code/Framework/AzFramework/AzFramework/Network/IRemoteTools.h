@@ -132,7 +132,7 @@ namespace AzFramework
 
         //! Gets the Persistent ID of this endpoint
         //! @return A Crc32 representing the Persistent ID of this endpoint
-        AZ::u32 GetPersistentId() const;
+        AZ::Crc32 GetPersistentId() const;
 
         //! Gets the AzNetworking Network ID of this endpoint
         //! @return The AzNetworking Network ID for the connection of this endpoint
@@ -142,7 +142,7 @@ namespace AzFramework
         //! @param displayName The string display name of this endpoint
         //! @param persistentId The Crc32 based persistent ID of this endpoint
         //! @param networkId The AzNetworking Network ID for this endpoint's connection
-        void SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId);
+        void SetInfo(AZStd::string displayName, AZ::Crc32 persistentId, AZ::u32 networkId);
 
         bool IsIdentityEqualTo(const RemoteToolsEndpointInfo& other) const;
 
@@ -152,7 +152,7 @@ namespace AzFramework
 
     private:
         AZStd::string m_displayName;
-        AZ::u32 m_persistentId = 0; // this is a CRC key used to identify a RemoteTools target
+        AZ::Crc32 m_persistentId; // this is a CRC key used to identify a RemoteTools target
         AZ::u32 m_networkId = 0; // this is the connection id, used for AzNetworking communications.
     };
 

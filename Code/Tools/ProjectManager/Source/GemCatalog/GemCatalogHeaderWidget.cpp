@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         closeButton->setFlat(true);
         closeButton->setFocusPolicy(Qt::NoFocus);
         closeButton->setIcon(QIcon(":/WindowClose.svg"));
-        connect(closeButton, &QPushButton::clicked, this, [=]
+        connect(closeButton, &QPushButton::clicked, this, [this]
             {
                 deleteLater();
             });
@@ -59,7 +59,7 @@ namespace O3DE::ProjectManager
         CreateDownloadSection();
 
         // added
-        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [=]
+        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/false);
@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed
-        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [=]
+        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/false);
@@ -93,7 +93,7 @@ namespace O3DE::ProjectManager
             });
 
         // added dependencies 
-        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [=]
+        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
@@ -110,7 +110,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed dependencies 
-        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
+        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -144,7 +144,7 @@ namespace O3DE::ProjectManager
         TagContainerWidget* tagContainer = new TagContainerWidget();
         layout->addWidget(tagContainer);
 
-        auto update = [=]()
+        auto update = [=, this]()
         {
             const QVector<QModelIndex> tagIndices = getTagIndices();
             if (tagIndices.isEmpty())
@@ -408,7 +408,7 @@ namespace O3DE::ProjectManager
         m_layout->addWidget(m_dropDownButton);
 
         // Adjust the label text whenever the model gets updated.
-        connect(gemModel, &GemModel::dataChanged, [=]
+        connect(gemModel, &GemModel::dataChanged, [this]
             {
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -458,7 +458,7 @@ namespace O3DE::ProjectManager
         }
 
         m_gemCart = new GemCartWidget(m_gemModel, m_downloadController, this);
-        connect(m_gemCart, &QWidget::destroyed, this, [=]
+        connect(m_gemCart, &QWidget::destroyed, this, [this]
             {
                 // Reset the overlay pointer on destruction to prevent dangling pointers.
                 m_gemCart = nullptr;

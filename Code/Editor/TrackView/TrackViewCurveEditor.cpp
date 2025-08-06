@@ -13,9 +13,7 @@
 
 #include <AzCore/std/containers/set.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "TrackView/ui_TrackViewCurveEditor.h"
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
 TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)

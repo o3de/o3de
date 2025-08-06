@@ -210,7 +210,7 @@ namespace UnitTest
         {
             m_settings.SetSize(brushRadiusSize * 2.0f);
 
-            ValidationFn validateFn = [=](const AZ::Aabb& dirtyArea,
+            ValidationFn validateFn = [=, this](const AZ::Aabb& dirtyArea,
                                   AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // The dirtyArea AABB should change size based on the current brush radius size that we're using.
@@ -275,7 +275,7 @@ namespace UnitTest
             m_settings.SetHardnessPercent(hardnessPercent);
 
             ValidationFn validateFn =
-                [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=, this]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // The falloff function should start at the hardness percentage from the center.
                 const float falloffStart = hardnessPercent / 100.0f;
@@ -327,7 +327,7 @@ namespace UnitTest
 
         // Verify that paint/smooth uses the hardness percent correctly.
         ValidationFn validateFn =
-            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+            [=, this]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
         {
             const AZStd::vector<AZ::Vector3> points = {
                 // Test the opacity at the brush center + 0%, 25%, 50%, 75%, 100%
@@ -384,7 +384,7 @@ namespace UnitTest
         // On the first PaintToLocation() call, we only have a single brush circle, so it should have a constant
         // opacity value that matches our flow percentage.
         ValidationFn validateFirstCallFn =
-            [=]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+            [=, this]([[maybe_unused]] const AZ::Aabb& dirtyArea, AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
         {
             AZStd::vector<AZ::Vector3> points;
 
@@ -508,14 +508,14 @@ namespace UnitTest
             // On the first *ToLocation() call, we only have a single brush circle, so it should have a constant
             // opacity value that matches our flow percentage.
             ValidationFn validateFirstCallFn =
-                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=, this](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // On the first call, the dirtyArea AABB should match the size of the brush.
                 EXPECT_THAT(dirtyArea, IsClose(AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestRadiusSize)));
             };
 
             ValidationFn validateSecondCallFn =
-                [=](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
+                [=, this](const AZ::Aabb& dirtyArea, [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn)
             {
                 // On the second call, a number of brush circles will be applied based on the distance %. The first
                 // brush circle in this call will start distance % further than the left edge of our initial circle.

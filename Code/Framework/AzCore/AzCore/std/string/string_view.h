@@ -1031,12 +1031,12 @@ namespace AZStd
     {
         inline namespace string_view_literals
         {
-            constexpr string_view operator "" _sv(const char* str, size_t len) noexcept
+            constexpr string_view operator ""_sv(const char* str, size_t len) noexcept
             {
                 return string_view{ str, len };
             }
 
-            constexpr wstring_view operator "" _sv(const wchar_t* str, size_t len) noexcept
+            constexpr wstring_view operator ""_sv(const wchar_t* str, size_t len) noexcept
             {
                 return wstring_view{ str, len };
             }

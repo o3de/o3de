@@ -163,7 +163,7 @@ namespace AssetProcessor
             // Make sure this is the only connection to the button.
             m_ui->gotoAssetButton->m_ui->goToPushButton->disconnect();
 
-            connect(m_ui->gotoAssetButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
+            connect(m_ui->gotoAssetButton->m_ui->goToPushButton, &QPushButton::clicked, [=, this] {
                 GoToSource(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()).AbsolutePath().c_str());
             });
 
@@ -478,7 +478,7 @@ namespace AssetProcessor
 
         AddProductIdToScanCount(productItemData->m_databaseInfo.m_productID, scanName);
         // Run the scan on another thread so the UI remains responsive.
-        auto* job = AZ::CreateJobFunction([=]() {
+        auto* job = AZ::CreateJobFunction([=, this]() {
             MissingDependencyScannerRequestBus::Broadcast(&MissingDependencyScannerRequestBus::Events::ScanFile,
                 pathOnDisk.toUtf8().constData(),
                 MissingDependencyScanner::DefaultMaxScanIteration,
@@ -486,7 +486,7 @@ namespace AssetProcessor
                 existingDependencies,
                 m_assetDatabaseConnection,
                 /*queueDbCommandsOnMainThread*/ true,
-                [=]([[maybe_unused]] AZStd::string relativeDependencyFilePath) {
+                [=, this]([[maybe_unused]] AZStd::string relativeDependencyFilePath) {
                 RemoveProductIdFromScanCount(productItemData->m_databaseInfo.m_productID, scanName);
                 // The MissingDependencyScannerRequestBus callback always runs on the main thread, so no need to queue again.
                 AzToolsFramework::AssetDatabase::AssetDatabaseNotificationBus::Broadcast(

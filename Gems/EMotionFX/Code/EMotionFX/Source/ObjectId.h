@@ -78,6 +78,14 @@ namespace EMotionFX
         bool operator==(const ObjectId& rhs) const;
 
         /**
+         * Compare two ids for equality. This is a convenience function to disambiguate between operator== and operator!= with not exactly
+         * matching argument types in c++20.
+         * @param rhs Value to compare the id against.
+         * @return True if the ids are equal. Otherwise, false.
+         */
+        bool operator==(AZ::u64 rhs) const;
+
+        /**
          * Compare two ids for inequality.
          * @param rhs Id to compare against.
          * @return True if the ids are different. Otherwise, false.

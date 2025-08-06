@@ -529,7 +529,7 @@ namespace PhysX
         physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         m_articulation->release();
-
+        m_articulation = nullptr;
         m_sensorIndicesByEntityId.clear();
     }
 
@@ -550,7 +550,7 @@ namespace PhysX
 
         PHYSX_SCENE_READ_LOCK(pxScene);
 
-        if (m_articulation->isSleeping())
+        if (!m_articulation || m_articulation->isSleeping())
         {
             return;
         }

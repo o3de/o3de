@@ -74,7 +74,7 @@ namespace O3DE::ProjectManager
             if (showAllLessButton)
             {
                 m_seeAllLessLabel = new LinkLabel();
-                connect(m_seeAllLessLabel, &LinkLabel::clicked, this, [=]()
+                connect(m_seeAllLessLabel, &LinkLabel::clicked, this, [this]()
                     {
                         m_seeAll = !m_seeAll;
                         UpdateSeeMoreLess();

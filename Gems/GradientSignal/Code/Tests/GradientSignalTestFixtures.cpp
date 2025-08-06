@@ -410,7 +410,7 @@ namespace UnitTest
         // Create a Surface Mask Gradient Component with arbitrary parameters.
         auto entity = CreateTestSphereEntity(shapeHalfBounds);
         GradientSignal::SurfaceMaskGradientConfig config;
-        config.m_surfaceTagList.push_back(AZ_CRC_CE("test_mask"));
+        config.m_surfaceTagList.emplace_back(AZ_CRC_CE("test_mask"));
         entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);
 
         // Create a SurfaceDataShape component to provide surface points from this component.

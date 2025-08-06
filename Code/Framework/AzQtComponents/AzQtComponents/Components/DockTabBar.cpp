@@ -182,7 +182,7 @@ namespace AzQtComponents
     void DockTabBar::tabInserted(int index)
     {
         auto closeButton = new DockBarButton(DockBarButton::CloseButton);
-        connect(closeButton, &DockBarButton::clicked, this, [=] {
+        connect(closeButton, &DockBarButton::clicked, this, [=, this] {
             int widgetIndex = tabAt(closeButton->pos());
             if (widgetIndex >= 0)
             {

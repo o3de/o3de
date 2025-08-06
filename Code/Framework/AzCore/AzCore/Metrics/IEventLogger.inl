@@ -36,7 +36,7 @@ namespace AZ::Metrics
 
     constexpr EventField::EventField(AZStd::string_view name, EventValue value)
         : m_name(name)
-        , m_value(AZStd::move(value))
+        , m_value(value)
     {}
 
     constexpr EventArray::EventArray(AZStd::span<EventValue> arrayFields)

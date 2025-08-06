@@ -447,7 +447,7 @@ namespace AzToolsFramework
             if (buttonChannel)
             {
                 // reset the consumed event cache so the chain of calls from UpdateState below can properly update it, if necessary
-                m_lastConsumedInputChannelIdCrc32 = 0;
+                m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
 
                 if (mouseEvent->type() != QEvent::Type::MouseButtonRelease)
                 {
@@ -616,7 +616,7 @@ namespace AzToolsFramework
         }
 
         // reset the consumed event cache so the chain of calls from ProcessRawInputEvent below can properly update it, if necessary
-        m_lastConsumedInputChannelIdCrc32 = 0;
+        m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
 
         cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(wheelAngle));
 

@@ -24,9 +24,7 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>    // for EditorPythonConsoleInterface
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzToolsFramework/PythonTerminal/ui_ScriptHelpDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace AzToolsFramework
 {

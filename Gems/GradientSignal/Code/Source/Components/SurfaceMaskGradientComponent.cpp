@@ -211,7 +211,7 @@ namespace GradientSignal
                         [this, inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
                         {
                             if (AZStd::find(
-                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), surfaceType) !=
+                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), SurfaceData::SurfaceTag(surfaceType)) !=
                                 m_configuration.m_surfaceTagList.end())
                             {
                                 outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);

@@ -244,7 +244,7 @@ TEST_F(BehaviorEntityTest, FindComponentOfType_Succeeds)
     AZ::Component* rawComponent2 = m_rawEntity->CreateComponent(EarComponentTypeId);
 
     AzFramework::BehaviorComponentId foundComponentId = m_behaviorEntity.FindComponentOfType(azrtti_typeid(rawComponent2));
-    EXPECT_EQ(rawComponent2->GetId(), foundComponentId);
+    EXPECT_EQ(rawComponent2->GetId(), AZ::ComponentId(foundComponentId));
 }
 
 TEST_F(BehaviorEntityTest, FindComponentOfType_ForNonexistentComponent_ReturnsInvalidComponentId)

@@ -40,9 +40,7 @@
 #include "CryEdit.h"
 #include "LevelFileDialog.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <WelcomeScreen/ui_WelcomeScreenDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 using namespace AzQtComponents;
 

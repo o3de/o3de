@@ -331,7 +331,7 @@ namespace AZ
     };
     AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, Attribute);
 
-    typedef AZ::u32 AttributeId;
+    typedef AZ::Crc32 AttributeId;
     typedef AZStd::pair<AttributeId, Attribute*> AttributePair;
     typedef AZStd::vector<AttributePair> AttributeArray;
 

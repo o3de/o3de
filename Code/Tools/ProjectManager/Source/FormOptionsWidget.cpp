@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
                 {
                     QCheckBox* optionCheckBox = new QCheckBox(option);
                     optionLayout->addWidget(optionCheckBox);
-                    connect(optionCheckBox, &QCheckBox::clicked, this, [=](bool checked){
+                    connect(optionCheckBox, &QCheckBox::clicked, this, [=, this](bool checked){
                         if(checked)
                         {
                             Enable(option);
@@ -66,7 +66,7 @@ namespace O3DE::ProjectManager
 
                 //Add the platform option toggle
                 m_allOptionsToggle = new QCheckBox(allOptionsText);
-                connect(m_allOptionsToggle, &QCheckBox::clicked, this, [=](bool checked){
+                connect(m_allOptionsToggle, &QCheckBox::clicked, this, [this](bool checked){
                     if(checked)
                     {
                         EnableAll();

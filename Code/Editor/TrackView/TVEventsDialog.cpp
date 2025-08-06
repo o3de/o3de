@@ -22,10 +22,7 @@
 // Editor
 #include "AnimationContext.h"
 
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TVEventsDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CTVEventsDialog dialog
 

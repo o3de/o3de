@@ -15,9 +15,6 @@
 #pragma once
 
 #include <CryPath.h>
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <shlwapi.h>
-#endif
 #include <Include/EditorCoreAPI.h>
 
 #include <AzCore/IO/SystemFile.h> // for max path

@@ -220,7 +220,7 @@ namespace EMStudio
         m_paneSplitter->setStretchFactor(1, 1);
         connect(m_paneSplitter, &QSplitter::splitterMoved,
                 this,
-                [=]{m_togglePresetsView->setChecked(m_paneSplitter->sizes().at(1) > 0 );});
+                [this]{m_togglePresetsView->setChecked(m_paneSplitter->sizes().at(1) > 0 );});
         mainLayout->addWidget(m_paneSplitter, 1, 0, 1, 2);
 
         // connect TrackDataWidget
@@ -246,7 +246,7 @@ namespace EMStudio
         // Create the motion event properties widget.
         m_motionEventWidget = new MotionEventWidget();
         m_motionEventWidget->hide();
-        connect(this, &TimeViewPlugin::SelectionChanged, this, [=]
+        connect(this, &TimeViewPlugin::SelectionChanged, this, [this]
             {
                 if (!m_motionEventWidget)
                 {

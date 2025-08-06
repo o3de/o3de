@@ -98,7 +98,7 @@ namespace SurfaceData
         SurfaceDataRegistryMap m_registeredSurfaceDataModifiers;
         SurfaceDataRegistryHandle m_registeredSurfaceDataProviderHandleCounter = InvalidSurfaceDataRegistryHandle;
         SurfaceDataRegistryHandle m_registeredSurfaceDataModifierHandleCounter = InvalidSurfaceDataRegistryHandle;
-        AZStd::unordered_set<AZ::u32> m_registeredModifierTags;
+        AZStd::unordered_set<SurfaceTag> m_registeredModifierTags;
 
         //point vector reserved for reuse
         mutable SurfacePointList m_targetPointList;

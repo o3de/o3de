@@ -28,6 +28,9 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen startScreen = ProjectManagerScreen::Projects);
 
     private:
+        void closeEvent(QCloseEvent* event) override;
+
+    private:
         QPointer<DownloadController> m_downloadController;
     };
 

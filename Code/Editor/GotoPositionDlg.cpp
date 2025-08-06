@@ -20,9 +20,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_GotoPositionDlg.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 void GoToPositionPitchConstraints::DeterminePitchRange(const AngleRangeConfigureFn& configurePitchRangeFn) const
 {

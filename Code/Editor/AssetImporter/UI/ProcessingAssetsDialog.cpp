@@ -14,9 +14,7 @@
 #include <QPushButton>
 #include <QStyle>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AssetImporter/UI/ui_ProcessingAssetsDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 ProcessingAssetsDialog::ProcessingAssetsDialog(int numberOfProcessedFiles, QWidget* parent)
     : QDialog(parent)

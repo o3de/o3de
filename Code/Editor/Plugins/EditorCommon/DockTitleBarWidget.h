@@ -53,8 +53,6 @@ private:
         int id;
         QAbstractButton* button;
     };
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     std::vector<SCustomButton> m_customButtons;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 

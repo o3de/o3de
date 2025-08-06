@@ -85,7 +85,7 @@ namespace O3DE::ProjectManager
         m_dropdownButton = new QPushButton(QIcon(":/CarrotArrowDown.svg"), "", this);
         m_dropdownButton->setObjectName("dropDownButton");
         m_frameLayout->addWidget(m_dropdownButton);
-        connect(m_dropdownButton, &QPushButton::clicked, this, [=]([[maybe_unused]]bool ignore){ m_lineEdit->completer()->complete(QRect()); });
+        connect(m_dropdownButton, &QPushButton::clicked, this, [this]([[maybe_unused]]bool ignore){ m_lineEdit->completer()->complete(QRect()); });
 
         //section of form for showing tags
         m_tagFrame = new QFrame(this);

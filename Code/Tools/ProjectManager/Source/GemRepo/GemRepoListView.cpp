@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
         GemRepoItemDelegate* itemDelegate = new GemRepoItemDelegate(model, header, this);
         connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
         connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
-        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { update(); });
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [this] { update(); });
         setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

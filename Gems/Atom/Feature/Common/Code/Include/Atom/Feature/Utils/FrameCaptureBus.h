@@ -12,6 +12,7 @@
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
+#include <Atom/Feature/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/Utils/ImageComparison.h>
 
@@ -21,7 +22,7 @@ namespace AZ
     {
         //! The errors met in initializing the frame capture.
         //! It is used for script Ebus calls to provide a richer debug environment.
-        struct FrameCaptureError
+        struct ATOM_FEATURE_COMMON_API FrameCaptureError
         {
             AZ_TYPE_INFO(FrameCaptureError, "{9459AC1D-B0EE-4D89-9EEC-6A65790C76BF}");
             static void Reflect(ReflectContext* context);
@@ -128,11 +129,11 @@ namespace AZ
         };
 
         //! Writes out content of ReadbackResult in the Dds image format.
-        FrameCaptureOutputResult DdsFrameCaptureOutput(
+        ATOM_FEATURE_COMMON_API FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 
         //! Writes out content of ReadbackResult in the Ppm image format.
-        FrameCaptureOutputResult PpmFrameCaptureOutput(
+        ATOM_FEATURE_COMMON_API FrameCaptureOutputResult PpmFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 
     } // namespace Render

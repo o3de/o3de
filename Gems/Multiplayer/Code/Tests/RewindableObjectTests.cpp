@@ -142,11 +142,11 @@ namespace UnitTest
         for (uint32_t i = 0; i < 31; ++i)
         {
             Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(i), AZ::Time::ZeroTimeMs, 1.f, AzNetworking::InvalidConnectionId);
-            EXPECT_EQ(1, test);
+            EXPECT_EQ(1, test.Get());
         }
 
         Multiplayer::ScopedAlterTime time3(static_cast<Multiplayer::HostFrameId>(31), AZ::Time::ZeroTimeMs, 1.f,  AzNetworking::InvalidConnectionId);
-        EXPECT_EQ(2, test);
+        EXPECT_EQ(2, test.Get());
     }
 
     TEST_F(RewindableObjectTests, TestMassiveValueOverflow)
@@ -162,7 +162,7 @@ namespace UnitTest
         for (uint32_t i = 0; i < 1000; ++i)
         {
             Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(1000 - i), AZ::Time::ZeroTimeMs, 1.f, AzNetworking::InvalidConnectionId);
-            EXPECT_EQ(1000, test);
+            EXPECT_EQ(1000, test.Get());
         }
     }
 }

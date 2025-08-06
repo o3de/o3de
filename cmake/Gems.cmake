@@ -54,14 +54,30 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
 #         For example if the directory containing the calling CMakeLists.txt
 #         is "Gems/Location/",
 #         then the PAL directory for windows is "Gems/Location/Platform/Windows/".
-#         For a restricted platfrom, the directory could be located at the path
+#         For a restricted platform, the directory could be located at the path
 #         "<restricted-platform-root>/Gems/Location/Platform/<platform>/"
-macro(o3de_gem_setup default_gem_name)
+macro(o3de_gem_setup) #default_gem_name)
+    # Check if a default_gem_name was provided
+    if(${ARGC} GREATER 0)
+        set(default_gem_name ${ARGV0})
+    else()
+        # Set default_gem_name to an empty string if not provided
+        set(default_gem_name "")
+    endif()
+
     # Query the gem name from the gem.json file if possible
     # otherwise fallback to using the default gem name argument
     o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
     if (NOT gem_name)
-        set(gem_name "${default_gem_name}")
+        message(STATUS "failed to find ancestor root in ${CMAKE_CURRENT_SOURCE_DIR}")
+        if (default_gem_name)
+            set(gem_name "${default_gem_name}")
+            # If no gem name was found in the gem.json, use the default gem name
+            message(STATUS "No gem name found in ${CMAKE_CURRENT_SOURCE_DIR}/gem.json, using default: ${default_gem_name}")
+        else()
+            # If no gem name was found and no default gem name was provided, set it to an empty string
+            message(WARNING "No gem name found in ${CMAKE_CURRENT_SOURCE_DIR}/gem.json and no default gem name provided.")
+        endif()
     endif()
 
     # Fallback to using the current source CMakeLists.txt directory as the gem root path
@@ -76,6 +92,13 @@ macro(o3de_gem_setup default_gem_name)
     o3de_read_json_key(gem_version ${gem_json} "version")
 
     o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+    if(gem_restricted_path)
+        message(STATUS "Restricted found in ${gem_json}, using: ${gem_restricted_path}")
+    else()
+        # If the gem.json does not have a 'restricted' field use the gem dir and append /restricted
+        set(gem_restricted_path "${gem_path}/restricted")
+        message(STATUS "No restricted found in ${gem_json}, using default: ${gem_restricted_path}")
+    endif()
 
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 endmacro()

@@ -9,7 +9,11 @@
 
 #include <AzCore/Debug/Profiler.h>
 
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_BUDGET(RHI);
+#else
 AZ_DECLARE_BUDGET_SHARED(RHI);
+#endif
 
 namespace AZ::RHI
 {

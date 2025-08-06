@@ -393,7 +393,7 @@ namespace GraphModelIntegration
         case SlotType::Property:
             {
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
-                    graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreatePropertySlot, stylingParent, 0, slotConfig);
+                    graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreatePropertySlot, stylingParent, AZ::Crc32(), slotConfig);
             }
             break;
         default:

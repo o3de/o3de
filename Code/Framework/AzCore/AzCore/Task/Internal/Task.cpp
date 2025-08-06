@@ -15,7 +15,7 @@ namespace AZ::Internal
         if (!other.m_relocator)
         {
             // The type-erased lambda is trivially relocatable OR, the lambda is heap allocated
-            memcpy(this, &other, sizeof(Task));
+            memcpy(reinterpret_cast<void*>(this), &other, sizeof(Task));
 
             // Prevent deletion in the event the lambda had spilled to the heap
             other.m_destroyer = nullptr;

@@ -122,8 +122,8 @@ namespace AZ
                     PairIterator(FirstIterator first, SecondIterator second);
                     PairIterator(const PairIterator& rhs) = default;
 
-                    bool operator==(const typename super::RootIterator& rhs) const;
-                    bool operator!=(const typename super::RootIterator& rhs) const;
+                    bool operator==(const PairIterator& rhs) const;
+                    bool operator!=(const PairIterator& rhs) const;
 
                     typename super::reference operator*() const;
                     typename super::pointer operator->() const;

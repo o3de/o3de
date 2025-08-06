@@ -161,7 +161,7 @@ namespace AZ
                 {
                     u32 value = 0;
                     dc.ReadArg(0, value);
-                    *thisPtr = value;
+                    *thisPtr = Crc32(value);
                 }
             }
         }

@@ -123,7 +123,7 @@ namespace AzToolsFramework
                 m_actionFiltersMapping[checkbox] = FilterConstType(groupFilter);
 
                 connect(checkbox, &QCheckBox::clicked, this,
-                    [=](bool checked)
+                    [=, this](bool checked)
                     {
                         if (checked)
                         {

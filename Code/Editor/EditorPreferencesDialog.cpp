@@ -42,10 +42,7 @@
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageAWS.h"
 
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_EditorPreferencesDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 using namespace AzQtComponents;
 

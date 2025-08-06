@@ -66,7 +66,7 @@ namespace AZ
         };
 
         //! Container for all the buffers and views needed for a single lod of a skinned mesh
-        class SkinnedMeshInputLod
+        class ATOM_FEATURE_COMMON_API SkinnedMeshInputLod
         {
             friend class SkinnedMeshInputBuffers;
         public:
@@ -148,7 +148,7 @@ namespace AZ
         };
 
         //! Container for all the buffers and views needed for per-source model input to both the skinning shader and subsequent mesh shaders
-        class SkinnedMeshInputBuffers
+        class ATOM_FEATURE_COMMON_API SkinnedMeshInputBuffers
             : public AZStd::intrusive_base
         {
         public:
