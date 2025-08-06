@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
 
-#include "../../External/meshoptimizer.h"
+#include <meshoptimizer.h>
 
 namespace AZ
 {

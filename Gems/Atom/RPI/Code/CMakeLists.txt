@@ -277,6 +277,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RHI.Public
                 Gem::${gem_name}.Edit
                 Gem::${gem_name}.Public
+                3rdParty::meshoptimizer
     )
 
     ly_add_target(

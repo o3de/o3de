@@ -24,7 +24,7 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#include "../../External/meshoptimizer.h"
+#include <meshoptimizer.h>
 
 #include <MeshletsDispatchItem.h>
 #include <MeshletsData.h>
