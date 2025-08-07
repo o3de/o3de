@@ -9,24 +9,23 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Debug/Profiler.h>
-#include <AzCore/std/string/conversions.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Asset/AssetSeedList.h>
-#include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
+#include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
 AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests);
@@ -59,6 +58,8 @@ namespace AzFramework
 
     namespace AssetSystem
     {
+        static constexpr const char* S_RegKey_AllowSyncRequests = "/O3DE/AssetSystem/AllowSyncRequests";
+
         void OnAssetSystemMessage(unsigned int /*typeId*/, const void* buffer, unsigned int bufferSize, AZ::SerializeContext* context)
         {
             AssetNotificationMessage message;
@@ -163,6 +164,11 @@ namespace AzFramework
             AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
             EnableSocketConnection();
+
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(m_allowSyncRequests, S_RegKey_AllowSyncRequests);
+            }
 
             m_cbHandle = m_socketConn->AddMessageHandler(AssetNotificationMessage::MessageType,
                 [context](unsigned int typeId, unsigned int /*serial*/, const void* data, unsigned int dataLength)
@@ -802,22 +808,38 @@ namespace AzFramework
 
         AssetStatus AssetSystemComponent::CompileAssetSync(const AZStd::string& assetPath)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, false));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, false));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSync_FlushIO(const AZStd::string& assetPath)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, true));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, true));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSyncById(const AZ::Data::AssetId& assetId)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetId, false, false));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetId, false, false));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSyncById_FlushIO(const AZ::Data::AssetId& assetId)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetId, false, true));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetId, false, true));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::GetAssetStatus(const AZStd::string& assetPath)

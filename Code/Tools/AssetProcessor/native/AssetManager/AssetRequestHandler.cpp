@@ -506,7 +506,7 @@ void AssetRequestHandler::OnCompileGroupFinished(NetworkRequestID groupID, Asset
     }
     else
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Compile Group finished: %s.\n", located.value().GetDisplayString().toUtf8().constData());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "Compile Group finished: %s - %s\n", located.value().GetDisplayString().toUtf8().constData(), status == AssetStatus_Compiled ? "compiled" : "failed");
         SendAssetStatus(groupID, RequestAssetStatus::MessageType, status);
         m_pendingAssetRequests.erase(located);
     }

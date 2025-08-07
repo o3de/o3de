@@ -67,6 +67,9 @@ namespace CommandSystem
         {
             filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
         }
+        // EmotionFX fails semi-permanetnly if it cannot find the asset it needs, so we sync compile it. If this asset is already compiled,
+        // this is essentially a quick returning no-op.  If its still compiling, this will block until its done.
+        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, filename.c_str());
 
         AZ::Data::AssetId actorAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
