@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/SwapChain.h>
@@ -268,11 +269,14 @@ namespace AZ::RHI
     {
         if (m_descriptor.m_isXrSwapChain)
         {
-#if defined (AZ_FORCE_CPU_GPU_INSYNC)
-            return m_images[0].get();
-#else
-            return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
-#endif
+            if constexpr (ForceCpuGpuInSync)
+            {
+                return m_images[0].get();
+            }
+            else
+            {
+                return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
+            }
         }
         AZ_Error("Swapchain", !m_deviceObjects.empty(), "No device swapchain image available.");
         // Note: Taking the current swapchain image index from the first device swap chain if there are multiple

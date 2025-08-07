@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
@@ -49,12 +51,15 @@ namespace AZ
             EndInternal();
             CommandQueue* cmdQueue = &m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass);
             cmdQueue->ExecuteWork(AZStd::move(m_workRequest));
-#if defined(AZ_FORCE_CPU_GPU_INSYNC)
-            //Cache the name of the scope we just queued and wait for it to finish on the cpu
-            m_device->SetLastExecutingScope(m_workRequest.m_commandList->GetName().GetStringView());
-            cmdQueue->FlushCommands();
-            cmdQueue->WaitForIdle();
-#endif
+
+            if constexpr (RHI::ForceCpuGpuInSync)
+            {
+                //Cache the name of the scope we just queued and wait for it to finish on the cpu
+                m_device->SetLastExecutingScope(m_workRequest.m_commandList->GetName().GetStringView());
+                cmdQueue->FlushCommands();
+                cmdQueue->WaitForIdle();
+            }
+
             m_isExecuted = true;
         }
 
