@@ -165,7 +165,7 @@ namespace AZ::RPI
 
         // Determine the vertex index range for the morph target.
         // Ignore any vertices that are associated with a later product mesh
-        uint32_t numVertices = aznumeric_cast<uint32_t>(productMesh.m_positions.size() / 3);
+        uint32_t numVertices = aznumeric_cast<uint32_t>(productMesh.m_vertexCount);
         uint32_t endVertex = startVertex + numVertices;
 
         if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount()
