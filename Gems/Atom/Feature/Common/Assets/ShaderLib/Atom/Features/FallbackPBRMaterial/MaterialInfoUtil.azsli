@@ -1,0 +1,99 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once 
+
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfo.azsli>
+#include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+bool GetMaterialInfoEntry(int index, inout MaterialInfo materialInfo)
+{
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint numStructs;
+    uint stride;
+    SceneSrg::m_fallbackPBRMaterial.GetDimensions(numStructs, stride);
+    if (index < 0 || index >= numStructs)
+    {
+        return false;
+    }
+#else
+    if (index < 0) 
+    {
+        return false;
+    }
+#endif
+    materialInfo = SceneSrg::m_fallbackPBRMaterial[index];
+    return true;
+}
+
+struct TextureData
+{
+    float4 m_baseColor;
+    float3 m_normal;
+    float  m_metallic;
+    float  m_roughness;
+    float3 m_emissiveColor;
+};
+
+TextureData GetFallbackPBRMaterialTextureData(MaterialInfo materialInfo, sampler textureSampler, float2 uv)
+{
+    TextureData textureData = (TextureData)0;
+
+    if (materialInfo.m_baseColorImage >= 0)
+    {
+        textureData.m_baseColor = Bindless::GetTexture2D(materialInfo.m_baseColorImage).SampleLevel(textureSampler, uv, 0);
+    }
+    else
+    {
+        textureData.m_baseColor = materialInfo.m_baseColor;
+    }
+
+    // transform the base color to the ACEScg color space
+    textureData.m_baseColor.rgb = TransformColor(textureData.m_baseColor.rgb, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+
+    if (materialInfo.m_normalImage >= 0)
+    {
+        textureData.m_normal = Bindless::GetTexture2D(materialInfo.m_normalImage).SampleLevel(textureSampler, uv, 0).rgb;
+    }
+    else
+    {
+        textureData.m_normal = float3(0.0f, 0.0f, 1.0f);
+    }
+
+    // metallic
+    if (materialInfo.m_metallicImage >= 0)
+    {
+        textureData.m_metallic = Bindless::GetTexture2D(materialInfo.m_metallicImage).SampleLevel(textureSampler, uv, 0).r;
+    }
+    else
+    {
+        textureData.m_metallic = saturate(materialInfo.m_metallicFactor);
+    }
+
+    // roughness
+    if (materialInfo.m_roughnessImage >= 0)
+    {
+        textureData.m_roughness = Bindless::GetTexture2D(materialInfo.m_roughnessImage).SampleLevel(textureSampler, uv, 0).r;
+    }
+    else
+    {
+        textureData.m_roughness = saturate(materialInfo.m_roughnessFactor);
+    }
+
+    // emissive
+    textureData.m_emissiveColor = materialInfo.m_emissiveColor;
+    if (materialInfo.m_emissiveImage >= 0)
+    {
+        textureData.m_emissiveColor *= Bindless::GetTexture2D(materialInfo.m_emissiveImage).SampleLevel(textureSampler, uv, 0).rgb;
+    }
+    return textureData;
+}
+
+
+
+

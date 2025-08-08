@@ -1,0 +1,211 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/MeshInfo/MeshInfo.azsli>
+#include <Atom/RPI/VertexBufferOperations.azsli>
+#include <Atom/RPI/IndexBufferOperations.azsli>
+
+#ifndef DEFENSIVE_BINDLESS_ACCESS
+#define DEFENSIVE_BINDLESS_ACCESS 1
+#endif
+
+float2 LoadFromVertexBuffer_float2(const int bufferIndex, const uint bufferOffset, const VertexFormat format, const uint index)
+{    
+    if (bufferIndex < 0)
+    {
+        return (float2)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadOffset = CalculateVertexLoadOffset(index, bufferOffset, format);
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint bufferSize;
+    buffer.GetDimensions(bufferSize);
+    if (loadOffset + GetVertexFormatSize(format) >= bufferSize)
+    {
+        return (float2)0;
+    }
+#endif
+    return LoadFloat2FromBuffer(buffer, loadOffset, format);
+
+}
+
+float3 LoadFromVertexBuffer_float3(const int bufferIndex, const uint bufferOffset, const VertexFormat format, const uint index)
+{
+    if (bufferIndex < 0)
+    {
+        return (float3)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadOffset = CalculateVertexLoadOffset(index, bufferOffset, format);
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint bufferSize;
+    buffer.GetDimensions(bufferSize);
+    if (loadOffset + GetVertexFormatSize(format) >= bufferSize)
+    {
+        return (float3)0;
+    }
+#endif
+    return LoadFloat3FromBuffer(buffer, loadOffset, format);
+}
+
+float4 LoadFromVertexBuffer_float4(const int bufferIndex, const uint bufferOffset, const VertexFormat format, const uint index)
+{
+    if (bufferIndex < 0)
+    {
+        return (float4)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadOffset = CalculateVertexLoadOffset(index, bufferOffset, format);
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint bufferSize;
+    buffer.GetDimensions(bufferSize);
+    if (loadOffset + GetVertexFormatSize(format) >= bufferSize)
+    {
+        return (float4)0;
+    }
+#endif
+    return LoadFloat4FromBuffer(buffer, loadOffset, format);
+}
+
+uint3 LoadFromIndexBuffer(const int bufferIndex, const uint bufferOffset, const IndexFormat format, const uint index)
+{
+    if (bufferIndex < 0)
+    {
+        return (uint3)0;
+    }
+    ByteAddressBuffer buffer = Bindless::GetByteAddressBuffer(bufferIndex);
+    const uint loadOffset = CalculateIndexLoadOffset(index * 3, bufferOffset, format);
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint bufferSize;
+    buffer.GetDimensions(bufferSize);
+    if (loadOffset + GetIndexFormatSize(format) >= bufferSize)
+    {
+        return (uint3)0;
+    }
+#endif
+    return LoadVertexIndices(buffer, loadOffset, format);
+}
+
+bool GetMeshInfoEntry(int index, inout MeshInfo meshInfo)
+{
+#if DEFENSIVE_BINDLESS_ACCESS
+    uint numStructs;
+    uint stride;
+    SceneSrg::m_meshInfo.GetDimensions(numStructs, stride);
+    if (index < 0 || index >= numStructs)
+    {
+        return false;
+    }
+#else
+    if (index < 0) 
+    {
+        return false;
+    }
+#endif
+    meshInfo = SceneSrg::m_meshInfo[index];
+    return true;
+}
+
+uint3 LoadIndex(const MeshInfo meshInfo, uint triangleIndex)
+{
+    return LoadFromIndexBuffer(meshInfo.m_indexBufferIndex, meshInfo.m_indexBufferByteOffset, (IndexFormat)meshInfo.m_indexFormat, triangleIndex);
+}
+
+float3 LoadPosition(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float3(meshInfo.m_positionBufferIndex, meshInfo.m_positionBufferByteOffset, (VertexFormat)meshInfo.m_positionFormat, vertexIndex);
+}
+
+float3 LoadNormal(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float3(meshInfo.m_normalBufferIndex, meshInfo.m_normalBufferByteOffset, (VertexFormat)meshInfo.m_normalFormat, vertexIndex);
+}
+
+float2 LoadUv0(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float2(meshInfo.m_uv0BufferIndex, meshInfo.m_uv0BufferByteOffset, (VertexFormat)meshInfo.m_uv0Format, vertexIndex);
+}
+
+float2 LoadUv1(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float2(meshInfo.m_uv1BufferIndex, meshInfo.m_uv1BufferByteOffset, (VertexFormat)meshInfo.m_uv1Format, vertexIndex);
+}
+
+float4 LoadTangent(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float4(meshInfo.m_tangentBufferIndex, meshInfo.m_tangentBufferByteOffset, (VertexFormat)meshInfo.m_tangentFormat, vertexIndex);
+}
+
+float3 LoadBitangent(const MeshInfo meshInfo, uint vertexIndex)
+{
+    return LoadFromVertexBuffer_float3(meshInfo.m_bitangentBufferIndex, meshInfo.m_bitangentBufferByteOffset, (VertexFormat)meshInfo.m_bitangentFormat, vertexIndex);
+}
+
+void LoadInterpolatedVertexData(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, inout VsInput vertex)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    // Note: this variables and loads should be optimized away if the result isn't used
+    float3 position = float3(0, 0, 0);
+    float3 normal = float3(0, 0, 0);
+    float4 tangent = float4(0, 0, 0, 0);
+    float3 bitangent = float3(0, 0, 0);
+    float2 uv0 = float2(0, 0);
+    float2 uv1 = float2(0, 0);
+    // TODO: add color and blend-mask
+    [unroll]
+    for (int index = 0; index < 3; ++index)
+    {
+        position += LoadPosition(meshInfo, triangleIndices[index]) * barycentrics[index];
+        normal += LoadNormal(meshInfo, triangleIndices[index]) * barycentrics[index];
+        tangent += LoadTangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv0 += LoadUv0(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv1 += LoadUv1(meshInfo, triangleIndices[index]) * barycentrics[index];
+        bitangent += LoadBitangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+    }
+    tangent.xyz = normalize(tangent.xyz);
+    tangent.w = sign(tangent.w);
+    normal = normalize(normal);
+    bitangent = normalize(bitangent);
+
+#if MATERIAL_USES_VERTEX_POSITION
+    vertex.position = position;
+#endif
+#if MATERIAL_USES_VERTEX_NORMAL
+    vertex.normal = normal;
+#endif
+#if MATERIAL_USES_VERTEX_TANGENT
+    vertex.tangent = tangent;
+#endif
+
+#if MATERIAL_USES_VERTEX_BITANGENT
+    vertex.bitangent = bitangent;
+#endif
+#if MATERIAL_USES_VERTEX_UV
+    vertex.uv0 = uv0;
+    vertex.uv1 = uv1;
+#endif
+#if MATERIAL_USES_VERTEX_COLOR
+    vertex.m_optional_color0 = float4(0, 0, 0, 0);
+#endif
+#if MATERIAL_USES_VERTEX_BLENDMASK
+    vertex.m_optional_blendMask = float4(0, 0, 0, 0);
+#endif
+}
+
+void LoadTriangleVertices(const MeshInfo meshInfo, const uint triangleId, inout float3 p0, inout float3 p1, inout float3 p2)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    p0 = LoadPosition(meshInfo, triangleIndices[0]);
+    p1 = LoadPosition(meshInfo, triangleIndices[1]);
+    p2 = LoadPosition(meshInfo, triangleIndices[2]);
+}
+
+
+

@@ -20,6 +20,18 @@ float3 GetUVColor(float2 uv)
     return float3(uv, 0.f);
 }
 
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+float3 GetFallbackPBRAlbedo(float2 uv)
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, uv);
+    return textureData.m_baseColor;
+}
+
 [shader("closesthit")]
 void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersectionAttributes attrib)
 {
@@ -30,6 +42,7 @@ void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersect
     case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());   break;
     case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.GetNormal()); break;
     case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.GetUv());         break;
+    case RayTracingDebugViewMode::FallbackPBRAlbedo:    payload.m_color = GetFallbackPBRAlbedo(attrib.GetUv()); break;
     default:                                      payload.m_noData = true;                              break;
     }
 }

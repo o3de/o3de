@@ -266,11 +266,8 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoGpuBuffer();
 
-            if (meshInfoBuffer &&
-                rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
-                rayTracingFeatureProcessor->GetSubMeshCount())
+            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() && rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
@@ -327,8 +324,7 @@ namespace AZ
 
                     const RHI::DeviceShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
-                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
                     };
 
                     RHI::DeviceDispatchRaysItem dispatchRaysItem;

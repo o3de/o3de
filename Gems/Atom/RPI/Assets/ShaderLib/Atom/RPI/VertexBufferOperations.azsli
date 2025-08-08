@@ -91,6 +91,11 @@ float4 DecodeTangentPackedOctahedron(uint encodedPackedValue, uint xyBits)
         ((encodedPackedValue >> (xyBits * 2 + 1)) & 1) * 2.f - 1.f);
 }
 
+uint CalculateVertexLoadOffset(const uint index, const uint startOffset, const VertexFormat format)
+{
+    return index * GetVertexFormatSize(format) + startOffset;
+}
+
 float2 LoadFloat2FromBuffer(ByteAddressBuffer buffer, uint byteOffset, VertexFormat format)
 {
     switch (format)

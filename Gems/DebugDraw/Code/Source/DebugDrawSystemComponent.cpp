@@ -1166,7 +1166,7 @@ namespace DebugDraw
 
         m_spheresRayTracingIndicesBuffer->UpdateData(&element.m_radius, sizeof(float), element.m_localInstanceIndex * sizeof(float));
 
-        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
+        AZ::Render::FallbackPBR::MaterialParameters material;
         material.m_baseColor = element.m_color;
         material.m_roughnessFactor = 0.9f;
 
@@ -1198,7 +1198,7 @@ namespace DebugDraw
                 m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");
         }
 
-        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
+        AZ::Render::FallbackPBR::MaterialParameters material;
         material.m_baseColor = element.m_color;
         material.m_roughnessFactor = 0.9f;
 

@@ -27,6 +27,16 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
     bool  m_rayTraceFallbackSpecular;
     [[pad_to(16)]]
 
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
     Sampler PointSampler
     {
         MinFilter = Point;

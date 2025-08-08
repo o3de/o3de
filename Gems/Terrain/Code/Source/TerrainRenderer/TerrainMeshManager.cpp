@@ -16,8 +16,11 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
+#include <Atom/RHI.Reflect/IndexFormat.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI.Reflect/VertexFormat.h>
 #include <Atom/RHI/RHISystemInterface.h>
+
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -27,8 +30,10 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/MeshInfo.h>
+#include <Atom/Feature/RenderCommon.h>
 
 namespace Terrain
 {
@@ -78,6 +83,8 @@ namespace Terrain
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
         
         m_meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
+
+        m_meshfeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::MeshFeatureProcessorInterface>();
 
         m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessorInterface>();
         m_rayTracingEnabled = (AZ::RHI::RHISystemInterface::Get()->GetRayTracingSupport() != AZ::RHI::MultiDevice::NoDevices) && m_rayTracingFeatureProcessor;
@@ -186,6 +193,10 @@ namespace Terrain
                 RtSector::MeshGroup& meshGroup = rtData->m_meshGroups.at(item.m_meshGroupIndex);
                 meshGroup.m_isVisible = false;
                 m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+                if (!meshGroup.m_submeshVector.empty())
+                {
+                    m_meshfeatureProcessor->ReleaseMeshInfoEntry(meshGroup.m_submeshVector.back().m_meshInfoHandle);
+                }
             }
         }
         m_rayTracedItems.clear();
@@ -371,6 +382,10 @@ namespace Terrain
 
     void TerrainMeshManager::BuildRtSector(Sector& sector, uint32_t lodLevel)
     {
+        // TODO: experiment with the various supported vertex formats, since we are currently using R32G32B32_FLOAT for everything:
+        // The position for a BLAS supports only R32G32B32_FLOAT or R16G16B16A16_FLOAT, but the normal could be octahedron - encoded with
+        // various bit-sizes (N32_OCT, N16_OCT and N8_OCT). Similarily, the Index-Buffer supports 32 and 16 bit indices.
+
         RtSector& rtSector = *sector.m_rtData;
 
         AZStd::string positionName = AZStd::string::format("Terrain Positions-  Lod %u, Sector (%u, %u)", lodLevel, sector.m_worldCoord.m_x, sector.m_worldCoord.m_x);
@@ -384,45 +399,48 @@ namespace Terrain
         AZ::RHI::Format positionsBufferFormat = rtSector.m_positionsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
         AZ::RHI::StreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
-        AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
 
         AZ::RHI::Buffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
         uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format normalsBufferFormat = rtSector.m_normalsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
         AZ::RHI::StreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
-        AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
 
         AZ::RHI::Buffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
         AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
 
         uint32_t totalIndexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
-        uint32_t indexElementSize = AZ::RHI::GetIndexFormatSize(indexBufferFormat);
 
         // Create the ray tracing meshes. Each sector has 5 meshes which all share the same data - one mesh that covers the whole
         // sector, and 4 meshes that cover each quadrant of the sector.
         auto createMesh = [&](RtSector::MeshGroup& meshGroup, uint32_t indexBufferByteOffset, uint32_t indexBufferByteCount)
         {
+            if (!meshGroup.m_submeshVector.empty())
+            {
+                m_meshfeatureProcessor->ReleaseMeshInfoEntry(meshGroup.m_submeshVector.back().m_meshInfoHandle);
+            }
             meshGroup.m_submeshVector.clear();
             AZ::Render::RayTracingFeatureProcessorInterface::SubMesh& subMesh = meshGroup.m_submeshVector.emplace_back();
 
-            subMesh.m_positionFormat = AZ::RHI::ConvertToVertexFormat(positionsBufferFormat);
-            subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
-            subMesh.m_normalFormat = AZ::RHI::ConvertToVertexFormat(normalsBufferFormat);
-            subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
-            subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
-            subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
+            // Create a meshinfo - entry for the terrain mesh, so we can add it to the raytracing TLAS
+            subMesh.m_meshInfoHandle = m_meshfeatureProcessor->AcquireMeshInfoEntry();
+            m_meshfeatureProcessor->UpdateMeshInfoEntry(
+                subMesh.m_meshInfoHandle,
+                [&](AZ::Render::MeshInfoEntry* entry) -> bool
+                {
+                    AZ::RHI::ShaderSemantic position{ AZ::Name{ "POSITION" } };
+                    entry->m_meshBuffers[position] = AZ::Render::BufferViewIndexAndOffset::Create(
+                        positionsVertexBufferView, AZ::RHI::ConvertToVertexFormat(positionsBufferFormat));
 
-            AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
-            indexBufferDescriptor.m_elementOffset = indexBufferByteOffset / indexElementSize;
-            indexBufferDescriptor.m_elementCount = indexBufferByteCount / indexElementSize;
-            indexBufferDescriptor.m_elementSize = indexElementSize;
-            indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
+                    AZ::RHI::ShaderSemantic normal{ AZ::Name{ "NORMAL" } };
+                    entry->m_meshBuffers[normal] = AZ::Render::BufferViewIndexAndOffset::Create(
+                        normalsVertexBufferView, AZ::RHI::ConvertToVertexFormat(normalsBufferFormat));
 
-            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
-
+                    auto indexBufferView =
+                        AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
+                    entry->m_indexBuffer = AZ::Render::IndexBufferViewIndexAndOffset::Create(indexBufferView);
+                    return true;
+                });
             meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
             meshGroup.m_mesh.m_transform = AZ::Transform::CreateIdentity();
