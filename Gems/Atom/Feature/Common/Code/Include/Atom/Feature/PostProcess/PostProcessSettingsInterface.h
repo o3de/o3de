@@ -18,7 +18,7 @@
 #include <Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h>
 #include <Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
-#include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoSettingsInterface.h>
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h>
 #include <Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h>

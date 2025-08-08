@@ -321,12 +321,24 @@
                 "Path": "Passes/ContrastAdaptiveSharpening.pass"
             },
             {
+                "Name": "AoParentTemplate",
+                "Path": "Passes/AoParent.pass"
+            },
+            {
                 "Name": "SsaoParentTemplate",
                 "Path": "Passes/SsaoParent.pass"
             },
             {
                 "Name": "SsaoComputeTemplate",
                 "Path": "Passes/SsaoCompute.pass"
+            },
+            {
+                "Name": "GtaoParentTemplate",
+                "Path": "Passes/GtaoParent.pass"
+            },
+            {
+                "Name": "GtaoComputeTemplate",
+                "Path": "Passes/GtaoCompute.pass"
             },
             {
                 "Name": "ReflectionsParentPassTemplate",

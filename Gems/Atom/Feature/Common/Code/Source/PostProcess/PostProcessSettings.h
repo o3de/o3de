@@ -15,7 +15,7 @@
 #include <PostProcess/Bloom/BloomSettings.h>
 #include <PostProcess/DepthOfField/DepthOfFieldSettings.h>
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
-#include <PostProcess/Ssao/SsaoSettings.h>
+#include <PostProcess/AmbientOcclusion/AoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>

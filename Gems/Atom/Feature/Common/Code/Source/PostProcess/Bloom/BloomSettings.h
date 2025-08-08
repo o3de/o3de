@@ -24,7 +24,7 @@ namespace AZ
     {
         class PostProcessSettings;
 
-        // The post process sub-settings class for SSAO (Screen-Space Ambient Occlusion)
+        // The post process sub-settings class for Bloom
         class BloomSettings final
             : public BloomSettingsInterface
             , public PostProcessBase

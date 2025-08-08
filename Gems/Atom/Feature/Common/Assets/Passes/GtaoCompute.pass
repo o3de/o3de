@@ -1,0 +1,63 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GtaoComputeTemplate",
+            "PassClass": "GtaoComputePass",
+            "Slots": [
+                {
+                    "Name": "LinearDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Gtao",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "LinearDepth"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8_UNORM"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Gtao"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/GtaoCompute.shader"
+                },
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
+            },
+            "FallbackConnections": [
+                {
+                    "Input": "LinearDepth", 
+                    "Output": "Output" 
+                }
+            ]
+        }
+    }
+}

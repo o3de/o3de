@@ -26,6 +26,45 @@ namespace AZ
         {
         }
 
+        void MotionBlurPass::InitializeInternal()
+        {
+            ComputePass::InitializeInternal();
+
+            InitializeShaderVariant();
+        }
+
+        void MotionBlurPass::InitializeShaderVariant()
+        {
+            AZ_Assert(m_shader != nullptr, "MotionBlurPass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+
+            AZStd::vector<RPI::ShaderOptionValue> options =
+            {
+                RPI::ShaderOptionValue(MotionBlur::SampleQuality::Low),
+                RPI::ShaderOptionValue(MotionBlur::SampleQuality::Medium),
+                RPI::ShaderOptionValue(MotionBlur::SampleQuality::High),
+                RPI::ShaderOptionValue(MotionBlur::SampleQuality::Ultra),
+            };
+
+            // Caching all pipeline state for each shader variation for performance reason.
+            for (auto shaderVariantIndex = 0; shaderVariantIndex < options.size(); ++shaderVariantIndex)
+            {
+                auto shaderOption = m_shader->CreateShaderOptionGroup();
+                shaderOption.SetValue(m_sampleQualityShaderVariantOptionName, options.at(shaderVariantIndex));
+                PreloadShaderVariantForDispatch(m_shader, shaderOption);
+            }
+
+            m_needToUpdateShaderVariant = true;
+        }
+
+        void MotionBlurPass::SetSampleQuality(MotionBlur::SampleQuality sampleQuality)
+        {
+            if (sampleQuality != m_sampleQuality)
+            {
+                m_sampleQuality = sampleQuality;
+                m_needToUpdateShaderVariant = true;
+            }
+        }
+
         bool MotionBlurPass::IsEnabled() const
         {
             if (!ComputePass::IsEnabled())
@@ -61,9 +100,9 @@ namespace AZ
             // Must match the struct in MotionBlur.azsl
             struct Constants
             {
-                AZ::u32 m_sampleNumber = MotionBlur::DefaultSampleNumber;
-                float m_strength = MotionBlur::DefaultStrength;
                 AZStd::array<AZ::u32, 2> m_outputSize;
+                float m_strength = MotionBlur::DefaultStrength;
+                AZStd::array<float, 1> m_pad;
             } constants{};
 
             RPI::Scene* scene = GetScene();
@@ -77,7 +116,7 @@ namespace AZ
                     MotionBlurSettings* MotionBlurSettings = postProcessSettings->GetMotionBlurSettings();
                     if (MotionBlurSettings)
                     {
-                        constants.m_sampleNumber = MotionBlurSettings->GetSampleNumber();
+                        SetSampleQuality(MotionBlurSettings->GetSampleQuality());
                         constants.m_strength = MotionBlurSettings->GetStrength();
                     }
                 }
@@ -94,7 +133,46 @@ namespace AZ
 
             m_shaderResourceGroup->SetConstant(m_constantsIndex, constants);
 
-            RPI::ComputePass::FrameBeginInternal(params);
+            ComputePass::FrameBeginInternal(params);
+        }
+
+        void MotionBlurPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "MotionBlurPass %s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
+
+            if (m_needToUpdateShaderVariant)
+            {
+                UpdateCurrentShaderVariant();
+            }
+
+            CompileShaderVariant(m_shaderResourceGroup);
+            ComputePass::CompileResources(context);
+        }
+
+        void MotionBlurPass::UpdateCurrentShaderVariant()
+        {
+            AZ_Assert(m_shader != nullptr, "MotionBlurPass %s has a null shader when calling UpdateCurrentShaderVariant.", GetPathName().GetCStr());
+
+            auto shaderOption = m_shader->CreateShaderOptionGroup();
+            // Decide which shader to use.
+            shaderOption.SetValue(m_sampleQualityShaderVariantOptionName, RPI::ShaderOptionValue(m_sampleQuality));
+
+            UpdateShaderVariant(shaderOption);
+
+            m_needToUpdateShaderVariant = false;
+        }
+
+        void MotionBlurPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        {
+            AZ_Assert(m_shaderResourceGroup != nullptr, "MotionBlurPass %s has a null shader resource group when calling Execute.", GetPathName().GetCStr());
+
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            SetSrgsForDispatch(context);
+
+            m_dispatchItem.SetPipelineState(GetPipelineStateFromShaderVariant());
+
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
     } // namespace Render
 } // namespace AZ

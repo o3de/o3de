@@ -139,11 +139,11 @@ set(FILES
     Source/PostProcess/ExposureControl/ExposureControlComponentConfig.cpp
     Source/PostProcess/ExposureControl/ExposureControlComponentController.cpp
     Source/PostProcess/ExposureControl/ExposureControlComponentController.h
-    Source/PostProcess/Ssao/SsaoComponent.cpp
-    Source/PostProcess/Ssao/SsaoComponent.h
-    Source/PostProcess/Ssao/SsaoComponentConfig.cpp
-    Source/PostProcess/Ssao/SsaoComponentController.cpp
-    Source/PostProcess/Ssao/SsaoComponentController.h
+    Source/PostProcess/AmbientOcclusion/AoComponent.cpp
+    Source/PostProcess/AmbientOcclusion/AoComponent.h
+    Source/PostProcess/AmbientOcclusion/AoComponentConfig.cpp
+    Source/PostProcess/AmbientOcclusion/AoComponentController.cpp
+    Source/PostProcess/AmbientOcclusion/AoComponentController.h
     Source/PostProcess/LookModification/LookModificationComponent.cpp
     Source/PostProcess/LookModification/LookModificationComponent.h
     Source/PostProcess/LookModification/LookModificationComponentConfig.cpp

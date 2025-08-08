@@ -8,15 +8,14 @@
 
 #pragma once
 
-#include <AzCore/base.h>
-
 namespace AZ
 {
     namespace Render
     {
-        namespace MotionBlur
+        namespace Ao
         {
-            static constexpr float DefaultStrength = 5.f;
-        } // namespace MotionBlur
-    } // namespace Render
-} // namespace AZ
+            static constexpr float DefaultSsaoStrength = 1.0f;
+            static constexpr float DefaultSsaoSamplingRadius = 0.05f;
+        }
+    }
+}
