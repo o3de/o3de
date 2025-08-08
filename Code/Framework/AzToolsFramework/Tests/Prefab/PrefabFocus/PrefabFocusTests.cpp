@@ -263,4 +263,37 @@ namespace UnitTest
         }
     }
 
+    TEST_F(PrefabFocusTests, DISABLED_VerifySelectionAfterFocus)
+    {
+        // Verify entity selection is set to nested entities and prefabs
+        AzToolsFramework::EntityIdList selectedEntities;
+
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_EQ(selectedEntities.size(), 0);
+
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_entityMap[Passenger1EntityName]->GetId());
+
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_EQ(selectedEntities.size(), 1);
+        EXPECT_EQ(selectedEntities[0], m_entityMap[Passenger1EntityName]->GetId());
+    }
+
+    TEST_F(PrefabFocusTests, DISABLED_VerifySelectionAfterFocusOnRoot)
+    {
+        // Focusing on the root should not change selection
+        AzToolsFramework::EntityIdList selectedEntities;
+
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_EQ(selectedEntities.size(), 0);
+
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_entityMap[CityEntityName]->GetId());
+
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_EQ(selectedEntities.size(), 0);
+    }
+
 }
