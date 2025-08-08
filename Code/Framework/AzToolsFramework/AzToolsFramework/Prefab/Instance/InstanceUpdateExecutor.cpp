@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework
 {
@@ -266,6 +267,36 @@ namespace AzToolsFramework
 
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+
+                            auto removeOrphanedEntities = [](Instance& instance)
+                            {
+                                instance.RemoveEntities(
+                                    [&instance](const AZStd::unique_ptr<AZ::Entity>& entity)
+                                    {
+                                        AZ::EntityId parentId;
+                                        if (AzToolsFramework::Components::TransformComponent* transformComponent =
+                                            entity->FindComponent<AzToolsFramework::Components::TransformComponent>())
+                                        {
+                                            parentId = transformComponent->GetParentId();
+                                        }
+
+                                        return (!parentId.IsValid() || !instance.GetEntityAlias(parentId).has_value());
+                                    });
+                            };
+
+                            // Remove any orphaned entities from the instance object (patch data stays intact).
+                            // Entities can contain unregistered parent aliases in the target template after
+                            // applying add/remove entity patches to the source template. These show up as
+                            // invalid parent EntityIds.
+                            // Note: This needs to be validated after the HandleEntitiesAdded call to ensure
+                            // parent entityIds have been set up (ex. when creating a new entity, its parent
+                            // is set up on a callback triggered via HandleEntitiesAdded)
+                            removeOrphanedEntities(*instanceToUpdate);
+                            instanceToUpdate->GetNestedInstances(
+                                [&](AZStd::unique_ptr<Instance>& nestedInstance)
+                                {
+                                    removeOrphanedEntities(*nestedInstance.get());
+                                });
 
                             if (!m_isRootPrefabInstanceLoaded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
