@@ -170,7 +170,7 @@ namespace AZ
                 AZStd::queue<SceneBuilder::QueueNode> nodes;
                 nodes.emplace(AZStd::move(sceneRoot), scene.GetGraph().GetRoot());
                 RenamedNodesMap nodeNameMap;
-
+                AZStd::set<AZStd::string> nameMap;
                 while (!nodes.empty())
                 {
                     SceneBuilder::QueueNode& node = nodes.front();
@@ -183,6 +183,17 @@ namespace AZ
                         continue;
                     }
                     AZStd::string nodeName = nodeNameMap.GetNodeName(node.m_node);
+                    if (nameMap.contains(nodeName))
+                    {
+                        AZ::u32 num = 0;
+                        auto tmpName = nodeName;
+                        do
+                        {
+                            nodeName = AZStd::string::format("%s%d", tmpName.c_str(), num++);
+                        } while (nameMap.contains(nodeName));
+                         
+                    }
+                    nameMap.insert(nodeName);
                     SanitizeNodeName(nodeName);
 
                     AZ_TraceContext("SceneAPI Node Name", nodeName);
