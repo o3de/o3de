@@ -170,6 +170,10 @@ namespace AzFramework
             AZStd::string m_assetProcessorIP;
             AZ::u16 m_assetProcessorPort = 45643;
             bool m_configured = false;
+
+            // set to false in tools like asset builders which are responsible for building assets themselves
+            // and thus should not be allowed to send blocking requests that would cause a deadlock.
+            bool m_allowSyncRequests = true;
         };
     } // namespace AssetSystem
 } // namespace AzFramework

@@ -194,6 +194,10 @@ namespace AssetProcessor
 
         AZStd::set<AZ::Uuid> m_builderUuidList;// ordered set because we have to use dependent jobs fingerprint in some sorted order.
         AssetBuilderSDK::JobDependency m_jobDependency;
+        
+        // Set to true if the source file is missing at the time of job creation.
+        // Updated to false later when the dependency appears.
+        bool m_isMissingSource = false;
 
         AZStd::string ToString() const
         {
@@ -246,15 +250,6 @@ namespace AssetProcessor
         // if you set a job to "auto fail" it will check the m_jobParam map for a AZ_CRC(AutoFailReasonKey) and use that, if present, for fail information
         bool m_autoFail = false;
 
-        // If true, this job declared a source dependency that could not be resolved.
-        // There's a chance that the dependency might be fulfilled as part of processing other assets, if
-        // an intermediate asset matches the missing dependency. If this is true, this job is treated as
-        // lower priority than other jobs, so that there's a chance the dependency is resolved before this job runs.
-        // If that dependency is resolved, then this job will be removed from the queue and re-added.
-        // If the dependency is not resolved, then the job will run at the end of the queue still, in case the
-        // builder is able to process the asset with the dependency gap, if the dependency was optional.
-        bool m_hasMissingSourceDependency = false;
-
         AZStd::string ToString() const
         {
             return QString("%1 %2 %3").arg(m_jobEntry.GetAbsoluteSourcePath(), m_jobEntry.m_platformInfo.m_identifier.c_str(), m_jobEntry.m_jobKey).toUtf8().data();
@@ -269,6 +264,18 @@ namespace AssetProcessor
         }
 
         JobDetails() = default;
+
+        bool HasMissingSourceDependency() const
+        {
+            for (const auto& jobDependency : m_jobDependencyList)
+            {
+                if (jobDependency.m_isMissingSource)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     };
 
     //! JobDesc struct is used for identifying jobs that need to be processed again

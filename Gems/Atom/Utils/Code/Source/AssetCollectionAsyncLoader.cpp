@@ -12,6 +12,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/algorithm.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
+
 namespace AZ
 {
     //! This is the Job class that runs until all assetPaths become valid AssetIds.
@@ -119,6 +121,10 @@ namespace AZ
             const auto& assetPath = assetToLoadInfo.m_assetPath;
             AZ_Warning(AssetCollectionAsyncLoaderName, !m_assetsToLoad.count(assetPath), "Asset with path %s was already scheduled for loading", assetPath.c_str());
             m_assetsToLoad.insert(assetPath);
+            // we can try to escalate the asset so that it moves to the top of the AP's queue.
+            // This is an effictive no-op in shipped builds, and in profile and debug its a non-blocking fire and forget call
+            // that just places an outgoing message in the queue to send, and returns immediately with low overhead.
+            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystemRequestBus::Events::EscalateAssetBySearchTerm, assetToLoadInfo.m_assetPath);
         }
 
         // Prepare to create a cancellable job.

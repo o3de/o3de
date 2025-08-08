@@ -1202,7 +1202,7 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     // purposely prioritizes host platform jobs first.
     ASSERT_EQ(m_jobDetailsList.size(), 2);
     // One of the two jobs should have the missing source dependency flagged for follow up.
-    EXPECT_NE(m_jobDetailsList[0].m_hasMissingSourceDependency, m_jobDetailsList[1].m_hasMissingSourceDependency);
+    EXPECT_NE(m_jobDetailsList[0].HasMissingSourceDependency(), m_jobDetailsList[1].HasMissingSourceDependency());
     m_rc->JobSubmitted(m_jobDetailsList[0]);
     m_rc->JobSubmitted(m_jobDetailsList[1]);
     m_jobDetailsList.clear();
@@ -1257,8 +1257,8 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     // The queue should now be the job to process the intermediate asset, and the re-created Job B, which no longer has a missing dependency.
     ASSERT_EQ(m_jobDetailsList.size(), 2);
     // Neither job in the queue should have the missing source dependency flag.
-    EXPECT_FALSE(m_jobDetailsList[0].m_hasMissingSourceDependency);
-    EXPECT_FALSE(m_jobDetailsList[1].m_hasMissingSourceDependency);
+    EXPECT_FALSE(m_jobDetailsList[0].HasMissingSourceDependency());
+    EXPECT_FALSE(m_jobDetailsList[1].HasMissingSourceDependency());
     m_rc->JobSubmitted(m_jobDetailsList[0]);
     m_rc->JobSubmitted(m_jobDetailsList[1]);
     m_jobDetailsList.clear();
@@ -1461,7 +1461,10 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     m_assetProcessorManager->OnJobStatusChanged(entry, JobStatus::InProgress);
     ASSERT_TRUE(m_assetProcessorManager->CheckJobKeyToJobRunKeyMap(entry.m_jobKey.toUtf8().data()));
     m_assetProcessorManager->AssetCancelled(entry);
-    ASSERT_FALSE(m_assetProcessorManager->CheckJobKeyToJobRunKeyMap(entry.m_jobKey.toUtf8().data()));
+
+    // cancelled jobs are always assumed re-queued, not gone entirely
+
+    ASSERT_TRUE(m_assetProcessorManager->CheckJobKeyToJobRunKeyMap(entry.m_jobKey.toUtf8().data()));
     ASSERT_TRUE(m_assetProcessorManager->GetDatabaseConnection()->QuerySourceBySourceGuid(sourceUUID, [&]([[maybe_unused]] AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source)
     {
         sourceFound = true;

@@ -13,6 +13,7 @@
 #include <Pass/EditorStatePassSystemUtils.h>
 
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 namespace AZ::Render
 {
@@ -198,13 +199,9 @@ namespace AZ::Render
         // Pass data
         {
             const auto shaderFilePath = "shaders/editormodebuffercopy.azshader";
-            Data::AssetId shaderAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                shaderAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, shaderFilePath, azrtti_typeid<RPI::ShaderAsset>(),
-                false);
+            Data::AssetId shaderAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(shaderFilePath, AZ::RPI::AssetUtils::TraceLevel::Assert, azrtti_typeid<RPI::ShaderAsset>());
             if (!shaderAssetId.IsValid())
             {
-                AZ_Assert(false, "[DisplayMapperPass] Unable to obtain asset id for %s.", shaderFilePath);
                 return;
             }
 

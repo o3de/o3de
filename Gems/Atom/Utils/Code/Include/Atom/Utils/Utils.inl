@@ -28,7 +28,7 @@ namespace AZ
 
             if (!asset && path.size() > 0)
             {
-                AZ_Warning("CreateAssetFromPath", false, "Unable to find asset Id for path %.*s.", aznumeric_cast<int>(path.size()), path.data());
+                AZ_Warning("GetAssetFromPath", false, "Unable to find asset Id for path %.*s.", aznumeric_cast<int>(path.size()), path.data());
             }
             return asset;
         }
