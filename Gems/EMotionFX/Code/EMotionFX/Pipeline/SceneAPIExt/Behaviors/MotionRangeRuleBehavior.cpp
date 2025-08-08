@@ -62,6 +62,7 @@ namespace EMotionFX
                     const AZ::u32 frameCount = aznumeric_caster(animation->GetKeyFrameCount());
                     motionRangeRule->SetStartFrame(0);
                     motionRangeRule->SetEndFrame(frameCount - 1);
+                    motionRangeRule->SetPlaybackSpeed(1.0f);
                 }
             }
 
