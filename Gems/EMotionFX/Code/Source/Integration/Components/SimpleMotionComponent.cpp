@@ -350,6 +350,12 @@ namespace EMotionFX
         {
             if (CheckMotionInstance(m_motionInstance))
             {
+                if (time > m_motionInstance->GetDuration())
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid play time: %f, The set value exceeds the maximum value.", time);
+                    return;
+                }
+
                 float delta = time - m_motionInstance->GetLastCurrentTime();
                 m_motionInstance->SetCurrentTime(time, false);
 
