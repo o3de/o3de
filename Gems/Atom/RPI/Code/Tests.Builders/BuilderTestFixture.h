@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzTest/AzTest.h>
@@ -66,6 +67,7 @@ namespace UnitTest
         // Required for json serializer
         AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
         AZStd::unique_ptr<AZ::IO::Streamer> m_streamer;
     };
 

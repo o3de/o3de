@@ -381,8 +381,6 @@ namespace AZ::IO
         void Reset();
         void SetOptionalParent(FileRequest* parent);
 
-        inline static void OnCompletionPlaceholder(const FileRequest& /*request*/) {}
-
         //! Command and parameters for the request.
         CommandVariant m_command;
 
@@ -410,7 +408,7 @@ namespace AZ::IO
         AZStd::atomic<IStreamerTypes::RequestStatus> m_status{ IStreamerTypes::RequestStatus::Pending };
 
         //! The number of dependent file request that need to complete before this one is done.
-        u16 m_dependencies{ 0 };
+        AZStd::atomic<u16> m_dependencies{ 0 };
 
         //! Internal request. If this is true the request is created inside the streaming stack and never
         //! leaves it. If true it will automatically be maintained by the scheduler, if false than it's

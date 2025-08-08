@@ -55,6 +55,7 @@ namespace EMotionFX
         : ComponentFixture<
             AZ::AssetManagerComponent,
             AZ::JobManagerComponent,
+            AZ::TaskGraphSystemComponent,
             AZ::StreamerComponent,
             AzFramework::AssetCatalogComponent,
             AzToolsFramework::Components::PropertyManagerComponent,

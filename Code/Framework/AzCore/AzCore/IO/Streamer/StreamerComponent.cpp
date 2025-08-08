@@ -179,8 +179,9 @@ namespace AZ
         incompatible.push_back(AZ_CRC_CE("DataStreamingService"));
     }
 
-    void StreamerComponent::GetDependentServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& dependent)
+    void StreamerComponent::GetRequiredServices( ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("TaskExecutorService"));
     }
 
     //=========================================================================

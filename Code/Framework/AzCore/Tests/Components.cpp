@@ -23,6 +23,7 @@
 
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/IAllocator.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzCore/std/parallel/containers/concurrent_unordered_set.h>
@@ -61,6 +62,7 @@ namespace UnitTest
         startupParameters.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParameters);
 
+        systemEntity->CreateComponent<TaskGraphSystemComponent>();
         systemEntity->CreateComponent<StreamerComponent>();
         systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
         systemEntity->CreateComponent(AZ::Uuid("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}")); // AssetDatabase component

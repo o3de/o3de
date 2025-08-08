@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -46,6 +47,7 @@ namespace StandaloneTools
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
 
         RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
+        RegisterComponentDescriptor(AZ::TaskGraphSystemComponent::CreateDescriptor());
         RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
     }
 
@@ -59,6 +61,7 @@ namespace StandaloneTools
 
     void BaseApplication::CreateApplicationComponents()
     {
+        EnsureComponentCreated(AZ::TaskGraphSystemComponent::RTTI_Type());
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
         EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());

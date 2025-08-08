@@ -62,6 +62,7 @@
 
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
@@ -1297,6 +1298,9 @@ namespace UnitTest
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
+
             m_streamer = AZStd::make_unique<IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
             Interface<IO::IStreamer>::Register(m_streamer.get());
         }
@@ -1307,6 +1311,9 @@ namespace UnitTest
 
             Interface<IO::IStreamer>::Unregister(m_streamer.get());
             m_streamer.reset();
+
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
@@ -1342,6 +1349,7 @@ namespace UnitTest
 
     protected:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
         AZStd::unique_ptr<AZ::IO::Streamer> m_streamer;
     };
 
@@ -3462,6 +3470,9 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
         {
             LeakDetectionFixture::SetUp();
 
+            m_taskExecutor = aznew AZ::TaskExecutor();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor);
+
             m_prevFileIO = IO::FileIOBase::GetInstance();
             IO::FileIOBase::SetInstance(&m_fileIO);
             m_streamer = aznew IO::Streamer(AZStd::thread_desc{}, StreamerComponent::CreateStreamerStack());
@@ -3494,6 +3505,9 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
             Interface<IO::IStreamer>::Unregister(m_streamer);
             delete m_streamer;
 
+            AZ::TaskExecutor::SetInstance(nullptr);
+            delete m_taskExecutor;
+
             IO::FileIOBase::SetInstance(m_prevFileIO);
 
             LeakDetectionFixture::TearDown();
@@ -3515,6 +3529,7 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
         AZ::IO::FileIOBase* m_prevFileIO{};
+        AZ::TaskExecutor* m_taskExecutor{};
         AZ::IO::Streamer* m_streamer{};
         TestFileIOBase m_fileIO;
         TestCloneAssetHandler m_testAssetHandlerAndCatalog;
