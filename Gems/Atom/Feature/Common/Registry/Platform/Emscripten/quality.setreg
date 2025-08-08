@@ -1,0 +1,26 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Platform specific quality setting overrides go in this file 
+            "Groups": {
+                // Example of how to override the default quality level for this platform to be high
+                //"q_general": {
+                //    "Default": 2  
+                //}
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for this platform go here 
+                // Device rule groups can have whatever name makes sense to you
+                //"Example": {
+                //    "Rules": {
+                //        "ExampleRegexRule": { "DeviceModel": "^ModelRegex$" }
+                //    },
+                //    "Settings": {
+                //        "q_general": 0 
+                //    }
+                //}
+            }
+        }
+    }
+}
