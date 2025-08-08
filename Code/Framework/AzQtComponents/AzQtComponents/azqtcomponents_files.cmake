@@ -87,6 +87,7 @@ set(FILES
     Components/StyleHelpers.h
     Components/StyleManager.cpp
     Components/StyleManager.h
+    Components/StyleManagerInterface.h
     Components/StyleSheetCache.cpp
     Components/StyleSheetCache.h
     Components/StylesheetPreprocessor.cpp
@@ -238,7 +239,6 @@ set(FILES
     Components/Widgets/ToolBarConfig.ini
     Components/Widgets/ToolButton.cpp
     Components/Widgets/ToolButton.h
-    Components/Widgets/ToolButtonConfig.ini
     Components/Widgets/ToolTip.qss
     Components/Widgets/TreeView.h
     Components/Widgets/TreeView.cpp

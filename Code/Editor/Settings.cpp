@@ -30,6 +30,9 @@
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
+// AzQtComponents
+#include <AzQtComponents/Components/StyleManager.h>
+
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
@@ -209,6 +212,7 @@ SEditorSettings::SEditorSettings()
     // Initialize GUI settings.
     //////////////////////////////////////////////////////////////////////////
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
+    gui.editorTheme = AzQtComponents::EditorTheme::Original;
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -474,6 +478,7 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "DragSquareSize", viewports.nDragSquareSize);
     SaveValue("Settings", "EnableContextMenu", viewports.bEnableContextMenu);
     SaveValue("Settings", "ToolbarIconSizeV2", gui.nToolbarIconSize);
+    SaveValue("Settings", "EditorTheme", (int)gui.editorTheme);
     SaveValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
@@ -650,6 +655,13 @@ void SEditorSettings::Load()
     LoadValue("Settings", "DragSquareSize", viewports.nDragSquareSize);
     LoadValue("Settings", "EnableContextMenu", viewports.bEnableContextMenu);
     LoadValue("Settings", "ToolbarIconSizeV2", gui.nToolbarIconSize);
+    int editorThemeInt = (int)gui.editorTheme;
+    LoadValue("Settings", "EditorTheme", editorThemeInt);
+    gui.editorTheme = static_cast<AzQtComponents::EditorTheme>(editorThemeInt);
+    if (gui.editorTheme != AzQtComponents::EditorTheme::Light && gui.editorTheme != AzQtComponents::EditorTheme::Dark)
+    {
+        gui.editorTheme = AzQtComponents::EditorTheme::Original;
+    }
     LoadValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
@@ -804,6 +816,7 @@ void SEditorSettings::PostInitApply()
     REGISTER_CVAR2("g_TemporaryLevelName", &g_TemporaryLevelName, "temp_level", VF_NULL, "Temporary level named used for experimental levels.");
 
     CCryEditApp::instance()->KeepEditorActive(keepEditorActive > 0);
+    AzQtComponents::StyleManager::setThemeProperties(gui.editorTheme);
 }
 
 //////////////////////////////////////////////////////////////////////////

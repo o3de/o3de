@@ -10,12 +10,12 @@ QMenuBar
 {
     min-height: 28px;
     height: 28px;
-    font-family: "Amazon Ember";
-    font-size: 12px;
+    font-family: "$FontFamily";
+    font-size: $FontSize;
     margin: 0px;
     spacing: 0px;
     border-bottom-width: 2px;
-    border-bottom-color: #111111;
+    border-bottom-color: $SeparatorColor;
     border-bottom-style: solid;
 }
 
