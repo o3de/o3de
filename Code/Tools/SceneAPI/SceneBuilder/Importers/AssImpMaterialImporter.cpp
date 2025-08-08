@@ -158,12 +158,12 @@ namespace AZ
                             continue;
                         }
 
-                        AssImpSceneAttributeDataPopulatedContext dataPopulated(context, material, newIndex, materialName);
-                        materialResult = Events::Process(dataPopulated);
+                        auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, material, newIndex, materialName);
+                        materialResult = Events::Process(*dataPopulated);
 
                         if (materialResult != Events::ProcessingResult::Failure)
                         {
-                            materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
+                            materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(*dataPopulated);
                         }
 
                         combinedMaterialImportResults += materialResult;

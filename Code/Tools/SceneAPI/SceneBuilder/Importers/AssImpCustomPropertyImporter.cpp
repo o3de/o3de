@@ -114,12 +114,12 @@ namespace AZ::SceneAPI::SceneBuilder
                 }
 
                 Events::ProcessingResult attributeResult;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, customPropertyMapData, newIndex, nodeName);
-                attributeResult = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, customPropertyMapData, newIndex, nodeName);
+                attributeResult = Events::Process(*dataPopulated);
 
                 if (attributeResult != Events::ProcessingResult::Failure)
                 {
-                    attributeResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                    attributeResult = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
 
                 return attributeResult;
