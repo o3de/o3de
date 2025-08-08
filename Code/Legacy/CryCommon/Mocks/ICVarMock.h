@@ -23,10 +23,16 @@ public:
     MOCK_CONST_METHOD0(GetFVal, float());
     MOCK_CONST_METHOD0(GetString, const char*());
     MOCK_CONST_METHOD0(GetDataProbeString, const char*());
-    MOCK_METHOD1(Set, void(const char*));
+    MOCK_METHOD1(SetImpl, void(const char*));
+    void Set(const char* value, const Cry::SetCVarOptions&) override { SetImpl(value); }
+
+    MOCK_METHOD1(SetImpl, void(float));
+    void Set(float value, const Cry::SetCVarOptions&) override { SetImpl(value); }
+
+    MOCK_METHOD1(SetImpl, void(int));
+    void Set(int value, const Cry::SetCVarOptions&) override { SetImpl(value); }
+
     MOCK_METHOD1(ForceSet, void(const char*));
-    MOCK_METHOD1(Set, void(float));
-    MOCK_METHOD1(Set, void(int));
     MOCK_METHOD1(ClearFlags, void(const int));
     MOCK_CONST_METHOD0(GetFlags, int());
     MOCK_METHOD1(SetFlags, int(const int));

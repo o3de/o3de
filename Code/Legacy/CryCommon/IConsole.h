@@ -153,6 +153,27 @@ using ConsoleCommandFunc = void (*)(IConsoleCmdArgs*);
 // This a definition of the callback function that is called when variable change.
 using ConsoleVarFunc = void (*)(ICVar*);
 
+namespace Cry
+{
+    //! Argument structure which supplies the ICVar::Set method
+    //! configuration data to suppress variable setting
+    struct SetCVarOptions
+    {
+        //! suppress any registered on change callbacks
+        bool m_supressOnChangeFunctions{};
+    };
+
+    //! Argument structure which supplies the IConsole::LoadConfigVar method
+    //! to determine how CVars should be set
+    struct LoadConfigVarOptions
+    {
+        //! Options to forward to any ICVar::Set invocations
+        //! that were invoked throuhg the IConsole::LoadConfigVar call
+        SetCVarOptions m_setCvarOptions{};
+    };
+}
+
+
 /* Summary: Interface to the engine console.
 
   Description:
@@ -426,7 +447,8 @@ struct IConsole
 
     //////////////////////////////////////////////////////////////////////////
     //
-    virtual void LoadConfigVar(const char* sVariable, const char* sValue) = 0;
+    virtual void LoadConfigVar(const char* sVariable, const char* sValue,
+        const Cry::LoadConfigVarOptions& loadConfigVarOptions = {}) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Enable or disable the activation key (tilde by default).
@@ -524,7 +546,7 @@ struct ICVar
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // set the string value of the variable
     // @param s string representation the value
-    virtual void Set(const char* s) = 0;
+    virtual void Set(const char* s, const Cry::SetCVarOptions& cvarArgs = {}) = 0;
 
     // Force to set the string value of the variable - can be called
     // from inside code only
@@ -533,11 +555,11 @@ struct ICVar
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // set the float value of the variable
     // @param s float representation the value
-    virtual void Set(float f) = 0;
+    virtual void Set(float f, const Cry::SetCVarOptions& cvarArgs = {}) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // set the float value of the variable
     // @param s integer representation the value
-    virtual void Set(int i) = 0;
+    virtual void Set(int i, const Cry::SetCVarOptions& cvarArgs = {}) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // clear the specified bits in the flag field
     virtual void ClearFlags (int flags) = 0;

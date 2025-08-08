@@ -178,7 +178,8 @@ public:
     const char* GetHistoryElement(bool bUpOrDown) override;
     void AddCommandToHistory(const char* szCommand) override;
     void SetInputLine(const char* szLine) override;
-    void LoadConfigVar(const char* sVariable, const char* sValue) override;
+    void LoadConfigVar(const char* sVariable, const char* sValue,
+        const Cry::LoadConfigVarOptions& cvarArgs = {}) override;
     void EnableActivationKey(bool bEnable) override;
     void SetClientDataProbeString(const char* pName, const char* pValue) override;
 
