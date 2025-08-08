@@ -173,7 +173,7 @@ def get_db_source_job_product_info(asset_db_path, filename, cache_root):
 def get_source_info_from_filename(asset_db_path, filename):
     sources = do_select(asset_db_path,
         f"SELECT SourceID,ScanFolderPK,SourceGuid FROM Sources where SourceName=\"{filename}\"")
-    assert len(sources) == 1, f"Zero or multiple source assets found when only one was expected for '{filename}'"
+    assert len(sources) == 1, f"{len(sources)} source assets found when only one was expected for '{filename}'"
     return sources[0]
 
 
