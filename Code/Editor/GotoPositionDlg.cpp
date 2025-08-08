@@ -38,6 +38,7 @@ GotoPositionDialog::GotoPositionDialog(QWidget* parent)
     , m_ui(new Ui::GotoPositionDialog)
 {
     m_ui->setupUi(this);
+    m_ui->m_dymAnglePitch->setToolTip(tr("Camera vertical angle is limited from -89%1 to +89%1").arg(QChar(0x00B0)));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setFixedSize(size());
     OnInitDialog();
@@ -73,9 +74,9 @@ void GotoPositionDialog::OnInitDialog()
 
     // rotation
     m_goToPositionPitchConstraints.DeterminePitchRange(
-        [this](const float minPitchDegrees, const float maxPitchDegrees)
+        [this]([[maybe_unused]] const float minPitchDegrees, [[maybe_unused]] const float maxPitchDegrees)
         {
-            m_ui->m_dymAnglePitch->setRange(minPitchDegrees, maxPitchDegrees);
+            m_ui->m_dymAnglePitch->setRange(-89.0f, 89.0f);
         });
     m_ui->m_dymAnglePitch->setValue(pitchDegrees);
 
@@ -103,7 +104,7 @@ void GotoPositionDialog::OnChangeEdit()
     m_ui->m_dymX->setValue(transform[0]);
     m_ui->m_dymY->setValue(transform[1]);
     m_ui->m_dymZ->setValue(transform[2]);
-    m_ui->m_dymAnglePitch->setValue(transform[3]);
+    m_ui->m_dymAnglePitch->setValue(AZStd::clamp(transform[3], -89.0f, 89.0f));
     m_ui->m_dymAngleYaw->setValue(transform[4]);
 }
 
