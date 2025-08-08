@@ -202,7 +202,10 @@ namespace AZ::DocumentPropertyEditor
                     serialContext->EnumerateDerived(
                         [&derivedClasses](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*knownType*/) -> bool
                         {
-                            derivedClasses->push_back(classData);
+                            if (!(classData->m_azRtti && classData->m_azRtti->IsAbstract()))
+                            {
+                                derivedClasses->push_back(classData);
+                            }
                             return true;
                         },
                         containerClassElement->m_typeId,
