@@ -3347,6 +3347,110 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string::format("%s-%s The slot referenced by the slot id in the map was not found. SlotId: %s", GetNodeName().data(), executionOutSlot.GetName().data(), executionOutSlot.GetId().ToString().data()));
     }
 
+    AZStd::vector<const Slot*> Node::GetOppositeSlots(const Slot* slot) const
+    {
+        AZStd::vector<const Slot*> slots;
+
+        const ScriptCanvas::SlotExecution::Map* map = GetSlotExecutionMap();
+
+        if (slot->IsExecution())
+        {
+            if (map)
+            {
+                if (slot->IsInput())
+                {
+                    const ScriptCanvas::SlotExecution::In* in = map->GetIn(slot->GetId());
+
+                    for (SlotExecution::Out out : in->outs)
+                    {
+                        slots.push_back(GetSlot(out.slotId));
+                    }
+                }
+                else
+                {
+                    const ScriptCanvas::SlotExecution::Ins ins = map->GetIns();
+
+                    for (SlotExecution::In in : ins)
+                    {
+                        for (SlotExecution::Out out : in.outs)
+                        {
+                            if (out.slotId == slot->GetId())
+                            {
+                                slots.push_back(GetSlot(in.slotId));
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (slot->IsInput())
+                {
+                    return GetAllSlotsByDescriptor(SlotDescriptors::ExecutionOut());
+                }
+                else
+                {
+                    return GetAllSlotsByDescriptor(SlotDescriptors::ExecutionIn());
+                }
+            }
+        }
+        else
+        {
+            if (map)
+            {
+                if (slot->IsInput())
+                {
+                    if (const Slot* executionSlot = GetCorrespondingExecutionSlot(slot))
+                    {
+                        const ScriptCanvas::SlotExecution::In* in = map->GetIn(executionSlot->GetId());
+
+                        for (SlotExecution::Out out : in->outs)
+                        {
+                            for (SlotExecution::Output output : out.outputs)
+                            {
+                                slots.push_back(GetSlot(output.slotId));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    const ScriptCanvas::SlotExecution::Ins ins = map->GetIns();
+
+                    for (SlotExecution::In in : ins)
+                    {
+                        for (SlotExecution::Out out : in.outs)
+                        {
+                            for (SlotExecution::Output output : out.outputs)
+                            {
+                                if (output.slotId == slot->GetId())
+                                {
+                                    for (SlotExecution::Input input : in.inputs)
+                                    {
+                                        slots.push_back(GetSlot(input.slotId));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (slot->IsInput())
+                {
+                    return GetAllSlotsByDescriptor(SlotDescriptors::DataOut());
+                }
+                else
+                {
+                    return GetAllSlotsByDescriptor(SlotDescriptors::DataIn());
+                }
+            }
+        }
+
+        return slots;
+    }
+
     const Slot* Node::GetCorrespondingExecutionSlot(const Slot* slot) const
     {
         if (!slot)

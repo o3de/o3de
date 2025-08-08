@@ -383,6 +383,11 @@ namespace ScriptCanvas
         m_node = node;
     }
 
+    void Slot::SetHasRootConnection(bool hasRootConnection)
+    {
+        m_hasRootConnection = hasRootConnection;
+    }
+
     void Slot::InitializeVariables()
     {        
         if (IsVariableReference())

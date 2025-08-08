@@ -169,6 +169,9 @@ namespace ScriptCanvasEditor
         void DisconnectConnection(const GraphCanvas::ConnectionId& connectionId) override;
         bool CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
 
+        // Updates connections from implicitly connecting slots to their corrosponding "root" node
+        void UpdateImplicitRoot(const ScriptCanvas::Slot* slot);
+
         // Adds or removes an implicit execution connection between the nodes these endpoints are connected if necessary
         void UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint);
 
