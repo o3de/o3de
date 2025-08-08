@@ -286,7 +286,7 @@ namespace UnitTest
         size_t pageCount3 = metrics.m_elementsPerPage.size();
         EXPECT_LT(pageCount3, pageCount2);
 
-        // The the defragmented handles should still have valid weak handles
+        // The the defragmented handles should still have valid weak handles, as long as they are made after the defragmentation
         for (StableDynamicArray<TestItem>::Handle& handle : handles)
         {
             if (handle.IsValid())
@@ -309,7 +309,6 @@ namespace UnitTest
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
             StableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -426,7 +425,6 @@ namespace UnitTest
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
             StableDynamicArray<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -543,6 +541,12 @@ namespace UnitTest
 
             TestItemImplementation(int value)
                 : m_value(value)
+            {
+                StableDynamicArrayHandleTests::s_testItemsConstructed++;
+            }
+
+            TestItemImplementation(const TestItemImplementation& testItem)
+                : m_value(testItem.m_value)
             {
                 StableDynamicArrayHandleTests::s_testItemsConstructed++;
             }
