@@ -189,6 +189,10 @@ namespace ScriptCanvasEditor
         // For every input we always want to make a new element.
         ScriptCanvas::Timestamp relativeTimeStamp = inputSignal.GetTimestamp() - m_anchorTimeStamp;
         ExecutionLogTreeItem* treeItem = m_debugLogRoot->CreateExecutionItem(GetDataId(), inputSignal.m_nodeType, inputSignal, inputSignal.m_endpoint.GetNamedNodeId());
+        if (!treeItem)
+        {
+            return;
+        }
 
         m_lastAggregateItemMap[inputSignal] = treeItem;
 

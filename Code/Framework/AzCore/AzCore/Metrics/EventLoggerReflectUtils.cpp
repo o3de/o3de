@@ -494,8 +494,10 @@ namespace AZ::Metrics
                     };
                     eventPhaseArgs.VisitArgs(AppendArgFields);
                     asyncArgs.m_args = eventFields;
-
-                    asyncArgs.m_id = eventPhaseArgs.m_id.value_or(AZStd::string_view{});
+                    if (eventPhaseArgs.m_id.has_value())
+                    {
+                        asyncArgs.m_id = eventPhaseArgs.m_id.value();
+                    };
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, asyncArgs, eventLoggerFactory);
                     break;
                 }
