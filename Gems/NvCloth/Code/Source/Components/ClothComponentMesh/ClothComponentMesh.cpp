@@ -565,7 +565,7 @@ namespace NvCloth
             const auto& destTangentsData = destTangents.GetBuffer();
             const auto& destBitangentsData = destBitangents.GetBuffer();
 
-            if (!destVerticesData.empty())
+            if (destVerticesData.empty())
             {
                 AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRHI(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
