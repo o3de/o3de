@@ -27,8 +27,15 @@ set(PATCH_ALREADY_APPLIED "")
 # Check if the patch has already been applied.
 # if this command returns 0 it means that reversing the patch was successful
 # which means the patch was already applied.
+
+find_package(Git)
+
+if (NOT Git_FOUND)
+    message(FATAL_ERROR "Git executable not found.  Please make sure `git` is in your PATH")
+endif()
+
 execute_process(
-    COMMAND git apply --check --reverse "${PATCH_FILE_NAME}"
+    COMMAND ${GIT_EXECUTABLE} apply --check --reverse "${PATCH_FILE_NAME}"
     RESULT_VARIABLE PATCH_ALREADY_APPLIED
     OUTPUT_QUIET
     ERROR_QUIET
@@ -38,11 +45,11 @@ if (PATCH_ALREADY_APPLIED STREQUAL "0")
     message(STATUS "Skipping already applied patch ${PATCH_FILE_NAME} in dir ${CMAKE_BINARY_DIR}")
 else()
     message(STATUS "Cleaning directory before patch...")
-    execute_process(COMMAND git restore .)
-    execute_process(COMMAND git clean -fdx)
+    execute_process(COMMAND ${GIT_EXECUTABLE} restore .)
+    execute_process(COMMAND ${GIT_EXECUTABLE} clean -fdx)
     message(STATUS "Applying patch ${PATCH_FILE_NAME} at ${CMAKE_BINARY_DIR}...")
     execute_process(
-        COMMAND git apply --ignore-whitespace "${PATCH_FILE_NAME}"
+        COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace "${PATCH_FILE_NAME}"
         RESULT_VARIABLE PATCH_RESULT
     )
     if (NOT PATCH_RESULT EQUAL 0)
