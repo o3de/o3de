@@ -105,6 +105,10 @@ namespace AssetProcessor
         //! The config about # of jobs and slots may have changed, recompute it.
         void UpdateAndComputeJobSlots();
 
+        //! When a new source file appears in the intermediate source folder, we can potentially resolve job dependencies
+        //! That we could not resolve before.
+        void OnIntermediateSourceAppeared(QString sourceRef);
+
     protected:
         AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
 

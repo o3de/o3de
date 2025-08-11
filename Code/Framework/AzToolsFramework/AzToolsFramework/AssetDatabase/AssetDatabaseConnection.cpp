@@ -310,7 +310,7 @@ namespace AzToolsFramework
 
             static const char* QUERY_PRODUCT_BY_JOBID = "AzToolsFramework::AssetDatabase::QueryProductByJobID";
             static const char* QUERY_PRODUCT_BY_JOBID_STATEMENT =
-                "SELECT Products.*, Jobs.* FROM Jobs INNER JOIN Products "
+                "SELECT Products.*, Jobs.* FROM Jobs LEFT JOIN Products "
                 "ON Jobs.JobID = Products.JobPK WHERE "
                 "Products.JobPK = :jobid;";
 
@@ -319,7 +319,7 @@ namespace AzToolsFramework
 
             static const char* QUERY_PRODUCT_BY_JOBID_PLATFORM = "AzToolsFramework::AssetDatabase::QueryProductByJobIDPlatform";
             static const char* QUERY_PRODUCT_BY_JOBID_PLATFORM_STATEMENT =
-                "SELECT Products.*, Jobs.* FROM Jobs INNER JOIN Products "
+                "SELECT Products.*, Jobs.* FROM Jobs LEFT JOIN Products "
                 "ON Jobs.JobID = Products.JobPK WHERE "
                 "Products.JobPK = :jobid AND "
                 "Jobs.Platform = :platform;";
