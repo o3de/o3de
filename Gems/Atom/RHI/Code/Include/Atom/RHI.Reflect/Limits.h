@@ -47,11 +47,7 @@ namespace AZ::RHI
             //
             // In a more realistic scenario, a value of 3 would allow the CPU to build the current
             // frame, while the GPU could have up to two frames queued up before the CPU would wait.
-#if defined(AZ_FORCE_CPU_GPU_INSYNC)
-            constexpr uint32_t FrameCountMax = 1;
-#else
             constexpr uint32_t FrameCountMax = 3;
-#endif
 
             // Due to the fact that D3D12 only supports the flip model we need to allocate at least
             // a minimum of 2 swapChain images or the drivers will complain.

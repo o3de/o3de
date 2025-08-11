@@ -16,6 +16,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
@@ -452,9 +453,10 @@ namespace AZ
             ID3D12Device* removedDevice = m_dx12Device.get();
             HRESULT removedReason = removedDevice->GetDeviceRemovedReason();
 
-#if defined(AZ_FORCE_CPU_GPU_INSYNC)
-            AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetLastExecutingScope().data());
-#endif
+            if constexpr (RHI::ForceCpuGpuInSync)
+            {
+                AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetLastExecutingScope().data());
+            }
             AZ_TracePrintf("Device", "Device was removed because of the following reason:\n");
             const char* removedReasonString;
 

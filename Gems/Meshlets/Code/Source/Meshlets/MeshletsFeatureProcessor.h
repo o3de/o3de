@@ -18,7 +18,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 #include <SharedBuffer.h>
 #include <MultiDispatchComputePass.h>
@@ -123,7 +123,7 @@ namespace AZ
             //! pass name per pipeline.
             RPI::RenderPipeline* m_renderPipeline = nullptr;
 
-            Render::TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
+            Render::TransformServiceFeatureProcessorInterface* m_transformServiceFeatureProcessor = nullptr;
 
             AZStd::list<MeshletsRenderObject*> m_renderObjectsMarkedForDeletion;
 

@@ -35,8 +35,6 @@ namespace AZ::RHI
         u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
 
     public:
-        GeometryView() = default;
-
         friend class StreamIterator<GeometryView, StreamBufferView>;
 
         explicit GeometryView(MultiDevice::DeviceMask deviceMask)

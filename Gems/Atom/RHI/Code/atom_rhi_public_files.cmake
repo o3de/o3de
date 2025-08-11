@@ -46,6 +46,7 @@ set(FILES
     Include/Atom/RHI/DeviceCopyItem.h
     Include/Atom/RHI/CopyItem.h
     Include/Atom/RHI/ConstantsData.h
+    Include/Atom/RHI/Debug.h
     Include/Atom/RHI/DeviceDispatchItem.h
     Include/Atom/RHI/DispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h

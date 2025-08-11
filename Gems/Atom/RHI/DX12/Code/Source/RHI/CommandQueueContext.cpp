@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
@@ -156,16 +157,17 @@ namespace AZ
         {
             GetCommandQueue(hardwareQueueClass).ExecuteWork(request);
 
-#if defined(AZ_FORCE_CPU_GPU_INSYNC)
-            // Cache the name of the scope we just queued and wait for it to finish on the cpu
-            m_device->SetLastExecutingScope(request.m_commandLists.front()->GetName().GetStringView());
-            // We call wait for idle on all queues for the following reason -> Dx12 will signal a fence on the
-            // queue that was executing work that may have caused the crash hence if we wait on that explicit queue
-            // that is executing the work we will not catch the crash at the correct place. The cpu will think that
-            // the pass finished executing successfully. In order to get around it we try to make
-            // every queue signal a fence causing a crash for other queues but at the correct place.
-            WaitForIdle();
-#endif
+            if constexpr (RHI::ForceCpuGpuInSync)
+            {
+                // Cache the name of the scope we just queued and wait for it to finish on the cpu
+                m_device->SetLastExecutingScope(request.m_commandLists.front()->GetName().GetStringView());
+                // We call wait for idle on all queues for the following reason -> Dx12 will signal a fence on the
+                // queue that was executing work that may have caused the crash hence if we wait on that explicit queue
+                // that is executing the work we will not catch the crash at the correct place. The cpu will think that
+                // the pass finished executing successfully. In order to get around it we try to make
+                // every queue signal a fence causing a crash for other queues but at the correct place.
+                WaitForIdle();
+            }
         }
 
         CommandQueue& CommandQueueContext::GetCommandQueue(RHI::HardwareQueueClass hardwareQueueClass)
