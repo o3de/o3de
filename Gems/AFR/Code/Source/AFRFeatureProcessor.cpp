@@ -268,7 +268,7 @@ namespace AFR
 
         // This works as long as this connection is built with a pass request and not a template (which is fine as it isn't done this
         // way for the CopyToSwapChain pass):
-        bool found{ false };
+        [[maybe_unused]] bool found{ false };
 
         for (auto& connection : copyToSwapchainPass->GetPassDescriptor().m_passRequest->m_connections)
         {
