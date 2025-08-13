@@ -194,6 +194,12 @@ namespace EMotionFX
 
             /// Set the name of the active motion set.
             virtual void SetActiveMotionSet(const char* activeMotionSetName) = 0;
+            
+            /// Starts updating an anim graph instance
+            virtual void StartAnimGraph() = 0;
+
+            /// Stops updating an anim graph instance and resets its state
+            virtual void StopAnimGraph() = 0;
         };
 
         using AnimGraphComponentRequestBus = AZ::EBus<AnimGraphComponentRequests>;
