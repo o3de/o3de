@@ -20,9 +20,3 @@ set(LY_BUILD_DEPENDENCIES
 )
 
 add_compile_definitions(MA_NO_RUNTIME_LINKING=1)
-
-ly_add_source_properties(
-    SOURCES Source/Clients/MiniAudioImplementation.cpp
-    PROPERTY COMPILE_OPTIONS
-    VALUES -xobjective-c++
-)

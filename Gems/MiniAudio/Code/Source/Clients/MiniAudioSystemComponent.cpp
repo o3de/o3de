@@ -12,8 +12,12 @@
 #include <MiniAudio/SoundAsset.h>
 #include <MiniAudio/SoundAssetRef.h>
 
-#include "MiniAudioIncludes.h"
+#include <miniaudio.h>
 #include "SoundAssetHandler.h"
+
+#include <miniaudio.h>
+#include <extras/decoders/libvorbis/miniaudio_libvorbis.h>
+
 
 namespace MiniAudio
 {
@@ -86,18 +90,43 @@ namespace MiniAudio
 
     void MiniAudioSystemComponent::Activate()
     {
-        m_engine = AZStd::make_unique<ma_engine>();
+        m_resourceManager = AZStd::make_unique<ma_resource_manager>();
 
-        ma_engine_config engineConfig = ma_engine_config_init();
+        ma_resource_manager_config resourceManagerConfig = ma_resource_manager_config_init();
+        ma_decoding_backend_vtable* customBackends[] =
+        {
+            ma_decoding_backend_libvorbis
+        };
+        resourceManagerConfig.ppCustomDecodingBackendVTables = customBackends;
+        resourceManagerConfig.customDecodingBackendCount = AZ_ARRAY_SIZE(customBackends);
+        resourceManagerConfig.pCustomDecodingBackendUserData = nullptr; // could pass `this` in, its passed into each call to res man
 
-        // The number of audio output channels cannot be dynamically changed during runtime yet.
-        // The engine configuration setting is done here for future reference.
-        engineConfig.channels = m_channelCount;
-        const ma_result result = ma_engine_init(&engineConfig, m_engine.get());
+        ma_result result = ma_resource_manager_init(&resourceManagerConfig, m_resourceManager.get());
         if (result != MA_SUCCESS)
         {
-            AZ_Error("MiniAudio", false, "Failed to initialize audio engine, error %d", result);
+            AZ_Error("MiniAudio", false, "Failed to initialize miniaudio resource manager, error %d", result);
+            m_resourceManager.reset();
+            return;
         }
+        
+        // The number of audio output channels cannot be dynamically changed during runtime yet.
+        // The engine configuration setting is done here for future reference.
+        ma_engine_config engineConfig = ma_engine_config_init();
+        engineConfig.pResourceManager = m_resourceManager.get();
+        engineConfig.channels = m_channelCount;
+        m_engine = AZStd::make_unique<ma_engine>();
+        result = ma_engine_init(&engineConfig, m_engine.get());
+        if (result != MA_SUCCESS)
+        {
+            ma_resource_manager_uninit(m_resourceManager.get());
+            m_resourceManager.reset();
+            m_engine.reset();
+            AZ_Error("MiniAudio", false, "Failed to initialize miniaudio engine, error %d", result);
+            return;
+
+        }
+
+        m_engineInitialized = true;
 
         MiniAudioRequestBus::Handler::BusConnect();
 
@@ -113,8 +142,15 @@ namespace MiniAudio
     void MiniAudioSystemComponent::Deactivate()
     {
         m_assetHandlers.clear();
-        ma_engine_uninit(m_engine.get());
-        m_engine.reset();
+
+        if (m_engineInitialized)
+        {
+            ma_engine_uninit(m_engine.get());
+            ma_resource_manager_uninit(m_resourceManager.get());
+            m_engine.reset();
+            m_resourceManager.reset();
+        }
+        m_engineInitialized = false;
         MiniAudioRequestBus::Handler::BusDisconnect();
     }
 

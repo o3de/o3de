@@ -8,8 +8,10 @@
 
 o3de_gem_setup("MiniAudio")
 
-add_subdirectory(3rdParty)
-
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+# adds the 3rdParty folder into the CMAKE_MODULE_PATH.  This causes any call to find_package(XXXX)
+# to look in this folder for `FindXXXX.cmake` before it looks elsewhere, and run that file if it can
+# find it.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 
 add_subdirectory(Code)

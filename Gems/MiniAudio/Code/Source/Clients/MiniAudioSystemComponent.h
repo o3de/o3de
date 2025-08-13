@@ -14,9 +14,10 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <MiniAudio/MiniAudioBus.h>
 
-// avoid including MiniAudioIncludes here to speed up compilation
+// avoid including <miniaudio.h> here to speed up compilation
 
 struct ma_engine;
+struct ma_resource_manager;
 
 namespace MiniAudio
 {
@@ -53,6 +54,8 @@ namespace MiniAudio
 
     private:
         std::unique_ptr<ma_engine> m_engine;
+        std::unique_ptr<ma_resource_manager> m_resourceManager;
+        bool m_engineInitialized = false;
 
         float m_globalVolume = 1.f;
 

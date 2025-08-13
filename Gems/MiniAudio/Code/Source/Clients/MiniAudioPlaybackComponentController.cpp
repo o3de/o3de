@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include "AzCore/Math/MathUtils.h"
-#include "MiniAudioIncludes.h"
+#include <miniaudio.h>
 
 namespace MiniAudio
 {
@@ -22,7 +22,7 @@ namespace MiniAudio
     }
 
     // placement of this destructor is intentional.  It forces unique_ptr<ma_sound> to declare its destructor here
-    // instead of in the header before inclusion of the giant MiniAudioIncludes.h file
+    // instead of in the header before inclusion of the giant <miniaudio.h> file
     MiniAudioPlaybackComponentController::~MiniAudioPlaybackComponentController()
     {
     }

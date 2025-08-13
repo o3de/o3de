@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include "AzCore/Math/MathUtils.h"
-#include "MiniAudioIncludes.h"
+#include <miniaudio.h>
 
 namespace MiniAudio
 {
