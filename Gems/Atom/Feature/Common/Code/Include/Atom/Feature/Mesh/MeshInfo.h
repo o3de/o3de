@@ -139,5 +139,6 @@ namespace AZ::Render
         uint32_t m_lightingChannels = 0;
         uint32_t m_objectIdForTransform = 0;
         bool m_isSkinnedMesh = false;
+        bool m_hasClusterGeometryBuffers = false;
     };
 } // namespace AZ::Render

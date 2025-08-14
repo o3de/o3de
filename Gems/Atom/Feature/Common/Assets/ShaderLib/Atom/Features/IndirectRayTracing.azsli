@@ -74,12 +74,33 @@ struct RayTracingClasBuildTriangleClusterInfo
 // Stores mesh-local per-cluster offsets
 struct RayTracingClasClusterOffsetInfo
 {
-    uint m_indexBufferOffset;
-    uint m_positionBufferOffset;
-    uint m_normalBufferOffset;
-    uint m_tangentBufferOffset;
-    uint m_bitangentBufferOffset;
-    uint m_uvBufferOffset;
+    uint m_indexBindlessReadIndex;
+    uint m_indexOffset;
+    uint m_indexStride;
+
+    uint m_positionBindlessReadIndex;
+    uint m_positionOffset;
+    uint m_positionStride;
+
+    uint m_normalBindlessReadIndex;
+    uint m_normalOffset;
+    uint m_normalStride;
+
+    uint m_uv0BindlessReadIndex;
+    uint m_uv0Offset;
+    uint m_uv0Stride;
+
+    uint m_uv1BindlessReadIndex;
+    uint m_uv1Offset;
+    uint m_uv1Stride;
+
+    uint m_tangentBindlessReadIndex;
+    uint m_tangentOffset;
+    uint m_tangentStride;
+
+    uint m_bitangentBindlessReadIndex;
+    uint m_bitangentOffset;
+    uint m_bitangentStride;
 };
 
 inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangleClusterInfo(

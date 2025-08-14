@@ -73,6 +73,18 @@ VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primiti
 
         MeshInfo clusterMeshInfo = meshInfo;
 
+        if (meshInfo.m_flags & ClusterGeometryBuffers)
+        {
+            // Overwrite mesh buffer indices with cluster buffer indices
+            clusterMeshInfo.m_indexBufferIndex = clusterInfo.m_indexBindlessReadIndex;
+            clusterMeshInfo.m_positionBufferIndex = clusterInfo.m_positionBindlessReadIndex;
+            clusterMeshInfo.m_normalBufferIndex = clusterInfo.m_normalBindlessReadIndex;
+            clusterMeshInfo.m_uv0BufferIndex = clusterInfo.m_uv0BindlessReadIndex;
+            clusterMeshInfo.m_uv1BufferIndex = clusterInfo.m_uv1BindlessReadIndex;
+            clusterMeshInfo.m_tangentBufferIndex = clusterInfo.m_tangentBindlessReadIndex;
+            clusterMeshInfo.m_bitangentBufferIndex = clusterInfo.m_bitangentBindlessReadIndex;
+        }
+
         // Overwrite mesh strides with cluster stride
         clusterMeshInfo.m_indexBufferByteStride = clusterInfo.m_indexStride;
         clusterMeshInfo.m_positionBufferByteStride = clusterInfo.m_positionStride;

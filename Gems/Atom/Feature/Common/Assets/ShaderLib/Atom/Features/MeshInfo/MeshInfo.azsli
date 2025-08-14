@@ -9,7 +9,8 @@
 
 enum MeshInfoFlags
 {
-    SkinnedMesh = 1             // true if the mesh is animated
+    SkinnedMesh            = 1,  // true if the mesh is animated
+    ClusterGeometryBuffers = 2,  // true if each cluster should have its own geometry buffer
 };
 
 
