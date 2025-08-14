@@ -247,7 +247,6 @@ namespace AZ
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::DepthClipEnable))
             {
                 depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
-                depthClipEnabled.pNext = nullptr;
 
                 deviceInfoAppender.append(depthClipEnabled);
             }
@@ -255,7 +254,6 @@ namespace AZ
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ShaderImageAtomicInt64))
             {
                 shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
-                shaderImageAtomicInt64.pNext = nullptr;
 
                 deviceInfoAppender.append(shaderImageAtomicInt64);
             }
@@ -264,7 +262,6 @@ namespace AZ
             {
                 robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
                 robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobustness2Features().nullDescriptor;
-                robustness2.pNext = nullptr;
 
                 deviceInfoAppender.append(robustness2);
             }
@@ -278,14 +275,13 @@ namespace AZ
 #if !defined(AZ_RELEASE_BUILD)
                 subpassMergeFeedback.subpassMergeFeedback = false;
 #endif
-                if (!subpassMergeFeedback.subpassMergeFeedback)
+                if (subpassMergeFeedback.subpassMergeFeedback)
                 {
-                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
+                    deviceInfoAppender.append(subpassMergeFeedback);
                 }
                 else
                 {
-                    subpassMergeFeedback.pNext = nullptr;
-                    deviceInfoAppender.append(subpassMergeFeedback);
+                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
                 }
             }
 
@@ -300,7 +296,6 @@ namespace AZ
                 {
                     // Must disable the "FragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
                     physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
-                    fragmentShadingRateFeatures.pNext = nullptr;
                     deviceInfoAppender.append(fragmentShadingRateFeatures);
                 }
                 else
@@ -318,7 +313,6 @@ namespace AZ
 
                 if (fragmentDensityMapFeatures.fragmentDensityMap && fragmentDensityMapFeatures.fragmentDensityMapNonSubsampledImages)
                 {
-                    fragmentDensityMapFeatures.pNext = nullptr;
                     deviceInfoAppender.append(fragmentDensityMapFeatures);
                 }
                 else
@@ -335,8 +329,7 @@ namespace AZ
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
 
             VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore;
-            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
-            // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
+            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead the respective extensions.
             if (majorVersion >= 1 && minorVersion >= 2)
             {
                 const auto& physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
@@ -401,37 +394,11 @@ namespace AZ
                     physicalDeviceVulkan12Features.descriptorBindingUpdateUnusedWhilePending;
                 vulkan12Features.shaderOutputViewportIndex = physicalDeviceVulkan12Features.shaderOutputViewportIndex;
                 vulkan12Features.shaderOutputLayer = physicalDeviceVulkan12Features.shaderOutputLayer;
+#ifndef DISABLE_TIMELINE_SEMAPHORES
                 vulkan12Features.timelineSemaphore = physicalDeviceVulkan12Features.timelineSemaphore;
-
-                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
-
-                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
-                rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
+#endif
 
                 deviceInfoAppender.append(vulkan12Features);
-
-                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure) &&
-                    physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayTracingPipeline))
-                {
-                    deviceInfoAppender.append({ &accelerationStructureFeatures, &rayTracingPipelineFeatures });
-
-                    if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
-                    {
-                        rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
-                        rayQueryFeatures.pNext = nullptr;
-
-                        deviceInfoAppender.append(rayQueryFeatures);
-                    }
-                }
-                else
-                {
-                    // make sure all ray tracing extensions are disabled
-                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::AccelerationStructure);
-                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayTracingPipeline);
-                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayQuery);
-                }
             }
             else
             {
@@ -494,7 +461,6 @@ namespace AZ
                 if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::BufferDeviceAddress))
                 {
                     bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-                    bufferDeviceAddressFeatures.pNext = nullptr;
 
                     deviceInfoAppender.append(bufferDeviceAddressFeatures);
                 }
@@ -502,18 +468,53 @@ namespace AZ
                 if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ShaderAtomicInt64))
                 {
                     shaderAtomicInt64 = physicalDevice.GetShaderAtomicInt64Features();
-                    shaderAtomicInt64.pNext = nullptr;
 
                     deviceInfoAppender.append(shaderAtomicInt64);
                 }
 
+#ifdef DISABLE_TIMELINE_SEMAPHORES
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::TimelineSempahore);
+#else
                 if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::TimelineSempahore))
                 {
                     timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
-                    timelineSemaphore.pNext = nullptr;
 
                     deviceInfoAppender.append(timelineSemaphore);
                 }
+#endif
+            }
+
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
+            {
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                accelerationStructureFeatures.accelerationStructure =
+                    physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+
+                deviceInfoAppender.append(accelerationStructureFeatures);
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayTracingPipeline))
+                {
+                    rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                    rayTracingPipelineFeatures.rayTracingPipeline =
+                        physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                    rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect =
+                        physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
+
+                    deviceInfoAppender.append(rayTracingPipelineFeatures);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
+                {
+                    rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
+
+                    deviceInfoAppender.append(rayQueryFeatures);
+                }
+            }
+            else
+            {
+                // make sure all ray tracing extensions are disabled
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayTracingPipeline);
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayQuery);
             }
 
             deviceInfoAppender.finish();

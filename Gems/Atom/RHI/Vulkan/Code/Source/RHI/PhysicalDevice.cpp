@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
 #include <RHI/Instance.h>
@@ -320,7 +321,8 @@ namespace AZ
             m_features.set(
                 static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
             m_features.set(
-                static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
+                static_cast<size_t>(DeviceFeature::BufferDeviceAddress),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address) && m_bufferDeviceAddressFeatures.bufferDeviceAddress);
             // Disable memory budget extension for now since it's crashing the driver when the VkPhysicalDeviceMemoryBudgetPropertiesEXT
             // structure is included in the pNext chain of VkPhysicalDeviceMemoryProperties2
             m_features.set(
@@ -334,7 +336,7 @@ namespace AZ
         }
 
         // The order must match the enum OptionalDeviceExtensions
-        static constexpr std::array<const char*, AZStd::to_underlying(OptionalDeviceExtension::Count)> OptionalDeviceExtensionNames{
+        static constexpr AZStd::array<const char*, AZStd::to_underlying(OptionalDeviceExtension::Count)> OptionalDeviceExtensionNames{
             VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
             VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
             VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
@@ -373,7 +375,7 @@ namespace AZ
         {
             RawStringList optionalExtensions;
 
-            for (auto i{ 0 }; i < AZStd::to_underlying(OptionalDeviceExtension::Count); ++i)
+            for (auto i{ 0U }; i < AZStd::to_underlying(OptionalDeviceExtension::Count); ++i)
             {
                 if (m_optionalExtensions.test(i))
                 {
@@ -394,7 +396,7 @@ namespace AZ
 
             StringList deviceExtensions = GetDeviceExtensionNames();
 
-            for (auto i{ 0 }; i < optionalExtensionCount; ++i)
+            for (auto i{ 0U }; i < optionalExtensionCount; ++i)
             {
                 if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), OptionalDeviceExtensionNames[i]) !=
                     deviceExtensions.end())
@@ -537,18 +539,6 @@ namespace AZ
                 if (majorVersion >= 1 && minorVersion >= 2)
                 {
                     deviceFeaturesAppender.append(m_vulkan12Features);
-
-                    if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure) &&
-                        IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayTracingPipeline))
-                    {
-                        deviceFeaturesAppender.append({ &m_accelerationStructureFeatures, &m_rayTracingPipelineFeatures });
-                        devicePropsAppender.append({ &m_accelerationStructureProperties, &m_rayTracingPipelineProperties });
-
-                        if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
-                        {
-                            deviceFeaturesAppender.append(m_rayQueryFeatures);
-                        }
-                    }
                 }
                 else
                 {
@@ -572,9 +562,28 @@ namespace AZ
                         deviceFeaturesAppender.append(m_shaderAtomicInt64Features);
                     }
 
+#ifndef DISABLE_TIMELINE_SEMAPHORES
                     if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::TimelineSempahore))
                     {
                         deviceFeaturesAppender.append(m_timelineSemaphoreFeatures);
+                    }
+#endif
+                }
+
+                if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
+                {
+                    deviceFeaturesAppender.append(m_accelerationStructureFeatures);
+                    devicePropsAppender.append(m_accelerationStructureProperties);
+
+                    if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayTracingPipeline))
+                    {
+                        deviceFeaturesAppender.append(m_rayTracingPipelineFeatures);
+                        devicePropsAppender.append(m_rayTracingPipelineProperties);
+                    }
+
+                    if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
+                    {
+                        deviceFeaturesAppender.append(m_rayQueryFeatures);
                     }
                 }
 
