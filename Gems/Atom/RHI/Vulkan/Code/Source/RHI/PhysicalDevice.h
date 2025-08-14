@@ -7,9 +7,9 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/std/containers/bitset.h>
-#include <Atom/RHI.Reflect/Format.h>
 #include <RHI/Vulkan.h>
 
 namespace AZ
@@ -40,6 +40,7 @@ namespace AZ
             Count // Must be last
         };
 
+        // If you change this enum, you also have to update OptionalDeviceExtensionNames in the cpp file!
         enum class OptionalDeviceExtension : uint32_t
         {
             SampleLocation = 0,
@@ -74,8 +75,7 @@ namespace AZ
             Count
         };
 
-        class PhysicalDevice final
-            : public RHI::PhysicalDevice
+        class PhysicalDevice final : public RHI::PhysicalDevice
         {
             using Base = RHI::PhysicalDevice;
         public:
@@ -123,7 +123,7 @@ namespace AZ
             bool IsFormatSupported(RHI::Format format, VkImageTiling tiling, VkFormatFeatureFlags features) const;
             void LoadSupportedFeatures(const GladVulkanContext& context);
             //! Filter optional extensions based on what the physics device support.
-            RawStringList FilterSupportedOptionalExtensions(bool enableSupported);
+            RawStringList GetEnabledOptionalExtensions();
             //! Returns the supported vulkan version of the physical device.
             uint32_t GetVulkanVersion() const;
             //! Query the set of available time domains for timestamp calibration
@@ -136,6 +136,8 @@ namespace AZ
             // RHI::PhysicalDevice
             void Shutdown() override;
            ///////////////////////////////////////////////////////////////////
+
+            void EnableSupportedOptionalExtensions();
 
             VkPhysicalDevice m_vkPhysicalDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceMemoryProperties m_memoryProperty{};
