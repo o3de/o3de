@@ -93,11 +93,11 @@ macro(o3de_gem_setup) #default_gem_name)
 
     o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
     if(gem_restricted_path)
-        message(STATUS "Restricted found in ${gem_json}, using: ${gem_restricted_path}")
+        message(VERBOSE "Restricted found in ${gem_json}, using: ${gem_restricted_path}")
     else()
         # If the gem.json does not have a 'restricted' field use the gem dir and append /restricted
         set(gem_restricted_path "${gem_path}/restricted")
-        message(STATUS "No restricted found in ${gem_json}, using default: ${gem_restricted_path}")
+        message(VERBOSE "No restricted found in ${gem_json}, using default: ${gem_restricted_path}")
     endif()
 
     o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
