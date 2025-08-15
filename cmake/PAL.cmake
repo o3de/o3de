@@ -256,7 +256,7 @@ o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
 if(NOT O3DE_ENGINE_RESTRICTED_PATH)
     # If the engine.json does not have a 'restricted' field use the engine dir and append /restricted
     set(O3DE_ENGINE_RESTRICTED_PATH "${LY_ROOT_FOLDER}/restricted")
-    message(STATUS "No restricted path found in engine.json, using default: ${O3DE_ENGINE_RESTRICTED_PATH}")
+    message(VERBOSE "No restricted path found in engine.json, using default: ${O3DE_ENGINE_RESTRICTED_PATH}")
 endif()
 
 # detect platforms in the restricted path
