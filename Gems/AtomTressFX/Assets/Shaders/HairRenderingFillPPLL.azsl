@@ -197,5 +197,7 @@ float4 PPLLFillPS(PS_INPUT_HAIR input) : SV_Target0
         strandColor.xyz, 
         input.Position.z
     );
+
+// Keep `float4`. The value is unused here, but PS stages are expected to return a color value.
 return float4(0.0, 0.0, 0.0, 0.0);
 }
