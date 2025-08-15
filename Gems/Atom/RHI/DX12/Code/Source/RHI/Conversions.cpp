@@ -74,6 +74,7 @@ namespace AZ
             case RHI::PrimitiveTopology::TriangleListAdj:
             case RHI::PrimitiveTopology::TriangleStrip:
             case RHI::PrimitiveTopology::TriangleStripAdj:
+            case RHI::PrimitiveTopology::TriangleFan:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
             case RHI::PrimitiveTopology::PatchList:
                 return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
@@ -97,6 +98,7 @@ namespace AZ
                 D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
                 D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
                 D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+                D3D_PRIMITIVE_TOPOLOGY_TRIANGLEFAN,
             };
             return table[(uint32_t)topology];
         }
@@ -858,7 +860,7 @@ namespace AZ
             }
             return RHI::ImageAspectFlags::None;
         }
-    
+
         DXGI_FORMAT ConvertFormat(RHI::Format format, [[maybe_unused]] bool raiseAsserts)
         {
             switch (format)
@@ -1364,20 +1366,20 @@ namespace AZ
             };
             return table[(uint32_t)mask];
         }
-    
+
         uint8_t ConvertColorWriteMask(uint8_t writeMask)
-        {            
+        {
             uint8_t dflags = 0;
             if(writeMask == 0)
             {
                 return dflags;
             }
-            
+
             if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
             {
                 return D3D12_COLOR_WRITE_ENABLE_ALL;
             }
-            
+
             if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_RED;
