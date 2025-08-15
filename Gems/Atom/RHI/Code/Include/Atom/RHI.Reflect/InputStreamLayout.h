@@ -34,6 +34,7 @@ namespace AZ::RHI
         TriangleListAdj,
         TriangleStrip,
         TriangleStripAdj,
+        TriangleFan,
         PatchList
     };
 
@@ -53,7 +54,7 @@ namespace AZ::RHI
     //! Describes an instance of a stream channel within a stream layout. A stream channel
     //! corresponds to a single data element on the input vertex, and it has a semantic associated
     //! with it which matches the element within the shader. The data in a stream channel can be
-    //! offset from the base of the parent StreamBufferView to interleave multiple channels within 
+    //! offset from the base of the parent StreamBufferView to interleave multiple channels within
     //! the same buffer.
     class ATOM_RHI_REFLECT_API StreamChannelDescriptor
     {
@@ -79,7 +80,7 @@ namespace AZ::RHI
         /// The parent stream buffer index.
         uint32_t m_bufferIndex = 0;
 
-        /// Byte offset from the base of the StreamBufferView to the first element in this channel. 
+        /// Byte offset from the base of the StreamBufferView to the first element in this channel.
         /// Used to interleave multiple channels in a single buffer.
         uint32_t m_byteOffset = 0;
     };
@@ -109,7 +110,7 @@ namespace AZ::RHI
 
         //! The distance in bytes between consecutive vertex entries in the buffer.
         //! This will match the stride value in StreamBufferView. It is provided separately here
-        //! because some platforms may require this information at PSO compile time, while the 
+        //! because some platforms may require this information at PSO compile time, while the
         //! StreamBufferView is not available until draw time.
         uint32_t m_byteStride = 0;
     };

@@ -32,7 +32,7 @@ namespace AZ
             bool IsResolveTargetSupported(id<MTLDevice> mtlDevice, RHI::Format format);
             bool IsDepthStencilSupported(id<MTLDevice> mtlDevice, RHI::Format format);
         }
-    
+
         MTLPixelFormat ConvertPixelFormat(RHI::Format format)
         {
             switch (format)
@@ -137,9 +137,9 @@ namespace AZ
                 //Check for platform specific formats
                 return Platform::ConvertPixelFormat(format);
             }
-            
+
         }
-    
+
         RHI::Format ConvertPixelFormat(MTLPixelFormat format)
         {
             switch (format)
@@ -242,7 +242,7 @@ namespace AZ
                 return RHI::Format::Unknown;
             }
         }
-        
+
         MTLStorageMode ConvertTextureStorageMode(RHI::ImageBindFlags imageFlags, const bool isMsaa)
         {
             MTLStorageMode storageModeFlags = GetCPUGPUMemoryMode();
@@ -251,32 +251,32 @@ namespace AZ
             {
                 storageModeFlags = MTLStorageModePrivate;
             }
-            
+
             if (RHI::CheckBitsAll(imageFlags, RHI::ImageBindFlags::ShaderRead))
             {
                 storageModeFlags = MTLStorageModePrivate;
             }
-            
+
             return storageModeFlags;
         }
-        
+
         MTLCPUCacheMode ConvertTextureCPUCacheMode()
         {
             return MTLCPUCacheModeDefaultCache;
         }
-    
+
         MTLHazardTrackingMode ConvertTextureHazardTrackingMode()
         {
             return MTLHazardTrackingModeTracked;
         }
-    
+
         MTLStorageMode ConvertBufferStorageMode(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel)
         {
-            //! Apple guidelines 
+            //! Apple guidelines
             //! Use MTLStorageModePrivate - If a buffer is Accessed exclusively by the GPU
             //! Use MTLStorageModeShared - If a buffer changes frequently, is relatively small, and is accessed by both the CPU and the GPU. This is slow memory.
             //! Use MTLStorageModeManaged (Mac only) - If a buffer is populated once by the CPU and accessed frequently by the GPU.
-            //! Use MTLStorageModeManaged (Mac only) - If a buffer changes frequently , is relatively large, and is accessed by both the CPU and the GPU. 
+            //! Use MTLStorageModeManaged (Mac only) - If a buffer changes frequently , is relatively large, and is accessed by both the CPU and the GPU.
 
             //Any buffer tagged with HeapMemoryLevel::Device will go to MTLStorageModePrivate and it will be updated via staging
             //memory so that it does not need to worry about triple buffering.
@@ -284,7 +284,7 @@ namespace AZ
             {
                 return MTLStorageModePrivate;
             }
-            
+
             //All other buffers falls under HeapMemoryLevel::Host tag and should be triple buffered at higher level or you may
             //run into issues where cpu is writing over memory that has not been consumed by the gpu for the previous frame.
             //Anything tagged with constant and DynamicInputAssembly will use shared memory as we expect the buffers to be updated
@@ -299,17 +299,17 @@ namespace AZ
                 return GetCPUGPUMemoryMode();
             }
         }
-    
+
         MTLCPUCacheMode ConvertBufferCPUCacheMode()
         {
             return MTLCPUCacheModeDefaultCache;
         }
-    
+
         MTLHazardTrackingMode ConvertBufferHazardTrackingMode()
         {
             return MTLHazardTrackingModeTracked;
         }
-    
+
         MTLTextureUsage ConvertTextureUsageFlags(RHI::ImageBindFlags imageFlags, RHI::Format format)
         {
             MTLTextureUsage usageFlags = MTLTextureUsageUnknown;
@@ -322,28 +322,28 @@ namespace AZ
             {
                 usageFlags |= MTLTextureUsageRenderTarget;
             }
-            
+
             //Enables loading or sampling from the texture in any shader stage.
             if (RHI::CheckBitsAll(imageFlags, RHI::ImageBindFlags::ShaderRead))
             {
                 usageFlags |= MTLTextureUsageShaderRead;
             }
-            
+
             //Enables writing to the texture from compute shaders
             if (RHI::CheckBitsAll(imageFlags, RHI::ImageBindFlags::ShaderReadWrite))
             {
                 usageFlags |= MTLTextureUsageShaderRead;
                 usageFlags |= MTLTextureUsageShaderWrite;
             }
-            
+
             //There is currently no way of knowing that the texture view for this texture will have a different pixel format.
             //Hence we assume every texture will use a texture view different from its own even though it may or may not.
             //Need to check performance impact for this assumption.
             usageFlags |= MTLTextureUsagePixelFormatView;
-            
+
             return usageFlags;
         }
-        
+
         MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray)
         {
             if(isCubeMap)
@@ -395,7 +395,7 @@ namespace AZ
                 }
             }
         }
-        
+
         bool IsTextureTypeAnArray(MTLTextureType textureType)
         {
             return textureType == MTLTextureType1DArray ||
@@ -403,9 +403,9 @@ namespace AZ
                     textureType == MTLTextureTypeCubeArray ||
                     textureType == MTLTextureType2DMultisampleArray;
         }
-    
+
         uint32_t GetArrayLength(int arraySize, bool isCubeMap)
-        {            
+        {
             if(arraySize>1)
             {
                 if(isCubeMap)
@@ -417,11 +417,11 @@ namespace AZ
                     return arraySize;
                 }
             }
-            
+
             AZ_Assert(arraySize==1, "If the texture type is not an array, this value should be 1.");
             return arraySize;
         }
-            
+
         ResourceDescriptor ConvertImageResourceDescriptor(const RHI::ImageDescriptor& descriptor)
         {
             ResourceDescriptor resourceDesc;
@@ -442,19 +442,19 @@ namespace AZ
                 resourceDesc.m_mtlTextureType = ConvertTextureType(descriptor.m_dimension, descriptor.m_arraySize, descriptor.m_isCubemap);
             }
             resourceDesc.m_mtlUsageFlags = ConvertTextureUsageFlags(descriptor.m_bindFlags, descriptor.m_format);
-            
-            
+
+
             resourceDesc.m_mtlStorageMode = ConvertTextureStorageMode(descriptor.m_bindFlags, isMsaa);
             resourceDesc.m_mtlCPUCacheMode = ConvertTextureCPUCacheMode();
             resourceDesc.m_mtlHazardTrackingMode = ConvertTextureHazardTrackingMode();
-            
+
             return resourceDesc;
         }
-        
+
         MTLTextureDescriptor* ConvertImageDescriptor(const RHI::ImageDescriptor& descriptor)
         {
             ResourceDescriptor resourceDescriptor = ConvertImageResourceDescriptor(descriptor);
-            
+
             AZ_Assert(resourceDescriptor.m_mtlFormat != MTLPixelFormatInvalid, "Invalid Texture format");
             MTLTextureDescriptor* mtlTextureDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat : resourceDescriptor.m_mtlFormat
                                                                                             width : resourceDescriptor.m_width
@@ -474,12 +474,12 @@ namespace AZ
             mtlTextureDesc.storageMode = resourceDescriptor.m_mtlStorageMode;
             mtlTextureDesc.cpuCacheMode = resourceDescriptor.m_mtlCPUCacheMode;
             mtlTextureDesc.hazardTrackingMode = resourceDescriptor.m_mtlHazardTrackingMode;
-            
+
             mtlTextureDesc.sampleCount = resourceDescriptor.m_sampleCount;
             return mtlTextureDesc;
         }
-    
-        
+
+
         ResourceDescriptor ConvertBufferDescriptor(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel)
         {
             ResourceDescriptor resourceDesc;
@@ -489,7 +489,7 @@ namespace AZ
             resourceDesc.m_mtlHazardTrackingMode = ConvertBufferHazardTrackingMode();
             return resourceDesc;
         }
-        
+
         MTLPixelFormat ConvertImageViewFormat(const Image& image, const RHI::ImageViewDescriptor& imageViewDescriptor)
         {
             /**
@@ -501,7 +501,7 @@ namespace AZ
             ConvertPixelFormat(imageViewDescriptor.m_overrideFormat) :
             ConvertPixelFormat(image.GetDescriptor().m_format);
         }
-        
+
         MTLBlendOperation ConvertBlendOp(RHI::BlendOp op)
         {
             static const MTLBlendOperation table[] =
@@ -512,10 +512,10 @@ namespace AZ
                 MTLBlendOperationMin,
                 MTLBlendOperationMax
             };
-            
+
             return table[(uint32_t)op];
         }
-        
+
         MTLBlendFactor ConvertBlendFactor(RHI::BlendFactor factor)
         {
             static const MTLBlendFactor table[] =
@@ -548,12 +548,12 @@ namespace AZ
             {
                 return colorMask;
             }
-            
+
             if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
             {
                 return MTLColorWriteMaskAll;
             }
-                        
+
             if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 colorMask |= MTLColorWriteMaskRed;
@@ -570,10 +570,10 @@ namespace AZ
             {
                 colorMask |= MTLColorWriteMaskAlpha;
             }
-            
+
             return colorMask;
         }
-        
+
         MTLVertexFormat ConvertVertexFormat(RHI::Format format)
         {
             switch (format)
@@ -675,7 +675,7 @@ namespace AZ
                     return MTLVertexFormatInvalid;
             }
         }
-        
+
         bool GetIndexTypeSizeInBytes(const MTLIndexType indexType, uint32_t& size)
         {
             switch (indexType)
@@ -698,28 +698,28 @@ namespace AZ
             }
             return true;
         }
-        
+
         bool GetVertexFormatSizeInBytes(const MTLVertexFormat vertexFormat, uint32_t& size)
         {
             switch (vertexFormat)
             {
                 case MTLVertexFormatInvalid:
                     return false;
-                    
+
                 case MTLVertexFormatUChar2:
                 case MTLVertexFormatChar2:
                 case MTLVertexFormatUChar2Normalized:
                 case MTLVertexFormatChar2Normalized:
                     size = 2;
                     break;
-                    
+
                 case MTLVertexFormatUChar3:
                 case MTLVertexFormatChar3:
                 case MTLVertexFormatUChar3Normalized:
                 case MTLVertexFormatChar3Normalized:
                     size = 3;
                     break;
-                    
+
                 case MTLVertexFormatUChar4:
                 case MTLVertexFormatChar4:
                 case MTLVertexFormatUChar4Normalized:
@@ -736,7 +736,7 @@ namespace AZ
                 case MTLVertexFormatUInt1010102Normalized:
                     size = 4;
                     break;
-                    
+
                 case MTLVertexFormatUShort3:
                 case MTLVertexFormatShort3:
                 case MTLVertexFormatUShort3Normalized:
@@ -744,7 +744,7 @@ namespace AZ
                 case MTLVertexFormatHalf3:
                     size = 6;
                     break;
-                    
+
                 case MTLVertexFormatUShort4:
                 case MTLVertexFormatShort4:
                 case MTLVertexFormatUShort4Normalized:
@@ -755,19 +755,19 @@ namespace AZ
                 case MTLVertexFormatUInt2:
                     size = 8;
                     break;
-                    
+
                 case MTLVertexFormatFloat3:
                 case MTLVertexFormatInt3:
                 case MTLVertexFormatUInt3:
                     size = 12;
                     break;
-                    
+
                 case MTLVertexFormatFloat4:
                 case MTLVertexFormatInt4:
                 case MTLVertexFormatUInt4:
                     size = 16;
                     break;
-                    
+
                 default:
                     AZ_Assert(false, "Unknown metal vertex format");
                     return false;
@@ -814,7 +814,7 @@ namespace AZ
                 bufferIdx++;
             }
         }
-        
+
         MTLSamplerMinMagFilter ConvertFilterMode(RHI::FilterMode mode)
         {
             switch (mode)
@@ -824,11 +824,11 @@ namespace AZ
                 case RHI::FilterMode::Linear:
                     return MTLSamplerMinMagFilterLinear;
             }
-            
+
             AZ_Assert(false, "bad conversion in ConvertFilterMode");
             return MTLSamplerMinMagFilterNearest;
         }
-        
+
         MTLSamplerMipFilter ConvertMipFilterMode(RHI::FilterMode mode)
         {
             switch (mode)
@@ -840,7 +840,7 @@ namespace AZ
             }
             return MTLSamplerMipFilterNotMipmapped;
         }
-        
+
         MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode)
         {
             switch (addressMode)
@@ -855,7 +855,7 @@ namespace AZ
                     return Platform::ConvertAddressMode(addressMode);
             }
         }
-        
+
         MTLCompareFunction ConvertComparisonFunc(RHI::ComparisonFunc func)
         {
             static const MTLCompareFunction table[] =
@@ -896,12 +896,12 @@ namespace AZ
             samplerDesc.tAddressMode = ConvertAddressMode(state.m_addressV);
             samplerDesc.rAddressMode = ConvertAddressMode(state.m_addressW);
             samplerDesc.compareFunction = ConvertComparisonFunc(state.m_comparisonFunc);
-    
+
             samplerDesc.minFilter = ConvertFilterMode(state.m_filterMin);
             samplerDesc.magFilter = ConvertFilterMode(state.m_filterMag);
             samplerDesc.mipFilter = ConvertMipFilterMode(state.m_filterMip);
             samplerDesc.supportArgumentBuffers = YES;
-            
+
             samplerDesc.maxAnisotropy = AZ::u8(state.m_anisotropyMax);
             if (!state.m_anisotropyEnable)
             {
@@ -909,16 +909,16 @@ namespace AZ
             }
             samplerDesc.lodMaxClamp = AZ::u8(state.m_mipLodMax);
             samplerDesc.lodMinClamp = AZ::u8(state.m_mipLodMin);
-            
+
 #if AZ_TRAIT_ATOM_METAL_SAMPLER_BORDERCOLOR_SUPPORT
             samplerDesc.borderColor = ConvertBorderColor(state.m_borderColor);
-#endif            
+#endif
             if(state.m_mipLodBias)
             {
                 AZ_Warning("ConvertSamplerState", false, "Metal sampler: MipLODBias is not supported.");
             }
         }
-        
+
         MTLPrimitiveType ConvertPrimitiveTopology(RHI::PrimitiveTopology primTopology)
         {
             switch (primTopology)
@@ -933,13 +933,17 @@ namespace AZ
                     return MTLPrimitiveTypeTriangle;
                 case RHI::PrimitiveTopology::TriangleStrip:
                     return  MTLPrimitiveTypeTriangleStrip;
+                case RHI::PrimitiveTopology::TriangleFan:
+                    // Not supported, just like this being excluded in Vulkan's portability subset
+                    // return MTLPrimitiveTypeTriangleFan;
+                    AZ_Assert(false, "TriangleFan not supported on Metal");
                 default:
                     AZ_Assert(false, "Invalid primitive topology");
                 break;
             }
             return MTLPrimitiveTypePoint;
         }
-        
+
         MTLStencilOperation ConvertStencilOp(RHI::StencilOp op)
         {
             static const MTLStencilOperation table[] =
@@ -955,12 +959,12 @@ namespace AZ
             };
             return table[static_cast<uint32_t>(op)];
         }
-        
+
         void ConvertStencilState(const RHI::StencilState& stencilState, MTLDepthStencilDescriptor* mtlDepthStencilDesc)
         {
             MTLStencilDescriptor* frontFaceStencil = mtlDepthStencilDesc.frontFaceStencil;
             MTLStencilDescriptor* backFaceStencil  = mtlDepthStencilDesc.backFaceStencil;
-            
+
             backFaceStencil.readMask  = frontFaceStencil.readMask  = stencilState.m_readMask;
             backFaceStencil.writeMask = frontFaceStencil.writeMask = stencilState.m_writeMask;
 
@@ -969,25 +973,25 @@ namespace AZ
             frontFaceStencil.depthFailureOperation      = ConvertStencilOp(stencilState.m_frontFace.m_depthFailOp);
             frontFaceStencil.depthStencilPassOperation  = ConvertStencilOp(stencilState.m_frontFace.m_passOp);
 
-            
+
             backFaceStencil.stencilCompareFunction      = ConvertComparisonFunc(stencilState.m_backFace.m_func);
             backFaceStencil.stencilFailureOperation     = ConvertStencilOp(stencilState.m_backFace.m_failOp);
             backFaceStencil.depthFailureOperation       = ConvertStencilOp(stencilState.m_backFace.m_depthFailOp);
             backFaceStencil.depthStencilPassOperation   = ConvertStencilOp(stencilState.m_backFace.m_passOp);
         }
-        
+
         void ConvertDepthStencilState(const RHI::DepthStencilState& depthStencil, MTLDepthStencilDescriptor* mtlDepthStencilDesc)
         {
             mtlDepthStencilDesc.depthWriteEnabled = depthStencil.m_depth.m_enable ? (depthStencil.m_depth.m_writeMask != RHI::DepthWriteMask::Zero): false;
             mtlDepthStencilDesc.depthCompareFunction = depthStencil.m_depth.m_enable ? ConvertComparisonFunc(depthStencil.m_depth.m_func)
                                                                                      : MTLCompareFunctionAlways;
-            
+
             if(depthStencil.m_stencil.m_enable)
             {
                 ConvertStencilState(depthStencil.m_stencil, mtlDepthStencilDesc);
             }
         }
-        
+
         MTLCullMode ConvertCullMode(RHI::CullMode mode)
         {
             static const MTLCullMode table[] =
@@ -998,7 +1002,7 @@ namespace AZ
             };
             return table[static_cast<uint32_t>(mode)];
         }
-        
+
         MTLTriangleFillMode ConvertFillMode(RHI::FillMode mode)
         {
             static const MTLTriangleFillMode table[] =
@@ -1021,7 +1025,7 @@ namespace AZ
             rasterizerState.m_depthClipMode = raster.m_depthClipEnable ? MTLDepthClipModeClip:MTLDepthClipModeClamp;
             rasterizerState.UpdateHash();
         }
-        
+
         bool IsDepthStencilMerged(RHI::Format format)
         {
             switch (format)
@@ -1032,7 +1036,7 @@ namespace AZ
             }
             return false;
         }
-        
+
         bool IsDepthStencilMerged(MTLPixelFormat mtlFormat)
         {
             switch (mtlFormat)
@@ -1043,7 +1047,7 @@ namespace AZ
                     return Platform::IsDepthStencilMerged(mtlFormat);
             }
         }
-        
+
         bool IsDepthStencilFormat(RHI::Format format)
         {
             switch (format)
@@ -1066,7 +1070,7 @@ namespace AZ
 #else
             MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
 #endif
-            
+
             if(accessType == RHI::ShaderInputImageAccess::ReadWrite)
             {
 #if defined(__IPHONE_17_0) || defined(__MAC_14_0)
@@ -1077,7 +1081,7 @@ namespace AZ
             }
             return mtlBindingAccess;
         }
-    
+
         MTLBindingAccess GetBindingAccess(RHI::ShaderInputBufferAccess accessType)
         {
 #if defined(__IPHONE_17_0) || defined(__MAC_14_0)
@@ -1085,7 +1089,7 @@ namespace AZ
 #else
             MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
 #endif
-            
+
             if(accessType == RHI::ShaderInputBufferAccess::ReadWrite)
             {
 #if defined(__IPHONE_17_0) || defined(__MAC_14_0)
@@ -1096,7 +1100,7 @@ namespace AZ
             }
             return mtlBindingAccess;
         }
-    
+
         void ConvertImageArgumentDescriptor(MTLArgumentDescriptor* imgArgDescriptor, const RHI::ShaderInputImageDescriptor& shaderInputImage)
         {
             imgArgDescriptor.dataType = MTLDataTypeTexture;
@@ -1152,16 +1156,16 @@ namespace AZ
             }
             imgArgDescriptor.arrayLength = shaderInputImage.m_count;
         }
-        
+
         void ConvertBufferArgumentDescriptor(MTLArgumentDescriptor* bufferArgDescriptor, const RHI::ShaderInputBufferDescriptor& shaderInputBuffer)
         {
             AZ_Assert(bufferArgDescriptor, "bufferArgDescriptor is null");
-            
+
             bufferArgDescriptor.index = shaderInputBuffer.m_registerId;
             bufferArgDescriptor.access = GetBindingAccess(shaderInputBuffer.m_access);
 
             bufferArgDescriptor.arrayLength = shaderInputBuffer.m_count;
-            
+
             if(shaderInputBuffer.m_type == RHI::ShaderInputBufferType::Typed)
             {
                 //Typed buffers (Buffer/RWBuffer) become texture_buffer
@@ -1173,13 +1177,13 @@ namespace AZ
                 bufferArgDescriptor.dataType = MTLDataTypePointer;
             }
         }
-    
+
         MTLSamplePosition ConvertSampleLocation(const RHI::SamplePosition& position)
         {
             const static float cellSize = 1.0f / RHI::Limits::Pipeline::MultiSampleCustomLocationGridSize;
             return MTLSamplePosition{ position.m_x * cellSize, position.m_y * cellSize };
         }
-    
+
         MTLResourceOptions CovertStorageMode(MTLStorageMode storageMode)
         {
             switch(storageMode)
@@ -1198,7 +1202,7 @@ namespace AZ
                 }
             }
         }
-    
+
         MTLResourceOptions CovertCPUCacheMode(MTLCPUCacheMode cpuCacheMode)
         {
             switch(cpuCacheMode)
@@ -1218,7 +1222,7 @@ namespace AZ
                 }
             }
         }
-    
+
         MTLResourceOptions CovertHazardTrackingMode(MTLHazardTrackingMode hazardTrackingMode)
         {
             switch(hazardTrackingMode)
@@ -1242,28 +1246,28 @@ namespace AZ
                 }
             }
         }
-    
+
         MTLResourceOptions CovertToResourceOptions(MTLStorageMode storageMode,
                                                    MTLCPUCacheMode cpuCacheMode,
                                                    MTLHazardTrackingMode hazardTrackingMode)
         {
             MTLResourceOptions resourceOptions;
-            
+
             resourceOptions = CovertCPUCacheMode(cpuCacheMode) | CovertStorageMode(storageMode) | CovertHazardTrackingMode(hazardTrackingMode);
             return resourceOptions;
         }
-          
-        //This returns the available cpu/gpu memory for the platform. 
+
+        //This returns the available cpu/gpu memory for the platform.
         MTLStorageMode GetCPUGPUMemoryMode()
         {
             return Platform::GetCPUGPUMemoryMode();
         }
-    
+
         MTLVisibilityResultMode ConvertVisibilityResult(RHI::QueryControlFlags flags)
         {
             return RHI::CheckBitsAll(flags, RHI::QueryControlFlags::PreciseOcclusion) ? MTLVisibilityResultModeCounting : MTLVisibilityResultModeBoolean;
         }
-    
+
         bool IsCompressedFormat(RHI::Format format)
         {
             switch (format)
@@ -1327,7 +1331,7 @@ namespace AZ
                     return false;
             }
         }
-    
+
         bool IsFilteringSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             //https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -1361,34 +1365,34 @@ namespace AZ
                 }
             }
         }
-    
+
         bool IsWriteSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(IsDepthStencilFormat(format) || IsCompressedFormat(format) || format == RHI::Format::A8_UNORM)
             {
                 return false;
             }
-                        
+
             return Platform::IsWriteSupported(mtlDevice, format);
         }
-    
+
         bool IsColorRenderTargetSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(IsDepthStencilFormat(format) || IsCompressedFormat(format) || format == RHI::Format::A8_UNORM)
             {
                 return false;
             }
-            
+
             return Platform::IsColorRenderTargetSupported(mtlDevice, format);
         }
-    
+
         bool IsBlendingSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(IsDepthStencilFormat(format) || IsCompressedFormat(format))
             {
                 return false;
             }
-            
+
             switch(format)
             {
                 case RHI::Format::A8_UNORM:
@@ -1420,7 +1424,7 @@ namespace AZ
                 }
             }
         }
-    
+
         bool IsMSAASupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(IsCompressedFormat(format) || format == RHI::Format::A8_UNORM)
@@ -1429,14 +1433,14 @@ namespace AZ
             }
             return Platform::IsMSAASupported(mtlDevice, format);
         }
-    
+
         bool IsResolveTargetSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(IsCompressedFormat(format))
             {
                 return false;
             }
-            
+
             switch(format)
             {
                 case RHI::Format::A8_UNORM:
@@ -1477,17 +1481,17 @@ namespace AZ
                 }
             }
         }
-     
+
         bool IsDepthStencilSupported(id<MTLDevice> mtlDevice, RHI::Format format)
         {
             if(!IsDepthStencilFormat(format) || IsCompressedFormat(format))
             {
                 return false;
             }
-            
+
             return Platform::IsDepthStencilSupported(mtlDevice, format);
         }
-    
+
         MTLBlitOption GetBlitOption(RHI::Format format, RHI::ImageAspect imageAspect)
         {
             switch(format)
@@ -1510,7 +1514,7 @@ namespace AZ
                     return MTLBlitOptionNone;
             }
         }
-    
+
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
         {
             MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
@@ -1520,7 +1524,7 @@ namespace AZ
             }
             return mtlResourceUsage;
         }
-        
+
         MTLResourceUsage GetBufferResourceUsage(RHI::ShaderInputBufferAccess bufferAccess)
         {
             MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
@@ -1530,7 +1534,7 @@ namespace AZ
             }
             return mtlResourceUsage;
         }
-        
+
         MTLRenderStages GetRenderStages(RHI::ShaderStageMask shaderMask)
         {
             MTLRenderStages mtlRenderStages = 0;
@@ -1544,7 +1548,7 @@ namespace AZ
             }
             return mtlRenderStages;
         }
-    
+
         RHI::ShaderInputImageAccess GetImageAccess(RHI::ShaderInputBufferAccess bufferAccess)
         {
             if(bufferAccess == RHI::ShaderInputBufferAccess::ReadWrite)

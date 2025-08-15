@@ -88,7 +88,7 @@ namespace AZ
             }
 
 #undef RHIVK_VK_TO_RHI
-        }        
+        }
 
 #undef RHIVK_EXPAND_FOR_FORMATS
 
@@ -166,6 +166,11 @@ namespace AZ
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
             case RHI::PrimitiveTopology::TriangleStripAdj:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
+            case RHI::PrimitiveTopology::TriangleFan:
+                // TODO: If VK_KHR_portability_subset is enabled (i.e. on MoltenVK), assert that
+                // `VkPhysicalDevicePortabilitySubsetFeaturesKHR::triangleFans` is not FALSE:
+                // https://registry.khronos.org/vulkan/specs/latest/man/html/VkPrimitiveTopology.html#_description
+                return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
             default:
                 AZ_Assert(false, "Unknown primitive topology.");
             }
@@ -345,17 +350,17 @@ namespace AZ
         VkColorComponentFlags ConvertComponentFlags(uint8_t sflags)
         {
             VkColorComponentFlags dflags = 0;
-            
+
             if(sflags == 0)
             {
                 return dflags;
             }
-            
+
             if(RHI::CheckBitsAll(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
             {
                 return VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             }
-            
+
             if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= VK_COLOR_COMPONENT_R_BIT;
@@ -397,7 +402,7 @@ namespace AZ
                 AZ_Assert(false, "SampleCount is invalid.");
                 return VK_SAMPLE_COUNT_1_BIT;
             }
-        }        
+        }
 
         void FillClearValue(const RHI::ClearValue& rhiClearValue, VkClearValue& vulkanClearValue)
         {
@@ -456,7 +461,7 @@ namespace AZ
                 AZ_Assert(false, "SamplerAddressMode is illegal.");
                 return VK_SAMPLER_ADDRESS_MODE_REPEAT;
             }
-        }            
+        }
 
         VkImageType ConvertToImageType(RHI::ImageDimension dimension)
         {
@@ -814,7 +819,7 @@ namespace AZ
             }
 
             if (RHI::CheckBitsAny(
-                pipelineStageFlags, 
+                pipelineStageFlags,
                 static_cast<VkPipelineStageFlags>(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
                     VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV | VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV)))
