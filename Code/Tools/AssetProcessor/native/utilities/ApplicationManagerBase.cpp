@@ -1536,6 +1536,7 @@ bool ApplicationManagerBase::Activate()
     {
         // this is not necessarily time sensitive.
         m_uuidManager->FileChanged(changedFile.toUtf8().constData());
+        QMetaObject::invokeMethod(m_rcController, "OnIntermediateSourceAppeared", Qt::QueuedConnection, Q_ARG(QString, changedFile));
     };
 
     QObject::connect(

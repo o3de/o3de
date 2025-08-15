@@ -38,7 +38,6 @@ GotoPositionDialog::GotoPositionDialog(QWidget* parent)
     , m_ui(new Ui::GotoPositionDialog)
 {
     m_ui->setupUi(this);
-    m_ui->m_dymAnglePitch->setToolTip(tr("Camera vertical angle is limited from -89%1 to +89%1").arg(QChar(0x00B0)));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setFixedSize(size());
     OnInitDialog();
@@ -74,13 +73,15 @@ void GotoPositionDialog::OnInitDialog()
 
     // rotation
     m_goToPositionPitchConstraints.DeterminePitchRange(
-        [this]([[maybe_unused]] const float minPitchDegrees, [[maybe_unused]] const float maxPitchDegrees)
+        [this](const float minPitchDegrees, const float maxPitchDegrees)
         {
-            m_ui->m_dymAnglePitch->setRange(-89.0f, 89.0f);
+            m_ui->m_dymAnglePitch->setRange(minPitchDegrees, maxPitchDegrees);
         });
+    m_ui->m_dymAnglePitch->setDecimals(0);
     m_ui->m_dymAnglePitch->setValue(pitchDegrees);
 
     m_ui->m_dymAngleYaw->setRange(-360, 360);
+    m_ui->m_dymAngleYaw->setDecimals(0);
     m_ui->m_dymAngleYaw->setValue(yawDegrees);
 
     // ensure the goto button is highlighted correctly.
@@ -104,8 +105,8 @@ void GotoPositionDialog::OnChangeEdit()
     m_ui->m_dymX->setValue(transform[0]);
     m_ui->m_dymY->setValue(transform[1]);
     m_ui->m_dymZ->setValue(transform[2]);
-    m_ui->m_dymAnglePitch->setValue(AZStd::clamp(transform[3], -89.0f, 89.0f));
-    m_ui->m_dymAngleYaw->setValue(transform[4]);
+    m_ui->m_dymAnglePitch->setValue(static_cast<int>(transform[3]));
+    m_ui->m_dymAngleYaw->setValue(static_cast<int>(transform[4]));
 }
 
 void GotoPositionDialog::OnUpdateNumbers()
@@ -114,8 +115,8 @@ void GotoPositionDialog::OnUpdateNumbers()
                                  .arg(m_ui->m_dymX->value(), 2, 'f', 2)
                                  .arg(m_ui->m_dymY->value(), 2, 'f', 2)
                                  .arg(m_ui->m_dymZ->value(), 2, 'f', 2)
-                                 .arg(m_ui->m_dymAnglePitch->value(), 2, 'f', 2)
-                                 .arg(m_ui->m_dymAngleYaw->value(), 2, 'f', 2));
+                                 .arg(m_ui->m_dymAnglePitch->value(), 0, 'f', 0)
+                                 .arg(m_ui->m_dymAngleYaw->value(), 0, 'f', 0));
 }
 
 void GotoPositionDialog::accept()
@@ -124,11 +125,15 @@ void GotoPositionDialog::accept()
         aznumeric_cast<float>(m_ui->m_dymX->value()),
         aznumeric_cast<float>(m_ui->m_dymY->value()),
         aznumeric_cast<float>(m_ui->m_dymZ->value()));
-    const auto pitchRadians = m_goToPositionPitchConstraints.PitchClampedRadians(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value()));
+    const auto pitchRadians = [this]()
+    {
+        const float pitchDegrees = aznumeric_cast<float>(m_ui->m_dymAnglePitch->value());
+        return AZ::DegToRad(AZStd::abs(AZStd::abs(pitchDegrees) - 90.0f) < 0.1f ? AZStd::clamp(pitchDegrees, -89.9f, 89.9f) : pitchDegrees);
+    };
     const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
 
     // either set or interpolate the camera to the new position and orientation
-    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(position, pitchRadians, yawRadians);
+    SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(position, pitchRadians(), yawRadians);
 
     QDialog::accept();
 }

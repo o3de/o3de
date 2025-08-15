@@ -115,7 +115,7 @@ namespace AssetProcessor
 
     bool RCJob::HasMissingSourceDependency() const
     {
-        return m_jobDetails.m_hasMissingSourceDependency;
+        return m_jobDetails.HasMissingSourceDependency();
     }
 
     QDateTime RCJob::GetTimeCreated() const
@@ -280,9 +280,40 @@ namespace AssetProcessor
         return m_jobDetails.m_priority;
     }
 
+    void RCJob::SetPriority(int newPriority)
+    {
+        m_jobDetails.m_priority = newPriority;
+    }
+
     const AZStd::vector<AssetProcessor::JobDependencyInternal>& RCJob::GetJobDependencies()
     {
         return m_jobDetails.m_jobDependencyList;
+    }
+
+    bool RCJob::UpdateMissingDependencies(const SourceAssetReference& sourceRef)
+    {
+        bool anyChanged = false;
+        bool stillHasMissingDep = false;
+
+        for (JobDependencyInternal& jobDependencyInternal : m_jobDetails.m_jobDependencyList)
+        {
+            if (jobDependencyInternal.m_isMissingSource)
+            {
+                SourceAssetReference thisDep(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str());
+                if (thisDep == sourceRef)
+                {
+                    // the missing dep is no longer missing.
+                    jobDependencyInternal.m_isMissingSource = false;
+                    anyChanged = true;
+                }
+                else
+                {
+                    stillHasMissingDep = true;
+                }
+            }
+        }
+
+        return !stillHasMissingDep && anyChanged;
     }
 
     void RCJob::Start()

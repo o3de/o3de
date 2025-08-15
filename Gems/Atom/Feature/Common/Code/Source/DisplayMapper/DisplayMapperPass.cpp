@@ -243,13 +243,10 @@ namespace AZ
             AZStd::string azshaderPath = shaderFilePath;
             AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
 
-            Data::AssetId shaderAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                shaderAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                azshaderPath.c_str(), azrtti_typeid<RPI::ShaderAsset>(), false);
+            Data::AssetId shaderAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(azshaderPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Assert, azrtti_typeid<RPI::ShaderAsset>());
             if (!shaderAssetId.IsValid())
             {
-                AZ_Assert(false, "[DisplayMapperPass] Unable to obtain asset id for %s.", shaderFilePath);
+                // The above GetAssetIdForProductPath will already have asserted if the asset was not found.
                 return nullptr;
             }
 
@@ -276,13 +273,11 @@ namespace AZ
             outSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
             outSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Clear;
 
-            Data::AssetId shaderAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                shaderAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                shaderFilePath, azrtti_typeid<RPI::ShaderAsset>(), false);
+            // Since this asset is required or a fatal assert occurs, we can use GetAssetIdForProductPath to ensure that it is built if at all possible.
+            Data::AssetId shaderAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(shaderFilePath, AZ::RPI::AssetUtils::TraceLevel::Assert, azrtti_typeid<RPI::ShaderAsset>());
             if (!shaderAssetId.IsValid())
             {
-                AZ_Assert(false, "[DisplayMapperPass] Unable to obtain asset id for %s.", shaderFilePath);
+                // The above GetAssetIdForProductPath will already have asserted if the asset was not found.  
                 return nullptr;
             }
 

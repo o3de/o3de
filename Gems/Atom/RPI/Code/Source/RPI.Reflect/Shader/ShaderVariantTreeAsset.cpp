@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
@@ -49,17 +50,15 @@ namespace AZ
             AZStd::string shaderVariantTreeAssetPath;
             AzFramework::StringFunc::Path::Join(shaderVariantTreeAssetDir.c_str(), shaderVariantTreeAssetFilename.c_str(), shaderVariantTreeAssetPath);
 
-            AZ::Data::AssetId shaderVariantTreeAssetId;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(shaderVariantTreeAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath
-                , shaderVariantTreeAssetPath.c_str(), AZ::Data::s_invalidAssetType, false);
+            // Since this asset is required or it may load the actual wrong asset, we will force the asset system to compile it if it can:
+            AZ::Data::AssetId shaderVariantTreeAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(shaderVariantTreeAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
 
+            // because the above function forces immediate compilation and blocks if not yet compiled, if we still don't find it, we know it does not exist and will not.
             if (!shaderVariantTreeAssetId.IsValid())
             {
                 // If the game project did not customize the shadervariantlist, let's see if the original author of the .shader file
                 // provided a shadervariantlist.
-                AzFramework::StringFunc::Path::Join(shaderAssetPathRoot.c_str(), shaderVariantTreeAssetFilename.c_str(), shaderVariantTreeAssetPath);
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(shaderVariantTreeAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath
-                    , shaderVariantTreeAssetPath.c_str(), AZ::Data::s_invalidAssetType, false);
+                shaderVariantTreeAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(shaderVariantTreeAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
             }
 
             return shaderVariantTreeAssetId;
