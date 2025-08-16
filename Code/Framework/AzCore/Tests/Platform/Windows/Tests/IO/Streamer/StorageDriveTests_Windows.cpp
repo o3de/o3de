@@ -1176,6 +1176,9 @@ namespace Benchmark
             AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
             delete m_fileIO;
             m_fileIO = nullptr;
+
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
         }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
@@ -1184,6 +1187,9 @@ namespace Benchmark
         void SetupStreamer(bool enableFileSharing)
         {
             using namespace AZ::IO;
+
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
 
             m_fileIO = new UnitTest::TestFileIOBase();
             m_previousFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -1265,6 +1271,7 @@ namespace Benchmark
         AZ::IO::Streamer* m_streamer{};
         AZ::IO::FileIOBase* m_previousFileIO{};
         UnitTest::TestFileIOBase* m_fileIO{};
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
     };
 
     BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)
