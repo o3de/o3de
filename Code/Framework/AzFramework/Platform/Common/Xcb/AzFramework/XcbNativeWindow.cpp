@@ -542,7 +542,7 @@ namespace AzFramework
     bool XcbNativeWindow::ValidateXcbResult(xcb_void_cookie_t cookie)
     {
         bool result = true;
-        if (xcb_generic_error_t* error = xcb_request_check(m_xcbConnection, cookie))
+        if ([[maybe_unused]]xcb_generic_error_t* error = xcb_request_check(m_xcbConnection, cookie))
         {
             AZ_TracePrintf("Error", "Error code %d", error->error_code);
             result = false;
