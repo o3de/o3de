@@ -25,25 +25,42 @@ namespace AZ::Dom::Tests
 
     void DomBenchmarkFixture::SetUp(const ::benchmark::State& st)
     {
+        // note that the `this` pointer is going to be a singleton, but this function gets called once per thread
+        // and is done overlapping with other threads calling the same function on the same `this` pointer, so
+        // do things that are thread-safe here, and only initialize things once.
+
         UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-        SetUpHarness();
+        if (st.thread_index() == 0)
+        {
+            SetUpHarness();
+        }
+        
     }
 
     void DomBenchmarkFixture::SetUp(::benchmark::State& st)
     {
         UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-        SetUpHarness();
+        if (st.thread_index() == 0)
+        {
+            SetUpHarness();
+        }
     }
 
     void DomBenchmarkFixture::TearDown(::benchmark::State& st)
     {
-        TearDownHarness();
+        if (st.thread_index() == 0)
+        {
+            TearDownHarness();
+        }
         UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
     }
 
     void DomBenchmarkFixture::TearDown(const ::benchmark::State& st)
     {
-        TearDownHarness();
+        if (st.thread_index() == 0)
+        {
+            TearDownHarness();
+        }
         UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
     }
 

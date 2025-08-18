@@ -634,10 +634,26 @@ namespace AZ
         // The /O3DE/Application/LifecycleEvents array contains a valid set of lifecycle events
         // Those lifecycle events are normally read from the <engine-root>/Registry
         // which isn't merged until ComponentApplication::Create invokes MergeSettingsToRegistry
-        // So pre-populate the valid lifecycle even entries
+        // So pre-populate the valid lifecycle event entries which are invoked before the settings registry is
+        // fully populated (e.g. loaded from every gem, for example).
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemAllocatorCreated");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemAllocatorPendingDestruction");
+
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SettingsRegistryAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SettingsRegistryUnavailable");
+
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ConsoleAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ConsoleUnavailable");
+        
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ReflectionManagerAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ReflectionManagerUnavailable");
+
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "GemsLoaded");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "GemsUnloaded");
+
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemComponentsActivated");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemComponentsDeactivated");
+
         ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SystemAllocatorCreated", R"({})");
         ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SettingsRegistryAvailable", R"({})");
     }

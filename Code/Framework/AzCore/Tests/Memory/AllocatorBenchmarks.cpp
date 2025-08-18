@@ -30,10 +30,12 @@ namespace Benchmark
         size_t GetMemorySize(void* memory);
     }
 
-    class RawMallocAllocator
-        : public AZStd::stateless_allocator
+    class RawMallocAllocator : public AZStd::stateless_allocator 
     {
     public:
+        AZ_DISABLE_COPY_MOVE(RawMallocAllocator);
+
+        RawMallocAllocator() = default;
         void GarbageCollect() {}
         size_t NumAllocatedBytes() { return 0; }
     };
@@ -85,14 +87,21 @@ namespace Benchmark
     class AllocatorBenchmarkFixture
         : public ::benchmark::Fixture
     {
+    public:
+        AZ_DISABLE_COPY_MOVE(AllocatorBenchmarkFixture);
+        AllocatorBenchmarkFixture() = default;
+
     protected:
         using TestAllocatorType = TAllocator;
 
+        // Note that the "this" pointer is going to be a singleton, but this function gets called once per thread
+        // and is done overlapping with other threads calling the same function on the same `this` pointer, so
+        // do things that are thread-safe here, and only initialize things once.
         virtual void internalSetUp(const ::benchmark::State& state)
         {
-            m_allocator = AZStd::make_unique<TestAllocatorType>();
             if (state.thread_index() == 0)
             {
+                m_allocator = AZStd::make_unique<TestAllocatorType>();
                 m_allocations.resize(state.threads());
                 for (auto& perThreadAllocations : m_allocations)
                 {
@@ -107,8 +116,8 @@ namespace Benchmark
             {
                 m_allocations.clear();
                 m_allocations.shrink_to_fit();
+                m_allocator = nullptr;
             }
-            m_allocator = nullptr;
         }
 
         AZStd::vector<void*>& GetPerThreadAllocations(size_t threadIndex)
@@ -151,6 +160,10 @@ namespace Benchmark
         using TestAllocatorType = typename base::TestAllocatorType;
 
     public:
+
+        AZ_DISABLE_COPY_MOVE(AllocationBenchmarkFixture);
+        AllocationBenchmarkFixture() = default;
+
         void Benchmark(benchmark::State& state)
         {
             for ([[maybe_unused]] auto _ : state)
@@ -167,7 +180,7 @@ namespace Benchmark
                     totalAllocationSize += allocationSize;
 
                     state.ResumeTiming();
-                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 16);
                     state.PauseTiming();
                 }
 
@@ -178,7 +191,7 @@ namespace Benchmark
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize);
+                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize, 16);
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
                 this->GetAllocator().GarbageCollect();
@@ -212,7 +225,7 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     totalAllocationSize += allocationSize;
-                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 16); // it is not legal to call aligned malloc with 0 align.
                 }
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -220,7 +233,7 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     state.ResumeTiming();
-                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize);
+                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize, 16);
                     state.PauseTiming();
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
@@ -260,14 +273,29 @@ namespace Benchmark
 
         void InternalSetUp([[maybe_unused]] const ::benchmark::State& state)
         {
-            m_allocator = AZStd::make_unique<TestAllocatorType>();
+            // note that the `this` pointer is going to be a singleton, but this function gets called once per thread
+            // and is done overlapping with other threads calling the same function on the same `this` pointer, so
+            // do things that are thread-safe here, and only initialize things once.
+
+            if (state.thread_index() == 0)
+            {
+                m_allocator = AZStd::make_unique<TestAllocatorType>();
+            }
         }
 
         void InternalTearDown([[maybe_unused]] const ::benchmark::State& state)
         {
-            m_allocator = nullptr;
+            if (state.thread_index() == 0)
+            {
+                m_allocator = nullptr;
+            }
         }
+
     public:
+        AZ_DISABLE_COPY(RecordedAllocationBenchmarkFixture);
+        RecordedAllocationBenchmarkFixture() = default;
+
+
         void SetUp(const ::benchmark::State& state) override
         {
             InternalSetUp(state);
@@ -334,7 +362,11 @@ namespace Benchmark
                                     // Doing a resize, dont account for this memory change, this operation is rare and we dont have
                                     // the size of the previous allocation
                                     state.ResumeTiming();
-                                    this->GetAllocator().reallocate(it.first->second, operation.m_size, operation.m_alignment);
+
+                                    // note that realloc could return a new address, having freed the old one.
+                                    void* newPtr = this->GetAllocator().reallocate(it.first->second, operation.m_size, operation.m_alignment);
+                                    it.first->second = newPtr;
+
                                     state.PauseTiming();
                                 }
                             }

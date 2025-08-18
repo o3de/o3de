@@ -1171,6 +1171,8 @@ namespace Benchmark
             AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
             delete m_fileIO;
             m_fileIO = nullptr;
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
         }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
@@ -1184,6 +1186,9 @@ namespace Benchmark
             m_previousFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_fileIO);
+
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>(8);
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
 
             SystemFile file;
             file.Open(TestFileName, SystemFile::OpenMode::SF_OPEN_CREATE | SystemFile::OpenMode::SF_OPEN_READ_WRITE);
@@ -1260,6 +1265,7 @@ namespace Benchmark
         AZ::IO::Streamer* m_streamer{};
         AZ::IO::FileIOBase* m_previousFileIO{};
         UnitTest::TestFileIOBase* m_fileIO{};
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
     };
 
     BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)

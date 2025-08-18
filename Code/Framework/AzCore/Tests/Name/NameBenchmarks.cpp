@@ -16,27 +16,43 @@ namespace AZ::NameBenchmarks
     class NameBenchmarkFixture : public UnitTest::AllocatorsBenchmarkFixture
     {
     public:
+        AZ_DISABLE_COPY_MOVE(NameBenchmarkFixture);
+        NameBenchmarkFixture() = default;
+
         void SetUp(const ::benchmark::State& st) override
         {
+            // note that the `this` pointer is going to be a singleton, but this function gets called once per thread
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-            AZ::NameDictionary::Create();
+            if (st.thread_index() == 0)
+            {
+                AZ::NameDictionary::Create();
+            }
         }
 
         void SetUp(::benchmark::State& st) override
         {
             UnitTest::AllocatorsBenchmarkFixture::SetUp(st);
-            AZ::NameDictionary::Create();
+            if (st.thread_index() == 0)
+            {
+                AZ::NameDictionary::Create();
+            }
         }
 
         void TearDown(::benchmark::State& st) override
         {
-            AZ::NameDictionary::Destroy();
+            if (st.thread_index() == 0)
+            {
+                AZ::NameDictionary::Destroy();
+            }
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 
         void TearDown(const ::benchmark::State& st) override
         {
-            AZ::NameDictionary::Destroy();
+            if (st.thread_index() == 0)
+            {
+                AZ::NameDictionary::Destroy();
+            }
             UnitTest::AllocatorsBenchmarkFixture::TearDown(st);
         }
 

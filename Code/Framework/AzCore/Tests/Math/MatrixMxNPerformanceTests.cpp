@@ -30,6 +30,11 @@ namespace Benchmark
             m_matrix2 = AZ::MatrixMxN();
             m_vector1 = AZ::VectorN();
             m_vector2 = AZ::VectorN();
+
+            m_result1 = AZ::MatrixMxN();
+            m_result2 = AZ::MatrixMxN();
+            m_result3 = AZ::VectorN();
+            m_result4 = AZ::VectorN();
         }
     public:
         void SetUp(const benchmark::State&) override
