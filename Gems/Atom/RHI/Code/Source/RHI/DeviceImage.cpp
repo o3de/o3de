@@ -64,7 +64,7 @@ namespace AZ::RHI
         imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
     }
     
-    Ptr<DeviceImageView> DeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<DeviceImageView> DeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor) const
     {
         return Base::GetResourceView(imageViewDescriptor);
     }

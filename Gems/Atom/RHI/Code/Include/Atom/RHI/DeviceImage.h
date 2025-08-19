@@ -76,7 +76,7 @@ namespace AZ::RHI
         //! images.
         const ImageFrameAttachment* GetFrameAttachment() const;
             
-        Ptr<DeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<DeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor) const;
 
         //! Returns the aspects that are included in the image.
         ImageAspectFlags GetAspectFlags() const;
