@@ -1,0 +1,105 @@
+#pragma once
+
+#define QUATERNION_IDENTITY float4(0, 0, 0, 1)
+
+float4 QuatNormalize(float4 quat)
+{
+    if (length(quat) > 0) {
+        return normalize(quat);
+    }
+    return QUATERNION_IDENTITY;
+}
+
+float3x3 QuaternionToMatrix(float4 roat)
+{
+    float3x3 m;
+
+    float xx = 2 * roat.x * roat.x, xy = 2 * roat.x * roat.y, xz = 2 * roat.x * roat.z;
+    float yy = 2 * roat.y * roat.y, yz = 2 * roat.y * roat.z, zz = 2 * roat.z * roat.z;
+    float wx = 2 * roat.w * roat.x, wy = 2 * roat.w * roat.y, wz = 2 * roat.w * roat.z;
+
+    m[0][0] = 1.0 - yy - zz;
+    m[0][1] = xy - wz;
+    m[0][2] = xz + wy;
+
+    m[1][0] = xy + wz;
+    m[1][1] = 1.0 - (xx + zz);
+    m[1][2] = yz - wx;
+
+    m[2][0] = xz - wy;
+    m[2][1] = yz + wx;
+    m[2][2] = 1.0 - (xx + yy);
+    return m;
+}
+
+float3x3 GetRotationFromLookAtMatrix(float3 heading, float3 cameraUp)
+{
+    float3 right = normalize(cross(cameraUp, heading));
+    float3 up = cross(-heading, right);
+
+    float3x3 rotation;
+    rotation[0][0] = right.x;
+    rotation[1][0] = right.y;
+    rotation[2][0] = right.z;
+
+    rotation[0][1] = -heading.x;
+    rotation[1][1] = -heading.y;
+    rotation[2][1] = -heading.z;
+
+    rotation[0][2] = up.x;
+    rotation[1][2] = up.y;
+    rotation[2][2] = up.z;
+    return rotation;
+}
+
+float3x3 GetRotationFromLookAtMatrix(float3 heading, float3 cameraUp, float rotateAngle)
+{
+    float3 tmpRight = normalize(cross(cameraUp, heading));
+    float3 tmpUp = cross(-heading, tmpRight);
+    float sinRotation;
+    float cosRotation;
+    const float spriteRotation = rotateAngle;
+    sincos(spriteRotation, sinRotation, cosRotation);
+    float3 right = sinRotation * tmpUp + cosRotation * tmpRight;
+    float3 up = cosRotation * tmpUp - sinRotation * tmpRight;
+    float3x3 rotation;
+    rotation[0][0] = right.x;
+    rotation[1][0] = right.y;
+    rotation[2][0] = right.z;
+    rotation[0][1] = -heading.x;
+    rotation[1][1] = -heading.y;
+    rotation[2][1] = -heading.z;
+    rotation[0][2] = up.x;
+    rotation[1][2] = up.y;
+    rotation[2][2] = up.z;
+    return rotation;
+}
+
+float3x3 AxisRadianToMatrix(float4 axisRadian)
+{
+    float radian = axisRadian.w;
+    float cosTheta = cos(radian);
+    float oneMinCos = 1 - cosTheta;
+    float sinTheta = sin(radian);
+    float x2 = axisRadian.x * axisRadian.x;
+    float y2 = axisRadian.y * axisRadian.y;
+    float z2 = axisRadian.z * axisRadian.z;
+    float xyo = axisRadian.x * axisRadian.y * oneMinCos;
+    float xzo = axisRadian.x * axisRadian.z * oneMinCos;
+    float yzo = axisRadian.y * axisRadian.z * oneMinCos;
+    float xs = axisRadian.x * sinTheta;
+    float ys = axisRadian.y * sinTheta;
+    float zs = axisRadian.z * sinTheta;
+
+    float3x3 m;
+    m[0][0] = cosTheta + x2 * oneMinCos;
+    m[0][1] = xyo - zs;
+    m[0][2] = xzo + ys;
+    m[1][0] = xyo + zs;
+    m[1][1] = cosTheta + y2 * oneMinCos;
+    m[1][2] = yzo - xs;
+    m[2][0] = xzo - ys;
+    m[2][1] = yzo + xs;
+    m[2][2] = cosTheta + z2 * oneMinCos;
+    return m;
+}

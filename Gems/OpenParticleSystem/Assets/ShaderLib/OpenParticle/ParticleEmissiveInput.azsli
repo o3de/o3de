@@ -1,0 +1,21 @@
+#pragma once
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+option bool o_emissiveEnabled;
+option bool o_emissive_useTexture;
+
+float3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, float factor, float3 emissiveColor, bool emissiveEnabled, bool useTexture)
+{
+    float3 emissive = float3(0,0,0);
+    if(emissiveEnabled)
+    {
+        emissive = emissiveColor * factor;
+        if (useTexture)
+        {
+            float3 sampledValue = map.Sample(mapSampler, uv).rgb;
+            emissive *= TransformColor(sampledValue, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        }
+    }
+    return emissive;
+}

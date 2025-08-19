@@ -1,0 +1,60 @@
+// This code was generated from the MaterialShaderParameterLayout. Do not modify.
+#pragma once
+
+struct MaterialParameters {
+    uint     m_materialType;
+    uint     m_materialInstance;
+    float4   m_baseColor;
+    float    m_baseColorFactor;
+    int      m_baseColorMap;
+    int      m_baseColorMapUvIndex;
+    float    m_vertexColorFactor;
+    float    m_metallicFactor;
+    int      m_metallicMap;
+    int      m_metallicMapUvIndex;
+    int      m_roughnessMap;
+    int      m_roughnessMapUvIndex;
+    float    m_roughnessLowerBound;
+    float    m_roughnessUpperBound;
+    float    m_roughnessFactor;
+    float    m_specularF0Factor;
+    int      m_specularF0Map;
+    int      m_specularF0MapUvIndex;
+    int      m_normalMap;
+    int      m_normalMapUvIndex;
+    bool     m_flipNormalX;
+    bool     m_flipNormalY;
+    float    m_normalFactor;
+    int      m_diffuseOcclusionMap;
+    int      m_diffuseOcclusionMapUvIndex;
+    float    m_diffuseOcclusionFactor;
+    int      m_specularOcclusionMap;
+    int      m_specularOcclusionMapUvIndex;
+    float    m_specularOcclusionFactor;
+    float4   m_emissiveColor;
+    float    m_emissiveAffectedByAlpha;
+    int      m_emissiveMap;
+    int      m_emissiveMapUvIndex;
+    float    m_clearCoatFactor;
+    int      m_clearCoatInfluenceMap;
+    int      m_clearCoatInfluenceMapUvIndex;
+    float    m_clearCoatRoughness;
+    int      m_clearCoatRoughnessMap;
+    int      m_clearCoatRoughnessMapUvIndex;
+    float    m_clearCoatNormalStrength;
+    int      m_clearCoatNormalMap;
+    int      m_clearCoatNormalMapUvIndex;
+    int      m_heightmap;
+    int      m_parallaxUvIndex;
+    float    m_heightmapScale;
+    float    m_heightmapOffset;
+    float    m_parallax_pdo_shadowFactor;
+    int      m_opacityMap;
+    int      m_opacityMapUvIndex;
+    float    m_opacityFactor;
+    float    m_opacityAffectsSpecularFactor;
+    float    m_emissiveIntensity;
+    float3x3 m_uvMatrix;
+    float3x3 m_uvMatrixInverse;
+}; 
+

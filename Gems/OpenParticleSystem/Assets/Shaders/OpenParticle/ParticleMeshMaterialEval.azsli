@@ -1,0 +1,151 @@
+#pragma once
+
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+
+void EvaluateStandardSurface(
+    const MaterialParameters params,
+    float3 vertexNormal,
+    float2 uv[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    bool isFrontFace,
+    bool displacementIsClipped,
+    float alpha,
+    inout Surface surface,
+    out SurfaceSettings surfaceSettings)
+{
+    // ------- Normal -------
+
+    float2 normalUv = uv[params.m_normalMapUvIndex];
+    float3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? params.m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
+    // custom uv derivatives not used, pass a default value
+    float4 defaultUvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    surface.normal = GetNormalInputWS(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, isFrontFace, vertexNormal,
+                                       tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], uvMatrix, o_normal_useTexture, params.m_normalFactor, defaultUvDxDy, false);
+
+    // ------- Base Color -------
+
+    float2 baseColorUv = uv[params.m_baseColorMapUvIndex];
+    float3 sampledColor = GetBaseColorInput(GetMaterialTexture(params.m_baseColorMap), GetMaterialTextureSampler(), baseColorUv, params.m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, params.m_baseColor.rgb, params.m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
+    // ------- Metallic -------
+
+    float2 metallicUv = uv[params.m_metallicMapUvIndex];
+    float metallic = GetMetallicInput(GetMaterialTexture(params.m_metallicMap), GetMaterialTextureSampler(), metallicUv, params.m_metallicFactor, o_metallic_useTexture);
+
+    // ------- Specular -------
+
+    float2 specularUv = uv[params.m_specularF0MapUvIndex];
+    float specularF0Factor = GetSpecularInput(GetMaterialTexture(params.m_specularF0Map), GetMaterialTextureSampler(), specularUv, params.m_specularF0Factor, o_specularF0_useTexture);
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    // ------- Roughness -------
+
+    float2 roughnessUv = uv[params.m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(GetMaterialTexture(params.m_roughnessMap), GetMaterialTextureSampler(), roughnessUv, params.m_roughnessFactor,
+                                        params.m_roughnessLowerBound, params.m_roughnessUpperBound, o_roughness_useTexture);
+    surface.CalculateRoughnessA();
+
+    // ------- Emissive -------
+
+    float2 emissiveUv = uv[params.m_emissiveMapUvIndex];
+    surface.emissiveLighting =  GetEmissiveInput(GetMaterialTexture(params.m_emissiveMap), GetMaterialTextureSampler(), emissiveUv, params.m_emissiveIntensity, params.m_emissiveColor.rgb, params.m_emissiveAffectedByAlpha, alpha, o_emissiveEnabled, o_emissive_useTexture);
+
+    // ------- Occlusion -------
+    
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_diffuseOcclusionMap), GetMaterialTextureSampler(), uv[params.m_diffuseOcclusionMapUvIndex], params.m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_specularOcclusionMap), GetMaterialTextureSampler(), uv[params.m_specularOcclusionMapUvIndex], params.m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+
+    // ------- Clearcoat -------
+    
+    if(o_clearCoat_feature_enabled)
+    {
+        if(o_clearCoat_enabled)
+        {
+            float3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? params.m_uvMatrix : CreateIdentity3x3();
+            GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uv[params.m_clearCoatInfluenceMapUvIndex], params.m_clearCoatFactor, o_clearCoat_factor_useTexture,
+                               GetMaterialTexture(params.m_clearCoatRoughnessMap), uv[params.m_clearCoatRoughnessMapUvIndex], params.m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
+                               GetMaterialTexture(params.m_clearCoatNormalMap),    uv[params.m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, params.m_clearCoatNormalStrength,
+                               uvMatrix, tangents[params.m_clearCoatNormalMapUvIndex], bitangents[params.m_clearCoatNormalMapUvIndex],
+                               GetMaterialTextureSampler(), isFrontFace,
+                               surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
+        }
+
+        // manipulate base layer f0 if clear coat is enabled
+        // modify base layer's normal incidence reflectance
+        // for the derivation of the following equation please refer to:
+        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
+        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
+        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+    }
+    
+    // ------- Opacity -------
+    surfaceSettings.opacityAffectsSpecularFactor = params.m_opacityAffectsSpecularFactor;
+}
+
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
+{
+    const float3 vertexNormal = normalize(IN.m_normal);
+
+    // ------- Tangents & Bitangents -------
+    float3 tangents[UvSetCount] = { IN.m_tangent, IN.m_tangent };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent, IN.m_bitangent };
+
+    // ------- Depth & Parallax -------
+
+    depthNDC = IN.m_position.z;
+    bool displacementIsClipped = false;
+
+    SurfaceSettings surfaceSettings;
+    Surface surface;
+    surface.lightingChannels = -1u;
+    surface.vertexNormal = vertexNormal;
+    surface.position = IN.m_worldPosition.xyz;
+
+    // ------- Alpha & Clip -------
+    // TODO: this often invokes a separate sample of the base color texture which is wasteful
+    float alpha = GetAlphaAndClip(GetMaterialParameters(), IN.m_uv);
+
+    EvaluateStandardSurface(GetMaterialParameters(), vertexNormal, IN.m_uv, tangents, bitangents, isFrontFace, displacementIsClipped, alpha, surface, surfaceSettings);
+
+    // Light iterator
+    LightCullingTileIterator tileIterator;
+    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
+    // ------- LightingData -------
+    LightingData lightingData;
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
+
+    // Shadow, Occlusion
+    lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIblForward(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+    
+
+    return lightingOutput;
+}
+

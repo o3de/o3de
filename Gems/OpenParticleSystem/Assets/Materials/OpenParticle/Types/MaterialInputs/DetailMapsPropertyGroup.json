@@ -1,0 +1,187 @@
+{
+    "name": "detailLayerGroup",
+    "displayName": "Detail Layer",
+    "description": "Properties for Fine Details Layer.",
+    "properties": [
+        {
+            "name": "enableDetailLayer",
+            "displayName": "Enable Detail Layer",
+            "description": "Enable detail layer for fine details and scratches",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "blendDetailFactor",
+            "displayName": "Blend Factor",
+            "description": "Scales the overall impact of the detail layer.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_blendFactor"
+            }
+        },
+        {
+            "name": "blendDetailMask",
+            "displayName": "Blend Mask",
+            "description": "Detailed blend mask for application of the detail maps.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_blendMask_texture"
+            }
+        },
+        {
+            "name": "enableDetailMaskTexture",
+            "displayName": "    Use Texture",
+            "description": "Enable detail blend mask",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "blendDetailMaskUv",
+            "displayName": "    Blend Mask UV",
+            "description": "Which UV set to use for sampling the detail blend mask",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_blendMask_uvIndex"
+            }
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "Detail Map UVs",
+            "description": "Which UV set to use for detail map sampling",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_allMapsUvIndex"
+            }
+        },
+        {
+            "name": "enableBaseColor",
+            "displayName": "Enable Base Color",
+            "description": "Enable detail blending for base color",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "baseColorDetailMap",
+            "displayName": "    Texture",
+            "description": "Detailed Base Color Texture",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_baseColor_texture"
+            }
+        },
+        {
+            "name": "baseColorDetailBlend",
+            "displayName": "    Blend Factor",
+            "description": "How much to blend the detail layer into the base color.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_baseColor_factor"
+            }
+        },
+        {
+            "name": "enableNormals",
+            "displayName": "Enable Normal",
+            "description": "Enable detail normal map to be used for fine detail normal such as scratches and small dents",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "normalDetailStrength",
+            "displayName": "    Factor",
+            "description": "Strength factor for scaling the Detail Normal",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "softMax": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_normal_factor"
+            }
+        },
+        {
+            "name": "normalDetailMap",
+            "displayName": "    Texture",
+            "description": "Detailed Normal map",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_normal_texture"
+            }
+        },
+        {
+            "name": "normalDetailFlipX",
+            "displayName": "    Flip X Channel",
+            "description": "Flip Detail tangent direction for this normal map.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_normal_flipX"
+            }
+        },
+        {
+            "name": "normalDetailFlipY",
+            "displayName": "    Flip Y Channel",
+            "description": "Flip Detail bitangent direction for this normal map.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_detail_normal_flipY"
+            }
+        }
+    ],
+    "propertyGroups": [
+        { 
+            "$import": { 
+                "filename": "UvPropertyGroup.json", 
+                "patch": {
+                    "name": "detailUV",
+                    "description": "Properties for modifying detail layer UV.",
+                    // We need to replace the functors with one that connects to m_detailUvMatrix and m_detailUvMatrixInverse
+                    "functors": [
+                        {
+                            "type": "Transform2D",
+                            "args": {
+                                "transformOrder": [ "Rotate", "Translate", "Scale" ],
+                                "centerProperty": "center",
+                                "scaleProperty": "scale",
+                                "scaleXProperty": "tileU",
+                                "scaleYProperty": "tileV",
+                                "translateXProperty": "offsetU",
+                                "translateYProperty": "offsetV",
+                                "rotateDegreesProperty": "rotateDegrees",
+                                "float3x3ShaderInput": "m_detailUvMatrix",
+                                "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua"
+            }
+        }
+    ]
+}

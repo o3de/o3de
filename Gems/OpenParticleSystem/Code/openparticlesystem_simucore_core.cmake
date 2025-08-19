@@ -1,0 +1,21 @@
+set(FILES
+    SimuCore/core/include/core/jobsystem/JobSystem.h
+    SimuCore/core/include/core/jobsystem/SpinLock.h
+    SimuCore/core/include/core/math/Constants.h
+    SimuCore/core/include/core/math/Math.h
+    SimuCore/core/include/core/math/MatrixX.h
+    SimuCore/core/include/core/math/Noise.h
+    SimuCore/core/include/core/math/Quaternion.h
+    SimuCore/core/include/core/math/Random.h
+    SimuCore/core/include/core/math/RandomStream.h
+    SimuCore/core/include/core/math/SimdType.h
+    SimuCore/core/include/core/math/Transform.h
+    SimuCore/core/include/core/math/VectorX.h
+    SimuCore/core/include/core/platform/Platform.h
+    SimuCore/core/src/jobsystem/JobSystem.cpp
+    SimuCore/core/src/math/Math.cpp
+    SimuCore/core/src/math/Noise.cpp
+    SimuCore/core/src/math/Random.cpp
+    SimuCore/core/src/math/RandomStream.cpp
+
+)
