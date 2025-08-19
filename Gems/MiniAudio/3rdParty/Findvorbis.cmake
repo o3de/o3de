@@ -68,7 +68,7 @@ get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
 ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
 o3de_fixup_fetchcontent_targets(
     IDE_FOLDER "${relative_this_gem_root}/External" 
-    TARGETS vorbis vorbisfile)
+    TARGETS vorbis vorbisfile vorbisenc)
 
 # Copy headers and license files, as well as a custom "find" file that declares the targets as IMPORTED
 FetchContent_GetProperties(vorbis SOURCE_DIR vorbis_source_dir)
