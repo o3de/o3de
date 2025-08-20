@@ -63,7 +63,7 @@ Texture2D GetMaterialTexture(const int readIndex)
     }
     return MaterialSrg::m_textures[localReadIndex];
 #else
-    return BindlessSrg::GetTexture2D(localReadIndex);
+    return Bindless::GetTexture2D(localReadIndex);
 #endif
 }
 
