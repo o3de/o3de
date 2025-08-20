@@ -61,6 +61,7 @@ namespace AZ::RHI
         // Returns true if @deviceIndex is valid, otherwise returns false.
         bool GetBindlessIndices(int deviceIndex, uint32_t* outReadIndex, uint32_t* outReadWriteIndex = nullptr) const;
 
+        //! Returns the GPU address of this BufferView for each device
         AZStd::unordered_map<int, uint64_t> GetDeviceAddress() const;
 
     private:

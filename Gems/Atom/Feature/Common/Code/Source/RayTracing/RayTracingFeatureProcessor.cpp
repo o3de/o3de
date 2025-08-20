@@ -51,6 +51,9 @@ namespace AZ
                 return;
             }
 
+            m_rayTracingClusterAccelerationStructureEnabled =
+                RHI::RHISystemInterface::Get()->GetRayTracingClusterAccelerationStructureSupport() != RHI::MultiDevice::NoDevices;
+
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessorInterface>();
             m_meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessorInterface>();
 
@@ -287,6 +290,11 @@ namespace AZ
                 subMesh.m_mesh = &mesh;
                 subMesh.m_subMeshIndex = subMeshIndex;
                 subMesh.m_globalIndex = subMeshGlobalIndex;
+
+                if (subMesh.IsClusterMesh())
+                {
+                    AZ_Assert(m_rayTracingClusterAccelerationStructureEnabled, "Ray tracing cluster acceleration structure not supported");
+                }
 
                 // add to the list of global subMeshIndices, which will be stored in the Mesh
                 subMeshIndices.push_back(subMeshGlobalIndex);

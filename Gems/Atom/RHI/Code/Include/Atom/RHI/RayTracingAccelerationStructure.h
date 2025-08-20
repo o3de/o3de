@@ -98,7 +98,7 @@ namespace AZ::RHI
         //! Returns the device-specific DeviceRayTracingBlasDescriptor for the given index
         DeviceRayTracingClusterBlasDescriptor GetDeviceRayTracingClusterBlasDescriptor(int deviceIndex) const;
 
-        RHI::Format m_vertexFormat;
+        RHI::VertexFormat m_vertexFormat;
         uint32_t m_maxGeometryIndexValue;
         uint32_t m_maxClusterUniqueGeometryCount;
         uint32_t m_maxClusterTriangleCount;

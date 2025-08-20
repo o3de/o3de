@@ -705,13 +705,15 @@ namespace AZ
 #endif
         }
 
-        void CommandList::BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        void CommandList::BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
         {
+            // TODO(CLAS): Implement this
             AZ_UNUSED(rayTracingClusterBlas);
         }
 
         void CommandList::BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList)
         {
+            // TODO(CLAS): Implement this
             AZ_UNUSED(clusterBlasList);
         }
 

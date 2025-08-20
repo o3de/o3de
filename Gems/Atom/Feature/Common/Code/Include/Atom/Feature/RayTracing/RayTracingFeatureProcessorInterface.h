@@ -312,7 +312,7 @@ namespace AZ::Render
             // Descriptor from which the m_clusterBlas is built
             AZStd::optional<RHI::RayTracingClusterBlasDescriptor> m_clusterBlasDescriptor;
 
-            // convenience function to check if this SubMeshBlasInstance is a cluster mesh
+            // Convenience function to check if this SubMeshBlasInstance is a cluster mesh
             bool IsClusterMesh() const
             {
                 return m_clusterBlasDescriptor.has_value();

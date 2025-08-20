@@ -86,7 +86,7 @@ namespace AZ::RHI
         virtual void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) = 0;
 
         /// Builds a Cluster Level Acceleration Structure (CLAS) for ray tracing operations
-        virtual void BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
+        virtual void BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) = 0;
 
         /// Builds a list of Cluster Bottom Level Acceleration Structures (cluster-BLAS) for ray tracing operations
         virtual void BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList) = 0;

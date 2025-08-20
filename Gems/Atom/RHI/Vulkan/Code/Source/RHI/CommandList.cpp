@@ -1289,9 +1289,9 @@ namespace AZ
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
         }
 
-        void CommandList::BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        void CommandList::BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
         {
-            const auto& clusterBuffers = static_cast<RayTracingClusterBlas&>(rayTracingClusterBlas).GetBuffers();
+            const auto& clusterBuffers = static_cast<const RayTracingClusterBlas&>(rayTracingClusterBlas).GetBuffers();
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
             context.CmdBuildClusterAccelerationStructureIndirectNV(GetNativeCommandBuffer(), &clusterBuffers.m_buildClasCommandInfo);
         }

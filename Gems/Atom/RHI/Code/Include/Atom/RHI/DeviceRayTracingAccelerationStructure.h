@@ -134,7 +134,7 @@ namespace AZ::RHI
     //! Describes a single-device cluster ray tracing bottom-level acceleration structure.
     struct DeviceRayTracingClusterBlasDescriptor
     {
-        RHI::Format m_vertexFormat;
+        RHI::VertexFormat m_vertexFormat;
         uint32_t m_maxGeometryIndexValue;
         uint32_t m_maxClusterUniqueGeometryCount;
         uint32_t m_maxClusterTriangleCount;

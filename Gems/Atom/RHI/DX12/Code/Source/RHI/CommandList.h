@@ -80,7 +80,7 @@ namespace AZ
             void BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
-            void BuildClusterAccelerationStructures(RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) override;
+            void BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) override;
             void BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList) override;
             void UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(

@@ -55,7 +55,7 @@ namespace AZ
                 // Input data for build CLAS operation
                 buffers.m_triangleClustersInput.sType = VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_TRIANGLE_CLUSTER_INPUT_NV;
                 buffers.m_triangleClustersInput.pNext = nullptr;
-                buffers.m_triangleClustersInput.vertexFormat = ConvertFormat(descriptor->m_vertexFormat);
+                buffers.m_triangleClustersInput.vertexFormat = ConvertFormat(RHI::ConvertToImageFormat(descriptor->m_vertexFormat));
                 buffers.m_triangleClustersInput.maxGeometryIndexValue = descriptor->m_maxGeometryIndexValue;
                 buffers.m_triangleClustersInput.maxClusterUniqueGeometryCount = descriptor->m_maxClusterUniqueGeometryCount;
                 buffers.m_triangleClustersInput.maxClusterTriangleCount = descriptor->m_maxClusterTriangleCount;
@@ -82,7 +82,8 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest clasDstImplicitBufferRequest;
                 clasDstImplicitBufferRequest.m_buffer = buffers.m_clasDstImplicitBuffer.get();
                 clasDstImplicitBufferRequest.m_descriptor = clasDstImplicitDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetDstImplicitBufferPool()->InitBuffer(clasDstImplicitBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode =
+                    bufferPools.GetDstImplicitBufferPool()->InitBuffer(clasDstImplicitBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create cluster destination implicit buffer");
             }
 
@@ -125,7 +126,7 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
                 scratchBufferRequest.m_buffer = buffers.m_scratchDataBuffer.get();
                 scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create scratch buffer");
             }
 
@@ -141,7 +142,7 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest clusterBlasBufferRequest;
                 clusterBlasBufferRequest.m_buffer = buffers.m_clusterBlasDstImplicitBuffer.get();
                 clusterBlasBufferRequest.m_descriptor = clusterBlasBufferDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(clusterBlasBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(clusterBlasBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create cluster BLAS destination implicit buffer");
             }
 
@@ -157,7 +158,8 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest dstAddressesBufferRequest;
                 dstAddressesBufferRequest.m_buffer = buffers.m_dstAddressesArrayBuffer.get();
                 dstAddressesBufferRequest.m_descriptor = dstAddressesBufferDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetDstAddressesArrayBufferPool()->InitBuffer(dstAddressesBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode =
+                    bufferPools.GetDstAddressesArrayBufferPool()->InitBuffer(dstAddressesBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create destination addresses array buffer");
             }
 
@@ -173,7 +175,7 @@ namespace AZ
                 AZ::RHI::DeviceBufferInitRequest dstSizesBufferRequest;
                 dstSizesBufferRequest.m_buffer = buffers.m_dstSizesArrayBuffer.get();
                 dstSizesBufferRequest.m_descriptor = dstSizesBufferDescriptor;
-                RHI::ResultCode resultCode = bufferPools.GetDstSizesArrayBufferPool()->InitBuffer(dstSizesBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetDstSizesArrayBufferPool()->InitBuffer(dstSizesBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create destination sizes array buffer");
             }
 
@@ -195,7 +197,8 @@ namespace AZ
                 blasSrcInfoBufferRequest.m_buffer = buffers.m_blasSrcInfosBuffer.get();
                 blasSrcInfoBufferRequest.m_descriptor = blasSrcInfoBufferDescriptor;
                 blasSrcInfoBufferRequest.m_initialData = &blasSrcInfoData;
-                RHI::ResultCode resultCode = bufferPools.GetSrcInfosArrayBufferPool()->InitBuffer(blasSrcInfoBufferRequest);
+                [[maybe_unused]] RHI::ResultCode resultCode =
+                    bufferPools.GetSrcInfosArrayBufferPool()->InitBuffer(blasSrcInfoBufferRequest);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to create BLAS source infos buffer");
             }
 

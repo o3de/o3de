@@ -19,7 +19,7 @@ namespace AZ
 
         uint64_t RayTracingClusterBlas::GetAccelerationStructureByteSize()
         {
-            // TODO: Implement this
+            // TODO(CLAS): Implement this
             return 0;
         }
 
@@ -28,7 +28,7 @@ namespace AZ
             [[maybe_unused]] const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor,
             [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
-            // TODO: Implement this
+            // TODO(CLAS): Implement this
             return RHI::ResultCode::Unimplemented;
         }
     } // namespace DX12

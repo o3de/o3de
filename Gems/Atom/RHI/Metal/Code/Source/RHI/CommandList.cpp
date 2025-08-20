@@ -911,6 +911,18 @@ namespace AZ
             AZ_Assert(false, "Not implemented");
         }
 
+        void CommandList::BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
         void CommandList::QueryBlasCompactionSizes(
             const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
         {
