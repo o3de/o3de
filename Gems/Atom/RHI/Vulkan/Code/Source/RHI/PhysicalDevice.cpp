@@ -367,8 +367,8 @@ namespace AZ
             VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
             VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
             VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME,
+            ExternalSemaphoreExtensionName,
             VK_KHR_SEPARATE_DEPTH_STENCIL_LAYOUTS_EXTENSION_NAME,
-            ExternalSemaphoreExtensionName
         };
 
         RawStringList PhysicalDevice::GetEnabledOptionalExtensions()
