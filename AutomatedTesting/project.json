@@ -67,6 +67,7 @@
         "TestAssetBuilder",
         "TextureAtlas",
         "Vegetation",
-        "WhiteBox"
+        "WhiteBox",
+        "OpenParticleSystem"
     ]
 }
