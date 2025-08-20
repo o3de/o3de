@@ -85,7 +85,6 @@
     ],
     "functors": [
         {
-            // Convert emissive unit.
             "type": "ConvertEmissiveUnit",
             "args": {
                 "intensityProperty": "intensity",

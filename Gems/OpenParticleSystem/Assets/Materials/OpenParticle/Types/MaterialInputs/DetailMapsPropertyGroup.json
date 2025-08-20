@@ -154,7 +154,7 @@
                 "patch": {
                     "name": "detailUV",
                     "description": "Properties for modifying detail layer UV.",
-                    // We need to replace the functors with one that connects to m_detailUvMatrix and m_detailUvMatrixInverse
+                    "comment": "We need to replace the functors with one that connects to m_detailUvMatrix and m_detailUvMatrixInverse",
                     "functors": [
                         {
                             "type": "Transform2D",
