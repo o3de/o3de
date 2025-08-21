@@ -10,6 +10,7 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
 #include <cstdarg>
+#include <format>
 
 namespace AZStd
 {
@@ -126,6 +127,18 @@ namespace AZ
             virtual void OutputToRawAndDebugger(const char* window, const char* message)
             {
                 RawOutput(window, message);
+            }
+
+            template<class... _Types>
+            void Print(const char* window, const std::format_string<_Types...> _Fmt, _Types&&... _Args)
+            {
+                // We use std::format_to_n instead of AZStd::format_to_n here because including format.h wants to include this header
+                // indirectly, leading to a circular include
+                char message[s_maxMessageLength];
+                std::format_to_n(message, s_maxMessageLength, _Fmt, std::forward<_Types>(_Args)...);
+                // Calling Printf here because its a virtual function that might be changed in the implementation
+                // Creating a virtual Print function is not possible because it needs to be a template function
+                Printf(window, "%s", message);
             }
 
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
@@ -429,6 +442,7 @@ namespace AZ
 #endif  // AZ_ENABLE_TRACING
 
 #define AZ_Printf(window, ...)       AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);
+#define AZ_Print(window, ...) AZ::Debug::Trace::Instance().Print(window, __VA_ARGS__);
 
 #if !defined(RELEASE)
 // Unconditional critical error log, enabled up to Performance config
