@@ -50,7 +50,7 @@ namespace AssetProcessor
         if (actualJob)
         {
             AZ_Printf(
-                AssetProcessor::DebugChannel,
+                AssetProcessor::ConsoleChannel,
                 "    Job %04i: (Escalation: %i) (Priority: %3i) (Status: %10s) (Crit? %s) (Plat: %s) (MissingDeps? %s) - %s\n",
                 idx,
                 actualJob->JobEscalation(),
@@ -63,7 +63,7 @@ namespace AssetProcessor
 
             for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
             {
-                AZ_Printf(AssetProcessor::DebugChannel, "        Depends on: %s%s\n",
+                AZ_Printf(AssetProcessor::ConsoleChannel, "        Depends on: %s%s\n",
                     jobDependencyInternal.ToString().c_str(),
                     jobDependencyInternal.m_isMissingSource ? " - missing source" : "");
             }
@@ -72,15 +72,15 @@ namespace AssetProcessor
 
     void RCQueueSortModel::DumpJobListInSortOrder()
     {
-        AZ_Printf(AssetProcessor::DebugChannel, "------------------------------------------------------------\n");
-        AZ_Printf(AssetProcessor::DebugChannel, "RCQueueSortModel: Printing Job list in sorted order:\n");
+        AZ_Printf(AssetProcessor::ConsoleChannel, "------------------------------------------------------------\n");
+        AZ_Printf(AssetProcessor::ConsoleChannel, "RCQueueSortModel: Printing Job list in sorted order:\n");
         for (int idx = 0; idx < rowCount(); ++idx)
         {
             QModelIndex parentIndex = mapToSource(index(idx, 0));
             RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
             PrintJob(actualJob, idx);
         }
-        AZ_Printf(AssetProcessor::DebugChannel, "------------------------------------------------------------\n");
+        AZ_Printf(AssetProcessor::ConsoleChannel, "------------------------------------------------------------\n");
     }
 
     RCJob* RCQueueSortModel::GetNextPendingJob()
@@ -107,6 +107,13 @@ namespace AssetProcessor
             RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
             if ((actualJob) && (actualJob->GetState() == RCJob::pending))
             {
+                if (!anyPendingJob)
+                {
+                    // anyPendingJob is always the first available job that could be processed in order to unblock the queue.
+                    // its not necesarily the best job to process.
+                    anyPendingJob = actualJob;
+                }
+
                 // If this job has a missing dependency, and there are any jobs in flight,
                 // don't queue it until those jobs finish, in case they resolve the dependency.
                 // This does mean that if there are multiple queued jobs with missing dependencies,
@@ -223,18 +230,23 @@ namespace AssetProcessor
             }
         }
 
-        // Either there are no jobs to do or there is a cyclic order job dependency.
+        // Either there are no jobs to do or there is a cyclic order job dependency or the only jobs left are waiting for other jobs
+        // to complete that will never appear.
+        // Unblock the first job we can in case this clears the log jam.
         if (anyPendingJob && m_sourceModel->jobsInFlight() == 0 && !waitingOnCatalog)
         {
-            AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job order dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
+            // there's only a tiny amount of space to print things in the log, so keep the message terse but visible!
+            AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                "Job (%s, %s, %s, %s) missing dependencies - check logs in Project/User/Log folder! \n",
                 anyPendingJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), anyPendingJob->GetJobKey().toUtf8().data(),
                 anyPendingJob->GetJobEntry().m_platformInfo.m_identifier.c_str(), anyPendingJob->GetBuilderGuid().ToString<AZStd::string>().c_str());
+
+            // Dump the job list to that folder.  It will include all remaining jobs, what dependencies are missing, etc, for debugging.
+            DumpJobListInSortOrder();
             return anyPendingJob;
         }
-        else
-        {
-            return nullptr;
-        }
+
+        return nullptr;
     }
 
     bool RCQueueSortModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
