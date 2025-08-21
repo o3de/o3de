@@ -60,3 +60,36 @@ void LoadInterpolatedVertexData(const MeshInfo meshInfo, const uint triangleId, 
 #endif
 }
 
+float4 CalculateUvDxDy(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, const float3 barycentricsDx, const float3 barycentricsDy, const int uvChannel)
+{
+    float4 result = float4(0, 0, 0, 0);
+#if MATERIAL_USES_VERTEX_UV
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    float2 vertexUv[3];
+
+    if (uvChannel == 0) {
+        [unroll]
+        for (int index = 0; index < 3; ++index)
+        {
+            vertexUv[index] = LoadUv0(meshInfo, triangleIndices[index]);
+        }
+    }
+    else if (uvChannel == 1)
+    {
+        [unroll]
+        for (int index = 0; index < 3; ++index)
+        {
+            vertexUv[index] = LoadUv1(meshInfo, triangleIndices[index]);
+        }
+    }
+    float2 uv = vertexUv[0] * barycentrics[0] + vertexUv[1] * barycentrics[1] + vertexUv[2] * barycentrics[2];
+    float2 uvDx = vertexUv[0] * (barycentrics[0] + barycentricsDx[0]) + vertexUv[1] * (barycentrics[1] + barycentricsDx[1]) + vertexUv[2] *(barycentrics[2] + barycentricsDx[2]);
+    result.xy = uv - uvDx;
+
+    float2 uvDy = vertexUv[0] * (barycentrics[0] + barycentricsDy[0]) + vertexUv[1] * (barycentrics[1] + barycentricsDy[1]) + vertexUv[2] *(barycentrics[2] + barycentricsDy[2]);
+    result.zw = uv - uvDy;
+#endif /* MATERIAL_USES_VERTEX_UV */
+    return result;
+}
+
+

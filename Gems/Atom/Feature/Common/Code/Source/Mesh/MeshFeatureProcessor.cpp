@@ -96,6 +96,7 @@ namespace AZ
             AZ_Assert(m_transformService, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             m_rayTracingFeatureProcessor = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            m_deferredMaterialFeatureProcessor = GetParentScene()->GetFeatureProcessor<DeferredMaterialFeatureProcessorInterface>();
             m_reflectionProbeFeatureProcessor = GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
             m_handleGlobalShaderOptionUpdate = RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
             {
@@ -166,6 +167,7 @@ namespace AZ
             );
             m_transformService = nullptr;
             m_rayTracingFeatureProcessor = nullptr;
+            m_deferredMaterialFeatureProcessor = nullptr;
             m_reflectionProbeFeatureProcessor = nullptr;
             m_forceRebuildDrawPackets = false;
 
@@ -1612,6 +1614,11 @@ namespace AZ
             m_reportShaderOptionFlags = true;
         }
 
+        DeferredMaterialFeatureProcessorInterface* MeshFeatureProcessor::GetDeferredMaterialFeatureProcessor() const
+        {
+            return m_deferredMaterialFeatureProcessor;
+        }
+
         RayTracingFeatureProcessor* MeshFeatureProcessor::GetRayTracingFeatureProcessor() const
         {
             return m_rayTracingFeatureProcessor;
@@ -1967,6 +1974,7 @@ namespace AZ
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
             RemoveRayTracingData(rayTracingFeatureProcessor);
+            RemoveDeferredMaterialData(meshFeatureProcessor);
             RemoveMeshInfo(meshFeatureProcessor);
 
             // We're intentionally using the MeshFeatureProcessor's value instead of using the cvar directly here,
@@ -2038,6 +2046,8 @@ namespace AZ
                 UpdateMeshInfo(meshFeatureProcessor, modelLodIndex);
                 BuildDrawPacketList(meshFeatureProcessor, modelLodIndex);
             }
+
+            SetDeferredMaterialData(meshFeatureProcessor);
 
             for (auto& objectSrg : m_objectSrgList)
             {
@@ -2299,7 +2309,8 @@ namespace AZ
                 // If the object SRG for this mesh was not already in the list, create it and add it to the list
                 if (!meshObjectSrg)
                 {
-                    auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                    auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg(
+                        RPI::ShaderCollection::Item::DrawItemType::Raster);
                     meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
                     if (!meshObjectSrg)
                     {
@@ -2450,6 +2461,28 @@ namespace AZ
             }
         }
 
+        void ModelDataInstance::SetDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor)
+        {
+            if (!m_model)
+            {
+                return;
+            }
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
+            if (modelLods.empty())
+            {
+                return;
+            }
+
+            DeferredMaterialFeatureProcessorInterface* deferredMaterialFeatureProcessor =
+                meshFeatureProcessor->GetDeferredMaterialFeatureProcessor();
+            if (!deferredMaterialFeatureProcessor)
+            {
+                return;
+            }
+            // use the raytracing UuId, since it's as good as any we could generate here
+            deferredMaterialFeatureProcessor->AddModel(m_rayTracingUuid, this, m_model);
+        }
+
         void ModelDataInstance::SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor)
         {
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = meshFeatureProcessor->GetRayTracingFeatureProcessor();
@@ -2559,6 +2592,19 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        void ModelDataInstance::RemoveDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor)
+        {
+            DeferredMaterialFeatureProcessorInterface* deferredMaterialFeatureProcessor =
+                meshFeatureProcessor->GetDeferredMaterialFeatureProcessor();
+
+            if (!deferredMaterialFeatureProcessor)
+            {
+                return;
+            }
+            // use the raytracing UuId, since it's as good as any we could generate here
+            deferredMaterialFeatureProcessor->RemoveModel(m_rayTracingUuid);
         }
 
         RHI::DrawItemSortKey ModelDataInstance::GetSortKey() const

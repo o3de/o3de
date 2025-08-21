@@ -101,6 +101,14 @@ set(FILES
     Source/Decals/AsyncLoadTracker.h
     Source/Decals/DecalTextureArrayFeatureProcessor.h
     Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
+    Source/DeferredMaterial/DeferredDrawPacket.h
+    Source/DeferredMaterial/DeferredDrawPacket.cpp
+    Source/DeferredMaterial/DeferredDrawPacketManager.h
+    Source/DeferredMaterial/DeferredDrawPacketManager.cpp
+    Source/DeferredMaterial/DeferredMeshDrawPacket.h
+    Source/DeferredMaterial/DeferredMeshDrawPacket.cpp   
+    Source/DeferredMaterial/DeferredMaterialFeatureProcessor.cpp
+    Source/DeferredMaterial/DeferredMaterialFeatureProcessor.h
     Source/DisplayMapper/AcesOutputTransformPass.cpp
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp

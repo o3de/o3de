@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/DeferredMaterial/DeferredMaterialFeatureProcessorInterface.h>
 #include <Atom/Feature/Material/FallbackPBRMaterial.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/MeshInfo.h>
@@ -135,6 +136,8 @@ namespace AZ
             void SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
+            void SetDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor);
+            void RemoveDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetLightingChannelMask(MeshFeatureProcessor* meshFeatureProcessor, uint32_t lightingChannelMask);
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
@@ -297,6 +300,7 @@ namespace AZ
             // Quick functions to get other relevant feature processors that have already been cached by the MeshFeatureProcessor
             // without needing to go through the RPI's list of feature processors
             RayTracingFeatureProcessor* GetRayTracingFeatureProcessor() const;
+            DeferredMaterialFeatureProcessorInterface* GetDeferredMaterialFeatureProcessor() const;
             ReflectionProbeFeatureProcessor* GetReflectionProbeFeatureProcessor() const;
             TransformServiceFeatureProcessor* GetTransformServiceFeatureProcessor() const;
 
@@ -406,6 +410,7 @@ namespace AZ
             
             TransformServiceFeatureProcessor* m_transformService = nullptr;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
+            DeferredMaterialFeatureProcessorInterface* m_deferredMaterialFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
