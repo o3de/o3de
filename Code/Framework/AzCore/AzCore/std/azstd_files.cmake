@@ -175,6 +175,7 @@ set(FILES
     string/fixed_string.cpp
     string/fixed_string.h
     string/fixed_string.inl
+    string/format.h
     string/memorytoascii.h
     string/memorytoascii.cpp
     string/regex.h

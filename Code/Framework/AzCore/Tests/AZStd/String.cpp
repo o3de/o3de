@@ -7,23 +7,24 @@
  */
 #include "UserTypes.h"
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/tokenize.h>
-#include <AzCore/std/string/alphanum.h>
-#include <AzCore/std/sort.h>
+#include <AzCore/Serialization/Locale.h> // for locale-independent string to float conversions
 #include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
-#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/ranges/join_view.h>
 #include <AzCore/std/ranges/transform_view.h>
-#include <AzCore/std/string/regex.h>
-#include <AzCore/std/string/wildcard.h>
+#include <AzCore/std/sort.h>
+#include <AzCore/std/string/alphanum.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/string/format.h>
+#include <AzCore/std/string/regex.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/tokenize.h>
+#include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/typetraits/is_convertible.h>
-#include <AzCore/Serialization/Locale.h> // for locale-independent string to float conversions
 
 // we need this for AZ_TEST_FLOAT compare
 #include <cinttypes>
@@ -2513,6 +2514,20 @@ namespace UnitTest
             AZStd::basic_string testString(testView, 1, 3);
             EXPECT_EQ("ell", testString);
         }
+    }
+
+    TEST_F(String, String_Format_Test)
+    {
+        EXPECT_EQ(AZStd::format("{} {} {}", "test", 1, 15.1), "test 1 15.1");
+        EXPECT_EQ(AZStd::format(L"{} {} {}", L"test", 1, 15.1), L"test 1 15.1");
+    }
+
+    TEST_F(String, String_Format_Fixed_Test)
+    {
+        EXPECT_EQ(AZStd::format_fixed_string<1>("{}", "test"), "t");
+        EXPECT_EQ(AZStd::format_fixed_string<1>(L"{}", L"test"), L"t");
+        EXPECT_EQ(AZStd::format_fixed_string<10>("{}{}", "test", 1), "test1");
+        EXPECT_EQ(AZStd::format_fixed_string<10>(L"{}{}", L"test", 1), L"test1");
     }
 
     template <typename StringType>
