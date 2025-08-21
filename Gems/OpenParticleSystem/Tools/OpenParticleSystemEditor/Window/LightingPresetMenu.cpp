@@ -86,7 +86,7 @@ namespace OpenParticleSystemEditor
         }
     }
 
-    void LightingPresetMenu::OnLightingPresetAdded(AZ::Render::LightingPresetPtr preset)
+    void LightingPresetMenu::OnLightingPresetAdded([[maybe_unused]]AZ::Render::LightingPresetPtr preset)
     {
         if (!m_reloading)
         {
@@ -94,7 +94,7 @@ namespace OpenParticleSystemEditor
         }
     }
 
-    void LightingPresetMenu::OnLightingPresetChanged(AZ::Render::LightingPresetPtr preset)
+    void LightingPresetMenu::OnLightingPresetChanged([[maybe_unused]]AZ::Render::LightingPresetPtr preset)
     {
     }
 
