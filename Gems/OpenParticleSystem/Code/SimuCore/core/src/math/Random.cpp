@@ -10,7 +10,7 @@
 #include "core/math/Math.h"
 #include "core/platform/Platform.h"
 
-#if defined(_WIN32)
+#if defined(AZ_PLATFORM_WINDOWS)
 #include <windows.h>
 #include <wincrypt.h>
 #else
@@ -21,7 +21,7 @@ namespace SimuCore {
     int32_t Random::randSeed = 0;
     int32_t Random::initSeed = 0;
 
-#if defined(_WIN32)
+#if defined(AZ_PLATFORM_WINDOWS)
     bool Random::GenRandom(void* data, uint32_t size)
     {
         int res;

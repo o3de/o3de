@@ -199,14 +199,14 @@ namespace SimuCore::ParticleCore {
         float tmpR = data->torusRadius < 0 ? 0 : data->torusRadius;
         float r = info.randomStream->RandRange(0, data->tubeRadius);
         /**
-         * x(θ,φ) = (R+r*cosθ)*cosφ,
-         * y(θ,φ) = (R+r*cosθ)*sinφ,
-         * z(θ,φ) = r*sinθ,
-         * θ, φ are angles which make a full circle, so their values start and end at the same point,
+         * x(\theta,\phi) = (R+r*cos\theta)*cos\phi,
+         * y(\theta,\phi) = (R+r*cos\theta)*sin\phi,
+         * z(\theta,\phi) = r*sin\theta,
+         * \theta, \phi are angles which make a full circle, so their values start and end at the same point,
          * R is the distance from the center of the tube to the center of the torus,
          * r is the radius of the tube.
-         * Angle θ represents rotation around the tube,
-         * whereas φ represents rotation around the torus' axis of revolution.
+         * Angle \theta represents rotation around the tube,
+         * whereas \phi represents rotation around the torus' axis of revolution.
          * R is known as the "major radius" and r is known as the "minor radius".
          * The ratio R divided by r is known as the "aspect ratio".
          */

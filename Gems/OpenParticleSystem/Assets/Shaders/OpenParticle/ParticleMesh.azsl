@@ -107,7 +107,7 @@ VSOutput MainVS(VSInput IN)
 
     float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId);
     ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
-	
+    
     OUT.m_color = IN.m_color;
     OUT.m_instanceId = IN.m_instanceId;
     return OUT;

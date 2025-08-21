@@ -90,13 +90,13 @@
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTreeView" name="m_assetBrowserTreeViewWidget">
-		     <property name="editTriggers">
+             <property name="editTriggers">
               <set>QAbstractItemView::EditKeyPressed</set>
              </property>
              <property name="selectionMode">
               <enum>QAbstractItemView::ExtendedSelection</enum>
              </property>
-		  </widget>
+          </widget>
          </item>
         </layout>
        </widget>

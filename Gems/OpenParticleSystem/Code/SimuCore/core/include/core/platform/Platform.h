@@ -66,16 +66,12 @@
  *  Linux         __linux__        __LP64__
  *  Android       __ANDROID__      __LP64__
  */
-#if defined(_WIN32)
+#if defined(AZ_PLATFORM_WINDOWS)
 #define SIMUCORE_PLATFORM SIMUCORE_ARCH_WIN32
-#elif defined(__APPLE__)
+#elif defined(AZ_PLATFORM_MAC)
 #define SIMUCORE_PLATFORM SIMUCORE_ARCH_MACOS
-#elif defined(__linux__)
-#define SIMUCORE_PLATFORM SIMUCORE_ARCH_LINUX
-#elif defined(__ANDROID__)
-#define SIMUCORE_PLATFORM SIMUCORE_ARCH_ANDROID
-#elif defined(__OHOS__) || defined(OHOS)
-#define SIMUCORE_PLATFORM SIMUCORE_ARCH_OHOS
+#elif defined(AZ_PLATFORM_LINUX)
+#define SIMUCORE_PLATFORM SIMUCORE_ARCH_LINU
 #else
 #error Invalid Platform
 #endif

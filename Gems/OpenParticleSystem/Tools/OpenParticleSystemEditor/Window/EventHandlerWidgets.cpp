@@ -29,7 +29,7 @@ namespace OpenParticleSystemEditor
         };
         m_btnAddEventHandler = new QPushButton(this);
         m_btnAddEventHandler->setText(tr("Add Event Handler"));
-		connect(m_btnAddEventHandler, &QPushButton::clicked, this, [clickBtnFunc]()
+        connect(m_btnAddEventHandler, &QPushButton::clicked, this, [clickBtnFunc]()
             {
                 AZStd::invoke(clickBtnFunc, OpenParticle::ParticleSourceData::DetailConstant::EventIndex::EVENT_HANDLER);
             });

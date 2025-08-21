@@ -4,8 +4,8 @@
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },
-	
-	"ProgramSettings" : 
+    
+    "ProgramSettings" : 
     {
         "EntryPoints":
         [

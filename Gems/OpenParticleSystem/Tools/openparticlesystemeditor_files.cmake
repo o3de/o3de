@@ -1,3 +1,11 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
 set(FILES
     OpenParticleSystemEditor/Window/EffectorInspector.h
     OpenParticleSystemEditor/Window/EffectorInspector.cpp
@@ -98,7 +106,7 @@ set(FILES
     OpenParticleSystemEditor/Window/Controls/CommonDefs.h
     OpenParticleSystemEditor/Window/AssetWidget.h
     OpenParticleSystemEditor/Window/AssetWidget.cpp
-	
+    
     OpenParticleSystemEditor/Document/ParticleDocument.cpp
     OpenParticleSystemEditor/Document/ParticleDocument.h
     OpenParticleSystemEditor/Document/ParticleDocumentBus.h

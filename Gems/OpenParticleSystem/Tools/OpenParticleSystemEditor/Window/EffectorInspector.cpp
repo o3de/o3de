@@ -471,7 +471,7 @@ namespace OpenParticleSystemEditor
         }
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
     }
-	
+    
     bool EffectorInspector::AfterVortexForceModified(AzToolsFramework::InstanceDataNode* pNode)
     {
         AZStd::string name = pNode->GetElementMetadata()->m_name;

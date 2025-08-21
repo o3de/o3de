@@ -1,3 +1,10 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/OpenParticleSystemEditor/Platform/${PAL_PLATFORM_NAME} "${o3de_gem_restricted_path}" ${o3de_gem_path} ${o3de_gem_parent_relative_path})
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -11,7 +18,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOUIC
         FILES_CMAKE
             openparticlesystemeditor_files.cmake
-			OpenParticleSystemEditor/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            OpenParticleSystemEditor/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 .
