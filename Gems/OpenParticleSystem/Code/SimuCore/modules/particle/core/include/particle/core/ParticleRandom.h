@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_RANDOM_H
-#define SIMUPARTICLE_CORE_PARTICLE_RANDOM_H
+#pragma once
 
 #include "particle/core/ParticleDistribution.h"
 
@@ -34,5 +33,3 @@ namespace SimuCore::ParticleCore {
         RandomTickMode tickMode = RandomTickMode::ONCE;
     };
 } // SimuCore::ParticleCore
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_RANDOM_H

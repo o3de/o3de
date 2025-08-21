@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_SPAWN_SPAWN_SIZE_H
-#define SIMUPARTICLE_SPAWN_SPAWN_SIZE_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -21,4 +20,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_SPAWN_SPAWN_SIZE_H

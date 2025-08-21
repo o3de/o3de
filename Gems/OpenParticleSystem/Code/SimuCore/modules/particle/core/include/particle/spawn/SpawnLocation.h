@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_SPAWN_SPAWN_LOCATION_H
-#define SIMUPARTICLE_SPAWN_SPAWN_LOCATION_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -81,4 +80,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_SPAWN_SPAWN_LOCATION_H

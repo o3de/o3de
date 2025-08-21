@@ -38,17 +38,20 @@ namespace OpenParticleSystemEditor
         {
             QGradient* m_gradient;
             QPainter::CompositionMode m_mode;
+
             explicit Gradient(QGradient* gradient, QPainter::CompositionMode mode = QPainter::CompositionMode::CompositionMode_Plus)
                 : m_gradient(gradient)
                 , m_mode(mode)
             {
                 gradient->setCoordinateMode(QGradient::ObjectBoundingMode);
             }
+
             explicit Gradient(const Gradient& other)
             {
                 m_gradient = other.m_gradient;
                 m_mode = other.m_mode;
             }
+
             ~Gradient()
             {
                 if (m_gradient != nullptr)
@@ -57,6 +60,7 @@ namespace OpenParticleSystemEditor
                     m_gradient = nullptr;
                 }
             }
+
             Gradient& operator=(const Gradient& gradient)
             {
                 if (&gradient == this)

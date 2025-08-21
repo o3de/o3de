@@ -565,6 +565,7 @@ namespace OpenParticleSystemEditor
         }
         return result;
     }
+
     void ParticleGraphicsView::SetCheckedInternal(bool solo, AZStd::string& name, bool except, bool checked)
     {
         auto SetCheckedFun = [](ParticleItemWidget* item, bool solo, bool checked)
@@ -668,6 +669,7 @@ namespace OpenParticleSystemEditor
     {
         SetCheckedInternal(true, name, except, checked);
     }
+
     void ParticleGraphicsView::SetChecked(AZStd::string& name, bool except, bool checked)
     {
         SetCheckedInternal(false, name, except, checked);

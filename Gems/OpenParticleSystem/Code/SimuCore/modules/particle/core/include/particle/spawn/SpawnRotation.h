@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_SPAWN_SPAWN_ROTATION_H
-#define SIMUPARTICLE_SPAWN_SPAWN_ROTATION_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -24,4 +23,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_SPAWN_SPAWN_ROTATION_H

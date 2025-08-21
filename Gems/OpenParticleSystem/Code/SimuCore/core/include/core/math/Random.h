@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_RANDOM_H
-#define SIMU_CORE_MATH_RANDOM_H
+#pragma once
 
 #include <cstdint>
 #include <AzCore/Math/Color.h>
@@ -41,5 +40,3 @@ namespace SimuCore {
         static int32_t initSeed;
     };
 }
-
-#endif // SIMU_CORE_MATH_RANDOM_H

@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef SIMU_CORE_PLATFORM_PLATFORM_H
-#define SIMU_CORE_PLATFORM_PLATFORM_H
+#pragma once
 
 /**
  * SIMUCORE_PLATFORM_INFO
@@ -66,11 +65,11 @@
  *  Linux         __linux__        __LP64__
  *  Android       __ANDROID__      __LP64__
  */
-#if defined(AZ_PLATFORM_WINDOWS)
+#if defined(_WIN32)
 #define SIMUCORE_PLATFORM SIMUCORE_ARCH_WIN32
-#elif defined(AZ_PLATFORM_MAC)
+#elif defined(__APPLE__)
 #define SIMUCORE_PLATFORM SIMUCORE_ARCH_MACOS
-#elif defined(AZ_PLATFORM_LINUX)
+#elif defined(__linux__)
 #define SIMUCORE_PLATFORM SIMUCORE_ARCH_LINU
 #else
 #error Invalid Platform
@@ -101,5 +100,3 @@
 #if !defined(NOMINMAX)
 #define NOMINMAX
 #endif
-
-#endif // SIMU_CORE_PLATFORM_PLATFORM_H

@@ -54,6 +54,7 @@ namespace OpenParticleSystemEditor
         LevelOfDetailInspectorNotifyBus::Handler::BusDisconnect();
         ClearLevels();
     }
+
     void LevelOfDetailInspector::AddLevel(OpenParticle::ParticleSourceData* sourceData, uint32_t indexOfLod)
     {
         auto levelWidget = new LevelWidget();
@@ -153,6 +154,7 @@ namespace OpenParticleSystemEditor
         AddLevel(sourceData, static_cast<uint32_t>(sourceData->m_lods.size() - 1));
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
     }
+
     void LevelOfDetailInspector::OnRemoveLevel(LevelWidget* levelWidget)
     {
         uint32_t index = 0;
@@ -178,6 +180,7 @@ namespace OpenParticleSystemEditor
         }
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
     }
+
     void LevelOfDetailInspector::OnParticleSourceDataLoaded([[maybe_unused]] OpenParticle::ParticleSourceData* particleSourceData, [[maybe_unused]]AZStd::string particleAssetPath) const
     {
         AZStd::string fileName;
@@ -185,6 +188,7 @@ namespace OpenParticleSystemEditor
 
         EBUS_EVENT(LevelOfDetailInspectorNotifyBus, ReloadLevel, fileName);
     }
+
     void LevelOfDetailInspector::ClearLevels()
     {
         for (auto& levelWidget : m_levels)
@@ -195,6 +199,7 @@ namespace OpenParticleSystemEditor
         }
         m_levels.clear();
     }
+
     void LevelOfDetailInspector::ReloadLevel([[maybe_unused]] AZStd::string widgetName)
     {
         OpenParticle::ParticleSourceData* sourceData = nullptr;
@@ -352,6 +357,7 @@ namespace OpenParticleSystemEditor
                 m_itemsWidget->setVisible(!expand);
             });
     }
+
     void LevelWidget::AddLevelItem(uint32_t emitterIndex, bool checked, AZStd::string& name)
     {
         (void)emitterIndex;
@@ -374,6 +380,7 @@ namespace OpenParticleSystemEditor
         m_layout->addWidget(checkbox);
         m_checkboxes.emplace_back(checkbox);
     }
+
     void LevelWidget::RemoveItem(uint32_t index)
     {
         auto& checkbox = m_checkboxes[index];
@@ -381,6 +388,7 @@ namespace OpenParticleSystemEditor
         m_checkboxes.erase(&checkbox);
         delete checkbox;
     }
+
     void LevelWidget::SetIndex(uint32_t index)
     {
         m_label->setText(QString("LOD %1").arg(index + 1));
@@ -390,6 +398,7 @@ namespace OpenParticleSystemEditor
     {
         return m_indexOfLod;
     }
+
     void LevelWidget::SetDistance(float distance)
     {
         m_lineEdit->setText(QString("%1").arg(distance));

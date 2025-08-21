@@ -1102,6 +1102,7 @@ namespace OpenParticleSystemEditor
         m_comboType->setCurrentIndex(currIndex);
         DistChanged(currIndex);
     }
+
     void PropertyDistCtrl::SetMinimum(double min)
     {
         m_editConstant->SetMinimum(min);
@@ -1109,6 +1110,7 @@ namespace OpenParticleSystemEditor
         m_randomMax->SetMinimum(min);
         m_valueFactor->SetMinimum(min);
     }
+
     void PropertyDistCtrl::SetMaximum(double max)
     {
         m_editConstant->SetMaximum(max);
@@ -1116,6 +1118,7 @@ namespace OpenParticleSystemEditor
         m_randomMax->SetMaximum(max);
         m_valueFactor->SetMaximum(max);
     }
+
     void PropertyDistCtrl::SetSuffix(const AZStd::string& suffix)
     {
         m_editConstant->SetSuffix(QCoreApplication::translate("Reflect", suffix.c_str()));

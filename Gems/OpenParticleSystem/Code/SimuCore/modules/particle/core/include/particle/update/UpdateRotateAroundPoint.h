@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef SIMUPARTICLE_UPDATE_ROTATEAROUNDPOINT_H
-#define SIMUPARTICLE_UPDATE_ROTATEAROUNDPOINT_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -23,5 +22,3 @@ namespace SimuCore::ParticleCore {
         float radius = 1.f;
     };
 }
-
-#endif // SIMUPARTICLE_UPDATE_ROTATEAROUNDPOINT_H

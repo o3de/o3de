@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_COLLISION_H
-#define SIMUPARTICLE_COLLISION_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -71,4 +70,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_COLLISION_H

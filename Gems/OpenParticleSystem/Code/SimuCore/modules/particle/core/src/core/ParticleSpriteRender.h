@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_SPRITE_RENDER_H
-#define SIMUPARTICLE_CORE_PARTICLE_SPRITE_RENDER_H
+#pragma once
 
 #include <unordered_map>
 #include "particle/core/Particle.h"
@@ -40,4 +39,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_CORE_PARTICLE_SPRITE_RENDER_H

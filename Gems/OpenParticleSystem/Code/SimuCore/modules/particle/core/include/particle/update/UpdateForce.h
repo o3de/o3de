@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_UPDATE_UPDATE_FORCE_H
-#define SIMUPARTICLE_UPDATE_UPDATE_FORCE_H
+#pragma once
 
 #include <cstdint>
 #include "particle/core/Particle.h"
@@ -68,4 +67,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_UPDATE_UPDATE_FORCE_H

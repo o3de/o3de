@@ -138,6 +138,7 @@ namespace OpenParticleSystemEditor
         }
         return -1;
     }
+
     void PropertyEditorWidget::SetCheckBoxEnable(bool check) const
     {
         if (m_moduleName == PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER])
@@ -149,6 +150,7 @@ namespace OpenParticleSystemEditor
             m_checkBox->setEnabled(check);
         }
     }
+
     void PropertyEditorWidget::SetChecked(bool checked) const
     {
         m_checkBox->setChecked(checked);

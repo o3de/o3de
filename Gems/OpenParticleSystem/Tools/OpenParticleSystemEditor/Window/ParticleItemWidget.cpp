@@ -94,6 +94,7 @@ namespace OpenParticleSystemEditor
         m_ui->lineBotton->hide();
         m_widgetSelect = false;
     }
+
     void ParticleItemWidget::OnClickParticleSolo(bool checked)
     {
         AZStd::vector<AZStd::string> itemNames;
@@ -131,6 +132,7 @@ namespace OpenParticleSystemEditor
         EBUS_EVENT(LevelOfDetailInspectorNotifyBus, ReloadLevel, m_graphParentTitle);
         EBUS_EVENT_ID(m_graphParentTitle, ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
     }
+
     void ParticleItemWidget::OnClickParticleName(bool bCheck)
     {
         if (bCheck)
@@ -306,10 +308,12 @@ namespace OpenParticleSystemEditor
         QPainter painter(this);
         style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
     }
+
     void ParticleItemWidget::SetSoloChecked(bool checked) const
     {
         m_ui->checkSolo->setChecked(checked);
     }
+
     void ParticleItemWidget::SetDetailChecked(bool checked) const
     {
         m_ui->checkParticleName->setChecked(checked);

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_NOISE_H
-#define SIMU_CORE_MATH_NOISE_H
+#pragma once
 
 #include "core/math/VectorX.h"
 #include "core/math/MatrixX.h"
@@ -22,5 +21,3 @@ namespace SimuCore {
         static Matrix4 SimplexDSmooth(const Matrix4& offsetToCell);      // out 3 * Vector4, in 4 * Vector3
     };
 } // namespace SimuCore
-
-#endif // SIMU_CORE_MATH_NOISE_H

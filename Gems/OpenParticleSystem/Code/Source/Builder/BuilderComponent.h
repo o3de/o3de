@@ -7,8 +7,7 @@
  */
 
 
-#ifndef O3DE_BUILDERCOMPONENT_H
-#define O3DE_BUILDERCOMPONENT_H
+#pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -54,4 +53,3 @@ namespace OpenParticle
     };
 } // namespace OpenParticle
 
-#endif // O3DE_BUILDERCOMPONENT_H

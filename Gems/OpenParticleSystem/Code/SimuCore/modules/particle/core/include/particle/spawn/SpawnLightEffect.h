@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_SPAWN_SPAWN_LIGHT_EFFECT_H
-#define SIMUPARTICLE_SPAWN_SPAWN_LIGHT_EFFECT_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -23,4 +22,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_SPAWN_SPAWN_LIGHT_EFFECT_H

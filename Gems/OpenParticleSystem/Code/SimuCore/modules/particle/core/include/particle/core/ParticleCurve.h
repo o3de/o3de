@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_CURVE_H
-#define SIMUPARTICLE_CORE_PARTICLE_CURVE_H
+#pragma once
 
 #include <algorithm>
 #include <functional>
@@ -58,5 +57,3 @@ namespace SimuCore::ParticleCore {
         std::vector<KeyPoint> keyPoints;
     };
 } // SimuCore::ParticleCore
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_CURVE_H

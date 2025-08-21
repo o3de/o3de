@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_TRANSFORM_H
-#define SIMU_CORE_MATH_TRANSFORM_H
+#pragma once
 
 #include "core/math/Quaternion.h"
 #include "core/math/MatrixX.h"
@@ -51,5 +50,3 @@ namespace SimuCore {
 }
 
 #include "core/math/Transform.inl"
-
-#endif // SIMU_CORE_MATH_TRANSFORM_H

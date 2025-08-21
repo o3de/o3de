@@ -53,14 +53,17 @@ namespace OpenParticleSystemEditor
         setLayout(layout);
         setVisible(false);
     }
+
     void AssetWidget::SetAssetPath(const AZStd::string& path)
     {
         m_assetPathBrowseEdit->setText(QString::fromStdString(path.c_str()));
     }
+
     void AssetWidget::Clear()
     {
         m_assetPathBrowseEdit->lineEdit()->clear();
     }
+
     void AssetWidget::PopupAssetPicker()
     {
         AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection(m_assetType);

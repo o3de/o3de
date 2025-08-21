@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_UPDATE_UPDATE_SUB_UV_H
-#define SIMUPARTICLE_UPDATE_UPDATE_SUB_UV_H
+#pragma once
 
 #include <cstdint>
 #include "particle/core/Particle.h"
@@ -27,4 +26,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_UPDATE_UPDATE_SUB_UV_H

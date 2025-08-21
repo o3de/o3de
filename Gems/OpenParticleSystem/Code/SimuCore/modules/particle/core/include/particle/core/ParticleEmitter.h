@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_EMITTER_H
-#define SIMUPARTICLE_CORE_PARTICLE_EMITTER_H
+#pragma once
 
 #include <atomic>
 #include <vector>
@@ -264,5 +263,3 @@ namespace SimuCore::ParticleCore {
         std::vector<ParticleEffectorInfo<ParticleEventEffector>> eventEffectors;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_EMITTER_H

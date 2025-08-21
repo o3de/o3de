@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_RIBBON_RENDER_H
-#define SIMUPARTICLE_CORE_PARTICLE_RIBBON_RENDER_H
+#pragma once
 
 #include <map>
 #include <unordered_map>
@@ -99,4 +98,3 @@ namespace SimuCore::ParticleCore {
     constexpr uint32_t INDEX_COUNT_IN_ONE_SEGMENT = 6;
 }
 
-#endif // SIMUPARTICLE_CORE_PARTICLE_RIBBON_RENDER_H

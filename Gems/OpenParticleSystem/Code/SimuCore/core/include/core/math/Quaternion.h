@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_QUATERNION_H
-#define SIMU_CORE_MATH_QUATERNION_H
+#pragma once
 
 #include <cmath>
 #include "core/platform/Platform.h"
@@ -132,5 +131,3 @@ namespace SimuCore {
 }
 
 #include "core/math/Quaternion.inl"
-
-#endif // SIMU_CORE_MATH_QUATERNION_H

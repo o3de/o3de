@@ -6,35 +6,34 @@
  *
  */
 
-#ifndef SIMU_CORE_SPIN_LOCK_H
-#define SIMU_CORE_SPIN_LOCK_H
+#pragma once
 
 #include <thread>
 #include <atomic>
 
 namespace SimuCore {
-constexpr uint32_t SPIN_MAX = 10;
-class SpinLock {
-public:
-    inline bool try_lock()
+    constexpr uint32_t SPIN_MAX = 10;
+    class SpinLock 
     {
-        return !lck.test_and_set(std::memory_order_acquire);
-    }
-
-    inline void lock()
-    {
-        while (!try_lock()) {
-            std::this_thread::yield();
+    public:
+        inline bool try_lock()
+        {
+            return !lck.test_and_set(std::memory_order_acquire);
         }
-    }
 
-    inline void unlock()
-    {
-        lck.clear(std::memory_order_release);
-    }
+        inline void lock()
+        {
+            while (!try_lock()) {
+                std::this_thread::yield();
+            }
+        }
 
-private:
-    std::atomic_flag lck = ATOMIC_FLAG_INIT;
-};
+        inline void unlock()
+        {
+            lck.clear(std::memory_order_release);
+        }
+
+    private:
+        std::atomic_flag lck = ATOMIC_FLAG_INIT;
+    };
 }
-#endif // SIMU_CORE_SPIN_LOCK_H

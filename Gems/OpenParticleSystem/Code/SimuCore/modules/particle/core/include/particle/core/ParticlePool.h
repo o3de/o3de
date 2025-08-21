@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_POOL_H
-#define SIMUPARTICLE_CORE_PARTICLE_POOL_H
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -148,5 +147,3 @@ namespace SimuCore::ParticleCore {
         }
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_POOL_H

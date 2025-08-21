@@ -411,10 +411,12 @@ namespace OpenParticleSystemEditor
             OnGradientChanged();
         }
     }
+
     void GradientColorPickerWidget::SetDefaultLocationChangedCB(AZStd::function<void()> callback)
     {
         m_defaultLocationChangedCB = callback;
     }
+
     void GradientColorPickerWidget::SetLocationChangedCB(AZStd::function<void(short, QColor)> callback)
     {
         m_locationChangedCB = callback;
@@ -461,7 +463,6 @@ namespace OpenParticleSystemEditor
         }
     }
 
-#pragma region GradientKeyFunctions
     GradientColorPickerWidget::GradientKey::GradientKey()
         : GradientKey(QGradientStop(0, Qt::white), QRect(0, 0, 0, 0))
     {

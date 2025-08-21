@@ -18,7 +18,6 @@ namespace OpenParticleSystem
     public:
         AZ_RTTI(OpenParticleSystemRequests, "{dc97b17d-ada8-4f67-b7ff-2380516f984d}");
         virtual ~OpenParticleSystemRequests() = default;
-        // Put your public methods here
     };
     
     class OpenParticleSystemBusTraits

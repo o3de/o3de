@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_EMIT_PARTICLE_EMIT_H
-#define SIMUPARTICLE_EMIT_PARTICLE_EMIT_H
+#pragma once
 
 #include <vector>
 #include "particle/core/Particle.h"
@@ -54,5 +53,3 @@ namespace SimuCore::ParticleCore {
         bool isProcessBurstList = true;
     };
 }
-
-#endif // SIMUPARTICLE_EMIT_PARTICLE_EMIT_H

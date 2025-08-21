@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_UPDATE_UPDATE_COLOR_H
-#define SIMUPARTICLE_UPDATE_UPDATE_COLOR_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -21,4 +20,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_UPDATE_UPDATE_COLOR_H

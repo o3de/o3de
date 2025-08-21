@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef O3DE_PARTICLEEDITDATACONFIG_H
-#define O3DE_PARTICLEEDITDATACONFIG_H
+#pragma once
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -22,5 +21,3 @@ namespace OpenParticle
         static void Reflect(AZ::ReflectContext* context);
     };
 } // namespace OpenParticle
-
-#endif // O3DE_PARTICLEEDITDATACONFIG_H

@@ -232,14 +232,17 @@ namespace OpenParticleSystemEditor
         // Connect camera to pipeline's default view after camera entity activated
         m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
     }
+
     void OpenParticleViewportRenderer::ActiveView()
     {
         m_active = true;
     }
+
     void OpenParticleViewportRenderer::DeactiveView()
     {
         m_active = false;
     }
+
     const OpenParticleSystem::CameraTransform& OpenParticleViewportRenderer::GetParticleEditorCameraTransform()
     {
         m_cameraTransform.m_valid = m_active;

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_HELPER_H
-#define SIMUPARTICLE_CORE_PARTICLE_HELPER_H
+#pragma once
 
 #include "particle/core/ParticleCurve.h"
 #include "particle/core/ParticleRandom.h"
@@ -124,5 +123,3 @@ namespace SimuCore::ParticleCore {
         return updateValue;
     }
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_HELPER_H

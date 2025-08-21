@@ -6,14 +6,14 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_MATH_H
-#define SIMU_CORE_MATH_MATH_H
+#pragma once
 
 #include <algorithm>
 #include <cstdint>
 
 namespace SimuCore {
-    class Math {
+    class Math 
+    {
     public:
         static float Fractional(float value);
 
@@ -88,5 +88,3 @@ namespace SimuCore {
         }
     };
 }
-
-#endif // SIMU_CORE_MATH_MATH_H

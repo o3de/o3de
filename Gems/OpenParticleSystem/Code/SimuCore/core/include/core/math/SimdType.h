@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_SIMD_TYPE_H
-#define SIMU_CORE_MATH_SIMD_TYPE_H
+#pragma once
 
 #include <cstdint>
 #include "core/platform/Platform.h"
@@ -44,5 +43,3 @@ namespace SimuCore {
     using VEC4_TYPE = VecValue<VECTOR_SIZE>;
 #endif
 }
-
-#endif // SIMU_CORE_MATH_SIMD_TYPE_H

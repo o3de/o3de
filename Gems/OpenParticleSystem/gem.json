@@ -1,7 +1,6 @@
 {
     "gem_name": "OpenParticleSystem",
     "display_name": "OpenParticleSystem",
-    "tags": ["OpenParticleSystem"],
     "icon_path": "preview.png",
     "type": "Code",
     "license": "Apache-2.0 Or MIT",

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef PARTICLE_UPDATE_KILL_H
-#define PARTICLE_UPDATE_KILL_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -24,5 +23,3 @@ namespace SimuCore::ParticleCore {
         bool useLocalSpace = true;
     };
 } // namespace SimuCore
-
-#endif

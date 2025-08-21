@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_DELEGATE_H
-#define SIMUPARTICLE_CORE_PARTICLE_DELEGATE_H
+#pragma once
 
 #include <cstdint>
 #include <string_view>
@@ -47,5 +46,3 @@ namespace SimuCore::ParticleCore {
     struct DataArgs {
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_DELEGATE_H

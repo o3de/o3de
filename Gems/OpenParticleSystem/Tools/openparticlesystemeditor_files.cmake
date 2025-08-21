@@ -106,7 +106,6 @@ set(FILES
     OpenParticleSystemEditor/Window/Controls/CommonDefs.h
     OpenParticleSystemEditor/Window/AssetWidget.h
     OpenParticleSystemEditor/Window/AssetWidget.cpp
-    
     OpenParticleSystemEditor/Document/ParticleDocument.cpp
     OpenParticleSystemEditor/Document/ParticleDocument.h
     OpenParticleSystemEditor/Document/ParticleDocumentBus.h

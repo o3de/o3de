@@ -67,6 +67,7 @@ namespace OpenParticleSystemEditor
 
         uint32_t m_indexOfLod = 0;
     };
+
     class LevelOfDetailInspector
         : public QWidget
         , public ParticleDocumentNotifyBus::Handler

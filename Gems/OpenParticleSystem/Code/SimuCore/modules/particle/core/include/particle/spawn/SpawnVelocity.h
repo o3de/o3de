@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_SPAWN_SPAWN_VELOCITY_H
-#define SIMUPARTICLE_SPAWN_SPAWN_VELOCITY_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -58,10 +57,9 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnVelConcentrate* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(SpawnVelConcentrate* data, const Distribution& distribution);
 
-        ValueObjFloat rate { 1.0 };
+        ValueObjFloat rate { 1.f };
         uint64_t padding0 = 0;
         Vector3 centre = { 0.f, 0.f, 0.f };
     };
 }
 
-#endif // SIMUPARTICLE_SPAWN_SPAWN_VELOCITY_H

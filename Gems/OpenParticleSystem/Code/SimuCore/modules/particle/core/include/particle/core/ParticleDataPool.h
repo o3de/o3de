@@ -5,9 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef SIMUPARTICLE_CORE_PARTICLE_DATA_POOL_H
-#define SIMUPARTICLE_CORE_PARTICLE_DATA_POOL_H
+#pragma once
 
 #include <map>
 #include <cstdint>
@@ -100,5 +98,3 @@ namespace SimuCore::ParticleCore {
         DataMap sets;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_DATA_POOL_H

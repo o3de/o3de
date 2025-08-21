@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_DISTRIBUTION_H
-#define SIMUPARTICLE_CORE_PARTICLE_DISTRIBUTION_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -21,5 +20,3 @@ namespace SimuCore::ParticleCore {
         virtual float Tick(const BaseInfo& info, const Particle& particle) = 0;
     };
 } // SimuCore::ParticleCore
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_DISTRIBUTION_H

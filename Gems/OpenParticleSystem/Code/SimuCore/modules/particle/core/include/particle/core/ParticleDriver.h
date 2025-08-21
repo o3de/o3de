@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_DRIVER_H
-#define SIMUPARTICLE_CORE_PARTICLE_DRIVER_H
+#pragma once
 
 #include "particle/core/Particle.h"
 #include "particle/core/ParticleDelegate.h"
@@ -47,5 +46,3 @@ namespace SimuCore::ParticleCore {
         static BufferDestroyDelegate bufferDestroyFn;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_DRIVER_H

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_H
-#define SIMUPARTICLE_CORE_PARTICLE_H
+#pragma once
 
 #include <AzCore/Math/Color.h>
 
@@ -577,5 +576,3 @@ namespace SimuCore::ParticleCore {
         MemoryType memory;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_H

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_UPDATE_UPDATE_VELOCITY_H
-#define SIMUPARTICLE_UPDATE_UPDATE_VELOCITY_H
+#pragma once
 
 #include "particle/core/Particle.h"
 
@@ -34,4 +33,3 @@ namespace SimuCore::ParticleCore {
     };
 }
 
-#endif // SIMUPARTICLE_UPDATE_UPDATE_VELOCITY_H

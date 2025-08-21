@@ -25,6 +25,7 @@ namespace OpenParticleSystemEditor
             m_gradients.takeAt(0);
         }
     }
+
     void GradientWidget::mousePressEvent(QMouseEvent* ev)
     {
         if (ev->button() == Qt::LeftButton)

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_CONSTANTS_H
-#define SIMU_CORE_MATH_CONSTANTS_H
+#pragma once
 
 #include <AzCore/Math/Color.h>
 #include "core/math/VectorX.h"
@@ -65,4 +64,3 @@ namespace SimuCore {
     constexpr uint32_t FACE_DIMENSION = 3;
     constexpr float NOISE_COEFFICIENT = 0.0001f;
 }
-#endif // SIMU_CORE_MATH_CONSTANTS_H

@@ -54,26 +54,32 @@ namespace OpenParticleSystemEditor
         GetViewportContext()->SetRenderScene(m_renderer->GetScene());
         OpenParticleViewportWidgetRequestsBus::Handler::BusConnect();
     }
+
     OpenParticleViewportWidget::~OpenParticleViewportWidget()
     {
         OpenParticleViewportWidgetRequestsBus::Handler::BusDisconnect();
     }
+
     AzFramework::CameraState OpenParticleViewportWidget::CameraState()
     {
         return GetCameraState();
     }
+
     AzFramework::ViewportId OpenParticleViewportWidget::ViewportId()
     {
         return GetId();
     }
+
     void OpenParticleViewportWidget::showEvent([[maybe_unused]] QShowEvent* event)
     {
         m_renderer->ActiveView();
     }
+
     void OpenParticleViewportWidget::hideEvent([[maybe_unused]] QHideEvent* event)
     {
         m_renderer->DeactiveView();
     }
+
     void OpenParticleViewportWidget::keyReleaseEvent(QKeyEvent* event)
     {
         if (event->key() == Qt::Key_Z)

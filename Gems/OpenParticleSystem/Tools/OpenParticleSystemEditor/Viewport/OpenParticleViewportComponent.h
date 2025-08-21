@@ -42,7 +42,7 @@ namespace OpenParticleSystemEditor
 
     private:
         ////////////////////////////////////////////////////////////////////////
-         // AZ::Component interface implementation
+        // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;

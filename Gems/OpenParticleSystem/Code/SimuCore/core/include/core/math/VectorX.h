@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_VECTOR_X_H
-#define SIMU_CORE_MATH_VECTOR_X_H
+#pragma once
 
 #include <cmath>
 #include "core/platform/Platform.h"
@@ -268,5 +267,3 @@ namespace SimuCore {
 }
 
 #include "core/math/VectorX.inl"
-
-#endif // SIMU_CORE_MATH_VECTOR_X_H

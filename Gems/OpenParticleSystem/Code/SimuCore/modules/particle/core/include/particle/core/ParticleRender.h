@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_RENDER_H
-#define SIMUPARTICLE_CORE_PARTICLE_RENDER_H
+#pragma once
 
 #include "particle/core/Particle.h"
 #include "particle/core/ParticleDelegate.h"
@@ -36,5 +35,3 @@ namespace SimuCore::ParticleCore {
         }
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_RENDER_H

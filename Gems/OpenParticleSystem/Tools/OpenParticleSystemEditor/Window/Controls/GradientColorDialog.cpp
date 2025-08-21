@@ -37,6 +37,7 @@ namespace OpenParticleSystemEditor
         Initialize();
         ShowKeys();
     }
+
     void GradientColorDialog::SetupUi()
     {
         QLabel* ColorLabel = new QLabel(this);
@@ -97,6 +98,7 @@ namespace OpenParticleSystemEditor
         m_lineEditColor->setReadOnly(true);
         m_lineEditColor->installEventFilter(this);
     }
+
     void GradientColorDialog::SetupButtons()
     {
         m_okButton.setText(tr("OK"));
@@ -112,6 +114,7 @@ namespace OpenParticleSystemEditor
                 reject();
             });
     }
+
     void GradientColorDialog::Initialize()
     {
         m_gradientWidget->setAutoFillBackground(true);
@@ -148,6 +151,7 @@ namespace OpenParticleSystemEditor
                 OnChangeUpdateDisplayedGradient();
             });
     }
+
     void GradientColorDialog::AddKeyEnabled(bool enabled) const
     {
         if (m_gradientColorPickerWidget != nullptr)
@@ -155,6 +159,7 @@ namespace OpenParticleSystemEditor
             m_gradientColorPickerWidget->AddKeyEnabled(enabled);
         }
     }
+
     void GradientColorDialog::OnGradientChanged(QGradientStops gradient)
     {
         m_gradientWidget->SetKeys(0, gradient);
@@ -170,6 +175,7 @@ namespace OpenParticleSystemEditor
     {
         return m_gradientColorPickerWidget->GetKeys();
     }
+
     void GradientColorDialog::SetGradient(QGradientStops stops)
     {
         m_gradientColorPickerWidget->SetKeys(stops);

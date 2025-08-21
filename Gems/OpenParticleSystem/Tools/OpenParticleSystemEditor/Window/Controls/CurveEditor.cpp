@@ -229,6 +229,7 @@ namespace OpenParticleSystemEditor
 
         return m_currentCurve->timeFactor;
     }
+
     void CurveEditor::SetTimeFactor(float value)
     {
         if (m_currentCurve)
@@ -236,6 +237,7 @@ namespace OpenParticleSystemEditor
             m_currentCurve->timeFactor = value;
         }
     }
+
     void CurveEditor::SetCurrentCurve(int index)
     {
         if (index == 0 || index > m_distribution->curves.size())
@@ -267,6 +269,7 @@ namespace OpenParticleSystemEditor
             value = max;
         }
     }
+
     QPointF CurveEditor::TransformPointFromScreen(float ptx, float pty) const
     {
         float x = ptx - m_scaleWidth;
@@ -293,6 +296,7 @@ namespace OpenParticleSystemEditor
 
         return QRect(static_cast<int>(x), static_cast<int>(y), KEY_WIDTH, KEY_WIDTH);
     }
+
     void CurveEditor::DrawGrid(QPainter& painter) const
     {
         // CONSTANTS
@@ -391,6 +395,7 @@ namespace OpenParticleSystemEditor
 
         QWidget::paintEvent(event);
     }
+
     void CurveEditor::mouseMoveEvent(QMouseEvent* event)
     {
         if (m_buttonPressed)
@@ -401,6 +406,7 @@ namespace OpenParticleSystemEditor
 
         QWidget::mouseMoveEvent(event);
     }
+
     void CurveEditor::mousePressEvent(QMouseEvent* event)
     {
         QPoint currPos = event->pos();
@@ -470,6 +476,7 @@ namespace OpenParticleSystemEditor
         releaseEvent = new QMouseEvent(QEvent::MouseButtonRelease, newPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         QCoreApplication::postEvent(this, releaseEvent);
     }
+
     void CurveEditor::AddKey(QPoint pos)
     {
         QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
@@ -489,6 +496,7 @@ namespace OpenParticleSystemEditor
         // to change the key point editor's target to current added key point
         SimulateLeftButtonPressDragRelease(keyNew.time, keyNew.value, keyNew.time, keyNew.value);
     }
+
     void CurveEditor::UpdateMenu(QPoint pos)
     {
         QMenu menu;
@@ -539,6 +547,7 @@ namespace OpenParticleSystemEditor
         const int activeCurveIdx = m_sourceData->m_distribution.curveCaches[key].activeAxis;
         m_sourceData->m_distribution.curveCaches[key].curves[activeCurveIdx] = m_currentCurve;
     }
+
     void CurveEditor::UpdateKeyInterpMode()
     {
         QAction* action = (QAction*)sender();
@@ -561,6 +570,7 @@ namespace OpenParticleSystemEditor
             }
         }
     }
+
     void CurveEditor::mouseReleaseEvent(QMouseEvent* event)
     {
         if (m_buttonPressed)
@@ -592,6 +602,7 @@ namespace OpenParticleSystemEditor
         QWidget::mouseReleaseEvent(event);
         emit mouseRelease();
     }
+
     void CurveEditor::resizeEvent(QResizeEvent* event)
     {
         m_mainRect = rect();
@@ -601,6 +612,7 @@ namespace OpenParticleSystemEditor
 
         QWidget::resizeEvent(event);
     }
+
     void CurveEditor::UpdateCurveKey(QPointF pos)
     {
         size_t index = 0;

@@ -258,6 +258,7 @@ namespace OpenParticleSystemEditor
         activateWindow();
         raise();
     }
+
     void OpenParticleSystemEditorWindow::OpenDocument(const AZStd::string& path)
     {
         AZStd::string emitterInspectorTitle;

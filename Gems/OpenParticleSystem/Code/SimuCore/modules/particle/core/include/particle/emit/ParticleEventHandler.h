@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_EMIT_PARTICLE_EVENT_HANDLE_H
-#define SIMUPARTICLE_EMIT_PARTICLE_EVENT_HANDLE_H
+#pragma once
 
 #include <cstdint>
 #include <core/math/VectorX.h>
@@ -48,5 +47,3 @@ namespace SimuCore::ParticleCore {
         bool applyLifetime = false;
     };
 }
-
-#endif // SIMUPARTICLE_EMIT_PARTICLE_EVENT_HANDLE_H

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_MATRIX_X_H
-#define SIMU_CORE_MATH_MATRIX_X_H
+#pragma once
 
 #include "core/math/VectorX.h"
 #include "core/math/Math.h"
@@ -103,5 +102,3 @@ namespace SimuCore {
 }
 
 #include "core/math/MatrixX.inl"
-
-#endif // SIMU_CORE_MATH_MATRIX_X_H

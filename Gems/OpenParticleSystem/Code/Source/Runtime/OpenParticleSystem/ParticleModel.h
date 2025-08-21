@@ -7,8 +7,6 @@
  */
  
 #pragma once
-#ifndef GAMEENGINE_PARTICLEMODEL_H
-#define GAMEENGINE_PARTICLEMODEL_H
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -88,4 +86,3 @@ namespace OpenParticle
     };
 } // namespace OpenParticle
 
-#endif // GAMEENGINE_PARTICLEMODEL_H

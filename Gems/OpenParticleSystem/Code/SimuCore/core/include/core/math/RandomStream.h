@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMU_CORE_MATH_RANDOM_STREAM_H
-#define SIMU_CORE_MATH_RANDOM_STREAM_H
+#pragma once
 
 #include "core/math/Random.h"
 
@@ -29,5 +28,3 @@ namespace SimuCore {
         int32_t randSeed;
     };
 }
-
-#endif // SIMU_CORE_MATH_RANDOM_STREAM_H

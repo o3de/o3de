@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_EFFECTOR_H
-#define SIMUPARTICLE_CORE_PARTICLE_EFFECTOR_H
+#pragma once
 
 #include <string>
 #include "particle/core/Particle.h"
@@ -184,5 +183,3 @@ namespace SimuCore::ParticleCore {
         std::string name;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_EFFECTOR_H

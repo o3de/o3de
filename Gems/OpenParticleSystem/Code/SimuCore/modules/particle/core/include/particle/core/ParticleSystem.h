@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SIMUPARTICLE_CORE_PARTICLE_SYSTEM_H
-#define SIMUPARTICLE_CORE_PARTICLE_SYSTEM_H
+#pragma once
 
 #include <string>
 #include <memory>
@@ -139,5 +138,3 @@ namespace SimuCore::ParticleCore {
         ParticleEventPool eventPool;
     };
 }
-
-#endif // SIMUPARTICLE_CORE_PARTICLE_SYSTEM_H
