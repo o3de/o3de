@@ -87,7 +87,7 @@ namespace OpenParticle
 
     class ParticleComponent final
         : public AzFramework::Components::ComponentAdapter<ParticleComponentController
-		, ParticleComponentConfig>
+        , ParticleComponentConfig>
     {
     public:
         using BaseClass = AzFramework::Components::ComponentAdapter<ParticleComponentController, ParticleComponentConfig>;
