@@ -25,6 +25,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
+#include <RayTracing/RayTracingMaterialShader.h>
 #include <RayTracing/RayTracingResourceList.h>
 
 // this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
@@ -96,6 +97,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingMaterialSrg() const override { return m_rayTracingMaterialSrg; }
             const Data::Instance<RPI::Buffer> GetMeshInfoGpuBuffer() const override { return m_meshInfoGpuBuffer.GetCurrentBuffer(); }
             const Data::Instance<RPI::Buffer> GetMaterialInfoGpuBuffer() const override { return m_materialInfoGpuBuffer.GetCurrentBuffer(); }
+            const RayTracingMaterialShaderManager& GetMaterialShaderManager() const;
             void Render(const RenderPacket&) override;
             void BeginFrame(int deviceIndex) override;
             uint32_t GetRevision() const override { return m_revision; }
@@ -143,6 +145,8 @@ namespace AZ
             // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
             MeshMap m_meshes;
             SubMeshVector m_subMeshes;
+            // one entry per sub-mesh
+            AZStd::vector<MeshRayTracingMaterialShaderLibraries> m_meshMaterialShaderLibraries;
 
             // buffer pools used in ray tracing operations
             RHI::Ptr<RHI::RayTracingBufferPools> m_bufferPools;
@@ -311,6 +315,8 @@ namespace AZ
             RHI::MultiDevice::DeviceMask m_deviceMask = {};
 
             void ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex);
+            
+            RayTracingMaterialShaderManager m_shaderManager;
         };
     }
 }

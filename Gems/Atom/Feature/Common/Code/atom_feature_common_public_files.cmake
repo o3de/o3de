@@ -112,7 +112,9 @@ set(FILES
     Include/Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h
     Include/Atom/Feature/RayTracing/RayTracingIndexList.h
     Include/Atom/Feature/RayTracing/RayTracingPass.h
+    Include/Atom/Feature/RayTracing/RayTracingMaterialPass.h
     Include/Atom/Feature/RayTracing/RayTracingPassData.h
+    Include/Atom/Feature/RayTracing/RayTracingMaterialPassData.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl

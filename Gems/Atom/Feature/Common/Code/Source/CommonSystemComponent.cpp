@@ -35,6 +35,8 @@
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
 #include <Atom/Feature/RayTracing/RayTracingPassData.h>
+#include <Atom/Feature/RayTracing/RayTracingMaterialPass.h>
+#include <Atom/Feature/RayTracing/RayTracingMaterialPassData.h>
 #include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -147,6 +149,7 @@ namespace AZ
             PostProcessFeatureProcessor::Reflect(context);
             ImGuiPassData::Reflect(context);
             RayTracingPassData::Reflect(context);
+            RayTracingMaterialPassData::Reflect(context);
             TaaPassData::Reflect(context);
             RayTracingDebugFeatureProcessor::Reflect(context);
             RenderDebugFeatureProcessor::Reflect(context);
@@ -336,6 +339,7 @@ namespace AZ
             // Add RayTracing passes
             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
             passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
+            passSystem->AddPassCreator(Name("RayTracingMaterialPass"), &Render::RayTracingMaterialPass::Create);
 
             // Add splash screen pass
             passSystem->AddPassCreator(Name("SplashScreenPass"), &Render::SplashScreenPass::Create);

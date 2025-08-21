@@ -27,6 +27,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
+#include <RayTracing/RayTracingMaterialShader.h>
 
 using uint = uint32_t;
 using uint4 = uint[4];
@@ -504,8 +505,18 @@ namespace AZ
                     descriptor->m_rayGenerationRecord.emplace_back(Name(m_passData->m_rayGenerationShaderName));
                     descriptor->m_missRecords.emplace_back(Name(m_passData->m_missShaderName));
 
-                    // add a hit group for standard meshes mesh to the shader table
-                    descriptor->m_hitGroupRecords.emplace_back(Name("HitGroup"));
+                    auto hitShaderCount = rayTracingFeatureProcessor->GetMaterialShaderManager().HitShaderCount();
+
+                    for (int hitShader = 0; hitShader < hitShaderCount; ++hitShader)
+                    {
+                        // add the same hit-group for each hit-shader index registered in the TLAS
+                        descriptor->m_hitGroupRecords.emplace_back(Name("HitGroup"));
+                    }
+                    if (hitShaderCount == 0)
+                    {
+                        // If we have no material hit-shaders: add a hit group for standard meshes to the shader table
+                        descriptor->m_hitGroupRecords.emplace_back(Name("HitGroup"));
+                    }
 
                     // add a hit group for each procedural geometry type to the shader table
                     const auto& proceduralGeometryTypes = rayTracingFeatureProcessor->GetProceduralGeometryTypes();

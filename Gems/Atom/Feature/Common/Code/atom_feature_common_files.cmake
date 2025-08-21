@@ -256,9 +256,12 @@ set(FILES
     Source/PostProcessing/WhiteBalancePass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingMaterialShader.h
+    Source/RayTracing/RayTracingMaterialShader.cpp
     Source/RayTracing/RayTracingResourceList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
+    Source/RayTracing/RayTracingMaterialPass.cpp
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
