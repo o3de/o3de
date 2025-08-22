@@ -19,6 +19,11 @@ namespace AZ
             BeginCommon(assetId);
         }
 
+        void BufferAssetCreator::SetCompressionFormat(const BufferAsset::CompressionFormat compressionFormat)
+        {
+            m_asset->m_compressionFormat = compressionFormat;
+        }
+
         void BufferAssetCreator::SetBuffer(const void* initialData, const size_t initialDataSize, const RHI::BufferDescriptor& descriptor)
         {
             if (!ValidateIsReady())
@@ -57,7 +62,7 @@ namespace AZ
             // Only allocate buffer if initial data is not empty
             if (initialData != nullptr && initialDataSize > 0)
             {
-                bufferAsset->m_buffer.resize_no_construct(descriptor.m_byteCount);
+                bufferAsset->m_buffer.resize_no_construct(initialDataSize);
                 memcpy(bufferAsset->m_buffer.data(), initialData, initialDataSize);
             }
 
@@ -160,6 +165,7 @@ namespace AZ
             inOutLastCreatedAssetId.m_subId = inOutLastCreatedAssetId.m_subId + 1;
             creator.Begin(inOutLastCreatedAssetId);
 
+            creator.SetCompressionFormat(sourceAsset->GetCompressionFormat());
             creator.SetBufferName(sourceAsset.GetHint());
             creator.SetUseCommonPool(sourceAsset->GetCommonPoolType());
             creator.SetPoolAsset(sourceAsset->GetPoolAsset());

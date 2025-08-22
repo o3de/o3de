@@ -28,6 +28,9 @@ namespace AZ
             //! @param assetId The unique id to use when creating the asset
             void Begin(const Data::AssetId& assetId);
 
+            //! Set buffer's in-disk compression format.
+            void SetCompressionFormat(const BufferAsset::CompressionFormat compressionFormat);
+
             //! @brief Assigns data to the BufferAsset
             //! @detail The given buffer is copied to the BufferAsset's structure and
             //! will be cleaned up when the BufferAsset is destroyed.
