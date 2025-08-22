@@ -130,7 +130,7 @@ namespace OpenParticle
                         AssetBuilderSDK::JobDependency jobDependency;
                         if (AzFramework::StringFunc::Path::IsExtension(filePath.c_str(), "material"))
                         {
-                            jobDependency.m_jobKey = "Atom Material Builder";
+                            jobDependency.m_jobKey = "Material Builder";
                         }
                         else if (AzFramework::StringFunc::Path::IsExtension(filePath.c_str(), "fbx"))
                         {
