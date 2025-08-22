@@ -172,7 +172,7 @@ namespace AZ
             return m_shader;
         }
 
-        bool MeshletsRenderPass::FillDrawRequestData(RHI::DeviceDrawPacketBuilder::DeviceDrawRequest& drawRequest)
+        bool MeshletsRenderPass::FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
         {
             if (!m_pipelineState)
             {
@@ -180,13 +180,13 @@ namespace AZ
             }
 
             drawRequest.m_listTag = m_drawListTag;
-            drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
+            drawRequest.m_pipelineState = m_pipelineState;
 
             return true;
         }
 
         // Adding draw packets
-        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::DeviceDrawPacket*> drawPackets)
+        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets)
         {
             bool overallSuccess = true;
 
@@ -198,7 +198,7 @@ namespace AZ
                 return false;
             }
             
-            for (const RHI::DeviceDrawPacket* drawPacket : drawPackets)
+            for (const RHI::DrawPacket* drawPacket : drawPackets)
             {
                 if (!drawPacket)
                 {   // might not be an error - the object might have just been added and the DrawPacket is

@@ -129,6 +129,7 @@ namespace AZ
 
             Data::Instance<RPI::Shader> m_renderShader;
             Data::Instance<RPI::Shader> m_computeShader;
+            RHI::GeometryView m_geometryView { RHI::MultiDevice::AllDevices };
         };
     } // namespace Meshlets
 } // namespace AZ

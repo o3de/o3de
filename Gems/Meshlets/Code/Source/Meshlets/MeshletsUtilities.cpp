@@ -196,7 +196,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, bufferView))
+            if (!srg->SetBufferView(bufferIndex, bufferView.get()))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;
