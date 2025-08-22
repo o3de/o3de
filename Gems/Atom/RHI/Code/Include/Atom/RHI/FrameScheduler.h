@@ -183,9 +183,6 @@ namespace AZ::RHI
         //! Adds a DeviceRayTracingShaderTable to be built this frame
         void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable);
 
-        //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
-        const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
-
     private:
         AZStd::unordered_map<int, ScopeId> m_rootScopeIds;
 

@@ -75,9 +75,6 @@ class Surface
     real diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
     real specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
 
-    //! Applies specular anti-aliasing to roughnessA2 
-    void ApplySpecularAA();
-
     //! Calculates roughnessA and roughnessA2 after roughness has been set
     void CalculateRoughnessA();
 

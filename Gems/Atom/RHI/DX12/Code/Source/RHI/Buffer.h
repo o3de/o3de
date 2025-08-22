@@ -39,10 +39,6 @@ namespace AZ
             // The initial state for the graph compiler to use when compiling the resource transition chain.
             D3D12_RESOURCE_STATES m_initialAttachmentState = D3D12_RESOURCE_STATE_COMMON;
 
-            // Override that returns the DX12 device.
-            Device& GetDevice();
-            const Device& GetDevice() const;
-
         private:
             Buffer() = default;
 

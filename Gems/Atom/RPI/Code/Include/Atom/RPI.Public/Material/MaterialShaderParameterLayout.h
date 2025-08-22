@@ -75,11 +75,6 @@ namespace AZ::RPI
         Index AddParameterFromPropertyConnection(const AZ::Name& name, const MaterialPropertyDataType dataType);
         Index AddParameterFromFunctor(const AZStd::string& name, const AZStd::string& typeName, const size_t typeSize = 0);
 
-        Index AddMaterialParameter(
-            const AZStd::string_view& name,
-            const MaterialPropertyDataType dataType,
-            const bool isPseudoParam = false,
-            const size_t count = 1);
         Index AddTypedMaterialParameter(
             const AZStd::string_view& name,
             const AZStd::string_view& typeName,

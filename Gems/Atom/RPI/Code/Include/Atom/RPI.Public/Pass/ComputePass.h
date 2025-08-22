@@ -66,10 +66,6 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-            // Calculates the group counts for the dispatch item using the target image dimensions
-            // and the number of threads per group (group size)
-            void MatchDimensionsToOutput();
-
             // The compute shader that will be used by the pass
             Data::Instance<Shader> m_shader = nullptr;
 

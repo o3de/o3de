@@ -107,8 +107,6 @@ namespace AZ
         {
             AZStd::string                  m_id;
             AZStd::vector<StructParameter> m_members;
-
-            AZStd::vector<Variable>        BuildTypeIdPairs() const;
         };
 
         // Textures

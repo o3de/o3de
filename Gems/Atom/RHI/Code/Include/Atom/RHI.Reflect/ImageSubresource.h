@@ -65,9 +65,6 @@ namespace AZ::RHI
         //! Constructs a range that covers the same region as the image view.
         explicit ImageSubresourceRange(const ImageViewDescriptor& descriptor);
 
-        //! Constructs a range from a single subresource.
-        ImageSubresourceRange(ImageSubresource subresource);
-
         //! Returns the hash of the view.
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 

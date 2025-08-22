@@ -544,5 +544,20 @@ namespace AZ
             return false;
         }
 
+        template <typename T>
+        T ShaderResourceGroup::GetConstant(RHI::ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
+        {
+            return m_data.GetConstant<T>(inputIndex, arrayIndex);
+        }
+
+        template <typename T>
+        T ShaderResourceGroup::GetConstant(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return GetConstant<T>(inputIndex.GetConstantIndex(), arrayIndex);
+            }
+            return false;
+        }
     } // namespace RPI
 } // namespace AZ

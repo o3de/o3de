@@ -385,13 +385,7 @@ namespace AZ
                 friend LuaMaterialFunctorAPI::RenderStates;
                 friend LuaMaterialFunctorAPI::ShaderItem;
             public:
-                static void Reflect(BehaviorContext* behaviorContext);
                 static constexpr char const DebugName[] = "LuaMaterialFunctor";
-
-            private:
-                static void Script_Error(const AZStd::string& message);
-                static void Script_Warning(const AZStd::string& message);
-                static void Script_Print(const AZStd::string& message);
             };
 
         } // namespace LuaMaterialFunctorAPI

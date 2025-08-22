@@ -66,11 +66,6 @@ namespace AZ::RHI
         //! is the highest detailed mip.
         uint32_t GetResidentMipLevel() const;
             
-        //! Returns the set of queue classes that are supported for usage as an attachment on the frame scheduler.
-        //! Effectively, for a scope of a specific hardware class to use the image as an attachment, the queue must
-        //! be present in this mask. This does not apply to non-attachment images on the Compute / Graphics queue.
-        HardwareQueueClassMask GetSupportedQueueMask() const;
-            
         //! Returns the image frame attachment if the image is currently attached. This is assigned when the image
         //! is imported into the frame scheduler (which is reset every frame). This value will be null for non-attachment
         //! images.

@@ -35,9 +35,6 @@ namespace AZ
 
             ImagePoolResolver* GetResolver();
 
-            void AddMemoryUsage(size_t bytesToAdd);
-            void SubtractMemoryUsage(size_t bytesToSubtract);
-
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
