@@ -8,7 +8,7 @@
             0.800000011920929,
             1.0
         ],
-        "baseColor.textureMap": "@gemroot:OpenParticleSystem@/Assets/Textures/OpenParticle/bark1_col.jpg",
+        "baseColor.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/checker_basecolor.tif",
         "emissive.color": [
             0.6894330978393555,
             0.0638590082526207,
@@ -17,12 +17,12 @@
         ],
         "emissive.enable": true,
         "emissive.intensity": 6.0,
-        "emissive.textureMap": "@gemroot:OpenParticleSystem@/Assets/Textures/OpenParticle/bark1_col.jpg",
+        "emissive.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/checker_basecolor.tif",
         "general.doubleSided": true,
         "general.enableShadows": false,
         "opacity.alphaAffectsSpecular": 0.75,
         "opacity.alphaSource": "Split",
         "opacity.mode": "Blended",
-        "opacity.textureMap": "@gemroot:OpenParticleSystem@/Assets/Textures/OpenParticle/bark1_col.jpg"
+        "opacity.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/checker_basecolor.tif"
     }
 }
