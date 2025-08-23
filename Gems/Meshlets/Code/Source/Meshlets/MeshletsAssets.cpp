@@ -225,7 +225,6 @@ namespace AZ
             //-------------------------------------------
             // Start model creation
             RPI::ModelAssetCreator modelAssetCreator;
-            Uuid modelId = Uuid::CreateRandom();
             modelAssetCreator.Begin(Uuid::CreateRandom());
             modelAssetCreator.SetName(m_name);
             //-------------------------------------------
