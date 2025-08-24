@@ -145,7 +145,7 @@ namespace AZ
 
         // Returns the buffer view instance as well as the buffer allocator
         Data::Instance<RHI::BufferView> UtilityClass::CreateSharedBufferView(
-            const char* warningHeader,
+            [[maybe_unused]] const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator)
         {
