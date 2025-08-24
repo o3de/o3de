@@ -54,6 +54,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/EBus/IEventScheduler.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -2773,6 +2774,27 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     m_levelErrorsHaveBeenDisplayed = false;
 
     return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CCryEditApp::OnNewComponent()
+{
+    AZ::IO::FixedMaxPath enginePath = AZ::Utils::GetEnginePath();
+    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+    AZ::IO::FixedMaxPath scriptPath = enginePath / "Tools" / "ClassCreationWizard" / "ClassWizard.py";
+
+    if (!AZ::IO::SystemFile::Exists(scriptPath.c_str()))
+    {
+        AZ_Error("ClassWizard", false, "ClassWizard.py script not found at: %s", scriptPath.c_str());
+        return;
+    }
+
+    AZStd::vector<AZStd::string_view> scriptArgs = { "--engine-path", enginePath.c_str(), "--project-path", projectPath.c_str() };
+
+    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+        &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
+        AZStd::string_view(scriptPath.c_str()),
+        scriptArgs);
 }
 
 //////////////////////////////////////////////////////////////////////////

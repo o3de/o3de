@@ -264,6 +264,28 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.new", "Ctrl+N");
     }
 
+    // New Component
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.file.newComponent";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "New Component";
+        actionProperties.m_description = "Create a new C++ component";
+        actionProperties.m_category = "Tools";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [cryEdit = m_cryEditApp]
+            {
+                cryEdit->OnNewComponent();
+            });
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
     // Open Level
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.open";
@@ -1794,6 +1816,7 @@ void EditorActionsHandler::OnMenuBindingHook()
     // File
     {
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.new", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.newComponent", 110);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.open", 200);
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::FileMenuIdentifier, EditorIdentifiers::RecentFilesMenuIdentifier, 300);
         {
