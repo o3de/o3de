@@ -130,7 +130,7 @@ namespace OpenParticle
         Init();
     }
 
-    void ParticleDataInstance::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ParticleDataInstance::OnAssetError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ_Error("ParticleDataInstance", false, "Failed to load asset %s.", asset.GetHint().c_str());
     }
