@@ -6,18 +6,27 @@
  *
  */
 
-#include <cstdlib>
 #include "core/math/RandomStream.h"
 
 namespace SimuCore {
-    RandomStream::RandomStream(int32_t seed) : randSeed(seed)
+    RandomStream::RandomStream(AZ::u64 seed)
     {
+        if (seed)
+        {
+            m_random.SetSeed(static_cast<AZ::u64>(seed));
+        }
+        else
+        {
+            // use a cryptographically secure random to seed our fast random stream
+            AZ::BetterPseudoRandom random;
+            random.GetRandom(&seed, sizeof(seed));
+            m_random.SetSeed(static_cast<AZ::u64>(seed));
+        }
     }
 
     float RandomStream::Rand()
     {
-        Random::MutateSeed(randSeed);
-        return Random::Rand();
+        return m_random.GetRandomFloat();
     }
 
     float RandomStream::RandRange(float min, float max)

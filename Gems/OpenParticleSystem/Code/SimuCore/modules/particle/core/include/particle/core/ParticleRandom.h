@@ -9,6 +9,7 @@
 #pragma once
 
 #include "particle/core/ParticleDistribution.h"
+#include "core/math/Random.h"
 
 namespace SimuCore::ParticleCore {
 

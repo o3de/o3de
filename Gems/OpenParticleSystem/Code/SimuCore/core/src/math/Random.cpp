@@ -9,88 +9,24 @@
 #include "core/math/Random.h"
 #include "core/math/Math.h"
 #include "core/platform/Platform.h"
+#include <AzCore/Math/Random.h>
 
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <windows.h>
-#include <wincrypt.h>
-#else
-#include <cstdio>
-#endif
+namespace SimuCore_Random_Internal
+{
+    // note, this class does not make any heap allocations.
+    AZ::SimpleLcgRandom s_random;
+    // note, if we want cryptographic quality random numbers, we can use AZ::BetterPseudoRandom which
+    // is already PAL-ified to use the best available system API like wincrypt on windows.
+    // But I don't think that particles need to be cryptographically secure, and those APIS are always more
+    // costly to call.
+} // namespace SimuCore_Random_Internal
 
 namespace SimuCore {
-    int32_t Random::randSeed = 0;
-    int32_t Random::initSeed = 0;
-
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool Random::GenRandom(void* data, uint32_t size)
-    {
-        int res;
-        HCRYPTPROV crypt;
-        res = CryptAcquireContext(&crypt, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
-        if (!res) {
-            return false;
-        }
-        res = CryptGenRandom(crypt, static_cast<DWORD>(size), static_cast<PBYTE>(data));
-        CryptReleaseContext(crypt, 0);
-        if (!res) {
-            return false;
-        }
-        return true;
-    }
-#else
-    bool Random::GenRandom(void* data, uint32_t size)
-    {
-        size_t res;
-        auto *fp = fopen("/dev/urandom", "rb");
-        if (fp == nullptr) {
-            return false;
-        }
-        res = fread(data, 1, size, fp);
-        (void)fclose(fp);
-        if (res != size) {
-            return false;
-        }
-        return true;
-    }
-#endif
-
-    namespace internal {
-        union FloatConvert {
-            float vf;
-            uint32_t vi;
-        };
-    }
-
-    void Random::RandSeed(int32_t seed)
-    {
-        randSeed = seed;
-        initSeed = seed;
-    }
-
-    void Random::MutateSeed(int32_t& seed)
-    {
-        // the fixed algorithm of random seed
-        seed = (seed * 196314165) + 907633515;
-    }
-
-    float Random::Rand(int32_t seed)
-    {
-        internal::FloatConvert tmp;
-        internal::FloatConvert result;
-        tmp.vf = 1.0f;
-        result.vi = (tmp.vi & 0xff800000) | (static_cast<uint32_t>(seed) & 0x007fffff);
-        return Math::Fractional(result.vf);
-    }
+    using namespace SimuCore_Random_Internal;
 
     float Random::Rand()
     {
-        if (initSeed == 0) {
-            (void)GenRandom(initSeed);
-            randSeed = initSeed;
-        }
-
-        MutateSeed(randSeed);
-        return Rand(randSeed);
+        return s_random.GetRandomFloat();
     }
 
     float Random::RandomRange(float min, float max)

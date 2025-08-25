@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Random.h"
 
 namespace SimuCore::ParticleCore {
     void SpawnLocBox::Execute(const SpawnLocBox* data, const SpawnInfo& info, Particle& particle)

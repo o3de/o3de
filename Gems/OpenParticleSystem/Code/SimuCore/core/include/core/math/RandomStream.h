@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "core/math/Random.h"
+#include <AzCore/Math/Random.h>
 
 namespace SimuCore {
     class RandomStream {
     public:
-        explicit RandomStream(int32_t seed = 0);
+        explicit RandomStream(AZ::u64 seed = 0);
         ~RandomStream() = default;
 
         float Rand();
@@ -25,6 +25,6 @@ namespace SimuCore {
         float SymmetricRandom();
 
     private:
-        int32_t randSeed;
+        AZ::SimpleLcgRandom m_random;
     };
 }
