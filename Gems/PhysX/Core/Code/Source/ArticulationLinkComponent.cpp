@@ -67,11 +67,6 @@ namespace PhysX
     {
     }
 
-    bool ArticulationLinkComponent::IsRootArticulation() const
-    {
-        return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
-    }
-
     const AZ::Entity* ArticulationLinkComponent::GetArticulationRootEntity() const
     {
         bool rootFound = false;
@@ -861,6 +856,11 @@ namespace PhysX
             return joint->getMaxJointVelocity();
         }
         return 0.0f;
+    }
+    
+    bool ArticulationLinkComponent::IsRootArticulation() const
+    {
+        return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
     }
 
     const physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex) const
