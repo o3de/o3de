@@ -509,6 +509,18 @@ namespace AZ
         return Vector4(Simd::Vec4::Mat4x4TransformVector(GetSimdValues(), rhs.GetSimdValue()));
     }
 
+    AZ_MATH_INLINE Vector4& Matrix4x4::operator[](const size_t row)
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
+    AZ_MATH_INLINE const Vector4& Matrix4x4::operator[](const size_t row) const
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
     AZ_MATH_INLINE Vector3 Matrix4x4::TransposedMultiply3x3(const Vector3& v) const
     {
         const Simd::Vec3::FloatType rows[3] = { Simd::Vec4::ToVec3(m_rows[0].GetSimdValue()), Simd::Vec4::ToVec3(m_rows[1].GetSimdValue()), Simd::Vec4::ToVec3(m_rows[2].GetSimdValue()) };
