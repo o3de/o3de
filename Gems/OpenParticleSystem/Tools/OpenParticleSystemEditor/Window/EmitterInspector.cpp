@@ -22,7 +22,6 @@
 
 namespace OpenParticleSystemEditor
 {
-    const float WHEEL_SCALE = 0.00125f;
     EmitterInspector::EmitterInspector(EffectorInspector* pViewDetail, QWidget* parent, QString windowTitle)
         : QWidget(parent)
         , m_ui(new Ui::EmitterInspector)
