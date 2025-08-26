@@ -330,17 +330,6 @@ namespace OpenParticle
         AZ::Vector3 torusAxis = { 0.f, 0.f, 1.f };
     };
 
-    struct SpawnRotationObsolete
-    {
-        AZ_CLASS_ALLOCATOR(SpawnRotationObsolete, AZ::SystemAllocator, 0);
-        void ConvertDistIndexVersion(Distribution& distribution);
-
-        ValueObjFloat angleObject = { "angleObject", 0.f };
-        ValueObjFloat speedObject = { "speedObject", 0.f };
-        AZ::Vector3 axis = { 0.f, 1.f, 0.f };
-        uint32_t version = 1;
-    };
-
     struct SpawnRotation
     {
         AZ_CLASS_ALLOCATOR(SpawnRotation, AZ::SystemAllocator, 0);
@@ -901,6 +890,4 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(OpenParticle::TrailParam, "{391EBB0C-4BF8-4092-BC41-21879E83F8F5}");
     AZ_TYPE_INFO_SPECIALIZE(OpenParticle::RibbonParam, "{142B7183-6376-405D-9836-832EE759D2D2}");
     AZ_TYPE_INFO_SPECIALIZE(OpenParticle::RibbonConfig, "{5ef04cdb-4acb-481b-893f-a341d238396d}");
-
-    AZ_TYPE_INFO_SPECIALIZE(OpenParticle::SpawnRotationObsolete, "{3B22BB72-AEB3-4852-8C2D-C3D9EF7DC9D0}");
 } // namespace AZ

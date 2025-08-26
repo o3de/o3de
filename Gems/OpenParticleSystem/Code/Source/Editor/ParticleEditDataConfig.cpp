@@ -315,13 +315,6 @@ namespace OpenParticle
                 ->Field("initAngleObject", &OpenParticle::SpawnRotation::initAngleObject)
                 ->Field("rotateSpeedObject", &OpenParticle::SpawnRotation::rotateSpeedObject);
 
-            serializeContext->Class<OpenParticle::SpawnRotationObsolete>()
-                ->Version(0)
-                ->Attribute("CONVERTOR", &ConvertDistIndexVersion<OpenParticle::SpawnRotationObsolete>)
-                ->Field("axis", &OpenParticle::SpawnRotationObsolete::axis)
-                ->Field("angleObject", &OpenParticle::SpawnRotationObsolete::angleObject)
-                ->Field("speedObject", &OpenParticle::SpawnRotationObsolete::speedObject);
-
             serializeContext->Class<OpenParticle::SpawnLightEffect>()
                 ->Version(0)
                 ->Attribute("CONVERTOR", &ConvertDistIndexVersion<OpenParticle::SpawnLightEffect>)

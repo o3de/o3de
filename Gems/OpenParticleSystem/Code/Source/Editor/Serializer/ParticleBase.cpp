@@ -381,13 +381,6 @@ namespace OpenParticle
         version = 1;
     }
 
-    void SpawnRotationObsolete::ConvertDistIndexVersion(Distribution& distribution)
-    {
-        ConvertDistIndexImpl(angleObject, version, distribution, RandomTickMode::PER_FRAME, CurveTickMode::EMIT_DURATION);
-        ConvertDistIndexImpl(speedObject, version, distribution, RandomTickMode::PER_FRAME, CurveTickMode::EMIT_DURATION);
-        version = 1;
-    }
-
     void SpawnRotation::ConvertDistIndexVersion(Distribution& distribution)
     {
         ConvertDistIndexImpl(initAngleObject, version, distribution, RandomTickMode::PER_FRAME, CurveTickMode::EMIT_DURATION);

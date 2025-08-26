@@ -27,31 +27,6 @@ namespace OpenParticle
         return classData == nullptr ? AZStd::string_view{} : AZStd::string_view(classData->m_name);
     }
 
-    AZ::JsonSerializationResult::ResultCode ParticleBaseSerializer::LoadObsoleteModule(
-        AZ::TypeId id,
-        AZStd::any& module,
-        const rapidjson::Value& inputValue,
-        AZ::JsonDeserializerContext& context)
-    {
-        AZ::JsonSerializationResult::ResultCode result(AZ::JsonSerializationResult::Tasks::Import);
-        if (id == azrtti_typeid<OpenParticle::SpawnRotation>())
-        {
-            AZ::TypeId obsoleteId = azrtti_typeid<OpenParticle::SpawnRotationObsolete>();
-            AZStd::any obsoleteModule = context.GetSerializeContext()->CreateAny(obsoleteId);
-            result = ContinueLoading(AZStd::any_cast<void>(&obsoleteModule), obsoleteId, inputValue, context);
-            if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
-            {
-                OpenParticle::SpawnRotationObsolete spawnRotationObsolete = AZStd::any_cast<OpenParticle::SpawnRotationObsolete>(obsoleteModule);
-                OpenParticle::SpawnRotation spawnRotation;
-                spawnRotation.initAxis = spawnRotationObsolete.axis;
-                spawnRotation.initAngleObject = spawnRotationObsolete.angleObject;
-                spawnRotation.rotateSpeedObject = spawnRotationObsolete.speedObject;
-                module = spawnRotation;
-            }
-        }
-        return result;
-    }
-
     AZ::JsonSerializationResult::ResultCode ParticleBaseSerializer::LoadModule(
         AZStd::unordered_map<AZ::TypeId, VersionConvertor>& list,
         AZStd::list<AZStd::any>& modules,
@@ -86,14 +61,7 @@ namespace OpenParticle
                 {
                     id.second(this, module, iter->value, context);
                 }
-                if (id.first == azrtti_typeid<OpenParticle::SpawnRotation>() && iter->value.HasMember("axis"))
-                {
-                    resultCode.Combine(LoadObsoleteModule(id.first, module, iter->value, context));
-                }
-                else
-                {
-                    resultCode.Combine(ContinueLoading(AZStd::any_cast<void>(&module), id.first, iter->value, context));
-                }
+                resultCode.Combine(ContinueLoading(AZStd::any_cast<void>(&module), id.first, iter->value, context));
                 modules.emplace_back(module);
             }
         }
@@ -221,23 +189,6 @@ namespace OpenParticle
         if (resultCode.GetOutcome() == JSR::Outcomes::Success)
         {
             spawnLocPoint.version = 0;
-        }
-    }
-
-    template<>
-    void ParticleBaseSerializer::ConvertOldModule<SpawnRotationObsolete>(
-        AZStd::any& module, const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
-    {
-        auto& val = AZStd::any_cast<OpenParticle::SpawnRotationObsolete&>(module);
-        auto resultCode = ConvertTo2FloatObject(val.angleObject, val.speedObject,
-            "angleObject", "angle", "speedObject", "speed", inputValue, context);
-        if (resultCode.GetOutcome() == JSR::Outcomes::Skipped)
-        {
-            val.version = 1;
-        }
-        if (resultCode.GetOutcome() == JSR::Outcomes::Success)
-        {
-            val.version = 0;
         }
     }
 

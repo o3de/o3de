@@ -70,12 +70,6 @@ namespace OpenParticle
             const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context);
 
-        AZ::JsonSerializationResult::ResultCode LoadObsoleteModule(
-            AZ::TypeId id,
-            AZStd::any& module,
-            const rapidjson::Value& inputValue,
-            AZ::JsonDeserializerContext& context);
-
         AZStd::string_view GetClassName(AZ::TypeId id, AZ::JsonBaseContext& context);
     };
 
