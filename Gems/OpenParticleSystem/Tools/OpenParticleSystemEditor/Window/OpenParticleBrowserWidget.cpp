@@ -63,7 +63,7 @@ namespace OpenParticleSystemEditor
     constexpr AZStd::string_view ICON_HIDE_HOVER = ":/stylesheet/img/UI20/toolbar/Object_list.svg";
     constexpr AZStd::string_view ICON_FILTER_DIR = ":/stylesheet/img/UI20/Grid-large.svg";
     constexpr AZStd::string_view ICON_FILTER_PARTICLE = ":/Gallery/Grid-small.svg";
-    constexpr AZStd::string_view ICON_IMPORT_12PX = ":/stylesheet/img/UI20/TreeView/open.svg";
+    [[maybe_unused]] constexpr AZStd::string_view ICON_IMPORT_12PX = ":/stylesheet/img/UI20/TreeView/open.svg";
     constexpr AZStd::string_view ICON_SAVEALL_12PX = ":/Gallery/Save.svg";
 
     NodeBrowserTreeDelegate::NodeBrowserTreeDelegate(QWidget* parent)
