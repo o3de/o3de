@@ -44,7 +44,7 @@ namespace AZ::RHI
     //! Aliased Heaps are used for allocating transient attachments (resources that are valid only during the duration of a frame).
     //! and they will reuse memory whenever possible, and will also track the necessary barriers that need to be inserted when aliasing happens.
     //! Aliased Heaps do not support aliased resources being used at the same time (even if the resources are compatible).
-    class AliasedHeap
+    class ATOM_RHI_PUBLIC_API AliasedHeap
         : public DeviceResourcePool
     {
         using Base = DeviceResourcePool;

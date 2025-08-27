@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
+#include <Atom/RHI/MultiDeviceObject.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -17,7 +18,7 @@ namespace AZ::RHI
 {
     struct ImageViewDescriptor;
 
-    struct ImageSubresource
+    struct ATOM_RHI_REFLECT_API ImageSubresource
     {
         AZ_TYPE_INFO(ImageSubresource, "{4B32F472-3B82-40AC-967A-BFE69B114C40}");
         static void Reflect(AZ::ReflectContext* context);
@@ -41,7 +42,7 @@ namespace AZ::RHI
         ImageAspect m_aspect = ImageAspect::Color;
     };
 
-    struct ImageSubresourceRange
+    struct ATOM_RHI_REFLECT_API ImageSubresourceRange
     {
         AZ_TYPE_INFO(ImageSubresourceRange, "{CD682C5C-1119-4291-84E1-253415F5D390}");
         static void Reflect(AZ::ReflectContext* context);
@@ -89,7 +90,7 @@ namespace AZ::RHI
         ImageAspectFlags m_aspectFlags = ImageAspectFlags::All;
     };
 
-    struct DeviceImageSubresourceLayout
+    struct ATOM_RHI_REFLECT_API DeviceImageSubresourceLayout
     {
         AZ_TYPE_INFO(DeviceImageSubresourceLayout, "{076A8345-B6E4-4287-A1B3-4079E1BA3CA9}");
         static void Reflect(AZ::ReflectContext* context);
@@ -133,7 +134,16 @@ namespace AZ::RHI
 
         ImageSubresourceLayout() = default;
 
-        void Init(RHI::MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout& deviceLayout);
+        void Init(RHI::MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout& deviceLayout)
+        {
+            MultiDeviceObject::IterateDevices(
+                deviceMask,
+                [this, deviceLayout](int deviceIndex)
+                {
+                    m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
+                    return true;
+                });
+        }
 
         DeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
         {
@@ -156,11 +166,11 @@ namespace AZ::RHI
     //! the source of a copy from system memory to a destination RHI staging buffer. The results are
     //! platform agnostic. It works by inspecting the image size and format, and then computing the required
     //! size and memory layout requirements to represent the data as linear rows.
-    DeviceImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat);
-    DeviceImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource);
+    ATOM_RHI_REFLECT_API DeviceImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat);
+    ATOM_RHI_REFLECT_API DeviceImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource);
 
     //! Returns the image subresource index given the mip and array slices, and the total mip levels. Subresources
     //! are organized by arrays of mip chains. The formula is: subresourceIndex = mipSlice + arraySlice * mipLevels.
-    uint32_t GetImageSubresourceIndex(uint32_t mipSlice, uint32_t arraySlice, uint32_t mipLevels);
-    uint32_t GetImageSubresourceIndex(ImageSubresource subresource, uint32_t mipLevels);
+    ATOM_RHI_REFLECT_API uint32_t GetImageSubresourceIndex(uint32_t mipSlice, uint32_t arraySlice, uint32_t mipLevels);
+    ATOM_RHI_REFLECT_API uint32_t GetImageSubresourceIndex(ImageSubresource subresource, uint32_t mipLevels);
 }

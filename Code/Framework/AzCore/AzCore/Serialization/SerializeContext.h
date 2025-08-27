@@ -906,7 +906,7 @@ namespace AZ::Serialize
         Attribute* FindAttribute(AttributeId attributeId) const;
 
         const char* m_name{ "" };                 ///< Used in XML output and debugging purposes
-        u32 m_nameCrc{};                          ///< CRC32 of m_name
+        AZ::Crc32 m_nameCrc{};                    ///< CRC32 of m_name
         Uuid m_typeId = AZ::TypeId::CreateNull();
         size_t m_dataSize{};
         size_t m_offset{};
@@ -1128,12 +1128,12 @@ namespace AZ::Serialize
         /// Return default element generic name (used by most containers).
         static inline const char* GetDefaultElementName() { return "element"; }
         /// Return default element generic name crc (used by most containers).
-        static inline u32 GetDefaultElementNameCrc() { return AZ_CRC_CE("element"); }
+        static inline Crc32 GetDefaultElementNameCrc() { return AZ_CRC_CE("element"); }
 
         // Returns default element generic name unless overridden by an IDataContainer
         virtual const char* GetElementName([[maybe_unused]] int index = 0) { return GetDefaultElementName(); }
         // Returns default element generic name crc unless overridden by an IDataContainer
-        virtual u32 GetElementNameCrC([[maybe_unused]] int index = 0) { return GetDefaultElementNameCrc(); }
+        virtual Crc32 GetElementNameCrC([[maybe_unused]] int index = 0) { return GetDefaultElementNameCrc(); }
 
         /// Returns the generic element (offsets are mostly invalid 0xbad0ffe0, there are exceptions). Null if element with this name can't be found.
         virtual const ClassElement* GetElement(u32 elementNameCrc) const = 0;
@@ -1312,7 +1312,7 @@ namespace AZ::Serialize
         };
 
         const char* m_name;         ///< Name of the parameter, they must be unique with in the scope of the class.
-        u32             m_nameCrc;      ///< CRC32 of name
+        AZ::Crc32       m_nameCrc;      ///< CRC32 of name
         DataType        m_dataType;     ///< What type of data, if we have any.
         Uuid            m_id = AZ::Uuid::CreateNull();           ///< Reference ID, the meaning can change depending on what are we referencing.
         unsigned int    m_version;  ///< Version of data in the stream. This can be the current version or older. Newer version will be handled internally.
@@ -2489,7 +2489,7 @@ namespace AZ::Serialize
     bool DataElementNode::Convert(SerializeContext& sc, const char* name)
     {
         AZ_Assert(name != NULL && strlen(name) > 0, "Empty name is an INVALID element name!");
-        u32 nameCrc = Crc32(name);
+        Crc32 nameCrc(name);
 
 #if defined(AZ_DEBUG_BUILD)
         if (FindElement(nameCrc) != -1)
@@ -2536,7 +2536,7 @@ namespace AZ::Serialize
     int DataElementNode::AddElement(SerializeContext& sc, const char* name)
     {
         AZ_Assert(name != nullptr && strlen(name) > 0, "Empty name in an INVALID element name!");
-        u32 nameCrc = Crc32(name);
+        Crc32 nameCrc(name);
 
 #if defined(AZ_DEBUG_BUILD)
         if (FindElement(nameCrc) != -1 && !m_classData->m_container)

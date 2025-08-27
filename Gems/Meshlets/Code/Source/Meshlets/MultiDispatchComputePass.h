@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RHI/DispatchItem.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -20,11 +21,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct DispatchItem;
-    }
-
     namespace Meshlets
     {
         //! Multi Dispatch Pass - this pass will handle multiple dispatch submission

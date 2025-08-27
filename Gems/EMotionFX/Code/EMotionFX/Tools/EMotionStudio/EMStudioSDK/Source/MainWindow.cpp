@@ -1620,7 +1620,7 @@ namespace EMStudio
 
         ResetSettingsDialog* resetDialog = new ResetSettingsDialog(this);
         resetDialog->setObjectName("EMFX.MainWindow.ResetSettingsDialog");
-        EMStudio::ResetSettingsDialog::connect(resetDialog, &QDialog::finished, [=](int resultCode)
+        EMStudio::ResetSettingsDialog::connect(resetDialog, &QDialog::finished, [=, this](int resultCode)
         {
             resetDialog->deleteLater();
 

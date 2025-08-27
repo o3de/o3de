@@ -26,7 +26,7 @@ namespace AZ::RHI
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
     //! @see DeviceImageView on how to interpret contents of an image.
-    class DeviceImage
+    class ATOM_RHI_PUBLIC_API DeviceImage
         : public DeviceResource
     {
         friend class DeviceImagePoolBase;
@@ -76,7 +76,7 @@ namespace AZ::RHI
         //! images.
         const ImageFrameAttachment* GetFrameAttachment() const;
             
-        Ptr<DeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<DeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor) const;
 
         //! Returns the aspects that are included in the image.
         ImageAspectFlags GetAspectFlags() const;

@@ -125,7 +125,7 @@ namespace AZ::RHI
     //! if the ResourceEventBus is replaced with a non-singleton queue data structure. Currently, it
     //! is only possible to flush this queue globally, which is incompatible with multiple frame schedulers.
     //! See [LY-83241] for more information.
-    class FrameScheduler final
+    class ATOM_RHI_PUBLIC_API FrameScheduler final
         : public FrameGraphBuilder
     {
     public:

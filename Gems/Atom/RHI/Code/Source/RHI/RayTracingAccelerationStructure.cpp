@@ -288,7 +288,7 @@ namespace AZ::RHI
         IterateObjects<DeviceRayTracingTlas>(
             [this](int deviceIndex, auto deviceRayTracingTlas)
             {
-                m_tlasInstancesBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasBuffer();
+                m_tlasInstancesBuffer->m_deviceObjects[deviceIndex] = deviceRayTracingTlas->GetTlasInstancesBuffer();
 
                 if (!m_tlasInstancesBuffer->m_deviceObjects[deviceIndex])
                 {

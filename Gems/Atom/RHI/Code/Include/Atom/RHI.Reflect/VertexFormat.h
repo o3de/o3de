@@ -24,11 +24,11 @@ namespace AZ::RHI
     using VertexFormat = Internal::VertexFormat;
 
     //! @brief Returns the size of the given vertex format in bytes.
-    uint32_t GetVertexFormatSize(VertexFormat vertexFormat);
+    ATOM_RHI_REFLECT_API uint32_t GetVertexFormatSize(VertexFormat vertexFormat);
 
     //! @brief Converts the given image format to a VertexFormat or asserts if no such conversion is possible
-    VertexFormat ConvertToVertexFormat(RHI::Format format);
+    ATOM_RHI_REFLECT_API VertexFormat ConvertToVertexFormat(RHI::Format format);
 
     //! @brief Converts the given VertexFormat to an image format or asserts if no such conversion is possible
-    RHI::Format ConvertToImageFormat(VertexFormat vertexFormat);
+    ATOM_RHI_REFLECT_API RHI::Format ConvertToImageFormat(VertexFormat vertexFormat);
 } // namespace AZ::RHI

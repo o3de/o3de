@@ -131,10 +131,10 @@ namespace AZ
             m_featureProcessorFactory.Shutdown();
             m_passSystem.Shutdown();
             m_dynamicDraw.Shutdown();
-            m_bufferSystem.Shutdown();
             m_materialSystem.Shutdown();
             m_modelSystem.Shutdown();
             m_shaderSystem.Shutdown();
+            m_bufferSystem.Shutdown();
             m_imageSystem.Shutdown();
             m_querySystem.Shutdown();
             m_rhiSystem.Shutdown();

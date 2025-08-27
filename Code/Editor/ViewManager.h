@@ -27,13 +27,11 @@ namespace AzToolsFramework
     class ManipulatorManager;
 }
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /** Manages set of viewports.
 */
 class SANDBOX_API CViewManager
     : public IEditorNotifyListener
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     static bool IsMultiViewportEnabled();
 
@@ -122,7 +120,6 @@ private:
     //FIELDS.
     float   m_zoomFactor;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::Aabb m_updateRegion;
 
     //! Origin of 2d viewports.
@@ -139,7 +136,6 @@ private:
     CViewport* m_pSelectedView;
 
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif // CRYINCLUDE_EDITOR_VIEWMANAGER_H

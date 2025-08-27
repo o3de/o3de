@@ -18,7 +18,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class BufferPoolDescriptor
+    class ATOM_RHI_REFLECT_API BufferPoolDescriptor
         : public ResourcePoolDescriptor
     {
     public:

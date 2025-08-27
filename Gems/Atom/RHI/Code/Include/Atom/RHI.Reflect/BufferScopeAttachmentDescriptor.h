@@ -13,7 +13,7 @@
 namespace AZ::RHI
 {
     //! Describes a buffer scope attachment, which is the specific usage of a frame graph attachment on a scope.
-    struct BufferScopeAttachmentDescriptor
+    struct ATOM_RHI_REFLECT_API BufferScopeAttachmentDescriptor
         : public ScopeAttachmentDescriptor
     {
         AZ_TYPE_INFO(BufferScopeAttachmentDescriptor, "{D40FFADC-DDD4-497A-877F-11E84FD96210}");

@@ -26,16 +26,16 @@ namespace O3DE::ProjectManager
         setSelectionModel(selectionModel);
         GemItemDelegate* itemDelegate = new GemItemDelegate(model, header, readOnly, this);
         
-        connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [=](const QMovie* playingMovie)
+        connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [this](const QMovie* playingMovie)
             {
                 // Force redraw when movie is playing so animation is smooth
-                connect(playingMovie, &QMovie::frameChanged, this, [=]
+                connect(playingMovie, &QMovie::frameChanged, this, [this]
                     {
                         this->viewport()->repaint();
                     });
             });
         
-        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { update(); });
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [this] { update(); });
 
         setItemDelegate(itemDelegate);
     }

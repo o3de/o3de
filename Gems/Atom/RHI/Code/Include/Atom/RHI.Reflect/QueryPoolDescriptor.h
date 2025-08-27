@@ -65,7 +65,7 @@ namespace AZ::RHI
         
     //! Descriptor for the QueryPool RHI type. Contains the type and count
     //! when initializing a query pool.
-    class QueryPoolDescriptor
+    class ATOM_RHI_REFLECT_API QueryPoolDescriptor
         : public ResourcePoolDescriptor
     {
     public:

@@ -8,14 +8,13 @@
 #pragma once
 
 #include <Atom/RHI/ImageFrameAttachment.h>
+#include <Atom/RHI/SwapChain.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::RHI
 {
-    class SwapChain;
-
     //! A swap chain registered into the frame scheduler.
-    class SwapChainFrameAttachment final
+    class ATOM_RHI_PUBLIC_API SwapChainFrameAttachment final
         : public ImageFrameAttachment
     {
     public:

@@ -2516,7 +2516,7 @@ namespace AZ::Serialize
         m_byteStream.Seek(rhs.m_byteStream.GetCurPos(), IO::GenericStream::ST_SEEK_BEGIN);
 
         rhs.m_name = nullptr;
-        rhs.m_nameCrc = 0;
+        rhs.m_nameCrc = Crc32();
         rhs.m_id = Uuid::CreateNull();
         rhs.m_version = 0;
         rhs.m_dataSize = 0;
@@ -2558,7 +2558,7 @@ namespace AZ::Serialize
         m_byteStream.Seek(rhs.m_byteStream.GetCurPos(), IO::GenericStream::ST_SEEK_BEGIN);
 
         rhs.m_name = nullptr;
-        rhs.m_nameCrc = 0;
+        rhs.m_nameCrc = Crc32();
         rhs.m_id = Uuid::CreateNull();
         rhs.m_version = 0;
         rhs.m_dataSize = 0;
@@ -2605,7 +2605,7 @@ namespace AZ::Serialize
     bool DataElementNode::Convert(SerializeContext& sc, const char* name, const Uuid& id)
     {
         AZ_Assert(name != nullptr && strlen(name) > 0, "Empty name is an INVALID element name!");
-        u32 nameCrc = Crc32(name);
+        Crc32 nameCrc(name);
 
 #if defined(AZ_ENABLE_TRACING)
         if (FindElement(nameCrc) != -1)
@@ -2725,7 +2725,7 @@ namespace AZ::Serialize
     {
         (void)sc;
         AZ_Assert(name != nullptr && strlen(name) > 0, "Empty name is an INVALID element name!");
-        u32 nameCrc = Crc32(name);
+        Crc32 nameCrc(name);
 
     #if defined(AZ_ENABLE_TRACING)
         if (!m_classData->m_container && FindElement(nameCrc) != -1)
@@ -2757,7 +2757,7 @@ namespace AZ::Serialize
             return -1;
         }
 
-        u32 nameCrc = Crc32(name.data());
+        Crc32 nameCrc(name.data());
         DataElementNode node;
         node.m_element.m_name = name.data();
         node.m_element.m_nameCrc = nameCrc;

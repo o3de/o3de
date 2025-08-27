@@ -27,7 +27,7 @@ namespace AZ::RHI
     //! In contrast to DeviceObject, which is device-specific and holds a strong reference to a specific device,
     //! MultiDeviceObject only specifies on which device an object resides/operates, specified by a
     //! DeviceMask (1 bit per device).
-    class MultiDeviceObject : public Object
+    class ATOM_RHI_PUBLIC_API MultiDeviceObject : public Object
     {
         friend struct UnitTest::MultiDeviceDrawPacketData;
         friend class ResourceView;

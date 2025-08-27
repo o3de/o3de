@@ -17,7 +17,7 @@ namespace AZ::RHI
 
     //! Query resource for recording gpu data like occlusion, timestamp or pipeline statistics.
     //! Queries belong to a QueryPool and their types are determined by the pool.
-    class Query : public Resource
+    class ATOM_RHI_PUBLIC_API Query : public Resource
     {
         friend class QueryPool;
 

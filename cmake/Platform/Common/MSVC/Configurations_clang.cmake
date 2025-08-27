@@ -25,6 +25,10 @@ set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS "")
 # those 3rd Party targets ONLY.
 set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 
+# C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
+# This is problematic if 3rd-party libraries use such operations in header files.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
+
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2

@@ -102,7 +102,7 @@ namespace AssetProcessor
         {
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
 
-            if (m_stateData->GetSourceByJobID(jobEntry.m_jobID, sourceEntry))
+            if (m_stateData->GetSourceBySourceID(jobEntry.m_sourcePK, sourceEntry))
             {
                 SourceAssetReference sourceAsset(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str());
 
@@ -665,11 +665,12 @@ namespace AssetProcessor
         AZStd::string logFile = AssetUtilities::ComputeJobLogFolder() + "/" + AssetUtilities::ComputeJobLogFileName(jobEntry);
         EraseLogFile(logFile.c_str());
 
-        // cancelled jobs are replaced by new jobs to process the same asset, so keep track of that for the analysis tracker too
+        // cancelled jobs will be replaced by new jobs to process the same asset (AFTER this call happens)
         // note that this isn't a failure - the job just isn't there anymore.
         UpdateAnalysisTrackerForFile(jobEntry, AnalysisTrackerUpdateType::JobFinished);
 
-        OnJobStatusChanged(jobEntry, JobStatus::Failed);
+        // When a job is cancelled, it is always because it was replaced by a new job.  The job is still pending.
+        OnJobStatusChanged(jobEntry, JobStatus::Queued);
 
         // we know that things have changed at this point; ensure that we check for idle
         QueueIdleCheck();
@@ -4049,13 +4050,16 @@ namespace AssetProcessor
                 }
                 else if(sourceFileDependency.m_sourceDependencyType != AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards)
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "UpdateJobDependency: Failed to find builder dependency for %s job (%s, %s, %s)\n",
+                    // This is not necessarily an actual problem, you are allowed to depend on builder or job dependencies that don't exist yet and will appear
+                    // later.  This can happen when some other job generates that input dependency, so the job will wait until its dependency appears.
+
+                    AZ_TracePrintf(AssetProcessor::DebugChannel, "UpdateJobDependency: Builder is missing: No builder found for %s job (%s, %s, %s)\n",
                         job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
                         jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
                         jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
 
-                    job.m_hasMissingSourceDependency = true;
+                    jobDependencyInternal->m_isMissingSource = true;
                 }
             }
 

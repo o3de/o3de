@@ -35,8 +35,6 @@ namespace AZ::RHI
         u8 m_dummyStreamBufferIndex = InvalidStreamBufferIndex;
 
     public:
-        GeometryView() = default;
-
         friend class StreamIterator<GeometryView, StreamBufferView>;
 
         explicit GeometryView(MultiDevice::DeviceMask deviceMask)
@@ -190,7 +188,7 @@ namespace AZ::RHI
     };
 
     //! Validates the stream buffer views in a GeometryView
-    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
+    ATOM_RHI_PUBLIC_API bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
         const RHI::StreamBufferIndices& streamIndices);
 
 }

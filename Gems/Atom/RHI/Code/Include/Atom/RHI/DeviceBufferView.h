@@ -16,7 +16,7 @@ namespace AZ::RHI
 
     //! DeviceBufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
     //! It associates 1-to-1 with a BufferViewDescriptor.
-    class DeviceBufferView
+    class ATOM_RHI_PUBLIC_API DeviceBufferView
         : public DeviceResourceView
     {
     public:

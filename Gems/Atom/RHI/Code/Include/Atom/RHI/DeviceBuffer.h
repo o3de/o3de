@@ -19,7 +19,7 @@ namespace AZ::RHI
     
     //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
     //! manages the lifecycle of a buffer through a DeviceBufferPool.
-    class DeviceBuffer
+    class ATOM_RHI_PUBLIC_API DeviceBuffer
         : public DeviceResource
     {
         using Base = DeviceResource;
@@ -37,7 +37,7 @@ namespace AZ::RHI
         /// Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<DeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<DeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
         // Get the hash associated with the DeviceBuffer
         const HashValue64 GetHash() const;

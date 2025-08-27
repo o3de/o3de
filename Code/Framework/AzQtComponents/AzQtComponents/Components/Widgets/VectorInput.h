@@ -22,8 +22,7 @@ namespace AzQtComponents
 
     // 'AzQtComponents::VectorElement::m_deferredExternalValue': class 'AZStd::optional<AzQtComponents::VectorElement::DeferredSetValue>' needs to
     // have dll-interface to be used by clients of class 'AzQtComponents::VectorElement' 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    
+
     /*!
      * \class VectorElement
      * \brief All flexible vector GUI's are constructed using a number vector elements. Each Vector
@@ -127,8 +126,6 @@ namespace AzQtComponents
         //! avoid overwriting their work, until they finish editing
         AZStd::optional<DeferredSetValue> m_deferredExternalValue;
     };
-
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     //////////////////////////////////////////////////////////////////////////
 

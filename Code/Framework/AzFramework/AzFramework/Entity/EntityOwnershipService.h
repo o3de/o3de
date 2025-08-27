@@ -103,8 +103,6 @@ namespace AzFramework
          */
         virtual void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) = 0;
 
-        bool m_shouldAssertForLegacySlicesUsage = false;
-
     protected:
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;

@@ -31,7 +31,7 @@ namespace AZ::RHI
         (Apple,         0x106B) 
     );
 
-    void ReflectVendorIdEnums(ReflectContext* context);
+    void ATOM_RHI_REFLECT_API ReflectVendorIdEnums(ReflectContext* context);
 
     enum class PhysicalDeviceType : uint32_t
     {
@@ -57,7 +57,7 @@ namespace AZ::RHI
 
     const uint32_t PhysicalDeviceTypeCount = static_cast<uint32_t>(PhysicalDeviceType::Count);
 
-    class PhysicalDeviceDescriptor
+    class ATOM_RHI_REFLECT_API PhysicalDeviceDescriptor
     {
     public:
         AZ_RTTI(PhysicalDeviceDescriptor, "{22052601-3C81-4FD2-AD46-1AE00F01E95E}");
@@ -73,7 +73,7 @@ namespace AZ::RHI
     };
 
     //! The GPU driver related information like unsupported versions, minimum version supported by the RHI.
-    class PhysicalDeviceDriverInfo
+    class ATOM_RHI_REFLECT_API PhysicalDeviceDriverInfo
     {
     public:
         AZ_RTTI(AZ::RHI::PhysicalDeviceDriverInfo, "{0063AFB9-C4F1-40F5-9F46-FEC631732F55}");
@@ -99,7 +99,7 @@ namespace AZ::RHI
 
     //! Validator for the current GPU driver.
     //! If the driver doesn't meet the requirements defined by RHI, a clear message will be output at RHI initialization time.
-    class PhysicalDeviceDriverValidator
+    class ATOM_RHI_REFLECT_API PhysicalDeviceDriverValidator
     {
     public:
         AZ_RTTI(AZ::RHI::PhysicalDeviceDriverValidator, "{EA11001D-5A5D-43D6-A90C-77E5E44273FC}");

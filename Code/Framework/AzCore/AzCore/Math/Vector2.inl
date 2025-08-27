@@ -479,6 +479,18 @@ namespace AZ
         return Vector2(Simd::Vec2::Div(m_value, rhs.m_value));
     }
 
+    AZ_MATH_INLINE float& Vector2::operator[](const size_t i)
+    {
+        AZ_MATH_ASSERT(i < 2, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
+    AZ_MATH_INLINE const float& Vector2::operator[](const size_t i) const
+    {
+        AZ_MATH_ASSERT(i < 2, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
     AZ_MATH_INLINE Vector2 Vector2::GetSin() const
     {
         return Vector2(Simd::Vec2::Sin(m_value));

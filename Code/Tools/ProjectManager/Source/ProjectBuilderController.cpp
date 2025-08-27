@@ -34,10 +34,13 @@ namespace O3DE::ProjectManager
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
         connect(m_worker, &ProjectBuilderWorker::Done, this, &ProjectBuilderController::HandleResults);
         connect(m_worker, &ProjectBuilderWorker::UpdateProgress, this, &ProjectBuilderController::UpdateUIProgress);
+
+        ProjectManagerUtilityRequestsBus::Handler::BusConnect();
     }
 
     ProjectBuilderController::~ProjectBuilderController()
     {
+        ProjectManagerUtilityRequestsBus::Handler::BusDisconnect();
         m_workerThread.requestInterruption();
         m_workerThread.quit();
         m_workerThread.wait();
@@ -135,4 +138,11 @@ namespace O3DE::ProjectManager
         m_workerThread.quit();
         emit Done(false);
     }
+
+    void ProjectBuilderController::CanCloseProjectManager(bool& result) const
+    {
+        // Always return false because ProjectBuilderController only exists when building a project
+        result = false;
+    }
+
 } // namespace O3DE::ProjectManager

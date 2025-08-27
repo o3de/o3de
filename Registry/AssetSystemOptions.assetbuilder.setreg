@@ -1,0 +1,12 @@
+{
+    "O3DE":
+    {
+        "AssetSystem":
+        {
+            // Turn off the ability for the asset system to send synchronous blocking requests,
+            // for asset builders.  This is becuase they themselves produce assets, and if they are allowed
+            // to issue blocking requests, this can lead to deadlocks.
+            "AllowSyncRequests" : false
+        }
+    }
+}

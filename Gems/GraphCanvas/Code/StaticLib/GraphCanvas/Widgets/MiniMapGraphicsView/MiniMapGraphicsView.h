@@ -40,7 +40,7 @@ namespace GraphCanvas
         AZ_TYPE_INFO(MiniMapGraphicsView, "{DF03D03E-2048-43B2-8F01-897098D553F2}");
         AZ_CLASS_ALLOCATOR(MiniMapGraphicsView, AZ::SystemAllocator);
 
-        MiniMapGraphicsView(const AZ::Crc32& graphCanvasEditorNotificationBusId = 0,
+        MiniMapGraphicsView(const AZ::Crc32& graphCanvasEditorNotificationBusId = AZ::Crc32(),
             bool isStandAlone = true,
             const AZ::EntityId sceneId = AZ::EntityId(),
             QWidget* parent = nullptr);

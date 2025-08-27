@@ -491,7 +491,7 @@ namespace AzToolsFramework
             {
                 return {};
             }
-            return propertyEditorSystem->LookupNameFromId(rpeHandler.GetHandlerName()).GetStringView();
+            return propertyEditorSystem->LookupNameFromId(AZ::Crc32(rpeHandler.GetHandlerName())).GetStringView();
         }
 
         void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::ValueChangeType changeType) override

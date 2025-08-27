@@ -143,7 +143,7 @@ namespace AZ
             CommandQueueContext& context = device.GetCommandQueueContext();
             const FenceSet &compiledFences = context.GetCompiledFences();
 
-            QueueCommand([=](void* commandQueue)
+            QueueCommand([=, this](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);

@@ -32,6 +32,7 @@ function(GetOpenMesh)
             GIT_REPOSITORY ${OPENMESH_GIT_REPO}
             GIT_TAG ${OPENMESH_GIT_TAG}
             PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${OPENMESH_GIT_PATCH}
+            GIT_SHALLOW TRUE
     )
 
     # please always be really clear about what third parties your gem uses.
@@ -46,7 +47,7 @@ function(GetOpenMesh)
     # These settings will be applied only to the current CMake scope - so it is only worth saving and restoring values from settings
     # that may affect other targets in the same CMake scope, most likely anything "CMAKE_xxxxxxxx".
     set(OLD_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL}) # save the old CMAKE_MESSAGE_LOG_LEVEL
-    set(CMAKE_MESSAGE_LOG_LEVEL ERROR)   # You can comment this line out if you want to see what messages output from its CMakeLists.txt
+    set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
     # The rest of these are all specific settings that come from OpenMesh's CMakeLists.txt files.
@@ -82,6 +83,9 @@ function(GetOpenMesh)
             ${O3DE_COMPILE_OPTION_DISABLE_WARNINGS}     # OpenMesh does not pass Warning Level 4
             ${O3DE_COMPILE_OPTION_EXPORT_SYMBOLS}       # OpenMesh requires symbols to be exported.
             ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})   # OpenMesh requires Exceptions enabled in it, and things that use it
+
+        target_compile_definitions(${OpenMesh_Target}
+            PRIVATE WIN32_LEAN_AND_MEAN)                # Fix compile errors in Windows kit header files
                 
         # this block makes sure that in IDEs like Visual Studio, they show up in the "External" subfolder under the gem.
         get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")

@@ -114,7 +114,7 @@ namespace EMStudio
 
                 m_addConditionButton = new AddConditionButton(m_plugin, m_conditionsWidget);
                 m_addConditionButton->setObjectName("EMFX.AttributesWindowWidget.NodeTransition.AddConditionsWidget");
-                connect(m_addConditionButton, &AddConditionButton::ObjectTypeChosen, this, [=](AZ::TypeId conditionType)
+                connect(m_addConditionButton, &AddConditionButton::ObjectTypeChosen, this, [this](AZ::TypeId conditionType)
                     {
                         AddCondition(conditionType);
                     });
@@ -139,7 +139,7 @@ namespace EMStudio
                 actionVerticalLayout->addLayout(m_actionsLayout);
 
                 AddActionButton* addActionButton = new AddActionButton(m_plugin, m_actionsWidget);
-                connect(addActionButton, &AddActionButton::ObjectTypeChosen, this, [=](AZ::TypeId actionType)
+                connect(addActionButton, &AddActionButton::ObjectTypeChosen, this, [this](AZ::TypeId actionType)
                     {
                         const AnimGraphModel::ModelItemType itemType = m_displayingModelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
                         if (itemType == AnimGraphModel::ModelItemType::TRANSITION)
@@ -158,7 +158,7 @@ namespace EMStudio
             }
         }
 
-        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [=]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
             {
                 UpdateAndShowInInspector();
             });

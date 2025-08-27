@@ -8,12 +8,13 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI/Base.h>
 
 namespace AZ::RHI
 {
     class FrameGraph;
 
-    class FrameGraphLogger
+    class ATOM_RHI_PUBLIC_API FrameGraphLogger
     {
     public:
         //! Logs the graph to the output console, with the specified verbosity.

@@ -33,7 +33,7 @@ namespace AZ::RHI
 
     //! Base class that provides the backend API the ability to add
     //! commands to a queue which are executed on a separate thread
-    class CommandQueue
+    class ATOM_RHI_PUBLIC_API CommandQueue
         : public RHI::DeviceObject
     {
         using Base = RHI::DeviceObject;

@@ -117,9 +117,6 @@ namespace AzFramework
         /// @deprecated Use 'IsPrefabSystemEnabled' instead
         virtual bool IsPrefabSystemForLevelsEnabled() const { return false; }
 
-        /// Returns true if code should assert when the Legacy Slice System is used
-        virtual bool ShouldAssertForLegacySlicesUsage() const { return false; }
-
         /*!
         * Returns a Type Uuid of the component for the given componentId and entityId.
         * if no component matches the entity and component Id pair, a Null Uuid is returned

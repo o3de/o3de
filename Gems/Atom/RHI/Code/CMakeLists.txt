@@ -81,10 +81,13 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ${gem_name}.Reflect STATIC
+    NAME ${gem_name}.Reflect ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_reflect_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RHI_REFLECT_EXPORTS
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -99,12 +102,15 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ${gem_name}.Public STATIC
+    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_public_files.cmake
         ../Assets/atom_rhi_asset_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ATOM_RHI_PUBLIC_EXPORTS
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -115,11 +121,12 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+        PUBLIC
             Gem::${gem_name}.Reflect
 )
 
 ly_add_target(
-    NAME ${gem_name}.Private.Static STATIC
+    NAME ${gem_name}.Private.Object OBJECT
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_private_files.cmake
@@ -150,7 +157,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::${gem_name}.Public
-            Gem::${gem_name}.Private.Static
+            Gem::${gem_name}.Private.Object
             Gem::${gem_name}.Profiler
     RUNTIME_DEPENDENCIES
         ${PROFILER_DEPENDENCIES}            

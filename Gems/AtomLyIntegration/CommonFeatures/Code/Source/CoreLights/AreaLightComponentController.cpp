@@ -142,7 +142,7 @@ namespace AZ::Render
         m_entityId = entityId;
         
         // Used to determine which features are supported.
-        m_configuration.m_shapeType = 0;
+        m_configuration.m_shapeType = Crc32();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(m_configuration.m_shapeType, m_entityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
 
         VerifyLightTypeAndShapeComponent();
@@ -224,7 +224,7 @@ namespace AZ::Render
                 break; // Light type can't be deduced. 
             }
         }
-        else if (m_configuration.m_shapeType == Crc32(0))
+        else if (m_configuration.m_shapeType == Crc32())
         {
             AZ_Error("AreaLightComponentController", !m_configuration.RequiresShapeComponent(), "The light type used on this area light requires a corresponding shape component");
         }

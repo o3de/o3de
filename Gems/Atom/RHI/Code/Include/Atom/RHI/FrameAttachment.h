@@ -12,6 +12,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/Base.h>
 
 namespace AZ::RHI
 {
@@ -25,7 +26,7 @@ namespace AZ::RHI
     //! first to last scope on each device. FrameAttachments are associated with a unique AttachmentId.
     //!
     //! FrameAttachments are rebuilt every frame, and are created through the FrameGraph.
-    class FrameAttachment
+    class ATOM_RHI_PUBLIC_API FrameAttachment
     {
         friend class FrameGraphAttachmentDatabase;
         friend class FrameGraphCompiler;

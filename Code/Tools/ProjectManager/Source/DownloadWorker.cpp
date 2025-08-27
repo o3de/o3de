@@ -20,7 +20,7 @@ namespace O3DE::ProjectManager
 
     void DownloadWorker::StartDownload()
     {
-        auto objectDownloadProgress = [=](int bytesDownloaded, int totalBytes)
+        auto objectDownloadProgress = [this](int bytesDownloaded, int totalBytes)
         {
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };

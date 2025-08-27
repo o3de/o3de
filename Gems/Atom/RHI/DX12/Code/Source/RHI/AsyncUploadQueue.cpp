@@ -158,7 +158,7 @@ namespace AZ
 
             uint64_t queueValue = m_uploadFence.Increment();
 
-            m_copyQueue->QueueCommand([=](void* commandQueue)
+            m_copyQueue->QueueCommand([=, this](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
@@ -256,7 +256,7 @@ namespace AZ
 
                 RHI::DeviceStreamingImageExpandRequest cachedRequest = request;
 
-                m_copyQueue->QueueCommand([=](void* commandQueue)
+                m_copyQueue->QueueCommand([=, this](void* commandQueue)
                 {
                     AZ_PROFILE_SCOPE(RHI, "Upload Image");
                     ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);

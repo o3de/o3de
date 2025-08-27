@@ -39,7 +39,7 @@ namespace AZ::RHI
     //! with another device.
     //!
     //! Multi-Device interop support is planned in the future and will likely require API changes.
-    class Device
+    class ATOM_RHI_PUBLIC_API Device
         : public Object
     {
     public:
@@ -241,8 +241,7 @@ namespace AZ::RHI
 
         bool m_wasDeviceRemoved = false;
 
-        // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC
+        // Cache the name of the last executing scope name. Used only if RHI::ForceCpuGpuInSync is enabled.
         AZStd::string m_lastExecutingScope;
-
     };
 }

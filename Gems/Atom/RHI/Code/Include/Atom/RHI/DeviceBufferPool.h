@@ -91,7 +91,7 @@ namespace AZ::RHI
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
     //! share the same backing heap and buffer bind flags.
-    class DeviceBufferPool
+    class ATOM_RHI_PUBLIC_API DeviceBufferPool
         : public DeviceBufferPoolBase
     {
     public:

@@ -33,7 +33,7 @@ namespace AZ::RHI
         return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const
     {
         return Base::GetResourceView(bufferViewDescriptor);
     }

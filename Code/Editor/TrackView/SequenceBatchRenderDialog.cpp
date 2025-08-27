@@ -37,9 +37,7 @@
 #include "ViewPane.h"
 #include "Viewport.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_SequenceBatchRenderDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace
 {
@@ -147,7 +145,7 @@ void CSequenceBatchRenderDialog::reject()
 void CSequenceBatchRenderDialog::OnInitDialog()
 {
     QAction* browseAction = m_ui->m_destinationEdit->addAction(style()->standardPixmap(QStyle::SP_DirOpenIcon), QLineEdit::TrailingPosition);
-    connect(browseAction, &QAction::triggered, this, [=]()
+    connect(browseAction, &QAction::triggered, this, [this]()
     {
         const QString dir = QFileDialog::getExistingDirectory(this);
         if (!dir.isEmpty())

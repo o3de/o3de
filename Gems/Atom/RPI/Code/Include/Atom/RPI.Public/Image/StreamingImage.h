@@ -44,12 +44,10 @@ namespace AZ
         //! 
         //! A trim operation will immediately trim the GPU image down and cancel any in-flight mip chain fetches.
         //!
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API StreamingImage final
             : public Image
             , public Data::AssetBus::MultiHandler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             static_assert(RHI::Limits::Image::MipCountMax < 16, "StreamingImageAsset is optimized to support a maximum of 16 mip levels.");
 
             friend class ImageSystem;

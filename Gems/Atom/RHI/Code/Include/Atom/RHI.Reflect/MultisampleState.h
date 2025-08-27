@@ -24,7 +24,7 @@ namespace AZ::RHI
     //! Sample positions have the origin(0, 0) at the pixel top left.
     //! Each of the X and Y coordinates are unsigned values in the range 0 (top / left) to Limits::Pipeline::MultiSampleCustomLocationGridSize - 1 (bottom / right).
     //! Values outside this range are invalid. Each increment of these integer values represents 1 / Limits::Pipeline::MultiSampleCustomLocationGridSize of a pixel.
-    struct SamplePosition
+    struct ATOM_RHI_REFLECT_API SamplePosition
     {
         AZ_TYPE_INFO(SamplePosition, "{8CCB872A-2CC3-4898-AB9E-C12517AC1FB8}");
         static void Reflect(ReflectContext* context);
@@ -39,7 +39,7 @@ namespace AZ::RHI
         uint8_t m_y = 0;
     };
 
-    struct MultisampleState
+    struct ATOM_RHI_REFLECT_API MultisampleState
     {
         AZ_TYPE_INFO(MultisampleState, "{7673d8d8-c3db-462a-a155-cfe1d2331397}");
         static void Reflect(ReflectContext* context);

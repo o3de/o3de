@@ -60,7 +60,7 @@ namespace AZ::RHI
 
     static const uint32_t UndefinedRegisterSlot = static_cast<uint32_t>(-1);
 
-    class ShaderInputBufferDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputBufferDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputBufferDescriptor, "{19D329BD-FCE7-43CC-A376-E2BD43EA5175}");
@@ -129,7 +129,7 @@ namespace AZ::RHI
         SubpassInput
     };
 
-    class ShaderInputImageDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputImageDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputImageDescriptor, "{913DBF3C-5556-4524-B928-174A42516D31}");
@@ -173,7 +173,7 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
-    class ShaderInputBufferUnboundedArrayDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputBufferUnboundedArrayDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputBufferUnboundedArrayDescriptor, "{7B355E06-DABA-4F49-834E-DEA26691C8DF}");
@@ -217,7 +217,7 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
-    class ShaderInputImageUnboundedArrayDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputImageUnboundedArrayDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputImageUnboundedArrayDescriptor, "{943E4C4A-E5FE-4993-93D5-EFB67565284B}");
@@ -257,7 +257,7 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
-    class ShaderInputSamplerDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputSamplerDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputSamplerDescriptor, "{F42E989D-002E-42B3-A396-062CB0DB6644}");
@@ -289,7 +289,7 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
-    class ShaderInputConstantDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputConstantDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputConstantDescriptor, "{C8DC7D2D-CCA0-45AD-9430-52C06B69325C}");
@@ -330,7 +330,7 @@ namespace AZ::RHI
         uint32_t m_spaceId = UndefinedRegisterSlot;
     };
 
-    class ShaderInputStaticSamplerDescriptor final
+    class ATOM_RHI_REFLECT_API ShaderInputStaticSamplerDescriptor final
     {
     public:
         AZ_TYPE_INFO(ShaderInputStaticSamplerDescriptor, "{A4D3C5AC-1624-4F78-9543-0E37DC93F491}");
@@ -363,12 +363,12 @@ namespace AZ::RHI
     };
 
     //! Returns the string name for the shader input type enum.
-    const char* GetShaderInputTypeName(ShaderInputBufferType bufferInputType);
-    const char* GetShaderInputTypeName(ShaderInputImageType imageInputType);
+    ATOM_RHI_REFLECT_API const char* GetShaderInputTypeName(ShaderInputBufferType bufferInputType);
+    ATOM_RHI_REFLECT_API const char* GetShaderInputTypeName(ShaderInputImageType imageInputType);
 
     //! Returns the string name for the shader input access enum.
-    const char* GetShaderInputAccessName(ShaderInputBufferAccess bufferInputAccess);
-    const char* GetShaderInputAccessName(ShaderInputImageAccess imageInputAccess);
+    ATOM_RHI_REFLECT_API const char* GetShaderInputAccessName(ShaderInputBufferAccess bufferInputAccess);
+    ATOM_RHI_REFLECT_API const char* GetShaderInputAccessName(ShaderInputImageAccess imageInputAccess);
 
     using ShaderInputBufferIndex = Handle<uint32_t, ShaderInputBufferDescriptor>;
     using ShaderInputImageIndex = Handle<uint32_t, ShaderInputImageDescriptor>;

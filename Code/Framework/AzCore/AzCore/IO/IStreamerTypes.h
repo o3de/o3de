@@ -16,9 +16,9 @@
 
  // The user defined literals have to be in the header because there were linking issues with CrySystem.
 
-constexpr AZ::u64 operator"" _kib(AZ::u64 value);
-constexpr AZ::u64 operator"" _mib(AZ::u64 value);
-constexpr AZ::u64 operator"" _gib(AZ::u64 value);
+constexpr AZ::u64 operator ""_kib(AZ::u64 value);
+constexpr AZ::u64 operator ""_mib(AZ::u64 value);
+constexpr AZ::u64 operator ""_gib(AZ::u64 value);
 
 namespace AZ::IO::IStreamerTypes
 {

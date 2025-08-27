@@ -197,34 +197,34 @@ namespace AZStd
                 , bool_constant<Internal::is_pair_like_constructible_for_t<pair, P>>
             >>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<get<0>(declval<P>()), T1> || !is_convertible_v<get<1>(declval<P>()), T2>)
+        explicit(!is_convertible_v<decltype(get<0, P>), T1> || !is_convertible_v<decltype(get<1, P>), T2>)
 #endif
         constexpr pair(P&& pairLike);
 
         // construct from compatible pair
         template<class U1, class U2, class = enable_if_t<is_constructible_v<T1, const U1&> && is_constructible_v<T2, const U2&>>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<declval<const U1&>(), T1> || !is_convertible_v<declval<const U2&>(), T2>)
+        explicit(!is_convertible_v<U1, T1> || !is_convertible_v<U2, T2>)
 #endif
         constexpr pair(const pair<U1, U2>& rhs);
 
         // move constructor from rvalue pair
         template<class U1, class U2, class = enable_if_t<is_constructible_v<T1, U1> && is_constructible_v<T2, U2>>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<declval<U1>(), T1> || !is_convertible_v<declval<U2>(), T2>)
+        explicit(!is_convertible_v<U1, T1> || !is_convertible_v<U2, T2>)
 #endif
         constexpr pair(pair<U1, U2>&& rhs);
 
         // C++23 non-const lvalue constructor
         template<class U1, class U2, class = enable_if_t<is_constructible_v<T1, U1&> && is_constructible_v<T2, U2&>>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<declval<U1&>(), T1> || !is_convertible_v<declval<U2&>(), T2>)
+        explicit(!is_convertible_v<U1, T1> || !is_convertible_v<U2, T2>)
 #endif
         constexpr pair(pair<U1, U2>& rhs);
         // C++23 const rvalue constructor
         template<class U1, class U2, class = enable_if_t<is_constructible_v<T1, U1> && is_constructible_v<T2, U2>>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<declval<const U1>(), T1> || !is_convertible_v<declval<const U2>(), T2>)
+        explicit(!is_convertible_v<U1, T1> || !is_convertible_v<U2, T2>)
 #endif
         constexpr pair(const pair<U1, U2>&& rhs);
 

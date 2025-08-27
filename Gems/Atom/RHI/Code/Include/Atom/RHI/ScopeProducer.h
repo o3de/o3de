@@ -56,7 +56,7 @@ namespace AZ::RHI
     //! // invoked.
     //! frameScheduler.AddScope(scope);
 
-    class ScopeProducer
+    class ATOM_RHI_PUBLIC_API ScopeProducer
     {
         friend class FrameScheduler;
     public:

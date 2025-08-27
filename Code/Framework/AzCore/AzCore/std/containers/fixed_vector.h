@@ -740,7 +740,7 @@ namespace AZStd
         {
             // specialize for iterator categories.
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
-            return insert_iter(insertPos, first, last, typename iterator_traits<InputIt>::iterator_category());
+            return insert_iter(insertPos, first, last);
         };
 
         template<class R>
@@ -752,14 +752,12 @@ namespace AZStd
             if constexpr (is_lvalue_reference_v<R>)
             {
                 auto rangeView = AZStd::forward<R>(rg) | views::common;
-                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView),
-                    typename iterator_traits<ranges::iterator_t<R>>::iterator_category());
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
                 auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
-                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView),
-                    typename iterator_traits<ranges::iterator_t<R>>::iterator_category());
+                return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView));
             }
         };
 
@@ -853,71 +851,72 @@ namespace AZStd
 
     private:
         template<class Iterator>
-        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last, const forward_iterator_tag&)
+        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last)
         {
-            size_type numElements = AZStd::ranges::distance(first, last);
-            if (numElements == 0)
+            if constexpr (forward_iterator<Iterator>)
             {
-                return begin();
-            }
+                size_type numElements = AZStd::ranges::distance(first, last);
+                if (numElements == 0)
+                {
+                    return begin();
+                }
 
-            const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
-            pointer insertPosPtr = data() + offset;
+                const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
+                pointer insertPosPtr = data() + offset;
 
-            AZSTD_CONTAINER_ASSERT(Capacity >= size() + numElements, "AZStd::fixed_vector::insert_iter - capacity is reached!");
+                AZSTD_CONTAINER_ASSERT(Capacity >= size() + numElements, "AZStd::fixed_vector::insert_iter - capacity is reached!");
 
-            pointer dataStart = data();
-            pointer dataEnd = data() + size();
-            // Number of elements we can assign.
-            size_type numInitializedToFill = AZStd::ranges::distance(insertPosPtr, dataEnd);
-            if (numInitializedToFill < numElements)
-            {
-                // Copy the elements after insert position.
-                AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + numElements);
-                // get last iterator to use move assignment operator
-                Iterator lastToAssign = AZStd::next(first, numInitializedToFill);
+                pointer dataStart = data();
+                pointer dataEnd = data() + size();
+                // Number of elements we can assign.
+                size_type numInitializedToFill = AZStd::ranges::distance(insertPosPtr, dataEnd);
+                if (numInitializedToFill < numElements)
+                {
+                    // Copy the elements after insert position.
+                    AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + numElements);
+                    // get last iterator to use move assignment operator
+                    Iterator lastToAssign = AZStd::next(first, numInitializedToFill);
 
-                // assign new data - The data up to previous dataEnd has already been constructed
-                // so placement new should not be used for them
-                insertPosPtr = AZStd::copy(first, lastToAssign, insertPosPtr);
-                // Add new elements to uninitialized elements.
-                iterator newDataEnd = AZStd::uninitialized_copy(lastToAssign, last, insertPosPtr);
+                    // assign new data - The data up to previous dataEnd has already been constructed
+                    // so placement new should not be used for them
+                    insertPosPtr = AZStd::copy(first, lastToAssign, insertPosPtr);
+                    // Add new elements to uninitialized elements.
+                    iterator newDataEnd = AZStd::uninitialized_copy(lastToAssign, last, insertPosPtr);
 
-                // Update the fixed storage size
-                resize_no_construct(AZStd::ranges::distance(dataStart, newDataEnd));
+                    // Update the fixed storage size
+                    resize_no_construct(AZStd::ranges::distance(dataStart, newDataEnd));
+                }
+                else
+                {
+                    // We need to copy data with care, it is overlapping.
+
+                    // first copy the data that will not overlap.
+                    pointer nonOverlap = dataEnd - numElements;
+                    iterator  newLast = AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+
+                    // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
+                    AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
+
+                    // add new elements
+                    AZStd::move(first, last, insertPosPtr);
+
+                    resize_no_construct(AZStd::ranges::distance(dataStart, newLast));
+                }
+
+                return AZStd::ranges::next(begin(), offset);
             }
             else
             {
-                // We need to copy data with care, it is overlapping.
+                iterator dataStart = data();
+                size_type offset = AZStd::ranges::distance(dataStart, insertPos);
 
-                // first copy the data that will not overlap.
-                pointer nonOverlap = dataEnd - numElements;
-                iterator  newLast = AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+                for (Iterator iter{ first }; iter != last; ++iter, ++offset)
+                {
+                    insert(dataStart + offset, *iter);
+                }
 
-                // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
-                AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
-
-                // add new elements
-                AZStd::move(first, last, insertPosPtr);
-
-                resize_no_construct(AZStd::ranges::distance(dataStart, newLast));
+                return AZStd::ranges::next(begin(), offset);
             }
-
-            return AZStd::ranges::next(begin(), offset);
-        }
-
-        template<class Iterator>
-        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last, const input_iterator_tag&)
-        {
-            iterator dataStart = data();
-            size_type offset = AZStd::ranges::distance(dataStart, insertPos);
-
-            for (Iterator iter{ first }; iter != last; ++iter, ++offset)
-            {
-                insert(dataStart + offset, *iter);
-            }
-
-            return AZStd::ranges::next(begin(), offset);
         }
     };
 

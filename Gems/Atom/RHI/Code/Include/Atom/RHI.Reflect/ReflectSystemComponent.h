@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/Component/Component.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class ReflectSystemComponent
+    class ATOM_RHI_REFLECT_API ReflectSystemComponent
         : public AZ::Component
     {
     public:

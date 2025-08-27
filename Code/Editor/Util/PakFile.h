@@ -51,11 +51,10 @@ public:
 
     //! Return archive of this pak file wrapper.
     AZ::IO::INestedArchive* GetArchive() { return m_pArchive.get(); };
+
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::intrusive_ptr<AZ::IO::INestedArchive> m_pArchive;
     AZ::IO::IArchive* m_pCryPak;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif // CRYINCLUDE_EDITOR_UTIL_PAKFILE_H

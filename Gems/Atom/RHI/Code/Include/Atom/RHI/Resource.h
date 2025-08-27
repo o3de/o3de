@@ -7,10 +7,10 @@
  */
 #pragma once
 
+#include <Atom/RHI/Base.h>
 #include <Atom/RHI/DeviceResource.h>
 #include <Atom/RHI/MultiDeviceObject.h>
 #include <Atom/RHI/ResourceViewCache.h>
-
 
 namespace AZ::RHI
 {
@@ -27,7 +27,7 @@ namespace AZ::RHI
     //! ShaderResourceGroup, etc). It provides some common lifecycle management semantics. Resource creation is
     //! separate from initialization. Resources are created separate from any pool, but its backing platform data is associated at
     //! initialization time on a specific pool.
-    class Resource : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API Resource : public MultiDeviceObject
     {
         friend class FrameAttachment;
         friend class ResourcePool;

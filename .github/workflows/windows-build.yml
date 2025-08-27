@@ -14,22 +14,22 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      compiler: 
+      compiler:
         required: true
         type: string
-      config: 
+      config:
         required: true
         type: string
-      image: 
+      image:
         required: true
         type: string
-      platform: 
+      platform:
         required: true
         type: string
-      type: 
+      type:
         required: true
         type: string
-      last_artifact: 
+      last_artifact:
         required: false
         type: boolean
 
@@ -193,6 +193,7 @@ jobs:
         timeout-minutes: 330
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+          $env:LY_PACKAGE_SERVER_URLS = "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp"
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}

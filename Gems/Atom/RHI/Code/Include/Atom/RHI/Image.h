@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
     //! @see DeviceImageView on how to interpret contents of an image.
-    class Image : public Resource
+    class ATOM_RHI_PUBLIC_API Image : public Resource
     {
         friend class ImagePoolBase;
         friend class ImagePool;
@@ -51,7 +51,7 @@ namespace AZ::RHI
         const ImageDescriptor& GetDescriptor() const;
 
         //! Returns the multi-device DeviceImageView
-        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor) const;
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents

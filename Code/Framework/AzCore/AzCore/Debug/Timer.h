@@ -18,7 +18,7 @@ namespace AZ
         /**
          * \todo use AZStd::chrono
          */
-        class AZCORE_API Timer
+        class Timer
         {
         public:
             /// Stores the current time in the timer.

@@ -15,7 +15,7 @@
 namespace AZ::RHI
 {
     //! Describes what rules to apply when the image or buffer attachment is loaded and stored
-    struct AttachmentLoadStoreAction
+    struct ATOM_RHI_REFLECT_API AttachmentLoadStoreAction
     {
         AZ_TYPE_INFO(AttachmentLoadStoreAction, "{B41084F9-ED52-49F1-A2FA-8F648B0EC0D4}");
 

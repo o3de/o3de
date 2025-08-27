@@ -37,7 +37,7 @@ namespace AZ::RHI
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::AliasedResourceTypeFlags)
 
     //! Parameters when using the Paging heap allocation strategy.
-    struct HeapPagingParameters
+    struct ATOM_RHI_REFLECT_API HeapPagingParameters
     {
         AZ_TYPE_INFO(HeapPagingParameters, "{530768C3-BE3B-4E8E-A6F6-1391FE813887}");
         static void Reflect(AZ::ReflectContext* context);
@@ -55,7 +55,7 @@ namespace AZ::RHI
     };
 
     //! Parameters when using the MemoryHint heap allocation strategy.
-    struct HeapMemoryHintParameters
+    struct ATOM_RHI_REFLECT_API HeapMemoryHintParameters
     {
         AZ_TYPE_INFO(HeapMemoryHintParameters, "{7B448FF1-62CF-4758-9753-D2FB64E73620}");
         static void Reflect(AZ::ReflectContext* context);
@@ -84,7 +84,7 @@ namespace AZ::RHI
 
     //! Parameters that controls how to allocate resources
     //! based on heap allocation strategy picked for a transient pool.
-    struct HeapAllocationParameters
+    struct ATOM_RHI_REFLECT_API HeapAllocationParameters
     {
         HeapAllocationParameters()
             : m_pagingParameters()
@@ -110,6 +110,6 @@ namespace AZ::RHI
         };
     };
 
-    const char* ToString(HeapAllocationStrategy type);
-    const char* ToString(AliasedResourceType type);
+    ATOM_RHI_REFLECT_API const char* ToString(HeapAllocationStrategy type);
+    ATOM_RHI_REFLECT_API const char* ToString(AliasedResourceType type);
 }

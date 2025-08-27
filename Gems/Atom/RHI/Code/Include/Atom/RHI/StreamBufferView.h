@@ -19,7 +19,7 @@ namespace AZ::RHI
 
     //! Provides a view into a multi-device buffer, to be used as vertex stream. The content of the view is a contiguous
     //! list of input vertex data. Its device-specific buffer is provided to the RHI back-end at draw time for a given device.
-    class alignas(8) StreamBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) StreamBufferView
     {
     public:
         StreamBufferView() = default;
@@ -59,6 +59,6 @@ namespace AZ::RHI
     };
 
     //! Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout
-    bool ValidateStreamBufferViews(
+    ATOM_RHI_PUBLIC_API bool ValidateStreamBufferViews(
         const InputStreamLayout& inputStreamLayout, AZStd::span<const StreamBufferView> streamBufferViews);
 } // namespace AZ::RHI

@@ -87,7 +87,7 @@ namespace O3DE::ProjectManager
             // QButtonGroup has overloaded buttonClicked methods so we need the QOverload
             connect(
                 m_projectTemplateButtonGroup, QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked), this,
-                [=](QAbstractButton* button)
+                [this](QAbstractButton* button)
                 {
                     if (button && button->property(k_templateIndexProperty).isValid())
                     {
@@ -386,7 +386,7 @@ namespace O3DE::ProjectManager
             templateDetailsLayout->addWidget(m_downloadTemplateButton);
 
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
-            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
+            connect(configureGemsButton, &QPushButton::clicked, this, [this]()
                 {
                     emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
                 });

@@ -15,7 +15,7 @@ namespace AZ::RHI
     //! A simple base class for image pools. This mainly exists so that various
     //! image pool implementations can have some type safety separate from other
     //! resource pool types.
-    class DeviceImagePoolBase
+    class ATOM_RHI_PUBLIC_API DeviceImagePoolBase
         : public DeviceResourcePool
     {
     public:

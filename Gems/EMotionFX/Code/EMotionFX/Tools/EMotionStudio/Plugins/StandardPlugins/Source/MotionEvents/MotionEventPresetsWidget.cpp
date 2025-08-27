@@ -80,7 +80,7 @@ namespace EMStudio
 
         m_loadAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Open.svg"),
             tr("Load motion event preset config file"),
-            this, [=]() { LoadPresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
+            this, [this]() { LoadPresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
 
         m_saveMenuAction = toolBar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Save.svg"),
@@ -92,7 +92,7 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            m_saveAction = contextMenu->addAction("Save", this, [=]() { SavePresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
+            m_saveAction = contextMenu->addAction("Save", this, [this]() { SavePresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
             m_saveAsAction = contextMenu->addAction("Save as...", this, &MotionEventPresetsWidget::SaveWithDialog);
 
             m_saveMenuAction->setMenu(contextMenu);

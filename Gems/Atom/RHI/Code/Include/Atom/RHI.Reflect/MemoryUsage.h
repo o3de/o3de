@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    struct HeapMemoryTransfer
+    struct ATOM_RHI_REFLECT_API HeapMemoryTransfer
     {
         HeapMemoryTransfer() = default;
         HeapMemoryTransfer(const HeapMemoryTransfer&);
@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! Tracks memory usage for a specific heap in the system. The data is expected to adhere to the following constraints:
     //!  1) Reserved <= Budget (unless the budget is 0).
     //!  2) Resident <= Reserved.
-    struct HeapMemoryUsage
+    struct ATOM_RHI_REFLECT_API HeapMemoryUsage
     {
         HeapMemoryUsage() = default;
         HeapMemoryUsage(const HeapMemoryUsage&);
@@ -89,7 +89,7 @@ namespace AZ::RHI
     //! device memory heap (i.e. a single GPU) and the host memory heap. Certain pools on specific platforms
     //! may not require one or the other. In this case, the memory usage / budget will report empty values for
     //! that heap type.
-    struct PoolMemoryUsage
+    struct ATOM_RHI_REFLECT_API PoolMemoryUsage
     {
         PoolMemoryUsage() = default;
         PoolMemoryUsage(const PoolMemoryUsage&) = default;

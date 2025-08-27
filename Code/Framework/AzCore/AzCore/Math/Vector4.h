@@ -256,6 +256,8 @@ namespace AZ
         Vector4& operator/=(const Vector4& rhs);
         Vector4& operator*=(float multiplier);
         Vector4& operator/=(float divisor);
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector4 GetSin() const;

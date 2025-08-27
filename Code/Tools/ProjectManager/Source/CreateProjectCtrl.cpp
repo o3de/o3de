@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
 
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
-        connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
+        connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [this](int oldIndex, [[maybe_unused]] int newIndex)
             {
                 const GemModel* gemModel = m_projectGemCatalogScreen->GetGemModel();
                 const QVector<QModelIndex> toBeAdded = gemModel->GatherGemsToBeAdded();

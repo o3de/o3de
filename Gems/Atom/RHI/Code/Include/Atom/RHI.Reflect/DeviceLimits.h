@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    struct DeviceLimits
+    struct ATOM_RHI_REFLECT_API DeviceLimits
     {
         /// The maximum pixel size of a 1d image.
         uint32_t m_maxImageDimension1D = 0;

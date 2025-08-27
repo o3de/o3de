@@ -35,7 +35,7 @@ namespace AZ::RHI
     //! and supply platform-specific scope data. All platform specific data should be built in \ref
     //! CompileInternal. At that time, the client will have access to the attachment database, which
     //! it can use to compile flat arrays of platform-specific state (fences, barriers, clears, etc).
-    class Scope
+    class ATOM_RHI_PUBLIC_API Scope
         : public Object
     {
         friend class FrameGraph;

@@ -24,7 +24,7 @@ namespace AZ::RHI
     //!
     //! Alternatively, this class can be used to structure work into batches so that submission occurs once for a
     //! set of command lists.
-    class FrameGraphExecuteGroup
+    class ATOM_RHI_PUBLIC_API FrameGraphExecuteGroup
     {
         friend class FrameGraphExecuter;
     public:

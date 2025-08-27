@@ -8,8 +8,7 @@
 
 set(FILES
     Source/MiniAudioModuleInterface.h
-    Source/Clients/MiniAudioImplementation.cpp
-    Source/Clients/MiniAudioIncludes.h
+
     Source/Clients/MiniAudioListenerComponent.cpp
     Source/Clients/MiniAudioListenerComponent.h
 
@@ -33,8 +32,4 @@ set(FILES
     Source/Clients/SoundAssetHandler.h
     Source/Clients/SoundAsset.cpp
     Source/Clients/SoundAssetRef.cpp
-)
-
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    Source/Clients/MiniAudioImplementation.cpp
 )

@@ -15,7 +15,7 @@ namespace AZ::RHI
     //! A simple base class for buffer pools. This mainly exists so that various
     //! buffer pool implementations can have some type safety separate from other
     //! resource pool types.
-    class DeviceBufferPoolBase
+    class ATOM_RHI_PUBLIC_API DeviceBufferPoolBase
         : public DeviceResourcePool
     {
     public:

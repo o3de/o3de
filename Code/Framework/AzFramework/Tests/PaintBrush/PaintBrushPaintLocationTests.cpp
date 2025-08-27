@@ -48,7 +48,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color,
+                [=, this]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     AzFramework::PaintBrushNotifications::BlendFn& blendFn)
@@ -195,9 +195,9 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
+                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the first PaintToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);
@@ -208,9 +208,9 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
+                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the second PaintToLocation, we expect the dirtyArea to only contain the next 3 paint brush stamps,
                     // but not the first one.
@@ -248,9 +248,9 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
+                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // We expect that the Y value for our dirtyArea won't be changed even though we'll call UseEyedropper
                     // with a large Y value in-between the two paint calls.
@@ -304,9 +304,9 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
-                    [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
+                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
+                          [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
                     // On the first PaintToLocation, we expect to get a dirtyArea that exactly fits our first paint brush stamp.
                     const AZ::Aabb expectedFirstDirtyArea = AZ::Aabb::CreateCenterRadius(TestBrushCenter2d, TestBrushRadius);

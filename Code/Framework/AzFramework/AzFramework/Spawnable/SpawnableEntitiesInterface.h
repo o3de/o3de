@@ -124,8 +124,8 @@ namespace AzFramework
         SpawnableIndexEntityIterator& operator--();
         SpawnableIndexEntityIterator operator--(int);
 
-        bool operator==(const SpawnableIndexEntityIterator& rhs);
-        bool operator!=(const SpawnableIndexEntityIterator& rhs);
+        bool operator==(const SpawnableIndexEntityIterator& rhs) const;
+        bool operator!=(const SpawnableIndexEntityIterator& rhs) const;
 
         SpawnableIndexEntityPair& operator*();
         const SpawnableIndexEntityPair& operator*() const;

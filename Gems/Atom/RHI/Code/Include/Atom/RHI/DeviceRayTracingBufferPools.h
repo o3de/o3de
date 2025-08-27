@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! This class encapsulates all of the BufferPools needed for ray tracing, freeing the application
     //! from setting up and managing the buffers pools individually.
     //!
-    class DeviceRayTracingBufferPools
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingBufferPools
         : public DeviceObject
     {
     public:

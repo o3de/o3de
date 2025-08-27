@@ -451,7 +451,7 @@ namespace AZStd
 
             // forward to the constructor
             pointer ptr = &newNode->m_value;
-            construct_at(ptr, AZStd::forward<Args>(args)...);
+            AZStd::construct_at(ptr, AZStd::forward<Args>(args)...);
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             base_node_ptr_type prevNode = insertPos.base().get_iterator().m_node;

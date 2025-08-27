@@ -18,7 +18,7 @@
 
 namespace AZ::RHI
 {
-    struct DeviceFeatures
+    struct ATOM_RHI_REFLECT_API DeviceFeatures
     {
         //! Whether the adapter supports geometry shaders.
         bool m_geometryShader;

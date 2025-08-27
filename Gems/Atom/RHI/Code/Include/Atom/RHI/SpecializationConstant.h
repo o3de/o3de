@@ -9,6 +9,7 @@
 
 #include <AzCore/Utils/TypeHash.h>
 #include <Atom/RHI.Reflect/Handle.h>
+#include <Atom/RHI/Base.h>
 
 namespace AZ::RHI
 {
@@ -25,7 +26,7 @@ namespace AZ::RHI
 
     //! Contains all the necessary information and value of a specialization constant
     //! so it can be used when creating a PipelineState.
-    struct SpecializationConstant
+    struct ATOM_RHI_PUBLIC_API SpecializationConstant
     {
         SpecializationConstant() = default;
 

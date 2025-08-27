@@ -21,13 +21,10 @@ namespace AZ
 {
     namespace RPI
     {
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ImageTagSystemComponent final
             : public AZ::Component
             , ImageTagBus::Handler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
         public:
             AZ_COMPONENT(ImageTagSystemComponent, "{1AC446A3-6F20-4D5C-9C09-BB034C9188D5}");
 

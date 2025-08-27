@@ -106,6 +106,9 @@ namespace SandboxEditor
     SANDBOX_API float CameraPanSpeedScaled();
     SANDBOX_API void SetCameraPanSpeed(float speed);
 
+    SANDBOX_API bool CameraZoomInverted();
+    SANDBOX_API void SetCameraZoomInverted(bool inverted);
+
     SANDBOX_API float CameraRotateSmoothness();
     SANDBOX_API void SetCameraRotateSmoothness(float smoothness);
 
@@ -207,6 +210,7 @@ namespace SandboxEditor
     SANDBOX_API void ResetCameraOrbitYawRotationInverted();
     SANDBOX_API void ResetCameraPanInvertedX();
     SANDBOX_API void ResetCameraPanInvertedY();
+    SANDBOX_API void ResetCameraZoomInverted();
     SANDBOX_API void ResetCameraDefaultEditorPosition();
     SANDBOX_API void ResetCameraDefaultOrbitDistance();
     SANDBOX_API void ResetCameraDefaultEditorOrientation();

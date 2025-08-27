@@ -384,7 +384,6 @@ struct IVariable
 // Smart pointer to this parameter.
 typedef _smart_ptr<IVariable> IVariablePtr;
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /**
  **************************************************************************************
  * CVariableBase implements IVariable interface and provide default implementation
@@ -396,7 +395,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVariableBase
     : public IVariable
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     virtual ~CVariableBase() {}
 
@@ -649,12 +647,10 @@ protected:
     //! Optional user data pointer
     QVariant m_userData;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //! Extended data (Extended data is never copied, it's always private to this variable).
     WiredList m_wiredVars;
     OnSetCallbackList m_onSetFuncs;
     OnSetEnumCallbackList m_onSetEnumFuncs;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     uint16 m_flags;
     //! Limited to 8 flags.
@@ -882,9 +878,7 @@ public:
 
 protected:
     typedef std::vector<IVariablePtr> Variables;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Variables m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //! Any string value displayed in properties.
     QString m_strValue;
 };
@@ -1741,13 +1735,11 @@ typedef _smart_ptr<IVarEnumList> IVarEnumListPtr;
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING;
 //! Selection list shown in combo box, for enumerated variable.
 template <class T>
 class CVarEnumListBase
     : public IVarEnumList
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CVarEnumListBase(){}
 
@@ -2036,19 +2028,15 @@ struct CSmartVariableArray
     VarType* GetVar() const { return pVar; };
 
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     _smart_ptr<VarType> pVar;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 //////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVarBlock
     : public IVariableContainer
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     // Dtor.
     virtual ~CVarBlock() {}
@@ -2145,9 +2133,7 @@ protected:
     void GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources);
 
     typedef std::vector<IVariablePtr> Variables;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Variables m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 typedef _smart_ptr<CVarBlock> CVarBlockPtr;
@@ -2180,9 +2166,7 @@ protected:
     void CopyVariableValues(CVarObject* sourceObject);
 
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     CVarBlockPtr m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 Q_DECLARE_METATYPE(IVariable *);

@@ -8,13 +8,14 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/IndexFormat.h>
+#include <Atom/RHI/Base.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
 {
     class DeviceBuffer;
 
-    class alignas(8) DeviceIndexBufferView
+    class ATOM_RHI_PUBLIC_API alignas(8) DeviceIndexBufferView
     {
     public:
         DeviceIndexBufferView() = default;

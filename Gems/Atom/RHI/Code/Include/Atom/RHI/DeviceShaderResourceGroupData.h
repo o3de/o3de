@@ -44,7 +44,7 @@ namespace AZ::RHI
     //! prefer to share the data between them (i.e. within a single job).
     //!
     //! NOTE [SRG Constants]: The ConstantsData class is used for efficiently setting/getting the constants values of the SRG.
-    class DeviceShaderResourceGroupData
+    class ATOM_RHI_PUBLIC_API DeviceShaderResourceGroupData
     {
     public:
         //! By default creates an empty data structure. Must be initialized before use.

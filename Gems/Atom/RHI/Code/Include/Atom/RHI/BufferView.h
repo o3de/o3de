@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! A BufferView is a light-weight representation of a view onto a multi-device buffer.
     //! It holds a ConstPtr to a multi-device buffer as well as a BufferViewDescriptor
     //! Using both, single-device BufferViews can be retrieved
-    class BufferView : public ResourceView
+    class ATOM_RHI_PUBLIC_API BufferView : public ResourceView
     {
     public:
         AZ_RTTI(BufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", ResourceView);

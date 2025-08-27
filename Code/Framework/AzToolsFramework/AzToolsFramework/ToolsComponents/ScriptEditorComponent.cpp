@@ -586,7 +586,7 @@ namespace AzToolsFramework
                                             {
                                                 AZ::u64 value = 0;
                                                 propertyTable.ReadValue(attrIndex, value);
-                                                ei.m_editData.m_elementId = aznumeric_cast<AZ::u32>(value);
+                                                ei.m_editData.m_elementId = AZ::Crc32(aznumeric_cast<AZ::u32>(value));
                                             }
                                             else if (propertyTable.IsString(attrIndex))
                                             {
