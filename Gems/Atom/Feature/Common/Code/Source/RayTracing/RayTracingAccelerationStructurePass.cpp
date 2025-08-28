@@ -265,21 +265,30 @@ namespace AZ
                 auto& blasInstance = it->second;
                 for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
                 {
-                    changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
-
-                    context.GetCommandList()->BuildBottomLevelAccelerationStructure(
-                        *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                    auto query = submeshBlasInstance.m_compactionSizeQuery;
-                    if (query)
+                    if (submeshBlasInstance.IsClusterMesh())
                     {
-                        auto deviceQuery = query->GetDeviceRayTracingCompactionQuery(context.GetDeviceIndex());
-                        compactionQueries.push_back(
-                            { submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get(), deviceQuery.get() });
-                        enqueuedForCompaction = true;
+                        auto clusterBlas = submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex());
+                        context.GetCommandList()->BuildClusterAccelerationStructures(*clusterBlas);
+                        changedClusterBlasList.push_back(clusterBlas.get());
                     }
                     else
                     {
-                        AZ_Assert(!enqueuedForCompaction, "All or none Blas of an asset need to be compacted");
+                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
+
+                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                            *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
+                        auto query = submeshBlasInstance.m_compactionSizeQuery;
+                        if (query)
+                        {
+                            auto deviceQuery = query->GetDeviceRayTracingCompactionQuery(context.GetDeviceIndex());
+                            compactionQueries.push_back(
+                                { submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get(), deviceQuery.get() });
+                            enqueuedForCompaction = true;
+                        }
+                        else
+                        {
+                            AZ_Assert(!enqueuedForCompaction, "All or none Blas of an asset need to be compacted");
+                        }
                     }
                 }
                 if (enqueuedForCompaction)
