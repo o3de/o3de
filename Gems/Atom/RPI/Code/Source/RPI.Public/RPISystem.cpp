@@ -97,7 +97,6 @@ namespace AZ
             m_assetHandlers.emplace_back(MakeAssetHandler<ResourcePoolAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<AnyAssetHandler>());
 
-            m_materialSystem.Init();
             m_modelSystem.Init();
             m_shaderSystem.Init();
             m_passSystem.Init();
@@ -452,6 +451,8 @@ namespace AZ
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
 
             m_passSystem.InitPassTemplates();
+
+            m_materialSystem.Init();
 
             m_systemAssetsInitialized = true;
             AZ_TracePrintf("RPI system", "System assets initialized\n");

@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
 #include <Atom/RPI.Public/Material/MaterialSystem.h>
@@ -16,9 +18,8 @@
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
-#include <AzCore/Name/NameDictionary.h>
-
 #include <Atom_RPI_Traits_Platform.h>
+#include <AzCore/Name/NameDictionary.h>
 
 #ifndef AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS
 #define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 0
@@ -270,7 +271,7 @@ namespace AZ::RPI
                 {
                     auto desc = instanceData.m_shaderResourceGroup->GetLayout()->GetShaderInput(materialTexturesIndex);
                     instanceData.m_materialTextureRegistry = AZStd::make_unique<MaterialTextureRegistry>();
-                    instanceData.m_materialTextureRegistry->Init(desc.m_count);
+                    instanceData.m_materialTextureRegistry->Init(desc.m_count, m_nullTexture);
                 }
 #endif
             }
@@ -473,6 +474,19 @@ namespace AZ::RPI
                             instanceData.m_materialTexturesDirty = false;
                         }
 #endif
+                        // register the sampler array if the material requires it
+                        auto nullTextureIndex =
+                            instanceData.m_shaderResourceGroup->FindShaderInputConstantIndex(AZ::Name{ "m_nullTextureIndex" });
+                        if (nullTextureIndex.IsValid())
+                        {
+#ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
+                            instanceData.m_shaderResourceGroup->SetConstant(
+                                nullTextureIndex, instanceData.m_materialTextureRegistry->GetNullTextureIndex());
+#else
+                            instanceData.m_shaderResourceGroup->SetConstant(
+                                nullTextureIndex, m_nullTexture->GetImageView()->GetBindlessReadIndex());
+#endif
+                        }
 
                         // register the sampler array if the material requires it
                         auto samplerIndex = instanceData.m_shaderResourceGroup->FindShaderInputSamplerIndex(AZ::Name{ "m_samplers" });
@@ -633,6 +647,10 @@ namespace AZ::RPI
 
             // register the buffer in the SRG and compile it
             m_sceneMaterialSrg->SetBuffer(m_materialTypeBufferInputIndex, m_materialTypeBufferIndicesBuffer);
+
+            // Register the bindless read index of the Null-Texture
+            m_sceneMaterialSrg->SetConstant(m_nullTextureIndexInputIndex, m_nullTexture->GetImageView()->GetBindlessReadIndex());
+
             return true;
         }
         return false;
@@ -682,9 +700,23 @@ namespace AZ::RPI
         };
         Data::InstanceDatabase<Material>::Create(azrtti_typeid<MaterialAsset>(), handler);
 
-        auto defaultSampler = RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
-        defaultSampler.m_anisotropyMax = 16;
-        m_sceneTextureSamplers.Init(AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, defaultSampler);
+        {
+            auto defaultSampler = RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
+            defaultSampler.m_anisotropyMax = 16;
+            m_sceneTextureSamplers.Init(AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, defaultSampler);
+        }
+
+        {
+            auto pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            auto bindFlags = RHI::GetImageBindFlags(RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentAccess::Read);
+            // create a 8x8 image with the RGBA values (0, 0, 0, 1) to use a similar behaviour as the robustness2 extension when reading a
+            // null texture.
+            auto nullImageDesc = RHI::ImageDescriptor::Create2D(bindFlags, 8, 8, RHI::Format::R8G8B8A8_UNORM);
+            auto imageViewDesc = RHI::ImageViewDescriptor::Create(RHI::Format::R8G8B8A8_UNORM, 0, 0);
+            RHI::ClearValue nullImageClearValue = RHI::ClearValue::CreateVector4Uint(0, 0, 0, 1);
+            m_nullTexture = AZ::RPI::AttachmentImage::Create(
+                *pool.get(), nullImageDesc, AZ_NAME_LITERAL("MaterialNullTexture"), &nullImageClearValue, &imageViewDesc);
+        }
     }
 
     void MaterialSystem::Shutdown()

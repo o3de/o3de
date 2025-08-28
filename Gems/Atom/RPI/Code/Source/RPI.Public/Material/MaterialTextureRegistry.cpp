@@ -10,13 +10,21 @@
 
 namespace AZ::RPI
 {
-    void MaterialTextureRegistry::Init(const uint32_t maxTextures)
+    void MaterialTextureRegistry::Init(const uint32_t maxTextures, const Data::Instance<Image>& nullTexture)
     {
         // we might be re-using this registry, so reset everything
         *this = {};
         m_maxTextures = maxTextures;
         m_materialTextures.resize(maxTextures, nullptr);
         m_materialTexturesReferenceCount.resize(maxTextures, 0);
+
+        // make sure one of the images is a null-texture, so we can have a fallback texture in case we attempt to sample an unbound texture
+        m_nullTextureIndex = RegisterMaterialTexture(nullTexture);
+    }
+
+    int32_t MaterialTextureRegistry::GetNullTextureIndex()
+    {
+        return m_nullTextureIndex;
     }
 
     AZStd::vector<const RHI::ImageView*> MaterialTextureRegistry::CollectTextureViews()
