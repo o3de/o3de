@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Material/MaterialInstanceHandler.h>
 #include <Atom/RPI.Public/Material/MaterialSystem.h>
@@ -20,6 +21,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom_RPI_Traits_Platform.h>
 #include <AzCore/Name/NameDictionary.h>
+
 
 #ifndef AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS
 #define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 0
