@@ -24,11 +24,11 @@ namespace SimuCore::ParticleCore {
     {
         AZ::Vector2 size;
         if (info.front.IsEqual(VEC3_UNIT_Z) || info.front.IsEqual(-VEC3_UNIT_Z)) {
-            size = AZ::Vector2(particle.scale.x, particle.scale.y);
+            size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(1));
         } else if (info.front.IsEqual(VEC3_UNIT_Y) || info.front.IsEqual(-VEC3_UNIT_Y)) {
-            size = AZ::Vector2(particle.scale.x, particle.scale.z);
+            size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(2));
         } else {
-            size = AZ::Vector2(particle.scale.y, particle.scale.z);
+            size = AZ::Vector2(particle.scale.GetElement(1), particle.scale.GetElement(2));
         }
 
         switch (data.collisionRadius.method) {
@@ -76,7 +76,7 @@ namespace SimuCore::ParticleCore {
         float ap = (Math::PI * angleCof / 2.f) * info.randomStream->Rand();
         Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
         Transform d;
-        d.LookAt(Vector3(0.0f), planeNormal, Vector3(0.0f, 1.0f, 0.0f));
+        d.LookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
         return (Matrix3(d.ToMatrix()) * vel).Normalize();
     }
 

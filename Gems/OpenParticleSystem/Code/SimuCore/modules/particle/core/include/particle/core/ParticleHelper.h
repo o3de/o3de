@@ -112,12 +112,14 @@ namespace SimuCore::ParticleCore {
             updateValue.maxValue = Vector3(valueObject.dataValue.maxValue[0]);
         }
         if (valueObject.distType == DistributionType::CURVE) {
-            for (uint32_t index = 0; index < DISTRIBUTION_COUNT_THREE; ++index) {
-                if (valueObject.isUniform) {
-                    updateValue.value[index] = valueObject.distributions.at(0)->Tick(info, particle);
+            for (uint32_t index = 0; index < DISTRIBUTION_COUNT_THREE; ++index) 
+            {
+                if (valueObject.isUniform) 
+                {
+                    updateValue.value.value.SetElement(index, valueObject.distributions.at(0)->Tick(info, particle));
                     continue;
                 }
-                updateValue.value[index] = valueObject.distributions.at(index)->Tick(info, particle);
+                updateValue.value.value.SetElement(index, valueObject.distributions.at(index)->Tick(info, particle));
             }
         }
         return updateValue;

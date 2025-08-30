@@ -18,16 +18,8 @@
 namespace SimuCore {
     class Quaternion {
     public:
-        using MemType = VEC4_TYPE;
-        union {
-            struct {
-                float x;
-                float y;
-                float z;
-                float w;
-            };
-            MemType value;
-        };
+        using MemType = AZ::Quaternion;
+        MemType value;
 
         inline Quaternion();
 
@@ -36,6 +28,8 @@ namespace SimuCore {
         inline Quaternion(const Vector3& axis, float angle);
 
         inline Quaternion(const Quaternion& q);
+
+        inline Quaternion(const MemType& q) : value(q) {};
 
         inline Quaternion& operator=(const Quaternion& q);
 
@@ -79,14 +73,12 @@ namespace SimuCore {
 
     inline Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return Quaternion(lhs) *= rhs;
+        return lhs.value * rhs.value;
     }
 
     inline Quaternion Normalize(const Quaternion& lhs)
     {
-        Quaternion q(lhs);
-        (void)q.Normalize();
-        return q;
+        return lhs.value.GetNormalized();
     }
 
     inline Quaternion EulerToQuaternion(float yaw, float pitch, float roll) // z, y, x
@@ -109,22 +101,22 @@ namespace SimuCore {
         Vector3 eulerAngle;
 
         {
-            double sc = 2 * (quat.w * quat.x + quat.y * quat.z);
-            double cc = 1 - 2 * (quat.x * quat.x + quat.y * quat.y);
-            eulerAngle.x = static_cast<float>(std::atan2(sc, cc));
+            double sc = 2 * (quat.value.GetW() * quat.value.GetX() + quat.value.GetY() * quat.value.GetZ());
+            double cc = 1 - 2 * (quat.value.GetX() * quat.value.GetX() + quat.value.GetY() * quat.value.GetY());
+            eulerAngle.SetElement(0, static_cast<float>(std::atan2(sc, cc)));
         }
 
-        double sin = 2 * (quat.w * quat.y - quat.z * quat.x);
+        double sin = 2 * (quat.value.GetW() * quat.value.GetY() - quat.value.GetZ() * quat.value.GetX());
         if (std::abs(sin) >= 1) {
-            eulerAngle.y = static_cast<float>(std::copysign(Math::PI / 2.f, sin));
+            eulerAngle.SetElement(1, static_cast<float>(std::copysign(Math::PI / 2.f, sin)));
         } else {
-            eulerAngle.y = static_cast<float>(std::asin(sin));
+            eulerAngle.SetElement(1, static_cast<float>(std::asin(sin)));
         }
 
         {
-            double sc = 2 * (quat.w * quat.z + quat.x * quat.y);
-            double cc = 1 - 2 * (quat.y * quat.y + quat.z * quat.z);
-            eulerAngle.z = static_cast<float>(std::atan2(sc, cc));
+            double sc = 2 * (quat.value.GetW() * quat.value.GetZ() + quat.value.GetX() * quat.value.GetY());
+            double cc = 1 - 2 * (quat.value.GetY() * quat.value.GetY() + quat.value.GetZ() * quat.value.GetZ());
+            eulerAngle.SetElement(2, static_cast<float>(std::atan2(sc, cc)));
         }
         return eulerAngle;
     }

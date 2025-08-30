@@ -13,8 +13,8 @@ namespace SimuCore::ParticleCore {
     void UpdateRotateAroundPoint::Execute(
         const UpdateRotateAroundPoint* data, const UpdateInfo& info, Particle& particle)
     {
-        particle.rotateAroundPoint.w += data->rotateRate * info.tickTime;
-        float theta = particle.rotateAroundPoint.w;
+        particle.rotateAroundPoint.value.SetW(particle.rotateAroundPoint.value.GetW() + data->rotateRate * info.tickTime);
+        float theta = particle.rotateAroundPoint.value.GetW();
         Vector3 lastPosition = particle.localPosition;
         particle.localPosition =
             data->xAxis * data->radius * cos(theta) + data->yAxis * data->radius * sin(theta) + data->center;

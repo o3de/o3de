@@ -12,6 +12,8 @@
 #include "core/math/MatrixX.h"
 #include "core/math/Constants.h"
 
+#include <AzCore/Math/Transform.h>
+
 namespace SimuCore {
     //! Limits for transform scale values.
     //! The scale should not be zero to avoid problems with inverting.
@@ -19,12 +21,11 @@ namespace SimuCore {
     constexpr float MAX_TRANSFORM_SCALE = 1e9f;
 
     struct Transform {
-        Vector3 translation;
-        Quaternion rotation;
-        Vector3 scale;
+        AZ::Transform value;
 
-        Transform() : Transform(VEC3_ZERO, QUAT_IDENTITY, VEC3_ONE) {}
-        inline Transform(const Vector3& trans, const Quaternion& rot, const Vector3& s);
+        Transform() : Transform(VEC3_ZERO, QUAT_IDENTITY, 1.0f) {}
+        inline Transform(const Vector3& trans, const Quaternion& rot, float s);
+        inline Transform(const AZ::Transform& transform) : value(transform) {}
 
         inline Transform& operator*=(const Transform& rhs);
 
@@ -34,7 +35,7 @@ namespace SimuCore {
 
         inline bool operator!=(const Transform& rhs) const;
 
-        inline void FromMatrix(const Matrix4& trans);
+        //inline void FromMatrix(const Matrix4& trans);
 
         inline Matrix4 ToMatrix() const;
 
@@ -42,10 +43,10 @@ namespace SimuCore {
         [[nodiscard]] inline Vector3 TransformPoint(const Vector3& rhs) const;
         [[nodiscard]] inline Vector3 TransformVector(const Vector3& rhs) const;
 
-        [[nodiscard]] inline const Vector3& GetTranslation() const;
-        [[nodiscard]] inline const Quaternion& GetRotation() const;
-        [[nodiscard]] inline const Vector3& GetUniformScale() const;
-        inline void LookAt(const Vector3& start, const Vector3& target, const Vector3& yAxisUp);
+        [[nodiscard]] inline Vector3 GetTranslation() const;
+        [[nodiscard]] inline Quaternion GetRotation() const;
+        [[nodiscard]] inline float GetUniformScale() const;
+        inline void LookAt(const Vector3& start, const Vector3& target, const AZ::Transform::Axis axisUp);
     };
 }
 

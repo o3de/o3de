@@ -87,19 +87,25 @@ namespace SimuCore::ParticleCore {
     {
         if (data->sampleType == MeshSampleType::VERTEX && info.vertexCount > 0) {
             uint32_t vertexIndex = Random::RandomRange(0u, info.vertexCount);
-            particle.localPosition.x = data->scale.x * info.vertexStream[vertexIndex].x;
-            particle.localPosition.y = data->scale.y * info.vertexStream[vertexIndex].y;
-            particle.localPosition.z = data->scale.z * info.vertexStream[vertexIndex].z;
+            particle.localPosition = Vector3(
+                data->scale[0] * info.vertexStream[vertexIndex][0],
+                data->scale[1] * info.vertexStream[vertexIndex][1],
+                data->scale[2] * info.vertexStream[vertexIndex][2]
+            );
         } else if (data->sampleType == MeshSampleType::AREA && info.indiceCount > 0) {
             auto pointP = SamplePointViaArea(info);
-            particle.localPosition.x = data->scale.x * pointP.x;
-            particle.localPosition.y = data->scale.y * pointP.y;
-            particle.localPosition.z = data->scale.z * pointP.z;
+            particle.localPosition = Vector3(
+                data->scale.value.GetX() * pointP.value.GetX(),
+                data->scale.value.GetY() * pointP.value.GetY(),
+                data->scale.value.GetZ() * pointP.value.GetZ()
+            );
         } else if (data->sampleType == MeshSampleType::BONE && info.boneCount > 0) {
             uint32_t boneIndex = Random::RandomRange(0u, info.boneCount);
-            particle.localPosition.x = data->scale.x * info.boneStream[boneIndex].x;
-            particle.localPosition.y = data->scale.y * info.boneStream[boneIndex].y;
-            particle.localPosition.z = data->scale.z * info.boneStream[boneIndex].z;
+            particle.localPosition = Vector3(
+                data->scale.value.GetX() * info.boneStream[boneIndex].value.GetX(),
+                data->scale.value.GetY() * info.boneStream[boneIndex].value.GetY(),
+                data->scale.value.GetZ() * info.boneStream[boneIndex].value.GetZ()
+            );
         }
     }
 

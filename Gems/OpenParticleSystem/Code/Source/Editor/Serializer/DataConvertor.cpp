@@ -106,11 +106,12 @@ namespace OpenParticle
     {
         runtime.isUniform = editor.isUniform;
         runtime.distType = DataConvertor::DistributionTypeToRuntime(editor.distType);
+
+        runtime.dataValue.value = editor.dataValue.value;
+        runtime.dataValue.minValue = editor.dataValue.minValue;
+        runtime.dataValue.maxValue = editor.dataValue.maxValue;
         for (uint32_t index = 0; index < editor.Size(); ++index)
         {
-            runtime.dataValue.value[index] = editor.dataValue.value.GetElement(index);
-            runtime.dataValue.minValue[index] = editor.dataValue.minValue.GetElement(index);
-            runtime.dataValue.maxValue[index] = editor.dataValue.maxValue.GetElement(index);
             runtime.distIndex[index] = static_cast<uint32_t>(editor.distIndex[index]);
         }
     }
@@ -175,16 +176,9 @@ namespace OpenParticle
 
     void DataConvertor::ToRuntime(OpenParticle::InheritanceHandler& editData, SimuCore::ParticleCore::InheritanceHandler& runtimeData)
     {
-        runtimeData.positionOffset.x = editData.positionOffset.GetX();
-        runtimeData.positionOffset.y = editData.positionOffset.GetY();
-        runtimeData.positionOffset.z = editData.positionOffset.GetZ();
-        runtimeData.velocityRatio.x = editData.velocityRatio.GetX();
-        runtimeData.velocityRatio.y = editData.velocityRatio.GetY();
-        runtimeData.velocityRatio.z = editData.velocityRatio.GetZ();
-        runtimeData.colorRatio.x = editData.colorRatio.GetX();
-        runtimeData.colorRatio.y = editData.colorRatio.GetY();
-        runtimeData.colorRatio.z = editData.colorRatio.GetZ();
-        runtimeData.colorRatio.w = editData.colorRatio.GetW();
+        runtimeData.positionOffset = editData.positionOffset;
+        runtimeData.velocityRatio = editData.velocityRatio;
+        runtimeData.colorRatio = editData.colorRatio;
         runtimeData.emitterIndex = editData.emitterIndex;
         runtimeData.spawnRate = editData.spawnRate;
         runtimeData.calculateSpawnRate = editData.calculateSpawnRate;
@@ -211,13 +205,8 @@ namespace OpenParticle
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLocBox& editData, SimuCore::ParticleCore::SpawnLocBox& runtimeData)
     {
-        runtimeData.size.x = editData.size.GetX();
-        runtimeData.size.y = editData.size.GetY();
-        runtimeData.size.z = editData.size.GetZ();
-
-        runtimeData.center.x = editData.center.GetX();
-        runtimeData.center.y = editData.center.GetY();
-        runtimeData.center.z = editData.center.GetZ();
+        runtimeData.size = editData.size;
+        runtimeData.center = editData.center;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLocPoint& editData, SimuCore::ParticleCore::SpawnLocPoint& runtimeData)
@@ -232,9 +221,7 @@ namespace OpenParticle
         runtimeData.radius = editData.radius;
         runtimeData.ratio = editData.ratio;
         runtimeData.radiusThickness = editData.radiusThickness;
-        runtimeData.center.x = editData.center.GetX();
-        runtimeData.center.y = editData.center.GetY();
-        runtimeData.center.z = editData.center.GetZ();
+        runtimeData.center = editData.center;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLocCylinder& editData, SimuCore::ParticleCore::SpawnLocCylinder& runtimeData)
@@ -244,44 +231,39 @@ namespace OpenParticle
         runtimeData.radius = editData.radius;
         runtimeData.height = editData.height;
         runtimeData.radiusThickness = editData.radiusThickness;
-        runtimeData.center.x = editData.center.GetX();
-        runtimeData.center.y = editData.center.GetY();
-        runtimeData.center.z = editData.center.GetZ();
+        runtimeData.center = editData.center;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLocSkeleton& editData, SimuCore::ParticleCore::SpawnLocSkeleton& runtimeData)
     {
         runtimeData.sampleType = editData.sampleType;
-        runtimeData.scale.x = editData.scale.GetX();
-        runtimeData.scale.y = editData.scale.GetY();
-        runtimeData.scale.z = editData.scale.GetZ();
+        runtimeData.scale = editData.scale;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLocTorus& editData, SimuCore::ParticleCore::SpawnLocTorus& runtimeData)
     {
         runtimeData.torusRadius = editData.torusRadius;
         runtimeData.tubeRadius = editData.tubeRadius;
-        runtimeData.center.x = editData.center.GetX();
-        runtimeData.center.y = editData.center.GetY();
-        runtimeData.center.z = editData.center.GetZ();
-        runtimeData.torusAxis.x = editData.torusAxis.GetX();
-        runtimeData.torusAxis.y = editData.torusAxis.GetY();
-        runtimeData.torusAxis.z = editData.torusAxis.GetZ();
+        runtimeData.center = editData.center;
+        runtimeData.torusAxis = editData.torusAxis;
         runtimeData.torusAxis.Normalize();
-        if (runtimeData.torusAxis.z) {
-            runtimeData.xAxis.x = 1.f;
-            runtimeData.xAxis.y = 1.f;
-            runtimeData.xAxis.z = -(runtimeData.torusAxis.x + runtimeData.torusAxis.y) / runtimeData.torusAxis.z;
+        if (runtimeData.torusAxis.value.GetZ()) {
+            runtimeData.xAxis = {
+                1.f, 1.f, -(runtimeData.torusAxis.value.GetX() + runtimeData.torusAxis.value.GetY()) / runtimeData.torusAxis.value.GetZ()
+            };
         }
-        else if (runtimeData.torusAxis.y) {
-            runtimeData.xAxis.x = 1.f;
-            runtimeData.xAxis.z = 1.f;
-            runtimeData.xAxis.y = -(runtimeData.torusAxis.x + runtimeData.torusAxis.z) / runtimeData.torusAxis.y;
+        else if (runtimeData.torusAxis.value.GetY())
+        {
+            runtimeData.xAxis = {
+                1.f, 1.f, -(runtimeData.torusAxis.value.GetX() + runtimeData.torusAxis.value.GetZ()) / runtimeData.torusAxis.value.GetY()
+
+            };
         }
-        else if (runtimeData.torusAxis.x) {
-            runtimeData.xAxis.z = 1.f;
-            runtimeData.xAxis.y = 1.f;
-            runtimeData.xAxis.x = -(runtimeData.torusAxis.y + runtimeData.torusAxis.z) / runtimeData.torusAxis.x;
+        else if (runtimeData.torusAxis.value.GetZ())
+        {
+            runtimeData.xAxis = {
+                1.f,  1.f, -(runtimeData.torusAxis.value.GetY() + runtimeData.torusAxis.value.GetZ()) / runtimeData.torusAxis.value.GetX()
+            };
         }
         runtimeData.xAxis.Normalize();
         runtimeData.yAxis = runtimeData.torusAxis.Cross(runtimeData.xAxis).Normalize();
@@ -291,12 +273,8 @@ namespace OpenParticle
     {
         ConvertValueObjectToRuntime(editData.initAngleObject, runtimeData.initAngle);
         ConvertValueObjectToRuntime(editData.rotateSpeedObject, runtimeData.rotateSpeed);
-        runtimeData.initAxis.x = editData.initAxis.GetX();
-        runtimeData.initAxis.y = editData.initAxis.GetY();
-        runtimeData.initAxis.z = editData.initAxis.GetZ();
-        runtimeData.rotateAxis.x = editData.rotateAxis.GetX();
-        runtimeData.rotateAxis.y = editData.rotateAxis.GetY();
-        runtimeData.rotateAxis.z = editData.rotateAxis.GetZ();
+        runtimeData.initAxis = editData.initAxis;
+        runtimeData.rotateAxis = editData.rotateAxis;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnSize& editData, SimuCore::ParticleCore::SpawnSize& runtimeData)
@@ -309,9 +287,7 @@ namespace OpenParticle
         ConvertValueObjectToRuntime(editData.strengthObject, runtimeData.strength);
         runtimeData.centralAngle = editData.centralAngle;
         runtimeData.rotateAngle = editData.rotateAngle;
-        runtimeData.direction.x = editData.direction.GetX();
-        runtimeData.direction.y = editData.direction.GetY();
-        runtimeData.direction.z = editData.direction.GetZ();
+        runtimeData.direction = editData.direction;
         runtimeData.direction.Normalize();
     }
 
@@ -319,9 +295,7 @@ namespace OpenParticle
     {
         runtimeData.angle = editData.angle;
         ConvertValueObjectToRuntime(editData.strengthObject, runtimeData.strength);
-        runtimeData.direction.x = editData.direction.GetX();
-        runtimeData.direction.y = editData.direction.GetY();
-        runtimeData.direction.z = editData.direction.GetZ();
+        runtimeData.direction = editData.direction;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnVelDirection& editData, SimuCore::ParticleCore::SpawnVelDirection& runtimeData)
@@ -338,9 +312,7 @@ namespace OpenParticle
     void DataConvertor::ToRuntime(OpenParticle::SpawnVelConcentrate& editData, SimuCore::ParticleCore::SpawnVelConcentrate& runtimeData)
     {
         ConvertValueObjectToRuntime(editData.rateObject, runtimeData.rate);
-        runtimeData.centre.x = editData.centre.GetX();
-        runtimeData.centre.y = editData.centre.GetY();
-        runtimeData.centre.z = editData.centre.GetZ();
+        runtimeData.centre = editData.centre;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnLightEffect& editData, SimuCore::ParticleCore::SpawnLightEffect& runtimeData)
@@ -392,12 +364,8 @@ namespace OpenParticle
 
     void DataConvertor::ToRuntime(OpenParticle::UpdateVortexForce& editData, SimuCore::ParticleCore::UpdateVortexForce& runtimeData)
     {
-        runtimeData.origin.x = editData.origin.GetX();
-        runtimeData.origin.y = editData.origin.GetY();
-        runtimeData.origin.z = editData.origin.GetZ();
-        runtimeData.vortexAxis.x = editData.vortexAxis.GetX();
-        runtimeData.vortexAxis.y = editData.vortexAxis.GetY();
-        runtimeData.vortexAxis.z = editData.vortexAxis.GetZ();
+        runtimeData.origin = editData.origin;
+        runtimeData.vortexAxis = editData.vortexAxis;
         if (runtimeData.vortexAxis != SimuCore::VEC3_ZERO)
         {
             runtimeData.vortexAxis.Normalize();
@@ -412,13 +380,9 @@ namespace OpenParticle
         runtimeData.noiseStrength = editData.noiseStrength;
         runtimeData.noiseFrequency = editData.noiseFrequency;
         runtimeData.panNoise = editData.panNoise;
-        runtimeData.panNoiseField.x = editData.panNoiseField.GetX();
-        runtimeData.panNoiseField.y = editData.panNoiseField.GetY();
-        runtimeData.panNoiseField.z = editData.panNoiseField.GetZ();
+        runtimeData.panNoiseField = editData.panNoiseField;
         runtimeData.randomSeed = editData.randomSeed;
-        runtimeData.randomizationVector.x = editData.randomizationVector.GetX();
-        runtimeData.randomizationVector.y = editData.randomizationVector.GetY();
-        runtimeData.randomizationVector.z = editData.randomizationVector.GetZ();
+        runtimeData.randomizationVector = editData.randomizationVector;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::UpdateSizeLinear& editData, SimuCore::ParticleCore::UpdateSizeLinear& runtimeData)
@@ -449,15 +413,9 @@ namespace OpenParticle
     {
         runtimeData.rotateRate = editData.rotateRate;
         runtimeData.radius = editData.radius;
-        runtimeData.center.x = editData.center.GetX();
-        runtimeData.center.y = editData.center.GetY();
-        runtimeData.center.z = editData.center.GetZ();
-        runtimeData.xAxis.x = editData.xAxis.GetX();
-        runtimeData.xAxis.y = editData.xAxis.GetY();
-        runtimeData.xAxis.z = editData.xAxis.GetZ();
-        runtimeData.yAxis.x = editData.yAxis.GetX();
-        runtimeData.yAxis.y = editData.yAxis.GetY();
-        runtimeData.yAxis.z = editData.yAxis.GetZ();
+        runtimeData.center = editData.center;
+        runtimeData.xAxis = editData.xAxis;
+        runtimeData.yAxis = editData.yAxis;
         runtimeData.xAxis.Normalize();
         runtimeData.yAxis = (runtimeData.xAxis.Cross(runtimeData.yAxis)).Cross(runtimeData.xAxis).Normalize();
     }

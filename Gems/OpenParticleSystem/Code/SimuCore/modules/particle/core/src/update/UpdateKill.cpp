@@ -12,14 +12,14 @@
 namespace SimuCore::ParticleCore {
     static bool BoxContainPoint(const Vector3& min, const Vector3& max, const Vector3& point)
     {
-        return (point.x > min.x) && (point.y > min.y) && (point.z > min.z) &&
-            (point.x < max.x) && (point.y < max.y) && (point.z < max.z);
+        return (point.value.GetX() > min.value.GetX()) && (point.value.GetY() > min.value.GetY()) && (point.value.GetZ() > min.value.GetZ()) &&
+            (point.value.GetX() < max.value.GetX()) && (point.value.GetY() < max.value.GetY()) && (point.value.GetZ() < max.value.GetZ());
     }
 
     void KillInBox::Execute(const KillInBox* data, const UpdateInfo& info, Particle& particle)
     {
         Vector3 size = Vector3(
-            std::fabs(data->boxSize.x), std::fabs(data->boxSize.y), std::fabs(data->boxSize.z)
+            std::fabs(data->boxSize.value.GetX()), std::fabs(data->boxSize.value.GetY()), std::fabs(data->boxSize.value.GetZ())
         );
         Vector3 min = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->positionOffset) - size / 2.0f :

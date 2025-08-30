@@ -44,9 +44,9 @@ namespace SimuCore::ParticleCore {
         }
         Matrix4 jacobian = SimplexNoise::JacobianSimplexNoise(samplePosition * 125.0f); // 3 * Vector4
         Vector3 force {
-            jacobian.m[1][2] - jacobian.m[2][1],
-            jacobian.m[2][0] - jacobian.m[0][2],
-            jacobian.m[0][1] - jacobian.m[1][0]
+            jacobian.value.GetRow(1).GetElement(2) - jacobian.value.GetRow(2).GetElement(1),
+            jacobian.value.GetRow(2).GetElement(0) - jacobian.value.GetRow(0).GetElement(2),
+            jacobian.value.GetRow(0).GetElement(1) - jacobian.value.GetRow(1).GetElement(0)
         };
         float length = force.Length();
         if (length < NOISE_COEFFICIENT) {
@@ -121,18 +121,24 @@ namespace SimuCore::ParticleCore {
     void UpdateVortexForce::GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis)
     {
         if (dir == VEC3_ZERO) {
-            if (Math::Abs(axis.z) > Math::EPSLON) {
-                xAxis.x = 1.f;
-                xAxis.y = 1.f;
-                xAxis.z = -(axis.x + axis.y) / axis.z;
-            } else if (Math::Abs(axis.y) > Math::EPSLON) {
-                xAxis.x = 1.f;
-                xAxis.z = 1.f;
-                xAxis.y = -(axis.x + axis.z) / axis.y;
-            } else if (Math::Abs(axis.x) > Math::EPSLON) {
-                xAxis.z = 1.f;
-                xAxis.y = 1.f;
-                xAxis.x = -(axis.y + axis.z) / axis.x;
+            if (Math::Abs(axis.value.GetZ()) > Math::EPSLON) {
+                xAxis = {
+                    1.f,
+                    1.f,
+                    -(axis.value.GetX() + axis.value.GetY()) / axis.value.GetZ()
+                };
+            } else if (Math::Abs(axis.value.GetY()) > Math::EPSLON) {
+                xAxis = {
+                    1.f,
+                    -(axis.value.GetX() + axis.value.GetZ()) / axis.value.GetY(),
+                    1.f
+                };
+            } else if (Math::Abs(axis.value.GetX()) > Math::EPSLON) {
+                xAxis = {
+                    -(axis.value.GetY() + axis.value.GetZ()) / axis.value.GetX(),
+                    1.f,
+                    1.f
+                };
             }
             xAxis = xAxis.Normalize();
             yAxis = xAxis.Cross(axis).Normalize();

@@ -24,26 +24,29 @@ namespace SimuCore {
     struct Vector4;
 
     struct Vector3 {
-        using MemType = VEC4_TYPE; // simd requires 4byte memory
+        using MemType = VEC3_TYPE; // simd requires 4byte memory
 
-        union {
-            MemType value;
-            struct {
-                float x;
-                float y;
-                float z;
-            };
-            
-        };
+        MemType value;
 
-        inline const float& GetElement(size_t index) const
-        {
-            return (&x)[index];
+        inline const float GetElement(size_t index) const
+        {  
+            return value.GetElement(static_cast<int32_t>(index));
         }
 
         inline void SetElement(size_t index, float v)
         {
-            (&x)[index] = v;
+            switch (index)
+            {
+                case 0:
+                    value.SetX(v);
+                    break;
+                case 1:
+                    value.SetY(v);
+                    break;
+                case 2:
+                    value.SetZ(v);
+                    break;
+            }
         }
 
         inline Vector3();
@@ -53,6 +56,7 @@ namespace SimuCore {
         inline Vector3(float tx, float ty, float tz);
 
         inline Vector3(const Vector3& v);
+        inline Vector3(const VEC3_TYPE& v) : value(v) {}
 
         inline explicit Vector3(const Vector4& v);
 
@@ -78,8 +82,7 @@ namespace SimuCore {
         // operation ( r.x = (cmp1.x >= cmp2.x) ? vA.x : vB.x ) per component
         static inline Vector3 CreateSelectCmpGreaterEqual(const Vector3& cmp1,
             const Vector3& cmp2, const Vector3& vA, const Vector3& vB);
-        inline float& operator[](size_t index);
-        inline const float& operator[](size_t index) const;
+        inline const float operator[](size_t index) const;
         [[nodiscard]] inline float Dot(const Vector3& v) const;
         [[nodiscard]] inline float Length() const;
         [[nodiscard]] inline float Distance(const Vector3& v) const;
@@ -100,7 +103,7 @@ namespace SimuCore {
 
         inline Vector3 operator-() const
         {
-            return Vector3(-x, -y, -z);
+            return Vector3(value * -1.0f);
         }
     };
 
@@ -108,7 +111,7 @@ namespace SimuCore {
     inline Vector3 Vector3::CreateSelectCmpGreaterEqual(const Vector3 &cmp1,
         const Vector3 &cmp2, const Vector3 &vA, const Vector3 &vB)
     {
-        return {(cmp1.x >= cmp2.x) ? vA.x : vB.x, (cmp1.y >= cmp2.y) ? vA.y : vB.y, (cmp1.z >= cmp2.z) ? vA.z : vB.z};
+        return {(cmp1.value.GetX() >= cmp2.value.GetX()) ? vA.value.GetX() : vB.value.GetX(), (cmp1.value.GetY() >= cmp2.value.GetY()) ? vA.value.GetY() : vB.value.GetY(), (cmp1.value.GetZ() >= cmp2.value.GetZ()) ? vA.value.GetZ() : vB.value.GetZ()};
     }
 
     inline Vector3 operator+(const Vector3& lhs, const Vector3& rhs)
@@ -158,32 +161,24 @@ namespace SimuCore {
 
     inline Vector3 Vector3::GetMin(const Vector3& v) const
     {
-        return Vector3(Math::Min(x, v.x), Math::Min(y, v.y), Math::Min(z, v.z));
+        return Vector3(value.GetMin(v.value));
     }
-
 
     inline Vector3 Vector3::GetMax(const Vector3& v) const
     {
-        return Vector3(Math::Max(x, v.x), Math::Max(y, v.y), Math::Max(z, v.z));
+        return Vector3(value.GetMax(v.value));
     }
 
     struct Vector4 {
         using MemType = VEC4_TYPE;
-        union {
-            struct {
-                float x;
-                float y;
-                float z;
-                float w;
-            };
-            MemType value;
-        };
+        MemType value;
 
         inline Vector4();
 
         inline explicit Vector4(float v);
 
         inline Vector4(float tx, float ty, float tz, float tw);
+        inline Vector4(const VEC4_TYPE& v);
 
         inline explicit Vector4(const Vector3& v, float w = 1.0f);
 
@@ -199,8 +194,7 @@ namespace SimuCore {
         inline bool operator!=(const Vector4& v) const;
 
         inline Vector4& Normalize();
-        inline float& operator[](size_t index);
-        inline const float& operator[](size_t index) const;
+        inline const float operator[](size_t index) const;
         [[nodiscard]] inline float Dot(const Vector4& v) const;
         [[nodiscard]] inline float Length() const;
         [[nodiscard]] inline float Distance(const Vector4& v) const;

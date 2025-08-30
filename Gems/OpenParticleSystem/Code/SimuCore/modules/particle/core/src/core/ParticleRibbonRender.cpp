@@ -233,7 +233,7 @@ namespace SimuCore::ParticleCore {
                 float curTexV = bTileV ? preTileV : travelingDistance / totalDistance;
                 Vector3 right = CalRightVector(world, config, segment.tangent0, head.globalPosition);
                 BufferInfo bInfo{head.globalPosition, head.color,
-                    right, head.scale.x, vertexIdx, indexIdx, curTexV, vb, ib};
+                    right, head.scale.value.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                 (segmentId == 0) ? FillHeadVertex(bInfo) : FillVertex(bInfo);
 
                 for (uint32_t interpId = 1; interpId < segment.interpCount; interpId++) {
@@ -242,7 +242,7 @@ namespace SimuCore::ParticleCore {
                     std::pair<Vector3, Vector3> pair1 = {end.globalPosition, segment.tangent1};
                     auto pos = Math::CubicInterp<Vector3>(pair0, pair1, step, segment.segmentLength);
                     AZ::Color color = head.color.Lerp(end.color, step);
-                    auto width = Math::Lerp<float>(head.scale.x, end.scale.x, step);
+                    auto width = Math::Lerp<float>(head.scale.value.GetX(), end.scale.value.GetX(), step);
                     curTexV = bTileV ? Math::Lerp<float>(preTileV, segment.tileV, step) :
                             (pos.Distance(head.globalPosition) + travelingDistance) / totalDistance;
                     Vector3 up = segment.tangent0.Lerp(segment.tangent1, step);
@@ -255,7 +255,7 @@ namespace SimuCore::ParticleCore {
                     right = CalRightVector(world, config, segment.tangent1, end.globalPosition).Normalize();
                     curTexV = bTileV ? segment.tileV : segment.distance / totalDistance;
                     BufferInfo info{end.globalPosition, end.color,
-                        right, end.scale.x, vertexIdx, indexIdx, curTexV, vb, ib};
+                        right, end.scale.value.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                     FillEndVertex(info);
                     continue;
                 }

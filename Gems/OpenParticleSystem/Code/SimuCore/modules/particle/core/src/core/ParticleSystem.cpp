@@ -217,7 +217,7 @@ namespace SimuCore::ParticleCore {
     void ParticleSystem::UpdateWorldInfo(const Transform& cameraTrans,
         const Transform& systemTrans, const Vector3& worldFront)
     {
-        currentDistance = (cameraTrans.translation - systemTrans.translation).Length();
+        currentDistance = (cameraTrans.GetTranslation() - systemTrans.GetTranslation()).Length();
         for (auto& emitter : allEmitters) {
             emitter.second->SetEmitterTransform(systemTrans);
             emitter.second->SetWorldFront(worldFront);

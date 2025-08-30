@@ -69,26 +69,6 @@ namespace
 
 namespace OpenParticle
 {
-    static SimuCore::Vector3 From(const AZ::Vector3& v)
-    {
-        return { v.GetX(), v.GetY(), v.GetZ() };
-    }
-
-    static SimuCore::Quaternion From(const AZ::Quaternion& q)
-    {
-        return { q.GetX(), q.GetY(), q.GetZ(), q.GetW() };
-    }
-
-    static SimuCore::Transform From(const AZ::Transform& transform)
-    {
-        return
-        {
-            From(transform.GetTranslation()),
-            From(transform.GetRotation()),
-            SimuCore::Vector3(transform.GetUniformScale())
-        };
-    }
-
     ParticleSystem::~ParticleSystem()
     {
         ClearAllLightEffects();
@@ -143,7 +123,7 @@ namespace OpenParticle
             for (auto emitter : emitters)
             {
                 emitter.second->SetMoveDistance(distance);
-                emitter.second->SetEmitterTransform(From(m_transform));
+                emitter.second->SetEmitterTransform(m_transform);
             }
         }
     }
@@ -198,8 +178,9 @@ namespace OpenParticle
             OpenParticleSystem::ParticleEditorRequestBus::BroadcastResult(
                     cameraTransform, &OpenParticleSystem::ParticleEditorRequestBus::Events::GetParticleEditorCameraTransform);
         }
-        m_particleSystem->UpdateWorldInfo(From(cameraTransform.m_transform), From(m_rtConfig.m_followActiveCamera ? m_rtSysTransform : m_transform),
-                                          -From(AZ::Vector3::CreateAxisY()));
+        m_particleSystem->UpdateWorldInfo(cameraTransform.m_transform, 
+                                          m_rtConfig.m_followActiveCamera ? m_rtSysTransform : m_transform,
+                                          -AZ::Vector3::CreateAxisY());
 
         m_particleSystem->Simulate(delta);
 
@@ -314,12 +295,12 @@ namespace OpenParticle
             auto transform = view->GetCameraTransform();
 
             SimuCore::ParticleCore::WorldInfo world = {};
-            world.cameraPosition = From(transform.GetTranslation());
-            world.cameraUp = From(transform.TransformVector(AZ::Vector3::CreateAxisZ()));
-            world.cameraRight = From(transform.TransformVector(AZ::Vector3::CreateAxisX()));
-            world.axisZ = -From(AZ::Vector3::CreateAxisY());
+            world.cameraPosition = transform.GetTranslation();
+            world.cameraUp = transform.TransformVector(AZ::Vector3::CreateAxisZ());
+            world.cameraRight = transform.TransformVector(AZ::Vector3::CreateAxisX());
+            world.axisZ = -AZ::Vector3::CreateAxisY();
             world.viewKey.p = (intptr_t)view.get();
-            world.emitterTransform = From(m_transform);
+            world.emitterTransform = m_transform;
 
             auto emitters = m_particleSystem->GetVisibleEmitters();
             for (auto emitter : emitters) {
@@ -650,8 +631,8 @@ namespace OpenParticle
                 AZ::Color(lightParticle.lightColor.GetR(), lightParticle.lightColor.GetG(),
                 lightParticle.lightColor.GetB(), lightParticle.lightColor.GetA()));
             lightFP->SetRgbIntensity(light, color);
-            AZ::Vector3 position{ item.positionBuffer[lightIndex].x,
-                item.positionBuffer[lightIndex].y, item.positionBuffer[lightIndex].z };
+            AZ::Vector3 position{ item.positionBuffer[lightIndex].value.GetX(),
+                item.positionBuffer[lightIndex].value.GetY(), item.positionBuffer[lightIndex].value.GetZ() };
             lightFP->SetPosition(light, position);
             lights.emplace_back(light);
         }
@@ -842,7 +823,7 @@ namespace OpenParticle
 
         for (auto& emitter : emitters)
         {
-            emitter.second->SetEmitterTransform(From(m_transform));
+            emitter.second->SetEmitterTransform(m_transform);
             auto key = GetPipelineKey(emitter.second->GetRenderType());
             auto pipelineState = m_particleFp->FetchOrCreate(key);
             if (pipelineState == nullptr)
@@ -857,7 +838,7 @@ namespace OpenParticle
             {
                 efd.m_model.SetupModel(archive.m_emitterInfos[emitter.first].m_model, 0);
                 AZ::Aabb aabb = archive.m_emitterInfos[emitter.first].m_model->GetAabb();
-                emitter.second->SetAabbExtends(From(aabb.GetMax()), From(aabb.GetMin()));
+                emitter.second->SetAabbExtends(aabb.GetMax(), aabb.GetMin());
             }
 
             HandleSkeletonModel(*emitter.second);

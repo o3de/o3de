@@ -54,15 +54,15 @@ namespace SimuCore::ParticleCore {
                 particleVertex.subuv = Vector4(config.subImageSize.GetX(), config.subImageSize.GetY(),
                         static_cast<float>((particle.subUVFrame % width) / config.subImageSize.GetX()),
                         static_cast<float>((particle.subUVFrame / width) / config.subImageSize.GetY()));
-                Vector3 initAxis(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+                Vector3 initAxis(particle.rotation.value.GetX(), particle.rotation.value.GetY(), particle.rotation.value.GetZ());
                 if (config.facing == Facing::CUSTOM && initAxis.IsEqual(VEC3_ZERO)) {
                     particleVertex.initRotation = Vector4(initAxis, 0.f);
                 } else {
                     particleVertex.initRotation = particle.rotation;
                 }
-                Vector3 rotateAxis(particle.rotationVector.x, particle.rotationVector.y, particle.rotationVector.z);
+                Vector3 rotateAxis(particle.rotationVector.value.GetX(), particle.rotationVector.value.GetY(), particle.rotationVector.value.GetZ());
                 particleVertex.rotationVector = rotateAxis.IsEqual(VEC3_ZERO) ? Vector4(rotateAxis, 0.f) :
-                                                Vector4(rotateAxis, Math::AngleToRadians(particle.rotationVector.w));
+                                                Vector4(rotateAxis, Math::AngleToRadians(particle.rotationVector.value.GetW()));
             }
 
             BufferUpdate info = {};
