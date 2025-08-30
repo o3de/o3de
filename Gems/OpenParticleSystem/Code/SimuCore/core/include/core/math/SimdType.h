@@ -33,10 +33,12 @@ namespace SimuCore {
     using VEC2_TYPE = __m128;
     using VEC3_TYPE = __m128;
     using VEC4_TYPE = __m128;
-#elif (defined(SIMUCORE_PLATFORM_INFO) && defined(SIMUCORE_SIMD_NEON) && ((SIMUCORE_PLATFORM_INFO & SIMUCORE_SIMD_NEON) != 0))
+// TEMPORARILY - comment out the neon types.
+/*#elif (defined(SIMUCORE_PLATFORM_INFO) && defined(SIMUCORE_SIMD_NEON) && ((SIMUCORE_PLATFORM_INFO & SIMUCORE_SIMD_NEON) != 0))
     using VEC2_TYPE = float32x4_t;
     using VEC3_TYPE = float32x4_t;
     using VEC4_TYPE = float32x4_t;
+*/
 #else
     using VEC2_TYPE = VecValue<VECTOR_SIZE>;
     using VEC3_TYPE = VecValue<VECTOR_SIZE>;
