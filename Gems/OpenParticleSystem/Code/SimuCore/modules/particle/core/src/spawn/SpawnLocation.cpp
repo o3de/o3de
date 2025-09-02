@@ -85,27 +85,20 @@ namespace SimuCore::ParticleCore {
 
     void SpawnLocSkeleton::Execute(const SpawnLocSkeleton* data, const SpawnInfo& info, Particle& particle)
     {
-        if (data->sampleType == MeshSampleType::VERTEX && info.vertexCount > 0) {
+        if (data->sampleType == MeshSampleType::VERTEX && info.vertexCount > 0)
+        {
             uint32_t vertexIndex = Random::RandomRange(0u, info.vertexCount);
-            particle.localPosition = Vector3(
-                data->scale[0] * info.vertexStream[vertexIndex][0],
-                data->scale[1] * info.vertexStream[vertexIndex][1],
-                data->scale[2] * info.vertexStream[vertexIndex][2]
-            );
-        } else if (data->sampleType == MeshSampleType::AREA && info.indiceCount > 0) {
+            particle.localPosition = data->scale * info.vertexStream[vertexIndex];
+        }
+        else if (data->sampleType == MeshSampleType::AREA && info.indiceCount > 0)
+        {
             auto pointP = SamplePointViaArea(info);
-            particle.localPosition = Vector3(
-                data->scale.value.GetX() * pointP.value.GetX(),
-                data->scale.value.GetY() * pointP.value.GetY(),
-                data->scale.value.GetZ() * pointP.value.GetZ()
-            );
-        } else if (data->sampleType == MeshSampleType::BONE && info.boneCount > 0) {
+            particle.localPosition = data->scale * pointP;
+        }
+        else if (data->sampleType == MeshSampleType::BONE && info.boneCount > 0)
+        {
             uint32_t boneIndex = Random::RandomRange(0u, info.boneCount);
-            particle.localPosition = Vector3(
-                data->scale.value.GetX() * info.boneStream[boneIndex].value.GetX(),
-                data->scale.value.GetY() * info.boneStream[boneIndex].value.GetY(),
-                data->scale.value.GetZ() * info.boneStream[boneIndex].value.GetZ()
-            );
+            particle.localPosition = data->scale * info.boneStream[boneIndex];
         }
     }
 

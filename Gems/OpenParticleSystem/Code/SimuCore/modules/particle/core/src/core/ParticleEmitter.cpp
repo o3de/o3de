@@ -248,7 +248,7 @@ namespace SimuCore::ParticleCore {
                                 spawnInheritances.empty() ? nullptr : spawnInheritances[i - beginPos];
                         if (useSpawnEventInfo && relatedSpawnEvent)
                         {
-                            particle.localPosition += emitterTransform.Inverse().TransformPoint(relatedSpawnEvent->eventPosition);
+                            particle.localPosition += emitterTransform.GetInverse().TransformPoint(relatedSpawnEvent->eventPosition);
                             particle.parentEventIdx = relatedSpawnEvent->locationEventIdx;
                         }
                         SpawnInfo spawnInfo;
@@ -273,7 +273,7 @@ namespace SimuCore::ParticleCore {
                         }
                         particle.spawnTrans = emitterTransform;
                         particle.globalPosition = emitterTransform.TransformPoint(particle.localPosition);
-                        particle.rotateAroundPoint.value.SetW(i * 2.f * Math::PI / alive);
+                        particle.rotateAroundPoint.SetW(i * 2.f * Math::PI / alive);
                         HandleEvents(relatedSpawnEvent, relatedInheritanceEvent, particle);
                     }
                 });
@@ -293,7 +293,7 @@ namespace SimuCore::ParticleCore {
                         particle = {};
                         particle.id = particleIdentity.fetch_add(1, std::memory_order_relaxed);
                         if (eventInfo != nullptr && eventInfo->useEventInfo) {
-                            particle.localPosition += emitterTransform.Inverse().TransformPoint(eventInfo->eventPosition);
+                            particle.localPosition += emitterTransform.GetInverse().TransformPoint(eventInfo->eventPosition);
                             particle.parentEventIdx = eventInfo->locationEventIdx;
                         }
                         SpawnInfo spawnInfo;
@@ -317,7 +317,7 @@ namespace SimuCore::ParticleCore {
                         }
                         particle.spawnTrans = emitterTransform;
                         particle.globalPosition = emitterTransform.TransformPoint(particle.localPosition);
-                        particle.rotateAroundPoint.value.SetW(i * 2.f * Math::PI / alive);
+                        particle.rotateAroundPoint.SetW(i * 2.f * Math::PI / alive);
                         HandleEvents(eventInfo, inheritance, particle);
                     }
                 });
@@ -347,7 +347,7 @@ namespace SimuCore::ParticleCore {
             particle.ribbonId = inheritance->ribbonId;
             if (inheritance->applyPosition) {
                 particle.globalPosition = inheritance->position;
-                particle.localPosition = particle.spawnTrans.Inverse().TransformPoint(particle.globalPosition);
+                particle.localPosition = particle.spawnTrans.GetInverse().TransformPoint(particle.globalPosition);
             }
             if (inheritance->applyVelocity) {
                 if (inheritance->overwriteVelocity) {
@@ -412,7 +412,7 @@ namespace SimuCore::ParticleCore {
                 particle.localPosition += particle.velocity * delta;
                 particle.globalPosition = cfg.localSpace ? emitterTransform.TransformPoint(particle.localPosition)
                                                          : particle.spawnTrans.TransformPoint(particle.localPosition);
-                particle.rotationVector.value.SetW(particle.rotationVector.value.GetW() + particle.angularVel * delta);
+                particle.rotationVector.SetW(particle.rotationVector.GetW() + particle.angularVel * delta);
             }
         });
 
@@ -461,7 +461,7 @@ namespace SimuCore::ParticleCore {
                 particle.localPosition += particle.velocity * delta;
                 particle.globalPosition = cfg.localSpace ? emitterTransform.TransformPoint(particle.localPosition)
                                                          : particle.spawnTrans.TransformPoint(particle.localPosition);
-                particle.rotationVector.value.SetW(particle.rotationVector.value.GetW() + particle.angularVel * delta);
+                particle.rotationVector.SetW(particle.rotationVector.GetW() + particle.angularVel * delta);
             }
         });
 

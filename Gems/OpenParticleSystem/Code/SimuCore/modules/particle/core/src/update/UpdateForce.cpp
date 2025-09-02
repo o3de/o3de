@@ -44,11 +44,11 @@ namespace SimuCore::ParticleCore {
         }
         Matrix4 jacobian = SimplexNoise::JacobianSimplexNoise(samplePosition * 125.0f); // 3 * Vector4
         Vector3 force {
-            jacobian.value.GetRow(1).GetElement(2) - jacobian.value.GetRow(2).GetElement(1),
-            jacobian.value.GetRow(2).GetElement(0) - jacobian.value.GetRow(0).GetElement(2),
-            jacobian.value.GetRow(0).GetElement(1) - jacobian.value.GetRow(1).GetElement(0)
+            jacobian.GetRow(1).GetElement(2) - jacobian.GetRow(2).GetElement(1),
+            jacobian.GetRow(2).GetElement(0) - jacobian.GetRow(0).GetElement(2),
+            jacobian.GetRow(0).GetElement(1) - jacobian.GetRow(1).GetElement(0)
         };
-        float length = force.Length();
+        float length = force.GetLength();
         if (length < NOISE_COEFFICIENT) {
             force = Vector3(0.0f, 0.0f, 1.0f);
             length = 1.0f;
@@ -71,8 +71,9 @@ namespace SimuCore::ParticleCore {
         Vector3 direction = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->position) - particle.globalPosition :
             data->position - particle.globalPosition;
-        if (direction.Length() > 0.f) {
-            particle.velocity += direction / direction.Length() * (data->force * info.tickTime);
+        if (float lengthSq = direction.GetLengthSq() > 0.f)
+        {
+            particle.velocity += direction / direction.GetLength() * (data->force * info.tickTime);
         }
     }
 
@@ -84,7 +85,7 @@ namespace SimuCore::ParticleCore {
 
     void UpdateVortexForce::Execute(const UpdateVortexForce* data, const UpdateInfo& info, Particle& particle)
     {
-        if (data->vortexAxis == VEC3_ZERO) {
+        if (data->vortexAxis == Vector3::CreateZero()) {
             return;
         }
         Vector3 axis = data->vortexAxis;
@@ -95,14 +96,14 @@ namespace SimuCore::ParticleCore {
         float vortexRateVal = CalcDistributionTickValue(data->vortexRate, info.baseInfo, particle);
 
         if (originPullVal <= Math::EPSLON) {
-            particle.velocity = (particle.velocity == VEC3_ZERO) ?
-                vortexRateVal * dir.Cross(axis).Normalize() : particle.velocity;
+            particle.velocity = (particle.velocity == Vector3::CreateZero()) ?
+                vortexRateVal * dir.Cross(axis).GetNormalizedSafe() : particle.velocity;
         } else if (Math::Abs(vortexRateVal) <= Math::EPSLON) {
-            particle.velocity += dir.Normalize() * (originPullVal * info.tickTime);
+            particle.velocity += dir.GetNormalizedSafe() * (originPullVal * info.tickTime);
         } else {
             float step = originPullVal * Math::Abs(vortexRateVal) * info.tickTime / (Math::HALF_PI);
             step = (step - 1.f >= Math::EPSLON) ? 1.f : step;
-            auto r = Math::Lerp<float>(dir.Length(),
+            auto r = Math::Lerp<float>(dir.GetLength(),
                 CalcDistributionTickValue(data->vortexRadius, info.baseInfo, particle), step);
             float theta = vortexRateVal * info.tickTime;
             Vector3 xAxis;
@@ -120,31 +121,31 @@ namespace SimuCore::ParticleCore {
 
     void UpdateVortexForce::GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis)
     {
-        if (dir == VEC3_ZERO) {
-            if (Math::Abs(axis.value.GetZ()) > Math::EPSLON) {
+        if (dir == Vector3::CreateZero()) {
+            if (Math::Abs(axis.GetZ()) > Math::EPSLON) {
                 xAxis = {
                     1.f,
                     1.f,
-                    -(axis.value.GetX() + axis.value.GetY()) / axis.value.GetZ()
+                    -(axis.GetX() + axis.GetY()) / axis.GetZ()
                 };
-            } else if (Math::Abs(axis.value.GetY()) > Math::EPSLON) {
+            } else if (Math::Abs(axis.GetY()) > Math::EPSLON) {
                 xAxis = {
                     1.f,
-                    -(axis.value.GetX() + axis.value.GetZ()) / axis.value.GetY(),
+                    -(axis.GetX() + axis.GetZ()) / axis.GetY(),
                     1.f
                 };
-            } else if (Math::Abs(axis.value.GetX()) > Math::EPSLON) {
+            } else if (Math::Abs(axis.GetX()) > Math::EPSLON) {
                 xAxis = {
-                    -(axis.value.GetY() + axis.value.GetZ()) / axis.value.GetX(),
+                    -(axis.GetY() + axis.GetZ()) / axis.GetX(),
                     1.f,
                     1.f
                 };
             }
-            xAxis = xAxis.Normalize();
-            yAxis = xAxis.Cross(axis).Normalize();
+            xAxis.GetNormalized();
+            yAxis = xAxis.Cross(axis).GetNormalizedSafe();
         } else {
-            xAxis = dir.Normalize();
-            yAxis = xAxis.Cross(axis).Normalize();
+            xAxis.GetNormalized();
+            yAxis = xAxis.Cross(axis).GetNormalizedSafe();
         }
     }
     

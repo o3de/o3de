@@ -13,29 +13,29 @@ namespace SimuCore {
     {
         float skew3DFactor = 1.0f / 3.0f;
         float unskew3DFactor = 1.0f / 6.0f;
-        Vector3 cellSkewPos = input + input.Dot(Vector3{ skew3DFactor });
-        cellSkewPos = Vector3{std::floor(cellSkewPos.value.GetX()), std::floor(cellSkewPos.value.GetY()), std::floor(cellSkewPos.value.GetZ())};
-        Vector3 cellPos = cellSkewPos - cellSkewPos.Dot(Vector3{ unskew3DFactor });
+        Vector3 cellSkewPos = input + Vector3(input.Dot(Vector3(skew3DFactor)));
+        cellSkewPos = Vector3{std::floor(cellSkewPos.GetX()), std::floor(cellSkewPos.GetY()), std::floor(cellSkewPos.GetZ())};
+        Vector3 cellPos = cellSkewPos - Vector3(cellSkewPos.Dot(Vector3(unskew3DFactor)));
         Vector3 offsetToCell = input - cellPos;
         Vector3 order1 = Vector3 {
-            offsetToCell.value.GetY() <= offsetToCell.value.GetX() ? 1.0f : 0.0f,
-            offsetToCell.value.GetZ() <= offsetToCell.value.GetY() ? 1.0f : 0.0f,
-            offsetToCell.value.GetX() <= offsetToCell.value.GetZ() ? 1.0f : 0.0f
+            offsetToCell.GetY() <= offsetToCell.GetX() ? 1.0f : 0.0f,
+            offsetToCell.GetZ() <= offsetToCell.GetY() ? 1.0f : 0.0f,
+            offsetToCell.GetX() <= offsetToCell.GetZ() ? 1.0f : 0.0f
         };
         Vector3 order2 = Vector3 {
-            offsetToCell.value.GetZ() <= offsetToCell.value.GetX() ? 1.0f : 0.0f,
-            offsetToCell.value.GetX() <= offsetToCell.value.GetY() ? 1.0f : 0.0f,
-            offsetToCell.value.GetY() <= offsetToCell.value.GetZ() ? 1.0f : 0.0f
+            offsetToCell.GetZ() <= offsetToCell.GetX() ? 1.0f : 0.0f,
+            offsetToCell.GetX() <= offsetToCell.GetY() ? 1.0f : 0.0f,
+            offsetToCell.GetY() <= offsetToCell.GetZ() ? 1.0f : 0.0f
         };
-        Vector3 offset1 = order1.ComponentMin(order2) - unskew3DFactor;
-        Vector3 offset2 = order1.ComponentMax(order2) - 2.0f * unskew3DFactor;
+        Vector3 offset1 = order1.GetMin(order2) - Vector3(unskew3DFactor);
+        Vector3 offset2 = order1.GetMax(order2) - 2.0f * Vector3(unskew3DFactor);
         Vector3 offset3 = Vector3(1.0f - 3.0f * unskew3DFactor);
-        return Matrix4 {
+        return Matrix4::CreateFromRows(
             Vector4{cellPos},
             Vector4{cellPos + offset1},
             Vector4{cellPos + offset2},
             Vector4{cellPos + offset3}
-        }; // 4 * Vector3
+        ); // 4 * Vector3
     }
 
     Matrix4 SimplexNoise::JacobianSimplexNoise(const Vector3& input)
@@ -47,46 +47,46 @@ namespace SimuCore {
         const int GRADIENT_MASK[3] = { 0x8000, 0x4000, 0x2000 };
         const Vector3 GRADIENT_SCALE{ 1.0f / 0x4000, 1.0f / 0x2000, 1.0f / 0x1000 };
         for (uint32_t i = 0; i < 4; i++) {
-            offsetToCell.value.SetRow(i, VEC4_TYPE(input.value) - simplexNoise.value.GetRow(i));
-            Vector3 rand = RandomPCG16(6.0f * Vector3(simplexNoise.value.GetRow(i)) + VEC3_TYPE{ 0.5f });
-            gvec[0].value.SetRow(i, VEC3_TYPE(
-                static_cast<float>(static_cast<int>(rand.value.GetX()) & GRADIENT_MASK[0]),
-                static_cast<float>(static_cast<int>(rand.value.GetY()) & GRADIENT_MASK[1]),
-                static_cast<float>(static_cast<int>(rand.value.GetZ()) & GRADIENT_MASK[2])
-            ) * GRADIENT_SCALE.value - VEC3_TYPE(1.0f));
-            gvec[1].value.SetRow(i, VEC3_TYPE(
-                static_cast<float>(static_cast<int>(rand.value.GetX()) & GRADIENT_MASK[0]),
-                static_cast<float>(static_cast<int>(rand.value.GetY()) & GRADIENT_MASK[1]),
-                static_cast<float>(static_cast<int>(rand.value.GetZ()) & GRADIENT_MASK[2])
-            ) * GRADIENT_SCALE.value - VEC3_TYPE(1.0f));
-            gvec[2].value.SetRow(i, VEC3_TYPE(
-                static_cast<float>(static_cast<int>(rand.value.GetX()) & GRADIENT_MASK[0]),
-                static_cast<float>(static_cast<int>(rand.value.GetY()) & GRADIENT_MASK[1]),
-                static_cast<float>(static_cast<int>(rand.value.GetZ()) & GRADIENT_MASK[2])
-            ) * GRADIENT_SCALE.value - VEC3_TYPE(1.0f));
+            offsetToCell.SetRow(i, AZ::Vector4(input) - simplexNoise.GetRow(i));
+            Vector3 rand = RandomPCG16(6.0f * Vector3(simplexNoise.GetRow(i)) + AZ::Vector3{ 0.5f });
+            gvec[0].SetRow(i, AZ::Vector3(
+                static_cast<float>(static_cast<int>(rand.GetX()) & GRADIENT_MASK[0]),
+                static_cast<float>(static_cast<int>(rand.GetY()) & GRADIENT_MASK[1]),
+                static_cast<float>(static_cast<int>(rand.GetZ()) & GRADIENT_MASK[2])
+            ) * GRADIENT_SCALE - AZ::Vector3(1.0f));
+            gvec[1].SetRow(i, AZ::Vector3(
+                static_cast<float>(static_cast<int>(rand.GetX()) & GRADIENT_MASK[0]),
+                static_cast<float>(static_cast<int>(rand.GetY()) & GRADIENT_MASK[1]),
+                static_cast<float>(static_cast<int>(rand.GetZ()) & GRADIENT_MASK[2])
+            ) * GRADIENT_SCALE - AZ::Vector3(1.0f));
+            gvec[2].SetRow(i, AZ::Vector3(
+                static_cast<float>(static_cast<int>(rand.GetX()) & GRADIENT_MASK[0]),
+                static_cast<float>(static_cast<int>(rand.GetY()) & GRADIENT_MASK[1]),
+                static_cast<float>(static_cast<int>(rand.GetZ()) & GRADIENT_MASK[2])
+            ) * GRADIENT_SCALE - AZ::Vector3(1.0f));
         
-            grad.value.SetColumn(i,
-                 VEC3_TYPE(
-                 gvec[0].value.GetRow(i).Dot(offsetToCell.value.GetRow(i)),
-                 gvec[1].value.GetRow(i).Dot(offsetToCell.value.GetRow(i)),
-                 gvec[2].value.GetRow(i).Dot(offsetToCell.value.GetRow(i)))
+            grad.SetColumn(i,
+                 AZ::Vector3(
+                 gvec[0].GetRow(i).Dot(offsetToCell.GetRow(i)),
+                 gvec[1].GetRow(i).Dot(offsetToCell.GetRow(i)),
+                 gvec[2].GetRow(i).Dot(offsetToCell.GetRow(i)))
             );
         }
         Vector4 smoothOffset = SimplexSmooth(offsetToCell);
         Matrix4 dSmoothOffset = SimplexDSmooth(offsetToCell);
-        return Matrix4 {
-            Vector4(Vector3(smoothOffset * gvec[0] + dSmoothOffset * grad.value.GetRow(0)), smoothOffset.Dot(grad.value.GetRow(0))),
-            Vector4(Vector3(smoothOffset * gvec[1] + dSmoothOffset * grad.value.GetRow(1)), smoothOffset.Dot(grad.value.GetRow(1))),
-            Vector4(Vector3(smoothOffset * gvec[2] + dSmoothOffset * grad.value.GetRow(2)), smoothOffset.Dot(grad.value.GetRow(2))),
+        return Matrix4::CreateFromRows(
+            Vector4(Vector3(smoothOffset * gvec[0] + dSmoothOffset * grad.GetRow(0)), smoothOffset.Dot(grad.GetRow(0))),
+            Vector4(Vector3(smoothOffset * gvec[1] + dSmoothOffset * grad.GetRow(1)), smoothOffset.Dot(grad.GetRow(1))),
+            Vector4(Vector3(smoothOffset * gvec[2] + dSmoothOffset * grad.GetRow(2)), smoothOffset.Dot(grad.GetRow(2))),
             Vector4(0.0f)
-        }; // 3 * Vector4
+        ); // 3 * Vector4
     }
 
     Vector3 SimplexNoise::RandomPCG16(const Vector3& vec)
     {
-        uint32_t x = static_cast<uint32_t>(vec.value.GetX()) * 1664525u + 1013904223u;
-        uint32_t y = static_cast<uint32_t>(vec.value.GetY()) * 1664525u + 1013904223u;
-        uint32_t z = static_cast<uint32_t>(vec.value.GetZ()) * 1664525u + 1013904223u;
+        uint32_t x = static_cast<uint32_t>(vec.GetX()) * 1664525u + 1013904223u;
+        uint32_t y = static_cast<uint32_t>(vec.GetY()) * 1664525u + 1013904223u;
+        uint32_t z = static_cast<uint32_t>(vec.GetZ()) * 1664525u + 1013904223u;
         x += y * z;
         y += z * x;
         z += x * y;
@@ -104,16 +104,16 @@ namespace SimuCore {
     {
         float scale = 1024.0f / 375.0f;
         Vector4 d = Vector4 {
-            Vector3(offsetToCell.value.GetRow(0)).Dot(Vector3(offsetToCell.value.GetRow(0))),
-            Vector3(offsetToCell.value.GetRow(1)).Dot(Vector3(offsetToCell.value.GetRow(1))),
-            Vector3(offsetToCell.value.GetRow(2)).Dot(Vector3(offsetToCell.value.GetRow(2))),
-            Vector3(offsetToCell.value.GetRow(3)).Dot(Vector3(offsetToCell.value.GetRow(3))),
+            Vector3(offsetToCell.GetRow(0)).Dot(Vector3(offsetToCell.GetRow(0))),
+            Vector3(offsetToCell.GetRow(1)).Dot(Vector3(offsetToCell.GetRow(1))),
+            Vector3(offsetToCell.GetRow(2)).Dot(Vector3(offsetToCell.GetRow(2))),
+            Vector3(offsetToCell.GetRow(3)).Dot(Vector3(offsetToCell.GetRow(3))),
         };
         Vector4 s = Vector4 (
-            Math::Clamp(2.0f * d.value.GetX(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetY(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetZ(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetW(), 0.0f, 1.0f)
+            Math::Clamp(2.0f * d.GetX(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetY(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetZ(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetW(), 0.0f, 1.0f)
         );
         s = scale * (Vector4(1.0f) + s * (Vector4(-3.0f) + s * (Vector4(3.0f) - s)));
         return s;
@@ -123,22 +123,22 @@ namespace SimuCore {
     {
         float scale = 1024.0f / 375.0f;
         Vector4 d = Vector4 {
-            Vector3(offsetToCell.value.GetRow(0)).Dot(Vector3(offsetToCell.value.GetRow(0))),
-            Vector3(offsetToCell.value.GetRow(1)).Dot(Vector3(offsetToCell.value.GetRow(1))),
-            Vector3(offsetToCell.value.GetRow(2)).Dot(Vector3(offsetToCell.value.GetRow(2))),
-            Vector3(offsetToCell.value.GetRow(3)).Dot(Vector3(offsetToCell.value.GetRow(3))),
+            Vector3(offsetToCell.GetRow(0)).Dot(Vector3(offsetToCell.GetRow(0))),
+            Vector3(offsetToCell.GetRow(1)).Dot(Vector3(offsetToCell.GetRow(1))),
+            Vector3(offsetToCell.GetRow(2)).Dot(Vector3(offsetToCell.GetRow(2))),
+            Vector3(offsetToCell.GetRow(3)).Dot(Vector3(offsetToCell.GetRow(3))),
         };
         Vector4 s = Vector4(
-            Math::Clamp(2.0f * d.value.GetX(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetY(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetZ(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.value.GetW(), 0.0f, 1.0f)
+            Math::Clamp(2.0f * d.GetX(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetY(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetZ(), 0.0f, 1.0f),
+            Math::Clamp(2.0f * d.GetW(), 0.0f, 1.0f)
         );
         s = scale * (Vector4(-12.0f) + s * (Vector4(24.0f) - 12.0f * s));
-        return Matrix4(
-            s * Vector4(offsetToCell.value.GetRow(0).GetX(), offsetToCell.value.GetRow(1).GetX(), offsetToCell.value.GetRow(2).GetX(), offsetToCell.value.GetRow(3).GetX()),
-            s * Vector4(offsetToCell.value.GetRow(0).GetY(), offsetToCell.value.GetRow(1).GetY(), offsetToCell.value.GetRow(2).GetY(), offsetToCell.value.GetRow(3).GetY()),
-            s * Vector4(offsetToCell.value.GetRow(0).GetZ(), offsetToCell.value.GetRow(1).GetZ(), offsetToCell.value.GetRow(2).GetZ(), offsetToCell.value.GetRow(3).GetZ()),
+        return Matrix4::CreateFromRows(
+            s * Vector4(offsetToCell.GetRow(0).GetX(), offsetToCell.GetRow(1).GetX(), offsetToCell.GetRow(2).GetX(), offsetToCell.GetRow(3).GetX()),
+            s * Vector4(offsetToCell.GetRow(0).GetY(), offsetToCell.GetRow(1).GetY(), offsetToCell.GetRow(2).GetY(), offsetToCell.GetRow(3).GetY()),
+            s * Vector4(offsetToCell.GetRow(0).GetZ(), offsetToCell.GetRow(1).GetZ(), offsetToCell.GetRow(2).GetZ(), offsetToCell.GetRow(3).GetZ()),
             Vector4(0.0f)
         );
     }

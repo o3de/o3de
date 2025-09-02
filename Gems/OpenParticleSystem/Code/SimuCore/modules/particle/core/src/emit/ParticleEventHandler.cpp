@@ -49,7 +49,7 @@ namespace SimuCore::ParticleCore {
                 spawn.position = systemInheritance.second.position + data->positionOffset;
                 spawn.velocity = systemInheritance.second.velocity * data->velocityRatio;
                 spawn.size = systemInheritance.second.size;
-                spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.value.GetX(), data->colorRatio.value.GetY(), data->colorRatio.value.GetZ(), data->colorRatio.value.GetW());
+                spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.GetX(), data->colorRatio.GetY(), data->colorRatio.GetZ(), data->colorRatio.GetW());
                 spawn.currentLife = systemInheritance.second.currentLife;
                 spawn.lifetime = systemInheritance.second.lifetime;
                 spawn.applyPosition = data->applyPosition;
@@ -75,7 +75,7 @@ namespace SimuCore::ParticleCore {
                     spawn.position = systemInheritance.second.position + data->positionOffset;
                     spawn.velocity = systemInheritance.second.velocity * data->velocityRatio;
                     spawn.size = systemInheritance.second.size;
-                    spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.value.GetX(), data->colorRatio.value.GetY(), data->colorRatio.value.GetZ(), data->colorRatio.value.GetW());
+                    spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.GetX(), data->colorRatio.GetY(), data->colorRatio.GetZ(), data->colorRatio.GetW());
                     spawn.currentLife = systemInheritance.second.currentLife;
                     spawn.lifetime = systemInheritance.second.lifetime;
                     spawn.applyPosition = data->applyPosition;

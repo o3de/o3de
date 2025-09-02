@@ -114,13 +114,13 @@ namespace OpenParticleSystemEditor
 
     AZ::Quaternion Behavior::LookRotation(AZ::Vector3 forward)
     {
-        forward.Normalize();
+        forward.GetNormalized();
         AZ::Vector3 right = forward.CrossZAxis();
-        right.Normalize();
+        right.GetNormalized();
         AZ::Vector3 up = right.Cross(forward);
-        up.Normalize();
+        up.GetNormalized();
         AZ::Quaternion rotation = AZ::Quaternion::CreateFromBasis(right, forward, up);
-        rotation.Normalize();
+        rotation.GetNormalized();
         return rotation;
     }
 

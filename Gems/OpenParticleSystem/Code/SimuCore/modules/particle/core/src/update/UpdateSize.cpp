@@ -22,7 +22,7 @@ namespace SimuCore::ParticleCore {
 
     void UpdateSizeByVelocity::Execute(const UpdateSizeByVelocity* data, const UpdateInfo& info, Particle& particle)
     {
-        float vel = std::max(Math::EPSLON, particle.velocity.Length());
+        float vel = std::max(Math::EPSLON, particle.velocity.GetLength());
         vel = std::min(vel, data->velocityRange);
         vel = data->velocityRange > Math::EPSLON ? vel / data->velocityRange : 1.f;
         LinearValue velSize = CalcDistributionTickValue(data->velScale, info.baseInfo, particle);

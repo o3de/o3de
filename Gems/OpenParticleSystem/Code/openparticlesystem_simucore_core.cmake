@@ -16,7 +16,6 @@ set(FILES
     SimuCore/core/include/core/math/Quaternion.h
     SimuCore/core/include/core/math/Random.h
     SimuCore/core/include/core/math/RandomStream.h
-    SimuCore/core/include/core/math/SimdType.h
     SimuCore/core/include/core/math/Transform.h
     SimuCore/core/include/core/math/VectorX.h
     SimuCore/core/include/core/platform/Platform.h

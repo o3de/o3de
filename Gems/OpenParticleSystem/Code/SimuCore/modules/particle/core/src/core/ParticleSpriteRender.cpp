@@ -31,7 +31,7 @@ namespace SimuCore::ParticleCore {
     {
         AZ_PROFILE_SCOPE(AzCore, "UpdateParticle");
         pool.RenderAll([&config, &world, &vb, &positionBuffer, &buffer, gDriver](const Particle* particleData, uint32_t begin, uint32_t end) {
-            const auto trans = world.emitterTransform.Inverse();
+            const auto trans = world.emitterTransform.GetInverse();
             for (uint32_t index = begin; index < end; ++index) {
                 const auto& particle = particleData[index];
                 ParticleSpriteVertex& particleVertex = vb[index];
@@ -44,25 +44,28 @@ namespace SimuCore::ParticleCore {
                 particleVertex.up = Vector4(world.cameraUp, 0.f);
 
                 Vector3 vel = particle.velocity;
-                if (vel.IsEqual(VEC3_ZERO)) {
+                if (vel.IsClose(Vector3::CreateZero())) {
                     particleVertex.velocity = Vector4(vel, 0.f);
                 } else {
-                    particleVertex.velocity = Vector4(vel.Normalize(), 0.f);
+                    particleVertex.velocity = Vector4(vel.GetNormalized(), 0.f);
                 }
 
                 uint32_t width = std::max(static_cast<uint32_t>(std::floor(config.subImageSize.GetX())), 1u);
                 particleVertex.subuv = Vector4(config.subImageSize.GetX(), config.subImageSize.GetY(),
                         static_cast<float>((particle.subUVFrame % width) / config.subImageSize.GetX()),
                         static_cast<float>((particle.subUVFrame / width) / config.subImageSize.GetY()));
-                Vector3 initAxis(particle.rotation.value.GetX(), particle.rotation.value.GetY(), particle.rotation.value.GetZ());
-                if (config.facing == Facing::CUSTOM && initAxis.IsEqual(VEC3_ZERO)) {
+                Vector3 initAxis(particle.rotation.GetX(), particle.rotation.GetY(), particle.rotation.GetZ());
+                if (config.facing == Facing::CUSTOM && initAxis.IsClose(Vector3::CreateZero()))
+                {
                     particleVertex.initRotation = Vector4(initAxis, 0.f);
-                } else {
+                }
+                else {
                     particleVertex.initRotation = particle.rotation;
                 }
-                Vector3 rotateAxis(particle.rotationVector.value.GetX(), particle.rotationVector.value.GetY(), particle.rotationVector.value.GetZ());
-                particleVertex.rotationVector = rotateAxis.IsEqual(VEC3_ZERO) ? Vector4(rotateAxis, 0.f) :
-                                                Vector4(rotateAxis, Math::AngleToRadians(particle.rotationVector.value.GetW()));
+                Vector3 rotateAxis(particle.rotationVector.GetX(), particle.rotationVector.GetY(), particle.rotationVector.GetZ());
+                particleVertex.rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
+                    ? Vector4(rotateAxis, 0.f)
+                    : Vector4(rotateAxis, Math::AngleToRadians(particle.rotationVector.GetW()));
             }
 
             BufferUpdate info = {};

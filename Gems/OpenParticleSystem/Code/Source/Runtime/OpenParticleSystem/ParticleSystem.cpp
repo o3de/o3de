@@ -46,7 +46,7 @@ namespace
         SimuCore::Vector3 e2;
         e1 = v2 - v1;
         e2 = v3 - v2;
-        return 0.5 * e1.Cross(e2).Length();
+        return 0.5 * e1.Cross(e2).GetLength();
     }
 
     void ResetMeshBuffers(const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& subMeshes, AZStd::vector<uint32_t>& allMeshIndices,
@@ -631,8 +631,8 @@ namespace OpenParticle
                 AZ::Color(lightParticle.lightColor.GetR(), lightParticle.lightColor.GetG(),
                 lightParticle.lightColor.GetB(), lightParticle.lightColor.GetA()));
             lightFP->SetRgbIntensity(light, color);
-            AZ::Vector3 position{ item.positionBuffer[lightIndex].value.GetX(),
-                item.positionBuffer[lightIndex].value.GetY(), item.positionBuffer[lightIndex].value.GetZ() };
+            AZ::Vector3 position{ item.positionBuffer[lightIndex].GetX(),
+                item.positionBuffer[lightIndex].GetY(), item.positionBuffer[lightIndex].GetZ() };
             lightFP->SetPosition(light, position);
             lights.emplace_back(light);
         }

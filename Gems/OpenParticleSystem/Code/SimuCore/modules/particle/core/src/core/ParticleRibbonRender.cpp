@@ -143,19 +143,26 @@ namespace SimuCore::ParticleCore {
             uint32_t currentIndex = sortedIndices[i].first;
             Particle currentParticle = particle[currentIndex];
             Vector3 curDir = currentParticle.globalPosition - lastParticle.globalPosition;
-            float localDistance = curDir.Length();
-            if (localDistance <= Math::EPSLON || (localDistance <
-                config.minRibbonSegmentLength && i !=  sortedIndices.size() - 1)) {
+            float localDistance = curDir.GetLengthSq();
+            if (localDistance > Math::EPSLON)
+            {
+                localDistance = std::sqrt(localDistance);
+            }
+
+            if (localDistance < config.minRibbonSegmentLength && i != sortedIndices.size() - 1)
+            {
                 continue;
             }
 
-            Vector3 lastDir = VEC3_ZERO;
-            if (indicesInRibbon.size() > 1) {
+            Vector3 lastDir = Vector3::CreateZero();
+            if (indicesInRibbon.size() > 1)
+            {
                 uint32_t lastLast = indicesInRibbon[indicesInRibbon.size() - 2];
                 Particle lastLastParticle = particle[lastLast];
                 lastDir = lastParticle.globalPosition - lastLastParticle.globalPosition;
-                if (lastDir.Length() > Math::EPSLON) {
-                    (void)lastDir.Normalize();
+                if (float sqlength = lastDir.GetLengthSq() > Math::EPSLON)
+                {
+                    lastDir = lastDir / std::sqrt(sqlength);
                 }
             }
 
@@ -165,8 +172,8 @@ namespace SimuCore::ParticleCore {
             segment.head = lastIndex;
             segment.end = currentIndex;
             segment.segmentLength = localDistance;
-            segment.tangent0 = segments.empty() ? curDir.Normalize() : segments[segments.size() - 1].tangent1;
-            segment.tangent1 = (1.f - config.curveTension) * (dir.Normalize());
+            segment.tangent0 = segments.empty() ? curDir.GetNormalized() : segments[segments.size() - 1].tangent1;
+            segment.tangent1 = (1.f - config.curveTension) * (dir.GetNormalized());
             segment.interpCount = static_cast<uint32_t>(std::ceil(localDistance / config.tesselationFactor));
             segmentCount += segment.interpCount;
             totalDistance += localDistance;
@@ -233,7 +240,7 @@ namespace SimuCore::ParticleCore {
                 float curTexV = bTileV ? preTileV : travelingDistance / totalDistance;
                 Vector3 right = CalRightVector(world, config, segment.tangent0, head.globalPosition);
                 BufferInfo bInfo{head.globalPosition, head.color,
-                    right, head.scale.value.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
+                    right, head.scale.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                 (segmentId == 0) ? FillHeadVertex(bInfo) : FillVertex(bInfo);
 
                 for (uint32_t interpId = 1; interpId < segment.interpCount; interpId++) {
@@ -242,9 +249,9 @@ namespace SimuCore::ParticleCore {
                     std::pair<Vector3, Vector3> pair1 = {end.globalPosition, segment.tangent1};
                     auto pos = Math::CubicInterp<Vector3>(pair0, pair1, step, segment.segmentLength);
                     AZ::Color color = head.color.Lerp(end.color, step);
-                    auto width = Math::Lerp<float>(head.scale.value.GetX(), end.scale.value.GetX(), step);
+                    auto width = Math::Lerp<float>(head.scale.GetX(), end.scale.GetX(), step);
                     curTexV = bTileV ? Math::Lerp<float>(preTileV, segment.tileV, step) :
-                            (pos.Distance(head.globalPosition) + travelingDistance) / totalDistance;
+                            (pos.GetDistance(head.globalPosition) + travelingDistance) / totalDistance;
                     Vector3 up = segment.tangent0.Lerp(segment.tangent1, step);
                     right = CalRightVector(world, config, up, head.globalPosition);
                     BufferInfo info{pos, color, right, width, vertexIdx, indexIdx, curTexV, vb, ib};
@@ -252,10 +259,10 @@ namespace SimuCore::ParticleCore {
                 }
 
                 if (segmentId == iter->second.size() - 1) {
-                    right = CalRightVector(world, config, segment.tangent1, end.globalPosition).Normalize();
+                    right = CalRightVector(world, config, segment.tangent1, end.globalPosition).GetNormalized();
                     curTexV = bTileV ? segment.tileV : segment.distance / totalDistance;
                     BufferInfo info{end.globalPosition, end.color,
-                        right, end.scale.value.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
+                        right, end.scale.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                     FillEndVertex(info);
                     continue;
                 }
@@ -337,7 +344,7 @@ namespace SimuCore::ParticleCore {
                 facing = world.axisZ;
                 break;
         }
-        return facing.Cross(up).Normalize();
+        return facing.Cross(up).GetNormalized();
     }
 
     void ParticleRibbonRender::UpdateVertexBuffer(

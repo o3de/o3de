@@ -28,14 +28,14 @@ namespace SimuCore::ParticleCore {
         float length = 0.0f;
         if (data->scope > info.randomStream->UnitRandom()) {
             if (data->keepVelocity) {
-                length = particle.velocity.Length();
+                length = particle.velocity.GetLength();
             }
             particle.velocity += Vector3(
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime,
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime,
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime);
             if (data->keepVelocity) {
-                particle.velocity *= length / particle.velocity.Length();
+                particle.velocity *= length / particle.velocity.GetLength();
             }
         }
     }

@@ -39,8 +39,6 @@
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(SimuCore::Vector3, "{cca90682-4b27-45dd-a1ae-0f71d642dfb8}");
-    AZ_TYPE_INFO_SPECIALIZE(SimuCore::Vector4, "{0dfe125a-ec2d-4b53-a699-0b91441de8ac}");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(
         std::array, "std::array","{343a34f9-0737-4a37-9e64-2cdd4dd62186}",
         AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);

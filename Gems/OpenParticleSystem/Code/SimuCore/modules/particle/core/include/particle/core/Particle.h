@@ -22,24 +22,16 @@
 #include "core/math/VectorX.h"
 #include "core/math/Transform.h"
 
-#if defined __clang__ || (defined __GNUC__ && __GNUC__ > 8)
-#define PRETTY_FUCTION __PRETTY_FUNCTION__
-#elif defined __GNUC__
-#define PRETTY_FUCTION __PRETTY_FUNCTION__
-#elif defined _MSC_VER
-#define PRETTY_FUCTION __FUNCSIG__
-#endif
-
 namespace SimuCore::ParticleCore {
     struct Particle {
         Transform spawnTrans;    // transform when spawn
         Vector3 localPosition;     // local position in emitter
         Vector3 globalPosition;    // global position in world
         Vector3 velocity;          // velocity
-        Vector3 baseScale = VEC3_ONE;          // base scale
-        Vector3 scale = VEC3_ONE;              // scale
-        Vector4 rotation = VEC4_UNIT_Y;        // xyz: axis w: angle
-        Vector4 rotationVector = VEC4_UNIT_Y;  // xyz: axis w: angle
+        Vector3 baseScale = Vector3::CreateOne();
+        Vector3 scale = Vector3::CreateOne();              // scale
+        Vector4 rotation = Vector4::CreateAxisY();        // xyz: axis w: angle
+        Vector4 rotationVector = Vector4::CreateAxisY();  // xyz: axis w: angle
         Vector4 rotateAroundPoint; // xyz: rotation axis w: angle
         AZ::Color color = COLOR_WHITE;             // rgba
         AZ::Color lightColor = COLOR_WHITE;        // light effect AZ::Color
@@ -204,7 +196,7 @@ namespace SimuCore::ParticleCore {
     struct TypeInfo {
         static constexpr std::string_view Name() noexcept
         {
-            std::string_view id(PRETTY_FUCTION);
+            std::string_view id(AZ_FUNCTION_SIGNATURE);
             auto first = id.find_first_of(' ', id.find_last_of('<') + 1) + 1;
             auto last = id.find_last_of('>');
             return id.substr(first, last - first);
@@ -365,7 +357,7 @@ namespace SimuCore::ParticleCore {
 
     struct SpawnInfo {
         Transform emitterTrans;
-        Vector3 front = VEC3_UNIT_Z;
+        Vector3 front = Vector3::CreateAxisZ();
         const Vector3* vertexStream = nullptr;
         const uint32_t* indiceStream = nullptr;
         const double* areaStream = nullptr;
@@ -381,9 +373,9 @@ namespace SimuCore::ParticleCore {
 
     struct UpdateInfo {
         Transform emitterTrans;
-        Vector3 front = VEC3_UNIT_Z;
-        Vector3 maxExtend = VEC3_ZERO;
-        Vector3 minExtend = VEC3_ZERO;
+        Vector3 front = Vector3::CreateAxisZ();
+        Vector3 maxExtend = Vector3::CreateZero();
+        Vector3 minExtend = Vector3::CreateZero();
         RandomStream* randomStream = nullptr;
         BaseInfo baseInfo;
         float tickTime = 0.0f;

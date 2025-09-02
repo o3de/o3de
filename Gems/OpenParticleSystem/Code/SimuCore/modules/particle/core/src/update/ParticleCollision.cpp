@@ -16,18 +16,23 @@ namespace SimuCore::ParticleCore {
         Vector3 maxExtend = max * particleSize;
         Vector3 minExtend = min * particleSize;
         Vector3 center = (maxExtend + minExtend) * 0.5f;
-        float radius = (maxExtend - center).Length();
+        float radius = (maxExtend - center).GetLength();
         return radius;
     }
 
     static float CalculateSpriteRadius(const ParticleCollision& data, const Particle& particle, const UpdateInfo& info)
     {
         AZ::Vector2 size;
-        if (info.front.IsEqual(VEC3_UNIT_Z) || info.front.IsEqual(-VEC3_UNIT_Z)) {
+        if (info.front.IsClose(Vector3::CreateAxisZ()) || info.front.IsClose(-Vector3::CreateAxisZ()))
+        {
             size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(1));
-        } else if (info.front.IsEqual(VEC3_UNIT_Y) || info.front.IsEqual(-VEC3_UNIT_Y)) {
+        }
+        else if (info.front.IsClose(Vector3::CreateAxisY()) || info.front.IsClose(-Vector3::CreateAxisY()))
+        {
             size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(2));
-        } else {
+        }
+        else
+        {
             size = AZ::Vector2(particle.scale.GetElement(1), particle.scale.GetElement(2));
         }
 
@@ -75,9 +80,8 @@ namespace SimuCore::ParticleCore {
         // normal (0, 1] -> (0, Pi]
         float ap = (Math::PI * angleCof / 2.f) * info.randomStream->Rand();
         Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
-        Transform d;
-        d.LookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
-        return (Matrix3(d.ToMatrix()) * vel).Normalize();
+        Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
+        return (Matrix3::CreateFromTransform(d) * vel).GetNormalized();
     }
 
     static void HandleCollision(const ParticleCollision* data, Particle& particle, const UpdateInfo& info,
@@ -151,7 +155,7 @@ namespace SimuCore::ParticleCore {
             if (info.localSpace) {
                 collisionParam.localPlane = plane;
             } else {
-                Transform inverse = particle.spawnTrans.Inverse();
+                Transform inverse = particle.spawnTrans.GetInverse();
                 collisionParam.localPlane.position = inverse.TransformPoint(plane.position);
                 collisionParam.localPlane.normal = inverse.TransformVector(plane.normal);
             }

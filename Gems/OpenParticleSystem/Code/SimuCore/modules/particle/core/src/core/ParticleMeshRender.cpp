@@ -39,11 +39,12 @@ namespace SimuCore::ParticleCore {
             meshInfo[i].position = curr.globalPosition - world.emitterTransform.GetTranslation();
             meshInfo[i].color = curr.color;
             meshInfo[i].scale = curr.scale;
-            Vector3 initAxis(curr.rotation.value.GetX(), curr.rotation.value.GetY(), curr.rotation.value.GetZ());
-            meshInfo[i].initRotation = initAxis.IsEqual(VEC3_ZERO) ? Vector4(initAxis, 0.f) : curr.rotation;
-            Vector3 rotateAxis(curr.rotationVector.value.GetX(), curr.rotationVector.value.GetY(), curr.rotationVector.value.GetZ());
-            meshInfo[i].rotationVector = rotateAxis.IsEqual(VEC3_ZERO) ? Quaternion(rotateAxis, 0.f) :
-                Quaternion(rotateAxis, Math::AngleToRadians(curr.rotationVector.value.GetW()));
+            Vector3 initAxis(curr.rotation.GetX(), curr.rotation.GetY(), curr.rotation.GetZ());
+            meshInfo[i].initRotation = initAxis.IsClose(Vector3::CreateZero()) ? Vector4(initAxis, 0.f) : curr.rotation;
+            Vector3 rotateAxis(curr.rotationVector.GetX(), curr.rotationVector.GetY(), curr.rotationVector.GetZ());
+            meshInfo[i].rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
+                ? Quaternion(rotateAxis, 0.f)
+                : Quaternion(rotateAxis, Math::AngleToRadians(curr.rotationVector.GetW()));
         }
     }
 

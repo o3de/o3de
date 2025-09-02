@@ -251,9 +251,9 @@ namespace SimuCore::ParticleCore {
         const uint32_t* indiceStream = nullptr;
         const double* areaStream = nullptr;
         uint32_t indiceCount = 0;
-        Vector3 maxExtend = VEC3_ZERO;
-        Vector3 minExtend = VEC3_ZERO;
-        Vector3 worldFront = VEC3_UNIT_Z;
+        Vector3 maxExtend = Vector3::CreateZero();
+        Vector3 minExtend = Vector3::CreateZero();
+        Vector3 worldFront = Vector3::CreateAxisZ();
         std::unordered_map<uint32_t, InheritanceSpawn> emitterInheritances;
 
         std::pair<ParticleRender*, uint32_t> render;
