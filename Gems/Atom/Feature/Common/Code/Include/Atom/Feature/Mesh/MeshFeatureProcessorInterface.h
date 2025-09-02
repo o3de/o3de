@@ -98,6 +98,10 @@ namespace AZ
             virtual ~ModelDataInstanceInterface() = default;
 
             virtual const Data::Instance<RPI::Model>& GetModel() = 0;
+
+            //! If this is a skinned mesh, ProductModelAssetId is the asset-id of the original, non-animated asset.
+            //! Returns a invalid Asset for non-skinned meshes.
+            virtual const Data::Asset<RPI::ModelAsset>& GetProductModelAsset() = 0;
             virtual const RPI::Cullable& GetCullable() = 0;
 
             virtual const uint32_t GetLightingChannelMask() = 0;
@@ -168,6 +172,9 @@ namespace AZ
 
             AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
             Data::Asset<RPI::ModelAsset> m_modelAsset;
+            // If the mesh is a skinned mesh, the m_productModelAsset refers to the original, non-animated mesh asset.
+            // Otherwhise this is empty.
+            Data::Asset<RPI::ModelAsset> m_productModelAsset;
             bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;

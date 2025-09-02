@@ -46,6 +46,11 @@ namespace AZ
             {
                 return m_model;
             }
+            const Data::Asset<RPI::ModelAsset>& GetProductModelAsset() override
+            {
+                return m_descriptor.m_productModelAsset;
+            }
+
             const RPI::Cullable& GetCullable() override
             {
                 return m_cullable;
