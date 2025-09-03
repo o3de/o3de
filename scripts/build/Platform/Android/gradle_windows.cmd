@@ -31,16 +31,32 @@ IF NOT EXIST "%ANDROID_SDK_ROOT%" (
 ECHO Using Android SDK at '%ANDROID_SDK_ROOT%'
 CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value sdk.root="%ANDROID_SDK_ROOT%" --global
 
+IF DEFINED USE_GRADLE_FROM_PATH (
+    FOR /F delims^=^"^ tokens^=1 %%i in ('where /F gradle') do (
+    set GRADLE_LOCATION=%%i
+    goto :found_gradle_from_path
+    )
 
-REM Validate that gradle home path was set
-IF "%GRADLE_BUILD_HOME%" == "" (
-    ECHO Environment key GRADLE_BUILD_HOME not set
-    GOTO :error
+    :found_gradle_from_path
+    if "!GRADLE_LOCATION!" == "" (
+        ECHO Environment key USE_GRADLE_FROM_PATH set but Gradle was not found on the path.
+        GOTO :error
+    )
+    call :get_path_of_filename result "!GRADLE_LOCATION!"
+    set GRADLE_HOME=!result!..
+    set GRADLE_BUILD_HOME=!GRADLE_HOME!
+) ELSE (
+    REM Validate that gradle home path was set
+    IF "%GRADLE_BUILD_HOME%" == "" (
+        ECHO Environment key GRADLE_BUILD_HOME not set
+        GOTO :error
+    )
+    IF NOT EXIST "%GRADLE_BUILD_HOME%" (
+        ECHO Environment key value for ANDROID_SDK_ROOT '%GRADLE_BUILD_HOME%' does not exist
+        GOTO :error
+    )
 )
-IF NOT EXIST "%GRADLE_BUILD_HOME%" (
-    ECHO Environment key value for ANDROID_SDK_ROOT '%GRADLE_BUILD_HOME%' does not exist
-    GOTO :error
-)
+
 ECHO Using Gradle Build at '%GRADLE_BUILD_HOME%'
 CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value gradle.home="%GRADLE_BUILD_HOME%" --global
 
@@ -255,3 +271,9 @@ POPD
 
 cd %CURRENT_DIR%
 EXIT /b 1
+
+:get_path_of_filename <resultVar> <pathVar>
+(
+    set "%~1=%~dp2"
+    exit /b
+)
