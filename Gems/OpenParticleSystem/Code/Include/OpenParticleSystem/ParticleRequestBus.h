@@ -33,7 +33,7 @@ namespace OpenParticle
         virtual void SetParticleAssetByPath(AZStd::string path) = 0;
         virtual AZStd::string GetParticleAssetPath() const = 0;
 
-        virtual void SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath) = 0;
+        virtual void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath) = 0;
     };
 
     using ParticleRequestBus = AZ::EBus<ParticleRequest>;

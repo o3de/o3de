@@ -55,10 +55,10 @@ namespace OpenParticleSystemEditor
         ClearLevels();
     }
 
-    void LevelOfDetailInspector::AddLevel(OpenParticle::ParticleSourceData* sourceData, uint32_t indexOfLod)
+    void LevelOfDetailInspector::AddLevel(OpenParticle::ParticleSourceData* sourceData, AZ::u32 indexOfLod)
     {
         auto levelWidget = new LevelWidget();
-        levelWidget->SetIndex(static_cast<uint32_t>(indexOfLod));
+        levelWidget->SetIndex(static_cast<AZ::u32>(indexOfLod));
         auto& lod = sourceData->m_lods.at(indexOfLod);
         levelWidget->SetDistance(lod.m_distance);
         connect(levelWidget, &LevelWidget::OnEditingFinished, this, [this, levelWidget](float distance)
@@ -67,7 +67,7 @@ namespace OpenParticleSystemEditor
                 OnDistanceModified(idx, distance);
             });
         connect(levelWidget, &LevelWidget::RemoveLevelItem, this, &LevelOfDetailInspector::OnRemoveLevel);
-        connect(levelWidget, &LevelWidget::OnEmitterChecked, this, [levelWidget, this](uint32_t index, bool checked)
+        connect(levelWidget, &LevelWidget::OnEmitterChecked, this, [levelWidget, this](AZ::u32 index, bool checked)
             {
                 OpenParticle::ParticleSourceData* srcData = nullptr;
                 EBUS_EVENT_ID_RESULT(srcData, m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, GetParticleSourceData);
@@ -92,7 +92,7 @@ namespace OpenParticleSystemEditor
                 }
                 EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
             });
-        uint32_t index = 0;
+        AZ::u32 index = 0;
         for (const auto& emitter : sourceData->m_emitters)
         {
             auto iter = AZStd::find(lod.m_emitters.begin(), lod.m_emitters.end(), index);
@@ -104,12 +104,12 @@ namespace OpenParticleSystemEditor
         m_levels.push_back(levelWidget);
     }
 
-    void LevelOfDetailInspector::OnDistanceModified(uint32_t index, float distance)
+    void LevelOfDetailInspector::OnDistanceModified(AZ::u32 index, float distance)
     {
         OpenParticle::ParticleSourceData* sourceData = nullptr;
         EBUS_EVENT_ID_RESULT(sourceData, m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, GetParticleSourceData);
         auto& lods = sourceData->m_lods;
-        for (uint32_t i = 0; i < lods.size(); i++)
+        for (AZ::u32 i = 0; i < lods.size(); i++)
         {
             if (i == index)
             {
@@ -151,13 +151,13 @@ namespace OpenParticleSystemEditor
         }
         auto& lod = sourceData->m_lods.emplace_back();
         lod.m_distance = 0;
-        AddLevel(sourceData, static_cast<uint32_t>(sourceData->m_lods.size() - 1));
+        AddLevel(sourceData, static_cast<AZ::u32>(sourceData->m_lods.size() - 1));
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
     }
 
     void LevelOfDetailInspector::OnRemoveLevel(LevelWidget* levelWidget)
     {
-        uint32_t index = 0;
+        AZ::u32 index = 0;
         auto it = AZStd::find(m_levels.begin(), m_levels.end(), levelWidget);
         if (it != m_levels.end())
         {
@@ -212,19 +212,19 @@ namespace OpenParticleSystemEditor
             return;
         }
         m_addLevelOfDetail->setEnabled(true);
-        for (uint32_t i = 0; i < sourceData->m_lods.size(); i++)
+        for (AZ::u32 i = 0; i < sourceData->m_lods.size(); i++)
         {
             if (m_levels.size() <= i)
             {
                 AddLevel(sourceData, i);
                 continue;
             }
-            m_levels[i]->SetIndex(static_cast<uint32_t>(i));
+            m_levels[i]->SetIndex(static_cast<AZ::u32>(i));
             auto& lod = sourceData->m_lods[i];
             m_levels[i]->SetDistance(lod.m_distance);
             auto checkboxCount = m_levels[i]->m_checkboxes.size();
 
-            for (uint32_t index = 0; index < sourceData->m_emitters.size(); index++)
+            for (AZ::u32 index = 0; index < sourceData->m_emitters.size(); index++)
             {
                 auto iter = AZStd::find(lod.m_emitters.begin(), lod.m_emitters.end(), index);
                 bool checked = (iter == lod.m_emitters.end()) ? false : true;
@@ -244,7 +244,7 @@ namespace OpenParticleSystemEditor
             {
                 while (m_levels[i]->m_checkboxes.size() > sourceData->m_emitters.size())
                 {
-                    m_levels[i]->RemoveItem(static_cast<uint32_t>(m_levels[i]->m_checkboxes.size() - 1));
+                    m_levels[i]->RemoveItem(static_cast<AZ::u32>(m_levels[i]->m_checkboxes.size() - 1));
                 }
             }
         }
@@ -358,7 +358,7 @@ namespace OpenParticleSystemEditor
             });
     }
 
-    void LevelWidget::AddLevelItem(uint32_t emitterIndex, bool checked, AZStd::string& name)
+    void LevelWidget::AddLevelItem(AZ::u32 emitterIndex, bool checked, AZStd::string& name)
     {
         (void)emitterIndex;
         auto checkbox = new QCheckBox(name.data());
@@ -373,7 +373,7 @@ namespace OpenParticleSystemEditor
                 {
                     return;
                 }
-                uint32_t index = it - m_checkboxes.begin();
+                AZ::u32 index = it - m_checkboxes.begin();
                 bool checked = state == Qt::Checked ? true : false;
                 emit OnEmitterChecked(index, checked);
             });
@@ -381,7 +381,7 @@ namespace OpenParticleSystemEditor
         m_checkboxes.emplace_back(checkbox);
     }
 
-    void LevelWidget::RemoveItem(uint32_t index)
+    void LevelWidget::RemoveItem(AZ::u32 index)
     {
         auto& checkbox = m_checkboxes[index];
         m_layout->removeWidget(checkbox);
@@ -389,12 +389,12 @@ namespace OpenParticleSystemEditor
         delete checkbox;
     }
 
-    void LevelWidget::SetIndex(uint32_t index)
+    void LevelWidget::SetIndex(AZ::u32 index)
     {
         m_label->setText(QString("LOD %1").arg(index + 1));
         m_indexOfLod = index;
     }
-    uint32_t LevelWidget::GetIndex()
+    AZ::u32 LevelWidget::GetIndex()
     {
         return m_indexOfLod;
     }

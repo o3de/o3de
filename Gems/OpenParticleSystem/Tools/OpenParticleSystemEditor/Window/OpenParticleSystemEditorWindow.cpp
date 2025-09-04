@@ -164,7 +164,7 @@ namespace OpenParticleSystemEditor
         widget = NULL;
     }
 
-    void OpenParticleSystemEditorWindow::SetDockWidget(const AZStd::string& name, QWidget* widget, uint32_t orientation)
+    void OpenParticleSystemEditorWindow::SetDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 orientation)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);
         if (dockWidgetItr != m_dockWidgets.end() || !widget)
@@ -396,7 +396,7 @@ namespace OpenParticleSystemEditor
         m_emitterTabWidget->setTabVisible(0, false);
     }
 
-    void OpenParticleSystemEditorWindow::SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
+    void OpenParticleSystemEditorWindow::SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation)
     {
         AzQtComponents::StyledDockWidget* dockWidget = new AzQtComponents::StyledDockWidget(tr(name.c_str()));
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
@@ -493,7 +493,7 @@ namespace OpenParticleSystemEditor
         return false;
     }
 
-    bool OpenParticleSystemEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
+    bool OpenParticleSystemEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);
         if (dockWidgetItr != m_dockWidgets.end() || !widget)

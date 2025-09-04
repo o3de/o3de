@@ -22,14 +22,14 @@ namespace SimuCore::ParticleCore {
         virtual ~ParticleRender() = default;
 
         virtual void Render(
-            const uint8_t* data, const BaseInfo& emitterInfo, uint8_t* driver, const ParticlePool& pool, const WorldInfo& world, DrawItem& item) = 0;
+            const AZ::u8* data, const BaseInfo& emitterInfo, AZ::u8* driver, const ParticlePool& pool, const WorldInfo& world, DrawItem& item) = 0;
 
         virtual RenderType GetType() const
         {
             return RenderType::UNDEFINED;
         }
 
-        virtual uint32_t DataSize() const
+        virtual AZ::u32 DataSize() const
         {
             return 0;
         }

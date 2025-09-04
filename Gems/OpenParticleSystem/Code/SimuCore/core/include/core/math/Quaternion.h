@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include <cmath>
-#include "core/platform/Platform.h"
-#include "core/math/Math.h"
 #include <AzCore/Math/Quaternion.h>
 
 namespace SimuCore

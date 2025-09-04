@@ -388,7 +388,7 @@ namespace OpenParticleSystemEditor
             OpenParticleViewportWidgetRequestsBus::BroadcastResult(cameraState, &OpenParticleViewportWidgetRequestsBus::Handler::CameraState);
             auto viewportSize = cameraState.m_viewportSize;
             auto dimensions = m_windowContext->GetSwapChain()->GetDescriptor().m_dimensions;
-            if (static_cast<uint32_t>(viewportSize.m_width) != dimensions.m_imageWidth)
+            if (static_cast<AZ::u32>(viewportSize.m_width) != dimensions.m_imageWidth)
             {
                 m_initialized = true;
                 auto swapChain = m_windowContext->GetSwapChain();

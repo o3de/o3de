@@ -49,7 +49,7 @@ namespace
         return 0.5 * e1.Cross(e2).GetLength();
     }
 
-    void ResetMeshBuffers(const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& subMeshes, AZStd::vector<uint32_t>& allMeshIndices,
+    void ResetMeshBuffers(const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& subMeshes, AZStd::vector<AZ::u32>& allMeshIndices,
         AZStd::vector<SimuCore::Vector3>& allMeshVertexes, AZStd::vector<double>& allFaceAreas)
     {
         size_t totalIndiceCnt{0};
@@ -319,7 +319,7 @@ namespace OpenParticle
                     auto& efd = instance.m_emitterForDrawPair[shader.second.get()];
                     DrawParam drawParam;
                     SimuCore::ParticleCore::DrawItem& item = drawParam.item;
-                    emitter->Render(reinterpret_cast<uint8_t*>(&driverWrap), world, item);
+                    emitter->Render(reinterpret_cast<AZ::u8*>(&driverWrap), world, item);
                     auto pipeline = m_particleFp->Fetch(GetPipelineKey(item.type));
                     if (pipeline == nullptr || item.drawArgs.Empty())
                     {
@@ -381,7 +381,7 @@ namespace OpenParticle
         }
     }
 
-    void ParticleSystem::SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath)
+    void ParticleSystem::SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath)
     {
         AZStd::string path = mapPath + ".streamingimage";
         AZ::Data::AssetId mapAssetId;
@@ -436,7 +436,7 @@ namespace OpenParticle
             return;
         }
 
-        uint32_t emitterId = emitter.GetEmitterId();
+        AZ::u32 emitterId = emitter.GetEmitterId();
         if (emitter.GetMeshSampleType() == SimuCore::ParticleCore::MeshSampleType::BONE)
         {
             GetSkeletonBoneBuffer(emitterId, *actor, *transData);
@@ -457,15 +457,15 @@ namespace OpenParticle
             const auto& indiceStream = m_indiceStreams.at(emitterId);
             const auto& areaStream = m_areaStreams.at(emitterId);
             emitter.SetSkeletonMesh(
-                boneStream.data(), static_cast<uint32_t>(boneStream.size()),
-                vertexStream.data(), static_cast<uint32_t>(vertexStream.size()),
-                indiceStream.data(), static_cast<uint32_t>(indiceStream.size()),
+                boneStream.data(), static_cast<AZ::u32>(boneStream.size()),
+                vertexStream.data(), static_cast<AZ::u32>(vertexStream.size()),
+                indiceStream.data(), static_cast<AZ::u32>(indiceStream.size()),
                 areaStream.data());
         }
     }
 
     void ParticleSystem::GetSkeletonBoneBuffer(
-        const uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
+        const AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
     {
         const EMotionFX::Skeleton* skeleton = actor.GetSkeleton();
         const EMotionFX::Pose* pose = transData.GetCurrentPose();
@@ -491,7 +491,7 @@ namespace OpenParticle
         }
     }
 
-    void ParticleSystem::GetMeshVertexBuffer(const uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
+    void ParticleSystem::GetMeshVertexBuffer(const AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
     {
         AZ::Data::Instance<AZ::RPI::Model> m_modelInstance =
             AZ::RPI::Model::FindOrCreate(m_asset->GetParticleArchive().m_emitterInfos[emitterId].m_skeletonModel);
@@ -521,16 +521,16 @@ namespace OpenParticle
         }
         m_lastLodLevel = curLodLevel;
 
-        uint32_t curMeshVertexOffset{0};
-        uint32_t curMeshIndceOffset{0};
+        AZ::u32 curMeshVertexOffset{0};
+        AZ::u32 curMeshIndceOffset{0};
         for (size_t j = 0; j < subMeshes.size(); j++)
         {
             if (lodChanged)
             {
                 // Merge sub mesh indices
-                const auto subMeshIndince = subMeshes[j].GetIndexBufferTyped<uint32_t>();
+                const auto subMeshIndince = subMeshes[j].GetIndexBufferTyped<AZ::u32>();
                 std::transform(subMeshIndince.begin(), subMeshIndince.end(), allMeshIndices.begin() + curMeshIndceOffset,
-                    [curMeshVertexOffset](uint32_t indice) {
+                    [curMeshVertexOffset](AZ::u32 indice) {
                         return indice + curMeshVertexOffset;
                     });
                 curMeshIndceOffset += subMeshes[j].GetIndexCount();
@@ -538,7 +538,7 @@ namespace OpenParticle
             // Calculate sub mesh deformations and merge all vertex
             const auto sourcePosition = subMeshes[j].GetSemanticBufferTyped<float>(AZ::Name("POSITION"));
             const auto sourceSkinWeights = subMeshes[j].GetSemanticBufferTyped<float>(AZ::Name("SKIN_WEIGHTS"));
-            const auto sourceSkinJointIndices = subMeshes[j].GetSemanticBufferTyped<uint16_t>(AZ::Name("SKIN_JOINTINDICES"));
+            const auto sourceSkinJointIndices = subMeshes[j].GetSemanticBufferTyped<AZ::u16>(AZ::Name("SKIN_JOINTINDICES"));
             const size_t numOfInfluencesPerVertex = sourceSkinWeights.size() / (sourcePosition.size() / VERTEX_DIMENSION);
             const auto& skinToSkeletonIndexMap = actor.GetSkinToSkeletonIndexMap();
             const AZ::Matrix3x4* skinningMatrices = transData.GetSkinningMatrices();
@@ -573,13 +573,13 @@ namespace OpenParticle
         }
     }
 
-    void ParticleSystem::GetMeshAreaBuffer(uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
+    void ParticleSystem::GetMeshAreaBuffer(AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData)
     {
         GetMeshVertexBuffer(emitterId, actor, transData);
         UpdateArea(emitterId);
     }
 
-    void ParticleSystem::UpdateArea(uint32_t emitterId)
+    void ParticleSystem::UpdateArea(AZ::u32 emitterId)
     {
         auto& areaStream = m_areaStreams.at(emitterId);
         auto& vertexSteam = m_vertexStreams.at(emitterId);
@@ -594,7 +594,7 @@ namespace OpenParticle
 
         //calculate each triangle's area and add to cumulative
         double curArea;
-        for (uint32_t i = FACE_DIMENSION, j = 1; i < indiceStream.size(); i = i + FACE_DIMENSION, j++)
+        for (AZ::u32 i = FACE_DIMENSION, j = 1; i < indiceStream.size(); i = i + FACE_DIMENSION, j++)
         {
             curArea = CalTriArea(
                 vertexSteam.at(indiceStream.at(i)),
@@ -610,7 +610,7 @@ namespace OpenParticle
     {
 
         ClearLightEffects(emitter.GetEmitterId());
-        std::vector<SimuCore::ParticleCore::LightParticle> lightParticles;
+        AZStd::vector<SimuCore::ParticleCore::LightParticle> lightParticles;
         emitter.GatherSimpleLight(lightParticles);
         if (lightParticles.size() != item.positionBuffer.size() || lightParticles.size() == 0)
         {
@@ -639,7 +639,7 @@ namespace OpenParticle
         lightHandles.emplace(emitter.GetEmitterId(), lights);
     }
 
-    void ParticleSystem::ClearLightEffects(uint32_t emitterId)
+    void ParticleSystem::ClearLightEffects(AZ::u32 emitterId)
     {
         AZ::Render::SimplePointLightFeatureProcessorInterface* lightFP =
             m_scene->GetFeatureProcessor<AZ::Render::SimplePointLightFeatureProcessorInterface>();
@@ -669,9 +669,9 @@ namespace OpenParticle
         }
     }
 
-    uint32_t ParticleSystem::GetPipelineKey(SimuCore::ParticleCore::RenderType type) const
+    AZ::u32 ParticleSystem::GetPipelineKey(SimuCore::ParticleCore::RenderType type) const
     {
-        return static_cast<uint32_t>(type);
+        return static_cast<AZ::u32>(type);
     }
 
     void ParticleSystem::RenderParticle(const AZ::RHI::DrawListTag drawListTag, const DrawParam& drawParam,
@@ -792,9 +792,9 @@ namespace OpenParticle
         auto& lods = m_asset->GetLODs();
         auto& dist = m_asset->GetDistribution();
 
-        std::vector<SimuCore::ParticleCore::LevelsOfDetail> levelsOfDetail;
+        AZStd::vector<SimuCore::ParticleCore::LevelsOfDetail> levelsOfDetail;
         for (auto& lod : lods) {
-            std::vector<uint32_t> indexes;
+            AZStd::vector<AZ::u32> indexes;
             for (auto& index : lod.m_emitters) {
                 indexes.emplace_back(index);
             }
@@ -802,7 +802,7 @@ namespace OpenParticle
         }
         m_particleSystem->SetLODs(levelsOfDetail);
 
-        uint32_t maxParticleNum = m_particleSystem->GetMaxParticleNum();
+        AZ::u32 maxParticleNum = m_particleSystem->GetMaxParticleNum();
         for (auto& random : dist.randoms)
         {
             m_particleSystem->AddRandom(random.min, random.max, random.tickMode, maxParticleNum);
@@ -855,7 +855,7 @@ namespace OpenParticle
     void ParticleSystem::HandleSkeletonModel(SimuCore::ParticleCore::ParticleEmitter& emitter)
     {
         auto& archive = m_asset->GetParticleArchive();
-        uint32_t emitterId = emitter.GetEmitterId();
+        AZ::u32 emitterId = emitter.GetEmitterId();
         for (auto effector : archive.m_emitterInfos[emitterId].m_effectors)
         {
             if (AZStd::get<0>(effector) != azrtti_typeid<SimuCore::ParticleCore::SpawnLocSkeleton>())
@@ -874,7 +874,7 @@ namespace OpenParticle
             if (vexIter == m_vertexStreams.end())
             {
                 m_vertexStreams.emplace(emitterId, AZStd::vector<SimuCore::Vector3>{});
-                m_indiceStreams.emplace(emitterId, AZStd::vector<uint32_t>{});
+                m_indiceStreams.emplace(emitterId, AZStd::vector<AZ::u32>{});
                 m_areaStreams.emplace(emitterId, AZStd::vector<double>{});
             }
             auto boneIter = m_boneStreams.find(emitterId);
@@ -894,14 +894,14 @@ namespace OpenParticle
             auto subMeshes = lodAssets[m_lastLodLevel]->GetMeshes();
             ResetMeshBuffers(subMeshes, allMeshIndices, allMeshVertexes, allFaceAreas);
 
-            uint32_t curMeshVertexOffset{0};
-            uint32_t curMeshIndceOffset{0};
+            AZ::u32 curMeshVertexOffset{0};
+            AZ::u32 curMeshIndceOffset{0};
             for (size_t j = 0; j < subMeshes.size(); j++)
             {
                 // Merge sub mesh indices
-                const auto subMeshIndince = subMeshes[j].GetIndexBufferTyped<uint32_t>();
+                const auto subMeshIndince = subMeshes[j].GetIndexBufferTyped<AZ::u32>();
                 std::transform(subMeshIndince.begin(), subMeshIndince.end(), allMeshIndices.begin() + curMeshIndceOffset,
-                    [curMeshVertexOffset](uint32_t indice) {
+                    [curMeshVertexOffset](AZ::u32 indice) {
                         return indice + curMeshVertexOffset;
                     });
                 curMeshIndceOffset += subMeshes[j].GetIndexCount();
@@ -917,7 +917,7 @@ namespace OpenParticle
                     };
                     allMeshVertexes.at(curMeshVertexOffset + vertexIndex) = curPosition;
                 }
-                curMeshVertexOffset += static_cast<uint32_t>(sourcePosition.size());
+                curMeshVertexOffset += static_cast<AZ::u32>(sourcePosition.size());
             }
             if (emitter.GetMeshSampleType() == SimuCore::ParticleCore::MeshSampleType::AREA)
             {
@@ -925,9 +925,9 @@ namespace OpenParticle
             }
 
             emitter.SetSkeletonMesh(
-                allBones.data(), static_cast<uint32_t>(allBones.size()),
-                allMeshVertexes.data(), static_cast<uint32_t>(allMeshVertexes.size()),
-                allMeshIndices.data(), static_cast<uint32_t>(allMeshIndices.size()),
+                allBones.data(), static_cast<AZ::u32>(allBones.size()),
+                allMeshVertexes.data(), static_cast<AZ::u32>(allMeshVertexes.size()),
+                allMeshIndices.data(), static_cast<AZ::u32>(allMeshIndices.size()),
                 allFaceAreas.data());
         }
 

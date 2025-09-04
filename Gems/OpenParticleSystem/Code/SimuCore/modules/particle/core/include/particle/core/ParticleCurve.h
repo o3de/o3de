@@ -10,7 +10,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <vector>
+#include <AzCore/std/containers/vector.h>
 #include "particle/core/ParticleDistribution.h"
 
 namespace SimuCore::ParticleCore {
@@ -34,11 +34,11 @@ namespace SimuCore::ParticleCore {
         float GetTimeFactor() const;
         void AddKeyPoint(float time, float value, const KeyPointInterpMode& mode);
         void NormalizeKeyPoints();
-        void UpdateKeyPointTime(uint32_t index, float time);
-        void SetKeyPointValue(uint32_t index, float value);
-        void SetKeyPointInterpMode(uint32_t index, const KeyPointInterpMode& mode);
-        void DeleteKeyPoint(uint32_t index);
-        const std::vector<KeyPoint>& GetKeyPoints() const;
+        void UpdateKeyPointTime(AZ::u32 index, float time);
+        void SetKeyPointValue(AZ::u32 index, float value);
+        void SetKeyPointInterpMode(AZ::u32 index, const KeyPointInterpMode& mode);
+        void DeleteKeyPoint(AZ::u32 index);
+        const AZStd::vector<KeyPoint>& GetKeyPoints() const;
 
         float Tick(const BaseInfo& info) override;
         float Tick(const BaseInfo& info, const Particle& particle) override;
@@ -54,6 +54,6 @@ namespace SimuCore::ParticleCore {
         float valueFactor = 1.0f;
         float timeFactor = 1.0f;
         CurveTickMode tickMode = CurveTickMode::EMIT_DURATION;
-        std::vector<KeyPoint> keyPoints;
+        AZStd::vector<KeyPoint> keyPoints;
     };
 } // SimuCore::ParticleCore

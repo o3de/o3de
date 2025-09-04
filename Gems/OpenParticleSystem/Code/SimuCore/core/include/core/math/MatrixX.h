@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include "core/math/VectorX.h"
-#include "core/math/Math.h"
-#include <array>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Matrix3x3.h>
 

@@ -46,7 +46,7 @@ namespace SimuCore {
         Matrix4 grad;                                     // 3 * Vector4
         const int GRADIENT_MASK[3] = { 0x8000, 0x4000, 0x2000 };
         const Vector3 GRADIENT_SCALE{ 1.0f / 0x4000, 1.0f / 0x2000, 1.0f / 0x1000 };
-        for (uint32_t i = 0; i < 4; i++) {
+        for (AZ::u32 i = 0; i < 4; i++) {
             offsetToCell.SetRow(i, AZ::Vector4(input) - simplexNoise.GetRow(i));
             Vector3 rand = RandomPCG16(6.0f * Vector3(simplexNoise.GetRow(i)) + AZ::Vector3{ 0.5f });
             gvec[0].SetRow(i, AZ::Vector3(
@@ -84,9 +84,9 @@ namespace SimuCore {
 
     Vector3 SimplexNoise::RandomPCG16(const Vector3& vec)
     {
-        uint32_t x = static_cast<uint32_t>(vec.GetX()) * 1664525u + 1013904223u;
-        uint32_t y = static_cast<uint32_t>(vec.GetY()) * 1664525u + 1013904223u;
-        uint32_t z = static_cast<uint32_t>(vec.GetZ()) * 1664525u + 1013904223u;
+        AZ::u32 x = static_cast<AZ::u32>(vec.GetX()) * 1664525u + 1013904223u;
+        AZ::u32 y = static_cast<AZ::u32>(vec.GetY()) * 1664525u + 1013904223u;
+        AZ::u32 z = static_cast<AZ::u32>(vec.GetZ()) * 1664525u + 1013904223u;
         x += y * z;
         y += z * x;
         z += x * y;
@@ -110,10 +110,10 @@ namespace SimuCore {
             Vector3(offsetToCell.GetRow(3)).Dot(Vector3(offsetToCell.GetRow(3))),
         };
         Vector4 s = Vector4 (
-            Math::Clamp(2.0f * d.GetX(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetY(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetZ(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetW(), 0.0f, 1.0f)
+            AZ::GetClamp(2.0f * d.GetX(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetY(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetZ(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetW(), 0.0f, 1.0f)
         );
         s = scale * (Vector4(1.0f) + s * (Vector4(-3.0f) + s * (Vector4(3.0f) - s)));
         return s;
@@ -129,10 +129,10 @@ namespace SimuCore {
             Vector3(offsetToCell.GetRow(3)).Dot(Vector3(offsetToCell.GetRow(3))),
         };
         Vector4 s = Vector4(
-            Math::Clamp(2.0f * d.GetX(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetY(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetZ(), 0.0f, 1.0f),
-            Math::Clamp(2.0f * d.GetW(), 0.0f, 1.0f)
+            AZ::GetClamp(2.0f * d.GetX(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetY(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetZ(), 0.0f, 1.0f),
+            AZ::GetClamp(2.0f * d.GetW(), 0.0f, 1.0f)
         );
         s = scale * (Vector4(-12.0f) + s * (Vector4(24.0f) - 12.0f * s));
         return Matrix4::CreateFromRows(

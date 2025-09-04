@@ -81,14 +81,14 @@ namespace OpenParticle
 
     template<typename ET, typename RT, size_t count>
     static void ConvertValueObjectToRuntime(
-        const ValueObject<ET, count>& editor, SimuCore::ParticleCore::ValueObject<RT, static_cast<uint32_t>(count)>& runtime)
+        const ValueObject<ET, count>& editor, SimuCore::ParticleCore::ValueObject<RT, static_cast<AZ::u32>(count)>& runtime)
     {
         runtime.isUniform = editor.isUniform;
         runtime.distType = DataConvertor::DistributionTypeToRuntime(editor.distType);
         for (auto index = 0; index < count; ++index)
         {
             runtime.dataValue.SetElement(index, editor.dataValue.GetElement(index));
-            runtime.distIndex[index] = static_cast<uint32_t>(editor.distIndex[index]);
+            runtime.distIndex[index] = static_cast<AZ::u32>(editor.distIndex[index]);
         }
     }
 
@@ -98,7 +98,7 @@ namespace OpenParticle
         runtime.dataValue = editor.dataValue;
         runtime.isUniform = editor.isUniform;
         runtime.distType = DataConvertor::DistributionTypeToRuntime(editor.distType);
-        runtime.distIndex[0] = static_cast<uint32_t>(editor.distIndex[0]);
+        runtime.distIndex[0] = static_cast<AZ::u32>(editor.distIndex[0]);
     }
 
     template<>
@@ -110,9 +110,9 @@ namespace OpenParticle
         runtime.dataValue.value = editor.dataValue.value;
         runtime.dataValue.minValue = editor.dataValue.minValue;
         runtime.dataValue.maxValue = editor.dataValue.maxValue;
-        for (uint32_t index = 0; index < editor.Size(); ++index)
+        for (AZ::u32 index = 0; index < editor.Size(); ++index)
         {
-            runtime.distIndex[index] = static_cast<uint32_t>(editor.distIndex[index]);
+            runtime.distIndex[index] = static_cast<AZ::u32>(editor.distIndex[index]);
         }
     }
 
@@ -168,7 +168,7 @@ namespace OpenParticle
     void DataConvertor::ToRuntime(OpenParticle::ParticleEventHandler& editData, SimuCore::ParticleCore::ParticleEventHandler& runtimeData)
     {
         runtimeData.emitterIndex = editData.emitterIndex;
-        runtimeData.eventType = static_cast<uint32_t>(editData.eventType);
+        runtimeData.eventType = static_cast<AZ::u32>(editData.eventType);
         runtimeData.maxEventNum = editData.maxEventNum;
         runtimeData.emitNum = editData.emitNum;
         runtimeData.useEventInfo = editData.useEventInfo;
@@ -1095,13 +1095,13 @@ namespace OpenParticle
             {
                 distInfos.randomIndexInfos.emplace_back(ParamDistInfo {
                     &valueObj, azrtti_typeid<ValueObject<T, count>>(), valueObj.isUniform,
-                    valueObj.paramName, index, static_cast<uint32_t>(valueObj.distIndex[index]) });
+                    valueObj.paramName, index, static_cast<AZ::u32>(valueObj.distIndex[index]) });
             }
             if (valueObj.distType == DistributionType::CURVE && valueObj.distIndex[index] != 0)
             {
                 distInfos.curveIndexInfos.emplace_back(ParamDistInfo {
                     &valueObj, azrtti_typeid<ValueObject<T, count>>(), valueObj.isUniform,
-                    valueObj.paramName, index, static_cast<uint32_t>(valueObj.distIndex[index]) });
+                    valueObj.paramName, index, static_cast<AZ::u32>(valueObj.distIndex[index]) });
             }
         }
     }

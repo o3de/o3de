@@ -11,8 +11,10 @@
 #include <thread>
 #include <atomic>
 
+#include <AzCore/base.h>
+
 namespace SimuCore {
-    constexpr uint32_t SPIN_MAX = 10;
+    constexpr AZ::u32 SPIN_MAX = 10;
     class SpinLock 
     {
     public:

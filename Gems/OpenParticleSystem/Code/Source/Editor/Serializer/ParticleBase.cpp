@@ -9,6 +9,7 @@
 #include "OpenParticleSystem/Serializer/ParticleBase.h"
 #include <AzCore/std/sort.h>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include "core/math/Constants.h"
 
 namespace OpenParticle
 {
@@ -34,42 +35,42 @@ namespace OpenParticle
     void PreWarm::CheckParam()
     {
         warmupTime = AZStd::max(warmupTime, 0.f);
-        tickCount = AZStd::max<uint32_t>(tickCount, 0u);
+        tickCount = AZStd::max<AZ::u32>(tickCount, 0u);
         tickDelta = AZStd::max(tickDelta, 0.f);
-        if (tickDelta > SimuCore::Math::EPSLON) {
-            tickCount = static_cast<uint32_t>(warmupTime / tickDelta);
+        if (tickDelta > AZ::Constants::FloatEpsilon) {
+            tickCount = static_cast<AZ::u32>(warmupTime / tickDelta);
             warmupTime = tickCount * tickDelta;
         }
     }
 
     void EmitterConfig::CheckParam()
     {
-        maxSize = AZStd::clamp<uint32_t>(maxSize, 1u, 1000000u);
+        maxSize = AZStd::clamp<AZ::u32>(maxSize, 1u, 1000000u);
         startTime = AZStd::max(startTime, 0.f);
         duration = AZStd::max(duration, 0.05f);
     }
 
     void SpriteConfig::CheckParam()
     {
-        sortId = AZStd::max<uint32_t>(sortId, 0u);
+        sortId = AZStd::max<AZ::u32>(sortId, 0u);
         subImageSize = subImageSize.GetMax(AZ::Vector2(1.0f, 1.0f));
     }
 
     void MeshConfig::CheckParam()
     {
-        sortId = AZStd::max<uint32_t>(sortId, 0u);
+        sortId = AZStd::max<AZ::u32>(sortId, 0u);
     }
 
     void RibbonConfig::CheckParam()
     {
-        sortId = AZStd::max<uint32_t>(sortId, 0u);
+        sortId = AZStd::max<AZ::u32>(sortId, 0u);
         minRibbonSegmentLength = AZStd::max(minRibbonSegmentLength, 1.f - SimuCore::ALMOST_ONE);
         ribbonWidthObject.dataValue = AZStd::max(ribbonWidthObject.dataValue, 0.f);
         tesselationFactor = AZStd::max(tesselationFactor, 1.f - SimuCore::ALMOST_ONE);
         curveTension = AZStd::clamp<float>(curveTension, 0.f, 1.f - SimuCore::ALMOST_ONE);
         trailParam.lifetime = AZStd::max(trailParam.lifetime, 0.f);
         trailParam.ratio = AZStd::clamp<float>(trailParam.ratio, 0.f, 1.f);
-        ribbonParam.ribbonCount = AZStd::max<uint32_t>(ribbonParam.ribbonCount, 0u);
+        ribbonParam.ribbonCount = AZStd::max<AZ::u32>(ribbonParam.ribbonCount, 0u);
     }
 
     void EmitSpawn::CheckParam()
@@ -94,8 +95,8 @@ namespace OpenParticle
 
     void ParticleEventHandler::CheckParam()
     {
-        maxEventNum = AZStd::max<uint32_t>(maxEventNum, 0);
-        emitNum = AZStd::max<uint32_t>(emitNum, 0);
+        maxEventNum = AZStd::max<AZ::u32>(maxEventNum, 0);
+        emitNum = AZStd::max<AZ::u32>(emitNum, 0);
     }
 
     AZStd::vector<AZStd::string> ParticleEventHandler::GetEmitterNames() const
@@ -286,8 +287,8 @@ namespace OpenParticle
 
     void UpdateSubUv::CheckParam()
     {
-        frameNum = AZStd::clamp<uint32_t>(frameNum, 1u, 1000000u);
-        framePerSecond = AZStd::clamp<uint32_t>(framePerSecond, 0u, 1000000u);
+        frameNum = AZStd::clamp<AZ::u32>(frameNum, 1u, 1000000u);
+        framePerSecond = AZStd::clamp<AZ::u32>(framePerSecond, 0u, 1000000u);
     }
 
     void UpdateRotateAroundPoint::CheckParam()
@@ -305,7 +306,7 @@ namespace OpenParticle
     }
 
     template<typename T, size_t size>
-    void ConvertDistIndexImpl(ValueObject<T, size>& valueObj, uint32_t version, Distribution& dists,
+    void ConvertDistIndexImpl(ValueObject<T, size>& valueObj, AZ::u32 version, Distribution& dists,
         [[maybe_unused]] const RandomTickMode& randomTickMode, [[maybe_unused]] const CurveTickMode& curveTickMode)
     {
         if (version == 1)
@@ -618,7 +619,7 @@ namespace OpenParticle
 
     void RebuildIndex(AZStd::vector<ParamDistInfo>& indexInfo)
     {
-        for (uint32_t index = 0; index < indexInfo.size(); index++)
+        for (AZ::u32 index = 0; index < indexInfo.size(); index++)
         {
             if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjFloat>())
             {
@@ -652,7 +653,7 @@ namespace OpenParticle
     template<typename DistType>
     bool CheckIndex(const AZStd::vector<DistType*>& dist, AZStd::vector<ParamDistInfo>& infos)
     {
-        uint32_t index = 0;
+        AZ::u32 index = 0;
         auto iter = AZStd::find_if(
             infos.begin(), infos.end(),
             [&index, &dist](ParamDistInfo& info)

@@ -151,7 +151,7 @@ namespace OpenParticle
         }
     }
 
-    void ParticleDataInstance::SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath)
+    void ParticleDataInstance::SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath)
     {
         if (m_particleInstance)
         {
@@ -300,7 +300,7 @@ namespace OpenParticle
         }
     }
 
-    void ParticleFeatureProcessor::SetMaterialDiffuseMap(const ParticleHandle& handle, uint32_t emitterIndex, AZStd::string mapPath)
+    void ParticleFeatureProcessor::SetMaterialDiffuseMap(const ParticleHandle& handle, AZ::u32 emitterIndex, AZStd::string mapPath)
     {
         if (handle.IsValid())
         {
@@ -355,7 +355,7 @@ namespace OpenParticle
         }
     }
 
-    ParticlePipelineState* ParticleFeatureProcessor::FetchOrCreate(uint32_t key)
+    ParticlePipelineState* ParticleFeatureProcessor::FetchOrCreate(AZ::u32 key)
     {
         auto iter = m_pipelineStates.find(key);
         if (iter == m_pipelineStates.end())
@@ -369,7 +369,7 @@ namespace OpenParticle
         return &m_pipelineStates[key];
     }
 
-    ParticlePipelineState* ParticleFeatureProcessor::Fetch(uint32_t key)
+    ParticlePipelineState* ParticleFeatureProcessor::Fetch(AZ::u32 key)
     {
         auto iter = m_pipelineStates.find(key);
         return iter == m_pipelineStates.end() ? nullptr : &iter->second;

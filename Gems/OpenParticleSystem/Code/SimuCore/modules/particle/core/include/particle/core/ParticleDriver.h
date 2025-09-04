@@ -14,13 +14,13 @@
 namespace SimuCore::ParticleCore {
     class ParticleDriver {
     public:
-        using BufferCreateFn = void(uint8_t*, const BufferCreate&, GpuInstance&);
+        using BufferCreateFn = void(AZ::u8*, const BufferCreate&, GpuInstance&);
         using BufferCreateDelegate = ParticleDelegate<BufferCreateFn>;
 
-        using BufferUpdateFn = void(uint8_t*, const BufferUpdate&, const GpuInstance&);
+        using BufferUpdateFn = void(AZ::u8*, const BufferUpdate&, const GpuInstance&);
         using BufferUpdateDelegate = ParticleDelegate<BufferUpdateFn>;
 
-        using BufferDestroyFn = void(uint8_t*, const GpuInstance&);
+        using BufferDestroyFn = void(AZ::u8*, const GpuInstance&);
         using BufferDestroyDelegate = ParticleDelegate<BufferDestroyFn>;
 
         template<auto Func, typename Driver>

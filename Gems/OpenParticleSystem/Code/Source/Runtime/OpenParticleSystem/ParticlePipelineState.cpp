@@ -89,7 +89,7 @@ namespace OpenParticle
         m_materialChangeId = m_material->GetCurrentChangeId();
     }
 
-    bool ParticlePipelineState::Setup(uint32_t key)
+    bool ParticlePipelineState::Setup(AZ::u32 key)
     {
         SimuCore::ParticleCore::RenderType type = static_cast<SimuCore::ParticleCore::RenderType>(key);
         switch (type)

@@ -17,8 +17,8 @@ namespace SimuCore::ParticleCore {
         static void Execute(const UpdateSubUv* data, const UpdateInfo& info, Particle& particle);
         static void UpdateDistPtr(const UpdateSubUv* data, const Distribution& distribution);
 
-        uint32_t framePerSecond = 30;
-        uint32_t frameNum = 1;
+        AZ::u32 framePerSecond = 30;
+        AZ::u32 frameNum = 1;
 
         // only update subUV when particle spawn
         bool spawnOnly{false};

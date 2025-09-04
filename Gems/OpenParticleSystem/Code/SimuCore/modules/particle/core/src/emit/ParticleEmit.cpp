@@ -13,7 +13,7 @@
 namespace SimuCore::ParticleCore {
     void EmitBurstList::Execute(const EmitBurstList* data, const EmitInfo& info, EmitSpawnParam& emitSpawnParam)
     {
-        auto fn = [&info](int min, uint32_t max) {
+        auto fn = [&info](int min, AZ::u32 max) {
             return info.randomStream->RandRange(static_cast<float>(min), static_cast<float>(max));
         };
 
@@ -23,7 +23,7 @@ namespace SimuCore::ParticleCore {
             if (singleBurst.time < info.baseInfo.duration && delta >= 0 && delta <= info.tickTime) {
                 emitSpawnParam.burstNum += singleBurst.minCount < 0 ?
                     singleBurst.count :
-                    static_cast<uint32_t>(fn(singleBurst.minCount, singleBurst.count));
+                    static_cast<AZ::u32>(fn(singleBurst.minCount, singleBurst.count));
                 emitSpawnParam.realEmitTime = delta;
             }
         }
@@ -44,7 +44,7 @@ namespace SimuCore::ParticleCore {
         float last = data->current;
         float updateValue = CalcDistributionTickValue(data->spawnRate, info.baseInfo);
         data->current += updateValue * info.tickTime;
-        emitSpawnParam.spawnNum += static_cast<uint32_t>(data->current) - static_cast<uint32_t>(last);
+        emitSpawnParam.spawnNum += static_cast<AZ::u32>(data->current) - static_cast<AZ::u32>(last);
         if (emitSpawnParam.spawnNum > 0) {
             emitSpawnParam.realEmitTime = (data->current - std::floor(data->current)) / updateValue;
         }
@@ -62,7 +62,7 @@ namespace SimuCore::ParticleCore {
         }
         float lastNum = data->currentNum;
         data->currentNum += CalcDistributionTickValue(data->spawnRatePerUnit, info.baseInfo) * info.moveDistance;
-        emitSpawnParam.numOverMoving += static_cast<uint32_t>(data->currentNum) - static_cast<uint32_t>(lastNum);
+        emitSpawnParam.numOverMoving += static_cast<AZ::u32>(data->currentNum) - static_cast<AZ::u32>(lastNum);
         emitSpawnParam.isProcessSpawnRate = emitSpawnParam.isProcessSpawnRate && data->isProcessSpawnRate;
         emitSpawnParam.isProcessBurstList = emitSpawnParam.isProcessBurstList && data->isProcessBurstList;
         emitSpawnParam.isIgnoreSpawnRate = emitSpawnParam.isIgnoreSpawnRate || data->isIgnoreSpawnRateWhenMoving;

@@ -9,33 +9,33 @@
 
 #include <map>
 #include <cstdint>
-#include <vector>
+#include <AzCore/std/containers/vector.h>
 #include "particle/core/Particle.h"
 
 namespace SimuCore::ParticleCore {
     class ParticleDataSet {
     public:
-        explicit ParticleDataSet(uint32_t dataSize)
+        explicit ParticleDataSet(AZ::u32 dataSize)
             : stride(dataSize)
         {
         }
 
         ~ParticleDataSet() = default;
 
-        uint32_t Alloc();
+        AZ::u32 Alloc();
 
-        void Free(uint32_t index);
+        void Free(AZ::u32 index);
 
-        uint8_t* At(uint32_t index);
+        AZ::u8* At(AZ::u32 index);
 
-        uint32_t ActiveSize() const;
+        AZ::u32 ActiveSize() const;
 
-        void SetData(const uint8_t* src, uint32_t size);
+        void SetData(const AZ::u8* src, AZ::u32 size);
 
     protected:
-        uint32_t stride;
-        std::vector<uint8_t> rawData;
-        std::vector<uint32_t> freeList;
+        AZ::u32 stride;
+        AZStd::vector<AZ::u8> rawData;
+        AZStd::vector<AZ::u32> freeList;
     };
 
     class ParticleDataPool {
@@ -53,42 +53,42 @@ namespace SimuCore::ParticleCore {
 
         void Reset();
 
-        void EmplaceData(uint32_t stride, const uint8_t* data, uint32_t dataSize);
+        void EmplaceData(AZ::u32 stride, const AZ::u8* data, AZ::u32 dataSize);
 
         template<typename T>
-        uint32_t AllocT(const T& t)
+        AZ::u32 AllocT(const T& t)
         {
-            uint32_t rst = Alloc(sizeof(T));
-            uint8_t* data = Data(sizeof(T), rst);
+            AZ::u32 rst = Alloc(sizeof(T));
+            AZ::u8* data = Data(sizeof(T), rst);
             if (data != nullptr) {
                 new (data) T(t);
             }
             return rst;
         }
 
-        uint32_t Alloc(uint32_t size);
+        AZ::u32 Alloc(AZ::u32 size);
 
-        void Free(uint32_t size, uint32_t index);
+        void Free(AZ::u32 size, AZ::u32 index);
 
-        uint8_t* Data(uint32_t size, uint32_t index);
+        AZ::u8* Data(AZ::u32 size, AZ::u32 index);
 
-        static uint32_t AlignSize(uint32_t size);
+        static AZ::u32 AlignSize(AZ::u32 size);
 
         template<typename T>
-        T* Data(uint32_t index)
+        T* Data(AZ::u32 index)
         {
             return reinterpret_cast<T*>(Data(sizeof(T), index));
         }
 
-        const uint8_t* Data(uint32_t size, uint32_t index) const;
+        const AZ::u8* Data(AZ::u32 size, AZ::u32 index) const;
 
         template<typename T>
-        const T* Data(uint32_t index) const
+        const T* Data(AZ::u32 index) const
         {
             return reinterpret_cast<T*>(Data(sizeof(T), index));
         }
 
-        using DataMap = std::map<uint32_t, ParticleDataSet*>;
+        using DataMap = std::map<AZ::u32, ParticleDataSet*>;
         const DataMap& GetDataSets() const
         {
             return sets;

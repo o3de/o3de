@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <vector>
+#include <AzCore/std/containers/array.h>
 #include "particle/core/Particle.h"
 
 namespace SimuCore::ParticleCore {
@@ -16,9 +16,9 @@ namespace SimuCore::ParticleCore {
 
     struct SingleBurst {
         float time = 0.f;
-        uint32_t count = 0;
+        AZ::u32 count = 0;
         int minCount = -1;
-        uint32_t pad0 = 0u;
+        AZ::u32 pad0 = 0u;
     };
 
     struct EmitBurstList {
@@ -26,7 +26,7 @@ namespace SimuCore::ParticleCore {
         static void Execute(const EmitBurstList* data, const EmitInfo& info, EmitSpawnParam& emitSpawnParam);
         static void UpdateDistPtr([[maybe_unused]] EmitBurstList* data, const Distribution& distribution);
 
-        std::array<SingleBurst, BURST_MAX_NUMBER> burstList;
+        AZStd::array<SingleBurst, BURST_MAX_NUMBER> burstList;
         size_t arrSize = 0u;
         bool isProcessBurstList = true;
     };

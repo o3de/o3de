@@ -9,18 +9,18 @@
 #include "particle/core/ParticlePool.h"
 
 namespace SimuCore::ParticleCore {
-    void ParticlePool::Resize(uint32_t size)
+    void ParticlePool::Resize(AZ::u32 size)
     {
         alive = 0;
         maxSize = size;
         particles.resize(maxSize);
     }
 
-    void ParticlePool::Recycle(uint32_t beginPos)
+    void ParticlePool::Recycle(AZ::u32 beginPos)
     {
-        for (uint32_t i = beginPos; i < alive; ++i) {
+        for (AZ::u32 i = beginPos; i < alive; ++i) {
             Particle& particle = particles[i];
-            if (particle.lifeTime < Math::EPSLON || particle.currentLife > particle.lifeTime) {
+            if (particle.lifeTime < AZ::Constants::FloatEpsilon || particle.currentLife > particle.lifeTime) {
                 Particle& endP = particles[alive - 1];
                 particle = endP;
                 --i;
@@ -34,17 +34,17 @@ namespace SimuCore::ParticleCore {
         alive = 0;
     }
 
-    uint32_t ParticlePool::Size() const
+    AZ::u32 ParticlePool::Size() const
     {
         return maxSize;
     }
 
-    uint32_t ParticlePool::Alive() const
+    AZ::u32 ParticlePool::Alive() const
     {
         return alive;
     }
 
-    const std::vector<Particle>& ParticlePool::ParticleData() const
+    const AZStd::vector<Particle>& ParticlePool::ParticleData() const
     {
         return particles;
     }

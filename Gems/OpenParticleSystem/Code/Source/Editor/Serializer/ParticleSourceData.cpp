@@ -383,12 +383,12 @@ namespace OpenParticle
         auto iter = AZStd::find(m_emitters.begin(), m_emitters.end(), info);
         if (iter != m_emitters.end())
         {
-            UpdateLODIndex(static_cast<uint32_t>(iter - m_emitters.begin()));
+            UpdateLODIndex(static_cast<AZ::u32>(iter - m_emitters.begin()));
             delete *iter;
             m_emitters.erase(iter);
         }
     }
-    void ParticleSourceData::UpdateLODIndex(uint32_t index)
+    void ParticleSourceData::UpdateLODIndex(AZ::u32 index)
     {
         for (auto& lod : m_lods)
         {
@@ -1251,7 +1251,7 @@ namespace OpenParticle
                 for (auto& randomInfo : popRandom)
                 {
                     AddRandom(randomInfo.second);
-                    randomInfo.first.distIndex = static_cast<uint32_t>(m_distribution.randoms.size());
+                    randomInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.randoms.size());
                     distInfos.randomIndexInfos.emplace_back(randomInfo.first);
                     if (stash)
                     {
@@ -1268,7 +1268,7 @@ namespace OpenParticle
                 for (auto& curveInfo : popCurve)
                 {
                     AddCurve(curveInfo.second);
-                    curveInfo.first.distIndex = static_cast<uint32_t>(m_distribution.curves.size());
+                    curveInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.curves.size());
                     distInfos.curveIndexInfos.emplace_back(curveInfo.first);
                     m_distribution.curveCaches[key].curves[curveInfo.first.paramIndex] = nullptr;
                     if (stash)
@@ -1426,7 +1426,7 @@ namespace OpenParticle
                     });
                 if (find != m_emitters.end())
                 {
-                    auto index = static_cast<uint32_t>(find - m_emitters.begin());
+                    auto index = static_cast<AZ::u32>(find - m_emitters.begin());
                     if (index < m_emitters.size() && index != eventHandler.emitterIndex)
                     {
                         eventHandler.emitterIndex = index;
@@ -1435,7 +1435,7 @@ namespace OpenParticle
                 }
                 else if (unSelect && eventHandler.emitterName == emitterName)
                 {
-                    eventHandler.emitterIndex = static_cast<uint32_t>(-1);
+                    eventHandler.emitterIndex = static_cast<AZ::u32>(-1);
                     any = eventHandler;
                 }
             }
@@ -1561,7 +1561,7 @@ namespace OpenParticle
                         cacheInterface->StashDistributionRandom(key, randomInfo);
 
                         AddRandom(*randomInfo.second);
-                        randomInfo.first.distIndex = static_cast<uint32_t>(m_distribution.randoms.size());
+                        randomInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.randoms.size());
                         distInfos.randomIndexInfos.emplace_back(randomInfo.first);
                     }
 
@@ -1571,7 +1571,7 @@ namespace OpenParticle
                         cacheInterface->StashDistributionCurve(key, curveInfo);
 
                         AddCurve(*curveInfo.second);
-                        curveInfo.first.distIndex = static_cast<uint32_t>(m_distribution.curves.size());
+                        curveInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.curves.size());
                         distInfos.curveIndexInfos.emplace_back(curveInfo.first);
                     }
                 }
@@ -1695,7 +1695,7 @@ namespace OpenParticle
                 {
                     auto* oldRandom = m_distribution.randoms[randomInfo.distIndex - 1];
                     AddRandom(oldRandom);
-                    randomInfo.distIndex = static_cast<uint32_t>(m_distribution.randoms.size());
+                    randomInfo.distIndex = static_cast<AZ::u32>(m_distribution.randoms.size());
                 }
             }
             // copy curves
@@ -1705,7 +1705,7 @@ namespace OpenParticle
                 {
                     auto* oldCurve = m_distribution.curves[curveInfo.distIndex - 1];
                     AddCurve(oldCurve);
-                    curveInfo.distIndex = static_cast<uint32_t>(m_distribution.curves.size());
+                    curveInfo.distIndex = static_cast<AZ::u32>(m_distribution.curves.size());
                 }
             }
             DataConvertor::UpdateDistIndex(*module, distInfos);

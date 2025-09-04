@@ -23,7 +23,7 @@ namespace SimuCore::ParticleCore {
         if (data->frameNum == 0) {
             particle.subUVFrame = 0;
         } else {
-            uint32_t currentFrame = static_cast<uint32_t>(std::floor(data->framePerSecond * particle.currentLife));
+            AZ::u32 currentFrame = static_cast<AZ::u32>(std::floor(data->framePerSecond * particle.currentLife));
             particle.subUVFrame = currentFrame % data->frameNum;
         }
     }

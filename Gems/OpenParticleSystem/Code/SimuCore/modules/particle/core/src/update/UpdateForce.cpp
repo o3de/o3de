@@ -9,6 +9,7 @@
 #include "particle/update/UpdateForce.h"
 #include "core/math/Noise.h"
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Constants.h"
 
 namespace SimuCore::ParticleCore {
     void UpdateConstForce::Execute(const UpdateConstForce* data, const UpdateInfo& info, Particle& particle)
@@ -54,7 +55,7 @@ namespace SimuCore::ParticleCore {
             length = 1.0f;
         } else {
             force /= length;
-            length = Math::Clamp(length, 0.0f, 1.0f);
+            length = AZ::GetClamp(length, 0.0f, 1.0f);
         }
         Vector3 sampledNoise = force * length * data->noiseStrength;
         particle.velocity += sampledNoise * info.tickTime;
@@ -95,15 +96,15 @@ namespace SimuCore::ParticleCore {
         float originPullVal = CalcDistributionTickValue(data->originPull, info.baseInfo, particle);
         float vortexRateVal = CalcDistributionTickValue(data->vortexRate, info.baseInfo, particle);
 
-        if (originPullVal <= Math::EPSLON) {
+        if (originPullVal <= AZ::Constants::FloatEpsilon) {
             particle.velocity = (particle.velocity == Vector3::CreateZero()) ?
                 vortexRateVal * dir.Cross(axis).GetNormalizedSafe() : particle.velocity;
-        } else if (Math::Abs(vortexRateVal) <= Math::EPSLON) {
+        } else if (AZStd::abs(vortexRateVal) <= AZ::Constants::FloatEpsilon) {
             particle.velocity += dir.GetNormalizedSafe() * (originPullVal * info.tickTime);
         } else {
-            float step = originPullVal * Math::Abs(vortexRateVal) * info.tickTime / (Math::HALF_PI);
-            step = (step - 1.f >= Math::EPSLON) ? 1.f : step;
-            auto r = Math::Lerp<float>(dir.GetLength(),
+            float step = originPullVal * AZStd::abs(vortexRateVal) * info.tickTime / (AZ::Constants::HalfPi);
+            step = (step - 1.f >= AZ::Constants::FloatEpsilon) ? 1.f : step;
+            auto r = AZStd::lerp(dir.GetLength(),
                 CalcDistributionTickValue(data->vortexRadius, info.baseInfo, particle), step);
             float theta = vortexRateVal * info.tickTime;
             Vector3 xAxis;
@@ -112,7 +113,7 @@ namespace SimuCore::ParticleCore {
             Vector3 lastPosition = particle.localPosition;
             particle.localPosition = data->origin - direction.Dot(axis) * axis -
                 xAxis * r * cos(theta) + yAxis * r * sin(theta);
-            if (info.tickTime > Math::EPSLON) {
+            if (info.tickTime > AZ::Constants::FloatEpsilon) {
                 particle.velocity = (particle.localPosition - lastPosition) / info.tickTime;
             }
             particle.localPosition -= particle.velocity * info.tickTime;
@@ -122,19 +123,19 @@ namespace SimuCore::ParticleCore {
     void UpdateVortexForce::GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis)
     {
         if (dir == Vector3::CreateZero()) {
-            if (Math::Abs(axis.GetZ()) > Math::EPSLON) {
+            if (AZStd::abs(axis.GetZ()) > AZ::Constants::FloatEpsilon) {
                 xAxis = {
                     1.f,
                     1.f,
                     -(axis.GetX() + axis.GetY()) / axis.GetZ()
                 };
-            } else if (Math::Abs(axis.GetY()) > Math::EPSLON) {
+            } else if (AZStd::abs(axis.GetY()) > AZ::Constants::FloatEpsilon) {
                 xAxis = {
                     1.f,
                     -(axis.GetX() + axis.GetZ()) / axis.GetY(),
                     1.f
                 };
-            } else if (Math::Abs(axis.GetX()) > Math::EPSLON) {
+            } else if (AZStd::abs(axis.GetX()) > AZ::Constants::FloatEpsilon) {
                 xAxis = {
                     -(axis.GetY() + axis.GetZ()) / axis.GetX(),
                     1.f,

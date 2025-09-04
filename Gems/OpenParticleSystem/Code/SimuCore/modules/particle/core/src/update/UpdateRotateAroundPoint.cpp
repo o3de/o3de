@@ -18,7 +18,7 @@ namespace SimuCore::ParticleCore {
         Vector3 lastPosition = particle.localPosition;
         particle.localPosition =
             data->xAxis * data->radius * cos(theta) + data->yAxis * data->radius * sin(theta) + data->center;
-        if (info.tickTime > Math::EPSLON) {
+        if (info.tickTime > AZ::Constants::FloatEpsilon) {
             particle.velocity = (particle.localPosition - lastPosition) / info.tickTime;
         }
         particle.localPosition -= particle.velocity * info.tickTime;

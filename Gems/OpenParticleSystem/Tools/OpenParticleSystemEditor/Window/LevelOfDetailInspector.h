@@ -40,16 +40,16 @@ namespace OpenParticleSystemEditor
         explicit LevelWidget(QWidget* parent = nullptr);
         ~LevelWidget();
 
-        void SetIndex(uint32_t index);
-        uint32_t GetIndex();
+        void SetIndex(AZ::u32 index);
+        AZ::u32 GetIndex();
         void SetDistance(float distance);
-        void AddLevelItem(uint32_t emitterIndex, bool checked, AZStd::string& name);
-        void RemoveItem(uint32_t index);
+        void AddLevelItem(AZ::u32 emitterIndex, bool checked, AZStd::string& name);
+        void RemoveItem(AZ::u32 index);
         AZStd::vector<QCheckBox*> m_checkboxes;
     Q_SIGNALS:
         void RemoveLevelItem(LevelWidget* levelWidget);
         void OnEditingFinished(float distance);
-        void OnEmitterChecked(uint32_t index, bool checked);
+        void OnEmitterChecked(AZ::u32 index, bool checked);
 
     protected:
         bool eventFilter(QObject* obj, QEvent* ev) override;
@@ -65,7 +65,7 @@ namespace OpenParticleSystemEditor
         QVBoxLayout* m_layout = nullptr;
         QWidget* m_itemsWidget = nullptr;
 
-        uint32_t m_indexOfLod = 0;
+        AZ::u32 m_indexOfLod = 0;
     };
 
     class LevelOfDetailInspector
@@ -90,9 +90,9 @@ namespace OpenParticleSystemEditor
 
     private:
         void SetupUi();
-        void AddLevel(OpenParticle::ParticleSourceData* sourceData, uint32_t indexOfLod);
+        void AddLevel(OpenParticle::ParticleSourceData* sourceData, AZ::u32 indexOfLod);
         void ClearLevels();
-        void OnDistanceModified(uint32_t index, float distance);
+        void OnDistanceModified(AZ::u32 index, float distance);
 
         QVBoxLayout* m_layout = nullptr;
         QPushButton* m_addLevelOfDetail = nullptr;

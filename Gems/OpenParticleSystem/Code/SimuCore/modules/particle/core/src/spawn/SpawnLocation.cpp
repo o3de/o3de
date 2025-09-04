@@ -11,6 +11,7 @@
 #include <algorithm>
 #include "particle/core/ParticleHelper.h"
 #include "core/math/Random.h"
+#include "core/math/Constants.h"
 
 namespace SimuCore::ParticleCore {
     void SpawnLocBox::Execute(const SpawnLocBox* data, const SpawnInfo& info, Particle& particle)
@@ -40,7 +41,7 @@ namespace SimuCore::ParticleCore {
 
     void SpawnLocSphere::Execute(const SpawnLocSphere* data, const SpawnInfo& info, Particle& particle)
     {
-        float th = Math::AngleToRadians(data->angle) * info.randomStream->Rand();
+        float th = AZ::DegToRad(data->angle) * info.randomStream->Rand();
         float arcCosAp = info.randomStream->RandRange(-1.f, 1.f);
         float ap = acos(arcCosAp);
         float tmp = info.randomStream->RandRange(1 - data->radiusThickness, 1.f);
@@ -87,7 +88,7 @@ namespace SimuCore::ParticleCore {
     {
         if (data->sampleType == MeshSampleType::VERTEX && info.vertexCount > 0)
         {
-            uint32_t vertexIndex = Random::RandomRange(0u, info.vertexCount);
+            AZ::u32 vertexIndex = Random::RandomRange(0u, info.vertexCount);
             particle.localPosition = data->scale * info.vertexStream[vertexIndex];
         }
         else if (data->sampleType == MeshSampleType::AREA && info.indiceCount > 0)
@@ -97,7 +98,7 @@ namespace SimuCore::ParticleCore {
         }
         else if (data->sampleType == MeshSampleType::BONE && info.boneCount > 0)
         {
-            uint32_t boneIndex = Random::RandomRange(0u, info.boneCount);
+            AZ::u32 boneIndex = Random::RandomRange(0u, info.boneCount);
             particle.localPosition = data->scale * info.boneStream[boneIndex];
         }
     }
@@ -113,15 +114,15 @@ namespace SimuCore::ParticleCore {
         auto totalArea = *(info.areaStream + cumulativeCnt - 1);
         auto sampleArea = totalArea * Random::Rand();
         auto it = std::lower_bound(info.areaStream, info.areaStream + cumulativeCnt, sampleArea);
-        uint32_t faceIdx = static_cast<uint32_t>(it - info.areaStream);
+        AZ::u32 faceIdx = static_cast<AZ::u32>(it - info.areaStream);
 
-        uint32_t aIdx = info.indiceStream[faceIdx * 3];
+        AZ::u32 aIdx = info.indiceStream[faceIdx * 3];
         auto pointA = info.vertexStream[aIdx];
 
-        uint32_t bIdx = info.indiceStream[faceIdx * 3 + 1];
+        AZ::u32 bIdx = info.indiceStream[faceIdx * 3 + 1];
         auto pointB = info.vertexStream[bIdx];
 
-        uint32_t cIdx = info.indiceStream[faceIdx * 3 + 2];
+        AZ::u32 cIdx = info.indiceStream[faceIdx * 3 + 2];
         auto pointC = info.vertexStream[cIdx];
 
         auto alpha = Random::Rand();
@@ -146,13 +147,13 @@ namespace SimuCore::ParticleCore {
             return;
         }
 
-        float th = Math::AngleToRadians(data->angle) * info.randomStream->Rand();
-        float ap = Math::PI * info.randomStream->Rand();
+        float th = AZ::DegToRad(data->angle) * info.randomStream->Rand();
+        float ap = AZ::Constants::Pi * info.randomStream->Rand();
         float tmp = info.randomStream->RandRange(1 - data->radiusThickness, 1.f);
         float x = sin(th) * data->radius  * data->aspectRatio * tmp;
         float y = cos(th) * data->radius * tmp;
         float z = ap * data->height;
-        if (data->height - 0.f <= Math::EPSLON) {
+        if (data->height - 0.f <= AZ::Constants::FloatEpsilon) {
             particle.localPosition += data->center + Vector3(x, y, z);
             return;
         }
@@ -194,8 +195,8 @@ namespace SimuCore::ParticleCore {
 
     void SpawnLocTorus::Execute(const SpawnLocTorus* data, const SpawnInfo& info, Particle& particle)
     {
-        float th = 2 * Math::PI * info.randomStream->Rand();
-        float ap = 2 * Math::PI * info.randomStream->Rand();
+        float th = 2 * AZ::Constants::Pi * info.randomStream->Rand();
+        float ap = 2 * AZ::Constants::Pi * info.randomStream->Rand();
         float tmpR = data->torusRadius < 0 ? 0 : data->torusRadius;
         float r = info.randomStream->RandRange(0, data->tubeRadius);
         /**

@@ -21,17 +21,17 @@ namespace SimuCore::ParticleCore {
         gDriver = nullptr;
     }
 
-    uint32_t ParticleMeshRender::DataSize() const
+    AZ::u32 ParticleMeshRender::DataSize() const
     {
         return sizeof(MeshConfig);
     }
 
-    static void UpdateParticle(const ParticlePool& pool, const WorldInfo& world, std::vector<ParticleMeshVertex>& vb,
-            std::vector<Vector3>& positionBuffer)
+    static void UpdateParticle(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<ParticleMeshVertex>& vb,
+            AZStd::vector<Vector3>& positionBuffer)
     {
         const Particle* particle = pool.ParticleData().data();
         ParticleMeshVertex* meshInfo = vb.data();
-        for (uint32_t i = 0; i < pool.Alive(); ++i) {
+        for (AZ::u32 i = 0; i < pool.Alive(); ++i) {
             const Particle& curr = particle[i];
             if (curr.hasLightEffect) {
                 positionBuffer[i] = curr.globalPosition;
@@ -44,11 +44,11 @@ namespace SimuCore::ParticleCore {
             Vector3 rotateAxis(curr.rotationVector.GetX(), curr.rotationVector.GetY(), curr.rotationVector.GetZ());
             meshInfo[i].rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
                 ? Quaternion(rotateAxis, 0.f)
-                : Quaternion(rotateAxis, Math::AngleToRadians(curr.rotationVector.GetW()));
+                : Quaternion(rotateAxis, AZ::DegToRad(curr.rotationVector.GetW()));
         }
     }
 
-    void ParticleMeshRender::UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, std::vector<Vector3>& positionBuffer)
+    void ParticleMeshRender::UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<Vector3>& positionBuffer)
     {
         auto& bufferView = bufferViews[world.viewKey.v];
         auto& vb = vbs[world.viewKey.v];
@@ -64,25 +64,25 @@ namespace SimuCore::ParticleCore {
 
         if (reCreate || bufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = particleSize * static_cast<uint32_t>(sizeof(ParticleMeshVertex));
-            info.data = reinterpret_cast<const uint8_t*>(vb.data());
+            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
+            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = particleSize * static_cast<uint32_t>(sizeof(ParticleMeshVertex));
+            bufferView.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
             bufferView.stride = sizeof(ParticleMeshVertex);
         } else {
             BufferUpdate info = {};
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = particleSize * static_cast<uint32_t>(sizeof(ParticleMeshVertex));
-            info.data = reinterpret_cast<const uint8_t*>(vb.data());
+            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
+            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
         }
     }
 
-    void ParticleMeshRender::Render(const uint8_t* data, [[maybe_unused]] const BaseInfo& emitterInfo, uint8_t* driver, const ParticlePool& pool,
+    void ParticleMeshRender::Render(const AZ::u8* data, [[maybe_unused]] const BaseInfo& emitterInfo, AZ::u8* driver, const ParticlePool& pool,
         const WorldInfo& world, DrawItem& item)
     {
         if (data == nullptr || pool.Alive() == 0) {

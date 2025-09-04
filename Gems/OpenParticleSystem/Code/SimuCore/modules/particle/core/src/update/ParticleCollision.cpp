@@ -76,9 +76,9 @@ namespace SimuCore::ParticleCore {
 
     static Vector3 CalculateNormal(const Vector3 planeNormal, const UpdateInfo& info, float angleCof)
     {
-        float th = 2.f * Math::PI * info.randomStream->Rand();
+        float th = 2.f * AZ::Constants::Pi * info.randomStream->Rand();
         // normal (0, 1] -> (0, Pi]
-        float ap = (Math::PI * angleCof / 2.f) * info.randomStream->Rand();
+        float ap = (AZ::Constants::Pi * angleCof / 2.f) * info.randomStream->Rand();
         Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
         Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
         return (Matrix3::CreateFromTransform(d) * vel).GetNormalized();
@@ -127,7 +127,7 @@ namespace SimuCore::ParticleCore {
         particle.collisionPosition = collisionPos;
 
         // colliding
-        if (data->bounce.randomizeNormal <= Math::EPSLON) {
+        if (data->bounce.randomizeNormal <= AZ::Constants::FloatEpsilon) {
             normal = collision.localPlane.normal;
             particle.localPosition = particle.localPosition - 2.0f * distance * normal;
         } else {
@@ -142,7 +142,7 @@ namespace SimuCore::ParticleCore {
 
     void ParticleCollision::Execute(const ParticleCollision* data, const UpdateInfo& info, Particle& particle)
     {
-        std::vector<CollisionPlane> planes;
+        AZStd::vector<CollisionPlane> planes;
         (void)planes.emplace_back(CollisionPlane{ data->collisionPlane1.normal, data->collisionPlane1.position });
         if (data->useTwoPlane) {
             (void)planes.emplace_back(CollisionPlane{ data->collisionPlane2.normal, data->collisionPlane2.position });

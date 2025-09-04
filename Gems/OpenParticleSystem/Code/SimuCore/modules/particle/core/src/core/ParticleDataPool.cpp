@@ -10,7 +10,7 @@
 #include <cstring>
 
 namespace SimuCore::ParticleCore {
-    constexpr uint32_t ALIGNMENT = 16;
+    constexpr AZ::u32 ALIGNMENT = 16;
 
     template <typename T>
     constexpr T AlignUp(const T& value, size_t alignment)
@@ -18,19 +18,19 @@ namespace SimuCore::ParticleCore {
         return static_cast<T>((static_cast<size_t>(value) + (alignment - 1)) & ~(alignment - 1));
     }
 
-    uint32_t ParticleDataSet::Alloc()
+    AZ::u32 ParticleDataSet::Alloc()
     {
         if (!freeList.empty()) {
             auto ret = freeList.back();
             freeList.pop_back();
             return ret;
         }
-        uint32_t ret = static_cast<uint32_t>(rawData.size());
+        AZ::u32 ret = static_cast<AZ::u32>(rawData.size());
         rawData.resize(rawData.size() + stride);
         return ret;
     }
 
-    void ParticleDataSet::Free(uint32_t index)
+    void ParticleDataSet::Free(AZ::u32 index)
     {
         if (index >= rawData.size()) {
             return;
@@ -39,7 +39,7 @@ namespace SimuCore::ParticleCore {
         freeList.emplace_back(index);
     }
 
-    uint8_t* ParticleDataSet::At(uint32_t index)
+    AZ::u8* ParticleDataSet::At(AZ::u32 index)
     {
         if (index >= rawData.size()) {
             return nullptr;
@@ -47,12 +47,12 @@ namespace SimuCore::ParticleCore {
         return &rawData[index];
     }
 
-    uint32_t ParticleDataSet::ActiveSize() const
+    AZ::u32 ParticleDataSet::ActiveSize() const
     {
-        return static_cast<uint32_t>(rawData.size() - freeList.size() * stride);
+        return static_cast<AZ::u32>(rawData.size() - freeList.size() * stride);
     }
 
-    void ParticleDataSet::SetData(const uint8_t* src, uint32_t size)
+    void ParticleDataSet::SetData(const AZ::u8* src, AZ::u32 size)
     {
         freeList.clear();
         rawData.clear();
@@ -81,16 +81,16 @@ namespace SimuCore::ParticleCore {
         sets.clear();
     }
 
-    void ParticleDataPool::EmplaceData(uint32_t stride, const uint8_t* data, uint32_t dataSize)
+    void ParticleDataPool::EmplaceData(AZ::u32 stride, const AZ::u8* data, AZ::u32 dataSize)
     {
-        uint32_t alignSize = AlignUp(stride, ALIGNMENT);
+        AZ::u32 alignSize = AlignUp(stride, ALIGNMENT);
         DataMap::const_iterator iter = sets.emplace(alignSize, new ParticleDataSet(alignSize)).first;
         iter->second->SetData(data, dataSize);
     }
 
-    uint32_t ParticleDataPool::Alloc(uint32_t size)
+    AZ::u32 ParticleDataPool::Alloc(AZ::u32 size)
     {
-        uint32_t alignSize = AlignUp(size, ALIGNMENT);
+        AZ::u32 alignSize = AlignUp(size, ALIGNMENT);
         auto iter = sets.find(alignSize);
         if (iter == sets.end()) {
             iter = sets.emplace(alignSize, new ParticleDataSet(alignSize)).first;
@@ -99,23 +99,23 @@ namespace SimuCore::ParticleCore {
         return iter->second->Alloc();
     }
 
-    void ParticleDataPool::Free(uint32_t size, uint32_t index)
+    void ParticleDataPool::Free(AZ::u32 size, AZ::u32 index)
     {
-        uint32_t alignSize = AlignUp(size, ALIGNMENT);
+        AZ::u32 alignSize = AlignUp(size, ALIGNMENT);
         DataMap::const_iterator iter = sets.find(alignSize);
         if (iter != sets.end()) {
             iter->second->Free(index);
         }
     }
 
-    uint32_t ParticleDataPool::AlignSize(uint32_t size)
+    AZ::u32 ParticleDataPool::AlignSize(AZ::u32 size)
     {
         return AlignUp(size, ALIGNMENT);
     }
 
-    uint8_t* ParticleDataPool::Data(uint32_t size, uint32_t index)
+    AZ::u8* ParticleDataPool::Data(AZ::u32 size, AZ::u32 index)
     {
-        uint32_t alignSize = AlignUp(size, ALIGNMENT);
+        AZ::u32 alignSize = AlignUp(size, ALIGNMENT);
         DataMap::const_iterator iter = sets.find(alignSize);
         if (iter == sets.end()) {
             return nullptr;
@@ -123,9 +123,9 @@ namespace SimuCore::ParticleCore {
         return iter->second->At(index);
     }
 
-    const uint8_t* ParticleDataPool::Data(uint32_t size, uint32_t index) const
+    const AZ::u8* ParticleDataPool::Data(AZ::u32 size, AZ::u32 index) const
     {
-        uint32_t alignSize = AlignUp(size, ALIGNMENT);
+        AZ::u32 alignSize = AlignUp(size, ALIGNMENT);
         auto iter = sets.find(alignSize);
         if (iter == sets.end()) {
             return nullptr;

@@ -8,16 +8,9 @@
 
 #pragma once
 
-#include "core/math/Quaternion.h"
-#include "core/math/Constants.h"
-
 #include <AzCore/Math/Transform.h>
 
 namespace SimuCore {
-    //! Limits for transform scale values.
-    //! The scale should not be zero to avoid problems with inverting.
-    constexpr float MIN_TRANSFORM_SCALE = 1e-2f;
-    constexpr float MAX_TRANSFORM_SCALE = 1e9f;
     using Transform = AZ::Transform;
 }
 

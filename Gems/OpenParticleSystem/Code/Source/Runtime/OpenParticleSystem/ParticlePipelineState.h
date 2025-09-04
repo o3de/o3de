@@ -62,7 +62,7 @@ namespace OpenParticle
     struct ParticlePipelineState
     {
         AZ::RHI::InputStreamLayout m_streamLayout;
-        bool Setup(uint32_t);
+        bool Setup(AZ::u32);
 
     private:
         void SetupSprite();

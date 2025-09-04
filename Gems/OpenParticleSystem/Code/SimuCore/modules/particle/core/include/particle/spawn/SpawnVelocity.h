@@ -17,8 +17,8 @@ namespace SimuCore::ParticleCore {
         static void UpdateDistPtr(SpawnVelDirection* data, const Distribution& distribution);
 
         ValueObjVec3 direction { { 0.f, 0.f, 0.f } };
-        uint64_t padding0 = 0;
-        uint64_t padding1 = 0;
+        AZ::u64 padding0 = 0;
+        AZ::u64 padding1 = 0;
         ValueObjFloat strength { 1.f };
     };
 
@@ -40,7 +40,7 @@ namespace SimuCore::ParticleCore {
 
         ValueObjFloat strength { 1.f };
         float angle = 60.f;
-        uint32_t padding0 = 0;
+        AZ::u32 padding0 = 0;
         Vector3 direction = { 0.f, 0.f, 0.f };
     };
 
@@ -58,7 +58,7 @@ namespace SimuCore::ParticleCore {
         static void UpdateDistPtr(SpawnVelConcentrate* data, const Distribution& distribution);
 
         ValueObjFloat rate { 1.f };
-        uint64_t padding0 = 0;
+        AZ::u64 padding0 = 0;
         Vector3 centre = { 0.f, 0.f, 0.f };
     };
 }
