@@ -63,12 +63,21 @@ namespace AZ
                 stageCreateInfo.module = shaderModule;
                 stageCreateInfo.pSpecializationInfo = specializationData.GetVkSpecializationInfo();
 
+                auto firstIfValid = [](const AZ::Name& first, const AZ::Name& second)
+                {
+                    if (first.IsEmpty())
+                    {
+                        return second.GetCStr();
+                    }
+                    return first.GetCStr();
+                };
+
                 // ray generation
                 if (!shaderLibrary.m_rayGenerationShaderName.IsEmpty())
                 {
                     VkPipelineShaderStageCreateInfo rayGenerationCreateInfo = stageCreateInfo;
                     rayGenerationCreateInfo.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-                    rayGenerationCreateInfo.pName = shaderLibrary.m_rayGenerationShaderName.GetCStr();
+                    rayGenerationCreateInfo.pName = firstIfValid(shaderLibrary.m_rayGenerationEntryFunctionName, shaderLibrary.m_rayGenerationShaderName);
                     stages.push_back(rayGenerationCreateInfo);
 
                     VkRayTracingShaderGroupCreateInfoKHR groupCreateInfo = {};
@@ -89,7 +98,7 @@ namespace AZ
                 {
                     VkPipelineShaderStageCreateInfo missCreateInfo = stageCreateInfo;
                     missCreateInfo.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
-                    missCreateInfo.pName = shaderLibrary.m_missShaderName.GetCStr();
+                    missCreateInfo.pName = firstIfValid(shaderLibrary.m_missEntryFunctionName, shaderLibrary.m_missShaderName);
                     stages.push_back(missCreateInfo);
 
                     VkRayTracingShaderGroupCreateInfoKHR groupCreateInfo = {};
@@ -110,7 +119,7 @@ namespace AZ
                 {
                     VkPipelineShaderStageCreateInfo closestHitCreateInfo = stageCreateInfo;
                     closestHitCreateInfo.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-                    closestHitCreateInfo.pName = shaderLibrary.m_closestHitShaderName.GetCStr();
+                    closestHitCreateInfo.pName = firstIfValid(shaderLibrary.m_closestHitEntryFunctionName, shaderLibrary.m_closestHitShaderName);
                     stages.push_back(closestHitCreateInfo);
 
                     hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_closestHitShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
@@ -121,7 +130,7 @@ namespace AZ
                 {
                     VkPipelineShaderStageCreateInfo anyHitCreateInfo = stageCreateInfo;
                     anyHitCreateInfo.stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-                    anyHitCreateInfo.pName = shaderLibrary.m_anyHitShaderName.GetCStr();
+                    anyHitCreateInfo.pName = firstIfValid(shaderLibrary.m_anyHitEntryFunctionName, shaderLibrary.m_anyHitShaderName);
                     stages.push_back(anyHitCreateInfo);
 
                     hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_anyHitShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));
@@ -132,7 +141,7 @@ namespace AZ
                 {
                     VkPipelineShaderStageCreateInfo intersectionCreateInfo = stageCreateInfo;
                     intersectionCreateInfo.stage = VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-                    intersectionCreateInfo.pName = shaderLibrary.m_intersectionShaderName.GetCStr();
+                    intersectionCreateInfo.pName = firstIfValid(shaderLibrary.m_intersectionEntryFunctionName, shaderLibrary.m_intersectionShaderName);
                     stages.push_back(intersectionCreateInfo);
 
                     hitStageIndices.insert(AZStd::pair<AZStd::string_view, uint32_t>(shaderLibrary.m_intersectionShaderName.GetStringView(), aznumeric_cast<uint32_t>(stages.size() - 1)));

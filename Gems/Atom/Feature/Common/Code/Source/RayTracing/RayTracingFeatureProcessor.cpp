@@ -313,6 +313,11 @@ namespace AZ
             return geometryTypeHandle->m_instanceCount;
         }
 
+        const RayTracingMaterialShaderManager& RayTracingFeatureProcessor::GetMaterialShaderManager() const
+        {
+            return m_shaderManager;
+        }
+
         void RayTracingFeatureProcessor::AddMesh(const AZ::Uuid& uuid, const Mesh& rayTracingMesh, const SubMeshVector& subMeshes)
         {
             if (!m_rayTracingEnabled)
@@ -359,7 +364,12 @@ namespace AZ
                 {
                     materialInfos.emplace_back();
                 }
+                // create one entry for each sub-mesh
+                m_meshMaterialShaderLibraries.emplace_back(
+                    MeshRayTracingMaterialShaderLibraries{ subMesh.m_modelLod, subMesh.m_modelLodMeshIndex, subMesh.m_material });
             }
+
+            m_shaderManager.SetNeedsUpdate(true);
 
             mesh.m_subMeshIndices = subMeshIndices;
 
@@ -599,6 +609,7 @@ namespace AZ
                         // update the global index for the swapped subMesh
                         m_subMeshes[globalIndex].m_globalIndex = globalIndex;
 
+                        m_meshMaterialShaderLibraries[globalIndex] = m_meshMaterialShaderLibraries.back();
                         // update the global index in the parent Mesh' subMesh list
                         Mesh* swappedSubMeshParent = m_subMeshes[globalIndex].m_mesh;
                         uint32_t swappedSubMeshIndex = m_subMeshes[globalIndex].m_subMeshIndex;
@@ -612,6 +623,7 @@ namespace AZ
                         meshInfos.pop_back();
                         materialInfos.pop_back();
                     }
+                    m_meshMaterialShaderLibraries.pop_back();
                 }
 
                 // remove from the Mesh list
@@ -648,6 +660,7 @@ namespace AZ
                     m_meshBuffers.Reset();
                     m_materialTextures.Reset();
 #endif
+                    m_meshMaterialShaderLibraries.clear();
                 }
             }
 
@@ -825,6 +838,19 @@ namespace AZ
 
             UpdateBlasInstances();
 
+            if (m_shaderManager.NeedsUpdate())
+            {
+                // check and update the hit-shaders for each mesh if needed
+                for (auto& entry : m_meshMaterialShaderLibraries)
+                {
+                    entry.Update(&m_shaderManager);
+                }
+                // update the pipelinestates and the hit-shader table if needed
+                m_shaderManager.UpdateShaderLibraries(this);
+                m_shaderManager.SetNeedsUpdate(false);
+                // TODO: update the ShaderTable Revision!
+            }
+
             if (m_tlasRevision != m_revision)
             {
                 m_tlasRevision = m_revision;
@@ -872,7 +898,7 @@ namespace AZ
                                 RHI::DeviceRayTracingTlasInstance& tlasInstance = tlasDescriptor[deviceIndex].m_instances.emplace_back();
                                 tlasInstance.m_instanceID = instanceIndex;
                                 tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
-                                tlasInstance.m_hitGroupIndex = 0;
+                                tlasInstance.m_hitGroupIndex = m_meshMaterialShaderLibraries[subMesh.m_globalIndex].GetHitGroupIndex();
                                 tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
                                 tlasInstance.m_transform = subMesh.m_mesh->m_transform;
                                 tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
