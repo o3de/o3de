@@ -42,14 +42,14 @@ namespace SimuCore::ParticleCore {
 
         // calculate right and front axis of this plane, rotate the sector's centralLine to specified direction
         Vector3 normUp = axisUp;
-        normUp.GetNormalized();
+        normUp.Normalize();
         if (std::abs(normal.Dot(normUp)) > ALMOST_ONE) {
             normUp = { normUp.GetZ(), normUp.GetX(), normUp.GetY() };
         }
         Vector3 right = normal.Cross(normUp);
-        right.GetNormalized();
+        right.Normalize();
         Vector3 front = right.Cross(normal);
-        front.GetNormalized();
+        front.Normalize();
         double angleNeedRotated = atan2(front.Cross(data->direction).Dot(normal), front.Dot(data->direction));
         if (angleNeedRotated < 0) {
             angleNeedRotated = 2.f * AZ::Constants::Pi + angleNeedRotated;

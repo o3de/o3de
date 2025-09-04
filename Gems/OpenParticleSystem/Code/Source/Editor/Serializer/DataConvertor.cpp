@@ -246,7 +246,7 @@ namespace OpenParticle
         runtimeData.tubeRadius = editData.tubeRadius;
         runtimeData.center = editData.center;
         runtimeData.torusAxis = editData.torusAxis;
-        runtimeData.torusAxis.GetNormalized();
+        runtimeData.torusAxis.Normalize();
         if (runtimeData.torusAxis.GetZ()) {
             runtimeData.xAxis = {
                 1.f, 1.f, -(runtimeData.torusAxis.GetX() + runtimeData.torusAxis.GetY()) / runtimeData.torusAxis.GetZ()
@@ -265,7 +265,7 @@ namespace OpenParticle
                 1.f,  1.f, -(runtimeData.torusAxis.GetY() + runtimeData.torusAxis.GetZ()) / runtimeData.torusAxis.GetX()
             };
         }
-        runtimeData.xAxis.GetNormalized();
+        runtimeData.xAxis.Normalize();
         runtimeData.yAxis = runtimeData.torusAxis.Cross(runtimeData.xAxis).GetNormalized();
     }
 
@@ -288,7 +288,7 @@ namespace OpenParticle
         runtimeData.centralAngle = editData.centralAngle;
         runtimeData.rotateAngle = editData.rotateAngle;
         runtimeData.direction = editData.direction;
-        runtimeData.direction.GetNormalized();
+        runtimeData.direction.Normalize();
     }
 
     void DataConvertor::ToRuntime(OpenParticle::SpawnVelCone& editData, SimuCore::ParticleCore::SpawnVelCone& runtimeData)
@@ -368,7 +368,7 @@ namespace OpenParticle
         runtimeData.vortexAxis = editData.vortexAxis;
         if (runtimeData.vortexAxis != SimuCore::Vector3::CreateZero())
         {
-            runtimeData.vortexAxis.GetNormalized();
+            runtimeData.vortexAxis.Normalize();
         }
         ConvertValueObjectToRuntime(editData.originPullObject, runtimeData.originPull);
         ConvertValueObjectToRuntime(editData.vortexRateObject, runtimeData.vortexRate);
@@ -416,7 +416,7 @@ namespace OpenParticle
         runtimeData.center = editData.center;
         runtimeData.xAxis = editData.xAxis;
         runtimeData.yAxis = editData.yAxis;
-        runtimeData.xAxis.GetNormalized();
+        runtimeData.xAxis.Normalize();
         runtimeData.yAxis = (runtimeData.xAxis.Cross(runtimeData.yAxis)).Cross(runtimeData.xAxis).GetNormalized();
     }
 
@@ -442,7 +442,7 @@ namespace OpenParticle
             editData.collisionPlane1.normal.GetY(),
             editData.collisionPlane1.normal.GetZ()
         };
-        runtimeData.collisionPlane1.normal.GetNormalized();
+        runtimeData.collisionPlane1.normal.Normalize();
         runtimeData.collisionPlane1.position = {
             editData.collisionPlane1.position.GetX(),
             editData.collisionPlane1.position.GetY(),
@@ -453,7 +453,7 @@ namespace OpenParticle
             editData.collisionPlane2.normal.GetY(),
             editData.collisionPlane2.normal.GetZ()
         };
-        runtimeData.collisionPlane2.normal.GetNormalized();
+        runtimeData.collisionPlane2.normal.Normalize();
         runtimeData.collisionPlane2.position = {
             editData.collisionPlane2.position.GetX(),
             editData.collisionPlane2.position.GetY(),

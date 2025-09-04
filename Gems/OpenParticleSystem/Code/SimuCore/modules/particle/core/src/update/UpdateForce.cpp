@@ -122,7 +122,7 @@ namespace SimuCore::ParticleCore {
 
     void UpdateVortexForce::GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis)
     {
-        if (dir == Vector3::CreateZero()) {
+        if (dir.IsClose(Vector3::CreateZero())) {
             if (AZStd::abs(axis.GetZ()) > AZ::Constants::FloatEpsilon) {
                 xAxis = {
                     1.f,
@@ -142,10 +142,10 @@ namespace SimuCore::ParticleCore {
                     1.f
                 };
             }
-            xAxis.GetNormalized();
+            xAxis = dir.GetNormalized();
             yAxis = xAxis.Cross(axis).GetNormalizedSafe();
         } else {
-            xAxis.GetNormalized();
+            xAxis = dir.GetNormalized();
             yAxis = xAxis.Cross(axis).GetNormalizedSafe();
         }
     }

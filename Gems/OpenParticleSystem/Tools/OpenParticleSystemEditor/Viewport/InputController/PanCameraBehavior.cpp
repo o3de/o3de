@@ -35,7 +35,7 @@ namespace OpenParticleSystemEditor
         const AZ::Vector3 right = transform.GetBasisX();
         rotation =
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -x) * AZ::Quaternion::CreateFromAxisAngle(right, -y) * rotation;
-        rotation.GetNormalized();
+        rotation.Normalize();
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
     }
 
