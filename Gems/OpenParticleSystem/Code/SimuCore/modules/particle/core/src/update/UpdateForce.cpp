@@ -142,7 +142,7 @@ namespace SimuCore::ParticleCore {
                     1.f
                 };
             }
-            xAxis = dir.GetNormalized();
+            xAxis.Normalize();
             yAxis = xAxis.Cross(axis).GetNormalizedSafe();
         } else {
             xAxis = dir.GetNormalized();
