@@ -390,14 +390,12 @@ namespace AZ::Render
             // - The bindless read-index of this new BufferView
             // - The start-offset inside the new BufferView
             const auto semantic = inputContract.m_streamChannels[streamIndex].m_semantic;
-            auto& streamBuffer = const_cast<RHI::StreamBufferView&>(streamIter[static_cast<u16>(streamIndex)]);
+            auto& streamBuffer = streamIter[static_cast<u16>(streamIndex)];
             entry->m_meshBuffers[semantic] =
                 BufferViewIndexAndOffset::Create(streamBuffer, RHI::ConvertToVertexFormat(inputChannelFormat[streamIndex]));
         }
 
         // Register the Index buffer
-        auto& indexBuffer = const_cast<RHI::IndexBufferView&>(mesh.GetIndexBufferView());
-        entry->m_indexBuffer = IndexBufferViewIndexAndOffset::Create(indexBuffer);
+        entry->m_indexBuffer = IndexBufferViewIndexAndOffset::Create(mesh.GetIndexBufferView());
     }
-
 } // namespace AZ::Render

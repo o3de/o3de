@@ -60,7 +60,7 @@ namespace AZ::Render
         }
 
         // utility function to create an entry from a Streambuffer
-        static BufferViewIndexAndOffset Create(RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
+        static BufferViewIndexAndOffset Create(const RHI::StreamBufferView& streamBufferView, const RHI::VertexFormat vertexFormat)
         {
             auto rhiBuffer = streamBufferView.GetBuffer();
             auto result = BufferViewIndexAndOffset::CreateInternal(rhiBuffer, streamBufferView.GetByteOffset(), vertexFormat);
@@ -101,7 +101,7 @@ namespace AZ::Render
         AZStd::unordered_map<int, uint32_t> m_bindlessReadIndex = {};
 
         // utility function to create an entry from an IndexBufferView
-        static IndexBufferViewIndexAndOffset Create(AZ::RHI::IndexBufferView& indexBufferView)
+        static IndexBufferViewIndexAndOffset Create(const AZ::RHI::IndexBufferView& indexBufferView)
         {
             uint32_t byteCount = static_cast<uint32_t>(indexBufferView.GetBuffer()->GetDescriptor().m_byteCount);
             // The 'raw' bufferview is for a ByteAddresBuffer, which has to be R32_UINT.
