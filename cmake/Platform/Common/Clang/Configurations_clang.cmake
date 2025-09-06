@@ -27,6 +27,17 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-deprecated-enum-enum-conversion)
 
+
+
+# A known bug in clang18 prevents __cpp_conditional_explicit from working correctly.
+# see https://github.com/llvm/llvm-project/pull/70548 and other reports.
+# this causes it to evaluate #if __cpp_conditional_explicit >= 201806L as true, but
+# can trip over code that uses it, such as in AZStd::pair.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 18.0 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0)
+    message(STATUS "Clang 18 detected, adding workaround for __cpp_conditional_explicit bug")
+    add_compile_definitions(O3DE_DISABLE_CONDITIONAL_EXPLICIT=1)
+endif()
+
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2
