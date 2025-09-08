@@ -262,7 +262,7 @@ namespace AZ::Render
             }
             if (entry)
             {
-                m_bufferNeedsUpdate = updateFunction(entry.get());
+                m_bufferNeedsUpdate |= updateFunction(entry.get());
             }
         }
 
