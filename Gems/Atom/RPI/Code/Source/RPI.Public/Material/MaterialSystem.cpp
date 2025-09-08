@@ -269,7 +269,7 @@ namespace AZ::RPI
                 // get the size of the m_samplers[] array from the SRG layout
                 auto materialTexturesIndex =
                     instanceData.m_shaderResourceGroup->GetLayout()->FindShaderInputImageIndex(AZ::Name{ "m_textures" });
-                if (materialTexturesIndex.IsValid())
+                if (materialTexturesIndex.IsValid() && m_nullTexture)
                 {
                     auto desc = instanceData.m_shaderResourceGroup->GetLayout()->GetShaderInput(materialTexturesIndex);
                     instanceData.m_materialTextureRegistry = AZStd::make_unique<MaterialTextureRegistry>();
@@ -479,7 +479,7 @@ namespace AZ::RPI
                         // register the sampler array if the material requires it
                         auto nullTextureIndex =
                             instanceData.m_shaderResourceGroup->FindShaderInputConstantIndex(AZ::Name{ "m_nullTextureIndex" });
-                        if (nullTextureIndex.IsValid())
+                        if (nullTextureIndex.IsValid() && m_nullTexture)
                         {
 #ifdef AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL
                             instanceData.m_shaderResourceGroup->SetConstant(
@@ -650,9 +650,11 @@ namespace AZ::RPI
             // register the buffer in the SRG and compile it
             m_sceneMaterialSrg->SetBuffer(m_materialTypeBufferInputIndex, m_materialTypeBufferIndicesBuffer);
 
-            // Register the bindless read index of the Null-Texture
-            m_sceneMaterialSrg->SetConstant(m_nullTextureIndexInputIndex, m_nullTexture->GetImageView()->GetBindlessReadIndex());
-
+            if (m_nullTexture)
+            {
+                // Register the bindless read index of the Null-Texture
+                m_sceneMaterialSrg->SetConstant(m_nullTextureIndexInputIndex, m_nullTexture->GetImageView()->GetBindlessReadIndex());
+            }
             return true;
         }
         return false;
@@ -708,8 +710,11 @@ namespace AZ::RPI
             m_sceneTextureSamplers.Init(AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, defaultSampler);
         }
 
+        auto imageSystem = AZ::RPI::ImageSystemInterface::Get();
+        AZ_Assert(imageSystem, "ImageSystem needs to be initialized before the MaterialSystem.");
+        if (imageSystem)
         {
-            auto pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+            auto pool = imageSystem->GetSystemAttachmentPool();
             auto bindFlags = RHI::GetImageBindFlags(RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentAccess::Read);
             // create a 8x8 image with the RGBA values (0, 0, 0, 1) to use a similar behaviour as the robustness2 extension when reading a
             // null texture.
@@ -719,10 +724,16 @@ namespace AZ::RPI
             m_nullTexture = AZ::RPI::AttachmentImage::Create(
                 *pool.get(), nullImageDesc, AZ_NAME_LITERAL("MaterialNullTexture"), &nullImageClearValue, &imageViewDesc);
         }
+        m_initialized = true;
     }
 
     void MaterialSystem::Shutdown()
     {
+        if (!m_initialized)
+        {
+            return;
+        }
+
         if (m_sceneMaterialSrgShaderAsset)
         {
             AZ::Data::AssetBus::Handler::BusDisconnect(m_sceneMaterialSrgShaderAsset.GetId());
@@ -737,8 +748,15 @@ namespace AZ::RPI
             m_materialTypeBufferIndicesBuffer.reset();
         }
         m_materialTypeData.clear();
+        if (m_nullTexture)
+        {
+            m_nullTexture.reset();
+        }
+
         MaterialInstanceHandlerInterface::Unregister(this);
         Data::InstanceDatabase<Material>::Destroy();
+
+        m_initialized = false;
     }
 
 } // namespace AZ::RPI

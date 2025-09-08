@@ -484,6 +484,7 @@ namespace AZ
             m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
+            m_materialSystem.Init();
 
             // Assets aren't actually available or needed for tests, but the m_systemAssetsInitialized flag still needs to be flipped.
             m_systemAssetsInitialized = true;

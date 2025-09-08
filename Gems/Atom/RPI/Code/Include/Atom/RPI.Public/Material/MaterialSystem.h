@@ -127,6 +127,7 @@ namespace AZ::RPI
         Data::Instance<Buffer> m_materialTypeBufferIndicesBuffer;
         bool m_bufferReadIndicesDirty = false;
         bool m_sharedSamplerStatesDirty = false;
+        bool m_initialized = false;
     };
 
 } // namespace AZ::RPI
