@@ -226,7 +226,7 @@ namespace PhysX
         AZ_Warning("ArticulationLinkComponent", IsRootArticulation(), "Pose can be adjusted only for the root articulation link.");
         if (m_articulation && IsRootArticulation())
         {
-            physx::PxArticulationKinematicFlags kinematicFlag {};
+            physx::PxArticulationKinematicFlags kinematicFlag{};
             kinematicFlag.raise(physx::PxArticulationKinematicFlag::ePOSITION);
             m_articulation->setRootGlobalPose(PxMathConvert(world));
             m_articulation->updateKinematic(kinematicFlag);
@@ -268,8 +268,7 @@ namespace PhysX
             if (linkActorData)
             {
                 const auto entityId = linkActorData->GetEntityId();
-                if (auto iterator = m_sensorIndicesByEntityId.find(entityId);
-                    iterator != m_sensorIndicesByEntityId.end())
+                if (auto iterator = m_sensorIndicesByEntityId.find(entityId); iterator != m_sensorIndicesByEntityId.end())
                 {
                     iterator->second.push_back(sensor->getIndex());
                 }
@@ -352,8 +351,8 @@ namespace PhysX
             AZ::Interface<AzPhysics::SceneInterface>::Get()->AddSimulatedBody(m_attachedSceneHandle, &articulationLinkConfiguration);
         if (articulationLinkHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
-            AZ_Error("PhysX", false, "Failed to create a simulated body for the articulation link at root %s",
-                GetEntity()->GetName().c_str());
+            AZ_Error(
+                "PhysX", false, "Failed to create a simulated body for the articulation link at root %s", GetEntity()->GetName().c_str());
             return;
         }
 
@@ -392,8 +391,7 @@ namespace PhysX
                         articulationLinkConfiguration.m_angularLimitNegative, articulationLinkConfiguration.m_angularLimitPositive));
 
                     // From PhysX documentation: If the limits should be equal, use PxArticulationMotion::eLOCKED
-                    constexpr float epsilon = 1e-9;
-                    if (AZ::IsClose(limits.low, limits.high, epsilon))
+                    if (AZ::IsClose(limits.low, limits.high, AZ::Constants::FloatEpsilon))
                     {
                         inboundJoint->setMotion(physx::PxArticulationAxis::eTWIST, physx::PxArticulationMotion::eLOCKED);
                     }
@@ -408,13 +406,13 @@ namespace PhysX
                         (limits.low < 0.0 && limits.high > 0.0),
                         "The initial position of joint %s is outside joint limits, moving joint to avoid instability.",
                         thisPxLink->getName());
-                    if (limits.low > 0.0 && limits.low + epsilon < limits.high)
+                    if (limits.low > 0.0 && limits.low + AZ::Constants::FloatEpsilon < limits.high)
                     {
-                        inboundJoint->setJointPosition(physx::PxArticulationAxis::eTWIST, limits.low + epsilon);
+                        inboundJoint->setJointPosition(physx::PxArticulationAxis::eTWIST, limits.low + AZ::Constants::FloatEpsilon);
                     }
-                    else if (limits.high < 0.0 && limits.high - epsilon > limits.low)
+                    else if (limits.high < 0.0 && limits.high - AZ::Constants::FloatEpsilon > limits.low)
                     {
-                        inboundJoint->setJointPosition(physx::PxArticulationAxis::eTWIST, limits.high - epsilon);
+                        inboundJoint->setJointPosition(physx::PxArticulationAxis::eTWIST, limits.high - AZ::Constants::FloatEpsilon);
                     }
 
                     inboundJoint->setLimitParams(physx::PxArticulationAxis::eTWIST, limits);
@@ -590,8 +588,7 @@ namespace PhysX
 
     physx::PxArticulationLink* ArticulationLinkComponent::GetArticulationLink(const AZ::EntityId entityId)
     {
-        if (const auto iterator = m_articulationLinksByEntityId.find(entityId);
-            iterator != m_articulationLinksByEntityId.end())
+        if (const auto iterator = m_articulationLinksByEntityId.find(entityId); iterator != m_articulationLinksByEntityId.end())
         {
             return iterator->second;
         }
@@ -603,8 +600,7 @@ namespace PhysX
 
     const AZStd::vector<AZ::u32> ArticulationLinkComponent::GetSensorIndices(const AZ::EntityId entityId)
     {
-        if (const auto iterator = m_sensorIndicesByEntityId.find(entityId);
-            iterator != m_sensorIndicesByEntityId.end())
+        if (const auto iterator = m_sensorIndicesByEntityId.find(entityId); iterator != m_sensorIndicesByEntityId.end())
         {
             return iterator->second;
         }
@@ -857,7 +853,7 @@ namespace PhysX
         }
         return 0.0f;
     }
-    
+
     bool ArticulationLinkComponent::IsRootArticulation() const
     {
         return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
@@ -868,7 +864,11 @@ namespace PhysX
         if (sensorIndex >= m_sensorIndices.size())
         {
             AZ_ErrorOnce(
-                "Articulation Link Component", false, "Invalid sensor index (%i) for entity %s", sensorIndex, GetEntity()->GetName().c_str());
+                "Articulation Link Component",
+                false,
+                "Invalid sensor index (%i) for entity %s",
+                sensorIndex,
+                GetEntity()->GetName().c_str());
             return nullptr;
         }
 
@@ -1026,10 +1026,20 @@ namespace PhysX
     }
 
 #else
-    void ArticulationLinkComponent::Activate() {}
-    void ArticulationLinkComponent::Deactivate() {}
-    void ArticulationLinkComponent::CreateArticulation() {}
-    void ArticulationLinkComponent::DestroyArticulation() {}
-    void ArticulationLinkComponent::InitPhysicsTickHandler() {}
+    void ArticulationLinkComponent::Activate()
+    {
+    }
+    void ArticulationLinkComponent::Deactivate()
+    {
+    }
+    void ArticulationLinkComponent::CreateArticulation()
+    {
+    }
+    void ArticulationLinkComponent::DestroyArticulation()
+    {
+    }
+    void ArticulationLinkComponent::InitPhysicsTickHandler()
+    {
+    }
 #endif
 } // namespace PhysX
