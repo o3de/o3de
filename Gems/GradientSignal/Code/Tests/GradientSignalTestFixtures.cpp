@@ -11,6 +11,7 @@
 #include <Tests/GradientSignalTestHelpers.h>
 
 #include <Atom/RPI.Public/Image/ImageSystem.h>
+#include <Atom/RPI.Public/Material/MaterialSystem.h>
 #include <Atom/RPI.Public/RPISystem.h>
 #include <Common/RHI/Factory.h>
 #include <Common/RHI/Stubs.h>
@@ -123,10 +124,14 @@ namespace UnitTest
         AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
         m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
         m_imageSystem->Init(imageSystemDescriptor);
+
+        m_materialSystem = AZStd::make_unique<AZ::RPI::MaterialSystem>();
+        m_materialSystem->Init();
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
+        m_materialSystem->Shutdown();
         m_imageSystem->Shutdown();
         m_rpiSystem->Shutdown();
 

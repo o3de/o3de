@@ -21,6 +21,7 @@ namespace AZ::RPI
 {
     class RPISystem;
     class ImageSystem;
+    class MaterialSystem;
 } // namespace AZ::RPI
 
 namespace UnitTest
@@ -109,6 +110,7 @@ namespace UnitTest
         AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
         AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
         AZStd::unique_ptr<AZ::RPI::ImageSystem> m_imageSystem;
+        AZStd::unique_ptr<AZ::RPI::MaterialSystem> m_materialSystem;
     };
 
     struct GradientSignalTest

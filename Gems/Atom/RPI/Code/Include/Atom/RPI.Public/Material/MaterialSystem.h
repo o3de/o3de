@@ -119,12 +119,16 @@ namespace AZ::RPI
         Data::Asset<ShaderAsset> m_sceneMaterialSrgShaderAsset;
         Data::Instance<ShaderResourceGroup> m_sceneMaterialSrg;
 
+        RHI::ShaderInputNameIndex m_nullTextureIndexInputIndex = { "m_nullTextureIndex" };
+        Data::Instance<RPI::Image> m_nullTexture;
+
         // Texture samplers shared between all materials that use the SceneMaterialSrg
         TextureSamplerRegistry m_sceneTextureSamplers;
 
         Data::Instance<Buffer> m_materialTypeBufferIndicesBuffer;
         bool m_bufferReadIndicesDirty = false;
         bool m_sharedSamplerStatesDirty = false;
+        bool m_initialized = false;
     };
 
 } // namespace AZ::RPI
