@@ -27,16 +27,6 @@ namespace AZ::Render
 
     static const uint32_t RayTracingTlasInstanceElementSize = 64;
 
-    enum class RayTracingSubMeshBufferFlags : uint32_t
-    {
-        None = 0,
-
-        Tangent = AZ_BIT(0),
-        Bitangent = AZ_BIT(1),
-        UV = AZ_BIT(2),
-    };
-    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::Render::RayTracingSubMeshBufferFlags);
-
     enum class RayTracingSubMeshTextureFlags : uint32_t
     {
         None = 0,
