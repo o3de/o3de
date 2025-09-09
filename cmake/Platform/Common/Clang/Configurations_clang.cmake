@@ -29,11 +29,17 @@ set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-dep
 
 
 
-# A known bug in clang18 prevents __cpp_conditional_explicit from working correctly.
+# A known bug in clang18 and below prevents __cpp_conditional_explicit from working correctly.
 # see https://github.com/llvm/llvm-project/pull/70548 and other reports.
 # this causes it to evaluate #if __cpp_conditional_explicit >= 201806L as true, but
 # can trip over code that uses it, such as in AZStd::pair.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 18.0 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0)
+# It seems a bug was introduced when Clang introduced this feature, and it was fixed in clang19.
+# Clangs from before the feature was introduced would not declare __cpp_conditional_explicit and thus
+# won't run the code anyway.  Clangs after the feature was introduced but before it was fixed will
+# incorrectly evaluate the condition and run the code, but trip over the bug.  Since we know its fixed
+# in 19.0 and later, disable it for clang18 and earlier.  (This feature is not necessary for O3DE
+# to actually function)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0)
     message(STATUS "Clang 18 detected, adding workaround for __cpp_conditional_explicit bug")
     add_compile_definitions(O3DE_DISABLE_CONDITIONAL_EXPLICIT=1)
 endif()
