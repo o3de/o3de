@@ -253,7 +253,7 @@ namespace AZ
                     // in this single template member function
                     if constexpr (type == AttachmentType::Preserve)
                     {
-                        auto& subpassDescriptor = const_cast<RenderPass::SubpassDescriptor&>(m_descriptor->m_subpassDescriptors[subpassIndex]);
+                        const auto& subpassDescriptor = m_descriptor->m_subpassDescriptors[subpassIndex];
                         AZStd::vector<uint32_t>& attachmentReferenceList = subpassInfo.m_preserveAttachments;
                         attachmentReferenceList.insert(
                             attachmentReferenceList.end(),

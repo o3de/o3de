@@ -256,7 +256,7 @@ namespace ImageProcessingAtom
             return STRING_OUTCOME_ERROR(AZStd::string::format("TextureSettings preset [%s] does not have override for platform [%s]",
                 baseTextureSettings.m_preset.GetCStr(), platformName.c_str()));
         }
-        AZ::DataPatch& platformOverride = const_cast<AZ::DataPatch&>(overrideIter->second);
+        const AZ::DataPatch& platformOverride = overrideIter->second;
 
         // Update settings instance with override values.
         if (platformOverride.IsData())
