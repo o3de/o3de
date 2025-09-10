@@ -18,7 +18,7 @@ int GetClusterId()
 {
     // TODO(CLAS): Uncomment this once DXC can successfully compile this function
 #if 1
-    return 0;
+    return -1;
 #else
     // Only SPIRV support for now; otherwise it will be initialized to zero as a static variable
     [[vk::ext_extension("SPV_NV_cluster_acceleration_structure")]]
@@ -85,7 +85,7 @@ VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primiti
             clusterMeshInfo.m_bitangentBufferIndex = clusterInfo.m_bitangentBindlessReadIndex;
         }
 
-        // Overwrite mesh strides with cluster stride
+        // Overwrite mesh strides with cluster strides
         clusterMeshInfo.m_indexBufferByteStride = clusterInfo.m_indexStride;
         clusterMeshInfo.m_positionBufferByteStride = clusterInfo.m_positionStride;
         clusterMeshInfo.m_normalBufferByteStride = clusterInfo.m_normalStride;
@@ -94,14 +94,14 @@ VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primiti
         clusterMeshInfo.m_tangentBufferByteStride = clusterInfo.m_tangentStride;
         clusterMeshInfo.m_bitangentBufferByteStride = clusterInfo.m_bitangentStride;
 
-        // Add cluster offset to mesh offset
-        clusterMeshInfo.m_indexBufferByteOffset += clusterInfo.m_indexOffset;
-        clusterMeshInfo.m_positionBufferByteOffset += clusterInfo.m_positionOffset;
-        clusterMeshInfo.m_normalBufferByteOffset += clusterInfo.m_normalOffset;
-        clusterMeshInfo.m_uv0BufferByteOffset += clusterInfo.m_uv0Offset;
-        clusterMeshInfo.m_uv1BufferByteOffset += clusterInfo.m_uv1Offset;
-        clusterMeshInfo.m_tangentBufferByteOffset += clusterInfo.m_tangentOffset;
-        clusterMeshInfo.m_bitangentBufferByteOffset += clusterInfo.m_bitangentOffset;
+        // Overwrite mesh offsets with cluster offsets
+        clusterMeshInfo.m_indexBufferByteOffset = clusterInfo.m_indexOffset;
+        clusterMeshInfo.m_positionBufferByteOffset = clusterInfo.m_positionOffset;
+        clusterMeshInfo.m_normalBufferByteOffset = clusterInfo.m_normalOffset;
+        clusterMeshInfo.m_uv0BufferByteOffset = clusterInfo.m_uv0Offset;
+        clusterMeshInfo.m_uv1BufferByteOffset = clusterInfo.m_uv1Offset;
+        clusterMeshInfo.m_tangentBufferByteOffset = clusterInfo.m_tangentOffset;
+        clusterMeshInfo.m_bitangentBufferByteOffset = clusterInfo.m_bitangentOffset;
 
         LoadInterpolatedVertexData(clusterMeshInfo, primitiveIndex, barycentrics, vertex);
     }

@@ -71,7 +71,9 @@ struct RayTracingClasBuildTriangleClusterInfo
     uint64_t m_opacityMicromapIndexBufferAddress;
 };
 
-// Stores mesh-local per-cluster offsets
+// Stores per-cluster buffer information, similar to the MeshInfo struct (MeshInfo.azsli).
+// When a cluster is hit in a ray tracing hit shader, these values are used instead of the values from the MeshInfo struct to read the
+// vertex data.
 struct RayTracingClasClusterOffsetInfo
 {
     uint m_indexBindlessReadIndex;
@@ -108,23 +110,27 @@ inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangle
 {
     RayTracingClasBuildTriangleClusterInfo targetInfo;
 
+    // Since bit-packed struct fields (eg. "uint m_triangleCount : 9;") cannot be used in azsl, the struct data nees to be manually packed
+    // into the format required by the graphics API.
+
     targetInfo.m_clusterID = sourceInfo.m_clusterID;
     targetInfo.m_clusterFlags = (uint)sourceInfo.m_clusterFlags;
     targetInfo.m_vertexAndIndexConfiguration =
-        (sourceInfo.m_triangleCount                   & 0x1FF) |
-        ((sourceInfo.m_vertexCount                    & 0x1FF) <<  9) |
-        ((sourceInfo.m_positionTruncateBitCount       & 0x3F)  << 18) |
-        (((uint)sourceInfo.m_indexType                & 0xF)   << 24) |
-        (((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28);
+        (sourceInfo.m_triangleCount                   & 0x1FF) |        // 9 bits [0-8]
+        ((sourceInfo.m_vertexCount                    & 0x1FF) <<  9) | // 9 bits [9-17]
+        ((sourceInfo.m_positionTruncateBitCount       & 0x3F)  << 18) | // 6 bits [18-23]
+        (((uint)sourceInfo.m_indexType                & 0xF)   << 24) | // 4 bits [24-27]
+        (((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28);  // 4 bits [28-31]
     targetInfo.m_baseGeometryIndexAndGeometryFlags =
-        (sourceInfo.m_baseGeometryIndex    & 0xFFFFFF) |
-        (((uint)sourceInfo.m_geometryFlags & 0x7) << 29);
+        (sourceInfo.m_baseGeometryIndex    & 0xFFFFFF) |  // 24 bits [0-23]
+                                                          //  5 bits [24-28] (reserved)
+        (((uint)sourceInfo.m_geometryFlags & 0x7) << 29); //  3 bits [29-31]
     targetInfo.m_indexAndVertexBufferStride =
-        (sourceInfo.m_indexBufferStride   & 0xFFFF) |
-        ((sourceInfo.m_vertexBufferStride & 0xFFFF) << 16);
+        (sourceInfo.m_indexBufferStride   & 0xFFFF) |        // 16 bits [0-15]
+        ((sourceInfo.m_vertexBufferStride & 0xFFFF) << 16);  // 16 bits [16-31]
     targetInfo.m_geometryIndexAndOpacityIndexIndexBufferStride =
-        (sourceInfo.m_geometryIndexAndFlagsBufferStride & 0xFFFF) |
-        ((sourceInfo.m_opacityMicromapIndexBufferStride & 0xFFFF) << 16);
+        (sourceInfo.m_geometryIndexAndFlagsBufferStride & 0xFFFF) |       // 16 bits [0-15]
+        ((sourceInfo.m_opacityMicromapIndexBufferStride & 0xFFFF) << 16); // 16 bits [16-31]
     targetInfo.m_indexBufferAddress = sourceInfo.m_indexBufferAddress;
     targetInfo.m_vertexBufferAddress = sourceInfo.m_vertexBufferAddress;
     targetInfo.m_geometryIndexAndFlagsBufferAddress = sourceInfo.m_geometryIndexAndFlagsBufferAddress;

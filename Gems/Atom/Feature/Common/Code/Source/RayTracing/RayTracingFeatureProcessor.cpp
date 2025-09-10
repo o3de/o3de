@@ -294,6 +294,13 @@ namespace AZ
                 if (subMesh.IsClusterMesh())
                 {
                     AZ_Assert(m_rayTracingClusterAccelerationStructureEnabled, "Ray tracing cluster acceleration structure not supported");
+
+                    [[maybe_unused]] auto meshInfoEntry = m_meshFeatureProcessor->GetMeshInfoEntry(subMesh.m_meshInfoHandle);
+                    AZ_Assert(meshInfoEntry, "MeshInfoEntry for the given MeshInfoHandle not found");
+                    AZ_Assert(
+                        meshInfoEntry->m_clusterOffsetBuffer,
+                        "When a Cluster-BLAS descriptor is assigned to a ray tracing SubMesh, a cluster offset buffer also needs to be "
+                        "present in the corresponding MeshInfoEntry");
                 }
 
                 // add to the list of global subMeshIndices, which will be stored in the Mesh
