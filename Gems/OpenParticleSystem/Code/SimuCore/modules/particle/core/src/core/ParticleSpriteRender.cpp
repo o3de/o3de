@@ -11,6 +11,7 @@
 #include "particle/core/ParticlePool.h"
 #include "particle/core/ParticleDriver.h"
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Constants.h"
 
 namespace SimuCore::ParticleCore {
     ParticleSpriteRender::~ParticleSpriteRender()
@@ -21,18 +22,18 @@ namespace SimuCore::ParticleCore {
         gDriver = nullptr;
     }
 
-    uint32_t ParticleSpriteRender::DataSize() const
+    AZ::u32 ParticleSpriteRender::DataSize() const
     {
         return sizeof(SpriteConfig);
     }
 
-    static void UpdateParticle(const ParticlePool& pool, const SpriteConfig& config, const WorldInfo& world, std::vector<ParticleSpriteVertex>& vb,
-            std::vector<Vector3>& positionBuffer, const GpuInstance& buffer, uint8_t* gDriver)
+    static void UpdateParticle(const ParticlePool& pool, const SpriteConfig& config, const WorldInfo& world, AZStd::vector<ParticleSpriteVertex>& vb,
+            AZStd::vector<Vector3>& positionBuffer, const GpuInstance& buffer, AZ::u8* gDriver)
     {
         AZ_PROFILE_SCOPE(AzCore, "UpdateParticle");
-        pool.RenderAll([&config, &world, &vb, &positionBuffer, &buffer, gDriver](const Particle* particleData, uint32_t begin, uint32_t end) {
-            const auto trans = world.emitterTransform.Inverse();
-            for (uint32_t index = begin; index < end; ++index) {
+        pool.RenderAll([&config, &world, &vb, &positionBuffer, &buffer, gDriver](const Particle* particleData, AZ::u32 begin, AZ::u32 end) {
+            const auto trans = world.emitterTransform.GetInverse();
+            for (AZ::u32 index = begin; index < end; ++index) {
                 const auto& particle = particleData[index];
                 ParticleSpriteVertex& particleVertex = vb[index];
                 if (particle.hasLightEffect) {
@@ -44,33 +45,36 @@ namespace SimuCore::ParticleCore {
                 particleVertex.up = Vector4(world.cameraUp, 0.f);
 
                 Vector3 vel = particle.velocity;
-                if (vel.IsEqual(VEC3_ZERO)) {
+                if (vel.IsClose(Vector3::CreateZero())) {
                     particleVertex.velocity = Vector4(vel, 0.f);
                 } else {
-                    particleVertex.velocity = Vector4(vel.Normalize(), 0.f);
+                    particleVertex.velocity = Vector4(vel.GetNormalized(), 0.f);
                 }
 
-                uint32_t width = std::max(static_cast<uint32_t>(std::floor(config.subImageSize.GetX())), 1u);
+                AZ::u32 width = std::max(static_cast<AZ::u32>(std::floor(config.subImageSize.GetX())), 1u);
                 particleVertex.subuv = Vector4(config.subImageSize.GetX(), config.subImageSize.GetY(),
                         static_cast<float>((particle.subUVFrame % width) / config.subImageSize.GetX()),
                         static_cast<float>((particle.subUVFrame / width) / config.subImageSize.GetY()));
-                Vector3 initAxis(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-                if (config.facing == Facing::CUSTOM && initAxis.IsEqual(VEC3_ZERO)) {
+                Vector3 initAxis(particle.rotation.GetX(), particle.rotation.GetY(), particle.rotation.GetZ());
+                if (config.facing == Facing::CUSTOM && initAxis.IsClose(Vector3::CreateZero()))
+                {
                     particleVertex.initRotation = Vector4(initAxis, 0.f);
-                } else {
+                }
+                else {
                     particleVertex.initRotation = particle.rotation;
                 }
-                Vector3 rotateAxis(particle.rotationVector.x, particle.rotationVector.y, particle.rotationVector.z);
-                particleVertex.rotationVector = rotateAxis.IsEqual(VEC3_ZERO) ? Vector4(rotateAxis, 0.f) :
-                                                Vector4(rotateAxis, Math::AngleToRadians(particle.rotationVector.w));
+                Vector3 rotateAxis(particle.rotationVector.GetX(), particle.rotationVector.GetY(), particle.rotationVector.GetZ());
+                particleVertex.rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
+                    ? Vector4(rotateAxis, 0.f)
+                    : Vector4(rotateAxis, AZ::DegToRad(particle.rotationVector.GetW()));
             }
 
             BufferUpdate info = {};
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = (end - begin) * static_cast<uint32_t>(sizeof(ParticleSpriteVertex));
+            info.size = (end - begin) * static_cast<AZ::u32>(sizeof(ParticleSpriteVertex));
             info.offset = sizeof(ParticleSpriteVertex) * begin;
-            info.data = reinterpret_cast<const uint8_t*>(vb.data()) + info.offset;
+            info.data = reinterpret_cast<const AZ::u8*>(vb.data()) + info.offset;
             ParticleDriver::bufferUpdateFn(gDriver, info, buffer);
         });
     }
@@ -87,19 +91,19 @@ namespace SimuCore::ParticleCore {
             ParticleDriver::bufferDestroyFn(gDriver, bufferView.buffer);
 
             BufferCreate info = {};
-            info.size = particleSize * static_cast<uint32_t>(sizeof(ParticleSpriteVertex));
+            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleSpriteVertex));
             info.data = nullptr; //must be nullptr here to avoid data copy
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = particleSize * static_cast<uint32_t>(sizeof(ParticleSpriteVertex));
+            bufferView.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleSpriteVertex));
             bufferView.stride = sizeof(ParticleSpriteVertex);
         }
         UpdateParticle(pool, config, world, vb, item.positionBuffer, bufferView.buffer, gDriver);
     }
 
-    void ParticleSpriteRender::Render(const uint8_t* data, [[maybe_unused]] const BaseInfo& emitterInfo, uint8_t* driver, const ParticlePool& pool,
+    void ParticleSpriteRender::Render(const AZ::u8* data, [[maybe_unused]] const BaseInfo& emitterInfo, AZ::u8* driver, const ParticlePool& pool,
         const WorldInfo& world, DrawItem& item)
     {
         AZ_PROFILE_SCOPE(AzCore, "ParticleSpriteRender::Render");

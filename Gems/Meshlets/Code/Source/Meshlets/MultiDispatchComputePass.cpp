@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/DevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -89,7 +89,7 @@ namespace AZ
             */
         }
 
-        void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::DeviceDispatchItem*>& dispatchItems)
+        void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems)
         {
             for (auto& dispatchItem : dispatchItems)
             {
@@ -112,22 +112,17 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            for (const RHI::DeviceDispatchItem* dispatchItem : m_dispatchItems)
+            // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
+            // and sends them to the command list ahead of the dispatch.
+            // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
+            SetSrgsForDispatch(context);
+
+            auto it = m_dispatchItems.begin();
+            AZStd::advance(it, context.GetSubmitRange().m_startIndex);
+
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
             {
-                // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
-                // and sends them to the command list ahead of the dispatch.
-                // This includes the PerView, PerScene and PerPass srgs.
-                SetSrgsForDispatch(context);
-
-                // In a similar way, add the dispatch high frequencies srgs.
-                for (uint32_t srg = 0; srg < dispatchItem->m_shaderResourceGroupCount; ++srg)
-                {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
-                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
-                }
-
-                // submit the dispatch
-                commandList->Submit(*dispatchItem);
+                commandList->Submit((*it)->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
 
             // Clear the dispatch items. They will need to be re-populated next frame

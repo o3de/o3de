@@ -214,7 +214,7 @@ namespace OpenParticle
         return assetPathString;
     }
 
-    void ParticleComponentController::SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath)
+    void ParticleComponentController::SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath)
     {
         Deregister();
         if (m_featureProcessor != nullptr && m_configuration.m_particleAsset.GetId().IsValid())

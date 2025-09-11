@@ -41,12 +41,12 @@ namespace OpenParticle
             AZ_TYPE_INFO(OpenParticle::ParticleArchive::EmitterInfo, "{D3C0616F-D317-4F76-9191-BB2DA61332C4}");
             static void Reflect(AZ::ReflectContext* context);
 
-            uint32_t m_config = 0;
-            AZStd::pair<AZ::Uuid, uint32_t> m_render;
+            AZ::u32 m_config = 0;
+            AZStd::pair<AZ::Uuid, AZ::u32> m_render;
             AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
-            AZStd::vector<AZStd::tuple<AZ::Uuid, uint32_t>> m_effectors;
+            AZStd::vector<AZStd::tuple<AZ::Uuid, AZ::u32>> m_effectors;
             SimuCore::ParticleCore::MeshSampleType m_meshSampleType;
         };
 
@@ -82,10 +82,10 @@ namespace OpenParticle
         void Reset();
 
         AZ::SerializeContext* m_serializeContext = nullptr;
-        uint32_t m_systemConfig = 0;
-        uint32_t m_preWarm = 0;
+        AZ::u32 m_systemConfig = 0;
+        AZ::u32 m_preWarm = 0;
         AZStd::vector<EmitterInfo> m_emitterInfos;
-        AZStd::unordered_map<uint32_t, AZStd::vector<uint8_t>> m_buffers;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u8>> m_buffers;
     };
 
 } // namespace OpenParticle

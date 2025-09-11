@@ -9,7 +9,7 @@
 #include "particle/core/ParticleRandom.h"
 
 namespace SimuCore::ParticleCore {
-    ParticleRandom::ParticleRandom(float min, float max, const RandomTickMode& mode, uint32_t maxParticleNum)
+    ParticleRandom::ParticleRandom(float min, float max, const RandomTickMode& mode, AZ::u32 maxParticleNum)
             : minRange(min), maxRange(max), tickMode(mode)
     {
         this->realCacheSize = std::min(MAX_CACHE_SIZE, maxParticleNum);
@@ -41,7 +41,7 @@ namespace SimuCore::ParticleCore {
         return RandomTick(particle.id % realCacheSize);
     }
 
-    float ParticleRandom::RandomTick(uint64_t index)
+    float ParticleRandom::RandomTick(AZ::u64 index)
     {
         if (tickMode == RandomTickMode::ONCE) {
             if (sampler.needRegenerate) {

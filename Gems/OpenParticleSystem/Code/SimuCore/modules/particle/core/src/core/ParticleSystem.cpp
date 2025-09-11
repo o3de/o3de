@@ -27,7 +27,7 @@ namespace SimuCore::ParticleCore {
         return emitter;
     }
 
-    ParticleEmitter* ParticleSystem::AddEmitter(uint32_t cfg)
+    ParticleEmitter* ParticleSystem::AddEmitter(AZ::u32 cfg)
     {
         auto emitter = new ParticleEmitter(
             cfg,
@@ -49,7 +49,7 @@ namespace SimuCore::ParticleCore {
         delete emitter;
     }
 
-    void ParticleSystem::RemoveEmitter(uint32_t emitterId)
+    void ParticleSystem::RemoveEmitter(AZ::u32 emitterId)
     {
         auto iter = allEmitters.find(emitterId);
         if (iter != allEmitters.end()) {
@@ -58,7 +58,7 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    ParticleEmitter* ParticleSystem::GetEmitter(uint32_t emitterId)
+    ParticleEmitter* ParticleSystem::GetEmitter(AZ::u32 emitterId)
     {
         auto iter = allEmitters.find(emitterId);
         if (iter == allEmitters.end()) {
@@ -67,17 +67,17 @@ namespace SimuCore::ParticleCore {
         return iter->second;
     }
 
-    const std::unordered_map<uint32_t, ParticleEmitter*> ParticleSystem::GetAllEmitters() const
+    const AZStd::unordered_map<AZ::u32, ParticleEmitter*> ParticleSystem::GetAllEmitters() const
     {
         return allEmitters;
     }
 
-    const std::vector<ParticleEmitter*> ParticleSystem::GetVisibleEmitters() const
+    const AZStd::vector<ParticleEmitter*> ParticleSystem::GetVisibleEmitters() const
     {
         return visibleEmitters;
     }
 
-    void ParticleSystem::SetLODs(const std::vector<ParticleCore::LevelsOfDetail>& levelOfDetails)
+    void ParticleSystem::SetLODs(const AZStd::vector<ParticleCore::LevelsOfDetail>& levelOfDetails)
     {
         lods = levelOfDetails;
     }
@@ -95,7 +95,7 @@ namespace SimuCore::ParticleCore {
         return curvePtr;
     }
 
-    void ParticleSystem::AddRandom(float min, float max, const RandomTickMode& mode, uint32_t maxParticleNum)
+    void ParticleSystem::AddRandom(float min, float max, const RandomTickMode& mode, AZ::u32 maxParticleNum)
     {
         ParticleDistribution* randomPtr = new ParticleRandom(min, max, mode, maxParticleNum);
         (void)distribution[DistributionType::RANDOM].emplace_back(randomPtr);
@@ -106,22 +106,22 @@ namespace SimuCore::ParticleCore {
         return dataPool;
     }
 
-    uint8_t* ParticleSystem::Data(uint32_t size, uint32_t index)
+    AZ::u8* ParticleSystem::Data(AZ::u32 size, AZ::u32 index)
     {
         return dataPool.Data(size, index);
     }
 
-    const uint8_t* ParticleSystem::Data(uint32_t size, uint32_t index) const
+    const AZ::u8* ParticleSystem::Data(AZ::u32 size, AZ::u32 index) const
     {
         return dataPool.Data(size, index);
     }
 
-    void ParticleSystem::EmplaceData(uint32_t stride, const uint8_t* data, uint32_t dataSize)
+    void ParticleSystem::EmplaceData(AZ::u32 stride, const AZ::u8* data, AZ::u32 dataSize)
     {
         dataPool.EmplaceData(stride, data, dataSize);
     }
 
-    void ParticleSystem::SetConfig(uint32_t data)
+    void ParticleSystem::SetConfig(AZ::u32 data)
     {
         config = data;
         SimuCore::JobSystem& jobsystem = SimuCore::JobSystem::GetInstance();
@@ -132,9 +132,9 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    std::vector<RenderType> ParticleSystem::GetRenderTypes() const
+    AZStd::vector<RenderType> ParticleSystem::GetRenderTypes() const
     {
-        std::vector<RenderType> types;
+        AZStd::vector<RenderType> types;
         for (auto& emitter : allEmitters) {
             auto type = emitter.second->GetRenderType();
             if (type == RenderType::UNDEFINED) {
@@ -145,7 +145,7 @@ namespace SimuCore::ParticleCore {
         return types;
     }
 
-    uint32_t ParticleSystem::GetConfig() const
+    AZ::u32 ParticleSystem::GetConfig() const
     {
         return config;
     }
@@ -196,13 +196,13 @@ namespace SimuCore::ParticleCore {
 
         if (eventPool.inheritances.size() != emitterIdentifier) {
             eventPool.inheritances.clear();
-            eventPool.inheritances.resize(emitterIdentifier, std::unordered_map<uint64_t, InheritanceInfo>());
+            eventPool.inheritances.resize(emitterIdentifier, AZStd::unordered_map<AZ::u64, InheritanceInfo>());
         }
-        for (uint32_t i = 0; i < emitterIdentifier; i++) {
+        for (AZ::u32 i = 0; i < emitterIdentifier; i++) {
             eventPool.inheritances[i].clear();
         }
 
-        std::vector<float> dts;
+        AZStd::vector<float> dts;
         for (auto emitter : visibleEmitters) {
             dts.emplace_back(emitter->Simulate(delta));
         }
@@ -217,8 +217,17 @@ namespace SimuCore::ParticleCore {
     void ParticleSystem::UpdateWorldInfo(const Transform& cameraTrans,
         const Transform& systemTrans, const Vector3& worldFront)
     {
-        currentDistance = (cameraTrans.translation - systemTrans.translation).Length();
-        for (auto& emitter : allEmitters) {
+        currentDistance = (cameraTrans.GetTranslation() - systemTrans.GetTranslation()).GetLengthSq();
+        if (currentDistance < AZ::Constants::FloatEpsilon) {
+            currentDistance = 0.0f;
+        }
+        else
+        {
+            currentDistance = std::sqrt(currentDistance);
+        }
+
+        for (auto& emitter : allEmitters)
+        {
             emitter.second->SetEmitterTransform(systemTrans);
             emitter.second->SetWorldFront(worldFront);
         }
@@ -227,7 +236,7 @@ namespace SimuCore::ParticleCore {
     void ParticleSystem::CalculateVisibleEmitters()
     {
         visibleEmitters.clear();
-        std::vector<std::pair<ParticleEmitter*, uint32_t>> renderSortInfo;
+        AZStd::vector<std::pair<ParticleEmitter*, AZ::u32>> renderSortInfo;
         for (auto& lod : lods) {
             if (currentDistance > lod.distance) {
                 continue;
@@ -248,8 +257,8 @@ namespace SimuCore::ParticleCore {
         }
 
         std::sort(renderSortInfo.begin(), renderSortInfo.end(),
-            [](const std::pair<ParticleEmitter*, uint32_t>& sortInfo1,
-                const std::pair<ParticleEmitter*, uint32_t>& sortInfo2) {
+            [](const std::pair<ParticleEmitter*, AZ::u32>& sortInfo1,
+                const std::pair<ParticleEmitter*, AZ::u32>& sortInfo2) {
             return sortInfo1.second < sortInfo2.second;
         });
 
@@ -263,12 +272,12 @@ namespace SimuCore::ParticleCore {
         preWarm = dataPool.AllocT(warmUp);
     }
 
-    uint32_t ParticleSystem::GetPreWarm() const
+    AZ::u32 ParticleSystem::GetPreWarm() const
     {
         return preWarm;
     }
 
-    void ParticleSystem::SetPreWarm(uint32_t warmUp)
+    void ParticleSystem::SetPreWarm(AZ::u32 warmUp)
     {
         preWarm = warmUp;
     }
@@ -283,11 +292,11 @@ namespace SimuCore::ParticleCore {
         if (warmUp == nullptr) {
             return;
         }
-        if (warmUp->tickCount == 0 || warmUp->tickDelta <= Math::EPSLON) {
+        if (warmUp->tickCount == 0 || warmUp->tickDelta <= AZ::Constants::FloatEpsilon) {
             return;
         }
-        for (uint32_t tickIndex = 0; tickIndex < warmUp->tickCount; tickIndex++) {
-            std::unordered_map<uint32_t, float> dts;
+        for (AZ::u32 tickIndex = 0; tickIndex < warmUp->tickCount; tickIndex++) {
+            AZStd::unordered_map<AZ::u32, float> dts;
             for (auto emitter : allEmitters) {
                 (void)dts.emplace(emitter.first, emitter.second->Simulate(warmUp->tickDelta));
             }
@@ -314,9 +323,9 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    uint32_t ParticleSystem::GetMaxParticleNum()
+    AZ::u32 ParticleSystem::GetMaxParticleNum()
     {
-        uint32_t maxNum{0};
+        AZ::u32 maxNum{0};
         for (const auto& emitter : allEmitters) {
             maxNum = std::max(emitter.second->GetEmitterConfig()->maxSize, maxNum);
         }

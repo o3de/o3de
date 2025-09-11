@@ -15,8 +15,8 @@ namespace SimuCore::ParticleCore {
         if (!data->whetherSendEvent) {
             return;
         }
-        uint64_t key = (static_cast<uint64_t>(info.currentEmitter) << 32) +
-            static_cast<uint64_t>(ParticleEventType::UPDATE_LOCATION);
+        AZ::u64 key = (static_cast<AZ::u64>(info.currentEmitter) << 32) +
+            static_cast<AZ::u64>(ParticleEventType::UPDATE_LOCATION);
         auto& events = info.systemEventPool->events[key];
         ForEach(info.particleBuffer, info.begin, info.alive, [/*&info,*/ &events](Particle& particle) {
 
@@ -41,8 +41,8 @@ namespace SimuCore::ParticleCore {
         if (!data->whetherSendEvent) {
             return;
         }
-        uint64_t key = (static_cast<uint64_t>(info.currentEmitter) << 32) +
-            static_cast<uint64_t>(ParticleEventType::UPDATE_DEATH);
+        AZ::u64 key = (static_cast<AZ::u64>(info.currentEmitter) << 32) +
+            static_cast<AZ::u64>(ParticleEventType::UPDATE_DEATH);
         auto& events = info.systemEventPool->events[key];
         ForEach(info.particleBuffer, info.begin, info.alive, [&info, &events](const Particle& particle) {
             if (particle.currentLife >= particle.lifeTime) {
@@ -62,8 +62,8 @@ namespace SimuCore::ParticleCore {
         if (!data->whetherSendEvent) {
             return;
         }
-        uint64_t key = (static_cast<uint64_t>(info.currentEmitter) << 32) +
-            static_cast<uint64_t>(ParticleEventType::UPDATE_COLLISION);
+        AZ::u64 key = (static_cast<AZ::u64>(info.currentEmitter) << 32) +
+            static_cast<AZ::u64>(ParticleEventType::UPDATE_COLLISION);
         auto& events = info.systemEventPool->events[key];
         ForEach(info.particleBuffer, info.begin, info.alive, [/* &info,*/ &events](Particle& particle)
             {

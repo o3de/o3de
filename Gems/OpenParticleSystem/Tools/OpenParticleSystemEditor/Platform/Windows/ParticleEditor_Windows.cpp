@@ -53,7 +53,7 @@ namespace Platform
         RECT r;
         if (GetWindowRect(reinterpret_cast<HWND>(window), &r))
         {
-            return AzFramework::WindowSize{aznumeric_cast<uint32_t>(r.right - r.left), aznumeric_cast<uint32_t>(r.bottom - r.top)};
+            return AzFramework::WindowSize{aznumeric_cast<AZ::u32>(r.right - r.left), aznumeric_cast<AZ::u32>(r.bottom - r.top)};
         }
         else
         {

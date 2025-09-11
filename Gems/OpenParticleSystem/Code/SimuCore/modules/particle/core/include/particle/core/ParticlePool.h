@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <vector>
+#include <AzCore/std/containers/vector.h>
 #include <algorithm>
 #include "particle/core/Particle.h"
 #include "core/jobsystem/JobSystem.h"
@@ -16,23 +16,23 @@
 namespace SimuCore::ParticleCore {
 
     // Regarding 64KB as min simulation group size to avoid too much thread context switch.
-    constexpr uint32_t IDEAL_GROUP_COUNT{64 * 1024 / sizeof(Particle)};
+    constexpr AZ::u32 IDEAL_GROUP_COUNT{64 * 1024 / sizeof(Particle)};
 
     class ParticlePool {
     public:
         ParticlePool() : jobSystem(JobSystem::GetInstance()), maxGroup(jobSystem.GetThreadCount() + 1) {};
         ~ParticlePool() = default;
 
-        void Resize(uint32_t size);
+        void Resize(AZ::u32 size);
 
-        void Recycle(uint32_t beginPos = 0);
+        void Recycle(AZ::u32 beginPos = 0);
 
         void Reset();
 
         template<typename Func>
-        void ParallelSpawn(uint32_t num, uint32_t& begin, Func&& func)
+        void ParallelSpawn(AZ::u32 num, AZ::u32& begin, Func&& func)
         {
-            uint32_t old = alive;
+            AZ::u32 old = alive;
             begin = old;
             alive = std::min(alive + num, maxSize);
 
@@ -41,19 +41,19 @@ namespace SimuCore::ParticleCore {
                 return;
             }
             JobSystem::Counter ctx;
-            uint32_t groupNum;
-            uint32_t countPerGroup;
-            uint32_t lastGroupCount;
+            AZ::u32 groupNum;
+            AZ::u32 countPerGroup;
+            AZ::u32 lastGroupCount;
             std::tie(groupNum, countPerGroup, lastGroupCount) = CalcGroup(count);
-            for (uint32_t group = 0; group < groupNum; group++) {
+            for (AZ::u32 group = 0; group < groupNum; group++) {
                 jobSystem.AddJob(ctx, [this, old, func, group, countPerGroup]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = group * countPerGroup + old;
+                    AZ::u32 start = group * countPerGroup + old;
                     func(particles.data(), start, start + countPerGroup, alive);
                 });
             }
             if (lastGroupCount > 0) {
                 jobSystem.AddJob(ctx, [this, old, func, groupNum, countPerGroup, lastGroupCount]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = groupNum * countPerGroup + old;
+                    AZ::u32 start = groupNum * countPerGroup + old;
                     func(particles.data(), start, start + lastGroupCount, alive);
                 });
             }
@@ -61,26 +61,26 @@ namespace SimuCore::ParticleCore {
         }
 
         template<typename Func>
-        void ParallelUpdate(uint32_t begin, Func&& func)
+        void ParallelUpdate(AZ::u32 begin, Func&& func)
         {
             auto count = alive - begin;
             if (count == 0) {
                 return;
             }
             JobSystem::Counter ctx;
-            uint32_t groupNum;
-            uint32_t countPerGroup;
-            uint32_t lastGroupCount;
+            AZ::u32 groupNum;
+            AZ::u32 countPerGroup;
+            AZ::u32 lastGroupCount;
             std::tie(groupNum, countPerGroup, lastGroupCount) = CalcGroup(count);
-            for (uint32_t group = 0; group < groupNum; group++) {
+            for (AZ::u32 group = 0; group < groupNum; group++) {
                 jobSystem.AddJob(ctx, [this, begin, func, group, countPerGroup]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = group * countPerGroup + begin;
+                    AZ::u32 start = group * countPerGroup + begin;
                     func(particles.data(), start, start + countPerGroup);
                 });
             }
             if (lastGroupCount > 0) {
                 jobSystem.AddJob(ctx, [this, begin, func, groupNum, countPerGroup, lastGroupCount]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = groupNum * countPerGroup + begin;
+                    AZ::u32 start = groupNum * countPerGroup + begin;
                     func(particles.data(), start, start + lastGroupCount);
                 });
             }
@@ -88,7 +88,7 @@ namespace SimuCore::ParticleCore {
         }
 
         template<typename Func>
-        void Event(uint32_t begin, Func&& func)
+        void Event(AZ::u32 begin, Func&& func)
         {
             func(particles.data(), begin, alive);
         }
@@ -102,19 +102,19 @@ namespace SimuCore::ParticleCore {
 
             const auto& particleToRender = ParticleData();
             JobSystem::Counter ctx;
-            uint32_t groupNum;
-            uint32_t countPerGroup;
-            uint32_t lastGroupCount;
+            AZ::u32 groupNum;
+            AZ::u32 countPerGroup;
+            AZ::u32 lastGroupCount;
             std::tie(groupNum, countPerGroup, lastGroupCount) = CalcGroup(alive);
-            for (uint32_t group = 0; group < groupNum; group++) {
+            for (AZ::u32 group = 0; group < groupNum; group++) {
                 jobSystem.AddJob(ctx, [func, group, &particleToRender, countPerGroup]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = group * countPerGroup;
+                    AZ::u32 start = group * countPerGroup;
                     func(particleToRender.data(), start, start + countPerGroup);
                 });
             }
             if (lastGroupCount > 0) {
                 jobSystem.AddJob(ctx, [func, groupNum, lastGroupCount, countPerGroup, &particleToRender]([[maybe_unused]]JobSystem::JobInfo jobInfo) {
-                    uint32_t start = groupNum * countPerGroup;
+                    AZ::u32 start = groupNum * countPerGroup;
                     func(particleToRender.data(), start, start + lastGroupCount);
                 });
             }
@@ -122,27 +122,27 @@ namespace SimuCore::ParticleCore {
         }
 
         [[nodiscard]]
-        uint32_t Size() const;
+        AZ::u32 Size() const;
 
         [[nodiscard]]
-        uint32_t Alive() const;
+        AZ::u32 Alive() const;
 
         [[nodiscard]]
-        const std::vector<Particle>& ParticleData() const;
+        const AZStd::vector<Particle>& ParticleData() const;
 
     private:
-        uint32_t alive = 0;
-        uint32_t maxSize = 0;
-        std::vector<Particle> particles;
+        AZ::u32 alive = 0;
+        AZ::u32 maxSize = 0;
+        AZStd::vector<Particle> particles;
         JobSystem& jobSystem;
-        uint32_t maxGroup;
+        AZ::u32 maxGroup;
 
         [[nodiscard]]
-        inline std::tuple<uint32_t, uint32_t, uint32_t> CalcGroup(uint32_t count) const
+        inline std::tuple<AZ::u32, AZ::u32, AZ::u32> CalcGroup(AZ::u32 count) const
         {
-            const uint32_t groupNum = std::min(count / std::min(count, IDEAL_GROUP_COUNT), maxGroup);
-            const uint32_t countPerGroup = count / groupNum;
-            const uint32_t lastGroupCount = count - groupNum * countPerGroup;
+            const AZ::u32 groupNum = std::min(count / std::min(count, IDEAL_GROUP_COUNT), maxGroup);
+            const AZ::u32 countPerGroup = count / groupNum;
+            const AZ::u32 lastGroupCount = count - groupNum * countPerGroup;
             return {groupNum, countPerGroup, lastGroupCount};
         }
     };

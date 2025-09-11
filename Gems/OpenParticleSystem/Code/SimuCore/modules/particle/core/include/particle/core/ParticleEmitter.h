@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <atomic>
-#include <vector>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/containers/vector.h>
 #include "particle/core/Particle.h"
 #include "particle/core/ParticleDataPool.h"
 #include "particle/core/ParticleDelegate.h"
@@ -24,20 +24,20 @@ namespace SimuCore::ParticleCore {
         ParticleDataPool* dataPool;
         RandomStream* stream;
         ParticleEventPool* eventPool;
-        uint32_t id;
+        AZ::u32 id;
     };
 
     template <typename T>
     struct ParticleEffectorInfo {
         T* effector;
-        uint32_t offset;
-        uint8_t* data;
+        AZ::u32 offset;
+        AZ::u8* data;
     };
 
     class ParticleEmitter {
     public:
         struct Config {
-            uint32_t maxSize = 500;
+            AZ::u32 maxSize = 500;
             float startTime = 0.f;
             float duration = 2.f;
             bool localSpace = false;
@@ -47,12 +47,12 @@ namespace SimuCore::ParticleCore {
 
         ParticleEmitter(const ParticleEmitter::Config& cfg, EmitterCreateInfo createInfo);
 
-        ParticleEmitter(uint32_t data, EmitterCreateInfo createInfo);
+        ParticleEmitter(AZ::u32 data, EmitterCreateInfo createInfo);
 
         ~ParticleEmitter();
 
         template<typename Effector>
-        ParticleEmitEffector* AddEmitterEffectorData(uint32_t data)
+        ParticleEmitEffector* AddEmitterEffectorData(AZ::u32 data)
         {
             auto rst = new ParticleEmitEffector(DataArgs<Effector>{});
             ParticleEffectorInfo<ParticleEmitEffector> info;
@@ -70,7 +70,7 @@ namespace SimuCore::ParticleCore {
         }
 
         template<typename Effector>
-        ParticleSpawnEffector* AddSpawnEffectorData(uint32_t data)
+        ParticleSpawnEffector* AddSpawnEffectorData(AZ::u32 data)
         {
             auto rst = new ParticleSpawnEffector(DataArgs<Effector>{});
             ParticleEffectorInfo<ParticleSpawnEffector> info;
@@ -88,7 +88,7 @@ namespace SimuCore::ParticleCore {
         }
 
         template<typename Effector>
-        ParticleUpdateEffector* AddUpdateEffectorData(uint32_t data)
+        ParticleUpdateEffector* AddUpdateEffectorData(AZ::u32 data)
         {
             auto rst = new ParticleUpdateEffector(DataArgs<Effector>{});
             ParticleEffectorInfo<ParticleUpdateEffector> info;
@@ -106,7 +106,7 @@ namespace SimuCore::ParticleCore {
         }
 
         template<typename Effector>
-        ParticleEventEffector* AddEventEffectorData(uint32_t data)
+        ParticleEventEffector* AddEventEffectorData(AZ::u32 data)
         {
             auto rst = new ParticleEventEffector(DataArgs<Effector>{});
             ParticleEffectorInfo<ParticleEventEffector> info;
@@ -142,7 +142,7 @@ namespace SimuCore::ParticleCore {
             return nullptr;
         }
 
-        void SetSkeletonMesh(const Vector3* bone, uint32_t bCount, const Vector3* vertex, uint32_t vCount, const uint32_t* indice, uint32_t iCount,
+        void SetSkeletonMesh(const Vector3* bone, AZ::u32 bCount, const Vector3* vertex, AZ::u32 vCount, const AZ::u32* indice, AZ::u32 iCount,
             const double* area)
         {
             boneStream = bone;
@@ -154,7 +154,7 @@ namespace SimuCore::ParticleCore {
             areaStream = area;
         }
 
-        ParticleRender* SetParticleRender(uint32_t data, RenderType type);
+        ParticleRender* SetParticleRender(AZ::u32 data, RenderType type);
 
         RenderType GetRenderType() const;
 
@@ -162,21 +162,21 @@ namespace SimuCore::ParticleCore {
 
         void Tick(float delta);
 
-        void Render(uint8_t* driver, const WorldInfo& world, DrawItem& item);
+        void Render(AZ::u8* driver, const WorldInfo& world, DrawItem& item);
 
         float EndTime() const;
 
-        const std::vector<ParticleEffectorInfo<ParticleEmitEffector>>& GetEmitEffectors() const;
+        const AZStd::vector<ParticleEffectorInfo<ParticleEmitEffector>>& GetEmitEffectors() const;
 
-        const std::vector<ParticleEffectorInfo<ParticleSpawnEffector>>& GetSpawnEffectors() const;
+        const AZStd::vector<ParticleEffectorInfo<ParticleSpawnEffector>>& GetSpawnEffectors() const;
 
-        const std::vector<ParticleEffectorInfo<ParticleUpdateEffector>>& GetUpdateEffectors() const;
+        const AZStd::vector<ParticleEffectorInfo<ParticleUpdateEffector>>& GetUpdateEffectors() const;
 
-        const std::vector<ParticleEffectorInfo<ParticleEventEffector>>& GetEventEffectors() const;
+        const AZStd::vector<ParticleEffectorInfo<ParticleEventEffector>>& GetEventEffectors() const;
 
-        const std::pair<ParticleRender*, uint32_t>& GetRender() const;
+        const std::pair<ParticleRender*, AZ::u32>& GetRender() const;
 
-        uint32_t GetConfig() const;
+        AZ::u32 GetConfig() const;
 
         ParticleEmitter::Config* GetEmitterConfig() const;
 
@@ -184,13 +184,13 @@ namespace SimuCore::ParticleCore {
 
         void SetEmitterTransform(const SimuCore::Transform& transform);
 
-        void GatherSimpleLight(std::vector<LightParticle>& outParticleLights);
+        void GatherSimpleLight(AZStd::vector<LightParticle>& outParticleLights);
 
-        const uint32_t GetEmitterId() const;
+        const AZ::u32 GetEmitterId() const;
 
         const Transform& GetEmitterTransform() const;
 
-        const uint32_t GetRenderSort() const;
+        const AZ::u32 GetRenderSort() const;
 
         void SetMeshSampleType(MeshSampleType meshType);
 
@@ -210,32 +210,32 @@ namespace SimuCore::ParticleCore {
 
     private:
         EmitSpawnParam Emmit(float delta);
-        uint32_t Spawn(const ParticleEventInfo* eventInfo, const InheritanceSpawn* inheritance, uint32_t newParticleNum);
+        AZ::u32 Spawn(const ParticleEventInfo* eventInfo, const InheritanceSpawn* inheritance, AZ::u32 newParticleNum);
 
-        uint32_t Spawn(const std::vector<ParticleEventInfo>& spawnEvents, const std::vector<InheritanceSpawn*>& spawnInheritances, uint32_t newParticleNum);
+        AZ::u32 Spawn(const AZStd::vector<ParticleEventInfo>& spawnEvents, const AZStd::vector<InheritanceSpawn*>& spawnInheritances, AZ::u32 newParticleNum);
 
         void HandleEvents(const ParticleEventInfo* eventInfo, const InheritanceSpawn* inheritance, Particle& particle);
 
         float UpdateParticle(float delta);
 
-        void Update(float delta, uint32_t begin);
+        void Update(float delta, AZ::u32 begin);
 
-        void Update(const std::vector<ParticleEventInfo>& spawnEvents, const std::vector<InheritanceSpawn*>& spawnInheritances, uint32_t begin);
+        void Update(const AZStd::vector<ParticleEventInfo>& spawnEvents, const AZStd::vector<InheritanceSpawn*>& spawnInheritances, AZ::u32 begin);
 
         void ResetRender();
 
         void ResetEffectors();
 
-        void ResetEventPool(uint32_t emitterId, ParticleEventType type);
+        void ResetEventPool(AZ::u32 emitterId, ParticleEventType type);
 
         ParticleRender* AddParticleInternal(RenderType type) const;
 
-        uint32_t config;
+        AZ::u32 config;
         ParticleDataPool* dataPool;
         RandomStream* randomStream;
         ParticleEventPool* systemEventPool;
-        uint32_t emitterID = UINT32_MAX;
-        std::atomic_uint64_t particleIdentity = 0;
+        AZ::u32 emitterID = UINT32_MAX;
+        AZStd::atomic_uint64_t particleIdentity = 0;
 
         float currTime = 0.f;
         bool started = false;
@@ -245,21 +245,21 @@ namespace SimuCore::ParticleCore {
 
         ParticlePool particlePool;
         const Vector3* boneStream = nullptr;
-        uint32_t boneCount = 0;
+        AZ::u32 boneCount = 0;
         const Vector3* vertexStream = nullptr;
-        uint32_t vertexCount = 0;
-        const uint32_t* indiceStream = nullptr;
+        AZ::u32 vertexCount = 0;
+        const AZ::u32* indiceStream = nullptr;
         const double* areaStream = nullptr;
-        uint32_t indiceCount = 0;
-        Vector3 maxExtend = VEC3_ZERO;
-        Vector3 minExtend = VEC3_ZERO;
-        Vector3 worldFront = VEC3_UNIT_Z;
-        std::unordered_map<uint32_t, InheritanceSpawn> emitterInheritances;
+        AZ::u32 indiceCount = 0;
+        Vector3 maxExtend = Vector3::CreateZero();
+        Vector3 minExtend = Vector3::CreateZero();
+        Vector3 worldFront = Vector3::CreateAxisZ();
+        AZStd::unordered_map<AZ::u32, InheritanceSpawn> emitterInheritances;
 
-        std::pair<ParticleRender*, uint32_t> render;
-        std::vector<ParticleEffectorInfo<ParticleEmitEffector>> emitEffectors;
-        std::vector<ParticleEffectorInfo<ParticleSpawnEffector>> spawnEffectors;
-        std::vector<ParticleEffectorInfo<ParticleUpdateEffector>> updateEffectors;
-        std::vector<ParticleEffectorInfo<ParticleEventEffector>> eventEffectors;
+        std::pair<ParticleRender*, AZ::u32> render;
+        AZStd::vector<ParticleEffectorInfo<ParticleEmitEffector>> emitEffectors;
+        AZStd::vector<ParticleEffectorInfo<ParticleSpawnEffector>> spawnEffectors;
+        AZStd::vector<ParticleEffectorInfo<ParticleUpdateEffector>> updateEffectors;
+        AZStd::vector<ParticleEffectorInfo<ParticleEventEffector>> eventEffectors;
     };
 }

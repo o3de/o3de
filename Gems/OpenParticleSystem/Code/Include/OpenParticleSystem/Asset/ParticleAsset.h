@@ -20,7 +20,7 @@ namespace OpenParticle
     {
         static void Reflect(AZ::ReflectContext* context);
         float m_distance;
-        AZStd::vector<uint32_t> m_emitters;
+        AZStd::vector<AZ::u32> m_emitters;
     };
 
     struct ParticleCurve

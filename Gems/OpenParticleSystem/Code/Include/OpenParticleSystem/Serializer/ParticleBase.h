@@ -123,7 +123,7 @@ namespace OpenParticle
         void CheckParam();
 
         float warmupTime = 0.f;
-        uint32_t tickCount = 0;
+        AZ::u32 tickCount = 0;
         float tickDelta = 0.f;
     };
 
@@ -132,7 +132,7 @@ namespace OpenParticle
         AZ_CLASS_ALLOCATOR(EmitterConfig, AZ::SystemAllocator, 0);
         void CheckParam();
 
-        uint32_t maxSize = 500;
+        AZ::u32 maxSize = 500;
         bool localSpace = false;
         float startTime = 0.f;
         float duration = 2.f;
@@ -144,7 +144,7 @@ namespace OpenParticle
     {
         AZ_CLASS_ALLOCATOR(SingleBurst, AZ::SystemAllocator, 0);
         float time = 0.f;
-        uint32_t count = 0;
+        AZ::u32 count = 0;
         int minCount = -1;
     };
 
@@ -163,7 +163,7 @@ namespace OpenParticle
 
         ValueObjFloat spawnRateObject = { "spawnRateObject", 10.f };
         bool isProcessSpawnRate = true;
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct EmitSpawnOverMoving
@@ -176,7 +176,7 @@ namespace OpenParticle
         bool isIgnoreSpawnRateWhenMoving = false;
         bool isProcessSpawnRate = true;
         bool isProcessBurstList = true;
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct ParticleEventHandler : public EditorParticleDocumentBusRequestsBus::Handler
@@ -192,11 +192,11 @@ namespace OpenParticle
         // EditorParticleDocumentBusRequestsBus
         void OnEmitterNameChanged(ParticleSourceData* p) override;
 
-        uint32_t emitterIndex = 0;
+        AZ::u32 emitterIndex = 0;
         AZStd::string emitterName;
         SimuCore::ParticleCore::ParticleEventType eventType = SimuCore::ParticleCore::ParticleEventType::SPAWN_LOCATION;
-        uint32_t maxEventNum = 0;
-        uint32_t emitNum = 1;
+        AZ::u32 maxEventNum = 0;
+        AZ::u32 emitNum = 1;
         bool useEventInfo = false;
     };
 
@@ -216,7 +216,7 @@ namespace OpenParticle
         AZ::Vector3 positionOffset = AZ::Vector3::CreateZero();
         AZ::Vector3 velocityRatio = AZ::Vector3::CreateZero();
         AZ::Vector4 colorRatio = AZ::Vector4( 1.f, 1.f, 1.f, 1.f );
-        uint32_t emitterIndex = 0;
+        AZ::u32 emitterIndex = 0;
         AZStd::string emitterName;
         float spawnRate = 0.0f;
         bool calculateSpawnRate = false;
@@ -255,7 +255,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjColor startColorObject = { "startColorObject", { 1.f, 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnLifetime
@@ -265,7 +265,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjFloat lifeTimeObject = { "lifeTimeObject", 1.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnLocBox
@@ -283,7 +283,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 positionObject = { "positionObject", { 0.f, 0.f, 0.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnLocSphere
@@ -340,7 +340,7 @@ namespace OpenParticle
         ValueObjFloat rotateSpeedObject = { "rotateSpeedObject", 0.f };
         AZ::Vector3 initAxis = { 0, 1, 0 };
         AZ::Vector3 rotateAxis = { 0, 1, 0 };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnSize
@@ -350,7 +350,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 sizeObject = { "sizeObject", { 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnVelDirection
@@ -361,7 +361,7 @@ namespace OpenParticle
 
         ValueObjFloat strengthObject = { "strengthObject", 1.f };
         ValueObjVec3 directionObject = { "directionObject", { 0.f, 0.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnVelSector
@@ -374,7 +374,7 @@ namespace OpenParticle
         AZ::Vector3 direction = { 0.f, 0.f, 1.f };
         float centralAngle = 60.f;
         float rotateAngle = 60.f;
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnVelCone
@@ -386,7 +386,7 @@ namespace OpenParticle
         float angle = 60.f;
         ValueObjFloat strengthObject = { "strengthObject", 1.f };
         AZ::Vector3 direction = { 0.f, 0.f, 1.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnVelSphere
@@ -396,7 +396,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 strengthObject = { "strengthObject", { 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnVelConcentrate
@@ -407,7 +407,7 @@ namespace OpenParticle
 
         ValueObjFloat rateObject = { "rateObject", 1.f };
         AZ::Vector3 centre = { 0.f, 0.f, 0.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnLightEffect
@@ -418,7 +418,7 @@ namespace OpenParticle
         ValueObjColor lightColorObject = { "lightColorObject", { 1.f, 1.f, 1.f, 1.f } };
         ValueObjFloat intensityObject = { "intensityObject", 1.f };
         ValueObjFloat radianScaleObject = { "radianScaleObject", 1.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SpawnLocationEvent
@@ -435,7 +435,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjColor currentColorObject = { "currentColorObject", { 1.f, 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateLocationEvent
@@ -472,7 +472,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 forceObject = { "forceObject", { 0.f, 0.f, 0.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateDragForce
@@ -482,7 +482,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjFloat dragCoefficientObject = { "dragCoefficientObject", 1.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateVortexForce
@@ -495,7 +495,7 @@ namespace OpenParticle
         ValueObjFloat vortexRadiusObject = { "vortexRadiusObject", 0.f };
         AZ::Vector3 vortexAxis = { 0.f, 0.f, 1.f };
         AZ::Vector3 origin = { 0.f, 0.f, 0.f };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateCurlNoiseForce
@@ -507,7 +507,7 @@ namespace OpenParticle
         float noiseFrequency = 5.0f;
         bool panNoise = false;
         AZ::Vector3 panNoiseField;
-        uint32_t randomSeed = 0;
+        AZ::u32 randomSeed = 0;
         AZ::Vector3 randomizationVector;
     };
 
@@ -518,7 +518,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 sizeObject = { "sizeObject", { 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateSizeByVelocity
@@ -534,7 +534,7 @@ namespace OpenParticle
                 { 1.f, 1.f, 1.f }
             } };
         float velocityRange = 1.f;
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct SizeScale
@@ -544,7 +544,7 @@ namespace OpenParticle
         void ConvertDistIndexVersion(Distribution& distribution);
 
         ValueObjVec3 scaleFactorObject = { "scaleFactorObject", { 1.f, 1.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct UpdateSubUv
@@ -552,8 +552,8 @@ namespace OpenParticle
         AZ_CLASS_ALLOCATOR(UpdateSubUv, AZ::SystemAllocator, 0);
         void CheckParam();
 
-        uint32_t framePerSecond = 30;
-        uint32_t frameNum = 1;
+        AZ::u32 framePerSecond = 30;
+        AZ::u32 frameNum = 1;
         bool spawnOnly = false;
         bool IndexByEventOrder = false;
     };
@@ -577,7 +577,7 @@ namespace OpenParticle
 
         ValueObjFloat strengthObject = { "strengthObject", 1.f };
         ValueObjVec3 directionObject = { "directionObject", { 0.f, 0.f, 1.f } };
-        uint32_t version = 1;
+        AZ::u32 version = 1;
     };
 
     struct CollisionPlane
@@ -636,7 +636,7 @@ namespace OpenParticle
 
         static constexpr SimuCore::ParticleCore::RenderType RENDER = SimuCore::ParticleCore::RenderType::SPRITE;
         SimuCore::ParticleCore::Facing facing = SimuCore::ParticleCore::Facing::CAMERA_RECTANGLE;
-        uint32_t sortId = 0;
+        AZ::u32 sortId = 0;
         AZ::Vector2 subImageSize{ 1.0f, 1.0f };
     };
 
@@ -647,7 +647,7 @@ namespace OpenParticle
 
         static constexpr SimuCore::ParticleCore::RenderType RENDER = SimuCore::ParticleCore::RenderType::MESH;
         SimuCore::ParticleCore::Facing facing = SimuCore::ParticleCore::Facing::CAMERA_RECTANGLE;
-        uint32_t sortId = 0;
+        AZ::u32 sortId = 0;
     };
 
     struct TrailParam
@@ -664,7 +664,7 @@ namespace OpenParticle
     {
         AZ_CLASS_ALLOCATOR(RibbonParam, AZ::SystemAllocator, 0);
 
-        uint32_t ribbonCount = 1u;
+        AZ::u32 ribbonCount = 1u;
     };
 
     struct RibbonConfig
@@ -677,7 +677,7 @@ namespace OpenParticle
 
         TrailParam trailParam;
         RibbonParam ribbonParam;
-        uint32_t sortId = 0;
+        AZ::u32 sortId = 0;
         float minRibbonSegmentLength = 0.01f;
         ValueObjFloat ribbonWidthObject = { "ribbonWidthObject", 0.1f };
         bool inheritSize = false;
@@ -686,7 +686,7 @@ namespace OpenParticle
         float tilingDistance = 0.f;
         SimuCore::ParticleCore::RibbonFacing facing = SimuCore::ParticleCore::RibbonFacing::SCREEN;
         SimuCore::ParticleCore::TrailMode mode = SimuCore::ParticleCore::TrailMode::RIBBON;
-        uint32_t version = 1;
+        AZ::u32 version = 1;
 
         AZ::Crc32 ModeChangToRibbon() const
         {

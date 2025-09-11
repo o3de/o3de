@@ -79,7 +79,7 @@ namespace OpenParticleSystemEditor
         if (index < static_cast<int>(valueObj->Size()))
         {
             valueObj->distType = distType;
-            valueObj->distIndex[index] = static_cast<uint32_t>(value);
+            valueObj->distIndex[index] = static_cast<AZ::u32>(value);
         }
     }
 
@@ -92,7 +92,7 @@ namespace OpenParticleSystemEditor
             return;
         }
         valueObj->distType = distType;
-        valueObj->distIndex[index] = static_cast<uint32_t>(value);
+        valueObj->distIndex[index] = static_cast<AZ::u32>(value);
 
     }
 
@@ -134,7 +134,7 @@ namespace OpenParticleSystemEditor
     {
         ValueType* valueObj = static_cast<ValueType*>(address);
         valueObj->distType = OpenParticle::DistributionType::CONSTANT;
-        for (uint32_t index = 0; index < valueObj->Size(); ++index)
+        for (AZ::u32 index = 0; index < valueObj->Size(); ++index)
         {
             valueObj->distIndex[index] = 0;
         }

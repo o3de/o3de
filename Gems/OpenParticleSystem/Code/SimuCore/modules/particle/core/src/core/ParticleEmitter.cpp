@@ -23,7 +23,7 @@ namespace SimuCore::ParticleCore {
         particlePool.Resize(cfg.maxSize);
     }
 
-    ParticleEmitter::ParticleEmitter(uint32_t data, EmitterCreateInfo createInfo)
+    ParticleEmitter::ParticleEmitter(AZ::u32 data, EmitterCreateInfo createInfo)
         : config(data),
           dataPool(createInfo.dataPool),
           randomStream(createInfo.stream),
@@ -59,7 +59,7 @@ namespace SimuCore::ParticleCore {
     }
 
     template <typename T>
-    void FreeEffector(ParticleDataPool& pool, std::vector<ParticleEffectorInfo<T>>& effectors)
+    void FreeEffector(ParticleDataPool& pool, AZStd::vector<ParticleEffectorInfo<T>>& effectors)
     {
         for (auto& e : effectors) {
             pool.Free(e.effector->DataSize(), e.offset);
@@ -75,7 +75,7 @@ namespace SimuCore::ParticleCore {
         FreeEffector(*dataPool, updateEffectors);
     }
 
-    ParticleRender* ParticleEmitter::SetParticleRender(uint32_t data, RenderType type)
+    ParticleRender* ParticleEmitter::SetParticleRender(AZ::u32 data, RenderType type)
     {
         ResetRender();
         ParticleRender* rst = AddParticleInternal(type);
@@ -116,20 +116,20 @@ namespace SimuCore::ParticleCore {
     void ParticleEmitter::Tick(float delta)
     {
         auto emitParam = Emmit(delta);
-        uint32_t beginPos = Spawn(nullptr, nullptr, emitParam.newParticleNum);
+        AZ::u32 beginPos = Spawn(nullptr, nullptr, emitParam.newParticleNum);
         Update(emitParam.realEmitTime, beginPos);
         particlePool.Recycle(beginPos);
 
         if (!emitParam.eventSpawn.empty())
         {
-            beginPos = Spawn(emitParam.eventSpawn, {}, emitParam.eventSpawn.front().emitNum * static_cast<uint32_t>(emitParam.eventSpawn.size()));
+            beginPos = Spawn(emitParam.eventSpawn, {}, emitParam.eventSpawn.front().emitNum * static_cast<AZ::u32>(emitParam.eventSpawn.size()));
             Update(emitParam.eventSpawn, {}, beginPos);
             particlePool.Recycle(beginPos);
         }
 
         if (!emitParam.inheritanceSpawn.empty())
         {
-            beginPos = Spawn({}, emitParam.inheritanceSpawn, emitParam.inheritanceSpawn.front()->emitNum * static_cast<uint32_t>(emitParam.inheritanceSpawn.size()));
+            beginPos = Spawn({}, emitParam.inheritanceSpawn, emitParam.inheritanceSpawn.front()->emitNum * static_cast<AZ::u32>(emitParam.inheritanceSpawn.size()));
             Update({}, emitParam.inheritanceSpawn, beginPos);
             particlePool.Recycle(beginPos);
         }
@@ -137,10 +137,10 @@ namespace SimuCore::ParticleCore {
         started = true;
     }
 
-    void ParticleEmitter::GatherSimpleLight(std::vector<LightParticle>& outParticleLights)
+    void ParticleEmitter::GatherSimpleLight(AZStd::vector<LightParticle>& outParticleLights)
     {
         const Particle* particle = particlePool.ParticleData().data();
-        for (uint32_t i = 0; i < particlePool.Alive(); ++i) {
+        for (AZ::u32 i = 0; i < particlePool.Alive(); ++i) {
             const Particle& curr = particle[i];
             if (curr.hasLightEffect) {
                 LightParticle lightParticle;
@@ -151,7 +151,7 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    const uint32_t ParticleEmitter::GetEmitterId() const
+    const AZ::u32 ParticleEmitter::GetEmitterId() const
     {
         return emitterID;
     }
@@ -171,10 +171,10 @@ namespace SimuCore::ParticleCore {
         return dt;
     }
 
-    void ParticleEmitter::Render(uint8_t* driver, const WorldInfo& world, DrawItem& item)
+    void ParticleEmitter::Render(AZ::u8* driver, const WorldInfo& world, DrawItem& item)
     {
         AZ_PROFILE_SCOPE(AzCore, "ParticleEmitter::Render");
-        uint8_t* data = dataPool->Data(render.first->DataSize(), render.second);
+        AZ::u8* data = dataPool->Data(render.first->DataSize(), render.second);
         item.positionBuffer.resize(particlePool.Alive());
 
         BaseInfo emitterInfo;
@@ -225,19 +225,19 @@ namespace SimuCore::ParticleCore {
         return emitSpawnParam;
     }
 
-    uint32_t ParticleEmitter::Spawn(const std::vector<ParticleEventInfo>& spawnEvents, const std::vector<InheritanceSpawn*>& spawnInheritances,
-            uint32_t newParticleNum)
+    AZ::u32 ParticleEmitter::Spawn(const AZStd::vector<ParticleEventInfo>& spawnEvents, const AZStd::vector<InheritanceSpawn*>& spawnInheritances,
+            AZ::u32 newParticleNum)
     {
         auto& cfg = *dataPool->Data<Config>(config);
-        uint32_t beginPos;
+        AZ::u32 beginPos;
         bool useSpawnEventInfo = spawnEvents.empty() ? false : spawnEvents.front().useEventInfo;
-        uint32_t numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
+        AZ::u32 numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
 
         particlePool.ParallelSpawn(newParticleNum, beginPos,
                 [this, &cfg, &spawnEvents, useSpawnEventInfo, numPerSpawnEventEmit, &beginPos, &spawnInheritances](Particle* particles,
-                        uint32_t begin,
-                        uint32_t end, uint32_t alive) {
-                    for (uint32_t i = begin; i < end; ++i)
+                        AZ::u32 begin,
+                        AZ::u32 end, AZ::u32 alive) {
+                    for (AZ::u32 i = begin; i < end; ++i)
                     {
                         auto& particle = particles[i];
                         particle = {};
@@ -248,7 +248,7 @@ namespace SimuCore::ParticleCore {
                                 spawnInheritances.empty() ? nullptr : spawnInheritances[i - beginPos];
                         if (useSpawnEventInfo && relatedSpawnEvent)
                         {
-                            particle.localPosition += emitterTransform.Inverse().TransformPoint(relatedSpawnEvent->eventPosition);
+                            particle.localPosition += emitterTransform.GetInverse().TransformPoint(relatedSpawnEvent->eventPosition);
                             particle.parentEventIdx = relatedSpawnEvent->locationEventIdx;
                         }
                         SpawnInfo spawnInfo;
@@ -273,7 +273,7 @@ namespace SimuCore::ParticleCore {
                         }
                         particle.spawnTrans = emitterTransform;
                         particle.globalPosition = emitterTransform.TransformPoint(particle.localPosition);
-                        particle.rotateAroundPoint.w = i * 2.f * Math::PI / alive;
+                        particle.rotateAroundPoint.SetW(i * 2.f * AZ::Constants::Pi / alive);
                         HandleEvents(relatedSpawnEvent, relatedInheritanceEvent, particle);
                     }
                 });
@@ -281,19 +281,19 @@ namespace SimuCore::ParticleCore {
 
     }
 
-    uint32_t ParticleEmitter::Spawn(
-            const ParticleEventInfo* eventInfo, const InheritanceSpawn* inheritance, uint32_t newParticleNum)
+    AZ::u32 ParticleEmitter::Spawn(
+            const ParticleEventInfo* eventInfo, const InheritanceSpawn* inheritance, AZ::u32 newParticleNum)
     {
         auto& cfg = *dataPool->Data<Config>(config);
-        uint32_t beginPos;
+        AZ::u32 beginPos;
         particlePool.ParallelSpawn(newParticleNum, beginPos,
-                [this, &cfg, &eventInfo, &inheritance](Particle* particles, uint32_t begin, uint32_t end, uint32_t alive) {
-                    for (uint32_t i = begin; i < end; ++i) {
+                [this, &cfg, &eventInfo, &inheritance](Particle* particles, AZ::u32 begin, AZ::u32 end, AZ::u32 alive) {
+                    for (AZ::u32 i = begin; i < end; ++i) {
                         auto& particle = particles[i];
                         particle = {};
                         particle.id = particleIdentity.fetch_add(1, std::memory_order_relaxed);
                         if (eventInfo != nullptr && eventInfo->useEventInfo) {
-                            particle.localPosition += emitterTransform.Inverse().TransformPoint(eventInfo->eventPosition);
+                            particle.localPosition += emitterTransform.GetInverse().TransformPoint(eventInfo->eventPosition);
                             particle.parentEventIdx = eventInfo->locationEventIdx;
                         }
                         SpawnInfo spawnInfo;
@@ -317,7 +317,7 @@ namespace SimuCore::ParticleCore {
                         }
                         particle.spawnTrans = emitterTransform;
                         particle.globalPosition = emitterTransform.TransformPoint(particle.localPosition);
-                        particle.rotateAroundPoint.w = i * 2.f * Math::PI / alive;
+                        particle.rotateAroundPoint.SetW(i * 2.f * AZ::Constants::Pi / alive);
                         HandleEvents(eventInfo, inheritance, particle);
                     }
                 });
@@ -327,7 +327,7 @@ namespace SimuCore::ParticleCore {
     void ParticleEmitter::HandleEvents(const ParticleEventInfo* eventInfo,
         const InheritanceSpawn* inheritance, Particle& particle)
     {
-        uint8_t* data = dataPool->Data(render.first->DataSize(), render.second);
+        AZ::u8* data = dataPool->Data(render.first->DataSize(), render.second);
         if (eventInfo != nullptr && data != nullptr && render.first->GetType() == RenderType::RIBBON) {
             const auto* ribbonConfig = reinterpret_cast<const RibbonConfig*>(data);
             if (ribbonConfig->mode == TrailMode::TRAIL) {
@@ -347,7 +347,7 @@ namespace SimuCore::ParticleCore {
             particle.ribbonId = inheritance->ribbonId;
             if (inheritance->applyPosition) {
                 particle.globalPosition = inheritance->position;
-                particle.localPosition = particle.spawnTrans.Inverse().TransformPoint(particle.globalPosition);
+                particle.localPosition = particle.spawnTrans.GetInverse().TransformPoint(particle.globalPosition);
             }
             if (inheritance->applyVelocity) {
                 if (inheritance->overwriteVelocity) {
@@ -376,7 +376,7 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    void ParticleEmitter::Update(const std::vector<ParticleEventInfo>& spawnEvents, const std::vector<InheritanceSpawn*>& spawnInheritances, uint32_t beginPos)
+    void ParticleEmitter::Update(const AZStd::vector<ParticleEventInfo>& spawnEvents, const AZStd::vector<InheritanceSpawn*>& spawnInheritances, AZ::u32 beginPos)
     {
         if (particlePool.Alive() == 0) {
             return;
@@ -393,10 +393,10 @@ namespace SimuCore::ParticleCore {
         updateInfo.maxExtend = maxExtend;
         updateInfo.minExtend = minExtend;
 
-        uint32_t numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
+        AZ::u32 numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
 
-        particlePool.ParallelUpdate(beginPos, [&spawnEvents, numPerSpawnEventEmit, &spawnInheritances, &cfg, &updateInfo, beginPos, this](Particle* particles, uint32_t begin, uint32_t end) {
-            for (uint32_t i = begin; i < end; ++i) {
+        particlePool.ParallelUpdate(beginPos, [&spawnEvents, numPerSpawnEventEmit, &spawnInheritances, &cfg, &updateInfo, beginPos, this](Particle* particles, AZ::u32 begin, AZ::u32 end) {
+            for (AZ::u32 i = begin; i < end; ++i) {
                 auto& particle = particles[i];
 
                 const ParticleEventInfo* relatedSpawnEvent = spawnEvents.empty() ? nullptr : &spawnEvents[(i - beginPos) / numPerSpawnEventEmit];
@@ -412,12 +412,12 @@ namespace SimuCore::ParticleCore {
                 particle.localPosition += particle.velocity * delta;
                 particle.globalPosition = cfg.localSpace ? emitterTransform.TransformPoint(particle.localPosition)
                                                          : particle.spawnTrans.TransformPoint(particle.localPosition);
-                particle.rotationVector.w += particle.angularVel * delta;
+                particle.rotationVector.SetW(particle.rotationVector.GetW() + particle.angularVel * delta);
             }
         });
 
         particlePool.Event(beginPos,
-                [&cfg, this](Particle* particles, uint32_t begin, uint32_t alive) {
+                [&cfg, this](Particle* particles, AZ::u32 begin, AZ::u32 alive) {
                     for (const auto& ee : eventEffectors) {
                         EventInfo eventInfo;
                         eventInfo.emitterTrans = emitterTransform;
@@ -432,7 +432,7 @@ namespace SimuCore::ParticleCore {
                 });
     }
 
-    void ParticleEmitter::Update(float delta, uint32_t begin)
+    void ParticleEmitter::Update(float delta, AZ::u32 begin)
     {
         if (particlePool.Alive() == 0) {
             return;
@@ -450,8 +450,8 @@ namespace SimuCore::ParticleCore {
         updateInfo.maxExtend = maxExtend;
         updateInfo.minExtend = minExtend;
 
-        particlePool.ParallelUpdate(begin, [&delta, &cfg, &updateInfo, this](Particle* particles, uint32_t begin, uint32_t end) {
-            for (uint32_t i = begin; i < end; ++i) {
+        particlePool.ParallelUpdate(begin, [&delta, &cfg, &updateInfo, this](Particle* particles, AZ::u32 begin, AZ::u32 end) {
+            for (AZ::u32 i = begin; i < end; ++i) {
                 auto& particle = particles[i];
                 particle.currentLife += delta;
 
@@ -461,12 +461,12 @@ namespace SimuCore::ParticleCore {
                 particle.localPosition += particle.velocity * delta;
                 particle.globalPosition = cfg.localSpace ? emitterTransform.TransformPoint(particle.localPosition)
                                                          : particle.spawnTrans.TransformPoint(particle.localPosition);
-                particle.rotationVector.w += particle.angularVel * delta;
+                particle.rotationVector.SetW(particle.rotationVector.GetW() + particle.angularVel * delta);
             }
         });
 
         particlePool.Event(begin,
-            [&delta, &cfg, this](Particle* particles, uint32_t begin, uint32_t alive) {
+            [&delta, &cfg, this](Particle* particles, AZ::u32 begin, AZ::u32 alive) {
             for (const auto& ee : eventEffectors) {
                 EventInfo eventInfo;
                 eventInfo.emitterTrans = emitterTransform;
@@ -497,32 +497,32 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    const std::vector<ParticleEffectorInfo<ParticleEmitEffector>>& ParticleEmitter::GetEmitEffectors() const
+    const AZStd::vector<ParticleEffectorInfo<ParticleEmitEffector>>& ParticleEmitter::GetEmitEffectors() const
     {
         return emitEffectors;
     }
 
-    const std::vector<ParticleEffectorInfo<ParticleSpawnEffector>>& ParticleEmitter::GetSpawnEffectors() const
+    const AZStd::vector<ParticleEffectorInfo<ParticleSpawnEffector>>& ParticleEmitter::GetSpawnEffectors() const
     {
         return spawnEffectors;
     }
 
-    const std::vector<ParticleEffectorInfo<ParticleUpdateEffector>>& ParticleEmitter::GetUpdateEffectors() const
+    const AZStd::vector<ParticleEffectorInfo<ParticleUpdateEffector>>& ParticleEmitter::GetUpdateEffectors() const
     {
         return updateEffectors;
     }
 
-    const std::vector<ParticleEffectorInfo<ParticleEventEffector>>& ParticleEmitter::GetEventEffectors() const
+    const AZStd::vector<ParticleEffectorInfo<ParticleEventEffector>>& ParticleEmitter::GetEventEffectors() const
     {
         return eventEffectors;
     }
 
-    const std::pair<ParticleRender*, uint32_t>& ParticleEmitter::GetRender() const
+    const std::pair<ParticleRender*, AZ::u32>& ParticleEmitter::GetRender() const
     {
         return render;
     }
 
-    uint32_t ParticleEmitter::GetConfig() const
+    AZ::u32 ParticleEmitter::GetConfig() const
     {
         return config;
     }
@@ -542,24 +542,24 @@ namespace SimuCore::ParticleCore {
         emitterTransform = transform;
     }
 
-    void ParticleEmitter::ResetEventPool(uint32_t emitterId, ParticleEventType type)
+    void ParticleEmitter::ResetEventPool(AZ::u32 emitterId, ParticleEventType type)
     {
-        uint64_t key = (static_cast<uint64_t>(emitterId) << 32) +
-            static_cast<uint64_t>(type);
+        AZ::u64 key = (static_cast<AZ::u64>(emitterId) << 32) +
+            static_cast<AZ::u64>(type);
         auto iter = systemEventPool->events.find(key);
         if (iter == systemEventPool->events.end()) {
-            systemEventPool->events[key] = std::vector<ParticleEventInfo>();
+            systemEventPool->events[key] = AZStd::vector<ParticleEventInfo>();
         }
         systemEventPool->events[key].clear();
     }
 
-    const uint32_t ParticleEmitter::GetRenderSort() const
+    const AZ::u32 ParticleEmitter::GetRenderSort() const
     {
         if (render.first == nullptr) {
             return 0;
         }
 
-        uint8_t* data = dataPool->Data(render.first->DataSize(), render.second);
+        AZ::u8* data = dataPool->Data(render.first->DataSize(), render.second);
         if (data == nullptr) {
             return 0;
         }
@@ -592,9 +592,9 @@ namespace SimuCore::ParticleCore {
 
     bool ParticleEmitter::HasSkeletonModule() const
     {
-        std::string skeletonModuleName = "SpawnLocSkeleton";
+        AZStd::string skeletonModuleName = "SpawnLocSkeleton";
         for (const auto& se : spawnEffectors) {
-            if (se.effector->Name().find(skeletonModuleName) != std::string::npos) {
+            if (se.effector->Name().find(skeletonModuleName) != AZStd::string::npos) {
                 return true;
             }
         }
@@ -603,9 +603,9 @@ namespace SimuCore::ParticleCore {
 
     bool ParticleEmitter::HasLightModule() const
     {
-        std::string lightModuleName = "SpawnLightEffect";
+        AZStd::string lightModuleName = "SpawnLightEffect";
         for (const auto& se : spawnEffectors) {
-            if (se.effector->Name().find(lightModuleName) != std::string::npos) {
+            if (se.effector->Name().find(lightModuleName) != AZStd::string::npos) {
                 return true;
             }
         }
@@ -635,7 +635,7 @@ namespace SimuCore::ParticleCore {
             ue.effector->Update(ue.data, distribution);
         }
         if (render.first->GetType() == RenderType::RIBBON) {
-            uint8_t* renderData = dataPool->Data(render.first->DataSize(), render.second);
+            AZ::u8* renderData = dataPool->Data(render.first->DataSize(), render.second);
             if (renderData == nullptr) {
                 return;
             }

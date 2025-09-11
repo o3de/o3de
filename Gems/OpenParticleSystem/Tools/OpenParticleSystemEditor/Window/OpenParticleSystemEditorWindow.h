@@ -42,7 +42,7 @@ namespace OpenParticleSystemEditor
         void SetupMenu();
         void SetupDocking();
         void SetupCentral();
-        void SetDockWidget(const AZStd::string& name, QWidget* widget, uint32_t orientation);
+        void SetDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 orientation);
         void SetTabWidget(const AZStd::string& path);
 
         // ParticleEditorWindowRequestsBus
@@ -60,8 +60,8 @@ namespace OpenParticleSystemEditor
         void SetStatusMessage(const QString& message);
         bool IsDockWidgetVisible(const AZStd::string& name) const;
         void SetDockWidgetVisible(const AZStd::string& name, bool visible);
-        void SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation);
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation);
+        void SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation);
+        bool AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation);
         void Checked(const QString& name);
         void UnChecked(const QString& name);
         void RemoveDockWidget(const AZStd::string& name);

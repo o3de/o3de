@@ -13,9 +13,9 @@
 
 namespace SimuCore::ParticleCore {
     template<typename Func>
-    inline void ForEach(Particle* particleBuffer, uint32_t begin, uint32_t alive, Func&& fn)
+    inline void ForEach(Particle* particleBuffer, AZ::u32 begin, AZ::u32 alive, Func&& fn)
     {
-        for (uint32_t i = begin; i < alive; ++i) {
+        for (AZ::u32 i = begin; i < alive; ++i) {
             Particle& particle = particleBuffer[i];
             fn(particle);
         }
@@ -23,19 +23,19 @@ namespace SimuCore::ParticleCore {
 
     inline Facing SpriteVariantKeyGetFacing(const VariantKey& key)
     {
-        uint64_t value = key.value & 0xff;
+        AZ::u64 value = key.value & 0xff;
         return static_cast<Facing>(value);
     }
 
     inline void SpriteVariantKeySetFacing(VariantKey& key, Facing facing)
     {
-        key.value = static_cast<uint64_t>(facing) & 0xff;
+        key.value = static_cast<AZ::u64>(facing) & 0xff;
     }
 
-    template<typename T, uint32_t size>
+    template<typename T, AZ::u32 size>
     inline void UpdateDistributionPtr(ValueObject<T, size>& valueObject, const Distribution& distribution)
     {
-        for (uint32_t index = 0; index < size; ++index) {
+        for (AZ::u32 index = 0; index < size; ++index) {
             if (valueObject.distType != DistributionType::CONSTANT && valueObject.distIndex[index] != 0 &&
                 valueObject.distIndex[index] <= distribution.at(valueObject.distType).size()) {
                 valueObject.distributions[index] =
@@ -61,7 +61,7 @@ namespace SimuCore::ParticleCore {
         return valueObject.dataValue;
     }
 
-    template<typename T, uint32_t size>
+    template<typename T, AZ::u32 size>
     inline T CalcDistributionTickValue(const ValueObject<T, size>& valueObject, const BaseInfo& info)
     {
         T updateValue = valueObject.dataValue;
@@ -69,7 +69,7 @@ namespace SimuCore::ParticleCore {
             updateValue = T(valueObject.dataValue[0]);
         }
         if (valueObject.distType != DistributionType::CONSTANT) {
-            for (uint32_t index = 0; index < size; ++index) {
+            for (AZ::u32 index = 0; index < size; ++index) {
                 if (valueObject.isUniform) {
                     updateValue[index] = valueObject.distributions.at(0)->Tick(info);
                     continue;
@@ -80,7 +80,7 @@ namespace SimuCore::ParticleCore {
         return updateValue;
     }
 
-    template<typename T, uint32_t size>
+    template<typename T, AZ::u32 size>
     inline T CalcDistributionTickValue(const ValueObject<T, size>& valueObject,
         const BaseInfo& info, const Particle& particle)
     {
@@ -90,7 +90,7 @@ namespace SimuCore::ParticleCore {
         }
         if (valueObject.distType != DistributionType::CONSTANT) {
             auto tickValue = valueObject.distributions.at(0)->Tick(info, particle);
-            for (uint32_t index = 0; index < size; ++index) {
+            for (AZ::u32 index = 0; index < size; ++index) {
                 if (valueObject.isUniform) {
                     updateValue.SetElement(index, tickValue);
                     continue;
@@ -107,17 +107,19 @@ namespace SimuCore::ParticleCore {
     {
         LinearValue updateValue = valueObject.dataValue;
         if (valueObject.isUniform) {
-            updateValue.value = Vector3(valueObject.dataValue.value[0]);
-            updateValue.minValue = Vector3(valueObject.dataValue.minValue[0]);
-            updateValue.maxValue = Vector3(valueObject.dataValue.maxValue[0]);
+            updateValue.value = Vector3(valueObject.dataValue.value.GetX());
+            updateValue.minValue = Vector3(valueObject.dataValue.minValue.GetX());
+            updateValue.maxValue = Vector3(valueObject.dataValue.maxValue.GetX());
         }
         if (valueObject.distType == DistributionType::CURVE) {
-            for (uint32_t index = 0; index < DISTRIBUTION_COUNT_THREE; ++index) {
-                if (valueObject.isUniform) {
-                    updateValue.value[index] = valueObject.distributions.at(0)->Tick(info, particle);
+            for (AZ::u32 index = 0; index < DISTRIBUTION_COUNT_THREE; ++index) 
+            {
+                if (valueObject.isUniform) 
+                {
+                    updateValue.value.SetElement(index, valueObject.distributions.at(0)->Tick(info, particle));
                     continue;
                 }
-                updateValue.value[index] = valueObject.distributions.at(index)->Tick(info, particle);
+                updateValue.value.SetElement(index, valueObject.distributions.at(index)->Tick(info, particle));
             }
         }
         return updateValue;

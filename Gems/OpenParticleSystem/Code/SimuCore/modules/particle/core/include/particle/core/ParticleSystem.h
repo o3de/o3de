@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <string>
+#include <AzCore/std/string/string.h>
 #include <memory>
-#include <vector>
-#include <unordered_map>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include "particle/core/Particle.h"
 #include "particle/core/ParticleEmitter.h"
 #include "particle/core/ParticleCurve.h"
@@ -20,14 +20,14 @@
 namespace SimuCore::ParticleCore {
     struct LevelsOfDetail {
         float distance;
-        std::vector<uint32_t> emitterIndexes;
+        AZStd::vector<AZ::u32> emitterIndexes;
     };
 
     class ParticleSystem {
     public:
         struct PreWarm {
             float warmupTime = 0.f;
-            uint32_t tickCount = 0;
+            AZ::u32 tickCount = 0;
             float tickDelta = 0.f;
         };
 
@@ -40,44 +40,44 @@ namespace SimuCore::ParticleCore {
 
         ~ParticleSystem();
 
-        using DrawItemMap = std::unordered_map<ParticleEmitter*, std::vector<DrawItem>>;
+        using DrawItemMap = AZStd::unordered_map<ParticleEmitter*, AZStd::vector<DrawItem>>;
 
         ParticleEmitter* AddEmitter(const ParticleEmitter::Config& cfg);
 
-        ParticleEmitter* AddEmitter(uint32_t cfg);
+        ParticleEmitter* AddEmitter(AZ::u32 cfg);
 
         void RemoveEmitter(ParticleEmitter* emitter);
 
-        void RemoveEmitter(uint32_t emitterId);
+        void RemoveEmitter(AZ::u32 emitterId);
 
-        ParticleEmitter* GetEmitter(uint32_t emitterId);
+        ParticleEmitter* GetEmitter(AZ::u32 emitterId);
 
-        const std::unordered_map<uint32_t, ParticleEmitter*> GetAllEmitters() const;
+        const AZStd::unordered_map<AZ::u32, ParticleEmitter*> GetAllEmitters() const;
 
-        const std::vector<ParticleEmitter*> GetVisibleEmitters() const;
+        const AZStd::vector<ParticleEmitter*> GetVisibleEmitters() const;
 
-        void SetLODs(const std::vector<ParticleCore::LevelsOfDetail>& levelOfDetails);
+        void SetLODs(const AZStd::vector<ParticleCore::LevelsOfDetail>& levelOfDetails);
 
         ParticleCurve* AddCurve(const CurveExtrapMode& left, const CurveExtrapMode& right,
             float timeFactor, float valueFactor, const CurveTickMode& mode);
 
-        void AddRandom(float min, float max, const RandomTickMode& mode, uint32_t maxParticleNum);
+        void AddRandom(float min, float max, const RandomTickMode& mode, AZ::u32 maxParticleNum);
 
         void UpdateDistribution();
 
-        void SetConfig(uint32_t data);
+        void SetConfig(AZ::u32 data);
 
         const ParticleDataPool& GetDataPool() const;
 
-        uint8_t* Data(uint32_t size, uint32_t index);
+        AZ::u8* Data(AZ::u32 size, AZ::u32 index);
 
-        const uint8_t* Data(uint32_t size, uint32_t index) const;
+        const AZ::u8* Data(AZ::u32 size, AZ::u32 index) const;
 
-        void EmplaceData(uint32_t stride, const uint8_t* data, uint32_t dataSize);
+        void EmplaceData(AZ::u32 stride, const AZ::u8* data, AZ::u32 dataSize);
 
-        std::vector<RenderType> GetRenderTypes() const;
+        AZStd::vector<RenderType> GetRenderTypes() const;
 
-        uint32_t GetConfig() const;
+        AZ::u32 GetConfig() const;
 
         ParticleSystem::Config* GetSystemConfig();
 
@@ -103,15 +103,15 @@ namespace SimuCore::ParticleCore {
 
         void SetPreWarm(const PreWarm& warmUp);
 
-        void SetPreWarm(uint32_t warmUp);
+        void SetPreWarm(AZ::u32 warmUp);
 
-        uint32_t GetPreWarm() const;
+        AZ::u32 GetPreWarm() const;
 
         void WarmUp();
 
         void UseGlobalSpace();
 
-        uint32_t GetMaxParticleNum();
+        AZ::u32 GetMaxParticleNum();
 
     private:
         enum class Status {
@@ -125,13 +125,13 @@ namespace SimuCore::ParticleCore {
         Status status = Status::STOPED;
         float time = 0.f;
         float currentDistance = 0.0f;
-        std::vector<ParticleEmitter*> visibleEmitters;
+        AZStd::vector<ParticleEmitter*> visibleEmitters;
 
-        uint32_t emitterIdentifier = 0; // mark emitterId, unique identifier
-        uint32_t config = UINT32_MAX;
-        uint32_t preWarm = UINT32_MAX;
-        std::unordered_map<uint32_t, ParticleEmitter*> allEmitters; // id & ptr
-        std::vector<ParticleCore::LevelsOfDetail> lods;
+        AZ::u32 emitterIdentifier = 0; // mark emitterId, unique identifier
+        AZ::u32 config = UINT32_MAX;
+        AZ::u32 preWarm = UINT32_MAX;
+        AZStd::unordered_map<AZ::u32, ParticleEmitter*> allEmitters; // id & ptr
+        AZStd::vector<ParticleCore::LevelsOfDetail> lods;
         Distribution distribution;
         ParticleDataPool dataPool;
         RandomStream randomStream;

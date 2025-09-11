@@ -70,9 +70,9 @@ namespace OpenParticle
         struct Lod
         {
             AZ_CLASS_ALLOCATOR(ParticleSourceData::Lod, AZ::SystemAllocator, 0);
-            uint32_t m_level = 0;
+            AZ::u32 m_level = 0;
             float m_distance = 0.0f;
-            AZStd::vector<uint32_t> m_emitters;
+            AZStd::vector<AZ::u32> m_emitters;
         };
 
         struct DetailConstant
@@ -339,7 +339,7 @@ namespace OpenParticle
         void Reset();
 
         void RebuildLODs();
-        void UpdateLODIndex(uint32_t index);
+        void UpdateLODIndex(AZ::u32 index);
 
         void EmitterInfoToDetailInfo(DetailInfo* detailInfo, EmitterInfo* emitterInfo);
         template<

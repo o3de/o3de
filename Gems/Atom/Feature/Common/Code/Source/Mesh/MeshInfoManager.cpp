@@ -228,7 +228,7 @@ namespace AZ::Render
         }
         if (entry)
         {
-            m_meshInfoNeedsUpdate = updateFunction(entry.get());
+            m_meshInfoNeedsUpdate |= updateFunction(entry.get());
         }
     }
 

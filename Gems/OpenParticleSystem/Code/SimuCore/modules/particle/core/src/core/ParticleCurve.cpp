@@ -11,7 +11,7 @@
 namespace SimuCore::ParticleCore {
     std::function<float(const float)> ParticleCurve::GetInterpFunc(const KeyPointInterpMode& mode)
     {
-        static const std::unordered_map<KeyPointInterpMode, std::function<float(float)>> interpFuncs = {
+        static const AZStd::unordered_map<KeyPointInterpMode, std::function<float(float)>> interpFuncs = {
             {
                 KeyPointInterpMode::LINEAR,     [](float t) -> float { return t; }
             },
@@ -26,10 +26,10 @@ namespace SimuCore::ParticleCore {
                 [](float t) -> float { return (t - 1.0f) * (t - 1.0f) * (t - 1.0f) + 1.0f; }
             },
             {
-                KeyPointInterpMode::SINE_IN,    [](float t) -> float { return sin((t - 1.0f) * Math::HALF_PI) + 1.0f; }
+                KeyPointInterpMode::SINE_IN,    [](float t) -> float { return sin((t - 1.0f) * AZ::Constants::HalfPi) + 1.0f; }
             },
             {
-                KeyPointInterpMode::SINE_OUT,   [](float t) -> float { return sin(t * Math::HALF_PI); }
+                KeyPointInterpMode::SINE_OUT,   [](float t) -> float { return sin(t * AZ::Constants::HalfPi); }
             },
             {
                 KeyPointInterpMode::CIRCLE_IN,  [](float t) -> float { return 1.0f - sqrt(1.0f - (t * t)); }
@@ -60,10 +60,10 @@ namespace SimuCore::ParticleCore {
                 return (interTime - 1.0f) * (interTime - 1.0f) * (interTime - 1.0f) + 1.0f;;
             }
             case KeyPointInterpMode::SINE_IN: {
-                return sin((interTime - 1.0f) * Math::HALF_PI) + 1.0f;;
+                return sin((interTime - 1.0f) * AZ::Constants::HalfPi) + 1.0f;;
             }
             case KeyPointInterpMode::SINE_OUT: {
-                return sin(interTime * Math::HALF_PI);;
+                return sin(interTime * AZ::Constants::HalfPi);;
             }
             case KeyPointInterpMode::CIRCLE_IN: {
                 return 1.0f - sqrt(1.0f - (interTime * interTime));
@@ -125,7 +125,7 @@ namespace SimuCore::ParticleCore {
     void ParticleCurve::AddKeyPoint(float time, float value, const KeyPointInterpMode& mode)
     {
         float clampTime = ClampTime(time);
-        float clampValue = Math::Clamp(value, 0.0f, 1.0f);
+        float clampValue = AZ::GetClamp(value, 0.0f, 1.0f);
         int leftPoint = FindLeftKeyPoint(clampTime);
         if (leftPoint == -1) {
             keyPoints.insert(keyPoints.begin(), KeyPoint(clampTime, clampValue, mode));
@@ -143,7 +143,7 @@ namespace SimuCore::ParticleCore {
     {
         for (auto& point : keyPoints) {
             point.time = ClampTime(point.time);
-            point.value = Math::Clamp(point.value, 0.0f, 1.0f);
+            point.value = AZ::GetClamp(point.value, 0.0f, 1.0f);
         }
         std::sort(keyPoints.begin(), keyPoints.end(),
             [](const KeyPoint& left, const KeyPoint& right) {
@@ -156,7 +156,7 @@ namespace SimuCore::ParticleCore {
         keyPoints.erase(iter, keyPoints.end());
     }
 
-    void ParticleCurve::UpdateKeyPointTime(uint32_t index, float time)
+    void ParticleCurve::UpdateKeyPointTime(AZ::u32 index, float time)
     {
         if (index < keyPoints.size()) {
             keyPoints[index].time = time;
@@ -166,7 +166,7 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    void ParticleCurve::SetKeyPointValue(uint32_t index, float value)
+    void ParticleCurve::SetKeyPointValue(AZ::u32 index, float value)
     {
         if (index >= keyPoints.size()) {
             return;
@@ -174,7 +174,7 @@ namespace SimuCore::ParticleCore {
         keyPoints[index].value = value;
     }
 
-    void ParticleCurve::SetKeyPointInterpMode(uint32_t index, const KeyPointInterpMode& mode)
+    void ParticleCurve::SetKeyPointInterpMode(AZ::u32 index, const KeyPointInterpMode& mode)
     {
         if (index >= keyPoints.size()) {
             return;
@@ -182,7 +182,7 @@ namespace SimuCore::ParticleCore {
         keyPoints[index].interpMode = mode;
     }
 
-    void ParticleCurve::DeleteKeyPoint(uint32_t index)
+    void ParticleCurve::DeleteKeyPoint(AZ::u32 index)
     {
         if (index >= keyPoints.size()) {
             return;
@@ -190,7 +190,7 @@ namespace SimuCore::ParticleCore {
         keyPoints.erase(keyPoints.begin() + index);
     }
 
-    const std::vector<KeyPoint>& ParticleCurve::GetKeyPoints() const
+    const AZStd::vector<KeyPoint>& ParticleCurve::GetKeyPoints() const
     {
         return keyPoints;
     }
@@ -271,7 +271,7 @@ namespace SimuCore::ParticleCore {
 
     float ParticleCurve::CurveTick(float point, float range)
     {
-        if (range > Math::EPSLON) {
+        if (range > AZ::Constants::FloatEpsilon) {
             float clampTime = ClampTime(point / range);
             auto value = CalcCurveValue(clampTime);
             return value * valueFactor;

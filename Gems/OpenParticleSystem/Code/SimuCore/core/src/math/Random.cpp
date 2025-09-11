@@ -8,7 +8,6 @@
 
 #include "core/math/Random.h"
 #include "core/math/Math.h"
-#include "core/platform/Platform.h"
 #include <AzCore/Math/Random.h>
 
 namespace SimuCore_Random_Internal
@@ -34,9 +33,9 @@ namespace SimuCore {
         return min + (max - min) * Rand();
     }
 
-    uint32_t Random::RandomRange(uint32_t min, uint32_t max)
+    AZ::u32 Random::RandomRange(AZ::u32 min, AZ::u32 max)
     {
-        return min + static_cast<uint32_t>(static_cast<float>(max - min) * Rand());
+        return min + static_cast<AZ::u32>(static_cast<float>(max - min) * Rand());
     }
 
     AZ::Color Random::RandomRange(const AZ::Color& min, const AZ::Color& max)

@@ -37,7 +37,7 @@ namespace SimuCore::ParticleCore {
         Vector3 randomizationVector;
         float noiseStrength = 10.0f;
         float noiseFrequency = 5.0f;
-        uint32_t randomSeed = 0;
+        AZ::u32 randomSeed = 0;
         bool panNoise = false;
     };
 
@@ -59,7 +59,7 @@ namespace SimuCore::ParticleCore {
         ValueObjFloat originPull { 1.f };
         ValueObjFloat vortexRate { 1.f };
         ValueObjFloat vortexRadius { 1.f };
-        uint64_t padding0 = 0;
+        AZ::u64 padding0 = 0;
         Vector3 vortexAxis = { 0.f, 0.f, 1.f };
         Vector3 origin = { 0.f, 0.f, 0.f };
     private:

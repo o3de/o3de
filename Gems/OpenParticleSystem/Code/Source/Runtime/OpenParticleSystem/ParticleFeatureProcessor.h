@@ -55,7 +55,7 @@ namespace OpenParticle
 
         void LoadParticle(const AZ::Data::Asset<ParticleAsset>& asset, ParticleFeatureProcessor& fp);
 
-        void SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath);
+        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath);
         void SetRuntimeConfig(ParticleComponentConfig config) { m_rtConfig = config; };
 
         ParticleFeatureProcessor* m_particleFp = nullptr;
@@ -100,11 +100,11 @@ namespace OpenParticle
 
         void SetTransform(const ParticleHandle& handle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale) override;
 
-        void SetMaterialDiffuseMap(const ParticleHandle& handle, uint32_t emitterIndex, AZStd::string mapPath) override;
+        void SetMaterialDiffuseMap(const ParticleHandle& handle, AZ::u32 emitterIndex, AZStd::string mapPath) override;
 
-        ParticlePipelineState* FetchOrCreate(uint32_t key);
+        ParticlePipelineState* FetchOrCreate(AZ::u32 key);
 
-        ParticlePipelineState* Fetch(uint32_t key);
+        ParticlePipelineState* Fetch(AZ::u32 key);
 
         // AZ::TickBus::Handler overrides
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -124,7 +124,7 @@ namespace OpenParticle
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
         AZ::Render::TransformServiceFeatureProcessorInterface* m_transformService = nullptr;
         AZ::StableDynamicArray<ParticleDataInstance> m_particleInstances;
-        AZStd::unordered_map<uint32_t, ParticlePipelineState> m_pipelineStates;
+        AZStd::unordered_map<AZ::u32, ParticlePipelineState> m_pipelineStates;
         AZStd::optional<AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>> time;
         float m_timeToSim{0};
     };

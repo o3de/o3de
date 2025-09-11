@@ -63,7 +63,7 @@ namespace OpenParticle
         void SetParticleAssetByPath(AZStd::string path) override;
         AZStd::string GetParticleAssetPath() const override;
 
-        void SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath) override;
+        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath) override;
         void OnNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 
         void Register();

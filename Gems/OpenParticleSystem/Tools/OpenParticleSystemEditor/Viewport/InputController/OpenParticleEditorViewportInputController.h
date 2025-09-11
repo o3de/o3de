@@ -65,7 +65,7 @@ namespace OpenParticleSystemEditor
         void HandleStateEnded(const AzFramework::ViewportControllerInputEvent& event);
         void HandleStateUpdated(const AzFramework::ViewportControllerInputEvent& event, const bool mouseOver);
 
-        using KeyMask = uint32_t;
+        using KeyMask = AZ::u32;
 
         enum Keys
         {

@@ -37,14 +37,10 @@
 #include <particle/core/ParticleSystem.h>
 #include <AzCore/Math/Color.h>
 
+#include <AzCore/std/containers/array.h>
+
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(SimuCore::Vector3, "{cca90682-4b27-45dd-a1ae-0f71d642dfb8}");
-    AZ_TYPE_INFO_SPECIALIZE(SimuCore::Vector4, "{0dfe125a-ec2d-4b53-a699-0b91441de8ac}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(
-        std::array, "std::array","{343a34f9-0737-4a37-9e64-2cdd4dd62186}",
-        AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
-
     AZ_TYPE_INFO_SPECIALIZE(SimuCore::ParticleCore::ValueObjFloat, "{D087CEBE-1C36-46D9-ABE7-8123563559FA}");
     AZ_TYPE_INFO_SPECIALIZE(SimuCore::ParticleCore::ValueObjVec2, "{1904BB33-30EE-4058-99AE-B85C0A82D667}");
     AZ_TYPE_INFO_SPECIALIZE(SimuCore::ParticleCore::ValueObjVec3, "{F86CBDA8-DBF0-4C1E-BDAA-8785003EFC60}");

@@ -16,19 +16,24 @@ namespace SimuCore::ParticleCore {
         Vector3 maxExtend = max * particleSize;
         Vector3 minExtend = min * particleSize;
         Vector3 center = (maxExtend + minExtend) * 0.5f;
-        float radius = (maxExtend - center).Length();
+        float radius = (maxExtend - center).GetLength();
         return radius;
     }
 
     static float CalculateSpriteRadius(const ParticleCollision& data, const Particle& particle, const UpdateInfo& info)
     {
         AZ::Vector2 size;
-        if (info.front.IsEqual(VEC3_UNIT_Z) || info.front.IsEqual(-VEC3_UNIT_Z)) {
-            size = AZ::Vector2(particle.scale.x, particle.scale.y);
-        } else if (info.front.IsEqual(VEC3_UNIT_Y) || info.front.IsEqual(-VEC3_UNIT_Y)) {
-            size = AZ::Vector2(particle.scale.x, particle.scale.z);
-        } else {
-            size = AZ::Vector2(particle.scale.y, particle.scale.z);
+        if (info.front.IsClose(Vector3::CreateAxisZ()) || info.front.IsClose(-Vector3::CreateAxisZ()))
+        {
+            size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(1));
+        }
+        else if (info.front.IsClose(Vector3::CreateAxisY()) || info.front.IsClose(-Vector3::CreateAxisY()))
+        {
+            size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(2));
+        }
+        else
+        {
+            size = AZ::Vector2(particle.scale.GetElement(1), particle.scale.GetElement(2));
         }
 
         switch (data.collisionRadius.method) {
@@ -71,13 +76,12 @@ namespace SimuCore::ParticleCore {
 
     static Vector3 CalculateNormal(const Vector3 planeNormal, const UpdateInfo& info, float angleCof)
     {
-        float th = 2.f * Math::PI * info.randomStream->Rand();
+        float th = 2.f * AZ::Constants::Pi * info.randomStream->Rand();
         // normal (0, 1] -> (0, Pi]
-        float ap = (Math::PI * angleCof / 2.f) * info.randomStream->Rand();
+        float ap = (AZ::Constants::Pi * angleCof / 2.f) * info.randomStream->Rand();
         Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
-        Transform d;
-        d.LookAt(Vector3(0.0f), planeNormal, Vector3(0.0f, 1.0f, 0.0f));
-        return (Matrix3(d.ToMatrix()) * vel).Normalize();
+        Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
+        return (Matrix3::CreateFromTransform(d) * vel).GetNormalized();
     }
 
     static void HandleCollision(const ParticleCollision* data, Particle& particle, const UpdateInfo& info,
@@ -123,7 +127,7 @@ namespace SimuCore::ParticleCore {
         particle.collisionPosition = collisionPos;
 
         // colliding
-        if (data->bounce.randomizeNormal <= Math::EPSLON) {
+        if (data->bounce.randomizeNormal <= AZ::Constants::FloatEpsilon) {
             normal = collision.localPlane.normal;
             particle.localPosition = particle.localPosition - 2.0f * distance * normal;
         } else {
@@ -138,7 +142,7 @@ namespace SimuCore::ParticleCore {
 
     void ParticleCollision::Execute(const ParticleCollision* data, const UpdateInfo& info, Particle& particle)
     {
-        std::vector<CollisionPlane> planes;
+        AZStd::vector<CollisionPlane> planes;
         (void)planes.emplace_back(CollisionPlane{ data->collisionPlane1.normal, data->collisionPlane1.position });
         if (data->useTwoPlane) {
             (void)planes.emplace_back(CollisionPlane{ data->collisionPlane2.normal, data->collisionPlane2.position });
@@ -151,7 +155,7 @@ namespace SimuCore::ParticleCore {
             if (info.localSpace) {
                 collisionParam.localPlane = plane;
             } else {
-                Transform inverse = particle.spawnTrans.Inverse();
+                Transform inverse = particle.spawnTrans.GetInverse();
                 collisionParam.localPlane.position = inverse.TransformPoint(plane.position);
                 collisionParam.localPlane.normal = inverse.TransformVector(plane.normal);
             }

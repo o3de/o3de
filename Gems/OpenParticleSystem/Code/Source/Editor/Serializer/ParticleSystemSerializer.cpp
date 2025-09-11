@@ -838,7 +838,7 @@ namespace OpenParticle
         ParticleSourceData::Lod* lod = reinterpret_cast<ParticleSourceData::Lod*>(outputValue);
 
         resultCode.Combine(
-            ContinueLoadingFromJsonObjectField(&lod->m_level, azrtti_typeid<uint32_t>(), inputValue, "level", context));
+            ContinueLoadingFromJsonObjectField(&lod->m_level, azrtti_typeid<AZ::u32>(), inputValue, "level", context));
 
         resultCode.Combine(ContinueLoadingFromJsonObjectField(
             &lod->m_distance, azrtti_typeid<float>(), inputValue, "maxDistance", context));
@@ -854,9 +854,9 @@ namespace OpenParticle
         {
             for (rapidjson_ly::SizeType i = 0; i < emittersIndexes.Size(); ++i)
             {
-                uint32_t index;
+                AZ::u32 index;
                 resultCode.Combine(
-                    ContinueLoading(&index, azrtti_typeid<uint32_t>(), emittersIndexes[i], context));
+                    ContinueLoading(&index, azrtti_typeid<AZ::u32>(), emittersIndexes[i], context));
                 lod->m_emitters.emplace_back(index);
             }
         }
@@ -882,7 +882,7 @@ namespace OpenParticle
         AZ_Assert(lod, "Input value for ParticleAssetDataSerializer can't be null.");
 
         resultCode.Combine(
-            ContinueStoringToJsonObjectField(outputValue, "level", &lod->m_level, nullptr, azrtti_typeid<uint32_t>(), context));
+            ContinueStoringToJsonObjectField(outputValue, "level", &lod->m_level, nullptr, azrtti_typeid<AZ::u32>(), context));
 
         resultCode.Combine(
             ContinueStoringToJsonObjectField(outputValue, "maxDistance", &lod->m_distance, nullptr, azrtti_typeid<float>(), context));
@@ -892,7 +892,7 @@ namespace OpenParticle
         for (auto& emitter : lod->m_emitters)
         {
             rapidjson::Value emitterIndex;
-            resultCode.Combine(ContinueStoring(emitterIndex, &emitter, nullptr, azrtti_typeid<uint32_t>(), context));
+            resultCode.Combine(ContinueStoring(emitterIndex, &emitter, nullptr, azrtti_typeid<AZ::u32>(), context));
             if (resultCode.GetProcessing() != JSR::Processing::Halted &&
                 (context.ShouldKeepDefaults() || resultCode.GetOutcome() != JSR::Outcomes::DefaultsUsed))
             {

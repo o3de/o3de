@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <cstdint>
 #include <AzCore/Math/Color.h>
 
 namespace SimuCore {
@@ -18,7 +17,7 @@ namespace SimuCore {
        
         static float RandomRange(float min, float max);
 
-        static uint32_t RandomRange(uint32_t min, uint32_t max);
+        static AZ::u32 RandomRange(AZ::u32 min, AZ::u32 max);
 
         static AZ::Color RandomRange(const AZ::Color& min, const AZ::Color& max);
     };

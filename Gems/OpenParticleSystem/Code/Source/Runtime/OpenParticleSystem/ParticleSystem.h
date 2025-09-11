@@ -66,7 +66,7 @@ namespace OpenParticle
 
         void ClearAllLightEffects();
 
-        void SetMaterialDiffuseMap(uint32_t emitterIndex, AZStd::string mapPath);
+        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath);
 
     private:
         struct DrawParam {
@@ -75,20 +75,20 @@ namespace OpenParticle
             SimuCore::ParticleCore::DrawItem item;
         };
 
-        uint32_t GetPipelineKey(SimuCore::ParticleCore::RenderType) const;
+        AZ::u32 GetPipelineKey(SimuCore::ParticleCore::RenderType) const;
 
         void SetBoneAndVertexBuffer(SimuCore::ParticleCore::ParticleEmitter& emitter);
-        void GetSkeletonBoneBuffer(const uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
-        void GetMeshVertexBuffer(const uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
-        void GetMeshAreaBuffer(uint32_t emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
-        void UpdateArea(uint32_t emitterId);
+        void GetSkeletonBoneBuffer(const AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
+        void GetMeshVertexBuffer(const AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
+        void GetMeshAreaBuffer(AZ::u32 emitterId, const EMotionFX::Actor& actor, const EMotionFX::TransformData& transData);
+        void UpdateArea(AZ::u32 emitterId);
         void HandleSkeletonModel(SimuCore::ParticleCore::ParticleEmitter& emitter);
         void SetParticleLight(SimuCore::ParticleCore::ParticleEmitter& emitter, const SimuCore::ParticleCore::DrawItem& item);
 
         void RenderParticle(const AZ::RHI::DrawListTag drawListTag, const DrawParam& drawParam,
             EmitterInstance& instance, AZ::RPI::View& view, int meshIndex = -1);
 
-        void ClearLightEffects(uint32_t emitterId);
+        void ClearLightEffects(AZ::u32 emitterId);
 
         void Rebuild();
 
@@ -102,17 +102,17 @@ namespace OpenParticle
         AZStd::unique_ptr<SimuCore::ParticleCore::ParticleSystem> m_particleSystem;
         AZStd::unordered_map<const SimuCore::ParticleCore::ParticleEmitter*, EmitterInstance> m_emitterInstances;
         AZ::Transform m_transform;
-        AZStd::unordered_map <uint32_t,
+        AZStd::unordered_map <AZ::u32,
             AZStd::vector<AZ::Render::SimplePointLightFeatureProcessorInterface::LightHandle>> lightHandles;
         AZStd::vector<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>> m_drawPacket;
 
         bool m_changedDiffuseMap;
-        AZStd::unordered_map<uint32_t, AZ::RPI::MaterialPropertyValue> m_diffuseMapInstances;
-        AZStd::unordered_map<uint32_t, AZStd::vector<SimuCore::Vector3>> m_boneStreams;
-        AZStd::unordered_map<uint32_t, AZStd::vector<SimuCore::Vector3>> m_vertexStreams;
-        AZStd::unordered_map<uint32_t, AZStd::vector<SimuCore::Vector3>> m_vertexCoordSteams;
-        AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>> m_indiceStreams;
-        AZStd::unordered_map<uint32_t, AZStd::vector<double>> m_areaStreams;
+        AZStd::unordered_map<AZ::u32, AZ::RPI::MaterialPropertyValue> m_diffuseMapInstances;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_boneStreams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_vertexStreams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_vertexCoordSteams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> m_indiceStreams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<double>> m_areaStreams;
 
         // realtime position of particle system, used when particle follow active camera enabled.
         AZ::Transform m_rtSysTransform;

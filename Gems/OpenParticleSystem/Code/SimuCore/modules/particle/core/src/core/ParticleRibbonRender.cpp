@@ -10,6 +10,7 @@
 #include "particle/core/ParticlePool.h"
 #include "particle/core/ParticleDriver.h"
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Math.h"
 
 namespace SimuCore::ParticleCore {
     ParticleRibbonRender::~ParticleRibbonRender()
@@ -24,7 +25,7 @@ namespace SimuCore::ParticleCore {
         gDriver = nullptr;
     }
 
-    void ParticleRibbonRender::Render(const uint8_t* data, const BaseInfo& emitterInfo, uint8_t* driver, const ParticlePool& pool,
+    void ParticleRibbonRender::Render(const AZ::u8* data, const BaseInfo& emitterInfo, AZ::u8* driver, const ParticlePool& pool,
             const WorldInfo& world, DrawItem& item)
     {
         if (data == nullptr || pool.Alive() == 0) {
@@ -49,11 +50,11 @@ namespace SimuCore::ParticleCore {
         item.indexBuffer = indexBufferViews[world.viewKey.v];
     }
 
-    void ParticleRibbonRender::SortParticles(const ParticlePool& pool, std::vector<Vector3>& positionBuffer, const BaseInfo& emitterInfo,
+    void ParticleRibbonRender::SortParticles(const ParticlePool& pool, AZStd::vector<Vector3>& positionBuffer, const BaseInfo& emitterInfo,
             const RibbonConfig& config)
     {
         sortedParticleIndices.clear();
-        for (uint32_t current = 0; current < pool.Alive(); ++current) {
+        for (AZ::u32 current = 0; current < pool.Alive(); ++current) {
             Particle curParticleCopy = particle[current];
             if (curParticleCopy.hasLightEffect) {
                 positionBuffer[current] = curParticleCopy.globalPosition;
@@ -64,12 +65,12 @@ namespace SimuCore::ParticleCore {
             }
 
             if (config.mode == TrailMode::RIBBON && config.ribbonParam.ribbonCount > 0) {
-                curParticleCopy.ribbonId = curParticleCopy.id % static_cast<uint64_t>(config.ribbonParam.ribbonCount);
+                curParticleCopy.ribbonId = curParticleCopy.id % static_cast<AZ::u64>(config.ribbonParam.ribbonCount);
             }
 
             const auto it = sortedParticleIndices.find(curParticleCopy.ribbonId);
             if (it == sortedParticleIndices.end()) {
-                std::vector<std::pair<uint32_t, float>> sortedParticles;
+                AZStd::vector<std::pair<AZ::u32, float>> sortedParticles;
                 (void)sortedParticles.emplace_back(std::make_pair(current, curParticleCopy.currentLife));
                 (void)sortedParticleIndices.emplace(curParticleCopy.ribbonId, sortedParticles);
             } else {
@@ -78,7 +79,7 @@ namespace SimuCore::ParticleCore {
         }
 
         if (config.mode == TrailMode::TRAIL) {
-            uint32_t trailCount = static_cast<uint32_t>(
+            AZ::u32 trailCount = static_cast<AZ::u32>(
                 std::ceil(sortedParticleIndices.size() * config.trailParam.ratio));
             for (auto iter = sortedParticleIndices.begin(); iter != sortedParticleIndices.end();) {
                 if (trailCount == 0) {
@@ -87,7 +88,7 @@ namespace SimuCore::ParticleCore {
                 }
 
                 std::sort(iter->second.begin(), iter->second.end(),
-                    [](const std::pair<uint32_t, float>& o1, const std::pair<uint32_t, float>& o2) {
+                    [](const std::pair<AZ::u32, float>& o1, const std::pair<AZ::u32, float>& o2) {
                     return o1.second < o2.second;
                 });
                 trailCount--;
@@ -96,7 +97,7 @@ namespace SimuCore::ParticleCore {
         } else {
             for (auto iter = sortedParticleIndices.begin(); iter != sortedParticleIndices.end(); ++iter) {
                 std::sort(iter->second.begin(), iter->second.end(),
-                    [](const std::pair<uint32_t, float>& o1, const std::pair<uint32_t, float>& o2) {
+                    [](const std::pair<AZ::u32, float>& o1, const std::pair<AZ::u32, float>& o2) {
                     return o1.second > o2.second;
                 });
             }
@@ -107,8 +108,8 @@ namespace SimuCore::ParticleCore {
     {
         Reset();
         for (auto iter = sortedParticleIndices.begin(); iter != sortedParticleIndices.end(); ++iter) {
-            std::vector<uint32_t> indicesInRibbon;
-            std::vector<RibbonSegment> segments;
+            AZStd::vector<AZ::u32> indicesInRibbon;
+            AZStd::vector<RibbonSegment> segments;
             float totalDistance = 0.f;
             CalculateParticlesInRibbon(iter->second, indicesInRibbon, segments, totalDistance, config);
             if (indicesInRibbon.size() <= 1) {
@@ -128,34 +129,41 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    void ParticleRibbonRender::CalculateParticlesInRibbon(const std::vector<std::pair<uint32_t, float>>& sortedIndices,
-        std::vector<uint32_t>& indicesInRibbon, std::vector<RibbonSegment>& segments, float& totalDistance,
+    void ParticleRibbonRender::CalculateParticlesInRibbon(const AZStd::vector<std::pair<AZ::u32, float>>& sortedIndices,
+        AZStd::vector<AZ::u32>& indicesInRibbon, AZStd::vector<RibbonSegment>& segments, float& totalDistance,
         const RibbonConfig& config)
     {
-        for (uint32_t i = 0; i < sortedIndices.size(); i++) {
+        for (AZ::u32 i = 0; i < sortedIndices.size(); i++) {
             if (i == 0) {
                 (void)indicesInRibbon.emplace_back(sortedIndices[i].first);
                 continue;
             }
 
-            uint32_t lastIndex = indicesInRibbon.back();
+            AZ::u32 lastIndex = indicesInRibbon.back();
             Particle lastParticle = particle[lastIndex];
-            uint32_t currentIndex = sortedIndices[i].first;
+            AZ::u32 currentIndex = sortedIndices[i].first;
             Particle currentParticle = particle[currentIndex];
             Vector3 curDir = currentParticle.globalPosition - lastParticle.globalPosition;
-            float localDistance = curDir.Length();
-            if (localDistance <= Math::EPSLON || (localDistance <
-                config.minRibbonSegmentLength && i !=  sortedIndices.size() - 1)) {
+            float localDistance = curDir.GetLengthSq();
+            if (localDistance > AZ::Constants::FloatEpsilon)
+            {
+                localDistance = std::sqrt(localDistance);
+            }
+
+            if (localDistance < config.minRibbonSegmentLength && i != sortedIndices.size() - 1)
+            {
                 continue;
             }
 
-            Vector3 lastDir = VEC3_ZERO;
-            if (indicesInRibbon.size() > 1) {
-                uint32_t lastLast = indicesInRibbon[indicesInRibbon.size() - 2];
+            Vector3 lastDir = Vector3::CreateZero();
+            if (indicesInRibbon.size() > 1)
+            {
+                AZ::u32 lastLast = indicesInRibbon[indicesInRibbon.size() - 2];
                 Particle lastLastParticle = particle[lastLast];
                 lastDir = lastParticle.globalPosition - lastLastParticle.globalPosition;
-                if (lastDir.Length() > Math::EPSLON) {
-                    (void)lastDir.Normalize();
+                if (float sqlength = lastDir.GetLengthSq() > AZ::Constants::FloatEpsilon)
+                {
+                    lastDir = lastDir / std::sqrt(sqlength);
                 }
             }
 
@@ -165,9 +173,9 @@ namespace SimuCore::ParticleCore {
             segment.head = lastIndex;
             segment.end = currentIndex;
             segment.segmentLength = localDistance;
-            segment.tangent0 = segments.empty() ? curDir.Normalize() : segments[segments.size() - 1].tangent1;
-            segment.tangent1 = (1.f - config.curveTension) * (dir.Normalize());
-            segment.interpCount = static_cast<uint32_t>(std::ceil(localDistance / config.tesselationFactor));
+            segment.tangent0 = segments.empty() ? curDir.GetNormalized() : segments[segments.size() - 1].tangent1;
+            segment.tangent1 = (1.f - config.curveTension) * (dir.GetNormalized());
+            segment.interpCount = static_cast<AZ::u32>(std::ceil(localDistance / config.tesselationFactor));
             segmentCount += segment.interpCount;
             totalDistance += localDistance;
             segment.tileV = totalDistance / config.tilingDistance;
@@ -193,7 +201,7 @@ namespace SimuCore::ParticleCore {
         auto& ib = ibs[world.viewKey.v];
 
         bool reCreateVb = false;
-        uint32_t vertexCount = (segmentCount + ribbonCount) * 2;
+        AZ::u32 vertexCount = (segmentCount + ribbonCount) * 2;
         if (vertexCount > vb.size()) {
             newVbSize = vertexCount;
             vb.resize(newVbSize);
@@ -202,7 +210,7 @@ namespace SimuCore::ParticleCore {
         }
 
         bool reCreateIb = false;
-        uint32_t indexCount = segmentCount * INDEX_COUNT_IN_ONE_SEGMENT;
+        AZ::u32 indexCount = segmentCount * INDEX_COUNT_IN_ONE_SEGMENT;
         if (indexCount > ib.size()) {
             newIbSize = indexCount;
             ib.resize(newIbSize);
@@ -216,16 +224,16 @@ namespace SimuCore::ParticleCore {
     }
 
     void ParticleRibbonRender::FillVertexAndIndexBuffer(const WorldInfo& world, const RibbonConfig& config,
-        std::vector<ParticleRibbonVertex>& vb, std::vector<uint32_t>& ib)
+        AZStd::vector<ParticleRibbonVertex>& vb, AZStd::vector<AZ::u32>& ib)
     {
         bool bTileV = config.tilingDistance > 0.f;
-        uint32_t vertexIdx = 0; // vertex index
-        uint32_t indexIdx = 0; // indices index
+        AZ::u32 vertexIdx = 0; // vertex index
+        AZ::u32 indexIdx = 0; // indices index
         for (auto iter = ribbonSegments.begin(); iter != ribbonSegments.end(); ++iter) {
             float preTileV = 0.f;
             float travelingDistance = 0.f;
             auto totalDistance = ribbonDistances.at(iter->first);
-            for (uint32_t segmentId = 0; segmentId < iter->second.size(); segmentId++) {
+            for (AZ::u32 segmentId = 0; segmentId < iter->second.size(); segmentId++) {
                 RibbonSegment segment = iter->second[segmentId];
                 Particle head = particle[segment.head];
                 Particle end = particle[segment.end];
@@ -233,18 +241,18 @@ namespace SimuCore::ParticleCore {
                 float curTexV = bTileV ? preTileV : travelingDistance / totalDistance;
                 Vector3 right = CalRightVector(world, config, segment.tangent0, head.globalPosition);
                 BufferInfo bInfo{head.globalPosition, head.color,
-                    right, head.scale.x, vertexIdx, indexIdx, curTexV, vb, ib};
+                    right, head.scale.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                 (segmentId == 0) ? FillHeadVertex(bInfo) : FillVertex(bInfo);
 
-                for (uint32_t interpId = 1; interpId < segment.interpCount; interpId++) {
+                for (AZ::u32 interpId = 1; interpId < segment.interpCount; interpId++) {
                     float step = interpId * 1.0f / segment.interpCount;
                     std::pair<Vector3, Vector3> pair0 = {head.globalPosition, segment.tangent0};
                     std::pair<Vector3, Vector3> pair1 = {end.globalPosition, segment.tangent1};
                     auto pos = Math::CubicInterp<Vector3>(pair0, pair1, step, segment.segmentLength);
                     AZ::Color color = head.color.Lerp(end.color, step);
-                    auto width = Math::Lerp<float>(head.scale.x, end.scale.x, step);
-                    curTexV = bTileV ? Math::Lerp<float>(preTileV, segment.tileV, step) :
-                            (pos.Distance(head.globalPosition) + travelingDistance) / totalDistance;
+                    auto width = AZStd::lerp(head.scale.GetX(), end.scale.GetX(), step);
+                    curTexV = bTileV ? AZStd::lerp(preTileV, segment.tileV, step) :
+                            (pos.GetDistance(head.globalPosition) + travelingDistance) / totalDistance;
                     Vector3 up = segment.tangent0.Lerp(segment.tangent1, step);
                     right = CalRightVector(world, config, up, head.globalPosition);
                     BufferInfo info{pos, color, right, width, vertexIdx, indexIdx, curTexV, vb, ib};
@@ -252,10 +260,10 @@ namespace SimuCore::ParticleCore {
                 }
 
                 if (segmentId == iter->second.size() - 1) {
-                    right = CalRightVector(world, config, segment.tangent1, end.globalPosition).Normalize();
+                    right = CalRightVector(world, config, segment.tangent1, end.globalPosition).GetNormalized();
                     curTexV = bTileV ? segment.tileV : segment.distance / totalDistance;
                     BufferInfo info{end.globalPosition, end.color,
-                        right, end.scale.x, vertexIdx, indexIdx, curTexV, vb, ib};
+                        right, end.scale.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                     FillEndVertex(info);
                     continue;
                 }
@@ -268,7 +276,7 @@ namespace SimuCore::ParticleCore {
     void ParticleRibbonRender::FillHeadVertex(BufferInfo& info) const
     {
         ParticleRibbonVertex* prv = info.vb.data();
-        uint32_t* idx = info.ib.data();
+        AZ::u32* idx = info.ib.data();
 
         prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
@@ -284,7 +292,7 @@ namespace SimuCore::ParticleCore {
     void ParticleRibbonRender::FillVertex(BufferInfo& info) const
     {
         ParticleRibbonVertex* prv = info.vb.data();
-        uint32_t* idx = info.ib.data();
+        AZ::u32* idx = info.ib.data();
         prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(0.f, info.texV);
@@ -308,7 +316,7 @@ namespace SimuCore::ParticleCore {
     void ParticleRibbonRender::FillEndVertex(BufferInfo& info) const
     {
         ParticleRibbonVertex* prv = info.vb.data();
-        uint32_t* idx = info.ib.data();
+        AZ::u32* idx = info.ib.data();
         prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(0.f, info.texV);
@@ -337,56 +345,56 @@ namespace SimuCore::ParticleCore {
                 facing = world.axisZ;
                 break;
         }
-        return facing.Cross(up).Normalize();
+        return facing.Cross(up).GetNormalized();
     }
 
     void ParticleRibbonRender::UpdateVertexBuffer(
-        BufferView& bufferView, std::vector<ParticleRibbonVertex>& vb, bool reCreate) const
+        BufferView& bufferView, AZStd::vector<ParticleRibbonVertex>& vb, bool reCreate) const
     {
         if (reCreate || bufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = newVbSize * static_cast<uint32_t>(sizeof(ParticleRibbonVertex));
-            info.data = reinterpret_cast<const uint8_t*>(vb.data());
+            info.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
+            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = newVbSize * static_cast<uint32_t>(sizeof(ParticleRibbonVertex));
+            bufferView.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
             bufferView.stride = sizeof(ParticleRibbonVertex);
         } else {
             BufferUpdate info = {};
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = newVbSize * static_cast<uint32_t>(sizeof(ParticleRibbonVertex));
-            info.data = reinterpret_cast<const uint8_t*>(vb.data());
+            info.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
+            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
         }
     }
 
     void ParticleRibbonRender::UpdateIndexBuffer(
-        BufferView& bufferView, std::vector<uint32_t>& ib, bool reCreate) const
+        BufferView& bufferView, AZStd::vector<AZ::u32>& ib, bool reCreate) const
     {
         if (reCreate || bufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = newIbSize * static_cast<uint32_t>(sizeof(uint32_t));
-            info.data = reinterpret_cast<const uint8_t*>(ib.data());
+            info.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            info.data = reinterpret_cast<const AZ::u8*>(ib.data());
             info.usage = BufferUsage::INDEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = newIbSize * static_cast<uint32_t>(sizeof(uint32_t));
-            bufferView.stride = sizeof(uint32_t);
+            bufferView.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            bufferView.stride = sizeof(AZ::u32);
         } else {
             BufferUpdate info = {};
             info.usage = BufferUsage::INDEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = newIbSize * static_cast<uint32_t>(sizeof(uint32_t));
-            info.data = reinterpret_cast<const uint8_t*>(ib.data());
+            info.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            info.data = reinterpret_cast<const AZ::u8*>(ib.data());
             ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
         }
     }
 
-    uint32_t ParticleRibbonRender::DataSize() const
+    AZ::u32 ParticleRibbonRender::DataSize() const
     {
         return sizeof(RibbonConfig);
     }

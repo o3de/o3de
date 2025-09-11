@@ -12,11 +12,11 @@ namespace SimuCore::ParticleCore {
     void SpawnLocationEvent::Execute(const SpawnLocationEvent* data, const SpawnInfo& info, const Particle& particle)
     {
         if (data->whetherSendEvent) {
-            uint64_t key = (static_cast<uint64_t>(info.currentEmitter) << 32) +
-                static_cast<uint64_t>(ParticleEventType::SPAWN_LOCATION);
+            AZ::u64 key = (static_cast<AZ::u64>(info.currentEmitter) << 32) +
+                static_cast<AZ::u64>(ParticleEventType::SPAWN_LOCATION);
             auto iter = info.systemEventPool->events.find(key);
             if (iter == info.systemEventPool->events.end()) {
-                info.systemEventPool->events[key] = std::vector<ParticleEventInfo>();
+                info.systemEventPool->events[key] = AZStd::vector<ParticleEventInfo>();
             }
             ParticleEventInfo e;
             e.eventTimeBeforeTick = 0.0f;

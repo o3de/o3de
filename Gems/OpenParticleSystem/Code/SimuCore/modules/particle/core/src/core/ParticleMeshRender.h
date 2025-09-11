@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <unordered_map>
+#include <AzCore/std/containers/unordered_map.h>
 #include "particle/core/Particle.h"
 #include "particle/core/ParticleRender.h"
 
@@ -18,7 +18,7 @@ namespace SimuCore::ParticleCore {
         ParticleMeshRender() = default;
         ~ParticleMeshRender() override;
 
-        void Render(const uint8_t* data, const BaseInfo& emitterInfo, uint8_t* driver, const ParticlePool& pool, const WorldInfo& world,
+        void Render(const AZ::u8* data, const BaseInfo& emitterInfo, AZ::u8* driver, const ParticlePool& pool, const WorldInfo& world,
             DrawItem& item) override;
 
         RenderType GetType() const override
@@ -26,15 +26,15 @@ namespace SimuCore::ParticleCore {
             return RenderType::MESH;
         }
 
-        uint32_t DataSize() const override;
+        AZ::u32 DataSize() const override;
 
     private:
-        void UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, std::vector<Vector3>& positionBuffer);
+        void UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<Vector3>& positionBuffer);
 
-        uint8_t* gDriver = nullptr;
-        uint32_t particleSize = 0;
-        std::unordered_map<uint64_t, std::vector<ParticleMeshVertex>> vbs;
-        std::unordered_map<uint64_t, BufferView> bufferViews;
+        AZ::u8* gDriver = nullptr;
+        AZ::u32 particleSize = 0;
+        AZStd::unordered_map<AZ::u64, AZStd::vector<ParticleMeshVertex>> vbs;
+        AZStd::unordered_map<AZ::u64, BufferView> bufferViews;
     };
 }
 

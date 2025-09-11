@@ -14,30 +14,30 @@
 namespace OpenParticle
 {
     template<typename T>
-    inline void ConstructEmit(SimuCore::ParticleCore::ParticleEmitter* emitter, uint32_t data)
+    inline void ConstructEmit(SimuCore::ParticleCore::ParticleEmitter* emitter, AZ::u32 data)
     {
         emitter->AddEmitterEffectorData<T>(data);
     }
 
     template<typename T>
-    inline void ConstructSpawn(SimuCore::ParticleCore::ParticleEmitter* emitter, uint32_t data)
+    inline void ConstructSpawn(SimuCore::ParticleCore::ParticleEmitter* emitter, AZ::u32 data)
     {
         emitter->AddSpawnEffectorData<T>(data);
     }
 
     template<typename T>
-    inline void ConstructUpdate(SimuCore::ParticleCore::ParticleEmitter* emitter, uint32_t data)
+    inline void ConstructUpdate(SimuCore::ParticleCore::ParticleEmitter* emitter, AZ::u32 data)
     {
         emitter->AddUpdateEffectorData<T>(data);
     }
 
     template<typename T>
-    inline void ConstructEvent(SimuCore::ParticleCore::ParticleEmitter* emitter, uint32_t data)
+    inline void ConstructEvent(SimuCore::ParticleCore::ParticleEmitter* emitter, AZ::u32 data)
     {
         emitter->AddEventEffectorData<T>(data);
     }
 
-    using AddEffectorFunc = void (*)(SimuCore::ParticleCore::ParticleEmitter*, uint32_t);
+    using AddEffectorFunc = void (*)(SimuCore::ParticleCore::ParticleEmitter*, AZ::u32);
 
     void ParticleArchive::EmitterInfo::Reflect(AZ::ReflectContext* context)
     {
@@ -70,28 +70,28 @@ namespace OpenParticle
         }
     }
 
-    uint32_t BufferEmplace(
-        AZStd::unordered_map<uint32_t, AZStd::vector<uint8_t>>& buffers,
-        const SimuCore::ParticleCore::ParticleSystem& system, const uint32_t& index, const uint32_t stride)
+    AZ::u32 BufferEmplace(
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u8>>& buffers,
+        const SimuCore::ParticleCore::ParticleSystem& system, const AZ::u32& index, const AZ::u32 stride)
     {
         auto alignSize = SimuCore::ParticleCore::ParticleDataPool::AlignSize(stride);
         auto& block = buffers[alignSize];
-        uint32_t offset = static_cast<uint32_t>(block.size());
+        AZ::u32 offset = static_cast<AZ::u32>(block.size());
         block.resize(block.size() + alignSize);
-        uint8_t* dst = &block[offset];
-        const uint8_t* src = system.Data(stride, index);
+        AZ::u8* dst = &block[offset];
+        const AZ::u8* src = system.Data(stride, index);
         memcpy(dst, src, alignSize);
         
         return offset;
     }
 
-    uint32_t BufferEmplace(AZStd::unordered_map<uint32_t, AZStd::vector<uint8_t>>& buffers, const void* src, uint32_t stride)
+    AZ::u32 BufferEmplace(AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u8>>& buffers, const void* src, AZ::u32 stride)
     {
         auto alignSize = SimuCore::ParticleCore::ParticleDataPool::AlignSize(stride);
         auto& block = buffers[alignSize];
-        uint32_t offset = static_cast<uint32_t>(block.size());
+        AZ::u32 offset = static_cast<AZ::u32>(block.size());
         block.resize(block.size() + alignSize);
-        uint8_t* dst = &block[offset];
+        AZ::u8* dst = &block[offset];
         memcpy(dst, src, alignSize);
         
         return offset;
@@ -100,14 +100,14 @@ namespace OpenParticle
     template<typename T>
     void Convert(
         AZ::SerializeContext* context,
-        AZStd::unordered_map<uint32_t, AZStd::vector<uint8_t>>& buffers,
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u8>>& buffers,
         const SimuCore::ParticleCore::ParticleSystem& system,
-        const std::vector<SimuCore::ParticleCore::ParticleEffectorInfo<T>>& lists,
-        AZStd::vector<AZStd::tuple<AZ::Uuid, uint32_t>>& out)
+        const AZStd::vector<SimuCore::ParticleCore::ParticleEffectorInfo<T>>& lists,
+        AZStd::vector<AZStd::tuple<AZ::Uuid, AZ::u32>>& out)
     {
         for (auto& t : lists)
         {
-            uint32_t offset = BufferEmplace(buffers, system, t.offset, t.effector->DataSize());
+            AZ::u32 offset = BufferEmplace(buffers, system, t.offset, t.effector->DataSize());
             AZStd::vector<AZ::Uuid> ids = context->FindClassId(AZ::Crc32(t.effector->Name().c_str()));
             if (ids.empty())
             {
@@ -202,7 +202,7 @@ namespace OpenParticle
         for (auto& buffer : m_buffers)
         {
             auto& rawData = buffer.second;
-            system.EmplaceData(buffer.first, rawData.data(), static_cast<uint32_t>(rawData.size()));
+            system.EmplaceData(buffer.first, rawData.data(), static_cast<AZ::u32>(rawData.size()));
         }
 
         system.SetConfig(m_systemConfig);
@@ -248,7 +248,7 @@ namespace OpenParticle
         return *this;
     }
 
-    static inline AZStd::pair<uint32_t, bool> AnySize(AZ::SerializeContext* context, const AZStd::any& val)
+    static inline AZStd::pair<AZ::u32, bool> AnySize(AZ::SerializeContext* context, const AZStd::any& val)
     {
         AZ_Assert(context != nullptr, "invalid serialize context");
         auto classData = context->FindClassData(val.type());
@@ -257,7 +257,7 @@ namespace OpenParticle
             return { 0, false };
         }
 
-        return { (uint32_t)classData->m_azRtti->GetTypeSize(), true };
+        return { (AZ::u32)classData->m_azRtti->GetTypeSize(), true };
     }
 
     ParticleArchive& ParticleArchive::SystemConfig(const AZStd::any& val)
@@ -340,7 +340,7 @@ namespace OpenParticle
         }
 
         auto& emitter = m_emitterInfos.back();
-        uint32_t buffIndex = BufferEmplace(m_buffers, AZStd::any_cast<void>(&val), pair.first);
+        AZ::u32 buffIndex = BufferEmplace(m_buffers, AZStd::any_cast<void>(&val), pair.first);
         emitter.m_effectors.emplace_back(val.type(), buffIndex);
         return *this;
     }

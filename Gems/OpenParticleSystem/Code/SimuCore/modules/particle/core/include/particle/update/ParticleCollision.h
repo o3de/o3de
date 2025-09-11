@@ -11,17 +11,17 @@
 #include "particle/core/Particle.h"
 
 namespace SimuCore::ParticleCore {
-    enum class CpuCollisionType : uint8_t {
+    enum class CpuCollisionType : AZ::u8 {
         PLANE
     };
 
-    enum class RadiusCalculationType : uint8_t {
+    enum class RadiusCalculationType : AZ::u8 {
         SPRITE,
         MESH,
         CUSTOM
     };
 
-    enum class RadiusCalculationMethod : uint8_t {
+    enum class RadiusCalculationMethod : AZ::u8 {
         BOUNDS,
         MAXIMUM_AXIS,
         MINIMUM_AXIS

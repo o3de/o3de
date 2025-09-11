@@ -14,10 +14,10 @@ namespace SimuCore::ParticleCore {
     void ParticleEventHandler::Execute(const ParticleEventHandler* data,
         const EmitInfo& info, EmitSpawnParam& emitSpawnParam)
     {
-        uint64_t key = (static_cast<uint64_t>(data->emitterIndex) << 32) + static_cast<uint64_t>(data->eventType);
+        AZ::u64 key = (static_cast<AZ::u64>(data->emitterIndex) << 32) + static_cast<AZ::u64>(data->eventType);
         auto iter = info.systemEventPool->events.find(key);
         if (iter != info.systemEventPool->events.end() && iter->second.size() != 0) {
-            uint32_t eventNum = std::min(static_cast<uint32_t>(iter->second.size()), data->maxEventNum);
+            AZ::u32 eventNum = std::min(static_cast<AZ::u32>(iter->second.size()), data->maxEventNum);
             for (size_t i = 0; i < static_cast<size_t>(eventNum); i++) {
                 ParticleEventInfo event = iter->second[i];
                 event.emitNum = data->emitNum;
@@ -39,7 +39,7 @@ namespace SimuCore::ParticleCore {
         if (!data->spawnEnable || data->emitterIndex >= info.systemEventPool->inheritances.size()) {
             return;
         }
-        std::unordered_map<uint32_t, InheritanceSpawn>* tempMap = new std::unordered_map<uint32_t, InheritanceSpawn>();
+        AZStd::unordered_map<AZ::u32, InheritanceSpawn>* tempMap = new AZStd::unordered_map<AZ::u32, InheritanceSpawn>();
         tempMap->reserve(info.systemEventPool->inheritances.size());
         for (auto& systemInheritance : info.systemEventPool->inheritances[data->emitterIndex]) {
             InheritanceSpawn& spawn = (*tempMap)[static_cast<unsigned int>(systemInheritance.first)];
@@ -49,7 +49,7 @@ namespace SimuCore::ParticleCore {
                 spawn.position = systemInheritance.second.position + data->positionOffset;
                 spawn.velocity = systemInheritance.second.velocity * data->velocityRatio;
                 spawn.size = systemInheritance.second.size;
-                spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.x, data->colorRatio.y, data->colorRatio.z, data->colorRatio.w);
+                spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.GetX(), data->colorRatio.GetY(), data->colorRatio.GetZ(), data->colorRatio.GetW());
                 spawn.currentLife = systemInheritance.second.currentLife;
                 spawn.lifetime = systemInheritance.second.lifetime;
                 spawn.applyPosition = data->applyPosition;
@@ -66,7 +66,7 @@ namespace SimuCore::ParticleCore {
                 }
                 float last = spawn.currentNum;
                 spawn.currentNum += data->spawnRate * info.tickTime;
-                spawn.emitNum = static_cast<uint32_t>(spawn.currentNum) - static_cast<uint32_t>(last);
+                spawn.emitNum = static_cast<AZ::u32>(spawn.currentNum) - static_cast<AZ::u32>(last);
                 if (spawn.emitNum > 0) {
                     spawn.emitTime = (spawn.currentNum - std::floor(spawn.currentNum)) / data->spawnRate;
                 }
@@ -75,7 +75,7 @@ namespace SimuCore::ParticleCore {
                     spawn.position = systemInheritance.second.position + data->positionOffset;
                     spawn.velocity = systemInheritance.second.velocity * data->velocityRatio;
                     spawn.size = systemInheritance.second.size;
-                    spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.x, data->colorRatio.y, data->colorRatio.z, data->colorRatio.w);
+                    spawn.color = systemInheritance.second.color * AZ::Color(data->colorRatio.GetX(), data->colorRatio.GetY(), data->colorRatio.GetZ(), data->colorRatio.GetW());
                     spawn.currentLife = systemInheritance.second.currentLife;
                     spawn.lifetime = systemInheritance.second.lifetime;
                     spawn.applyPosition = data->applyPosition;

@@ -9,26 +9,14 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
-
-#include <cfloat>
-#include <cstdint>
-#include <vector>
-#include <string_view>
-#include <unordered_map>
-#include <AzCore/Math/Color.h>
 #include "core/math/MatrixX.h"
 #include "core/math/Quaternion.h"
 #include "core/math/RandomStream.h"
 #include "core/math/VectorX.h"
 #include "core/math/Transform.h"
-
-#if defined __clang__ || (defined __GNUC__ && __GNUC__ > 8)
-#define PRETTY_FUCTION __PRETTY_FUNCTION__
-#elif defined __GNUC__
-#define PRETTY_FUCTION __PRETTY_FUNCTION__
-#elif defined _MSC_VER
-#define PRETTY_FUCTION __FUNCSIG__
-#endif
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace SimuCore::ParticleCore {
     struct Particle {
@@ -36,19 +24,19 @@ namespace SimuCore::ParticleCore {
         Vector3 localPosition;     // local position in emitter
         Vector3 globalPosition;    // global position in world
         Vector3 velocity;          // velocity
-        Vector3 baseScale = VEC3_ONE;          // base scale
-        Vector3 scale = VEC3_ONE;              // scale
-        Vector4 rotation = VEC4_UNIT_Y;        // xyz: axis w: angle
-        Vector4 rotationVector = VEC4_UNIT_Y;  // xyz: axis w: angle
+        Vector3 baseScale = Vector3::CreateOne();
+        Vector3 scale = Vector3::CreateOne();              // scale
+        Vector4 rotation = Vector4::CreateAxisY();        // xyz: axis w: angle
+        Vector4 rotationVector = Vector4::CreateAxisY();  // xyz: axis w: angle
         Vector4 rotateAroundPoint; // xyz: rotation axis w: angle
-        AZ::Color color = COLOR_WHITE;             // rgba
-        AZ::Color lightColor = COLOR_WHITE;        // light effect AZ::Color
+        AZ::Color color = AZ::Colors::White;             // rgba
+        AZ::Color lightColor = AZ::Colors::White;        // light effect AZ::Color
         Vector3 collisionPosition;
-        uint64_t id = UINT64_MAX;              // particle unique id
-        uint64_t ribbonId = UINT64_MAX;        // in which ribbon
-        uint32_t subUVFrame = 0u;              // subuv frame
-        uint32_t locationEventCount = 0u;      // total location events generated
-        uint32_t parentEventIdx = 0u;          // when spawn triggered by event, record parent event index  when spawn triggered by event
+        AZ::u64 id = UINT64_MAX;              // particle unique id
+        AZ::u64 ribbonId = UINT64_MAX;        // in which ribbon
+        AZ::u32 subUVFrame = 0u;              // subuv frame
+        AZ::u32 locationEventCount = 0u;      // total location events generated
+        AZ::u32 parentEventIdx = 0u;          // when spawn triggered by event, record parent event index  when spawn triggered by event
         float lifeTime = 0.f;                  // life time
         float currentLife = 0.f;               // current life time
         float angularVel = 0.f;                // angular velocity
@@ -85,19 +73,19 @@ namespace SimuCore::ParticleCore {
         AZ::Vector2 uv{ 0.5f, 0.5f };
     };
 
-    enum class RenderType : uint8_t {
+    enum class RenderType : AZ::u8 {
         SPRITE,
         MESH,
         RIBBON,
         UNDEFINED
     };
 
-    enum class SimulateType : uint8_t {
+    enum class SimulateType : AZ::u8 {
         CPU,
         GPU
     };
 
-    enum class Facing : uint8_t {
+    enum class Facing : AZ::u8 {
         CAMERA_POS,
         CAMERA_SQUARE,
         CAMERA_RECTANGLE,
@@ -105,18 +93,18 @@ namespace SimuCore::ParticleCore {
         CUSTOM
     };
 
-    enum class RibbonFacing : uint8_t {
+    enum class RibbonFacing : AZ::u8 {
         SCREEN,
         CAMERA
     };
 
-    enum class DrawType : uint8_t {
+    enum class DrawType : AZ::u8 {
         LINEAR,
         INDEXED,
         INDIRECT
     };
 
-    enum class Axis : uint8_t {
+    enum class Axis : AZ::u8 {
         X_POSITIVE,
         X_NEGATIVE,
         Y_POSITIVE,
@@ -126,32 +114,32 @@ namespace SimuCore::ParticleCore {
         NO_AXIS
     };
 
-    enum class MeshSampleType : uint8_t {
+    enum class MeshSampleType : AZ::u8 {
         BONE,
         VERTEX,
         AREA
     };
     
-    enum class DistributionType : uint8_t {
+    enum class DistributionType : AZ::u8 {
         CONSTANT = 0,
         RANDOM,
         CURVE
     };
 
-    enum class RandomTickMode : uint8_t {
+    enum class RandomTickMode : AZ::u8 {
         ONCE = 0,
         PER_FRAME,
         PER_SPAWN
     };
 
-    enum class CurveTickMode : uint8_t {
+    enum class CurveTickMode : AZ::u8 {
         EMIT_DURATION = 0,
         PARTICLE_LIFETIME,
         NORMALIZED_AGE,
         CUSTOM
     };
 
-    enum class KeyPointInterpMode : uint8_t {
+    enum class KeyPointInterpMode : AZ::u8 {
         LINEAR = 0,
         STEP,
         CUBIC_IN,
@@ -162,7 +150,7 @@ namespace SimuCore::ParticleCore {
         CIRCLE_OUT
     };
 
-    enum class CurveExtrapMode : uint8_t {
+    enum class CurveExtrapMode : AZ::u8 {
         CYCLE = 0,
         CYCLE_WITH_OFFSET,
         CONSTANT
@@ -202,9 +190,9 @@ namespace SimuCore::ParticleCore {
 
     template<typename T>
     struct TypeInfo {
-        static constexpr std::string_view Name() noexcept
+        static constexpr AZStd::string_view Name() noexcept
         {
-            std::string_view id(PRETTY_FUCTION);
+            AZStd::string_view id(AZ_FUNCTION_SIGNATURE);
             auto first = id.find_first_of(' ', id.find_last_of('<') + 1) + 1;
             auto last = id.find_last_of('>');
             return id.substr(first, last - first);
@@ -213,21 +201,21 @@ namespace SimuCore::ParticleCore {
 
     class ParticleDistribution;
 
-    using Distribution = std::unordered_map<DistributionType, std::vector<ParticleDistribution*>>;
+    using Distribution = AZStd::unordered_map<DistributionType, AZStd::vector<ParticleDistribution*>>;
 
-    template<typename T, uint32_t size>
+    template<typename T, AZ::u32 size>
     struct ValueObject {
         ValueObject() = default;
         explicit ValueObject(const T& t) : dataValue(t) {}
 
-        std::array<ParticleDistribution*, size> distributions = { nullptr };
-        std::array<uint64_t, size> distIndex;
+        AZStd::array<ParticleDistribution*, size> distributions = { nullptr };
+        AZStd::array<AZ::u64, size> distIndex;
         T dataValue;
         DistributionType distType = DistributionType::CONSTANT;
         bool isUniform = false;
-        uint16_t padding0 = 0;
-        uint32_t padding1 = 0;
-        uint64_t padding2 = 0;
+        AZ::u16 padding0 = 0;
+        AZ::u32 padding1 = 0;
+        AZ::u64 padding2 = 0;
     };
 
     template<>
@@ -235,12 +223,12 @@ namespace SimuCore::ParticleCore {
         ValueObject() = default;
         explicit ValueObject(const float& t) : dataValue(t) {}
 
-        std::array<ParticleDistribution*, 1> distributions = { nullptr };
-        std::array<uint64_t, 1> distIndex;
+        AZStd::array<ParticleDistribution*, 1> distributions = { nullptr };
+        AZStd::array<AZ::u64, 1> distIndex;
         float dataValue;
         DistributionType distType = DistributionType::CONSTANT;
         bool isUniform = false;
-        uint16_t padding0 = 0;
+        AZ::u16 padding0 = 0;
     };
 
     struct LinearValue {
@@ -249,10 +237,10 @@ namespace SimuCore::ParticleCore {
         Vector3 maxValue;
     };
 
-    constexpr uint32_t DISTRIBUTION_COUNT_ONE = 1;
-    constexpr uint32_t DISTRIBUTION_COUNT_TWO = 2;
-    constexpr uint32_t DISTRIBUTION_COUNT_THREE = 3;
-    constexpr uint32_t DISTRIBUTION_COUNT_FOUR = 4;
+    constexpr AZ::u32 DISTRIBUTION_COUNT_ONE = 1;
+    constexpr AZ::u32 DISTRIBUTION_COUNT_TWO = 2;
+    constexpr AZ::u32 DISTRIBUTION_COUNT_THREE = 3;
+    constexpr AZ::u32 DISTRIBUTION_COUNT_FOUR = 4;
 
     using ValueObjFloat = ValueObject<float, DISTRIBUTION_COUNT_ONE>;
     using ValueObjVec2 = ValueObject<AZ::Vector2, DISTRIBUTION_COUNT_TWO>;
@@ -261,7 +249,7 @@ namespace SimuCore::ParticleCore {
     using ValueObjColor = ValueObject<AZ::Color, DISTRIBUTION_COUNT_FOUR>;
     using ValueObjLinear = ValueObject<LinearValue, DISTRIBUTION_COUNT_THREE>;
 
-    enum class ParticleEventType : uint32_t {
+    enum class ParticleEventType : AZ::u32 {
         SPAWN_LOCATION,
         UPDATE_LOCATION,
         UPDATE_DEATH,
@@ -272,9 +260,9 @@ namespace SimuCore::ParticleCore {
         Vector3 eventPosition;
         AZ::Color color;
         Vector3 size;
-        uint64_t particleId = UINT64_MAX;
-        uint32_t emitNum = 0u;
-        uint32_t locationEventIdx = 0u;
+        AZ::u64 particleId = UINT64_MAX;
+        AZ::u32 emitNum = 0u;
+        AZ::u32 locationEventIdx = 0u;
         float eventTimeBeforeTick = 0.0f;
         float lifeTime = 0.f;
         float currentLife = 0.f;
@@ -295,12 +283,12 @@ namespace SimuCore::ParticleCore {
         Vector3 velocity;
         Vector3 size;
         AZ::Color color;
-        uint64_t ribbonId = UINT64_MAX;
+        AZ::u64 ribbonId = UINT64_MAX;
         float currentLife = 0.0f;
         float lifetime = 0.0f;
 
         float currentNum = 0.0f;
-        uint32_t emitNum = 0u;
+        AZ::u32 emitNum = 0u;
         float emitTime = 0.0f;
         bool applyPosition = false;
         bool applyVelocity = false;
@@ -314,9 +302,9 @@ namespace SimuCore::ParticleCore {
 
     struct ParticleEventPool {
         // key = emitterID + eventType, value = vector<info>
-        std::unordered_map<uint64_t, std::vector<ParticleEventInfo>> events;
+        AZStd::unordered_map<AZ::u64, AZStd::vector<ParticleEventInfo>> events;
         // emitterID, value = map<particleID, info>
-        std::vector<std::unordered_map<uint64_t, InheritanceInfo>> inheritances;
+        AZStd::vector<AZStd::unordered_map<AZ::u64, InheritanceInfo>> inheritances;
     };
 
     struct CollisionInfo {
@@ -329,17 +317,17 @@ namespace SimuCore::ParticleCore {
         bool isProcessBurstList = true;
         bool isProcessSpawnRate = true;
         bool isIgnoreSpawnRate = false;
-        uint32_t burstNum = 0;
-        uint32_t spawnNum = 0;
-        uint32_t numOverMoving = 0;
-        uint32_t newParticleNum = 0;
+        AZ::u32 burstNum = 0;
+        AZ::u32 spawnNum = 0;
+        AZ::u32 numOverMoving = 0;
+        AZ::u32 newParticleNum = 0;
         float realEmitTime = 0.0f;
         // Event Info
-        std::vector<ParticleEventInfo> eventSpawn;
-        std::vector<InheritanceSpawn*> inheritanceSpawn;
+        AZStd::vector<ParticleEventInfo> eventSpawn;
+        AZStd::vector<InheritanceSpawn*> inheritanceSpawn;
     };
     
-    enum class InfoType : uint32_t {
+    enum class InfoType : AZ::u32 {
         EMIT = 0,
         SPAWN,
         UPDATE
@@ -356,7 +344,7 @@ namespace SimuCore::ParticleCore {
     struct EmitInfo {
         RandomStream* randomStream = nullptr;
         ParticleEventPool* systemEventPool;
-        std::unordered_map<uint32_t, InheritanceSpawn>* emitterInheritances;
+        AZStd::unordered_map<AZ::u32, InheritanceSpawn>* emitterInheritances;
         BaseInfo baseInfo;
         float tickTime = 0.f;
         float moveDistance = 0.f;
@@ -365,25 +353,25 @@ namespace SimuCore::ParticleCore {
 
     struct SpawnInfo {
         Transform emitterTrans;
-        Vector3 front = VEC3_UNIT_Z;
+        Vector3 front = Vector3::CreateAxisZ();
         const Vector3* vertexStream = nullptr;
-        const uint32_t* indiceStream = nullptr;
+        const AZ::u32* indiceStream = nullptr;
         const double* areaStream = nullptr;
         const Vector3* boneStream = nullptr;
         RandomStream* randomStream = nullptr;
         ParticleEventPool* systemEventPool;
         BaseInfo baseInfo;
-        uint32_t vertexCount = 0;
-        uint32_t indiceCount = 0;
-        uint32_t boneCount = 0;
-        uint32_t currentEmitter = 0;
+        AZ::u32 vertexCount = 0;
+        AZ::u32 indiceCount = 0;
+        AZ::u32 boneCount = 0;
+        AZ::u32 currentEmitter = 0;
     };
 
     struct UpdateInfo {
         Transform emitterTrans;
-        Vector3 front = VEC3_UNIT_Z;
-        Vector3 maxExtend = VEC3_ZERO;
-        Vector3 minExtend = VEC3_ZERO;
+        Vector3 front = Vector3::CreateAxisZ();
+        Vector3 maxExtend = Vector3::CreateZero();
+        Vector3 minExtend = Vector3::CreateZero();
         RandomStream* randomStream = nullptr;
         BaseInfo baseInfo;
         float tickTime = 0.0f;
@@ -397,9 +385,9 @@ namespace SimuCore::ParticleCore {
         Transform emitterTrans;
         Particle* particleBuffer = nullptr;
         ParticleEventPool* systemEventPool;
-        uint32_t begin = 0;
-        uint32_t alive = 0;
-        uint32_t currentEmitter = 0;
+        AZ::u32 begin = 0;
+        AZ::u32 alive = 0;
+        AZ::u32 currentEmitter = 0;
         float tickTime = 0.0f;
         bool localSpace = false;
     };
@@ -407,7 +395,7 @@ namespace SimuCore::ParticleCore {
     struct GpuInstance {
         union {
             void* ptr;
-            uint64_t idx;
+            AZ::u64 idx;
         } data;
     };
 
@@ -415,24 +403,24 @@ namespace SimuCore::ParticleCore {
         static constexpr RenderType RENDER_TYPE = RenderType::SPRITE;
 
         AZ::Vector2 subImageSize{ 1.0f, 1.0f };
-        uint32_t sortId = 0;
+        AZ::u32 sortId = 0;
         Facing facing = Facing::CAMERA_RECTANGLE;
     };
 
     struct MeshConfig {
         static constexpr RenderType RENDER_TYPE = RenderType::MESH;
 
-        uint32_t sortId = 0;
+        AZ::u32 sortId = 0;
         Facing facing = Facing::CUSTOM;
     };
 
-    enum class TrailMode : uint8_t {
+    enum class TrailMode : AZ::u8 {
         RIBBON = 0,
         TRAIL
     };
 
     struct RibbonParam {
-        uint32_t ribbonCount = 1;
+        AZ::u32 ribbonCount = 1;
     };
 
     struct TrailParam {
@@ -440,7 +428,7 @@ namespace SimuCore::ParticleCore {
         float lifetime = 0.f;
         bool inheritLifetime = true;
         bool dieWithParticles = false;
-        uint16_t padding0 = 0;
+        AZ::u16 padding0 = 0;
     };
 
     struct RibbonConfig {
@@ -449,8 +437,8 @@ namespace SimuCore::ParticleCore {
         ValueObjFloat ribbonWidth {1.f};
         TrailParam trailParam;
         RibbonParam ribbonParam;
-        uint32_t sortId = 0;
-        float minRibbonSegmentLength = Math::EPSLON;
+        AZ::u32 sortId = 0;
+        float minRibbonSegmentLength = AZ::Constants::FloatEpsilon;
         float tesselationFactor = 1.f;
         float curveTension = 0.f;
         float tilingDistance = 0.f;
@@ -460,18 +448,18 @@ namespace SimuCore::ParticleCore {
     };
 
     struct DrawLinear {
-        uint32_t instanceCount;
-        uint32_t instanceOffset;
-        uint32_t vertexCount;
-        uint32_t vertexOffset;
+        AZ::u32 instanceCount;
+        AZ::u32 instanceOffset;
+        AZ::u32 vertexCount;
+        AZ::u32 vertexOffset;
     };
 
     struct DrawIndexed {
-        uint32_t instanceCount;
-        uint32_t instanceOffset;
-        uint32_t vertexOffset;
-        uint32_t indexCount;
-        uint32_t indexOffset;
+        AZ::u32 instanceCount;
+        AZ::u32 instanceOffset;
+        AZ::u32 vertexOffset;
+        AZ::u32 indexCount;
+        AZ::u32 indexOffset;
     };
 
     struct DrawIndirect {
@@ -479,7 +467,7 @@ namespace SimuCore::ParticleCore {
 
     struct DrawArgsInitializer {
         // max size of DrawLinear, DrawIndexed, DrawIndirect
-        uint8_t value[sizeof(DrawIndexed)];
+        AZ::u8 value[sizeof(DrawIndexed)];
     };
 
     struct DrawArgs {
@@ -511,13 +499,13 @@ namespace SimuCore::ParticleCore {
 
     struct BufferView {
         GpuInstance buffer;
-        uint32_t offset;
-        uint32_t size;
-        uint32_t stride;
+        AZ::u32 offset;
+        AZ::u32 size;
+        AZ::u32 stride;
     };
 
     struct VariantKey {
-        uint64_t value;
+        AZ::u64 value;
     };
 
     struct LightParticle {
@@ -531,12 +519,12 @@ namespace SimuCore::ParticleCore {
         BufferView vertexBuffer;
         BufferView indexBuffer;
         DrawArgs drawArgs;
-        std::vector<Vector3> positionBuffer;
+        AZStd::vector<Vector3> positionBuffer;
     };
 
     struct WorldInfo {
         union ViewKey {
-            uint64_t v;
+            AZ::u64 v;
             uintptr_t p;
         } viewKey;
         Vector3 cameraPosition;
@@ -546,32 +534,32 @@ namespace SimuCore::ParticleCore {
         Transform emitterTransform;
     };
 
-    enum class BufferUsage : uint8_t {
+    enum class BufferUsage : AZ::u8 {
         VERTEX,
         INDEX
     };
 
-    enum class MemoryType : uint8_t {
+    enum class MemoryType : AZ::u8 {
         DYNAMIC,
         STATIC
     };
 
-    enum class InputRate : uint8_t {
+    enum class InputRate : AZ::u8 {
         VERTEX,
         INSTANCE
     };
 
     struct BufferCreate {
-        const uint8_t* data = nullptr;
-        uint32_t size = 0;
+        const AZ::u8* data = nullptr;
+        AZ::u32 size = 0;
         BufferUsage usage;
         MemoryType memory;
     };
 
     struct BufferUpdate {
-        const uint8_t* data = nullptr;
-        uint32_t size = 0;
-        uint32_t offset = 0;
+        const AZ::u8* data = nullptr;
+        AZ::u32 size = 0;
+        AZ::u32 offset = 0;
         BufferUsage usage;
         MemoryType memory;
     };

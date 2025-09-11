@@ -16,11 +16,11 @@ namespace SimuCore::ParticleCore {
         auto updateValue = CalcDistributionTickValue(data->initAngle, info.baseInfo, particle);
         Vector3 axis = data->initAxis;
         Vector3 rAxis = data->rotateAxis;
-        particle.rotation = data->initAxis.IsEqual(VEC3_ZERO) ?
-            Vector4(data->initAxis, Math::AngleToRadians(updateValue)) :
-            Vector4(axis.Normalize(), Math::AngleToRadians(updateValue));
-        particle.rotationVector = data->rotateAxis.IsEqual(VEC3_ZERO) ?
-            Vector4(data->rotateAxis, 0) : Vector4(rAxis.Normalize(), 0);
+        particle.rotation = data->initAxis.IsClose(Vector3::CreateZero()) ?
+            Vector4(data->initAxis, AZ::DegToRad(updateValue)) :
+            Vector4(axis.GetNormalized(), AZ::DegToRad(updateValue));
+        particle.rotationVector = data->rotateAxis.IsClose(Vector3::CreateZero()) ?
+            Vector4(data->rotateAxis, 0) : Vector4(rAxis.GetNormalized(), 0);
     }
 
     void SpawnRotation::UpdateDistPtr(SpawnRotation* data, const Distribution& distribution)

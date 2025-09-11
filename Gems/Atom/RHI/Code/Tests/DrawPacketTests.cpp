@@ -462,7 +462,7 @@ namespace UnitTest
             RHI::DeviceDrawPacketBuilder builder;
             const RHI::DeviceDrawPacket* drawPacket = drawPacketData.Build(builder);
             RHI::DeviceDrawPacketBuilder builder2;
-            RHI::DeviceDrawPacket* drawPacketClone = const_cast<RHI::DeviceDrawPacket*>(builder2.Clone(drawPacket));
+            RHI::DeviceDrawPacket* drawPacketClone = builder2.Clone(drawPacket);
 
             uint8_t drawItemCount = drawPacketClone->m_drawItemCount;
 
@@ -499,7 +499,7 @@ namespace UnitTest
             RHI::DeviceDrawPacketBuilder builder;
             const RHI::DeviceDrawPacket* drawPacket = drawPacketData.Build(builder);
             RHI::DeviceDrawPacketBuilder builder2;
-            RHI::DeviceDrawPacket* drawPacketClone = const_cast<RHI::DeviceDrawPacket*>(builder2.Clone(drawPacket));
+            RHI::DeviceDrawPacket* drawPacketClone = builder2.Clone(drawPacket);
 
             AZStd::array<uint8_t, sizeof(unsigned int) * 4> rootConstantOld;
             EXPECT_EQ(sizeof(unsigned int) * 4, drawPacketClone->m_rootConstantSize);

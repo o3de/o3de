@@ -42,7 +42,7 @@ namespace OpenParticle
             const AZ::Transform& transform,
             const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) = 0;
 
-        virtual void SetMaterialDiffuseMap(const ParticleHandle& handle, uint32_t emitterIndex, AZStd::string mapPath) = 0;
+        virtual void SetMaterialDiffuseMap(const ParticleHandle& handle, AZ::u32 emitterIndex, AZStd::string mapPath) = 0;
     };
 
 } // namespace OpenParticle

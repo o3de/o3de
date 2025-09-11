@@ -18,10 +18,10 @@ namespace SimuCore::ParticleCore {
         static void Execute(const ParticleEventHandler* data, const EmitInfo& info, EmitSpawnParam& emitSpawnParam);
         static void UpdateDistPtr(const ParticleEventHandler* data, const Distribution& distribution);
 
-        uint32_t emitterIndex = UINT32_MAX;
-        uint32_t eventType = UINT32_MAX;
-        uint32_t maxEventNum = 0;
-        uint32_t emitNum = 1;
+        AZ::u32 emitterIndex = UINT32_MAX;
+        AZ::u32 eventType = UINT32_MAX;
+        AZ::u32 maxEventNum = 0;
+        AZ::u32 emitNum = 1;
         bool useEventInfo = false;
     };
 
@@ -33,7 +33,7 @@ namespace SimuCore::ParticleCore {
         Vector3 positionOffset;
         Vector3 velocityRatio;
         Vector4 colorRatio;
-        uint32_t emitterIndex = UINT32_MAX;
+        AZ::u32 emitterIndex = UINT32_MAX;
         float spawnRate = 0.0f;
         bool calculateSpawnRate = false;
         bool spawnEnable = true;

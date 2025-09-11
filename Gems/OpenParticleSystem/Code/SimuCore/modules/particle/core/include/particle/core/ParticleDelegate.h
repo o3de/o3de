@@ -16,9 +16,9 @@ namespace SimuCore::ParticleCore {
     class ParticleDelegate;
 
     template<typename... Args>
-    class ParticleDelegate<void(uint8_t*, Args...)> {
+    class ParticleDelegate<void(AZ::u8*, Args...)> {
     public:
-        using FuncType = void(uint8_t*, Args&&...);
+        using FuncType = void(AZ::u8*, Args&&...);
 
         ParticleDelegate() noexcept = default;
         ~ParticleDelegate() noexcept = default;
@@ -27,18 +27,18 @@ namespace SimuCore::ParticleCore {
         void Connect() noexcept
         {
             size = sizeof(Data);
-            func = [](uint8_t* rawData, Args&&... args) {
+            func = [](AZ::u8* rawData, Args&&... args) {
                 Func(reinterpret_cast<Data*>(rawData), std::forward<Args>(args)...);
             };
         }
 
-        void operator()(uint8_t* data, Args&&... args) const
+        void operator()(AZ::u8* data, Args&&... args) const
         {
             if (func != nullptr) {
                 func(data, std::forward<Args>(args)...);
             }
         }
-        uint32_t size = 0;
+        AZ::u32 size = 0;
         FuncType* func = nullptr;
     };
 
