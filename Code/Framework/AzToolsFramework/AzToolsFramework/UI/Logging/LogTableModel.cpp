@@ -34,7 +34,7 @@ namespace AzToolsFramework
 
         int LogTableModel::rowCount(const QModelIndex& parent) const
         {
-            return parent.isValid() ? 0 : m_lines.size() - m_pendingLines;
+            return parent.isValid() ? 0 : static_cast<int>(m_lines.size()) - m_pendingLines;
         }
 
         int LogTableModel::columnCount(const QModelIndex& parent) const
@@ -163,7 +163,7 @@ namespace AzToolsFramework
                 m_pendingLines++;
                 if (!m_tmpDetails.isEmpty())
                 {
-                    m_details.insert(m_lines.count() - 1, m_tmpDetails);
+                    m_details.insert(static_cast<int>(m_lines.count()) - 1, m_tmpDetails);
                     m_tmpDetails.clear();
                 }
             }
@@ -173,7 +173,8 @@ namespace AzToolsFramework
         {
             if (m_pendingLines > 0)
             {
-                beginInsertRows({}, m_lines.count() - m_pendingLines, m_lines.count() - 1);
+                const int count = static_cast<int>(m_lines.count());
+                beginInsertRows({}, count - m_pendingLines, count - 1);
                 m_pendingLines = 0;
                 endInsertRows();
             }
@@ -230,7 +231,7 @@ namespace AzToolsFramework
 
         int ContextDetailsLogTableModel::rowCount(const QModelIndex& parent) const
         {
-            return parent.isValid() ? 0 : m_data.count();
+            return parent.isValid() ? 0 : static_cast<int>(m_data.count());
         }
 
         int ContextDetailsLogTableModel::columnCount(const QModelIndex& parent) const
@@ -248,11 +249,27 @@ namespace AzToolsFramework
                 {
                     if (index.column() == ColumnKey)
                     {
-                        return (m_data.constBegin() +index.row()).key();
+                        int i = 0;
+                        for (auto it = m_data.keyBegin(); it != m_data.keyEnd(); ++it)
+                        {
+                            if (i == index.row())
+                            {
+                                return *it;
+                            }
+                            ++i;
+                        }
                     }
                     else if (index.column() == ColumnValue)
                     {
-                        return (m_data.constBegin() +index.row()).value();
+                        int i = 0;
+                        for (auto& value : m_data)
+                        {
+                            if (i == index.row())
+                            {
+                                return value;
+                            }
+                            ++i;
+                        }
                     }
 
                     break;

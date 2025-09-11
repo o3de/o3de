@@ -19,10 +19,6 @@
 #include <Editor/Animation/ui_UiAnimViewCurveEditor.h>
 
 #include <QtUtil.h>
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/QtWin>
-#endif
-
 
 #define IDC_TRACKVIEWGRAPH_CURVE 1
 #define IDC_TIMELINE             2
@@ -42,7 +38,7 @@ UiAnimViewCurveEditorDialog::UiAnimViewCurveEditorDialog(QWidget* parent)
 {
     m_widget = new CUiAnimViewCurveEditor(this);
     QVBoxLayout* l = new QVBoxLayout;
-    l->setMargin(0);
+    l->setContentsMargins(0, 0, 0, 0);
     l->addWidget(m_widget);
     setLayout(l);
 }

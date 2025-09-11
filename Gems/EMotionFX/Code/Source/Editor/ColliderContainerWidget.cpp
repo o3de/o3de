@@ -527,7 +527,7 @@ namespace EMotionFX
         , m_colliderIcon(colliderIcon)
     {
         m_layout = new QVBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(s_layoutSpacing);
         setLayout(m_layout);
 
@@ -623,7 +623,7 @@ namespace EMotionFX
 
         int ypos = event->globalY();
         int index = 0;
-        int curpos = mapToGlobal({0,0}).y();
+        int curpos = mapToGlobal(QPoint{0,0}).y();
         for (const ColliderWidget* card : m_colliderWidgets)
         {
             if (!card->GetActor())
@@ -631,7 +631,7 @@ namespace EMotionFX
                 break;
             }
 
-            curpos = card->mapToGlobal({0,0}).y();
+            curpos = card->mapToGlobal(QPoint{0,0}).y();
             if (curpos > ypos)
             {
                 break;

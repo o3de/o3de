@@ -48,10 +48,4 @@ namespace O3DE::ProjectManager
         { "CreateGem", ProjectManagerScreen::CreateGem },
         { "EditGem", ProjectManagerScreen::EditGem }
     };
-
-    // need to define qHash for ProjectManagerScreen when using scoped enums
-    inline uint qHash(ProjectManagerScreen key, uint seed)
-    {
-        return ::qHash(static_cast<uint>(key), seed);
-    }
 } // namespace O3DE::ProjectManager

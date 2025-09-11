@@ -17,6 +17,11 @@
 #include <AzToolsFramework/ActionManager/Action/EditorActionContext.h>
 #include <AzToolsFramework/ActionManager/Action/EditorWidgetAction.h>
 
+#include <QObject>
+
+class QKeyEvent;
+class QWidget;
+
 namespace AzToolsFramework
 {
     //! This class is used to mute KeyPress events that are triggered after a shortcut has fired.

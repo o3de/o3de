@@ -9,6 +9,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzCore/Math/MathUtils.h>
 #include <QLocale>
+#include <QRegularExpression>
 
 namespace AzQtComponents
 {
@@ -41,8 +42,8 @@ namespace AzQtComponents
 
     QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool round)
     {
-        const QChar decimalPoint = locale.decimalPoint();
-        const QChar zeroDigit = locale.zeroDigit();
+        const QString decimalPoint = locale.decimalPoint();
+        const QString zeroDigit = locale.zeroDigit();
         const int numToStringDecimals = AZStd::max(numDecimals, 20);
         QString retValue;
 
@@ -70,7 +71,7 @@ namespace AzQtComponents
             // Remove trailing zeros, since the locale conversion won't do
             // it for us
             QString trailingZeros = QString("%1+$").arg(zeroDigit);
-            retValue.remove(QRegExp(trailingZeros));
+            retValue.remove(QRegularExpression(trailingZeros));
 
             // It's possible we could be left with a decimal point on the end
             // if we stripped the trailing zeros, so if that's the case, then

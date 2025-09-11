@@ -550,7 +550,7 @@ void ViewportWidget::mousePressEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
-    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QPointF scaledPosition = WidgetToViewport(ev->position());
     QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
@@ -585,7 +585,7 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
-    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QPointF scaledPosition = WidgetToViewport(ev->position());
     QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
 
     if (editorMode == UiEditorMode::Edit)
@@ -594,7 +594,7 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
         m_viewportInteraction->MouseMoveEvent(&scaledEvent,
             m_editorWindow->GetHierarchy()->selectedItems());
 
-        QPointF screenPosition = WidgetToViewport(ev->screenPos());
+        QPointF screenPosition = WidgetToViewport(ev->globalPosition());
         SetRulerCursorPositions(screenPosition.toPoint());
     }
     else // if (editorMode == UiEditorMode::Preview)
@@ -624,7 +624,7 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
-    QPointF scaledPosition = WidgetToViewport(ev->localPos());
+    QPointF scaledPosition = WidgetToViewport(ev->position());
     QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
@@ -877,7 +877,7 @@ void ViewportWidget::dropEvent(QDropEvent* event)
         const AZ::EntityId targetEntityId;
         const bool onElement = false;
         const int childIndex = -1;
-        const QPoint pos = event->pos();
+        const QPoint pos = event->position().toPoint();
         m_editorWindow->GetHierarchy()->DropMimeDataAssets(event->mimeData(), targetEntityId, onElement, childIndex, &pos);
         event->accept();
 

@@ -116,7 +116,7 @@ namespace EMStudio
 
     protected:
         // used for drag and drop support for the blend tree
-        QMimeData* mimeData(const QList<QTableWidgetItem*> items) const override;
+        QMimeData* mimeData(const QList<QTableWidgetItem*>& items) const override;
         QStringList mimeTypes() const override;
         Qt::DropActions supportedDropActions() const override;
 

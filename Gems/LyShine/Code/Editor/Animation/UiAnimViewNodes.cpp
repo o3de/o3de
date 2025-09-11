@@ -49,7 +49,7 @@ CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CUiAnimViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -238,7 +238,6 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_matchCount = 0;
 
     qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();

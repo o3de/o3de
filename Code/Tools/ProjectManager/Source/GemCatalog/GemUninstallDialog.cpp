@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
         setModal(true);
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(30);
+        layout->setContentsMargins(30, 30, 30, 30);
         layout->setAlignment(Qt::AlignTop);
         setLayout(layout);
 

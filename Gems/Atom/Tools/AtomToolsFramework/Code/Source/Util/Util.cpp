@@ -124,19 +124,19 @@ namespace AtomToolsFramework
     {
         QString symbolName(text.c_str());
         // Remove all leading whitespace
-        symbolName.replace(QRegExp("^\\s+"), "");
+        symbolName.replace(QRegularExpression("^\\s+"), "");
         // Remove all trailing whitespace
-        symbolName.replace(QRegExp("\\s+$"), "");
+        symbolName.replace(QRegularExpression("\\s+$"), "");
         // Replace non alphanumeric characters with _
-        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), "_");
+        symbolName.replace(QRegularExpression("[^a-zA-Z\\d]"), "_");
         // Insert a _ between a lowercase or numeric character followed by an uppercase character
-        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1_\\2");
+        symbolName.replace(QRegularExpression("([a-z\\d])([A-Z])"), "\\1_\\2");
         // Insert an underscore at the beginning of the string if it starts with a digit
-        symbolName.replace(QRegExp("^(\\d)"), "_\\1");
+        symbolName.replace(QRegularExpression("^(\\d)"), "_\\1");
         // Replace every sequence of whitespace characters with underscores
-        symbolName.replace(QRegExp("\\s+"), "_");
+        symbolName.replace(QRegularExpression("\\s+"), "_");
         // Replace Sequences of _ with a single _
-        symbolName.replace(QRegExp("_+"), "_");
+        symbolName.replace(QRegularExpression("_+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
 
@@ -144,15 +144,15 @@ namespace AtomToolsFramework
     {
         QString displayName(text.c_str());
         // Remove all leading whitespace
-        displayName.replace(QRegExp("^\\s+"), "");
+        displayName.replace(QRegularExpression("^\\s+"), "");
         // Remove all trailing whitespace
-        displayName.replace(QRegExp("\\s+$"), "");
+        displayName.replace(QRegularExpression("\\s+$"), "");
         // Replace non alphanumeric characters with space
-        displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        displayName.replace(QRegularExpression("[^a-zA-Z\\d]"), " ");
         // Insert a space between a lowercase or numeric character followed by an uppercase character
-        displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        displayName.replace(QRegularExpression("([a-z\\d])([A-Z])"), "\\1 \\2");
         // Tokenize the string where separated by whitespace
-        QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
+        QStringList displayNameParts = displayName.split(QRegularExpression("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
         {
             // Capitalize the first character of every token
@@ -401,7 +401,7 @@ namespace AtomToolsFramework
         const QString basePathAndName = fileInfo.absoluteFilePath().left(fileInfo.absoluteFilePath().size() - extension.size());
         while (fileInfo.exists())
         {
-            fileInfo = QString("%1_%2%3").arg(basePathAndName).arg(++counter).arg(extension);
+            fileInfo = QFileInfo(QString("%1_%2%3").arg(basePathAndName).arg(++counter).arg(extension));
         }
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }

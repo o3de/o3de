@@ -17,6 +17,7 @@
 #include <QSize>
 #include <QStyleOptionToolButton>
 #include <QToolButton>
+#include <QWindow>
 #include <QtWidgets/private/qstylehelper_p.h>
 
 namespace AzQtComponents
@@ -241,7 +242,7 @@ bool ToolButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* 
 
     if (QWindow* window = widget->window()->windowHandle())
     {
-        originalPixmap = icon.pixmap(window, requestedSize);
+        originalPixmap = icon.pixmap(requestedSize, window->devicePixelRatio());
     }
     else
     {

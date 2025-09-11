@@ -12,7 +12,7 @@
 #include <qabstractitemmodel.h>
 #include <qitemdelegate.h>
 #include <qobject.h>
-#include <qregexp.h>
+#include <QRegularExpression>
 #include <qsortfilterproxymodel.h>
 
 #include <AzCore/Component/EntityId.h>
@@ -95,6 +95,6 @@ namespace GraphCanvas
 
     private:
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

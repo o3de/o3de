@@ -21,7 +21,7 @@ namespace EMStudio
         : QWidget(parent)
     {
         QVBoxLayout* motionPropertiesLayout = new QVBoxLayout(this);
-        motionPropertiesLayout->setMargin(0);
+        motionPropertiesLayout->setContentsMargins(0, 0, 0, 0);
         motionPropertiesLayout->setSpacing(0);
 
         m_motionExtractionWindow = new MotionExtractionWindow(this);

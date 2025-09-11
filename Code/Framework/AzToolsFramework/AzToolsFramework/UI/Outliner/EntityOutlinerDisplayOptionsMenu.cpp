@@ -8,6 +8,8 @@
 
 #include "EntityOutlinerDisplayOptionsMenu.h"
 
+#include <QActionGroup>
+#include <QAction>
 #include <QIcon>
 
 namespace AzToolsFramework
