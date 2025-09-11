@@ -191,7 +191,7 @@ namespace LUAEditor
 
     void LUAEditorBreakpointWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        auto mousePos = event->localPos();
+        auto mousePos = event->position();
         m_textEdit->ForEachVisibleBlock(
             [&](const QTextBlock& block, const QRectF& blockRect)
             {

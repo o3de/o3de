@@ -107,7 +107,7 @@ namespace MysticQt
         dialogLayout->setAlignment(Qt::AlignTop);
         dialogWidget->setLayout(dialogLayout);
         dialogLayout->setSpacing(0);
-        dialogLayout->setMargin(0);
+        dialogLayout->setContentsMargins(0, 0, 0, 0);
 
         // add the dialog widget
         // the splitter is hierarchical : {a, {b, c}}
@@ -233,7 +233,7 @@ namespace MysticQt
         QVBoxLayout* layout = new QVBoxLayout();
         layout->addWidget(widget, Qt::AlignTop | Qt::AlignLeft);
         layout->setSpacing(0);
-        layout->setMargin(3);
+        layout->setContentsMargins(3, 3, 3, 3);
 
         // set the frame layout
         frame->setLayout(layout);
@@ -512,8 +512,8 @@ namespace MysticQt
         if (event->buttons() & Qt::LeftButton)
         {
             // keep the mouse pos
-            m_prevMouseX = event->globalX();
-            m_prevMouseY = event->globalY();
+            m_prevMouseX = event->globalPosition().x();
+            m_prevMouseY = event->globalPosition().y();
 
             // set the cursor if the scrollbar is visible
             if ((horizontalScrollBar()->maximum() > 0) || (verticalScrollBar()->maximum() > 0))
@@ -559,8 +559,8 @@ namespace MysticQt
         }
 
         // calculate the delta mouse movement
-        const int32 deltaX = event->globalX() - m_prevMouseX;
-        const int32 deltaY = event->globalY() - m_prevMouseY;
+        const int32 deltaX = event->globalPosition().x() - m_prevMouseX;
+        const int32 deltaY = event->globalPosition().y() - m_prevMouseY;
 
         // now apply this delta movement to the scroller
         int32 newX = horizontalScrollBar()->value() - deltaX;
@@ -569,8 +569,8 @@ namespace MysticQt
         verticalScrollBar()->setSliderPosition(newY);
 
         // store the current value as previous value
-        m_prevMouseX = event->globalX();
-        m_prevMouseY = event->globalY();
+        m_prevMouseX = event->globalPosition().x();
+        m_prevMouseY = event->globalPosition().y();
     }
 
 

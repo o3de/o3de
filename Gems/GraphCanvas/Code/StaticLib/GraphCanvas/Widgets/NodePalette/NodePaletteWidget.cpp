@@ -97,7 +97,7 @@ namespace GraphCanvas
                 {
                     QVariant roleColor = index.data(Qt::ForegroundRole);
                     QColor textColor =
-                        (roleColor.type() == QVariant::Type::Color) ? roleColor.value<QColor>() : options.palette.color(QPalette::Text);
+                        (roleColor.userType() == QMetaType::QColor) ? roleColor.value<QColor>() : options.palette.color(QPalette::Text);
 
                     int fontAlpha = aznumeric_cast<int>(textColor.alpha() * 0.5f);
                     fontAlpha = AZStd::min(AZStd::min(fontAlpha, 127), textColor.alpha());

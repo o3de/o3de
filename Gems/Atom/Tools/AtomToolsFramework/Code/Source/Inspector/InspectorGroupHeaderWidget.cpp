@@ -26,7 +26,7 @@ namespace AtomToolsFramework
         setStyleSheet("background-color: #333333; border-style: solid; border-color: #1B1B1B; border-width: 1px; border-left: none; border-right: none;");
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         setFixedHeight(24);
-        setMargin(0);
+        setContentsMargins(0, 0, 0, 0);
     }
 
     void InspectorGroupHeaderWidget::SetExpanded(bool expand)

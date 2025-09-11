@@ -47,6 +47,7 @@
 #include "EditorCommon.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -115,7 +116,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 
@@ -228,7 +229,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
 
     QWidget* w = new QWidget();
     QVBoxLayout* l = new QVBoxLayout;
-    l->setMargin(0);
+    l->setContentsMargins(0, 0, 0, 0);
 
     m_wndSplitter = new QSplitter(w);
     m_wndSplitter->setOrientation(Qt::Horizontal);

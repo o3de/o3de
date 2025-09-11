@@ -368,11 +368,11 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent* event)
     {
         if (m_bTrackingSnapToFrames)
         {
-            SetTimeMarker(SnapTimeToFrame(ClientToTime(event->x())));
+            SetTimeMarker(SnapTimeToFrame(ClientToTime(event->position().x())));
         }
         else
         {
-            SetTimeMarker(ClientToTime(event->x()));
+            SetTimeMarker(ClientToTime(event->position().x()));
         }
         CScopedVariableSetter<bool> ignoreSetTime(m_bIgnoreSetTime, true);
         Q_EMIT change();
@@ -390,7 +390,7 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent* event)
         bool altClicked = Qt::AltModifier & QApplication::queryKeyboardModifiers();
         float scale, offset;
         float startTime = ClientToTime(m_lastPoint.x());
-        float endTime = ClientToTime(event->x());
+        float endTime = ClientToTime(event->position().x());
         if (altClicked)
         {
             // Alt was pressed, so we should scale the key times rather than translate.
@@ -415,8 +415,8 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent* event)
 
     case TRACKING_MODE_SELECTION_RANGE:
     {
-        float start = min(ClientToTime(m_lastPoint.x()), ClientToTime(event->x()));
-        float end = max(ClientToTime(m_lastPoint.x()), ClientToTime(event->x()));
+        const float start = min(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
+        const float end = max(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
         SelectKeysInRange(start, end, !(event->modifiers() & Qt::ShiftModifier));
         m_lastPoint = event->pos();
         update();

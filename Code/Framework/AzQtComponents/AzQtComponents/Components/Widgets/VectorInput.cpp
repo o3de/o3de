@@ -252,7 +252,7 @@ VectorInput::VectorInput(QWidget* parent, int elementCount, int elementsPerRow, 
 {
     // Set up Qt layout
     QGridLayout* pLayout = new QGridLayout(this);
-    pLayout->setMargin(0);
+    pLayout->setContentsMargins(0, 0, 0, 0);
     pLayout->setSpacing(2);
     pLayout->setContentsMargins(1, 0, 1, 0);
 

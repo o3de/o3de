@@ -74,13 +74,13 @@ namespace EMStudio
 
         // build the layout
         m_hLayout = new QHBoxLayout();
-        m_hLayout->setMargin(0);
+        m_hLayout->setContentsMargins(0, 0, 0, 0);
         m_hLayout->setAlignment(Qt::AlignLeft);
 
         m_hLayout->addWidget(m_listWidget);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->addWidget(m_tableWidget);
 
         QLabel* label = new QLabel("Double-click to adjust shortcut");
@@ -365,7 +365,7 @@ namespace EMStudio
         layout->addWidget(m_conflictKeyLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        buttonLayout->setMargin(0);
+        buttonLayout->setContentsMargins(0, 0, 0, 0);
 
         m_okButton = new QPushButton("OK");
         buttonLayout->addWidget(m_okButton);

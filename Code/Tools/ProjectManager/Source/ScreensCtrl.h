@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/unordered_map.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
@@ -55,7 +57,7 @@ namespace O3DE::ProjectManager
         int GetScreenTabIndex(ProjectManagerScreen screen);
 
         QStackedWidget* m_screenStack;
-        QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
+        AZStd::unordered_map<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
         QTabWidget* m_tabWidget;
         DownloadController* m_downloadController;
