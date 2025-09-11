@@ -598,6 +598,8 @@ namespace AzToolsFramework
         EnableEditor(true);
         m_sceneIsNew = true;
 
+        m_gui->m_prefabContainerText->setElideMode(Qt::ElideLeft);
+
         connect(m_gui->m_entityIcon, &QPushButton::clicked, this, &EntityPropertyEditor::BuildEntityIconMenu);
         connect(m_gui->m_addComponentButton, &QPushButton::clicked, this, &EntityPropertyEditor::OnAddComponent);
         connect(m_gui->m_entitySearchBox, &QLineEdit::textChanged, this, &EntityPropertyEditor::OnSearchTextChanged);
