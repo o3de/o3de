@@ -586,10 +586,10 @@ namespace OpenParticle
             detailInfo->m_modules.emplace(name, ModuleType());
         }
 
-        detailInfo->m_name = &emitterInfo->m_name;
-        detailInfo->m_material = &emitterInfo->m_material;
-        detailInfo->m_model = &emitterInfo->m_model;
-        detailInfo->m_skeletonModel = &emitterInfo->m_skeletonModel;
+        detailInfo->m_name = emitterInfo->m_name;
+        detailInfo->m_material = emitterInfo->m_material;
+        detailInfo->m_model =  emitterInfo->m_model;
+        detailInfo->m_skeletonModel = emitterInfo->m_skeletonModel;
         detailInfo->m_isUse = true;
 
         AZStd::unordered_map<AZ::TypeId, AZStd::vector<AZStd::any*>> emitterModules;
@@ -649,7 +649,7 @@ namespace OpenParticle
         auto iter = AZStd::find(m_details.begin(), m_details.end(), info);
         if (iter != m_details.end())
         {
-            RemoveEmitter(GetPointerFromEmitterName(*info->m_name, m_emitters));
+            RemoveEmitter(GetPointerFromEmitterName(info->m_name, m_emitters));
             delete *iter;
             m_details.erase(iter);
         }
@@ -666,15 +666,14 @@ namespace OpenParticle
         }
         detailInfo->m_isUse = true;
         auto emitterInfo = AddEmitter(emitterName);
-        emitterInfo->m_name = *detailInfo->m_name;
-        detailInfo->m_name = &emitterInfo->m_name;
-        emitterInfo->m_material = *detailInfo->m_material;
-        detailInfo->m_material = &emitterInfo->m_material;
-        emitterInfo->m_model = *detailInfo->m_model;
-        detailInfo->m_model = &emitterInfo->m_model;
-        emitterInfo->m_skeletonModel = *detailInfo->m_skeletonModel;
-        detailInfo->m_skeletonModel = &emitterInfo->m_skeletonModel;
-        detailInfo->m_nameList.clear();
+        emitterInfo->m_name = detailInfo->m_name;
+        detailInfo->m_name = emitterInfo->m_name;
+        emitterInfo->m_material = detailInfo->m_material;
+        detailInfo->m_material = emitterInfo->m_material;
+        emitterInfo->m_model = detailInfo->m_model;
+        detailInfo->m_model = emitterInfo->m_model;
+        emitterInfo->m_skeletonModel = detailInfo->m_skeletonModel;
+        detailInfo->m_skeletonModel = emitterInfo->m_skeletonModel;
 
         for (auto& tuple : detailInfo->m_unusedListForDetail)
         {
@@ -684,7 +683,46 @@ namespace OpenParticle
         detailInfo->m_unusedListForDetail.clear();
     }
 
+    void ParticleSourceData::UpdateEmitterAsset(const AZStd::string& emitterName, const AZ::u8 index)
+    {
+
+        EmitterInfo* emitter = GetPointerFromEmitterName(emitterName, m_emitters);
+        DetailInfo* detailInfo = GetPointerFromEmitterName(emitterName, m_details);
+        if (detailInfo == nullptr || emitter == nullptr)
+        {
+            return;
+        }
+
+        switch (index)
+        {
+            case DetailConstant::ASSET_MATERIAL:
+                emitter->m_material = detailInfo->m_material;
+                break;
+            case DetailConstant::ASSET_MODEL:
+                emitter->m_model = detailInfo->m_model;
+                break;
+            case DetailConstant::ASSET_SKELETON_MODEL:
+                emitter->m_skeletonModel = detailInfo->m_skeletonModel;
+                break;
+        }
+    }
+
+    void ParticleSourceData::UpdateEmitterName(const AZStd::string& oldEmitterName, const AZStd::string& newEmitterName)
+    {
+        EmitterInfo* emitter = GetPointerFromEmitterName(oldEmitterName, m_emitters);
+        DetailInfo* detailInfo = GetPointerFromEmitterName(oldEmitterName, m_details);
+        if (detailInfo == nullptr || emitter == nullptr)
+        {
+            return;
+        }
+        emitter->m_name = newEmitterName;
+        detailInfo->m_name = newEmitterName;
+    }
+
     // Unselect Emitter in the Particle Editor
+    // Note that when we do this, we actually call RemoveEmitter from the source data,
+    // which leaves the data inside just the Details object.
+    // We can then re-enable it later using SelectDetail above, without losing the data.
     void ParticleSourceData::UnselectDetail(AZStd::string emitterName)
     {
         EmitterInfo* emitterInfo = GetPointerFromEmitterName(emitterName, m_emitters);
@@ -693,16 +731,6 @@ namespace OpenParticle
         {
             return;
         }
-        auto& nameList = detailInfo->m_nameList;
-        auto TransName = [&nameList](AZStd::string*& name)
-        {
-            nameList.emplace_back(name->c_str());
-            name = &nameList.back();
-        };
-        AZStd::invoke(TransName, detailInfo->m_name);
-        AZStd::invoke(TransName, detailInfo->m_material);
-        AZStd::invoke(TransName, detailInfo->m_model);
-        AZStd::invoke(TransName, detailInfo->m_skeletonModel);
 
         auto& moduleMap = detailInfo->m_modules;
         for (auto& pair : moduleMap)
@@ -718,13 +746,13 @@ namespace OpenParticle
         }
         RemoveEmitter(emitterInfo);
         detailInfo->m_isUse = false;
-        SetEventHandler(true, *detailInfo->m_name);
+        SetEventHandler(true, detailInfo->m_name);
     }
 
     // Add module to emitter
     void ParticleSourceData::SelectModule(DetailInfo* detailInfo, AZStd::string className, AZStd::string moduleName)
     {
-        EmitterInfo* emitterInfo = GetPointerFromEmitterName(*detailInfo->m_name, m_emitters);
+        EmitterInfo* emitterInfo = GetPointerFromEmitterName(detailInfo->m_name, m_emitters);
         auto& listIndex = AZStd::get<DetailConstant::LIST_INDEX>(GetTypeIdItem(className, moduleName));
         if (emitterInfo == nullptr)
         {
@@ -777,7 +805,7 @@ namespace OpenParticle
     // Remove module from emitter
     void ParticleSourceData::UnselectModule(DetailInfo* detailInfo, AZStd::string className, AZStd::string moduleName)
     {
-        EmitterInfo* emitterInfo = GetPointerFromEmitterName(*detailInfo->m_name, m_emitters);
+        EmitterInfo* emitterInfo = GetPointerFromEmitterName(detailInfo->m_name, m_emitters);
         auto& listIndex = AZStd::get<DetailConstant::LIST_INDEX>(GetTypeIdItem(className, moduleName));
         if (emitterInfo == nullptr)
         {
@@ -1043,7 +1071,7 @@ namespace OpenParticle
             name = name + AZStd::to_string(detail->m_itemNumber[typeId]++);
         }
         AZStd::any* pointer = nullptr;
-        auto emitter = GetPointerFromEmitterName(*detail->m_name, m_emitters);
+        auto emitter = GetPointerFromEmitterName(detail->m_name, m_emitters);
         emitter->m_emitModules.emplace_back(module);
         pointer = &emitter->m_emitModules.back();
         detail->m_modules[className][name] = { true, pointer };
@@ -1075,7 +1103,7 @@ namespace OpenParticle
                 list.erase(find);
             }
         };
-        auto emitter = GetPointerFromEmitterName(*detail->m_name, m_emitters);
+        auto emitter = GetPointerFromEmitterName(detail->m_name, m_emitters);
         AZStd::invoke(listFun, emitter->m_emitModules);
         AZStd::invoke(eraseFun, moduleMap, ModuleType::value_type(moduleName, AZStd::pair<bool, AZStd::any*>(true, any)));
     }
@@ -1188,8 +1216,17 @@ namespace OpenParticle
         SelectModule(detailInfo, "Particles", "Start Velocity");
         SelectModule(detailInfo, "Shape", "Point");
         SelectModule(detailInfo, "Renderer", "Sprite Renderer");
-        
-        *detailInfo->m_material = "Materials/OpenParticle/ParticleSpriteEmit.material";
+
+        AZ::Data::AssetId defaultSpriteEmitMaterialId;
+        using editorBus = EditorParticleSystemComponentRequestBus;
+        using editorBusEvents = EditorParticleSystemComponentRequestBus::Events;
+        editorBus::BroadcastResult(defaultSpriteEmitMaterialId, &editorBusEvents::GetDefaultEmitterMaterialId);
+
+        if (defaultSpriteEmitMaterialId.IsValid())
+        {
+            detailInfo->m_material =
+                AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehaviorNamespace::NoLoad);
+        }
     }
 
     void ParticleSourceData::StashDistribution(AZStd::any& any, const void* detailInfo, const AZStd::string& className, const AZStd::string& moduleName)
@@ -1456,7 +1493,7 @@ namespace OpenParticle
         {
             if (detail->m_solo)
             {
-                name = *detail->m_name;
+                name = detail->m_name;
                 return true;
             }
         }
@@ -1638,9 +1675,9 @@ namespace OpenParticle
     }
     void ParticleSourceData::CopyDetailFromDetail(DetailInfo* sourceDetail, EmitterInfo* destEmitter, DetailInfo* destDetail)
     {
-        destEmitter->m_material = *sourceDetail->m_material;
-        destEmitter->m_model = *sourceDetail->m_model;
-        destEmitter->m_skeletonModel = *sourceDetail->m_skeletonModel;
+        destEmitter->m_material = sourceDetail->m_material;
+        destEmitter->m_model = sourceDetail->m_model;
+        destEmitter->m_skeletonModel = sourceDetail->m_skeletonModel;
         // copy modules
         for (auto& tuple : sourceDetail->m_unusedListForDetail)
         {

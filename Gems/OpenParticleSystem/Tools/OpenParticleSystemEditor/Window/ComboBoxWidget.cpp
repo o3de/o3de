@@ -13,12 +13,13 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Window/EffectorInspector.h>
 #include <Document/ParticleDocumentBus.h>
+#include <OpenParticleSystemEditor/Window/AssetWidget.h>
 
 namespace OpenParticleSystemEditor
 {
     ComboBoxWidget::ComboBoxWidget(
         const AZStd::string& className,
-        OpenParticle::ParticleSourceData::DetailInfo* m_detail,
+        OpenParticle::ParticleSourceData::DetailInfo* detail,
         AZ::SerializeContext* serializeContext,
         AzToolsFramework::IPropertyEditorNotify* pnotify,
         QWidget* parent)
@@ -33,7 +34,7 @@ namespace OpenParticleSystemEditor
         m_propertyEditor->SetSavedStateKey({});
         m_propertyEditor->Setup(serializeContext, pnotify, false);
         m_propertyEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
-        for (const auto& iterModule : m_detail->m_modules[m_className.data()])
+        for (const auto& iterModule : detail->m_modules[m_className.data()])
         {
             if (iterModule.second.first == true)
             {
@@ -54,10 +55,11 @@ namespace OpenParticleSystemEditor
 
         InitComboBox();
 
-        m_materialAssetWidget = new AssetWidget(MATERIAL_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::MaterialAsset>(), MATERIAL_EXTENTION, this);
-        m_modelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), MODEL_EXTENTION, this);
-        m_skeletonModelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), MODEL_EXTENTION, this);
-        SetAssetWidget(*m_detail->m_material, *m_detail->m_model, *m_detail->m_skeletonModel);
+        m_materialAssetWidget = new AssetWidget(MATERIAL_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::MaterialAsset>(), this);
+        m_modelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), this);
+        m_skeletonModelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), this);
+        
+        SetAssetWidget(&detail->m_material, &detail->m_model, &detail->m_skeletonModel);
         SetAssetWidgetVisible();
 
         SetUI();
@@ -181,7 +183,10 @@ namespace OpenParticleSystemEditor
         SetAssetWidgetVisible();
     }
 
-    void ComboBoxWidget::SetAssetWidget(AZStd::string& materialAsset, AZStd::string& modelAsset, AZStd::string& skeletonModelAsset)
+    void ComboBoxWidget::SetAssetWidget(
+        AZ::Data::Asset<AZ::RPI::MaterialAsset>* materialAsset,
+        AZ::Data::Asset<AZ::RPI::ModelAsset>* modelAsset,
+        AZ::Data::Asset<AZ::RPI::ModelAsset>* skeletonModelAsset)
     {
         EffectorInspector* inspector = dynamic_cast<EffectorInspector*>(m_parent);
         AZStd::string busWidgetName = "";
@@ -189,20 +194,37 @@ namespace OpenParticleSystemEditor
         {
             busWidgetName = inspector->m_widgetName;
         }
-        auto func = [busWidgetName](AssetWidget* widget, AZStd::string& value)
-        {
-            widget->SetAssetPath(value);
-            widget->OnAssetSelectionChanged(
-                [busWidgetName, &value](const char* relPath)
-                {
-                    value = AZStd::string::format("%s", relPath);
-                    EBUS_EVENT_ID(busWidgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
-                });
-        };
 
-        func(m_materialAssetWidget, materialAsset);
-        func(m_modelAssetWidget, modelAsset);
-        func(m_skeletonModelAssetWidget, skeletonModelAsset);
+        
+        m_materialAssetWidget->SetAssetId(materialAsset->GetId());
+        m_modelAssetWidget->SetAssetId(modelAsset->GetId());
+        m_skeletonModelAssetWidget->SetAssetId(skeletonModelAsset->GetId());
+
+        m_materialAssetWidget->SetOnAssetSelectionChangedCallback(
+            [this, busWidgetName, materialAsset](AZ::Data::AssetId newId)
+            {
+                *materialAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(newId, AZ::Data::AssetLoadBehavior::PreLoad);
+                Q_EMIT(OnMaterialChanged());
+                EBUS_EVENT_ID(busWidgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+            });
+
+         m_modelAssetWidget->SetOnAssetSelectionChangedCallback(
+            [this, busWidgetName, modelAsset](AZ::Data::AssetId newId)
+            {
+                *modelAsset =
+                    AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(newId, AZ::Data::AssetLoadBehavior::PreLoad);
+                Q_EMIT(OnModelChanged());
+                EBUS_EVENT_ID(busWidgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+            });
+
+         m_skeletonModelAssetWidget->SetOnAssetSelectionChangedCallback(
+             [this, busWidgetName, skeletonModelAsset](AZ::Data::AssetId newId)
+            {
+                 *skeletonModelAsset =
+                     AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(newId, AZ::Data::AssetLoadBehavior::PreLoad);
+                 Q_EMIT(OnSkeletonModelChanged());
+                 EBUS_EVENT_ID(busWidgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+            });
     }
 
     void ComboBoxWidget::SetAssetWidgetVisible()

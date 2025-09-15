@@ -15,32 +15,30 @@
 #endif
 #include <QWidget>
 
+namespace AzToolsFramework
+{
+    class PropertyAssetCtrl;
+}
+
 namespace OpenParticleSystemEditor
 {
-    using AssetChangeCB = AZStd::function<void(const char*)>;
+    using AssetChangeCB = AZStd::function<void(AZ::Data::AssetId)>;
     class AssetWidget
         : public QWidget
     {
         Q_OBJECT;
 
     public:
-        AssetWidget(const AZStd::string& label, const AZ::Data::AssetType& assetType, const AZStd::string& extention, QWidget* parent = nullptr);
+        AssetWidget(const AZStd::string& label, const AZ::Data::AssetType& assetType, QWidget* parent = nullptr);
         ~AssetWidget() override {}
-        void SetAssetPath(const AZStd::string& path);
         void Clear();
-        
-        void OnAssetSelectionChanged(AssetChangeCB funcPtr)
-        {
-            m_AssetSelectionChanged = funcPtr;
-        }
+        void SetAssetId(const AZ::Data::AssetId& newId);
+
+        void SetOnAssetSelectionChangedCallback(AssetChangeCB funcPtr);
 
     private:
-        void PopupAssetPicker();
-
-        AZStd::string m_title;
-        AZ::Data::AssetType m_assetType;
-        AZStd::string m_extention;
-        AzQtComponents::BrowseEdit* m_assetPathBrowseEdit;
+        AzToolsFramework::PropertyAssetCtrl* m_assetCtrl = nullptr;
         AssetChangeCB m_AssetSelectionChanged;
+
     };
 } // namespace OpenParticleSystemEditor

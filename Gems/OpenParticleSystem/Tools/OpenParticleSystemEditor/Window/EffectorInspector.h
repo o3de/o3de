@@ -100,5 +100,10 @@ namespace OpenParticleSystemEditor
         AZStd::any m_preWarm;
         OpenParticle::UpdateRotateAroundPoint m_updateRotateAroundPoint;
         AZ::Vector3 m_lastAxis;
+
+    private Q_SLOTS:
+        void OnComboBoxMaterialChanged();
+        void OnComboBoxModelChanged();
+        void OnComboBoxSkeletonModelChanged();
     };
 } // namespace OpenParticleSystemEditor

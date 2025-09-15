@@ -16,6 +16,7 @@
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <AzCore/Asset/AssetJsonSerializer.h>
 
 namespace OpenParticle
 {
@@ -66,6 +67,7 @@ namespace OpenParticle
     {
         AssetBuilderSDK::AssetBuilderDesc particleBuilderDescriptor;
         particleBuilderDescriptor.m_name = jobKey;
+        particleBuilderDescriptor.m_version = 1; // bump this to reprocess all particles.
         particleBuilderDescriptor.m_busId = azrtti_typeid<ParticleBuilder>();
         particleBuilderDescriptor.m_patterns.push_back(
             AssetBuilderSDK::AssetBuilderPattern("*.particle", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
@@ -84,71 +86,6 @@ namespace OpenParticle
         BusDisconnect();
     }
 
-    void AddPossibleJobDependencies(
-        AZStd::string_view currentFilePath,
-        AZStd::set<AZStd::string>& dependencyPaths,
-        AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
-        AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies)
-    {
-        for (auto& filePath : dependencyPaths)
-        {
-            bool dependencyFileFound = false;
-
-            AZStd::vector<AZStd::string> possibleDependencies;
-            // Convert incoming paths containing aliases into absolute paths
-            AZ::IO::FixedMaxPath referencedPath;
-            AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ filePath });
-
-            if (referencedPath.IsRelative())
-            {
-                AZ::IO::FixedMaxPath originatingPath;
-                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ currentFilePath });
-                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
-                combinedPath /= referencedPath;
-
-                possibleDependencies.push_back(combinedPath.LexicallyNormal().String());
-            }
-            // Use the referencedSourceFilePath as a standard asset path
-            possibleDependencies.push_back(referencedPath.LexicallyNormal().String());
-
-            for (auto& file : possibleDependencies)
-            {
-                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = file;
-                sourceFileDependencies.push_back(sourceFileDependency);
-
-                if (!dependencyFileFound)
-                {
-                    AZ::Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        dependencyFileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(),
-                        sourceInfo, watchFolder);
-
-                    if (dependencyFileFound)
-                    {
-                        AssetBuilderSDK::JobDependency jobDependency;
-                        if (AzFramework::StringFunc::Path::IsExtension(filePath.c_str(), "material"))
-                        {
-                            jobDependency.m_jobKey = "Material Builder";
-                        }
-                        else if (AzFramework::StringFunc::Path::IsExtension(filePath.c_str(), "fbx"))
-                        {
-                            jobDependency.m_jobKey = "Scene compilation";
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                        jobDependencies.push_back(jobDependency);
-                    }
-                }
-            }
-        }
-    }
-
     void ParticleBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
     {
         if (m_isShuttingDown)
@@ -160,48 +97,34 @@ namespace OpenParticle
         AssetBuilderSDK::JobDescriptor descriptor;
         descriptor.m_jobKey = jobKey;
         AZStd::string fullSourcePath;
-        AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
-
-        auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(fullSourcePath);
-        if (!loadOutcome.IsSuccess())
-        {
-            AZ_Error("ParticleBuilder", false, "%s", loadOutcome.GetError().c_str());
-            return;
-        }
-        rapidjson::Document& document = loadOutcome.GetValue();
         AZStd::set<AZStd::string> dependencyPaths;
-
-        if (document.IsObject() && document.HasMember("emitters") && document["emitters"].IsArray())
+        AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
+        OpenParticle::ParticleSourceData sourceData;
+        if (!OpenParticle::LoadFromFile(fullSourcePath, sourceData))
         {
-            for (auto& emitter : document["emitters"].GetArray())
-            {
-                if (emitter.HasMember("material") && emitter["material"].IsString())
-                {
-                    dependencyPaths.insert(emitter["material"].GetString());
-                }
-                if (emitter.HasMember("model") && emitter["model"].IsString())
-                {
-                    if (AzFramework::StringFunc::Path::IsExtension(emitter["model"].GetString(), "azmodel"))
-                    {
-                        AZStd::string modelPath = emitter["model"].GetString();
-                        AzFramework::StringFunc::Path::ReplaceExtension(modelPath, "fbx");
-                        dependencyPaths.insert(modelPath.c_str());
-                    }
-                }
-            }
-            AddPossibleJobDependencies(
-                request.m_sourceFile, dependencyPaths, response.m_sourceFileDependencyList, descriptor.m_jobDependencyList);
+            AZ_Error(PARTICLE_BUILDER_NAME, false, "Failed to load particle from file '%s'!", fullSourcePath.c_str());
+            return;
         }
 
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
         {
             descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
             descriptor.m_critical = false;
-            for (auto& jobDep : descriptor.m_jobDependencyList)
-            {
-                jobDep.m_platformIdentifier = platformInfo.m_identifier;
-            }
+            descriptor.m_priority = 1; // since this is an entry point asset, we should prioritize it above the background
 
+            // make it depend on the materials it references.
+            // We didn't actually load them since we only need their assetid, not their data, at this stage.
+            // We need to load it during job processing to check if its the right material type, but not now.
+            for (const auto& emitter : sourceData.m_emitters)
+            {
+                if (emitter->m_material.GetId().IsValid())
+                {
+                    AssetBuilderSDK::SourceFileDependency dep;
+                    dep.m_sourceFileDependencyUUID = emitter->m_material.GetId().m_guid;
+                    descriptor.m_jobDependencyList.push_back(AssetBuilderSDK::JobDependency(
+                        "Material Builder", platformInfo.m_identifier, AssetBuilderSDK::JobDependencyType::Order, dep));
+                }
+            }
             response.m_createJobOutputs.push_back(descriptor);
         }
 

@@ -54,7 +54,7 @@ namespace OpenParticleSystemEditor
         this->setStyleSheet("background-color: #333333; border-radius: 8px;");
         SetLineWidgetIndex();
         SetLineWidgetParent();
-        m_pSourceData->SelectClass(*m_detail->m_name, PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER]);
+        m_pSourceData->SelectClass(m_detail->m_name, PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER]);
         OnRelease();
 
         QObject::connect(m_ui->btnParticleName, SIGNAL(clicked()), this, SLOT(OnClickParticleName()));
@@ -99,7 +99,7 @@ namespace OpenParticleSystemEditor
     {
         AZStd::vector<AZStd::string> itemNames;
         EBUS_EVENT_ID_RESULT(itemNames, m_graphParentTitle, ParticleGraphicsViewRequestsBus, GetItemNamesByOrder);
-        AZStd::string currDetailName = *m_detail->m_name;
+        AZStd::string currDetailName = m_detail->m_name;
         if (checked)
         {
             for (auto& detailName : itemNames)
@@ -146,12 +146,12 @@ namespace OpenParticleSystemEditor
             }
             AZStd::vector<AZStd::string> itemNames;
             EBUS_EVENT_ID_RESULT(itemNames, m_graphParentTitle, ParticleGraphicsViewRequestsBus, GetItemNamesByOrder);
-            m_pSourceData->SelectDetail(*m_detail->m_name);
+            m_pSourceData->SelectDetail(m_detail->m_name);
             m_pSourceData->SortEmitters(itemNames);
         }
         else
         {
-            m_pSourceData->UnselectDetail(*m_detail->m_name);
+            m_pSourceData->UnselectDetail(m_detail->m_name);
         }
         EBUS_EVENT(LevelOfDetailInspectorNotifyBus, ReloadLevel, m_graphParentTitle);
         EBUS_EVENT_ID(m_graphParentTitle, ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
@@ -166,11 +166,11 @@ namespace OpenParticleSystemEditor
     {
         if (check)
         {
-            m_pSourceData->SelectClass(*m_detail->m_name, className);
+            m_pSourceData->SelectClass(m_detail->m_name, className);
         }
         else
         {
-            m_pSourceData->UnselectClass(*m_detail->m_name, className);
+            m_pSourceData->UnselectClass(m_detail->m_name, className);
         }
         EBUS_EVENT_ID(m_graphParentTitle, ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
         ClickLineWidget(index);
@@ -292,7 +292,7 @@ namespace OpenParticleSystemEditor
 
     void ParticleItemWidget::UpdateParticleName()
     {
-        m_ui->btnParticleName->setText(m_detail->m_name->data());
+        m_ui->btnParticleName->setText(QString::fromUtf8(m_detail->m_name.c_str()));
     }
 
     QToolButton* ParticleItemWidget::GetBtnParticleName()

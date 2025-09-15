@@ -12,33 +12,39 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QToolButton>
-#include <QLineEdit>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
 namespace OpenParticleSystemEditor
 {
-    AssetWidget::AssetWidget(const AZStd::string& label, const AZ::Data::AssetType& assetType, const AZStd::string& extention, QWidget* parent)
+    AssetWidget::AssetWidget(const AZStd::string& label, const AZ::Data::AssetType& assetType, QWidget* parent)
         : QWidget(parent)
-        , m_title(label)
-        , m_assetType(assetType)
-        , m_extention(extention)
     {
         QHBoxLayout* layout = new QHBoxLayout(this);
         layout->setContentsMargins(20, 0, 0, 0);
         layout->setSpacing(2);
-        QLabel* name = new QLabel(tr(m_title.c_str()));
+        QLabel* name = new QLabel(tr(label.c_str()));
         name->setAlignment(Qt::AlignLeft);
         name->setMinimumWidth(0);
-        m_assetPathBrowseEdit = new AzQtComponents::BrowseEdit(this);
-        m_assetPathBrowseEdit->lineEdit()->setFocusPolicy(Qt::StrongFocus);
-        m_assetPathBrowseEdit->lineEdit()->installEventFilter(this);
-        m_assetPathBrowseEdit->setClearButtonEnabled(false);
-        m_assetPathBrowseEdit->setLineEditReadOnly(true);
-        m_assetPathBrowseEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        m_assetCtrl = new AzToolsFramework::PropertyAssetCtrl(this);
+        m_assetCtrl->SetCurrentAssetType(assetType);
+        m_assetCtrl->SetClearButtonEnabled(false);
+        m_assetCtrl->SetShowThumbnail(true);
+        m_assetCtrl->SetShowProductAssetName(false);
+        m_assetCtrl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-        connect(m_assetPathBrowseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &AssetWidget::PopupAssetPicker);
+        connect(
+            m_assetCtrl,
+            &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged,
+            this,
+            [this](const AZ::Data::AssetId& assetId)
+            {
+                if (m_AssetSelectionChanged)
+                {
+                    m_AssetSelectionChanged(assetId);
+                }
+            });
 
         QToolButton* button = new QToolButton(this);
         button->setAutoRaise(true);
@@ -47,43 +53,27 @@ namespace OpenParticleSystemEditor
         button->setVisible(false);
 
         layout->addWidget(name, 2, Qt::AlignLeft);
-        layout->addWidget(m_assetPathBrowseEdit, 5);
+        layout->addWidget(m_assetCtrl, 5);
         layout->addWidget(button, Qt::AlignRight);
 
         setLayout(layout);
         setVisible(false);
     }
 
-    void AssetWidget::SetAssetPath(const AZStd::string& path)
+    void AssetWidget::SetOnAssetSelectionChangedCallback(AssetChangeCB funcPtr)
     {
-        m_assetPathBrowseEdit->setText(QString::fromStdString(path.c_str()));
+        m_AssetSelectionChanged = funcPtr;
+    }
+
+    void AssetWidget::SetAssetId(const AZ::Data::AssetId& newId)
+    {
+        m_assetCtrl->blockSignals(true);
+        m_assetCtrl->SetSelectedAssetID(newId);
+        m_assetCtrl->blockSignals(false);
     }
 
     void AssetWidget::Clear()
     {
-        m_assetPathBrowseEdit->lineEdit()->clear();
-    }
-
-    void AssetWidget::PopupAssetPicker()
-    {
-        AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection(m_assetType);
-        selection.SetTitle(m_title.c_str());
-
-        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
-        if (!selection.IsValid())
-        {
-            AZ_TracePrintf("AssetWidget", "PopupAssetPicker failed\n");
-            return;
-        }
-        auto path = selection.GetResult()->GetRelativePath();
-
-        AZ::StringFunc::Path::ReplaceExtension(path, m_extention.c_str());
-
-        m_assetPathBrowseEdit->setText(path.c_str());
-
-        if (m_AssetSelectionChanged)
-        {
-            m_AssetSelectionChanged(path.c_str());
-        }
+        m_assetCtrl->SetSelectedAssetID(AZ::Data::AssetId());
     }
 }

@@ -263,7 +263,7 @@ namespace OpenParticleSystemEditor
         OpenParticle::ParticleSourceData::DetailInfo* detail, bool setCurMousePos, const AZStd::string& itemName)
     {
         ParticleItemWidget* itemWidget = new ParticleItemWidget(m_viewDetail, detail, m_SourceData, m_busID);
-        itemWidget->GetBtnParticleName()->setText(detail->m_name->data());
+        itemWidget->GetBtnParticleName()->setText(QString::fromUtf8(detail->m_name.c_str()));
         bool bCheckParticleName = false;
         for (auto& iter : detail->m_modules)
         {
@@ -429,7 +429,7 @@ namespace OpenParticleSystemEditor
         {
             if (m_viewDetail != nullptr)
             {
-                if (*detail->m_name == m_viewDetail->m_ui->particleName->text().toLatin1().data())
+                if (QString detailName = QString::fromUtf8(detail->m_name.c_str()); detailName == m_viewDetail->m_ui->particleName->text())
                 {
                     m_viewDetail->Init(m_busID);
                 }
@@ -458,7 +458,7 @@ namespace OpenParticleSystemEditor
 
         QGraphicsProxyWidget* itemProxyWidget = dynamic_cast<QGraphicsProxyWidget*>(graphicsItem);
         ParticleItemWidget* itemWidget = dynamic_cast<ParticleItemWidget*>(itemProxyWidget->widget());
-        AZStd::string emitterName = *itemWidget->m_detail->m_name;
+        AZStd::string emitterName = itemWidget->m_detail->m_name;
         OpenParticle::ParticleSourceData::DetailInfo* detail = nullptr;
         EBUS_EVENT_ID_RESULT(detail, m_busID, ParticleDocumentRequestBus, CopyDetail, emitterName);
         // tell every document which widget prepare to be pasted
@@ -482,7 +482,7 @@ namespace OpenParticleSystemEditor
         OpenParticle::ParticleSourceData::DetailInfo* destDetail = nullptr;
         EBUS_EVENT_ID_RESULT(destDetail, m_busID, ParticleDocumentRequestBus, SetEmitterAndDetail, sourceEmitter, sourceDetail);
 
-        NewItem(destDetail, false, destDetail->m_name->c_str());
+        NewItem(destDetail, false, destDetail->m_name);
         
         AZStd::vector<AZStd::string> itemNames = GetItemNamesByOrder();
         for (auto& detailName : itemNames)
@@ -552,7 +552,7 @@ namespace OpenParticleSystemEditor
                 if (itemWidget != nullptr)
                 {
                     auto pos = item->scenePos();
-                    auto info = AZStd::make_pair(static_cast<float>(pos.x()), *itemWidget->m_detail->m_name);
+                    auto info = AZStd::make_pair(static_cast<float>(pos.x()), itemWidget->m_detail->m_name);
                     itemsInfo.push_back(info);
                 }
             }
@@ -593,7 +593,7 @@ namespace OpenParticleSystemEditor
             }
             if (except)
             {
-                if (name.compare(*itemWidget->m_detail->m_name) == 0)
+                if (name.compare(itemWidget->m_detail->m_name) == 0)
                 {
                     continue;
                 }
@@ -601,7 +601,7 @@ namespace OpenParticleSystemEditor
             }
             else
             {
-                if (len == 0 || name.compare(*itemWidget->m_detail->m_name) == 0)
+                if (len == 0 || name.compare(itemWidget->m_detail->m_name) == 0)
                 {
                     AZStd::invoke(SetCheckedFun, itemWidget, solo, checked);
                     if (len != 0)
@@ -658,7 +658,7 @@ namespace OpenParticleSystemEditor
                 ParticleItemWidget* itemWidget = dynamic_cast<ParticleItemWidget*>(itemProxyWidget->widget());
                 if (itemWidget != nullptr)
                 {
-                    widgets[*(itemWidget->m_detail->m_name)] = itemWidget;
+                    widgets[itemWidget->m_detail->m_name] = itemWidget;
                 }
             }
         }
@@ -687,7 +687,7 @@ namespace OpenParticleSystemEditor
                 {
                     auto pos = item->scenePos();
                     auto sz = itemWidget->size();
-                    auto name = *itemWidget->m_detail->m_name;
+                    auto name = itemWidget->m_detail->m_name;
 
                     QRectF rect(pos.x(), pos.y(), sz.width(), sz.height());
                     if (rect.contains(scenePt))

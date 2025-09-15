@@ -144,16 +144,31 @@ namespace OpenParticle
         archive.Begin(m_serializeContext);
         archive.SystemConfig(m_config);
         archive.PreWarm(m_preWarm);
+
+        // note that any "continue" in here will result in the emitter being dropped/deleted
+        // and no particle will appear.
+
         for (auto& emitter : m_emitters)
         {
-            if (emitter->m_material.empty())
+            auto materialAsset = emitter->m_material;
+            if (!materialAsset.GetId().IsValid())
             {
+                AZ_Error("ParticleAssetData", false, "Cannot create particle data - no material assigned to render.");
                 continue;
             }
-            auto materialAsset = AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::MaterialAsset>(sourceFilePath, emitter->m_material, 0);
-            if (!materialAsset)
+
+            if (materialAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
             {
-                continue;
+                // we will need the material to be loaded in order to actually build the asset.
+                // This is not the case for the model asset.
+                materialAsset.QueueLoad();
+                materialAsset.BlockUntilLoadComplete();
+                if (!materialAsset)
+                {
+                    AZ_Error(
+                        "ParticleAssetData", false, "Unable to load material asset %s", materialAsset.ToString<AZStd::string>().c_str());
+                    continue;
+                }
             }
 
             AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -165,24 +180,34 @@ namespace OpenParticle
                 continue;
             }
 
-            auto materialType = materialAsset.GetValue()->GetMaterialTypeAsset();
+            auto materialType = materialAsset.Get()->GetMaterialTypeAsset();
             if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::SpriteConfig>()) && !((materialType.GetHint().ends_with("particlesprite.azmaterialtype"))))
             {
                 AZ_Error(
-                    "ParticleAssetData", false, "MaterialType is error, SpriteParticle needs material with ParticleSprite materialtype.");
+                    "ParticleAssetData",
+                    false,
+                    "SpriteParticle needs material with ParticleSprite materialtype but is %s instead",
+                    materialType.ToString<AZStd::string>().c_str());
                 continue;
             }
 
             if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>()) && !(materialType.GetHint().ends_with("particlemesh.azmaterialtype")))
             {
-                AZ_Error("ParticleAssetData", false, "MaterialType is error, MeshParticle needs material with PartcleMesh materialtype.");
+                AZ_Error(
+                    "ParticleAssetData",
+                    false,
+                    "Mesh Particle needs material with ParticleMesh materialtype but is %s instead",
+                    materialType.ToString<AZStd::string>().c_str());
                 continue;
             }
 
             if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::RibbonConfig>()) && !(materialType.GetHint().ends_with("particleribbon.azmaterialtype")))
             {
                 AZ_Error(
-                    "ParticleAssetData", false, "MaterialType is error, RibbonParticle needs material with PartcleRibbon materialtype.");
+                    "ParticleAssetData",
+                    false,
+                    "Ribbon Particle needs material with ParticleMesh materialtype but is %s instead",
+                    materialType.ToString<AZStd::string>().c_str());
                 continue;
             }
 
@@ -197,30 +222,21 @@ namespace OpenParticle
             }
             if (emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>())
             {
-                if (emitter->m_model.size() == 0)
+                // note that checking (!emitter->m_model) verifies whether its loaded right now, not just whether its
+                // valid.  We might want to parse the asset data without actually loading the model, so we check the id,
+                // not the actual model data.
+                if (!emitter->m_model.GetId().IsValid())
                 {
+                    // mesh config, but with no model assigned, we cannot make a valid output.
+                    AZ_Error("ParticleAssetData", false, "Emitter Renderer set to `Mesh` but no mesh asset assigned.  Particles will not function.");
                     continue;
                 }
-                AZStd::string resolvedPath = emitter->m_model;
-                if (AzFramework::StringFunc::Path::IsExtension(resolvedPath.c_str(), "azmodel"))
-                {
-                    modelAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ModelAsset>(
-                        resolvedPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Assert);
-                }
-                if (!modelAsset)
-                {
-                    continue;
-                }
+                modelAsset = emitter->m_model;
             }
 
             if (skeletonSpawn)
             {
-                AZStd::string resolvedSkeletonPath = emitter->m_skeletonModel;
-                if (AzFramework::StringFunc::Path::IsExtension(resolvedSkeletonPath.c_str(), "azmodel"))
-                {
-                    skeletonAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ModelAsset>(
-                        resolvedSkeletonPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Assert);
-                }
+                skeletonAsset = emitter->m_skeletonModel;
             }
 
             archive.EmitterBegin(emitter->m_config);
@@ -229,7 +245,7 @@ namespace OpenParticle
             fn(emitter->m_spawnModules);
             fn(emitter->m_updateModules);
             fn(emitter->m_eventModules);
-            archive.Material(materialAsset.GetValue());
+            archive.Material(materialAsset);
             if (emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>())
             {
                 archive.Model(modelAsset);

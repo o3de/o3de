@@ -42,9 +42,9 @@ namespace OpenParticle
             AZStd::string m_name;
             AZStd::any m_config;
             AZStd::any m_renderConfig;
-            AZStd::string m_material;
-            AZStd::string m_model;
-            AZStd::string m_skeletonModel;
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::list<AZStd::any> m_emitModules;
             AZStd::list<AZStd::any> m_spawnModules;
             AZStd::list<AZStd::any> m_updateModules;

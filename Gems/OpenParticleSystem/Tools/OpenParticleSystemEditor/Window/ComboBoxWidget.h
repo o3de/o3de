@@ -16,7 +16,6 @@
 #include <QtWidgets/QComboBox>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
 #include <ParticleCommonData.h>
-#include <Window/AssetWidget.h>
 #include <QVBoxLayout>
 #include <QCoreApplication>
 #endif
@@ -31,7 +30,18 @@ namespace OpenParticleSystemEditor
     const QString SHAPE_LABEL = QCoreApplication::translate("ComboBoxWidget", "Shape");
     const QString RENDERER_LABEL = QCoreApplication::translate("ComboBoxWidget", "Renderer");
 
-    using AssetChangeCB = AZStd::function<void(const char*)>;
+    class AssetWidget;
+
+    using AssetChangeCB = AZStd::function<void(AZ::Data::AssetId)>;
+    //! ComboBoxWidget represents a widget that has a drop down combo at the top which lets you select a class of objects
+    //! and depending on what you pick, changes the rest of the UI.
+    //! It consists of a ReflectedPropertyEditor control (showing a list of properties that you can edit) and below that,
+    //! a series of asset picker controls.  Depending on the selected class, it changes what properties, and which asset
+    //! controls are visible.
+    //! For example, it shows up when you select an emitter's shape class, and lets ou pick from "Point", "Box", "Sphere",
+    //! "Torus", "Cylinder", or "Mesh".
+    //! If you pick "mesh", then the "mesh" asset control appears for you to pick a mesh.  Otherwise, that asset control
+    //! is hidden.
     class ComboBoxWidget
         : public QWidget
     {
@@ -40,7 +50,7 @@ namespace OpenParticleSystemEditor
     public:
         ComboBoxWidget(
             const AZStd::string& className,
-            OpenParticle::ParticleSourceData::DetailInfo* m_detail,
+            OpenParticle::ParticleSourceData::DetailInfo* detail,
             AZ::SerializeContext* serializeContext,
             AzToolsFramework::IPropertyEditorNotify* pnotify,
             QWidget* parent = nullptr);
@@ -49,10 +59,23 @@ namespace OpenParticleSystemEditor
         void Clear();
         void Refresh();
         void Refresh(AZStd::any* instance);
-        void SetAssetWidget(AZStd::string& materialAsset, AZStd::string& modelAsset, AZStd::string& skeletonModelAsset);
+
+        // connects the asset widgets to the given asset pointers.
+        // Note that these asset pointers are in the "detail" object that was passed in the constructor,
+        // and the actual asset<T> lives on the particle source data object.
+        void SetAssetWidget(
+            AZ::Data::Asset<AZ::RPI::MaterialAsset>* materialAsset,
+            AZ::Data::Asset<AZ::RPI::ModelAsset>* modelAsset,
+            AZ::Data::Asset<AZ::RPI::ModelAsset>* skeletonModelAsset);
 
     private slots:
         void OnIndexChanged(const QString& curString);
+
+    Q_SIGNALS:
+        // signal that the assets have been changed in the editor.
+        void OnMaterialChanged();
+        void OnModelChanged();
+        void OnSkeletonModelChanged();
 
     private:
         void SetAssetWidgetVisible();

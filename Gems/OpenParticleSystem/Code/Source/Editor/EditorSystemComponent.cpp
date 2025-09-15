@@ -8,18 +8,19 @@
 
 #include <Editor/EditorSystemComponent.h>
 
-#include <AzCore/Name/Name.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
-
+#include "OpenParticleSystem/ParticleEditDataConfig.h"
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
 
-#include <QAction>
 #include <Editor/QtViewPaneManager.h>
-
-#include "OpenParticleSystem/ParticleEditDataConfig.h"
+#include <QAction>
 
 namespace OpenParticle
 {
@@ -38,14 +39,57 @@ namespace OpenParticle
         AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
         EditorParticleSystemComponentRequestBus::Handler::BusConnect();
         m_particleBrowserInteractions.reset(aznew ParticleBrowserInteractions);
+
+        if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
+        {
+            auto LifecycleCallback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+            {
+                this->OnCriticalAssetsCompiled();
+            };
+            AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler, AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+        }
+    }
+    void EditorSystemComponent::OnCriticalAssetsCompiled()
+    {
+        // This is called once the asset processor has finished compiling critical assets
+        AZ::Data::AssetInfo info;
+        AZStd::string watchFolderFromDatabase;
+        using AzToolsFramework::AssetSystemRequestBus;
+
+        // we know what the name of the source file is, get the UUID to escalate it.  We know that all UUIDs are available at this point
+        // even if assets are not yet fully compiled.
+        const char* defaultMaterialSourceFile = "Materials/OpenParticle/ParticleSpriteEmit.material";
+        const char* defaultMaterialProductFile = "materials/openparticle/particlespriteemit.azmaterial";
+
+        // Make sure its already compiled so the output product is ready.
+        using assetSystemBus = AzFramework::AssetSystemRequestBus;
+        assetSystemBus::Broadcast(&assetSystemBus::Events::CompileAssetSync, defaultMaterialSourceFile);
+
+        using catalogBus = AZ::Data::AssetCatalogRequestBus;
+        AZ::Data::AssetId defaultSpriteEmitMaterialId;
+        catalogBus::BroadcastResult(
+            defaultSpriteEmitMaterialId,
+            &catalogBus::Events::GetAssetIdByPath,
+            defaultMaterialProductFile,
+            azrtti_typeid<AZ::RPI::MaterialAsset>(),
+            false);
+        m_cachedDefaultEmitterMaterialAssetId = defaultSpriteEmitMaterialId;
+
+        if (!m_cachedDefaultEmitterMaterialAssetId.IsValid())
+        {
+            AZ_Error("ParticleSystem", false, "Failed to find default particle emitter material %s, particles may not function.", defaultMaterialProductFile);
+        }
     }
 
     void EditorSystemComponent::Deactivate()
     {
+        // prevent this handler from being called again during shutdown
+        m_criticalAssetsHandler = {};
         AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
         EditorParticleSystemComponentRequestBus::Handler::BusDisconnect();
         ResetMenu();
         m_particleBrowserInteractions.reset();
+
     }
 
     void EditorSystemComponent::ResetMenu()
@@ -82,6 +126,8 @@ namespace OpenParticle
     void EditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("OpenParticleService"));
+        required.push_back(AZ_CRC_CE("AssetProcessorConnection")); // to call Asset Runtime APIs like SyncCompileAsset
+        required.push_back(AZ_CRC_CE("AssetCatalogService")); // to look up assets in the catalog.
     }
 
     AZ::TypeId EditorSystemComponent::GetParticleSystemConfigType() const
@@ -178,4 +224,8 @@ namespace OpenParticle
         return azrtti_typeid<OpenParticle::SpriteConfig>();
     }
 
+    AZ::Data::AssetId EditorSystemComponent::GetDefaultEmitterMaterialId() const
+    {
+        return m_cachedDefaultEmitterMaterialAssetId;
+    }
 } // namespace OpenParticle

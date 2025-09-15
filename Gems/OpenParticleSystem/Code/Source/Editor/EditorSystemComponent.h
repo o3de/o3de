@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <Editor/ParticleBrowserInteractions.h>
 #include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
@@ -47,6 +48,8 @@ namespace OpenParticle
 
         AZ::TypeId GetDefaultRenderType() const override;
 
+        AZ::Data::AssetId GetDefaultEmitterMaterialId() const override;
+
         EditorSystemComponent() = default;
         ~EditorSystemComponent() = default;
 
@@ -60,9 +63,14 @@ namespace OpenParticle
         void OpenParticleEditor(const AZStd::string& sourcePath) override;
 
         void ResetMenu();
+        void OnCriticalAssetsCompiled();
 
     private:
         QAction* m_openParticleEditorAction = nullptr;
+        AZ::Data::AssetId m_cachedDefaultEmitterMaterialAssetId;
         AZStd::unique_ptr<ParticleBrowserInteractions> m_particleBrowserInteractions;
+
+        // invoked when assets are ready to query.
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 } // namespace OpenParticle

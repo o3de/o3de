@@ -58,9 +58,9 @@ namespace OpenParticle
             AZStd::string m_name;
             AZStd::any m_config;
             AZStd::any m_renderConfig;
-            AZStd::string m_material;
-            AZStd::string m_model;
-            AZStd::string m_skeletonModel;
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::list<AZStd::any> m_emitModules;
             AZStd::list<AZStd::any> m_spawnModules;
             AZStd::list<AZStd::any> m_updateModules;
@@ -211,6 +211,13 @@ namespace OpenParticle
                 EVENT_HANDLER,
                 INHERITANCE_HANDLER
             };
+
+            enum AssetIndex : AZ::u8
+            {
+                ASSET_MATERIAL,
+                ASSET_MODEL,
+                ASSET_SKELETON_MODEL,
+            };
         };
 
         struct DetailInfo
@@ -219,16 +226,15 @@ namespace OpenParticle
 
             bool m_isUse = true;
             bool m_solo = false;
-            AZStd::string* m_name;
-            AZStd::string* m_material;
-            AZStd::string* m_model;
-            AZStd::string* m_skeletonModel;
+            AZStd::string m_name;
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::unordered_map<AZStd::string, ModuleType> m_modules;
 
         private:
             friend ParticleSourceData;
             AZStd::list<AZStd::any> m_unusedModules;
-            AZStd::list<AZStd::string> m_nameList;
 
             UnusedListType m_unusedListForDetail;
             UnusedListType m_unusedListForClass;
@@ -270,6 +276,12 @@ namespace OpenParticle
 
         // Convert emitter data to detail data
         void EmittersToDetails();
+
+        // copy the currently selected assets in the detail object (being edited) to the emitter.
+        void UpdateEmitterAsset(const AZStd::string& emitterName, AZ::u8 index);
+
+        // copy the emitter name (being changed) into the actual emitter and details to keep in sync with ui.
+        void UpdateEmitterName(const AZStd::string& oldEmitterName, const AZStd::string& newEmitterName);
 
         // Add/Remove Emitter in the Particle Editor
         DetailInfo* AddDetail(const AZStd::string&);
@@ -346,7 +358,7 @@ namespace OpenParticle
             class T,
             class = AZStd::is_pointer<T>,
             class = AZStd::enable_if_t<AZStd::is_same_v<T, EmitterInfo*> || AZStd::is_same_v<T, DetailInfo*>>>
-        T GetPointerFromEmitterName(AZStd::string& emitterName, const AZStd::vector<T>& list) const
+        T GetPointerFromEmitterName(const AZStd::string& emitterName, const AZStd::vector<T>& list) const
         {
             auto iter = AZStd::find_if(
                 list.begin(), list.end(),
@@ -358,7 +370,7 @@ namespace OpenParticle
                     }
                     else if constexpr (AZStd::is_same_v<T, DetailInfo*>)
                     {
-                        return iter->m_name->c_str() == emitterName;
+                        return iter->m_name == emitterName;
                     }
                 });
             return (iter != list.end()) ? *iter : nullptr;

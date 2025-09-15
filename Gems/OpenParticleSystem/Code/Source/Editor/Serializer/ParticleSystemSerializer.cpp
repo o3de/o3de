@@ -11,6 +11,9 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <OpenParticleSystem/ParticleConfigurationRequestBus.h>
 #include <OpenParticleSystem/ParticleEditDataConfig.h>
+#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <API/EditorAssetSystemAPI.h>
 
 namespace OpenParticle
 {
@@ -506,6 +509,57 @@ namespace OpenParticle
         }
     }
 
+    // convert an old field, which is the file name of a source or product file (like "Blah.Material" or "mesh.azmodel")
+    // into the new format, an actual asset, ie, Asset<MaterialAsset> refcounted smart pointer.
+    // If its already an object, we can just load it normally.
+    template<class T>
+    JSR::ResultCode ParticleBaseSerializer::ConvertSourceFileNameToAsset(
+        AZ::Data::Asset<T>& destField,
+        const rapidjson::Value& inputValue,
+        const char* fieldName,
+        AZ::Data::AssetLoadBehavior loadBehavior,
+        AZ::JsonDeserializerContext& context)
+    {
+        AZ::Data::AssetType typeId = azrtti_typeid<T>();
+        destField.Reset(); // make sure any old ones are cleared out.
+        // Convert old string names to Assets.
+        auto iterator = inputValue.FindMember(fieldName);
+        if (iterator == inputValue.MemberEnd())
+        {
+            return JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Skipped);
+        }
+
+        if (iterator->value.IsObject())
+        {
+            // if its an object, then its in the new format, an actual AZ::Asset<T> type, so just load it normally:
+            auto returnCode = ContinueLoadingFromJsonObjectField(
+                &destField, azrtti_typeid<AZ::Data::Asset<T>>(), inputValue, rapidjson::GenericStringRef<char>(fieldName), context);
+            return returnCode;
+        }
+
+        if (iterator->value.IsString())
+        {
+            AZStd::string sourceAssetPath = iterator->value.GetString();
+            if (sourceAssetPath.empty())
+            {
+                return JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Skipped);
+            }
+
+            AZ::Data::AssetId resultId = AzToolsFramework::AssetSystem::FindAssetIdFromFileName(sourceAssetPath.c_str(), typeId);
+            if (resultId.IsValid())
+            {
+                destField = AZ::Data::AssetManager::Instance().FindOrCreateAsset<T>(resultId, loadBehavior);
+            }
+        }
+
+        if (destField.GetId().IsValid())
+        {
+            return JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success);
+        }
+
+        return JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed);
+    }
+
     AZ::JsonSerializationResult::Result ParticleEmitterInfoSerializer::Load(
         void* outputValue,
         const AZ::Uuid& outputValueTypeId,
@@ -524,12 +578,11 @@ namespace OpenParticle
         emitInfo->m_config = context.GetSerializeContext()->CreateAny(configId);
         resultCode.Combine(
             ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&emitInfo->m_config), configId, inputValue, "config", context));
-        resultCode.Combine(
-            ContinueLoadingFromJsonObjectField(&emitInfo->m_material, azrtti_typeid<AZStd::string>(), inputValue, "material", context));
-        resultCode.Combine(
-            ContinueLoadingFromJsonObjectField(&emitInfo->m_model, azrtti_typeid<AZStd::string>(), inputValue, "model", context));
-        resultCode.Combine(ContinueLoadingFromJsonObjectField(
-            &emitInfo->m_skeletonModel, azrtti_typeid<AZStd::string>(), inputValue, "skeleton model", context));
+
+        AZ::Data::AssetLoadBehavior loadBehavior = AZ::Data::AssetLoadBehavior::PreLoad;
+        resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_material, inputValue, "material", loadBehavior, context));
+        resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_model, inputValue, "model", loadBehavior, context));
+        resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_skeletonModel, inputValue, "skeleton model", loadBehavior, context));
 
         AZStd::unordered_map<AZ::TypeId, VersionConvertor> emits = {
             { azrtti_typeid<OpenParticle::EmitBurstList>(),        nullptr },
@@ -625,24 +678,34 @@ namespace OpenParticle
         resultCode.Combine(
             ContinueStoringToJsonObjectField(outputValue, "config", AZStd::any_cast<void>(&config), nullptr, configId, context));
 
-        auto mat = info->m_material;
-        if (info->m_material.empty())
+        // its not necessary to load the asset just to check its id or to store the id.
+        auto mat = info->m_material; 
+        if (!info->m_material.GetId().IsValid()) 
         {
-            mat = AZStd::string("Materials/OpenParticle/ParticleSpriteEmit.material");
+            AZ::Data::AssetId defaultSpriteEmitMaterialId;
+            using editorBus = EditorParticleSystemComponentRequestBus;
+            using editorBusEvents = EditorParticleSystemComponentRequestBus::Events;
+            editorBus::BroadcastResult(defaultSpriteEmitMaterialId, &editorBusEvents::GetDefaultEmitterMaterialId);
+            if (defaultSpriteEmitMaterialId.IsValid())
+            {
+                // we don't actually have to load the asset, just want to place it into a struct for serialize.
+                mat = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(
+                    defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehaviorNamespace::NoLoad);
+            }
         }
-        resultCode.Combine(
-            ContinueStoringToJsonObjectField(outputValue, "material", &mat, nullptr, azrtti_typeid<AZStd::string>(), context));
 
-        if (!info->m_model.empty())
+        auto materialAssetType = azrtti_typeid<AZ::Data::Asset<AZ::RPI::MaterialAsset>>();
+        auto modelAssetType = azrtti_typeid<AZ::Data::Asset<AZ::RPI::ModelAsset>>();
+        resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "material", &mat, nullptr, materialAssetType, context));
+
+        if (!info->m_model)
         {
-            resultCode.Combine(
-                ContinueStoringToJsonObjectField(outputValue, "model", &info->m_model, nullptr, azrtti_typeid<AZStd::string>(), context));
+            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "model", &info->m_model, nullptr, modelAssetType, context));
         }
 
-        if (!info->m_skeletonModel.empty())
+        if (!info->m_skeletonModel)
         {
-            resultCode.Combine(ContinueStoringToJsonObjectField(
-                outputValue, "skeleton model", &info->m_skeletonModel, nullptr, azrtti_typeid<AZStd::string>(), context));
+            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "skeleton model", &info->m_skeletonModel, nullptr, modelAssetType, context));
         }
 
         if (!info->m_renderConfig.empty())

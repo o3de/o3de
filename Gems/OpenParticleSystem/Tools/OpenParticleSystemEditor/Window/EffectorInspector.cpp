@@ -68,7 +68,7 @@ namespace OpenParticleSystemEditor
             m_ui->particleName->setText("");
             return;
         }
-        const auto text = m_ui->particleName->text().toStdString();
+        const AZStd::string text = m_ui->particleName->text().toUtf8().constData();
         if (m_detail == nullptr)
         {
             m_ui->particleName->setText("");
@@ -76,8 +76,9 @@ namespace OpenParticleSystemEditor
         }
         else
         {
-            if (text == m_detail->m_name->c_str())
+            if (text == m_detail->m_name)
             {
+                // It didn't change.
                 return;
             }
         }
@@ -97,12 +98,12 @@ namespace OpenParticleSystemEditor
                 m_isShowMessage = true;
                 messageBox.exec();
                 m_ui->particleName->setFocus();
-                m_ui->particleName->setText(m_detail->m_name->data());
+                m_ui->particleName->setText(QString::fromUtf8(m_detail->m_name.c_str()));
                 m_isShowMessage = false;
                 return;
             }
         }
-        *m_detail->m_name = m_ui->particleName->text().toStdString().data();
+        m_sourceData->UpdateEmitterName(m_detail->m_name, text);
         ParticleItemWidget* itemWidget = static_cast<ParticleItemWidget*>(m_pItemWidget);
         if (itemWidget != nullptr)
         {
@@ -200,6 +201,9 @@ namespace OpenParticleSystemEditor
             {
                 m_comboBoxWidget = new ComboBoxWidget(className, m_detail, m_serializeContext, this, this);
                 m_ui->verticalLayout->addWidget(m_comboBoxWidget);
+                QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnMaterialChanged, this, &EffectorInspector::OnComboBoxMaterialChanged);
+                QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnModelChanged, this, &EffectorInspector::OnComboBoxModelChanged);
+                QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnSkeletonModelChanged, this, &EffectorInspector::OnComboBoxSkeletonModelChanged);
                 break;
             }
         }
@@ -280,7 +284,7 @@ namespace OpenParticleSystemEditor
     {
         if (m_detail != nullptr)
         {
-            m_ui->particleName->setText(m_detail->m_name->data());
+            m_ui->particleName->setText(QString::fromUtf8(m_detail->m_name.c_str()));
         }
         for (auto& iter : m_propertyEditorWidgets)
         {
@@ -293,6 +297,7 @@ namespace OpenParticleSystemEditor
         {
             m_comboBoxWidget->Clear();
             m_ui->verticalLayout->removeWidget(m_comboBoxWidget);
+            m_comboBoxWidget->deleteLater();
             m_comboBoxWidget = nullptr;
         }
 
@@ -300,6 +305,7 @@ namespace OpenParticleSystemEditor
         {
             m_eventHandlerWidgets->Clear();
             m_ui->verticalLayout->removeWidget(m_eventHandlerWidgets);
+            m_eventHandlerWidgets->deleteLater();
             m_eventHandlerWidgets = nullptr;
         }
 
@@ -628,6 +634,28 @@ namespace OpenParticleSystemEditor
         AzFramework::StringFunc::Path::GetFileName(particleAssetPath.c_str(), m_widgetName);
         DefaultDisplay();
     }
+
+    void EffectorInspector::OnComboBoxMaterialChanged()
+    {
+        AZStd::string modifiedEffect = m_ui->particleName->text().toUtf8().constData();
+        // This will have modified the assets listed in the "Detail" object, but not the actual emitter, so sync them.
+        m_sourceData->UpdateEmitterAsset(modifiedEffect, OpenParticle::ParticleSourceData::DetailConstant::ASSET_MATERIAL);
+    }
+
+    void EffectorInspector::OnComboBoxModelChanged()
+    {
+        AZStd::string modifiedEffect = m_ui->particleName->text().toUtf8().constData();
+        // This will have modified the assets listed in the "Detail" object, but not the actual emitter, so sync them.
+        m_sourceData->UpdateEmitterAsset(modifiedEffect, OpenParticle::ParticleSourceData::DetailConstant::ASSET_MODEL);
+    }
+
+    void EffectorInspector::OnComboBoxSkeletonModelChanged()
+    {
+        AZStd::string modifiedEffect = m_ui->particleName->text().toUtf8().constData();
+        // This will have modified the assets listed in the "Detail" object, but not the actual emitter, so sync them.
+        m_sourceData->UpdateEmitterAsset(modifiedEffect, OpenParticle::ParticleSourceData::DetailConstant::ASSET_SKELETON_MODEL);
+    }
+
 } // namespace OpenParticleSystemEditor
 
 #include <Window/moc_EffectorInspector.cpp>

@@ -10,6 +10,9 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace OpenParticle
 {
@@ -42,6 +45,8 @@ namespace OpenParticle
         virtual AZStd::vector<AZ::TypeId> GetDefaultSpawnTypes() const = 0;
 
         virtual AZ::TypeId GetDefaultRenderType() const = 0;
+
+        virtual AZ::Data::AssetId GetDefaultEmitterMaterialId() const = 0;
     };
     using EditorParticleSystemComponentRequestBus = AZ::EBus<EditorParticleSystemComponentRequests>;
 

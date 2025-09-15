@@ -11,6 +11,12 @@
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
 
+namespace AZ::Data
+{
+    template<typename T>
+    class Asset;
+};
+
 namespace OpenParticle
 {
     class ParticleBaseSerializer
@@ -22,6 +28,15 @@ namespace OpenParticle
 
         template<typename T>
         void ConvertOldModule(AZStd::any& module, const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context);
+
+        //! Helper function to convert a source file name(string) to an asset reference(Asset<T>)
+        template<typename T>
+        AZ::JsonSerializationResult::ResultCode ConvertSourceFileNameToAsset(
+            AZ::Data::Asset<T>& destField,
+            const rapidjson::Value& inputValue,
+            const char* fieldName,
+            AZ::Data::AssetLoadBehavior loadBehavior,
+            AZ::JsonDeserializerContext& context);
 
         // Convert Type: float -> ValueFloatObj / AZ::Vector3 -> ValueVec3Obj / AZ::Color -> ValueObjColor
         template<typename T, size_t size>
