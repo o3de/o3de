@@ -62,12 +62,12 @@ namespace AZ
 
         void AtomFontSystemComponent::Activate()
         {
-            CrySystemEventBus::Handler::BusConnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
         }
 
         void AtomFontSystemComponent::Deactivate()
         {
-            CrySystemEventBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
         }
 
         void LoadFont(ICryFont& cryFont, const AZStd::string& fontName)
@@ -82,7 +82,7 @@ namespace AZ
             }
         }
 
-        void AtomFontSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
+        void AtomFontSystemComponent::OnEditorSystemInitialized(ISystem& system, const SSystemInitParams&)
         {
 #if !defined(AZ_MONOLITHIC_BUILD)
             // When module is linked dynamically, we must set our gEnv pointer.
@@ -106,7 +106,7 @@ namespace AZ
             }
         }
 
-        void AtomFontSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+        void AtomFontSystemComponent::OnEditorSystemShutdown([[maybe_unused]] ISystem& system)
         {
 #if !defined(AZ_MONOLITHIC_BUILD)
             gEnv = nullptr;

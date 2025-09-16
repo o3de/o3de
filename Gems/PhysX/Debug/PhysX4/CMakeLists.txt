@@ -46,6 +46,7 @@ ly_add_target(
         PUBLIC
             ${physxdebug_dependency}
             Legacy::CryCommon
+            AZ::AzToolsFramework
             Gem::PhysX
             Gem::ImGui.imguilib
             Gem::ImGui

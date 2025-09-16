@@ -69,6 +69,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 Gem::${gem_name}.Static
                 Gem::EMotionFX.Editor.Static
                 Gem::AtomToolsFramework.Static

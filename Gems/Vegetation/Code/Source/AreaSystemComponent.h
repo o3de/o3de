@@ -17,7 +17,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
-#include <CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 #include <ISystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -80,7 +80,7 @@ namespace Vegetation
         , private AreaSystemRequestBus::Handler
         , private GradientSignal::SectorDataRequestBus::Handler
         , private SystemConfigurationRequestBus::Handler
-        , private CrySystemEventBus::Handler
+        , private AzToolsFramework::EditorSystemEventBus::Handler
         , private ISystemEventListener
         , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
@@ -142,12 +142,12 @@ namespace Vegetation
 
 
         ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemShutdown(ISystem& system) override;
-        void OnCryEditorBeginLevelExport() override;
-        void OnCryEditorEndLevelExport(bool /*success*/) override;
-        void OnCryEditorCloseScene() override;
+        // AzToolsFramework::EditorSystemEvents
+        void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
+        void OnEditorSystemShutdown(ISystem& system) override;
+        void OnEditorBeginLevelExport() override;
+        void OnEditorEndLevelExport(bool /*success*/) override;
+        void OnEditorCloseScene() override;
 
         //////////////////////////////////////////////////////////////////////////
         // ISystemEventListener

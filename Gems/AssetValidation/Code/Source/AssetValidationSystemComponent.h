@@ -18,17 +18,17 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AssetSystemTestCommands.h>
 
-#include <CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 #include <AzFramework/Archive/ArchiveBus.h>
 
-struct IConsoleCmdArgs; 
+struct IConsoleCmdArgs;
 
 namespace AssetValidation
 {
     class AssetValidationSystemComponent
         : public AZ::Component
         , protected AssetValidationRequestBus::Handler
-        , public CrySystemEventBus::Handler
+        , public AzToolsFramework::EditorSystemEventBus::Handler
         , public AZ::IO::ArchiveNotificationBus::Handler
     {
     public:
@@ -58,7 +58,7 @@ namespace AssetValidation
         void SeedMode() override;
 
         bool AddSeedPath(const char* fileName) override;
-       
+
         bool RemoveSeedPath(const char* fileName) override;
 
         void ListKnownAssets() override;
@@ -81,7 +81,7 @@ namespace AssetValidation
         static void ConsoleCommandKnownAssets(IConsoleCmdArgs* pCmdArgs);
         static void ConsoleCommandTogglePrintExcluded(IConsoleCmdArgs* pCmdArgs);
 
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
+        void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -106,7 +106,7 @@ namespace AssetValidation
         bool RemoveSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 sourceId);
         bool AddSeedListHelper(const char* seedPath);
     private:
-        
+
         bool m_seedMode{ false };
         bool m_printExcluded{ false };
 

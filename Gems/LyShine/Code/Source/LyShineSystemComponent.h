@@ -31,7 +31,7 @@ namespace LyShine
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
         , protected UiFrameworkBus::Handler
-        , protected CrySystemEventBus::Handler
+        , protected EditorSystemEventBus::Handler
         , public ILevelSystemListener
     {
     public:
@@ -83,9 +83,9 @@ namespace LyShine
         void HandleEditorOnlyEntities(const EntityList& exportSliceEntities, const EntityIdSet& editorOnlyEntityIds) override;
         ////////////////////////////////////////////////////////////////////////
 
-        // CrySystemEventBus ///////////////////////////////////////////////////////
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        void OnCrySystemShutdown(ISystem&) override;
+        // EditorSystemEventBus ///////////////////////////////////////////////////////
+        void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams&) override;
+        void OnEditorSystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

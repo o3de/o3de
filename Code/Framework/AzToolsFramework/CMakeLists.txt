@@ -53,6 +53,7 @@ ly_add_target(
         PRIVATE
             3rdParty::SQLite
             AZ::AzCore
+            Legacy::CryCommon # Temporary, until ISystem is converted for EditorSystemBus
         PUBLIC
             3rdParty::Qt::Core
             3rdParty::Qt::Gui

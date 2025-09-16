@@ -86,17 +86,17 @@ namespace Maestro
     void MaestroSystemComponent::Activate()
     {
         MaestroRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
     }
 
     void MaestroSystemComponent::Deactivate()
     {
         MaestroRequestBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void MaestroSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& startupParams)
+    void MaestroSystemComponent::OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& startupParams)
     {
         if (!startupParams.bSkipMovie)
         {
@@ -105,7 +105,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void MaestroSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    void MaestroSystemComponent::OnEditorSystemShutdown([[maybe_unused]] ISystem& system)
     {
         m_movieSystem.reset();
     }

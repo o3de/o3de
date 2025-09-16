@@ -16,7 +16,7 @@
 #include <PhysXDebug/PhysXDebugBus.h>
 #include <PxPhysicsAPI.h>
 
-#include <CryCommon/CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 
 #include <AzFramework/Physics/SystemBus.h>
 
@@ -102,7 +102,7 @@ namespace PhysXDebug
         : public AZ::Component
         , protected PhysXDebugRequestBus::Handler
         , public AZ::TickBus::Handler
-        , public CrySystemEventBus::Handler
+        , public AzToolsFramework::EditorSystemEventBus::Handler
 #ifdef IMGUI_ENABLED
         , public ImGui::ImGuiUpdateListenerBus::Handler
 #endif // IMGUI_ENABLED
@@ -141,8 +141,8 @@ namespace PhysXDebug
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override { return AZ::ComponentTickBus::TICK_FIRST + 1; }
 
-        // CrySystemEvents
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
+        // EditorSystemEvents
+        void OnEditorSystemInitialized(ISystem&, const SSystemInitParams&) override;
 
     private:
 

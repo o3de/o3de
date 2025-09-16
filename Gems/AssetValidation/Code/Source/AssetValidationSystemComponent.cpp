@@ -72,7 +72,7 @@ namespace AssetValidation
 
     void AssetValidationSystemComponent::Activate()
     {
-        CrySystemEventBus::Handler::BusConnect();
+        EditorSystemEventBus::Handler::BusConnect();
         AssetValidationRequestBus::Handler::BusConnect();
     }
 
@@ -83,7 +83,7 @@ namespace AssetValidation
             AZ::IO::ArchiveNotificationBus::Handler::BusDisconnect();
         }
         AssetValidationRequestBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        EditorSystemEventBus::Handler::BusDisconnect();
     }
 
     void AssetValidationSystemComponent::ConsoleCommandSeedMode([[maybe_unused]] IConsoleCmdArgs* pCmdArgs)
@@ -130,7 +130,7 @@ namespace AssetValidation
         AssetValidationNotificationBus::Broadcast(&AssetValidationNotificationBus::Events::SetSeedMode, m_seedMode);
     }
 
-    void AssetValidationSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
+    void AssetValidationSystemComponent::OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
     {
         AZ_UNUSED(systemInitParams);
 

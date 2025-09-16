@@ -19,6 +19,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            AZ::AzToolsFramework
         PUBLIC
             Gem::Atom_Bootstrap.Headers
             Gem::Atom_RHI.Public
@@ -40,6 +41,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            AZ::AzToolsFramework
             Gem::${gem_name}.Static
         PUBLIC
             Gem::Atom_Bootstrap.Headers
@@ -128,6 +130,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Legacy::CryCommon
+                AZ::AzToolsFramework
                 Gem::${gem_name}.Static
     )
     ly_add_googletest(

@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <CrySystemBus.h>
+// #include <AzToolsFramework/Editor/EditorSystemBus.h>
 
 namespace Vegetation
 {

@@ -145,6 +145,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AtomToolsFramework.Editor
                 AZ::SceneCore
                 AZ::SceneData
+                AZ::AzToolsFramework
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Legacy::CryCommon

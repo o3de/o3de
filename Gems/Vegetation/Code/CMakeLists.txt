@@ -25,6 +25,7 @@ ly_add_target(
             Gem::LmbrCentral.API
             Gem::SurfaceData.Static
             Legacy::CryCommon
+            AZ::AzToolsFramework
         PUBLIC
             Gem::CommonFeaturesAtom.Static
 )
@@ -43,6 +44,7 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Static
             Legacy::CryCommon
+            AZ::AzToolsFramework
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::GradientSignal
@@ -126,6 +128,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::${gem_name}.Static
                 Gem::LmbrCentral.Mocks
                 Legacy::CryCommon
+                AZ::AzToolsFramework
     )
     ly_add_googletest(
         NAME Gem::${gem_name}.Tests

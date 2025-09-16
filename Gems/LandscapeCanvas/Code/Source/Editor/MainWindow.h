@@ -9,9 +9,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <CrySystemBus.h>
 
 // AZ
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/PlatformDef.h>
@@ -95,7 +95,7 @@ namespace LandscapeCanvasEditor
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
         , private AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler
         , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
-        , private CrySystemEventBus::Handler
+        , private AzToolsFramework::EditorSystemEventBus::Handler
     {
         Q_OBJECT
 
@@ -210,11 +210,11 @@ namespace LandscapeCanvasEditor
         void OnPrefabInstancePropagationEnd() override;
 
         ////////////////////////////////////////////////////////////////////////
-        // CrySystemEventBus overrides
-        void OnCryEditorEndCreate() override;
-        void OnCryEditorEndLoad() override;
-        void OnCryEditorCloseScene() override;
-        void OnCryEditorSceneClosed() override;
+        // AzToolsFramework::EditorSystemEventBus overrides
+        void OnEditorEndCreate() override;
+        void OnEditorEndLoad() override;
+        void OnEditorCloseScene() override;
+        void OnEditorSceneClosed() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -310,4 +310,4 @@ namespace LandscapeCanvasEditor
 
         QAction* m_fileNewAction = nullptr;
     };
-} 
+}

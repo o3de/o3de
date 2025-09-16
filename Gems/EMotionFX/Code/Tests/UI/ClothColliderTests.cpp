@@ -27,7 +27,7 @@ namespace EMotionFX
     class SystemComponent
         : public AZ::Component
         //        , public SystemRequestBus::Handler
-        //        , protected CrySystemEventBus::Handler
+        //        , protected EditorSystemEventBus::Handler
     {
     public:
         AZ_COMPONENT(SystemComponent, "{89DF5C48-64AC-4B8E-9E61-0D4C7A7B5491}");

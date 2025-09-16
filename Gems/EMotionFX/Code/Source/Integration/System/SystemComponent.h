@@ -17,7 +17,7 @@
 #include <Integration/EMotionFXBus.h>
 #include <Integration/Rendering/RenderBackendManager.h>
 
-#include <CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
 #   include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
@@ -51,7 +51,7 @@ namespace EMotionFX
             : public AZ::Component
             , private SystemRequestBus::Handler
             , private AZ::TickBus::Handler
-            , private CrySystemEventBus::Handler
+            , private AzToolsFramework::EditorSystemEventBus::Handler
             , private EMotionFXRequestBus::Handler
             , private IRaycastRequests
 #if defined (EMOTIONFXANIMATION_EDITOR)
@@ -94,9 +94,9 @@ namespace EMotionFX
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // CrySystemEventBus
-            void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-            void OnCrySystemShutdown(ISystem&) override;
+            // EditorSystemEventBus
+            void OnEditorSystemInitialized(ISystem&, const SSystemInitParams&) override;
+            void OnEditorSystemShutdown(ISystem&) override;
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////

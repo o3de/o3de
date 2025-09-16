@@ -31,6 +31,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Legacy::CryCommon
         PUBLIC
             AZ::AtomCore
@@ -80,7 +81,7 @@ ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS ${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS ${gem_name})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    
+
     ly_add_target(
         NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
@@ -136,6 +137,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 EMotionFX/Tools
                 EMotionFX/Pipeline
         BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzToolsFramework
             PRIVATE
                 Gem::${gem_name}.Editor.Static
         RUNTIME_DEPENDENCIES
@@ -182,6 +185,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzTestShared
+                AZ::AzToolsFramework
                 Gem::${gem_name}.Static
                 Gem::${gem_name}.Tests.Static
     )

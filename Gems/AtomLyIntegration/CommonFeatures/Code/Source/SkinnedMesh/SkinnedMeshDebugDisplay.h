@@ -10,7 +10,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 
@@ -21,7 +21,7 @@ namespace AZ
         //! This class is responsible for displaying stats about Atom's SkinnedMesh feature
         class SkinnedMeshDebugDisplay
             : private AzFramework::ViewportDebugDisplayEventBus::Handler
-            , private CrySystemEventBus::Handler
+            , private AzToolsFramework::EditorSystemEventBus::Handler
             , private AZ::Render::Bootstrap::NotificationBus::Handler
         {
         public:
@@ -30,11 +30,11 @@ namespace AZ
 
         private:
 
-            // CrySystemEventBus::Handler overrides
+            // AzToolsFramework::EditorSystemEventBus::Handler overrides
             // Register the r_skinnedMeshDisplaySceneStats cvar
-            void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-            void OnCrySystemShutdown(ISystem&) override;
-            void OnCryEditorInitialized() override;
+            void OnEditorSystemInitialized(ISystem&, const SSystemInitParams&) override;
+            void OnEditorSystemShutdown(ISystem&) override;
+            void OnEditorInitialized() override;
 
             // AzFramework::ViewportDebugDisplayEventBus overrides
             // Display the debug text if r_skinnedMeshDisplaySceneStats = 1

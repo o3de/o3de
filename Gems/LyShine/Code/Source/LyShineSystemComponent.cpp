@@ -100,7 +100,7 @@ namespace LyShine
                 ->Event("SetUiCursorPosition", &UiCursorBus::Events::SetUiCursorPosition)
                 ;
         }
-        
+
         LyShineFeatureProcessor::Reflect(context);
     }
 
@@ -154,7 +154,7 @@ namespace LyShine
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        EditorSystemEventBus::Handler::BusConnect();
 
         // register all the component types internal to the LyShine module
         // These are registered in the order we want them to appear in the Add Component menu
@@ -203,7 +203,7 @@ namespace LyShine
         // Setup handler for load pass template mappings
         m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
         AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
-        
+
         // Register feature processor
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<LyShineFeatureProcessor>();
 #endif
@@ -213,14 +213,14 @@ namespace LyShine
     void LyShineSystemComponent::Deactivate()
     {
 #if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
-        m_loadTemplatesHandler.Disconnect();        
+        m_loadTemplatesHandler.Disconnect();
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<LyShineFeatureProcessor>();
 #endif
 
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        EditorSystemEventBus::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +289,7 @@ namespace LyShine
         UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
         AZ::Entity* oldRootSliceEntity = canvasFileObject->m_rootSliceEntity;
         AZ::EntityId idToReuse = oldRootSliceEntity->GetId();
-        
+
         AZ::Entity* newRootSliceEntity = aznew AZ::Entity(idToReuse, AZStd::to_string(static_cast<AZ::u64>(idToReuse)).c_str());
         newRootSliceEntity->AddComponent(newSliceComponent);
         canvasFileObject->m_rootSliceEntity = newRootSliceEntity;
@@ -383,7 +383,7 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    void LyShineSystemComponent::OnEditorSystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
     {
 #if !defined(AZ_MONOLITHIC_BUILD)
         // When module is linked dynamically, we must set our gEnv pointer.
@@ -404,7 +404,7 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemShutdown(ISystem& system)
+    void LyShineSystemComponent::OnEditorSystemShutdown(ISystem& system)
     {
         system.GetILevelSystem()->RemoveListener(this);
 

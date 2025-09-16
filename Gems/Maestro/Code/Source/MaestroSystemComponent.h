@@ -9,7 +9,7 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Component/Component.h>
-#include <CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 
 #include "Cinematics/Movie.h"
 #include "Maestro/MaestroBus.h"
@@ -35,7 +35,7 @@ namespace Maestro
     class MaestroSystemComponent
         : public AZ::Component
         , protected MaestroRequestBus::Handler
-        , protected CrySystemEventBus::Handler
+        , protected AzToolsFramework::EditorSystemEventBus::Handler
     {
     public:
         AZ_COMPONENT(MaestroSystemComponent, "{47991994-4417-4CD7-AE0B-FEF1C8720766}");
@@ -57,9 +57,9 @@ namespace Maestro
 
         ////////////////////////////////////////////////////////////////////////
 
-        // CrySystemEventBus ///////////////////////////////////////////////////////
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        // AzToolsFramework::EditorSystemEventBus /////////////////////////////////////////
+        void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams&) override;
+        virtual void OnEditorSystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

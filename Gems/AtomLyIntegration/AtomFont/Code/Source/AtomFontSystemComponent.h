@@ -9,7 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <CryCommon/CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 
 namespace AZ
 {
@@ -17,7 +17,7 @@ namespace AZ
     {
         class AtomFontSystemComponent
             : public AZ::Component
-            , private CrySystemEventBus::Handler
+            , private AzToolsFramework::EditorSystemEventBus::Handler
         {
         public:
             AZ_COMPONENT(AtomFontSystemComponent, "{29DC7010-CF2A-4EE4-91F8-8E3C8BE65F41}");
@@ -37,13 +37,13 @@ namespace AZ
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // CrySystemEventBus
-            void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& initParams) override;
+            // EditorSystemEventBus
+            void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& initParams) override;
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // CrySystemEventBus
-            void OnCrySystemShutdown(ISystem& system) override;
+            // EditorSystemEventBus
+            void OnEditorSystemShutdown(ISystem& system) override;
             ////////////////////////////////////////////////////////////////////////
         };
     } // namespace Render

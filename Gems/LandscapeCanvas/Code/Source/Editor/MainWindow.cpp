@@ -476,7 +476,7 @@ namespace LandscapeCanvasEditor
     }
 
     AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-    
+
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
@@ -509,7 +509,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        EditorSystemEventBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
         // Listen for Entity notifications if a level is already loaded
@@ -538,7 +538,7 @@ namespace LandscapeCanvasEditor
     MainWindow::~MainWindow()
     {
         AZ::EntitySystemBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        EditorSystemEventBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
@@ -1745,7 +1745,7 @@ namespace LandscapeCanvasEditor
             InitialEntityGraph(entityId, graphId);
         }
         // Otherwise, we were able to load a previously saved graph so we just need to update the
-        // connections 
+        // connections
         else
         {
             GraphModel::NodePtrList nodes;
@@ -2844,26 +2844,26 @@ namespace LandscapeCanvasEditor
         m_queuedEntityRefresh.clear();
     }
 
-    void MainWindow::OnCryEditorEndCreate()
+    void MainWindow::OnEditorEndCreate()
     {
         UpdateGraphEnabled();
     }
 
-    void MainWindow::OnCryEditorEndLoad()
+    void MainWindow::OnEditorEndLoad()
     {
         UpdateGraphEnabled();
 
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
-    void MainWindow::OnCryEditorCloseScene()
+    void MainWindow::OnEditorCloseScene()
     {
         UpdateGraphEnabled();
 
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
-    void MainWindow::OnCryEditorSceneClosed()
+    void MainWindow::OnEditorSceneClosed()
     {
         UpdateGraphEnabled();
 
@@ -3713,7 +3713,7 @@ namespace LandscapeCanvasEditor
                                 GraphModelIntegration::GraphControllerRequestBus::EventResult(slotId, graphId, &GraphModelIntegration::GraphControllerRequests::ExtendSlot, node, slotName);
                                 success = slotId.IsValid();
                             }
-                            
+
                             if (!success)
                             {
                                 return nullptr;

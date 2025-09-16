@@ -22,20 +22,20 @@ namespace AZ
     {
         SkinnedMeshDebugDisplay::SkinnedMeshDebugDisplay()
         {
-            CrySystemEventBus::Handler::BusConnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
             AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
         }
 
         SkinnedMeshDebugDisplay::~SkinnedMeshDebugDisplay()
         {
             AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
-            CrySystemEventBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
         }
 
-        void SkinnedMeshDebugDisplay::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
+        void SkinnedMeshDebugDisplay::OnEditorSystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
         {
-            // Once CrySystem is initialized, we can register cvars
+            // Once EditorSystem is initialized, we can register cvars
             if (system.GetGlobalEnvironment() && system.GetGlobalEnvironment()->pConsole)
             {
                 system.GetGlobalEnvironment()->pConsole->Register("r_skinnedMeshDisplaySceneStats", &r_skinnedMeshDisplaySceneStats, 0, VF_NULL,
@@ -49,7 +49,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshDebugDisplay::OnCrySystemShutdown(ISystem& system)
+        void SkinnedMeshDebugDisplay::OnEditorSystemShutdown(ISystem& system)
         {
             if (system.GetGlobalEnvironment() && system.GetGlobalEnvironment()->pConsole)
             {
@@ -61,7 +61,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshDebugDisplay::OnCryEditorInitialized()
+        void SkinnedMeshDebugDisplay::OnEditorInitialized()
         {
             // Once the editor is initialized, listen to ViewportDebugDisplayEventBus
             AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
@@ -73,7 +73,7 @@ namespace AZ
         {
             if (r_skinnedMeshDisplaySceneStats == 1)
             {
-                // Get scene id when DisplayViewport2d is called. The RPI Scene may not be ready when OnCryEditorInitialized was called
+                // Get scene id when DisplayViewport2d is called. The RPI Scene may not be ready when OnEditorInitialized was called
                 SkinnedMeshSceneStats stats{};
                 SkinnedMeshStatsRequestBus::EventResult(stats, m_sceneId, &SkinnedMeshStatsRequestBus::Events::GetSceneStats);
 

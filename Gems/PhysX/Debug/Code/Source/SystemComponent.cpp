@@ -177,7 +177,7 @@ namespace PhysXDebug
         }
     }
 
-    void SystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
+    void SystemComponent::OnEditorSystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
     {
         InitPhysXColorMappings();
         ConfigurePhysXVisualizationParameters();
@@ -217,7 +217,7 @@ namespace PhysXDebug
     {
         PhysXDebugRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif // IMGUI_ENABLED
@@ -238,7 +238,7 @@ namespace PhysXDebug
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
 #endif // IMGUI_ENABLED
-        CrySystemEventBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         PhysXDebugRequestBus::Handler::BusDisconnect();
     }

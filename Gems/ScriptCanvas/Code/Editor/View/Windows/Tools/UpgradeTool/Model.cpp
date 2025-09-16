@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <CryCommon/CrySystemBus.h>
+#include <AzToolsFramework/Editor/EditorSystemBus.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <IConsole.h>
 #include <ISystem.h>
@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
         EditorKeepAlive::EditorKeepAlive()
         {
             ISystem* system = nullptr;
-            CrySystemRequestBus::BroadcastResult(system, &CrySystemRequestBus::Events::GetCrySystem);
+            AzToolsFramework::EditorSystemRequestBus::BroadcastResult(system, &AzToolsFramework::EditorSystemRequestBus::Events::GetEditorSystem);
 
             if (system)
             {

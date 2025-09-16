@@ -39,7 +39,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! This Gem provides a set of sample game states that can be overridden (or replaced entirely)
     //! in order to customize the functionality as needed for your game. To circumvent this default
-    //! set of game states, push a custom game state before GameStateModule::OnCrySystemInitialized
+    //! set of game states, push a custom game state before GameStateModule::OnEditorSystemInitialized
     //! is called, or just don't enable this Gem for your project (only the GameState Gem is needed
     //! if you plan on creating entirely custom game states). The flow of the sample game states in
     //! this Gem is roughly as follows:
@@ -95,16 +95,16 @@ namespace GameStateSamples
         }
 
     protected:
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override
+        void OnEditorSystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override
         {
-            CryHooksModule::OnCrySystemInitialized(system, systemInitParams);
+            CryHooksModule::OnEditorSystemInitialized(system, systemInitParams);
 
             AZ::TickBus::Handler::BusConnect();
         }
 
         void OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint scriptTimePoint) override
         {
-            // Ideally this would be called at startup (either above in OnCrySystemInitialized, or better during AZ system component
+            // Ideally this would be called at startup (either above in OnEditorSystemInitialized, or better during AZ system component
             // initialisation), but because the initial game state depends on loading a UI canvas using LYShine we need to wait until
             // the first tick, because LyShine in turn is not properly initialized until UiRenderer::OnBootstrapSceneReady has been
             // called, which doesn't happen until a queued tick event that gets called right at the end of initialisation before we

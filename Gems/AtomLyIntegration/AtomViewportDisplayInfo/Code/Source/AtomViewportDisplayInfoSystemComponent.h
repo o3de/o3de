@@ -9,7 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <CryCommon/CrySystemBus.h>
+// #include <CryCommon/CrySystemBus.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Font/FontInterface.h>

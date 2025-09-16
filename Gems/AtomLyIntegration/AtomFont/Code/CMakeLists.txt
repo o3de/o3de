@@ -23,7 +23,7 @@ ly_add_target(
             3rdParty::Freetype
             AZ::AzCore
             AZ::AtomCore
-            Legacy::CryCommon
+            AZ::AzToolsFramework
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
         PUBLIC
@@ -62,4 +62,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         LABELS REQUIRES_tiaf
     )
 endif()
-

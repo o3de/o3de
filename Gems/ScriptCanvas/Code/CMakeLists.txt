@@ -7,7 +7,7 @@
 #
 
 
-set(SCRIPT_CANVAS_COMMON_DEFINES 
+set(SCRIPT_CANVAS_COMMON_DEFINES
     SCRIPTCANVAS
     ENABLE_EXTENDED_MATH_SUPPORT=0
 )
@@ -183,9 +183,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Editor
                 Tools
                 ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
-        BUILD_DEPENDENCIES  
+        BUILD_DEPENDENCIES
             PUBLIC
                 Legacy::CryCommon
+                AZ::AzToolsFramework
                 AZ::AzCore
                 AZ::AssetBuilderSDK
                 ${additional_dependencies}
@@ -291,7 +292,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     ly_set_gem_variant_to_load(TARGETS ${gem_name}Application VARIANTS Tools)
-    
+
     # Add build dependency to Editor for the ScriptCanvas application since
     # Editor opens up the ScriptCanvas
     ly_add_dependencies(Editor Gem::${gem_name}Application)

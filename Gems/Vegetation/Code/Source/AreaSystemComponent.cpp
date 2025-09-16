@@ -313,7 +313,7 @@ namespace Vegetation
                 ;
             }
         }
-        
+
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
@@ -355,7 +355,7 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusConnect();
         GradientSignal::SectorDataRequestBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
 
@@ -376,7 +376,7 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusDisconnect();
         GradientSignal::SectorDataRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
 
@@ -555,7 +555,7 @@ namespace Vegetation
                     AreaNotificationBus::Event(area.m_id, &AreaNotificationBus::Events::OnAreaRefreshed);
                 }
 
-                // Set all existing sectors as needing to be rebuilt.  
+                // Set all existing sectors as needing to be rebuilt.
                 const auto& cachedMainThreadData = context->GetCachedMainThreadData();
                 vegTasks->MarkDirtySectors(AZ::Aabb::CreateNull(), threadData->m_dirtySectorContents,
                                              cachedMainThreadData.m_worldToSector, cachedMainThreadData.m_currViewRect);
@@ -945,13 +945,13 @@ namespace Vegetation
         InstanceSystemRequestBus::Broadcast(&InstanceSystemRequestBus::Events::Cleanup);
     }
 
-    void AreaSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
+    void AreaSystemComponent::OnEditorSystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
     {
         m_system = &system;
         m_system->GetISystemEventDispatcher()->RegisterListener(this);
     }
 
-    void AreaSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    void AreaSystemComponent::OnEditorSystemShutdown([[maybe_unused]] ISystem& system)
     {
         if (m_system)
         {
@@ -960,7 +960,7 @@ namespace Vegetation
         }
     }
 
-    void AreaSystemComponent::OnCryEditorBeginLevelExport()
+    void AreaSystemComponent::OnEditorBeginLevelExport()
     {
         // We need to free all our instances before exporting a level to ensure that none of the dynamic vegetation data
         // gets exported into the static vegetation data files.
@@ -969,13 +969,13 @@ namespace Vegetation
         ReleaseData();
     }
 
-    void AreaSystemComponent::OnCryEditorEndLevelExport(bool /*success*/)
+    void AreaSystemComponent::OnEditorEndLevelExport(bool /*success*/)
     {
         // We don't need to do anything here.  When the vegetation game components reactivate themselves after the level export completes,
         // (see EditorVegetationComponentBase.h) they will trigger a refresh of the vegetation areas which will produce all our instances again.
     }
 
-    void AreaSystemComponent::OnCryEditorCloseScene()
+    void AreaSystemComponent::OnEditorCloseScene()
     {
         // Clear all our spawned vegetation data
         ReleaseData();

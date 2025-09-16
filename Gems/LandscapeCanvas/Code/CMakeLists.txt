@@ -29,7 +29,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AzCore
                 AZ::AzToolsFramework
-                Legacy::CryCommon
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Gem::GraphModel.Editor.Static

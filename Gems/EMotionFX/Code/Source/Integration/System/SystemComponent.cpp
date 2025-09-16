@@ -500,7 +500,7 @@ namespace EMotionFX
 
             SystemRequestBus::Handler::BusConnect();
             AZ::TickBus::Handler::BusConnect();
-            CrySystemEventBus::Handler::BusConnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusConnect();
             EMotionFXRequestBus::Handler::BusConnect();
             EnableRayRequests();
 
@@ -548,7 +548,7 @@ namespace EMotionFX
             m_eventHandler.reset();
 
             AZ::TickBus::Handler::BusDisconnect();
-            CrySystemEventBus::Handler::BusDisconnect();
+            AzToolsFramework::EditorSystemEventBus::Handler::BusDisconnect();
             EMotionFXRequestBus::Handler::BusDisconnect();
             DisableRayRequests();
 
@@ -576,7 +576,7 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void SystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
+        void SystemComponent::OnEditorSystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
         {
 #if !defined(AZ_MONOLITHIC_BUILD)
             // When module is linked dynamically, we must set our gEnv pointer.
@@ -591,7 +591,7 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void SystemComponent::OnCrySystemShutdown(ISystem&)
+        void SystemComponent::OnEditorSystemShutdown(ISystem&)
         {
             gEnv->pConsole->UnregisterVariable("emfx_updateEnabled");
             gEnv->pConsole->UnregisterVariable("emfx_ragdollManipulatorsEnabled");
