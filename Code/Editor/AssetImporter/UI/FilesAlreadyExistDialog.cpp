@@ -87,7 +87,7 @@ void FilesAlreadyExistDialog::DoApplyActionToAllFiles()
 void FilesAlreadyExistDialog::UpdateCheckBoxState(int numberOfFiles)
 {
     m_ui->applyToAllCheckBox->setVisible((numberOfFiles > 1));
-    connect(m_ui->applyToAllCheckBox, &QCheckBox::stateChanged, this, &FilesAlreadyExistDialog::DoApplyActionToAllFiles);
+    connect(m_ui->applyToAllCheckBox, &QCheckBox::checkStateChanged, this, &FilesAlreadyExistDialog::DoApplyActionToAllFiles);
 }
 
 void FilesAlreadyExistDialog::closeEvent([[maybe_unused]] QCloseEvent* ev)

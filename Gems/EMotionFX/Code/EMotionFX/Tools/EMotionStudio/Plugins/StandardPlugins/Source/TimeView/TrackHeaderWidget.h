@@ -68,7 +68,7 @@ namespace EMStudio
     public slots:
         void NameChanged();
         void NameEdited(const QString& text);
-        void EnabledCheckBoxChanged(int state);
+        void EnabledCheckBoxChanged(Qt::CheckState state);
 
         void keyPressEvent(QKeyEvent* event) override;
         void keyReleaseEvent(QKeyEvent* event) override;
@@ -100,7 +100,7 @@ namespace EMStudio
         void OnTrackNameChanged(const QString& text, size_t trackNr)                                           { CommandSystem::CommandRenameEventTrack(trackNr, FromQtString(text).c_str()); }
         void OnTrackEnabledStateChanged(bool enabled, size_t trackNr)                                          { CommandSystem::CommandEnableEventTrack(trackNr, enabled); }
         void OnDetailedNodesCheckBox(int state);
-        void OnCheckBox(int state);
+        void OnCheckBox(Qt::CheckState state);
         void OnComboBoxIndexChanged(int state);
 
     private:

@@ -621,16 +621,19 @@ void MainWindow::Activate()
     ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
     ui->verboseLoggingCheckbox->setCheckState(verboseLogDump ? Qt::Checked : Qt::Unchecked);
 
-    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
-        [this](int newCheckState)
+    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::checkStateChanged, this,
+        [this](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(newOption);
             AssetUtilities::SetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, newOption);
         });
 
-    QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
-        [this](int newCheckState)
+    QObject::connect(
+        ui->debugOutputCheckBox,
+        &QCheckBox::checkStateChanged,
+        this,
+        [this](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
@@ -638,16 +641,19 @@ void MainWindow::Activate()
         });
 
 
-    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
-        [](int newCheckState)
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::checkStateChanged, this,
+        [](Qt::CheckState newCheckState)
         {
             // this is not something that we change while running, so just set it for next time.
             bool newOption = newCheckState == Qt::Checked ? true : false;
             AssetUtilities::SetUserSetting(AssetUtilities::SkipInitialScanOptionName, newOption);
         });
 
-     QObject::connect(ui->verboseLoggingCheckbox, &QCheckBox::stateChanged, this,
-        [](int newCheckState)
+     QObject::connect(
+        ui->verboseLoggingCheckbox,
+        &QCheckBox::checkStateChanged,
+        this,
+        [](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             AssetUtilities::SetUserSetting(AssetUtilities::VerboseLoggingOptionName, newOption);
@@ -823,7 +829,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     int row = ui->sharedCacheTable->rowCount();
     ui->sharedCacheTable->insertRow(row);
 
-    auto updateStatus = [this](int)
+    auto updateStatus = [this](Qt::CheckState)
     {
         this->m_cacheServerData.m_dirty = true;
         this->m_cacheServerData.m_updateStatus = false;
@@ -840,7 +846,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     // Enabled check mark
     auto* enableChackmark = new QCheckBox();
     enableChackmark->setChecked(enable);
-    QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
+    QObject::connect(enableChackmark, &QCheckBox::checkStateChanged, ui->sharedCacheTable, updateStatus);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
     enableChackmark->setToolTip(tr("Temporarily disable the pattern by unchecking this box"));

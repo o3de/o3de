@@ -386,7 +386,7 @@ public:
         while (totalBytesLeftToWrite > 0)
         {
             uint bytesToWrite = AZ::GetMin(blockSize, totalBytesLeftToWrite);
-            uint bytesWritten = QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite);
+            uint bytesWritten = static_cast<uint>(QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite));
 
             totalBytesLeftToWrite -= bytesWritten;
             totalBytesWritten += bytesWritten;

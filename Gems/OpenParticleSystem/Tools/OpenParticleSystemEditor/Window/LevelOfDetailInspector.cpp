@@ -363,7 +363,11 @@ namespace OpenParticleSystemEditor
         (void)emitterIndex;
         auto checkbox = new QCheckBox(name.data());
         checkbox->setChecked(checked);
-        connect(checkbox, &QCheckBox::stateChanged, this, [this, checkbox](int state)
+        connect(
+            checkbox,
+            &QCheckBox::checkStateChanged,
+            this,
+            [this, checkbox](Qt::CheckState state)
             {
                 auto it = AZStd::find_if(m_checkboxes.begin(), m_checkboxes.end(), [checkbox](const auto& item)
                     {

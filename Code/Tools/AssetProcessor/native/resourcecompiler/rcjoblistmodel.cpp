@@ -585,7 +585,7 @@ namespace AssetProcessor
 
         int slashIndex = searchTerm.lastIndexOf('/');
         int dashIndex = searchTerm.lastIndexOf('_');
-        QStringRef searchTermWithNoSuffix = searchTermWithNoExtension;
+        QString searchTermWithNoSuffix = searchTermWithNoExtension;
         if ((dashIndex != -1) && (slashIndex == -1) || (dashIndex > slashIndex))
         {
             searchTermWithNoSuffix = searchTermWithNoSuffix.mid(0, dashIndex);

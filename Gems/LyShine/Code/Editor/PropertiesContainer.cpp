@@ -1024,12 +1024,14 @@ void PropertiesContainer::SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox)
     m_editorOnlyCheckbox = editorOnlyCheckbox;
 
     QObject::connect(m_editorOnlyCheckbox,
-        &QCheckBox::stateChanged,
-        [this](int value)
+        &QCheckBox::checkStateChanged,
+        [this](Qt::CheckState value)
         {
             QSignalBlocker blocker(this);
 
-            QMetaObject::invokeMethod(m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, value));
+            bool checked = value == Qt::CheckState::Checked;
+            QMetaObject::invokeMethod(
+                m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, checked));
         }
     );
 }

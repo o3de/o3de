@@ -550,7 +550,7 @@ void ViewportWidget::mousePressEvent(QMouseEvent* ev)
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
     QPointF scaledPosition = WidgetToViewport(ev->position());
-    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->globalPosition(), ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
@@ -585,7 +585,7 @@ void ViewportWidget::mouseMoveEvent(QMouseEvent* ev)
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
     QPointF scaledPosition = WidgetToViewport(ev->position());
-    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->globalPosition(), ev->button(), ev->buttons(), ev->modifiers());
 
     if (editorMode == UiEditorMode::Edit)
     {
@@ -624,7 +624,7 @@ void ViewportWidget::mouseReleaseEvent(QMouseEvent* ev)
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
 
     QPointF scaledPosition = WidgetToViewport(ev->position());
-    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->button(), ev->buttons(), ev->modifiers());
+    QMouseEvent scaledEvent(ev->type(), scaledPosition, ev->globalPosition(), ev->button(), ev->buttons(), ev->modifiers());
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction

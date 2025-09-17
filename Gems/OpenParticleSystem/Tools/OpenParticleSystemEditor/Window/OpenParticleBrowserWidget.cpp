@@ -95,12 +95,12 @@ namespace OpenParticleSystemEditor
             AssetBrowserEntry* pEutry = static_cast<AssetBrowserEntry*>(sourceIndex.internalPointer());
 
             QString test = index.model()->data(index).toString();
-            int regexIndex = m_filterRegex.indexIn(test);
+            QRegularExpressionMatch match = m_filterRegex.match(test);
 
-            if (pEutry && regexIndex >= 0)
+            if (pEutry && match.hasMatch())
             {
                 // pos, len
-                const AZStd::pair<int, int> highlight(regexIndex, m_filterRegex.matchedLength());
+                const AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
                 QString preSelectedText = options.text.left(highlight.first);
                 int preSelectedTextLength = options.fontMetrics.horizontalAdvance(preSelectedText);
                 QString selectedText = options.text.mid(highlight.first, highlight.second);
@@ -132,7 +132,7 @@ namespace OpenParticleSystemEditor
 
     void NodeBrowserTreeDelegate::SetStringFilter(const QString& filter)
     {
-        m_filterString = QRegExp::escape(filter.simplified().replace(" ", ""));
+        m_filterString = filter.simplified().replace(" ", "");
 
         QString regExIgnoreWhitespace(m_filterString[0]);
         for (int i = 1; i < m_filterString.size(); ++i)
@@ -141,7 +141,7 @@ namespace OpenParticleSystemEditor
             regExIgnoreWhitespace.append(m_filterString[i]);
         }
 
-        m_filterRegex = QRegExp(regExIgnoreWhitespace, Qt::CaseInsensitive);
+        m_filterRegex.setPattern(regExIgnoreWhitespace);
     }
 
     ParticleBrowserWidget::ParticleBrowserWidget(QWidget* parent)

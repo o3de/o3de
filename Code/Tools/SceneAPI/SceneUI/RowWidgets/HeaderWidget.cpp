@@ -29,7 +29,8 @@
 
 static void InitSceneUIHeaderWidgetResources()
 {
-    Q_INIT_RESOURCE(Icons);
+    // #QT6_TODO
+    // Q_INIT_RESOURCE(Icons);
 }
 
 namespace AZ

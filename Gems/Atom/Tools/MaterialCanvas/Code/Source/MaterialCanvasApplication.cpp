@@ -36,11 +36,12 @@
 
 void InitMaterialCanvasResources()
 {
+    // #QT6_TODO
     // Must register qt resources from other modules
-    Q_INIT_RESOURCE(MaterialCanvas);
-    Q_INIT_RESOURCE(InspectorWidget);
-    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
-    Q_INIT_RESOURCE(GraphView);
+    // Q_INIT_RESOURCE(MaterialCanvas);
+    // Q_INIT_RESOURCE(InspectorWidget);
+    // Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+    // Q_INIT_RESOURCE(GraphView);
 }
 
 namespace MaterialCanvas

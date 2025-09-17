@@ -98,10 +98,6 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-#ifdef Q_OS_WIN
-    HWND GetNativeHandle();
-#endif // #ifdef Q_OS_WIN
-
     void Initialize();
 
     // Returns the old and original main frame which we're porting away from.

@@ -1024,7 +1024,7 @@ namespace LUAEditor
             newText.append(block.text());
             newText.append("\n");
         });
-        currText.remove(currText.count() - 1, 1);
+        currText.remove(currText.length() - 1, 1);
 
         if (startLine == 0)
         {

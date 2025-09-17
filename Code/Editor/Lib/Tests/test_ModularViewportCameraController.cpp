@@ -99,7 +99,7 @@ namespace UnitTest
 
             m_rootWidget = new QWidget();
             // set root widget to the the active window to ensure focus in/out events are fired
-            QApplication::setActiveWindow(m_rootWidget);
+            m_rootWidget->activateWindow();
             m_rootWidget->setFixedSize(WidgetSize);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
@@ -126,7 +126,6 @@ namespace UnitTest
             m_controllerList->UnregisterViewportContext(TestViewportId);
             m_controllerList.reset();
 
-            QApplication::setActiveWindow(nullptr);
             delete m_rootWidget;
 
             LeakDetectionFixture::TearDown();

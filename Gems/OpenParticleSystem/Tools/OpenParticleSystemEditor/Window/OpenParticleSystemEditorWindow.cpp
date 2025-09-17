@@ -33,8 +33,14 @@
 
 OpenParticleSystemEditor::EffectorInspector* g_effectorInspector;
 
-void QInitResourceOpenParticleEditor() { Q_INIT_RESOURCE(OpenParticleEditor); }
-void QCleanupResourceOpenParticleEditor() { Q_CLEANUP_RESOURCE(OpenParticleEditor); }
+void QInitResourceOpenParticleEditor() {
+    // #QT6_TODO
+    // Q_INIT_RESOURCE(OpenParticleEditor);
+}
+void QCleanupResourceOpenParticleEditor() {
+    // #QT6_TODO
+    // Q_CLEANUP_RESOURCE(OpenParticleEditor);
+}
 
 namespace OpenParticleSystemEditor
 {
@@ -86,7 +92,7 @@ namespace OpenParticleSystemEditor
 
         m_menuFile = m_menuBar->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&File"));
         m_menuFile->addAction(
-            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Open..."),
+            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Open..."), QKeySequence::Open,
             [this]()
             {
                 AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection(azrtti_typeid<OpenParticle::ParticleAsset>());
@@ -125,13 +131,12 @@ namespace OpenParticleSystemEditor
 
                     SetStatusMessage(tr("Particle opened: %1").arg(filePath.c_str()));
                 }
-            },
-            QKeySequence::Open);
+            });
 
         m_menuFile->addSeparator();
 
         m_menuFile->addAction(
-            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save"),
+            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save"), QKeySequence::Save,
             [this]()
             {
                 for (const auto& document : m_tabWidgetDocument)
@@ -142,8 +147,8 @@ namespace OpenParticleSystemEditor
                         SetStatusMessage(QString("Particle saved: %1").arg(document.second->GetAbsolutePath().data()));
                     }
                 }
-            },
-            QKeySequence::Save);
+            }
+            );
 
         // Add all View DockWidget panes.
         m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));

@@ -24,6 +24,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -40,7 +41,7 @@ namespace
 {
     struct StyleMatch
     {
-        GraphCanvas::Styling::Style* style;
+        AZStd::shared_ptr<GraphCanvas::Styling::Style> style;
         int complexity;
 
         bool operator<(const StyleMatch& o) const
@@ -862,12 +863,6 @@ namespace GraphCanvas
     void StyleManager::ClearStyles()
     {
         StyleManagerNotificationBus::Event(m_editorId, &StyleManagerNotifications::OnStylesUnloaded);
-
-        for (auto style : m_styles)
-        {
-            delete style;
-        }
-
         m_styles.clear();
     }
 

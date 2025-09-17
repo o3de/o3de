@@ -58,7 +58,7 @@ namespace EMotionFX
 
     private slots:
         void OnJointTypeChanged(int index);
-        void OnHasLimitStateChanged(int state);
+        void OnHasLimitStateChanged(Qt::CheckState state);
         void OnCardContextMenu(const QPoint& position);
 
     private:

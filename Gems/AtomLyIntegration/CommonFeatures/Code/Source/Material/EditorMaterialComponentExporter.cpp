@@ -149,14 +149,24 @@ namespace AZ
                     tableWidget->setCellWidget(row, OverwriteFileColumn, overwriteCheckBoxContainer);
 
                     // Whenever the selection is updated, automatically apply the change to the export item
-                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] int state) {
+                    QObject::connect(
+                        materialSlotCheckBox,
+                        &QCheckBox::checkStateChanged,
+                        materialSlotCheckBox,
+                        [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] Qt::CheckState state)
+                        {
                         exportItem.SetEnabled(materialSlotCheckBox->isChecked());
                         materialFileWidget->setEnabled(exportItem.GetEnabled());
                         overwriteCheckBox->setEnabled(exportItem.GetEnabled() && exportItem.GetExists());
                     });
 
                     // Whenever the overwrite check box is updated, automatically apply the change to the export item
-                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&exportItem, overwriteCheckBox]([[maybe_unused]] int state) {
+                    QObject::connect(
+                        overwriteCheckBox,
+                        &QCheckBox::checkStateChanged,
+                        overwriteCheckBox,
+                        [&exportItem, overwriteCheckBox]([[maybe_unused]] Qt::CheckState state)
+                        {
                         exportItem.SetOverwrite(overwriteCheckBox->isChecked());
                     });
 

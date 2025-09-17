@@ -84,14 +84,14 @@ namespace EMStudio
         m_nodeNamesCheckBox->setChecked(true);
         m_nodeNamesCheckBox->setCheckable(true);
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_nodeNamesCheckBox);
-        connect(m_nodeNamesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
+        connect(m_nodeNamesCheckBox, &QCheckBox::checkStateChanged, this, &TrackHeaderWidget::OnCheckBox);
         contentsLayout->addWidget(m_nodeNamesCheckBox);
 
         m_motionFilesCheckBox = new QCheckBox("Show Motion Files");
         m_motionFilesCheckBox->setChecked(false);
         m_motionFilesCheckBox->setCheckable(true);
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_motionFilesCheckBox);
-        connect(m_motionFilesCheckBox, &QCheckBox::stateChanged, this, &TrackHeaderWidget::OnCheckBox);
+        connect(m_motionFilesCheckBox, &QCheckBox::checkStateChanged, this, &TrackHeaderWidget::OnCheckBox);
         contentsLayout->addWidget(m_motionFilesCheckBox);
 
         QHBoxLayout* comboLayout = new QHBoxLayout();
@@ -250,7 +250,7 @@ namespace EMStudio
 
         connect(m_nameEdit, &QLineEdit::editingFinished, this, &HeaderTrackWidget::NameChanged);
         connect(m_nameEdit, &QLineEdit::textEdited, this, &HeaderTrackWidget::NameEdited);
-        connect(m_enabledCheckbox, &QCheckBox::stateChanged, this, &HeaderTrackWidget::EnabledCheckBoxChanged);
+        connect(m_enabledCheckbox, &QCheckBox::checkStateChanged, this, &HeaderTrackWidget::EnabledCheckBoxChanged);
 
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos)
@@ -341,7 +341,7 @@ namespace EMStudio
     }
 
 
-    void HeaderTrackWidget::EnabledCheckBoxChanged(int state)
+    void HeaderTrackWidget::EnabledCheckBoxChanged(Qt::CheckState state)
     {
         m_plugin->SetRedrawFlag();
 
@@ -414,7 +414,7 @@ namespace EMStudio
 
 
     // a checkbox state changed
-    void TrackHeaderWidget::OnCheckBox(int state)
+    void TrackHeaderWidget::OnCheckBox(Qt::CheckState state)
     {
         MCORE_UNUSED(state);
         m_plugin->SetRedrawFlag();

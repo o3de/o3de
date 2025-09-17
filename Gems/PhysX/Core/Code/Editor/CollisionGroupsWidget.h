@@ -116,7 +116,7 @@ namespace PhysX
             void OnLayerChanged(AzPhysics::CollisionGroups::Id groupId, const AzPhysics::CollisionLayer& layer, bool enabled);
 
         private:
-            void OnCheckboxChanged(int state);
+            void OnCheckboxChanged(Qt::CheckState state);
 
             QCheckBox * m_checkBox;
             Data m_cell;
