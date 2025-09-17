@@ -1095,10 +1095,11 @@ namespace GraphCanvas
                 /* QT comment/
                 // Left-button press in scroll hand mode initiates hand scrolling.
                 */
-                QMouseEvent startPressEvent(QEvent::MouseButtonPress, m_initialClick, Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent startPressEvent(
+                    QEvent::MouseButtonPress, m_initialClick, m_initialClick, Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mousePressEvent(&startPressEvent);
 
-                QMouseEvent customEvent(event->type(), event->pos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent customEvent(event->type(), event->position(), event->globalPosition(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mousePressEvent(&customEvent);
             }
 
@@ -1139,7 +1140,7 @@ namespace GraphCanvas
                 // under the mouse that have a valid cursor at this time, so
                 // we could repeat the steps from mouseMoveEvent().
                 */
-                QMouseEvent customEvent(event->type(), event->pos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent customEvent(event->type(), event->position(), event->globalPosition(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mouseReleaseEvent(&customEvent);
                 event->accept();
                 setInteractive(true);

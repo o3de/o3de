@@ -14,8 +14,9 @@
 
 void InitDccScriptingInterfaceResources()
 {
+    // #QT6_TODO
     // We must register our Qt resources (.qrc file) since this is being loaded from a separate module (gem)
-    Q_INIT_RESOURCE(DccScriptingInterface);
+    // Q_INIT_RESOURCE(DccScriptingInterface);
 }
 
 namespace DccScriptingInterface

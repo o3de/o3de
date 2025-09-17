@@ -309,11 +309,11 @@ namespace EMStudio
         menu->setObjectName("EMFX.MainWindow.FileMenu");
 
         // reset action
-        m_resetAction = menu->addAction(tr("&Reset"), this, &MainWindow::OnReset, QKeySequence::New);
+        m_resetAction = menu->addAction(tr("&Reset"), QKeySequence::New, this, &MainWindow::OnReset);
         m_resetAction->setObjectName("EMFX.MainWindow.ResetAction");
 
         // save all
-        m_saveAllAction = menu->addAction(tr("Save All..."), this, &MainWindow::OnSaveAll, QKeySequence::Save);
+        m_saveAllAction = menu->addAction(tr("Save All..."), QKeySequence::Save, this, &MainWindow::OnSaveAll);
         m_saveAllAction->setObjectName("EMFX.MainWindow.SaveAllAction");
 
         // disable the reset and save all menus until one thing is loaded
@@ -323,9 +323,9 @@ namespace EMStudio
         menu->addSeparator();
 
         // actor file actions
-        QAction* openAction = menu->addAction(tr("&Open Actor"), this, &MainWindow::OnFileOpenActor, QKeySequence::Open);
+        QAction* openAction = menu->addAction(tr("&Open Actor"), QKeySequence::Open, this, &MainWindow::OnFileOpenActor);
         openAction->setObjectName("EMFX.MainWindow.OpenActorAction");
-        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, 0x0 | Qt::CTRL | Qt::Key_I);
+        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), Qt::CTRL | Qt::Key_I, this, &MainWindow::OnFileMergeActor);
         m_mergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
         m_saveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
         m_saveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
@@ -359,17 +359,15 @@ namespace EMStudio
         menu = menuBar->addMenu(tr("&Edit"));
         menu->setObjectName("EMFX.MainWindow.EditMenu");
         m_undoAction = menu->addAction(
-            tr("Undo"),
+            tr("Undo"), QKeySequence::Undo,
             this,
-            &MainWindow::OnUndo,
-            QKeySequence::Undo
+            &MainWindow::OnUndo
         );
         m_undoAction->setObjectName("EMFX.MainWindow.UndoAction");
         m_redoAction = menu->addAction(
-            tr("Redo"),
+            tr("Redo"), QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z),
             this,
-            &MainWindow::OnRedo,
-            QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z)
+            &MainWindow::OnRedo
         );
         m_redoAction->setObjectName("EMFX.MainWindow.RedoAction");
         m_undoAction->setDisabled(true);

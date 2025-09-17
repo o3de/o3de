@@ -97,7 +97,7 @@ struct QtViewPane
     QString m_name;
     QString m_category;
     ViewPaneFactory m_factoryFunc;
-    QPointer<DockWidget> m_dockWidget;
+    DockWidget* m_dockWidget = nullptr;
     AzToolsFramework::ViewPaneOptions m_options;
     QList<DockWidget*> m_dockWidgetInstances;
 
@@ -136,7 +136,7 @@ struct QtViewPane
     bool CloseInstance(QDockWidget* dockWidget, CloseModes closeModes = CloseMode::Destroy);
 };
 
-typedef QVector<QtViewPane> QtViewPanes;
+typedef AZStd::vector<QtViewPane> QtViewPanes;
 
 class EDITOR_CORE_API QtViewPaneManager
     : public QObject

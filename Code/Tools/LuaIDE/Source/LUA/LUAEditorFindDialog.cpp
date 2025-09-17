@@ -81,7 +81,11 @@ namespace LUAEditor
         auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
         m_gui->wrapCheckBox->setChecked((pState ? pState->m_findWrap : true));
 
-        connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [](int newState)
+        connect(
+            m_gui->wrapCheckBox,
+            &QCheckBox::checkStateChanged,
+            this,
+            [](Qt::CheckState newState)
         {
             auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_findWrap = (newState == Qt::Checked);

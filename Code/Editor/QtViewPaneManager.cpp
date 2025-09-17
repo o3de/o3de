@@ -253,7 +253,7 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
             if (dockWidget == m_dockWidget)
             {
                 //clear dockwidget pointer otherwise if we open this pane before the delete happens we'll think it's already there, then it gets deleted on us.
-                m_dockWidget.clear();
+                m_dockWidget = nullptr;
             }
         }
         else
@@ -1604,7 +1604,10 @@ QtViewPane* QtViewPaneManager::GetPane(int id)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [id](const QtViewPane& pane) { return id == pane.m_id; });
 
-    return it == m_registeredPanes.end() ? nullptr : it;
+    if (it == m_registeredPanes.end())
+        return nullptr;
+    else
+        return it;
 }
 
 QtViewPane* QtViewPaneManager::GetPane(const QString& name)

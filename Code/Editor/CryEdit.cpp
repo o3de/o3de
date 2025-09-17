@@ -1551,12 +1551,6 @@ bool CCryEditApp::InitInstance()
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
-    // Note: we should use getNativeHandle to get the HWND from the widget, but
-    // it returns an invalid handle unless the widget has been shown and polished and even then
-    // it sometimes returns an invalid handle.
-    // So instead, we use winId(), which does consistently work
-    //mainWindowWrapperHwnd = QtUtil::getNativeHandle(mainWindowWrapper);
-
     // Connect to the AssetProcessor at this point
     // It will be launched if not running
     ConnectToAssetProcessor();

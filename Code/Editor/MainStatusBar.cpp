@@ -356,7 +356,7 @@ void SourceControlItem::InitMenu()
         }
 
         connect(m_settingsAction, &QAction::triggered, this, &SourceControlItem::OnOpenSettings);
-        connect(m_checkBox, &QCheckBox::stateChanged, this, [this](int state) {SetSourceControlEnabledState(state); });
+        connect(m_checkBox, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState state) {SetSourceControlEnabledState(state); });
     }
     else
     {

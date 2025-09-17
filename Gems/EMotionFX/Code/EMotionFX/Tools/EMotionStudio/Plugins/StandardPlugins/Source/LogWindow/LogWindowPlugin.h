@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
+
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
@@ -16,7 +18,6 @@
 
 namespace AzQtComponents
 {
-    struct SearchTypeFilter;
     class FilteredSearchWidget;
 }
 

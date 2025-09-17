@@ -249,9 +249,9 @@ namespace AtomToolsFramework
         BuildScriptsMenu();
         m_menuFile->addSeparator();
 
-        m_menuFile->addAction(tr("E&xit"), [this]() {
+        m_menuFile->addAction(tr("E&xit"), QKeySequence::Quit, [this]() {
             close();
-        }, QKeySequence::Quit);
+        });
 
         BuildDockingMenu();
         m_menuTools->addSeparator();
@@ -259,13 +259,13 @@ namespace AtomToolsFramework
         BuildLayoutsMenu();
         m_menuView->addSeparator();
 
-        m_menuTools->addAction(tr("&Settings..."), [this]() {
+        m_menuTools->addAction(tr("&Settings..."), QKeySequence::Preferences, [this]() {
             OpenSettingsDialog();
-        }, QKeySequence::Preferences);
+        });
 
-        m_menuHelp->addAction(tr("&Help..."), [this]() {
+        m_menuHelp->addAction(tr("&Help..."), QKeySequence::HelpContents, [this]() {
             OpenHelpUrl();
-        }, QKeySequence::HelpContents);
+        });
 
         m_menuHelp->addAction(tr("&About..."), [this]() {
             OpenAboutDialog();

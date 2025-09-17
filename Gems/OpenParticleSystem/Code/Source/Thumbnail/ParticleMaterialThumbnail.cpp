@@ -83,7 +83,7 @@ namespace OpenParticleSystem
 
         bool ParticleMaterialThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
         {
-            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data()))
+            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.get()))
             {
                 bool found = false;
                 AZStd::vector<AZ::Data::AssetInfo> productAssetInfos;
@@ -104,7 +104,7 @@ namespace OpenParticleSystem
                 }
             }
 
-            if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data()))
+            if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.get()))
             {
                 if (productKey->GetAssetType() != AZ::RPI::MaterialAsset::RTTI_Type())
                 {

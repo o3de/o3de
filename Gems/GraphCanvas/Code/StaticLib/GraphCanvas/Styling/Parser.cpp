@@ -15,6 +15,8 @@
 
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/JSON/error/error.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QFile>
@@ -684,7 +686,7 @@ namespace GraphCanvas
                 return;
             }
 
-            QScopedPointer<Style> style(aznew Style(selectors));
+            AZStd::shared_ptr<Style> style = AZStd::make_shared<Style>(selectors);
 
             for (auto member = value.MemberBegin(); member != value.MemberEnd(); ++member)
             {
@@ -986,7 +988,7 @@ namespace GraphCanvas
             }
             else
             {
-                styleManager.m_styles.push_back(style.take());
+                styleManager.m_styles.push_back(style);
             }
         }
 

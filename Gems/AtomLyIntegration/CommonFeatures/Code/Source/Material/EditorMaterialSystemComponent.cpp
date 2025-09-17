@@ -52,8 +52,9 @@ constexpr AZStd::string_view MaterialEditorActionIdentifier = "o3de.action.tools
 
 void InitMaterialEditorResources()
 {
+    // #QT6_TODO
     //Must register qt resources from other modules
-    Q_INIT_RESOURCE(InspectorWidget);
+    // Q_INIT_RESOURCE(InspectorWidget);
 }
 
 namespace AZ

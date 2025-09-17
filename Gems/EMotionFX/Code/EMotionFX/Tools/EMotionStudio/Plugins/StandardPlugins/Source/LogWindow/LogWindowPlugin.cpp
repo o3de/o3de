@@ -8,7 +8,6 @@
 
 #include "LogWindowPlugin.h"
 #include "LogWindowCallback.h"
-#include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>

@@ -632,24 +632,7 @@ namespace AzQtComponents
      */
     QPoint FancyDocking::multiscreenMapFromGlobal(const QPoint& point) const
     {
-#if 0 //def AZ_PLATFORM_WINDOWS
-        int index = 0;
-        for (auto screen : QApplication::screens()) {
-            if (screen->geometry().contains(point)) {
-                qreal scaleFactor = QHighDpiScaling::factor(screen);
-                return (
-                    (m_perScreenFullScreenWidgets[index]->mapFromGlobal(point) * scaleFactor) +
-                    (m_perScreenFullScreenWidgets[index]->mapToGlobal({0, 0})) / scaleFactor);
-            }
-            ++index;
-        }
-
-        // If the point isn't contained in any screen, return the regular mapFromGlobal() result for now
-        // TODO - may need to do some shenanigan like the above based to the closest screen?
         return mapFromGlobal(point);
-#else
-        return mapFromGlobal(point);
-#endif
     }
 
     bool FancyDocking::WidgetContainsPoint(QWidget* widget, const QPoint& pos) const

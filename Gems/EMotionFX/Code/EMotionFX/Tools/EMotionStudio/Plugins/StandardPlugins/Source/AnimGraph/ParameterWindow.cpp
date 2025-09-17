@@ -1549,9 +1549,8 @@ namespace EMStudio
     }
 
     class ParameterWindowTreeWidgetPrivate
-        : public QAbstractItemViewPrivate
+        : public QAbstractItemView
     {
-        Q_DECLARE_PUBLIC(ParameterWindowTreeWidget);
     };
 
     ParameterWindowTreeWidget::ParameterWindowTreeWidget(QWidget* parent)
@@ -1592,13 +1591,11 @@ namespace EMStudio
         emit DragEnded();
     }
 
-    void ParameterWindowTreeWidget::dropEvent(QDropEvent* event)
+    void ParameterWindowTreeWidget::dropEvent(QDropEvent*)
     {
-        Q_D(ParameterWindowTreeWidget);
-
-        QModelIndex topIndex;
-        int col = -1;
-        int row = -1;
+        //QModelIndex topIndex;
+       // int col = -1;
+       // int row = -1;
 
         // Getting the target drop index from the private implementation
         // of QAbstractItemView
@@ -1609,6 +1606,8 @@ namespace EMStudio
         // else
         //     // place at row, col in drop index
 
+        // #QT6_TODO
+        /*
         if (d->dropOn(event, &row, &col, &topIndex))
         {
             QTreeWidgetItem* item = itemFromIndex(topIndex);
@@ -1641,6 +1640,7 @@ namespace EMStudio
                 return;
             }
         }
+        */
     }
 
 } // namespace EMStudio

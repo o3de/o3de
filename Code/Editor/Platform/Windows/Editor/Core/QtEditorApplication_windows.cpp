@@ -15,8 +15,6 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
-#include <QtGui/qpa/qplatformnativeinterface.h>
-
 // AzQtComponents
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -65,7 +63,7 @@ namespace Editor
                         const short global_x = static_cast<short>(LOWORD(msg->lParam));
                         const short global_y = static_cast<short>(HIWORD(msg->lParam));
 
-                        const QPoint globalPos = QHighDpi::fromNativePixels(QPoint(global_x, global_y), widget->window()->windowHandle());
+                        const QPoint globalPos = QPoint(global_x, global_y);
                         const QPoint local = titleBar->mapFromGlobal(globalPos);
                         if (titleBar->draggableRect().contains(local) && !titleBar->isTopResizeArea(globalPos))
                         {

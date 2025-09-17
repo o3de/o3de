@@ -12,6 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <GraphCanvas/Styling/definitions.h>
 #include <GraphCanvas/Styling/Selector.h>
@@ -67,7 +68,7 @@ namespace GraphCanvas
             friend GraphCanvas::StyleManager;
         };
 
-        using StyleVector = AZStd::vector<Style*>;
+        using StyleVector = AZStd::vector<AZStd::shared_ptr<Style>>;
 
 
         class ComputedStyle
