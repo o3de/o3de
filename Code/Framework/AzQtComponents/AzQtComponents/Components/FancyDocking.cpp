@@ -41,7 +41,6 @@
 #include <QStyleOptionToolButton>
 #include <QVBoxLayout>
 #include <QWindow>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 
 static void OptimizedSetParent(QWidget* widget, QWidget* parent)
@@ -1475,7 +1474,7 @@ namespace AzQtComponents
                     // the tab widget. We can't just pass the event being filtered because the mouse
                     // positions are relative to the widget being watched.
                     const auto tabPos = m_state.tabWidget->mapFromGlobal(event->globalPosition());
-                    QMouseEvent tabEvent(event->type(), tabPos, event->button(), event->buttons(), event->modifiers());
+                    QMouseEvent tabEvent(event->type(), tabPos, tabPos, event->button(), event->buttons(), event->modifiers());
                     m_state.tabWidget->mouseMoveEvent(&tabEvent);
                     return true;
                 }
@@ -2460,18 +2459,6 @@ namespace AzQtComponents
             if (m_state.snappedSide & SnapBottom)
             {
                 placeholderRect.translate(0, -margins.bottom());
-            }
-
-            // Also adjust the placeholderRect by the relative dpi change from the original screen, since setGeometry uses the screen's
-            // virtualGeometry!
-            QScreen* fromScreen = dock->screen();
-            QScreen* toScreen = Utilities::ScreenAtPoint(placeholderRect.topLeft());
-
-            if (fromScreen != toScreen)
-            {
-                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
-                placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
-                placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
             }
 
             // Place the floating dock widget

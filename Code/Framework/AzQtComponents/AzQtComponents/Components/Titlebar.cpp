@@ -26,7 +26,6 @@
 #include <QStackedLayout>
 #include <QVector>
 #include <QWindow>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 namespace AzQtComponents
 {

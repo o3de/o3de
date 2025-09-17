@@ -7,8 +7,6 @@
  */
 #include "EditorCommon.h"
 
-#include <QtGui/private/qhighdpiscaling_p.h>
-
 namespace QtHelpers
 {
     AZ::Vector2 QPointFToVector2(const QPointF& point)

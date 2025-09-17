@@ -25,8 +25,6 @@ AZ_POP_DISABLE_WARNING
 #include <QWidget>
 #include <QDebug>
 
-// #include <QtWidgets/private/qstylesheetstyle_p.h> // #QT6_TODO
-
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>

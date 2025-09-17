@@ -43,7 +43,6 @@
 #include <QTreeWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QtWidgets/private/qabstractitemview_p.h>
 
 namespace EMStudio
 {

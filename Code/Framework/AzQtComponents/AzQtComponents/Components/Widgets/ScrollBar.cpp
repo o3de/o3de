@@ -20,8 +20,6 @@
 #include <QScrollBar>
 #include <QEvent>
 
-// #include <QtWidgets/private/qstylesheetstyle_p.h> // #QT6_TODO
-
 namespace AzQtComponents
 {
     static constexpr const char* g_showBackgroundProperty = "ShowBackground";

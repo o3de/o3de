@@ -95,8 +95,11 @@ namespace AzToolsFramework
         {
             switch (index.column())
             {
-                case ColumnType:
-                    return QLocale::system().toString(QDateTime::fromMSecsSinceEpoch(m_lines[index.row()].GetLogTime()), QLocale::ShortFormat).toUtf8().data();
+            case ColumnType:
+                {
+                    auto loc = QLocale::system().toString(QDateTime::fromMSecsSinceEpoch(m_lines[index.row()].GetLogTime()), QLocale::ShortFormat);
+                    return loc;
+                }
                 case ColumnWindow:
                     return m_lines[index.row()].GetLogWindow().c_str();
                 case ColumnMessage:

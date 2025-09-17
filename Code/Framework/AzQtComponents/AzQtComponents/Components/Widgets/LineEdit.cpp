@@ -71,7 +71,8 @@ namespace AzQtComponents
                             if (me->button() == Qt::LeftButton && m_mouseFocusedLineEditSingleClicked == le)
                             {
                                 // fake a single click event to place the mouse button
-                                QMouseEvent fake(QEvent::MouseButtonPress, me->position(), me->button(), me->buttons(), me->modifiers());
+                                QMouseEvent fake(
+                                    QEvent::MouseButtonPress, me->position(), me->globalPosition(), me->button(), me->buttons(), me->modifiers());
                                 QCoreApplication::sendEvent(le, &fake);
                                 m_mouseFocusedLineEditSingleClicked = nullptr;
                                 return true;
