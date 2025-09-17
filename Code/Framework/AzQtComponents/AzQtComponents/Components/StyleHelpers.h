@@ -9,10 +9,6 @@
 
 #include <AzQtComponents/Components/StyleManager.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-// #include <QtWidgets/private/qstylesheetstyle_p.h> // #QT6_TODO
-AZ_POP_DISABLE_WARNING
-
 namespace AzQtComponents
 {
     namespace StyleHelpers

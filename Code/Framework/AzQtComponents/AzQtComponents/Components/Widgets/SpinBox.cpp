@@ -30,8 +30,6 @@
 #include <QTimer>
 #include <QWindow>
 #include <QTextLayout>
-
-// #include <QtWidgets/private/qstylesheetstyle_p.h> // #QT6_TODO
 #include <qcoreevent.h>
 
 namespace AzQtComponents
@@ -610,7 +608,7 @@ bool SpinBoxWatcher::filterLineEditEvents(QLineEdit* lineEdit, QEvent* event)
                 if (mouseEvent->button() == Qt::LeftButton && m_mouseFocusedSpinBoxSingleClicked == spinBox)
                 {
                     // fake a single click event to place the mouse button
-                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->position(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
+                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->position(), mouseEvent->globalPosition(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
                     QCoreApplication::sendEvent(lineEdit, &fake);
                     m_mouseFocusedSpinBoxSingleClicked = nullptr;
                     return true;

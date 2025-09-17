@@ -640,10 +640,10 @@ PaletteView::PaletteView(Palette* palette, Internal::ColorController* controller
     onColorChanged(m_controller->color());
 
     m_context = new QMenu(this);
-    m_cut = m_context->addAction(tr("Cut"), this, &PaletteView::cut, QKeySequence::Cut);
-    m_copy = m_context->addAction(tr("Copy"), this, &PaletteView::copy, QKeySequence::Copy);
-    m_paste = m_context->addAction(tr("Paste"), this, &PaletteView::paste, QKeySequence::Paste);
-    m_remove = m_context->addAction(tr("Remove"), this, &PaletteView::removeSelection, QKeySequence::Delete);
+    m_cut = m_context->addAction(tr("Cut"), QKeySequence::Cut, this, &PaletteView::cut);
+    m_copy = m_context->addAction(tr("Copy"), QKeySequence::Copy, this, &PaletteView::copy);
+    m_paste = m_context->addAction(tr("Paste"), QKeySequence::Paste, this, &PaletteView::paste);
+    m_remove = m_context->addAction(tr("Remove"), QKeySequence::Delete, this, &PaletteView::removeSelection);
     m_update = m_context->addAction(tr("Update to current"), this, [this]() {
         m_paletteModel->trySet(selectionModel()->currentIndex().row(), m_controller->color());
     });

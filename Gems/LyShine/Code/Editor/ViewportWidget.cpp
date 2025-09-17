@@ -28,7 +28,6 @@
 #include "AssetDropHelpers.h"
 #include "Draw2d.h"
 #include "QtHelpers.h"
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QGridLayout>
 

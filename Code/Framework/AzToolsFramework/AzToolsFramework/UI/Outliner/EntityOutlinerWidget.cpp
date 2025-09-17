@@ -58,7 +58,8 @@
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initEntityOutlinerWidgetResources()
 {
-    Q_INIT_RESOURCE(resources);
+    // #QT6_TODO
+    // Q_INIT_RESOURCE(resources);
 }
 
 namespace

@@ -18,9 +18,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4244 4458, "-Wunknown-warning-option") // 4251: 'QT
 #include <QDockWidget>
 #include <QDebug>
 #include <QDataStream>
-#include <QtWidgets/private/qdockarealayout_p.h>
-#include <QtWidgets/private/qtoolbararealayout_p.h>
-#include <QtWidgets/private/qmainwindowlayout_p.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -138,166 +135,14 @@ namespace AzToolsFramework
         qDebug() << "dumpDockWidgets END";
     }
 
-    static bool processQDockAreaLayoutInfo(QDataStream &stream, QStringList &dockNames)
-    {
-        uchar marker;
-        stream >> marker;
-        if (marker != QDockAreaLayoutInfo::TabMarker && marker != QDockAreaLayoutInfo::SequenceMarker)
-        {
-            return false;
-        }
-
-        const bool tabbed = marker == QDockAreaLayoutInfo::TabMarker;
-
-        int index = -1;
-        if (tabbed)
-        {
-            stream >> index;
-        }
-
-        uchar orientation;
-        stream >> orientation;
-        int cnt;
-        stream >> cnt;
-        for (int i = 0; i < cnt; ++i)
-        {
-            uchar nextMarker;
-            stream >> nextMarker;
-            if (nextMarker == QDockAreaLayoutInfo::WidgetMarker)
-            {
-                QString name;
-                uchar flags;
-                stream >> name >> flags;
-                qDebug() << "    DockWidgetUtils::processSavedState WidgetMarker name="
-                    << name << "; floating=" << !!(flags & 2) << "; visible=" << !!(flags & 1);
-                dockNames << name;
-                int dummy;
-                stream >> dummy >> dummy >> dummy >> dummy;
-            }
-            else if (nextMarker == QDockAreaLayoutInfo::SequenceMarker)
-            {
-                qDebug() << "DockWidgetUtils::processSavedState SequenceMarker";
-                int dummy;
-                stream >> dummy >> dummy >> dummy >> dummy;
-                if (!processQDockAreaLayoutInfo(stream, dockNames))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    bool DockWidgetUtils::processSavedState(const QByteArray &data, QStringList &dockNames)
+    bool DockWidgetUtils::processSavedState(const QByteArray &data, QStringList &)
     {
         if (data.isEmpty())
         {
             return false;
         }
 
-        qDebug() << "DockWidgetUtils::processSavedState";
-        QByteArray sd = data;
-        QDataStream stream(&sd, QIODevice::ReadOnly);
-        int m, v;
-
-        stream >> m >> v;
-
-        if (stream.status() != QDataStream::Ok || m != QMainWindowLayout::VersionMarker || v != 0)
-        {
-            return false;
-        }
-
-        while (!stream.atEnd())
-        {
-            uchar marker;
-            stream >> marker;
-
-            switch (marker)
-            {
-            case QDockAreaLayout::DockWidgetStateMarker:
-            {
-                qDebug() << "DockWidgetUtils::processSavedState DockWidgetStateMarker";
-                int cnt;
-                stream >> cnt;
-                for (int i = 0; i < cnt; ++i) {
-                    int pos;
-                    stream >> pos;
-                    QSize size;
-                    stream >> size;
-
-                    if (!processQDockAreaLayoutInfo(stream, dockNames))
-                    {
-                        return false;
-                    }
-                }
-
-                QSize size;
-                stream >> size;
-                bool ok = stream.status() == QDataStream::Ok;
-
-                if (ok)
-                {
-                    int cornerData[4];
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        stream >> cornerData[i];
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-                break;
-            }
-            case QDockAreaLayout::FloatingDockWidgetTabMarker:
-            {
-                qDebug() << "DockWidgetUtils::processSavedState FloatingDockWidgetTabMarker";
-                QRect geometry;
-                stream >> geometry;
-                if (!processQDockAreaLayoutInfo(stream, dockNames))
-                {
-                    return false;
-                }
-                break;
-            }
-            case QToolBarAreaLayout::ToolBarStateMarker:
-            case QToolBarAreaLayout::ToolBarStateMarkerEx:
-            {
-                qDebug() << "DockWidgetUtils::processSavedState ToolbarMarker";
-                int dummyInt;
-                int lines;
-                stream >> lines;
-                for (int j = 0; j < lines; ++j)
-                {
-                    int pos;
-                    stream >> pos;
-
-                    if (pos < 0 || pos >= QInternal::DockCount)
-                    {
-                        return false;
-                    }
-                    int cnt;
-                    stream >> cnt;
-                    for (int k = 0; k < cnt; ++k)
-                    {
-                        QString dummyString;
-                        uchar dummyUChar;
-                        stream >> dummyString >> dummyUChar >> dummyInt >> dummyInt >> dummyInt;
-                        if (marker == QToolBarAreaLayout::ToolBarStateMarkerEx)
-                        {
-                            stream >> dummyInt;
-                        }
-                    }
-                }
-                break;
-            }
-            default:
-                qDebug() << "Error" << marker;
-                return false;
-            }
-        }
-
+        // #QT6_TODO
         qDebug() << "DockWidgetUtils::processSavedState END";
         return true;
     }

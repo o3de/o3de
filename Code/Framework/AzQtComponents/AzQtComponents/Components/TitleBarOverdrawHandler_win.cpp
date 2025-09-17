@@ -16,7 +16,6 @@
 #include <QScreen>
 #include <QWindow>
 #include <QWidget>
-#include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <VersionHelpers.h>
 #include <shellapi.h>
@@ -190,15 +189,16 @@ QPlatformWindow* TitleBarOverdrawHandlerWindows::overdrawWindow(const QVector<QW
     return nullptr;
 }
 
-void TitleBarOverdrawHandlerWindows::applyOverdrawMargins(QPlatformWindow* window, HWND hWnd, bool maximized)
+void TitleBarOverdrawHandlerWindows::applyOverdrawMargins(
+    [[maybe_unused]] QPlatformWindow* window, HWND hWnd, [[maybe_unused]] bool maximized)
 {
     if (auto pni = QGuiApplication::platformNativeInterface())
     {
         const auto style = GetWindowLongPtr(hWnd, GWL_STYLE);
         if (!(style & WS_CHILD))
         {
-            const auto exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
-            const auto monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL);
+            //const auto exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+            //const auto monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONULL);
 
             UINT dpi = 0;
             if (m_getDpiForWindowFn)
@@ -206,10 +206,11 @@ void TitleBarOverdrawHandlerWindows::applyOverdrawMargins(QPlatformWindow* windo
                 dpi = m_getDpiForWindowFn(hWnd);
             }
 
-            const auto margins = customTitlebarMargins(monitor, static_cast<int>(style), static_cast<int>(exStyle), maximized, dpi);
+            // #QT6_TODO
+            //const auto margins = customTitlebarMargins(monitor, static_cast<int>(style), static_cast<int>(exStyle), maximized, dpi);
             RECT rect;
             GetWindowRect(hWnd, &rect);
-            pni->setWindowProperty(window, QStringLiteral("WindowsCustomMargins"), QVariant::fromValue(margins));
+            //pni->setWindowProperty(window, QStringLiteral("WindowsCustomMargins"), QVariant::fromValue(margins));
             const auto width = rect.right - rect.left;
             const auto height = rect.bottom - rect.top;
             SetWindowPos(hWnd, 0, rect.left, rect.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE);

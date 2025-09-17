@@ -63,7 +63,7 @@ namespace AzToolsFramework
         {
             m_state = State::Loading;
 
-            auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.data());
+            auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.get());
             AZ_Assert(sourceKey, "Incorrect key type, excpected SourceThumbnailKey");
 
             bool foundIt = false;
@@ -141,7 +141,7 @@ namespace AzToolsFramework
 
         bool SourceThumbnailCache::IsSupportedThumbnail(SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const SourceThumbnailKey*>(key.data());
+            return azrtti_istypeof<const SourceThumbnailKey*>(key.get());
         }
 
     } // namespace AssetBrowser

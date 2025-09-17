@@ -87,7 +87,7 @@ namespace AzQtComponents
         for (QToolButton* button : findChildren<QToolButton*>(QString(), Qt::FindDirectChildrenOnly))
         {
             // Grab references to each button for use later
-            if (button->accessibleName() == TabBar::tr("Scroll Left"))
+            if (button->windowTitle() == TabBar::tr("Scroll Left"))
             {
                 m_leftButton = button;
             }
@@ -351,7 +351,8 @@ namespace AzQtComponents
      */
     void DockTabBar::finishDrag()
     {
-        QMouseEvent event(QEvent::MouseButtonRelease, {0.0f, 0.0f}, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        QMouseEvent event(
+            QEvent::MouseButtonRelease, { 0.0f, 0.0f }, { 0.0f, 0.0f }, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         mouseReleaseEvent(&event);
     }
 

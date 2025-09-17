@@ -21,8 +21,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QToolButton>
-
-// #include <QtWidgets/private/qstylesheetstyle_p.h> // #QT6_TODO
 AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents

@@ -15,7 +15,6 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 
 // AzQtComponents

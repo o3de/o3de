@@ -22,10 +22,6 @@
 #include <QStylePainter>
 #include <QWindow>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 6, 1) && defined(Q_OS_WIN32)
-#include <QtGui/private/qwindow_p.h>
-#endif
-
 namespace AzQtComponents
 {
     namespace Platform

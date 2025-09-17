@@ -111,8 +111,9 @@ AZ_POP_DISABLE_WARNING
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initEntityPropertyEditorResources()
 {
-    Q_INIT_RESOURCE(Icons);
-    Q_INIT_RESOURCE(OverrideResources);
+    // #QT6_TODO
+    //Q_INIT_RESOURCE(Icons);
+    //Q_INIT_RESOURCE(OverrideResources);
 }
 
 namespace AzToolsFramework
@@ -5386,15 +5387,19 @@ namespace AzToolsFramework
     static void EnableDisableComponentActions(
         QWidget* widget, const QVector<QAction*>& actions, const bool enable)
     {
-        using AddRemoveFunc = void (QWidget::*)(QAction*);
-
-        const AddRemoveFunc addRemove = enable
-            ? &QWidget::addAction
-            : &QWidget::removeAction;
-
-        for (QAction* action : actions)
+        if (enable)
         {
-            (widget->*addRemove)(action);
+            for (QAction* action : actions)
+            {
+                widget->addAction(action);
+            }
+        }
+        else
+        {
+            for (QAction* action : actions)
+            {
+                widget->removeAction(action);
+            }
         }
     }
 

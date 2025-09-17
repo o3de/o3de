@@ -94,8 +94,8 @@ namespace AzToolsFramework
             public:
                 bool operator()(const SharedThumbnailKey& val1, const SharedThumbnailKey& val2) const
                 {
-                    auto sourceThumbnailKey1 = azrtti_cast<const SourceControlThumbnailKey*>(val1.data());
-                    auto sourceThumbnailKey2 = azrtti_cast<const SourceControlThumbnailKey*>(val2.data());
+                    auto sourceThumbnailKey1 = azrtti_cast<const SourceControlThumbnailKey*>(val1.get());
+                    auto sourceThumbnailKey2 = azrtti_cast<const SourceControlThumbnailKey*>(val2.get());
                     if (!sourceThumbnailKey1 || !sourceThumbnailKey2)
                     {
                         return false;

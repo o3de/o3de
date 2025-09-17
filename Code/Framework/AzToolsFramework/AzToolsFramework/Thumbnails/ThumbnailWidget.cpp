@@ -34,16 +34,16 @@ namespace AzToolsFramework
         {
             if (m_key)
             {
-                disconnect(m_key.data(), nullptr, this, nullptr);
+                disconnect(m_key.get(), nullptr, this, nullptr);
             }
             m_key = key;
-            connect(m_key.data(), &ThumbnailKey::ThumbnailUpdated, this, &ThumbnailWidget::RepaintThumbnail);
+            connect(m_key.get(), &ThumbnailKey::ThumbnailUpdated, this, &ThumbnailWidget::RepaintThumbnail);
             repaint();
         }
 
         void ThumbnailWidget::ClearThumbnail()
         {
-            m_key.clear();
+            m_key.reset();
             repaint();
         }
 

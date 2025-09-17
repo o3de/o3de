@@ -391,10 +391,10 @@ namespace AzToolsFramework
         {
             if (m_thumbnailKey)
             {
-                disconnect(m_thumbnailKey.data(), nullptr, this, nullptr);
+                disconnect(m_thumbnailKey.get(), nullptr, this, nullptr);
             }
             m_thumbnailKey = thumbnailKey;
-            connect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
+            connect(m_thumbnailKey.get(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
         }
 
         SharedThumbnailKey AssetBrowserEntry::GetThumbnailKey() const
