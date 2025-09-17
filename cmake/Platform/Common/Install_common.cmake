@@ -1162,7 +1162,11 @@ function(ly_setup_o3de_install)
     ly_setup_cmake_install()
     ly_setup_runtime_dependencies()
     ly_setup_assets()
-    ly_setup_3p_dependencies()
+    
+    # script only mode and monolithic mode are mutually exclusive
+    if(NOT LY_MONOLITHIC_GAME)
+        ly_setup_3p_dependencies()
+    endif()
 
     # Misc
     cmake_path(SET current_folder_normalized NORMALIZE ".")
