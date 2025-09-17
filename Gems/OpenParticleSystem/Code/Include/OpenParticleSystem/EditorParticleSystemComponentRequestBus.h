@@ -8,11 +8,11 @@
  
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
 namespace OpenParticle
 {

@@ -39,12 +39,12 @@ namespace AzToolsFramework
             return "";
         }
 
-        AZ::Data::AssetId FindAssetIdFromFileName(const char* fileName, AZ::Data::AssetType assetTypeId)
+        AZ::Data::AssetId FindAssetIdFromFileName(AZStd::string_view fileName, AZ::Data::AssetType assetTypeId)
         {
             using namespace AZ::Data;
             using assetSystemBus = AzFramework::AssetSystemRequestBus;
             AssetId assetId;
-            if ((!fileName)||(!fileName[0]))
+            if (fileName.empty())
             {
                 return assetId;
             }

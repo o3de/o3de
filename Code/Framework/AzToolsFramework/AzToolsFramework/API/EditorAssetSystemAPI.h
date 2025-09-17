@@ -15,6 +15,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
@@ -156,7 +157,7 @@ namespace AzToolsFramework
         //! @param assetTypeId The expected type of the asset.  A null typeid will accept any asset type.
         //!        If you specify a typeId, it will only return a valid asset id if the type matches, even if it finds an asset
         //!        in the catalog with the exact name.
-        AZTF_API AZ::Data::AssetId FindAssetIdFromFileName(const char* fileName, AZ::Data::AssetType assetTypeId);
+        AZTF_API AZ::Data::AssetId FindAssetIdFromFileName(AZStd::string_view fileName, AZ::Data::AssetType assetTypeId);
 
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension

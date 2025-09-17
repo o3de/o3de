@@ -26,6 +26,18 @@
 
 namespace OpenParticle
 {
+    //! ParticleArchive is responsible for storing (and fixing up after load) the runtime
+    //! data for the particle systems.
+    //! Instead of storing the objects using serialize, it memcpys the image of the data into a buffer,
+    //! and then stores the offset into that buffer which they can be found.
+    //! So for example, EmitterInfo below has a AZ::u32 member called `m_config`.  This member is not the
+    //! actual config, but represents the offset in the buffer that the memory image of a
+    //! ParticleSystem::Config struct can be found.
+    //! This implies that all data in all such objects must be essentially memcpyable.
+    //! The >> operator can copy from a SimuCore::ParticleCore::ParticleSystem object into a ParticleArchive.
+    //! The << operator copies the buffers from a ParticleArchive into a SimuCore::ParticleCore::ParticleSystem object
+    //! Note that the ParticleSystem object uses these buffers in-place without unpacking them - it copies the buffers
+    //! and the offset of the object in the buffer, then uses them in-place.
     class ParticleArchive
     {
     public:
