@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <Atom/Feature/PostProcess/AmbientOcclusion/AoSettingsInterface.h>
 #include <Atom/Feature/PostProcess/AmbientOcclusion/AoConstants.h>
 #include <Atom/Feature/PostProcess/AmbientOcclusion/SsaoConstants.h>
 #include <Atom/Feature/PostProcess/AmbientOcclusion/GtaoConstants.h>
