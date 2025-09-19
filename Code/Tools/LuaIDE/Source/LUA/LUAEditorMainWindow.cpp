@@ -64,8 +64,7 @@
 
 void initSharedResources()
 {
-    // #QT6_TODO
-    // Q_INIT_RESOURCE(sharedResources);
+    Q_INIT_RESOURCE(sharedResources);
 }
 
 namespace

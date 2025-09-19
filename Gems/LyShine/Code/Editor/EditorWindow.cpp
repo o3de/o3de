@@ -46,9 +46,8 @@
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initUiCanvasEditorResources()
 {
-    // #QT6_TODO
-    // Q_INIT_RESOURCE(UiCanvasEditor);
-    // Q_INIT_RESOURCE(UiAnimViewDialog);
+    Q_INIT_RESOURCE(UiCanvasEditor);
+    Q_INIT_RESOURCE(UiAnimViewDialog);
 }
 
 namespace

@@ -34,12 +34,10 @@
 OpenParticleSystemEditor::EffectorInspector* g_effectorInspector;
 
 void QInitResourceOpenParticleEditor() {
-    // #QT6_TODO
-    // Q_INIT_RESOURCE(OpenParticleEditor);
+    Q_INIT_RESOURCE(OpenParticleEditor);
 }
 void QCleanupResourceOpenParticleEditor() {
-    // #QT6_TODO
-    // Q_CLEANUP_RESOURCE(OpenParticleEditor);
+    Q_CLEANUP_RESOURCE(OpenParticleEditor);
 }
 
 namespace OpenParticleSystemEditor
