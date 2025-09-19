@@ -307,4 +307,3 @@ bool CErrorReportTableModel::LessThan(const QModelIndex& lhs, const QModelIndex&
     return l.toString() < r.toString();
 }
 
-#include <moc_ErrorReportTableModel.cpp>

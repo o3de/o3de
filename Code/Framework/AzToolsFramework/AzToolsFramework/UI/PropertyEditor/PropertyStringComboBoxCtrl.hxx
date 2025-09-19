@@ -8,19 +8,18 @@
 
 #pragma once
 
+#include "PropertyEditorAPI.h"
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include "PropertyEditorAPI.h"
 #include <UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <AzCore/std/string/string.h>
 
 #include <QWidget>
 #include <QToolButton>
 #include <QComboBox>
-#endif
+#include <QObject>
 
 namespace AzToolsFramework
 {
@@ -49,6 +48,9 @@ namespace AzToolsFramework
         void UpdateTabOrder() override;
     };
 
+#pragma warning(push)
+#pragma warning(disable: 4661) // no suitable definition provided for explicit template instantiation request
+
     template <class ValueType>
     class PropertyComboBoxHandlerCommon
         : public PropertyHandler<ValueType, PropertyStringComboBoxCtrl>
@@ -74,4 +76,6 @@ namespace AzToolsFramework
     };
 
     AZTF_API void RegisterStringComboBoxHandler();
+
+#pragma warning(pop)
 };

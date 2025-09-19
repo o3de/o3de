@@ -2418,4 +2418,3 @@ void EditorWindow::ClearTraceMessages()
     m_warnings.clear();
 }
 
-#include <moc_EditorWindow.cpp>

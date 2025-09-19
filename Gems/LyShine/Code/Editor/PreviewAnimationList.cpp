@@ -170,4 +170,3 @@ void PreviewAnimationList::DoActionOnSelectedAnimations(Action action)
     }
 }
 
-#include <moc_PreviewAnimationList.cpp>

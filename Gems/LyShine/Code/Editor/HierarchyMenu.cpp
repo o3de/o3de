@@ -520,4 +520,3 @@ void HierarchyMenu::EditorOnly(HierarchyWidget* hierarchy,
     }
 }
 
-#include <moc_HierarchyMenu.cpp>

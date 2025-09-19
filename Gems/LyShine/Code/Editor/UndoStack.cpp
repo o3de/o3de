@@ -24,5 +24,3 @@ bool UndoStack::GetIsExecuting() const
 {
     return m_isExecuting;
 }
-
-#include <moc_UndoStack.cpp>

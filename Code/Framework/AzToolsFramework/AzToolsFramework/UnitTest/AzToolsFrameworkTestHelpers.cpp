@@ -632,4 +632,3 @@ namespace UnitTest
     }
 } // namespace UnitTest
 
-#include <moc_AzToolsFrameworkTestHelpers.cpp>

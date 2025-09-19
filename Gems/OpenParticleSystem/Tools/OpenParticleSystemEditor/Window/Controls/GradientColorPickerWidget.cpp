@@ -546,5 +546,4 @@ namespace OpenParticleSystemEditor
         m_stop.first = val;
     }
 
-#include <moc_GradientColorPickerWidget.cpp>
 } // namespace OpenParticleSystemEditor

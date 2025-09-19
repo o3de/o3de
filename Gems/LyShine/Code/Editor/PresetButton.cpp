@@ -72,4 +72,3 @@ void PresetButton::UpdateIcon(bool isChecked)
     }
 }
 
-#include <moc_PresetButton.cpp>

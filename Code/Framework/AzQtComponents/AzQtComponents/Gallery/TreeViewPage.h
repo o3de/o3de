@@ -7,10 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
-#include <QScopedPointer>
-#endif
 
 namespace Ui
 {
@@ -26,5 +23,5 @@ public:
     explicit TreeViewPage(QWidget* parent = nullptr);
 
 private:
-    QScopedPointer<Ui::TreeViewPage> ui;
+    Ui::TreeViewPage* ui;
 };

@@ -99,4 +99,3 @@ QSize PreviewActionLog::sizeHint() const
     return QSize(300, 100);
 }
 
-#include <moc_PreviewActionLog.cpp>
