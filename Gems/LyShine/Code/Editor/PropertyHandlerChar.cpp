@@ -60,4 +60,3 @@ void PropertyHandlerChar::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerChar());
 }
 
-#include <moc_PropertyHandlerChar.cpp>

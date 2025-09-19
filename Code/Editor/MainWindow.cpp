@@ -1213,4 +1213,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <moc_MainWindow.cpp>

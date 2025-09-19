@@ -213,5 +213,4 @@ namespace OpenParticleSystemEditor
         m_lineEditColor->show();
     }
 
-#include <moc_GradientColorDialog.cpp>
 } // namespace OpenParticleSystemEditor

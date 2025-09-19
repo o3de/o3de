@@ -503,4 +503,3 @@ float HierarchyItem::GetNonSnappedZRotation()
     return m_nonSnappedZRotation;
 }
 
-#include <moc_HierarchyItem.cpp>

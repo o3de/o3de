@@ -1536,4 +1536,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <moc_CryEditDoc.cpp>

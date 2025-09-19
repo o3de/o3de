@@ -268,4 +268,3 @@ namespace ProjectSettingsTool
     }
 } // namespace ProjectSettingsTool
 
-#include <moc_PropertyImagePreview.cpp>

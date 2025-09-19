@@ -414,4 +414,3 @@ void PropertyHandlerAnchor::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerAnchor());
 }
 
-#include <moc_PropertyHandlerAnchor.cpp>

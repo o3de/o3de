@@ -25,4 +25,3 @@ bool FindEntitySortFilterProxyModel::filterAcceptsRow(int sourceRow, const QMode
     return visibilityData.isValid() ? visibilityData.toBool() : true;
 }
 
-#include <moc_FindEntitySortFilterProxyModel.cpp>

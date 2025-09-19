@@ -989,4 +989,3 @@ void QtViewport::setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
     m_rayDir = rayDir;
 }
 
-#include <moc_Viewport.cpp>

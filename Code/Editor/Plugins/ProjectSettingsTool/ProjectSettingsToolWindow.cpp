@@ -720,5 +720,4 @@ namespace ProjectSettingsTool
         return AZStd::string();
     }
 
-#include <moc_ProjectSettingsToolWindow.cpp>
 } // namespace ProjectSettingsTool
