@@ -363,4 +363,3 @@ namespace EMStudio
     }
 } // end namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/moc_EventDataEditor.cpp>

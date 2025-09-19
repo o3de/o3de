@@ -3336,5 +3336,3 @@ Range AbstractSplineWidget::GetSplinesRange()
 
     return range;
 }
-
-#include <Controls/moc_SplineCtrlEx.cpp>

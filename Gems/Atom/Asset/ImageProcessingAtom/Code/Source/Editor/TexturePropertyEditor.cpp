@@ -192,4 +192,3 @@ namespace ImageProcessingAtomEditor
         return needsBlocking ? true : QWidget::event(event);
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_TexturePropertyEditor.cpp>

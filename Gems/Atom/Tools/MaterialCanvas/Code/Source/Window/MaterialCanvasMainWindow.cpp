@@ -266,4 +266,3 @@ namespace MaterialCanvas
     }
 } // namespace MaterialCanvas
 
-#include <Window/moc_MaterialCanvasMainWindow.cpp>

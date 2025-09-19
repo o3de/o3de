@@ -633,4 +633,3 @@ namespace ScriptCanvasEditor
     }
 }
 
-#include <Editor/View/Dialogs/ContainerWizard/moc_ContainerTypeLineEdit.cpp>

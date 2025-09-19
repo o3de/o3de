@@ -7,7 +7,6 @@
  */
 
 #include "ClassReferencePanel.hxx"
-#include <Source/LUA/moc_ClassReferencePanel.cpp>
 
 DHClassReferenceWidget::DHClassReferenceWidget(QWidget* parent)
     : QTreeView(parent)

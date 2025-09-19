@@ -389,7 +389,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     Style::addClass(m_alphaSlider, "AlphaGradient");
     m_alphaSlider->setColorFunction([this](qreal position) {
         auto color = ToQColor(m_currentColorController->color());
-        color.setAlphaF(position);
+        color.setAlphaF(aznumeric_cast<float>(position));
         return color;
     });
     m_alphaSlider->setToolTipFunction([this](qreal position) {
@@ -620,7 +620,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     m_quickPalette = QSharedPointer<Palette>::create();
     m_quickPaletteCard = new QuickPaletteCard(m_quickPalette, m_currentColorController, m_undoStack, this);
 
-    connect(m_quickPaletteCard, &QuickPaletteCard::selectedColorsChanged, this, [this](const QVector<AZ::Color>& selectedColors) {
+    connect(m_quickPaletteCard, &QuickPaletteCard::selectedColorsChanged, this, [this](const AZStd::vector<AZ::Color>& selectedColors) {
         if (selectedColors.size() == 1)
         {
             m_currentColorController->setColor(selectedColors[0]);
@@ -1539,4 +1539,3 @@ void ColorPicker::hideEvent(QHideEvent* event)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_ColorPicker.cpp"

@@ -1412,5 +1412,3 @@ void CConsoleSCB::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
     }
 }
-
-#include <Controls/moc_ConsoleSCB.cpp>

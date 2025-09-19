@@ -32,7 +32,7 @@ PaletteCardBase::PaletteCardBase(QSharedPointer<Palette> palette, Internal::Colo
     m_header->setExpandable(true);
     mainLayout->addWidget(m_header);
 
-    connect(m_paletteView, &PaletteView::selectedColorsChanged, this, [controller](const QVector<AZ::Color>& selectedColors) {
+    connect(m_paletteView, &PaletteView::selectedColorsChanged, this, [controller](const AZStd::vector<AZ::Color>& selectedColors) {
         if (selectedColors.size() == 1)
         {
             controller->setColor(selectedColors[0]);
@@ -202,4 +202,3 @@ QuickPaletteCard::QuickPaletteCard(QSharedPointer<Palette> palette, Internal::Co
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_PaletteCard.cpp"

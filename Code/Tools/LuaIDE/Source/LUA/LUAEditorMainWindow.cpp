@@ -2521,4 +2521,3 @@ namespace LUAEditor
     }
 }//namespace LUAEditor
 
-#include <Source/LUA/moc_LUAEditorMainWindow.cpp>

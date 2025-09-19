@@ -393,5 +393,3 @@ void AbstractGroupProxyModel::RemoveEmptyGroup(GroupItem* group)
     endRemoveRows();
     RemoveEmptyGroup(parentGroup);
 }
-
-#include <Util/moc_AbstractGroupProxyModel.cpp>

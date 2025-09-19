@@ -49,4 +49,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/UICore/moc_OverwritePromptDialog.cpp"

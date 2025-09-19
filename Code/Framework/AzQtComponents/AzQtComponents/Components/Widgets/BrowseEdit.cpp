@@ -369,4 +369,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_BrowseEdit.cpp"

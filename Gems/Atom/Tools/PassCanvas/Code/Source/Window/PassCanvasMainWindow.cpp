@@ -186,4 +186,3 @@ namespace PassCanvas
     }
 } // namespace PassCanvas
 
-#include <Window/moc_PassCanvasMainWindow.cpp>

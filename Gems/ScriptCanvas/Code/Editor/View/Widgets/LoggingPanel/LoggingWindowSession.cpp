@@ -463,5 +463,4 @@ namespace ScriptCanvasEditor
         }
     }
 
-#include <Editor/View/Widgets/LoggingPanel/moc_LoggingWindowSession.cpp>
 }

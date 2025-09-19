@@ -145,4 +145,3 @@ void ToolBarPage::refreshIconSizes()
     AzQtComponents::ToolBar::setToolBarIconSize(ui->resizableIconSecondaryToolBar, iconSizeEnum);
 }
 
-#include <Gallery/moc_ToolBarPage.cpp>

@@ -168,4 +168,3 @@ void CUiAnimViewFindDlg::OnItemDoubleClicked()
     ProcessSel();
 }
 
-#include <Animation/moc_UiAnimViewFindDlg.cpp>

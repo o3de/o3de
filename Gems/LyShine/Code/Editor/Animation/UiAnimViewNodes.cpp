@@ -1670,4 +1670,3 @@ void CUiAnimViewNodesCtrl::EraseNodeRecordRec(CUiAnimViewNode* pNode)
     }
 }
 
-#include <Animation/moc_UiAnimViewNodes.cpp>

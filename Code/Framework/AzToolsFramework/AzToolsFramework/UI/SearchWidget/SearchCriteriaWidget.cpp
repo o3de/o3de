@@ -711,4 +711,3 @@ namespace AzToolsFramework
 
 }   //  namespace AzToolsFramework
 
-#include "UI/SearchWidget/moc_SearchCriteriaWidget.cpp"

@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 
-#include <Source/LUA/moc_LUAEditorView.cpp>
 #include "LUAEditorContextMessages.h"
 #include "LUAEditorContextInterface.h"
 #include "LUAEditorViewMessages.h"

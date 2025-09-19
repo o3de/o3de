@@ -1045,4 +1045,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_ComponentEditor.cpp"

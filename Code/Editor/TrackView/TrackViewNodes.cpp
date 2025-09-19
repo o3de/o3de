@@ -2551,5 +2551,3 @@ void CTrackViewNodesCtrl::EraseNodeRecordRec(CTrackViewNode* pNode)
         EraseNodeRecordRec(pNode->GetChild(i));
     }
 }
-
-#include <TrackView/moc_TrackViewNodes.cpp>

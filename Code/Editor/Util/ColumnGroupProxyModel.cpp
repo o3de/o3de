@@ -106,4 +106,3 @@ QStringList ColumnGroupProxyModel::GroupForSourceIndex(const QModelIndex& source
     return group;
 }
 
-#include <Util/moc_ColumnGroupProxyModel.cpp>
