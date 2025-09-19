@@ -260,4 +260,3 @@ namespace AzQtComponents
     } // namespace Internal
 } // namespace AzQtComponents
 
-#include "Components/Widgets/Internal/moc_OverlayWidgetLayer.cpp"

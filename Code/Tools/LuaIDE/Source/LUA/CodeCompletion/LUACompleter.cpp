@@ -8,7 +8,6 @@
 
 #include "LUACompleter.hxx"
 
-#include <Source/LUA/CodeCompletion/moc_LUACompleter.cpp>
 
 #include <QRegularExpression>
 

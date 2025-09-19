@@ -1183,4 +1183,3 @@ namespace EMStudio
 
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/moc_MirrorSetupWindow.cpp>

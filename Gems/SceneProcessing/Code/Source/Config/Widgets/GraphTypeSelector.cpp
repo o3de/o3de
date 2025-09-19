@@ -160,4 +160,3 @@ namespace AZ
     } // namespace SceneProcessingConfig
 } // namespace AZ
 
-#include <Source/Config/Widgets/moc_GraphTypeSelector.cpp>

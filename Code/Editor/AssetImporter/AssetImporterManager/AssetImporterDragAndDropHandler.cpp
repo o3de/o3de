@@ -235,4 +235,3 @@ bool AssetImporterDragAndDropHandler::isCrateFile(QFileInfo fileInfo)
     return QStringLiteral("crate").compare(fileInfo.suffix(), Qt::CaseInsensitive) == 0;
 }
 
-#include <AssetImporter/AssetImporterManager/moc_AssetImporterDragAndDropHandler.cpp>

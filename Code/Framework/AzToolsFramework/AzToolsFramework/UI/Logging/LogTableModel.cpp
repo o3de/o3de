@@ -332,4 +332,3 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include "UI/Logging/moc_LogTableModel.cpp"

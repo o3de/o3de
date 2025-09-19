@@ -397,5 +397,3 @@ bool CTVCustomizeTrackColorsDlg::Import(const QString& fullPath)
 
     return true;
 }
-
-#include <TrackView/moc_TVCustomizeTrackColorsDlg.cpp>

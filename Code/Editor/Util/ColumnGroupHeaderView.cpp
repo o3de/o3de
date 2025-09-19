@@ -136,5 +136,3 @@ int ColumnGroupHeaderView::GroupViewHeight() const
     return QHeaderView::sizeHint().height() + qMax(0, groupCount - 1) * 10 + 20;
 }
 
-
-#include <Util/moc_ColumnGroupHeaderView.cpp>

@@ -638,4 +638,3 @@ namespace AzToolsFramework
     }
 }   // END namespace AzToolsFramework
 
-#include "UI/LegacyFramework/moc_UIFramework.cpp"

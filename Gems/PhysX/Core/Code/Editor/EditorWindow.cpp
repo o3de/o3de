@@ -120,4 +120,3 @@ namespace PhysX
         }
     }
 }
-#include <Editor/moc_EditorWindow.cpp>

@@ -7,10 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
-#include <QScopedPointer>
-#endif
 
 namespace Ui {
     class DragAndDropPage;
@@ -26,5 +23,5 @@ public:
     ~DragAndDropPage() override = default;
 
 private:
-    QScopedPointer<Ui::DragAndDropPage> ui;
+    Ui::DragAndDropPage* ui;
 };

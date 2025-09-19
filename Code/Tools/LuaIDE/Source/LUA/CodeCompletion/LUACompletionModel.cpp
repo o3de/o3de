@@ -9,7 +9,6 @@
 #include "LUACompletionModel.hxx"
 #include <Source/LUA/LUAEditorStyleMessages.h>
 
-#include <Source/LUA/CodeCompletion/moc_LUACompletionModel.cpp>
 
 namespace LUAEditor
 {

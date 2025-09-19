@@ -450,4 +450,3 @@ namespace AssetBundler
 
 } // namespace AssetBundler
 
-#include <source/ui/moc_RulesTabWidget.cpp>

@@ -99,4 +99,3 @@ namespace GradientSignal
     }
 } //namespace GradientSignal
 
-#include "UI/moc_GradientPreviewWidget.cpp"

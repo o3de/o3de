@@ -138,4 +138,3 @@ namespace EMotionFX
     }
 } // namespace EMotionFX
 
-#include <Tests/UI/moc_ModalPopupHandler.cpp>

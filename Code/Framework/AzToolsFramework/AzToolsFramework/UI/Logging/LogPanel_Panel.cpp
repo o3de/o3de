@@ -888,4 +888,3 @@ namespace AzToolsFramework
     } // namespace LogPanel
 } // namespace AzToolsFramework
 
-#include "UI/Logging/moc_LogPanel_Panel.cpp"

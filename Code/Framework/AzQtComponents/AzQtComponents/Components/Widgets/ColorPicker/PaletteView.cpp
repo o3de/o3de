@@ -1510,4 +1510,3 @@ void PaletteView::onColorChanged(const AZ::Color& c)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_PaletteView.cpp"

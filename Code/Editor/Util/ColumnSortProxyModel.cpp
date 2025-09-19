@@ -281,4 +281,3 @@ int ColumnSortProxyModel::ColumnContains(int col) const
     return -1;
 }
 
-#include <Util/moc_ColumnSortProxyModel.cpp>

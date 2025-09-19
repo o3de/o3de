@@ -111,5 +111,4 @@ namespace GraphCanvas
         }
     }
 
-#include <StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/moc_GraphCanvasEditorDockWidget.cpp>
 }

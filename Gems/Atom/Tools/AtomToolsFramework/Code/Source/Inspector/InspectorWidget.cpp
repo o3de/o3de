@@ -301,4 +301,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Inspector/moc_InspectorWidget.cpp>

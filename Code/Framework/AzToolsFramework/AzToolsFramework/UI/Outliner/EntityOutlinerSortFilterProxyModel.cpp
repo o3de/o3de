@@ -85,5 +85,4 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerSortFilterProxyModel.cpp>
 

@@ -50,4 +50,3 @@ label->setText("&lt;a href=\"#\"&gt;This is a hyperlink.&lt;/a&gt;");
     ui->exampleText->setHtml(exampleText);
 }
 
-#include <Gallery/moc_HyperlinkPage.cpp>

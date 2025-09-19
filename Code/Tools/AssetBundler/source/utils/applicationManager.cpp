@@ -2972,4 +2972,3 @@ namespace AssetBundler
         return !m_showVerboseOutput;
     }
 } // namespace AssetBundler
-#include <source/utils/moc_applicationManager.cpp>

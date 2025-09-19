@@ -7,13 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QObject>
 #include <AzCore/Math/Color.h>
 #include <QColor>
 #include <AzCore/std/functional.h>
-#endif
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AzQtComponents
 {
@@ -28,8 +27,8 @@ namespace AzQtComponents
         class AZ_QT_COMPONENTS_API ColorController : public QObject
         {
             Q_OBJECT
-            Q_PROPERTY(AZ::Color color READ color WRITE setColor NOTIFY colorChanged)
-            Q_PROPERTY(ColorValidator* validator READ validator WRITE setValidator)
+            //Q_PROPERTY(AZ::Color color READ color WRITE setColor NOTIFY colorChanged)
+            //Q_PROPERTY(ColorValidator* validator READ validator WRITE setValidator)
 
         public:
             explicit ColorController(QObject* parent = nullptr);
@@ -101,9 +100,7 @@ namespace AzQtComponents
 
             void validate();
 
-            AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'AzQtComponents::Internal::ColorController::m_state': class 'QScopedPointer<AzQtComponents::Internal::ColorController::ColorState,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'AzQtComponents::Internal::ColorController'
-            QScopedPointer<ColorState> m_state;
-            AZ_POP_DISABLE_WARNING
+            AZStd::shared_ptr<ColorState> m_state;
         };
     }
 } // namespace AzQtComponents

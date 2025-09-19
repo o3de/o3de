@@ -4552,6 +4552,4 @@ namespace ScriptCanvasEditor
         m_saves[key] = AZStd::chrono::steady_clock::now();
     }
 
-
-#include <Editor/View/Windows/moc_MainWindow.cpp>
 } // namespace ScriptCanvasEditor

@@ -12,7 +12,6 @@
 #include "LUAEditorPlainTextEdit.hxx"
 #include "LUAEditorStyleMessages.h"
 
-#include <Source/LUA/moc_LUAEditorFoldingWidget.cpp>
 
 #include <QTextBlock>
 #include <QStyleOption>

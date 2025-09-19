@@ -83,4 +83,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <UI/PropertyEditor/View/moc_AssetCompleterListView.cpp>

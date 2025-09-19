@@ -1287,5 +1287,3 @@ void PropertyCard::OnExpanderChanged(bool expanded)
     SetExpanded(expanded);
     emit OnExpansionContractionDone();
 }
-
-#include <Controls/ReflectedPropertyControl/moc_ReflectedPropertyCtrl.cpp>
