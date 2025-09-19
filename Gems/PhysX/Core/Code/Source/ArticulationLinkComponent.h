@@ -28,7 +28,7 @@ namespace physx
 {
     class PxArticulationReducedCoordinate;
     class PxArticulationJointReducedCoordinate;
-}
+} // namespace physx
 
 namespace PhysX
 {
@@ -80,6 +80,7 @@ namespace PhysX
         float GetMaxJointVelocity() const override;
         float GetJointPosition(ArticulationJointAxis jointAxis) const override;
         float GetJointVelocity(ArticulationJointAxis jointAxis) const override;
+        bool IsRootArticulation() const override;
         // ArticulationSensorRequestBus overrides ...
         AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const override;
         void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
@@ -98,7 +99,6 @@ namespace PhysX
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 #endif
 
-
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
@@ -108,7 +108,6 @@ namespace PhysX
         ArticulationLinkConfiguration m_config;
 
     private:
-        bool IsRootArticulation() const;
         const AZ::Entity* GetArticulationRootEntity() const;
 
         void CreateArticulation();
