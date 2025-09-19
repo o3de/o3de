@@ -30,11 +30,10 @@
 
 void InitShaderManagementConsoleResources()
 {
-    // #QT6_TODO
     // Must register qt resources from other modules
-    // Q_INIT_RESOURCE(ShaderManagementConsole);
-    // Q_INIT_RESOURCE(InspectorWidget);
-    // Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+    Q_INIT_RESOURCE(ShaderManagementConsole);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
 }
 
 namespace ShaderManagementConsole

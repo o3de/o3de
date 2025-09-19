@@ -36,8 +36,7 @@
 
 void InitACEResources()
 {
-    // #QT6_TODO
-    // Q_INIT_RESOURCE(AudioControlsEditorUI);
+    Q_INIT_RESOURCE(AudioControlsEditorUI);
 }
 
 namespace AudioControls

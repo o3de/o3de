@@ -35,8 +35,7 @@ AZ_POP_DISABLE_WARNING
 
 void InitTexturePropertyEditorResources()
 {
-    // #QT6_TODO
-    // Q_INIT_RESOURCE(ImageProcessing);
+    Q_INIT_RESOURCE(ImageProcessing);
 }
 
 namespace ImageProcessingAtomEditor

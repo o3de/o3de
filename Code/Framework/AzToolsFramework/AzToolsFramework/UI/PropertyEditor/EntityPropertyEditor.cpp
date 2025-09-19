@@ -111,9 +111,8 @@ AZ_POP_DISABLE_WARNING
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initEntityPropertyEditorResources()
 {
-    // #QT6_TODO
-    //Q_INIT_RESOURCE(Icons);
-    //Q_INIT_RESOURCE(OverrideResources);
+    Q_INIT_RESOURCE(Icons);
+    Q_INIT_RESOURCE(OverrideResources);
 }
 
 namespace AzToolsFramework
