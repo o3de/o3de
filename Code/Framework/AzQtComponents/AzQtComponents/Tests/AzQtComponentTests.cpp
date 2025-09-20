@@ -18,8 +18,6 @@ class AzQtComponentsTestEnvironment : public AZ::Test::ITestEnvironment
 public:
     AzQtComponentsTestEnvironment()
     {
-        // needed for the controller tests - only ever needs to be run once
-        AzQtComponents::registerMetaTypes();
     }
 
     ~AzQtComponentsTestEnvironment() override {}

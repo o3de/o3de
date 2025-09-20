@@ -39,7 +39,7 @@ namespace AzQtComponents
         template <typename T, typename ...Args>
         void repolishWhenPropertyChanges(T* widget, void (T::*signal)(Args...))
         {
-            QObject::connect(widget, signal, widget, [widget]() {
+            QObject::connect(widget, signal, widget, []() {
                 // Prevent asserts in Unit Tests
                 if (!StyleManager::isInstanced())
                 {

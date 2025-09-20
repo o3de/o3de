@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/Palette.h>
-#endif
+#include <AzCore/std/containers/vector.h>
 
 class QUndoStack;
 class QMargins;
@@ -105,6 +104,6 @@ namespace AzQtComponents
 
     Q_SIGNALS:
 
-        void selectedColorsChanged(const QVector<AZ::Color>& selectedColors);
+        void selectedColorsChanged(const AZStd::vector<AZ::Color>& selectedColors);
     };
 } // namespace AzQtComponents

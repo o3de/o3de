@@ -770,7 +770,7 @@ void PaletteView::handleSelectionChanged(const QItemSelection& selected, const Q
 
     if (!m_aboutToShowContextMenu)
     {
-        QVector<AZ::Color> selectedColors;
+        AZStd::vector<AZ::Color> selectedColors;
         std::transform(selection.cbegin(), selection.cend(), std::back_inserter(selectedColors), [](const QModelIndex i) -> AZ::Color { return i.data(PaletteModel::ColorRole).value<AZ::Color>(); });
         emit selectedColorsChanged(selectedColors);
     }
