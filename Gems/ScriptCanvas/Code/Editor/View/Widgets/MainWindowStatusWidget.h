@@ -7,15 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 
 #include <AzCore/Memory/SystemAllocator.h>
-
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-
 #include <Editor/View/Widgets/ValidationPanel/GraphValidationDockWidgetBus.h>
-#endif
 
 namespace Ui
 {
@@ -46,6 +42,6 @@ namespace ScriptCanvasEditor
         void OnWarningButtonPressed();
         
     private:
-        AZStd::unique_ptr<Ui::MainWindowStatusWidget> m_ui;
+        Ui::MainWindowStatusWidget* m_ui;
     };
 }

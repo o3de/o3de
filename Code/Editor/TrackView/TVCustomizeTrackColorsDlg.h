@@ -12,11 +12,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QColor>
 #include <QDialog>
-#endif
+
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
+#include <IXml.h>
+#include <IMovieSystem.h>
 
 namespace Ui
 {
@@ -52,7 +55,7 @@ private:
 
     inline void GetQColorFromXmlNode(QColor& colorOut, const XmlNodeRef& xmlNode) const
     {
-        QRgb rgb = std::numeric_limits<unsigned int>::max();
+        QRgb rgb = AZStd::numeric_limits<unsigned int>::max();
         xmlNode->getAttr("color", rgb);
         colorOut.setRgb(rgb);
     }
@@ -70,10 +73,10 @@ private:
     static void SaveColors(const char* sectionName);
     static void LoadColors(const char* sectionName);
 
-    QVector<QLabel*> m_aLabels;
-    QVector<ColorButton*> m_colorButtons;
+    AZStd::vector<QLabel*> m_aLabels;
+    AZStd::vector<ColorButton*> m_colorButtons;
 
-    QScopedPointer<Ui::TVCustomizeTrackColorsDialog> m_ui;
+    Ui::TVCustomizeTrackColorsDialog* m_ui;
 
     static AZStd::map<CAnimParamType, QColor> s_trackColors;
     static QColor s_colorForDisabled;

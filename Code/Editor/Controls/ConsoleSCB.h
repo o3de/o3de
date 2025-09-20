@@ -7,26 +7,25 @@
  */
 
 
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
-#define CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-
 #include "Settings.h"
-#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
-#include <QLineEdit>
-#include <QPlainTextEdit>
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzCore/std/containers/deque.h>
+#include <Editor/IEditorImpl.h>
+#include <IConsole.h>
 
 #include <QAbstractTableModel>
+#include <QColor>
 #include <QDialog>
 #include <QLineEdit>
+#include <QList>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QScopedPointer>
+#include <QString>
 #include <QStyledItemDelegate>
-#endif
 
 class QMenu;
 class ConsoleWidget;
@@ -43,7 +42,7 @@ struct ConsoleLine
     QString text;
     bool newLine;
 };
-typedef std::deque<ConsoleLine> Lines;
+typedef AZStd::deque<ConsoleLine> Lines;
 
 class ConsoleLineEdit
     : public QLineEdit
@@ -190,6 +189,4 @@ private:
     QMenu* m_optionsMenu;
     QAction* m_clearOnPlayAction;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
 

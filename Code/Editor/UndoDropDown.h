@@ -8,9 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Undo/IUndoManagerListener.h"
-#endif
+
+#include <QObject>
 
 /// Turns IUndoManagerListener callbacks into signals
 class UndoStackStateAdapter

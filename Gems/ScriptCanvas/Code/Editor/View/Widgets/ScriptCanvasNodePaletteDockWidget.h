@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -31,7 +30,6 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Core.h>
-#endif
 
 class QToolButton;
 namespace ScriptCanvasEditor { class FunctionPaletteTreeItem; }
@@ -154,7 +152,7 @@ namespace ScriptCanvasEditor
 
         private:
 
-            AZStd::unique_ptr< Ui::ScriptCanvasNodePaletteToolbar > m_ui;
+            Ui::ScriptCanvasNodePaletteToolbar* m_ui;
         };
 
         class ScriptCanvasNodePaletteConfig

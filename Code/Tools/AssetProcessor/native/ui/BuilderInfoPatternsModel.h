@@ -10,12 +10,7 @@
 
 #include <QAbstractItemModel>
 #include <AzCore/std/containers/vector.h>
-
-namespace AssetBuilderSDK
-{
-    struct AssetBuilderDesc;
-    struct AssetBuilderPattern;
-}
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 namespace AssetProcessor
 {

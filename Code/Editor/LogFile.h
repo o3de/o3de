@@ -6,15 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LOGFILE_H
-#define CRYINCLUDE_EDITOR_LOGFILE_H
-
 #pragma once
 
+#include "SandboxAPI.h"
 #include "ILog.h"
 #include <IConsole.h>
 #include <stdarg.h>
+#include <QString>
+#include <AzCore/std/string/string_view.h>
 
 #define MAX_LOGBUFFER_SIZE 16384
 
@@ -82,5 +81,3 @@ private:
     static bool m_bShowMemUsage;
     static bool m_bIsQuitting;
 };
-
-#endif // CRYINCLUDE_EDITOR_LOGFILE_H

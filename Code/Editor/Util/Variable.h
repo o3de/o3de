@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_VARIABLE_H
-#define CRYINCLUDE_EDITOR_UTIL_VARIABLE_H
 #pragma once
 
 
@@ -30,6 +27,8 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Serialization/Locale.h>
+#include <AzCore/std/string/conversions.h>
 
 inline const char* to_c_str(const char* str) { return str; }
 #define MAX_VAR_STRING_LENGTH 4096
@@ -2171,4 +2170,3 @@ private:
 
 Q_DECLARE_METATYPE(IVariable *);
 
-#endif // CRYINCLUDE_EDITOR_UTIL_VARIABLE_H

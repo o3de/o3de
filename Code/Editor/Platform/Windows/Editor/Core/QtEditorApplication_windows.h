@@ -14,7 +14,6 @@ namespace Editor
 {
     class EditorQtApplicationWindows : public EditorQtApplication
     {
-        Q_OBJECT
     public:
         EditorQtApplicationWindows(int& argc, char** argv)
             : EditorQtApplication(argc, argv)

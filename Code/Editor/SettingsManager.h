@@ -6,11 +6,13 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
-#define CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
 #pragma once
 
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
+#include <IXml.h>
 #include <QString>
 
 class QByteArray;
@@ -49,7 +51,7 @@ enum EditorSettingsExportType
     eSettingsManagerExportLayout
 };
 
-typedef std::map<QString, QString> TToolNamesMap;
+typedef AZStd::map<QString, QString> TToolNamesMap;
 
 struct SEventLog;
 
@@ -145,5 +147,3 @@ private:
     TToolNamesMap m_toolNames;
     TToolNamesMap m_toolVersions;
 };
-
-#endif // CRYINCLUDE_EDITOR_SETTINGSMANAGER_H

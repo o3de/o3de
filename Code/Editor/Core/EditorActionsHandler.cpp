@@ -27,7 +27,7 @@
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 
-#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h> // This should not be possible, editor cannot depend on gem code
 
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
 #include <Core/Widgets/ViewportSettingsWidgets.h>

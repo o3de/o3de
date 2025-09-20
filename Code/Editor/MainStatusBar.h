@@ -6,16 +6,12 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
-#define CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStatusBar>
 #include <QWidget>
 #include <QIcon>
-#endif
+#include <Editor/IEditor.h>
 
 class MainStatusBar;
 class QLabel;
@@ -81,6 +77,3 @@ public:
 signals:
     void requestStatusUpdate();
 };
-
-
-#endif // CRYINCLUDE_EDITOR_MAINSTATUSBAR_H

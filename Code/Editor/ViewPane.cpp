@@ -41,7 +41,7 @@
 
 #include <AzQtComponents/Components/Style.h>
 
-#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h> // This should not be possible, editor cannot depend on gem code
 
 // Editor
 #include "ViewManager.h"

@@ -326,7 +326,8 @@ namespace LUAEditor
 
         QList<QAction*> actions = m_gui->menuOpenRecent->actions();
 
-        for (int i = actions.size() - 1; i >= 0; i--)
+        const int size = aznumeric_cast<int>(actions.size());
+        for (int i = size - 1; i >= 0; i--)
         {
             m_gui->menuOpenRecent->removeAction(actions[i]);
         }

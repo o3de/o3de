@@ -8,13 +8,19 @@
 
 #pragma once
 
-#include <MainStatusBar.h>
-#include <IRenderer.h>
 #include <QMutex>
 #include <QString>
 #include <QSet>
+#include <QIcon>
 
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <MainStatusBar.h>
+#include <IRenderer.h>
+
+class QCheckBox;
+class QWidgetAction;
+class QCheckBox;
 
 class GeneralStatusItem
     : public StatusBarItem
@@ -48,7 +54,7 @@ private Q_SLOTS:
     void OnOpenSettings();
 
 private:
-    std::unique_ptr<QMenu> m_menu;
+    AZStd::unique_ptr<QMenu> m_menu;
     QAction* m_settingsAction;
     QWidgetAction* m_enableAction;
     QCheckBox* m_checkBox;

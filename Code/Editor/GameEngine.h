@@ -10,19 +10,22 @@
 // Description : The game engine for editor
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <AzCore/Outcome/Outcome.h>
 #include "LogFile.h"
 #include "Util/ModalWindowDismisser.h"
-#endif
-
-class CStartupLogoDialog;
-struct IInitializeUIInfo;
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
-
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
+#include <Editor/IEditor.h>
+#include <QObject>
+#include <QString>
+
+class CStartupLogoDialog;
+struct IInitializeUIInfo;
 
 class ThreadedOnErrorHandler : public QObject
 {

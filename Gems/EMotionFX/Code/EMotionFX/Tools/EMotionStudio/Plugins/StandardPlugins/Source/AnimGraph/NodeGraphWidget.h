@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/std/string/string.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QPoint>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QPainter)
