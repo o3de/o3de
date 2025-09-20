@@ -118,9 +118,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             openparticlesystem_editor_files.cmake
         INCLUDE_DIRECTORIES
-            PRIVATE
+            PUBLIC
                 Include
                 Source
+            PRIVATE
                 Source/Runtime
                 Source/Thumbnail
         COMPILE_DEFINITIONS
@@ -140,6 +141,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME OpenParticleSystem.Editor GEM_MODULE
         NAMESPACE Gem
+        AUTORCC
         OUTPUT_NAME OpenParticleSystem.Editor.Gem
         FILES_CMAKE
             openparticlesystem_editor_shared_files.cmake

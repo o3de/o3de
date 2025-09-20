@@ -36,6 +36,8 @@ namespace OpenParticle
 
     void EditorSystemComponent::Activate()
     {
+        m_document.reset(new OpenParticleSystemEditor::ParticleDocument());
+
         AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
         EditorParticleSystemComponentRequestBus::Handler::BusConnect();
         m_particleBrowserInteractions.reset(aznew ParticleBrowserInteractions);
@@ -80,6 +82,13 @@ namespace OpenParticle
             AZ_Error("ParticleSystem", false, "Failed to find default particle emitter material %s, particles may not function.", defaultMaterialProductFile);
         }
     }
+    void EditorSystemComponent::CreateNewParticle(const AZStd::string& sourcePath)
+    {
+        if (m_document->CreateParticle(sourcePath))
+        {
+            m_document->Close();
+        }
+    }
 
     void EditorSystemComponent::Deactivate()
     {
@@ -89,7 +98,7 @@ namespace OpenParticle
         EditorParticleSystemComponentRequestBus::Handler::BusDisconnect();
         ResetMenu();
         m_particleBrowserInteractions.reset();
-
+        m_document.reset();
     }
 
     void EditorSystemComponent::ResetMenu()
@@ -105,7 +114,7 @@ namespace OpenParticle
     {
         AZ_TracePrintf("ParticleSystem", "Launching ParticleSystem Editor");
 
-        QtViewPaneManager::instance()->OpenPane("OpenParticle Editor");
+        QtViewPaneManager::instance()->OpenPane("(Preview) Particle Editor");
         EBUS_EVENT(EditorParticleOpenParticleRequestsBus, OpenParticleFile, sourcePath.data());
     }
 

@@ -83,7 +83,7 @@ namespace OpenParticleSystem
         options.toolbarIcon = ":/stylesheet/img/UI20/toolbar/particle.svg";
 
         AzToolsFramework::RegisterViewPane<OpenParticleSystemEditor::OpenParticleSystemEditorWindow>(
-            "(Preview) OpenParticle Editor", LyViewPane::CategoryTools, options);
+            "(Preview) Particle Editor", LyViewPane::CategoryTools, options);
     }
 
 } // namespace OpenParticleSystem

@@ -19,14 +19,21 @@ namespace OpenParticle
         AZ_CLASS_ALLOCATOR(ParticleBrowserInteractions, AZ::SystemAllocator, 0);
 
         ParticleBrowserInteractions();
-        ~ParticleBrowserInteractions();
+        ~ParticleBrowserInteractions() override;
 
     private:
         //! AssetBrowserInteractionNotificationBus::Handler overrides...
+
+        // Provide your own creator for source files
+        void AddSourceFileCreators(const char* /*fullSourceFileName*/, const AZ::Uuid& /*sourceUUID*/, AzToolsFramework::AssetBrowser::SourceFileCreatorList& /*creators*/) override;
+
+        // Provide your own editor for source files
         void AddSourceFileOpeners(
             const char* fullSourceFileName,
             const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
+
+        AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
 
         bool HandlesSource(AZStd::string_view fileName) const;
     };

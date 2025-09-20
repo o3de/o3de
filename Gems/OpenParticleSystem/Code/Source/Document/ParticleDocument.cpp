@@ -6,14 +6,14 @@
  *
  */
 
-#include <Document/ParticleDocument.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
-#include <ParticleGraphicsViewRequestsBus.h>
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <Document/ParticleDocument.h>
 
 namespace OpenParticleSystemEditor
 {
@@ -90,6 +90,11 @@ namespace OpenParticleSystemEditor
     {
         ParticleDocumentRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+    }
+
+    void ParticleDocument::OpenParticle(const AZStd::string_view full_path)
+    {
+        Open(full_path);
     }
 
     bool ParticleDocument::UpdateAsset()
@@ -226,7 +231,7 @@ namespace OpenParticleSystemEditor
         return true;
     }
 
-    bool ParticleDocument::SaveNew(AZStd::string_view absolutePath)
+    bool ParticleDocument::CreateParticle(AZStd::string_view absolutePath)
     {
         if (absolutePath.empty())
         {

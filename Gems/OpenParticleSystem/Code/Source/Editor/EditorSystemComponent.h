@@ -8,9 +8,11 @@
 
 #pragma once
 
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <Document/ParticleDocument.h>
 #include <Editor/ParticleBrowserInteractions.h>
 #include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
 
@@ -60,6 +62,7 @@ namespace OpenParticle
         void OnResetToolMenuItems() override;
 
         //! EditorParticleSystemComponentRequestBus::Handler overrides...
+        void CreateNewParticle(const AZStd::string& sourcePath) override;
         void OpenParticleEditor(const AZStd::string& sourcePath) override;
 
         void ResetMenu();
@@ -69,7 +72,7 @@ namespace OpenParticle
         QAction* m_openParticleEditorAction = nullptr;
         AZ::Data::AssetId m_cachedDefaultEmitterMaterialAssetId;
         AZStd::unique_ptr<ParticleBrowserInteractions> m_particleBrowserInteractions;
-
+        AZStd::unique_ptr<OpenParticleSystemEditor::ParticleDocument> m_document;
         // invoked when assets are ready to query.
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };

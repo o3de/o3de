@@ -8,15 +8,13 @@
  
 #pragma once
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/string_view.h>
-#include <AzCore/Name/Name.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <Document/ParticleDocumentBus.h>
-
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Document/ParticleDocumentBus.h>
 
 namespace OpenParticleSystemEditor
 {
@@ -30,12 +28,14 @@ namespace OpenParticleSystemEditor
         AZ_CLASS_ALLOCATOR(ParticleDocument, AZ::SystemAllocator, 0);
 
         ParticleDocument();
-        ~ParticleDocument();
+        ~ParticleDocument() override;
+
+        bool CreateParticle(const AZStd::string_view absuolutePath);
+        void OpenParticle(const AZStd::string_view absuolutePath);
 
         bool Open(AZStd::string_view loadPath);
         bool Save();
         bool Close();
-        bool SaveNew(AZStd::string_view absuolutePath);
         bool UpdateAsset();
 
         bool IsOpen() const;

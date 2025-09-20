@@ -27,6 +27,7 @@ namespace OpenParticle
 
         //! Open document in particle editor
         virtual void OpenParticleEditor(const AZStd::string& sourcePath) = 0;
+        virtual void CreateNewParticle(const AZStd::string& sourcePath) = 0;
 
         virtual AZ::TypeId GetParticleSystemConfigType() const = 0;
 

@@ -29,7 +29,6 @@ set(FILES
     OpenParticleSystemEditor/Window/ParticleGraphicsScence.cpp
     OpenParticleSystemEditor/Window/ParticleGraphicsView.h
     OpenParticleSystemEditor/Window/ParticleGraphicsView.cpp
-    OpenParticleSystemEditor/Window/ParticleGraphicsViewRequestsBus.h
     OpenParticleSystemEditor/Window/ParticleItemWidget.h
     OpenParticleSystemEditor/Window/ParticleItemWidget.cpp
     OpenParticleSystemEditor/Window/ParticleItemWidget.ui
@@ -79,9 +78,6 @@ set(FILES
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.cpp
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.h
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRendererRequestsBus.h
-    OpenParticleSystemEditor/Window/OpenParticleBrowserWidget.h
-    OpenParticleSystemEditor/Window/OpenParticleBrowserWidget.cpp
-    OpenParticleSystemEditor/Window/OpenParticleBrowserWidget.ui
     OpenParticleSystemEditor/Window/WidgetItem.h
     OpenParticleSystemEditor/Window/WidgetItem.cpp
     OpenParticleSystemEditor/Window/WidgetItem.ui
@@ -106,7 +102,4 @@ set(FILES
     OpenParticleSystemEditor/Window/Controls/CommonDefs.h
     OpenParticleSystemEditor/Window/AssetWidget.h
     OpenParticleSystemEditor/Window/AssetWidget.cpp
-    OpenParticleSystemEditor/Document/ParticleDocument.cpp
-    OpenParticleSystemEditor/Document/ParticleDocument.h
-    OpenParticleSystemEditor/Document/ParticleDocumentBus.h
 )

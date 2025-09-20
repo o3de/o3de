@@ -6,32 +6,35 @@
  *
  */
 
+
+#include "AzCore/Utils/Utils.h"
+
 #include <OpenParticleSystemEditorWindow.h>
 
 #include <Atom/RHI/Factory.h>
-#include <AzCore/Name/Name.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AssetBrowser/AssetBrowserBus.h>
+
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QLabel>
-#include <QStackedWidget>
+#include <QFileDialog>
 
 #include <ViewInspector.h>
 #include <EmitterInspector.h>
 #include <LevelOfDetailInspector.h>
-#include <OpenParticleBrowserWidget.h>
 #include <InputController/OpenParticleEditorViewportInputControllerBus.h>
 #include <Window/Controls/PropertyDistCtrl.h>
 #include <Window/Controls/PropertyGradientColorCtrl.h>
-#include <Window/LevelOfDetailInspectorNotifyBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
-#define MAX_EMITTER_WIDGET_NUM 10
 
-OpenParticleSystemEditor::EffectorInspector* g_effectorInspector;
+#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+
+#define MAX_EMITTER_WIDGET_NUM 10
 
 void QInitResourceOpenParticleEditor() { Q_INIT_RESOURCE(OpenParticleEditor); }
 void QCleanupResourceOpenParticleEditor() { Q_CLEANUP_RESOURCE(OpenParticleEditor); }
@@ -55,8 +58,7 @@ namespace OpenParticleSystemEditor
         m_dockActions.clear();
 
         m_document.reset(new ParticleDocument());
-
-        OpenParticleSystemEditorWindowRequestsBus::Handler::BusConnect();
+        EditorWindowRequestsBus::Handler::BusConnect();
         OpenParticle::EditorParticleOpenParticleRequestsBus::Handler::BusConnect();
 
         AZ::TickBus::QueueFunction([]()
@@ -72,7 +74,7 @@ namespace OpenParticleSystemEditor
 
     OpenParticleSystemEditorWindow::~OpenParticleSystemEditorWindow()
     {
-        OpenParticleSystemEditorWindowRequestsBus::Handler::BusDisconnect();
+        EditorWindowRequestsBus::Handler::BusDisconnect();
         OpenParticle::EditorParticleOpenParticleRequestsBus::Handler::BusDisconnect();
         UnregisterDistCtrlHandlers();
         UnregisterGradientColorPropertyHandler();
@@ -85,6 +87,39 @@ namespace OpenParticleSystemEditor
         setMenuBar(m_menuBar);
 
         m_menuFile = m_menuBar->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&File"));
+
+        m_menuFile->addAction(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&New..."),
+            [this]()
+            {
+                AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+
+                QString fileName = QFileDialog::getSaveFileName(
+                    nullptr,
+                    "Create New Particle",
+                    projectPath.c_str(),
+                    "Particle (*.particle)"
+                );
+
+                if (fileName.isEmpty())
+                {
+                    return;
+                }
+
+                QFileInfo fileInfo(fileName);
+
+                AZStd::string fullFilepath;
+                AZ::StringFunc::Path::ConstructFull(fileInfo.path().toUtf8(),
+                                                    fileInfo.fileName().toUtf8(),
+                                                    ".particle",
+                                                    fullFilepath);
+
+                OpenParticle::EditorParticleSystemComponentRequestBus::Broadcast(&OpenParticle::EditorParticleSystemComponentRequestBus::Events::CreateNewParticle,
+                                                                    fullFilepath);
+
+                OpenDocument(fullFilepath);
+
+            }, QKeySequence::New);
+
         m_menuFile->addAction(
             QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Open..."),
             [this]()
@@ -99,30 +134,7 @@ namespace OpenParticleSystemEditor
                 const AZStd::string filePath = selection.GetResult()->GetParent()->GetFullPath();
                 if (!filePath.empty())
                 {
-                    AZStd::string emitterInspectorTitle;
-                    AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), emitterInspectorTitle);
-
-                    if (!m_opened && m_document != nullptr)
-                    {
-                        m_opened = m_document->Open(filePath.c_str());
-                        m_tabWidgetDocument[emitterInspectorTitle] = AZStd::move(m_document);
-                        SetTabWidget(filePath);
-                    }
-                    else
-                    {
-                        if (!RaiseOpendEmitter(emitterInspectorTitle.c_str()))
-                        {
-                            if (m_dockWidgets.size() > MAX_EMITTER_WIDGET_NUM)
-                            {
-                                AZ_Printf("Emitter", "max Emitter widget");
-                            }
-                            else
-                            {
-                                SetTabWidget(filePath);
-                            }
-                        }
-                    }
-
+                    OpenDocument(filePath);
                     SetStatusMessage(tr("Particle opened: %1").arg(filePath.c_str()));
                 }
             },
@@ -131,19 +143,12 @@ namespace OpenParticleSystemEditor
         m_menuFile->addSeparator();
 
         m_menuFile->addAction(
-            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save"),
-            [this]()
-            {
-                for (const auto& document : m_tabWidgetDocument)
-                {
-                    if (m_opened && document.second->IsModified())
-                    {
-                        document.second->Save();
-                        SetStatusMessage(QString("Particle saved: %1").arg(document.second->GetAbsolutePath().data()));
-                    }
-                }
-            },
-            QKeySequence::Save);
+        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save All"),
+        [this]()
+        {
+            SaveDocument();
+        },
+        QKeySequence::Save);
 
         // Add all View DockWidget panes.
         m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));
@@ -161,10 +166,10 @@ namespace OpenParticleSystemEditor
     {
         auto widget = this->takeCentralWidget();
         delete widget;
-        widget = NULL;
+        widget = nullptr;
     }
 
-    void OpenParticleSystemEditorWindow::SetDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 orientation)
+    void OpenParticleSystemEditorWindow::SetDockWidget(const AZStd::string& name, QWidget* widget)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);
         if (dockWidgetItr != m_dockWidgets.end() || !widget)
@@ -175,12 +180,12 @@ namespace OpenParticleSystemEditor
         auto dockWidget = new AzQtComponents::StyledDockWidget(tr(name.c_str()));
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        dockWidget->setMinimumSize(QSize(300, 300));
         widget->setObjectName(tr(name.c_str()));
         widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
         dockWidget->setFloating(false);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
+
         if (dockWidget)
         {
             m_dockWidgets[name] = dockWidget;
@@ -196,27 +201,25 @@ namespace OpenParticleSystemEditor
     void OpenParticleSystemEditorWindow::SetupDocking()
     {
         auto viewInspector = new ViewInspector(this);
-        auto exploreInspector = new ParticleBrowserWidget(this);
+        const auto Preview = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Preview");
+        AddDockWidget(Preview.toUtf8().data(), viewInspector, Qt::LeftDockWidgetArea);
+
         auto effectorInspector = new EffectorInspector(this);
-        // all Emitter use same effectorInspector
-        g_effectorInspector = effectorInspector;
+        m_effectorInspector = effectorInspector;
+        const auto Detail = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Detail");
+        SetDockWidget(Detail.toUtf8().data(), effectorInspector);
+
         auto emitterInspector = new EmitterInspector(effectorInspector, this);
-        QString Preview = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Preview");
-        QString Explore = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Explore");
-        QString Emitter = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Emitter");
-        QString lod = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Level Of Detail");
-        QString Detail = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Detail");
-        AddDockWidget(Preview.toUtf8().data(), viewInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
-        SetDockWidget(Explore.toUtf8().data(), exploreInspector, Qt::Horizontal);
-        SetDockWidget(Emitter.toUtf8().data(), emitterInspector, Qt::Horizontal);
+        const auto Emitter = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Emitter");
+        SetDockWidget(Emitter.toUtf8().data(), emitterInspector);
+
         auto levelOfDetailInspector = new LevelOfDetailInspector(this);
-        SetDockWidget(lod.toUtf8().data(), levelOfDetailInspector, Qt::Horizontal);
-        SetDockWidget(Detail.toUtf8().data(), effectorInspector, Qt::Horizontal);
+        const auto LOD = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Level Of Detail");
+        SetDockWidget(LOD.toUtf8().data(), levelOfDetailInspector);
 
         splitDockWidget(m_dockWidgets[Preview.toUtf8().data()], m_dockWidgets[Detail.toUtf8().data()], Qt::Horizontal);
-        splitDockWidget(m_dockWidgets[Preview.toUtf8().data()], m_dockWidgets[Explore.toUtf8().data()], Qt::Vertical);
         splitDockWidget(m_dockWidgets[Preview.toUtf8().data()], m_dockWidgets[Emitter.toUtf8().data()], Qt::Horizontal);
-        splitDockWidget(m_dockWidgets[Explore.toUtf8().data()], m_dockWidgets[lod.toUtf8().data()], Qt::Horizontal);
+        splitDockWidget(m_dockWidgets[Preview.toUtf8().data()], m_dockWidgets[LOD.toUtf8().data()], Qt::Vertical);
 
         m_dockWidgets[Preview.toUtf8().data()]->setFloating(false);
     }
@@ -292,7 +295,7 @@ namespace OpenParticleSystemEditor
                 if (m_emitterTabWidget != nullptr && m_emitterTabWidget->count() <= 0)
                 {
                     document->second->UpdateAsset();
-                    g_effectorInspector->Init("");
+                    m_effectorInspector->Init("");
                 }
                 m_tabWidgetDocument.erase(document);
             }
@@ -319,11 +322,11 @@ namespace OpenParticleSystemEditor
     {
         AZStd::string emitterInspectorTitle;
         AzFramework::StringFunc::Path::GetFileName(path.c_str(), emitterInspectorTitle);
-        auto emitterInspector = new EmitterInspector(g_effectorInspector, this, emitterInspectorTitle.c_str());
+        auto emitterInspector = new EmitterInspector(m_effectorInspector, this, emitterInspectorTitle.c_str());
 
         QString newEmitter = QCoreApplication::translate("OpenParticleSystemEditorWindow", emitterInspectorTitle.c_str());
 
-        SetEmitterDockWidget(newEmitter.toUtf8().data(), emitterInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
+        SetEmitterDockWidget(newEmitter.toUtf8().data(), emitterInspector, Qt::LeftDockWidgetArea);
         Checked(newEmitter);
 
         for (auto emitterDockWidgetPair : m_dockWidgets)
@@ -378,25 +381,25 @@ namespace OpenParticleSystemEditor
                 // Show default emitter tab when no document opened to keep layout
                 m_emitterTabWidget->setTabVisible(0, true);
                 // Clear detail dock
-                g_effectorInspector->Init("");
+                m_effectorInspector->Init("");
             }
         });
 
-        connect(m_dockWidgets[newEmitter.toUtf8().data()], &QDockWidget::visibilityChanged, [=, this](bool isVisible) {
-            if (isVisible) {
-                SetDistCtrlBusIDName(emitterInspectorTitle);
-                SetGradientColorBusIDName(emitterInspectorTitle);
-                g_effectorInspector->Init(emitterInspectorTitle);
-                m_tabWidgetDocument[emitterInspectorTitle]->UpdateAsset();
-            } else {
-                ParticleDocumentNotifyBus::Broadcast(&ParticleDocumentNotifyBus::Handler::OnDocumentInvisible);
-            }
-        });
+         connect(m_dockWidgets[newEmitter.toUtf8().data()], &QDockWidget::visibilityChanged, [=, this](bool isVisible) {
+             if (isVisible) {
+                 SetDistCtrlBusIDName(emitterInspectorTitle);
+                 SetGradientColorBusIDName(emitterInspectorTitle);
+                 m_effectorInspector->Init(emitterInspectorTitle);
+                 m_tabWidgetDocument[emitterInspectorTitle]->UpdateAsset();
+             } else {
+                 ParticleDocumentNotifyBus::Broadcast(&ParticleDocumentNotifyBus::Handler::OnDocumentInvisible);
+             }
+         });
         // Hide default emitter tab when any document opened
         m_emitterTabWidget->setTabVisible(0, false);
     }
 
-    void OpenParticleSystemEditorWindow::SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation)
+    void OpenParticleSystemEditorWindow::SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area)
     {
         AzQtComponents::StyledDockWidget* dockWidget = new AzQtComponents::StyledDockWidget(tr(name.c_str()));
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
@@ -404,11 +407,10 @@ namespace OpenParticleSystemEditor
 
         widget->setObjectName(tr(name.c_str()));
         widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
         dockWidget->setFloating(false);
         addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
+
         if (dockWidget)
         {
             m_dockWidgets[name] = dockWidget;
@@ -445,13 +447,13 @@ namespace OpenParticleSystemEditor
 
         if (!m_opened && m_document != nullptr)
         {
-            m_opened = m_document->SaveNew(path.c_str());
+            m_opened = m_document->CreateParticle(path.c_str());
             m_tabWidgetDocument[emitterInspectorTitle] = AZStd::move(m_document);
         }
         else
         {
-            m_tabWidgetDocument[emitterInspectorTitle].reset(new ParticleDocument()); 
-            m_tabWidgetDocument[emitterInspectorTitle]->SaveNew(path);
+            m_tabWidgetDocument[emitterInspectorTitle].reset(new ParticleDocument());
+            m_tabWidgetDocument[emitterInspectorTitle]->CreateParticle(path);
         }
 
         SetStatusMessage(QString("Particle created: %1").arg(path.c_str()));
@@ -493,7 +495,7 @@ namespace OpenParticleSystemEditor
         return false;
     }
 
-    bool OpenParticleSystemEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation)
+    bool OpenParticleSystemEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);
         if (dockWidgetItr != m_dockWidgets.end() || !widget)
@@ -501,15 +503,14 @@ namespace OpenParticleSystemEditor
             return false;
         }
 
-        auto dockWidget = new AzQtComponents::StyledDockWidget(tr(name.c_str()));
+        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(tr(name.c_str()));
+        widget->setObjectName(name.c_str());
         widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
         addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
+
         if (dockWidget)
         {
             m_dockWidgets[name] = dockWidget;
@@ -572,34 +573,6 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleSystemEditorWindow::OpenParticleFile(const AZStd::string& sourcePath)
     {
-        AZStd::string emitterInspectorTitle;
-        AzFramework::StringFunc::Path::GetFileName(sourcePath.c_str(), emitterInspectorTitle);
-
-        if (!m_opened)
-        {
-            m_opened = m_document->Open(sourcePath.c_str());
-            m_tabWidgetDocument[emitterInspectorTitle] = AZStd::move(m_document);
-            QString Emitter = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Emitter");
-            m_dockWidgets[Emitter.toUtf8().data()]->close();
-        }
-        else
-        {
-            if (RaiseOpendEmitter(emitterInspectorTitle.c_str()))
-            {
-                return;
-            }
-            if (m_dockWidgets.size() > MAX_EMITTER_WIDGET_NUM)
-            {
-                AZ_Printf("Emitter", "max widget number!");
-                return;
-            }
-            AZStd::string pastedName = "";
-            EBUS_EVENT_RESULT(pastedName, ParticleDocumentRequestBus, GetCopyWidgetName);
-            m_tabWidgetDocument[emitterInspectorTitle].reset(new ParticleDocument());
-            m_tabWidgetDocument[emitterInspectorTitle]->Open(sourcePath.c_str());
-            EBUS_EVENT(ParticleDocumentRequestBus, SetCopyName, pastedName);
-        }
-        SetTabWidget(sourcePath);
-        SetStatusMessage(tr("Particle opened: %1").arg(sourcePath.c_str()));
+        OpenDocument(sourcePath);
     }
 } // namespace OpenParticleSystemEditor
