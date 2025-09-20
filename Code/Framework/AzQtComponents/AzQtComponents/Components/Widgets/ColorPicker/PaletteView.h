@@ -7,22 +7,17 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QAbstractItemView>
 #include <QColor>
 #include <QRect>
 #include <QSize>
-#endif
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Math/Color.h>
 
 class QPainter;
 class QSettings;
 class QUndoStack;
-
-namespace AZ
-{
-    class Color;
-}
 
 namespace AzQtComponents
 {
@@ -128,7 +123,7 @@ namespace AzQtComponents
         void handleSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
     Q_SIGNALS:
-        void selectedColorsChanged(const QVector<AZ::Color>& selectedColors);
+        void selectedColorsChanged(const AZStd::vector<AZ::Color>& selectedColors);
         void unselectedContextMenuRequested(const QPoint& position);
 
     protected:
