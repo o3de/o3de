@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
-#endif
 
 class QToolButton;
 
@@ -99,6 +97,6 @@ namespace GraphCanvas
 
         bool m_viewDisabled = false;
     
-        AZStd::unique_ptr<Ui::AssetEditorToolbar> m_ui;
+        Ui::AssetEditorToolbar* m_ui;
     };
 }

@@ -9,9 +9,6 @@
 
 // Description : Class that collects error reports to present them later.
 
-
-#ifndef CRYINCLUDE_EDITOR_ERRORREPORT_H
-#define CRYINCLUDE_EDITOR_ERRORREPORT_H
 #pragma once
 
 // forward declarations.
@@ -20,6 +17,9 @@ class CParticleItem;
 #include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
 #include "ErrorRecorder.h"
+
+#include <AzCore/std/containers/vector.h>
+#include <QString>
 
 /*! Single error entry in error report.
  */
@@ -109,5 +109,3 @@ private:
     QString m_currentFilename;
 };
 
-
-#endif // CRYINCLUDE_EDITOR_ERRORREPORT_H

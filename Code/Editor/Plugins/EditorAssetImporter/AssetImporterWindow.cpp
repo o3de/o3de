@@ -740,7 +740,11 @@ void AssetImporterWindow::ReloadCurrentScene(bool warnUser)
 
     if (warnUser || foundSharedScene)
     {
-        QMessageBox::question(this, tr("Reloading Scene Settings"), promptMessage.arg(m_fullSourcePath.c_str()), QMessageBox::Ok);
+        QMessageBox::question(
+            this,
+            tr("Reloading Scene Settings"),
+            promptMessage.arg(m_fullSourcePath.c_str()),
+            QMessageBox::StandardButtons(QMessageBox::StandardButton::Ok));
     }
 
     OpenFileInternal(m_fullSourcePath);

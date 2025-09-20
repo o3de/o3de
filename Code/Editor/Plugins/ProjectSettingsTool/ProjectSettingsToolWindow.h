@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "LastPathBus.h"
 #include "Platforms.h"
 #include "PlatformSettings.h"
@@ -19,7 +18,6 @@
 #include <QProcess>
 #include <QScopedPointer>
 #include <QWidget>
-#endif
 
 // Forward Declares
 namespace Ui
@@ -57,15 +55,6 @@ namespace ProjectSettingsTool
     {
         Q_OBJECT
     public:
-        static const GUID& GetClassID()
-        {
-            // {0DC1B7D9-B660-41C3-91F1-A643EE65AADF}
-            static const GUID guid = {
-                0x0dc1b7d9, 0xb660, 0x41c3, { 0x91, 0xf1, 0xa6, 0x43, 0xee, 0x65, 0xaa, 0xdf }
-            };
-            return guid;
-        }
-
         ProjectSettingsToolWindow(QWidget* parent = nullptr);
         ~ProjectSettingsToolWindow();
 

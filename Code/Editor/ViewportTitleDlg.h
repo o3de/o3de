@@ -6,22 +6,22 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
-#define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "SandboxAPI.h"
+
 #include <AzCore/Component/Component.h>
-
 #include <functional>
-#include <QSharedPointer>
-#endif
 
-// CViewportTitleDlg dialog
+#include <QObject>
+#include <QSharedPointer>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
+
 class CLayoutViewPane;
 class CPopupMenuItem;
-
+class CViewportTitleDlg;
 class QAbstractButton;
 class QMenu;
 
@@ -31,6 +31,22 @@ namespace Ui
 {
     class ViewportTitleDlg;
 }
+
+class CViewportTitleDlgDisplayInfoHelper
+    : public QObject
+{
+    Q_OBJECT
+
+public:
+    CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent);
+
+signals:
+    void ViewportInfoStatusUpdated(int newIndex);
+
+private:
+    // #QT6_TODO editor cannot depend on a gem
+    // void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override;
+};
 
 //////////////////////////////////////////////////////////////////////////
 class CViewportTitleDlg
@@ -88,7 +104,7 @@ protected:
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
 
-    QScopedPointer<Ui::ViewportTitleDlg> m_ui;
+    Ui::ViewportTitleDlg* m_ui;
 
     //! The different prefab edit mode effects available in the Edit mode menu.
     enum class PrefabEditModeUXSetting
@@ -119,5 +135,3 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-
-#endif // CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H

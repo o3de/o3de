@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Vector2.h>
 
@@ -23,7 +22,12 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h>
-#endif
+#include <ScriptCanvas/Core/Slot.h>
+
+namespace AzToolsFramework::AssetBrowser
+{
+    class AssetBrowserFilterModel;
+}
 
 namespace ScriptCanvasEditor
 {

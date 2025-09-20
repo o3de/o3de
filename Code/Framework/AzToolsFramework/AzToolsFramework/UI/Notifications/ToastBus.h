@@ -9,14 +9,10 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzQtComponents/Components/ToastNotificationConfiguration.h>
 
 #include <QPoint>
-#endif
 
 namespace AzToolsFramework
 {

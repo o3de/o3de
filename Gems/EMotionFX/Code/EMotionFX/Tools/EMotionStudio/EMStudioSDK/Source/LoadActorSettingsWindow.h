@@ -8,11 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
+
+#include <MCore/Source/MemoryCategoriesCore.h>
+#include <MCore/Source/MemoryManager.h>
+#include <AzCore/std/string/string.h>
+
 #include <QCheckBox>
 #include <QDialog>
-#endif
 
 
 namespace EMStudio

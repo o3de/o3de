@@ -8,7 +8,6 @@
 
 // Description : CViewportTitleDlg implementation file
 
-#if !defined(Q_MOC_RUN)
 #include "EditorDefs.h"
 
 #include "ViewportTitleDlg.h"
@@ -17,8 +16,6 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QInputDialog>
-
-#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 // Editor
 #include "CustomAspectRatioDlg.h"
@@ -49,35 +46,22 @@
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 #include "ui_ViewportTitleDlg.h"
-#endif //! defined(Q_MOC_RUN)
 
-// CViewportTitleDlg dialog
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h> // This should not be possible, editor cannot depend on gem code
 
-namespace
+
+CViewportTitleDlgDisplayInfoHelper::CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent)
+    : QObject(parent)
 {
-    class CViewportTitleDlgDisplayInfoHelper
-        : public QObject
-        , public AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
-    {
-        Q_OBJECT
+    //AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
+}
 
-    public:
-        CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent)
-            : QObject(parent)
-        {
-            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
-        }
-
-    signals:
-        void ViewportInfoStatusUpdated(int newIndex);
-
-    private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
-        {
-            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
-        }
-    };
-} // end anonymous namespace
+/*
+void CViewportTitleDlgDisplayInfoHelper::OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state)
+{
+    emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
+}
+*/
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -350,5 +334,3 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
-
-#include "ViewportTitleDlg.moc"

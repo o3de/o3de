@@ -39,21 +39,21 @@ namespace
     using namespace ScriptCanvasEditor::Widget;
 
     void CreateSelectedNodes(CommandLine* commandLine,
-        AZStd::unique_ptr<Ui::CommandLine>& ui,
+        Ui::CommandLine& ui,
         AZ::SerializeContext* serializeContext)
     {
-        if (!ui->commandList->selectionModel())
+        if (!ui.commandList->selectionModel())
         {
             return;
         }
 
-        if (ui->commandList->selectionModel()->selectedIndexes().empty())
+        if (ui.commandList->selectionModel()->selectedIndexes().empty())
         {
             // Nothing selected.
             return;
         }
 
-        CommandListDataProxyModel* dataModel = qobject_cast<CommandListDataProxyModel*>(ui->commandList->model());
+        CommandListDataProxyModel* dataModel = qobject_cast<CommandListDataProxyModel*>(ui.commandList->model());
         if (!dataModel)
         {
             return;
@@ -75,7 +75,7 @@ namespace
 
         // Create the nodes in a horizontal list at the top of the canvas.
         AZ::Vector2 pos(20.0f, 20.0f);
-        for (const auto& index : ui->commandList->selectionModel()->selectedIndexes())
+        for (const auto& index : ui.commandList->selectionModel()->selectedIndexes())
         {
             if (index.column() != CommandListDataModel::ColumnIndex::CommandIndex)
             {
@@ -622,7 +622,7 @@ namespace ScriptCanvasEditor
 
             case Qt::Key_Enter:
             case Qt::Key_Return:
-                CreateSelectedNodes(this, ui, serializeContext);
+                CreateSelectedNodes(this, *ui, serializeContext);
                 break;
             }
         }
