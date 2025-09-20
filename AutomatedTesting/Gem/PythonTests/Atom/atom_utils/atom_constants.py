@@ -12,6 +12,14 @@ AO_METHODS = {
     'GTAO': 1,
 }
 
+GTAO_QUALITY = {
+    'SuperLow': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'SuperHigh': 4,
+}
+
 # Light type options for the Light component.
 LIGHT_TYPES = {
     'unknown': 0,
@@ -228,7 +236,7 @@ class AtomComponentProperties:
         Ambient Occlusion component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable SSAO' toggles the overall function of Screen Space Ambient Occlusion (bool)
+          - 'Enable AO' toggles the overall function of Screen Space Ambient Occlusion (bool)
           - 'AO Method' toggles the algorithm of ao calculation (enum, Uses above dictionary AO_METHODS)
           - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
           - 'SSAO Sampling Radius' (float 0.0 to 0.25, default 0.05)

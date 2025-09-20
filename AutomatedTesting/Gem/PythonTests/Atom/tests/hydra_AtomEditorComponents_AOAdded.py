@@ -14,17 +14,17 @@ class Tests:
         "SSAO Entity successfully created",
         "P0: SSAO Entity failed to be created")
     ao_component = (
-        "Entity has a SSAO component",
-        "P0: Entity failed to find SSAO component")
-    ssao_component_disabled = (
-        "SSAO component disabled",
-        "P0: SSAO component was not disabled.")
+        "Entity has a AO component",
+        "P0: Entity failed to find AO component")
+    ao_component_disabled = (
+        "AO component disabled",
+        "P0: AO component was not disabled.")
     postfx_layer_component = (
         "Entity has a PostFX Layer component",
         "P0: Entity did not have an PostFX Layer component")
-    ssao_component_enabled = (
-        "SSAO component enabled",
-        "P0: SSAO component was not enabled.")
+    ao_component_enabled = (
+        "AO component enabled",
+        "P0: AO component was not enabled.")
     enter_game_mode = (
         "Entered game mode",
         "P0: Failed to enter game mode")
@@ -52,9 +52,15 @@ class Tests:
     enable_blur = (
         "Enable Blur property set",
         "P1: Enabled Blure property failed to set correctly")
-    set_ao_type = (
-        "AO Type property set",
-        "P1: AO Type property failed to set correctly")
+    set_ao_method = (
+        "AO Method property set",
+        "P1: AO Method property failed to set correctly")
+    set_gtao_quality = (
+        "GTAO Quality property set",
+        "P1: GTAO Quality property failed to set correctly")
+    set_gtao_radius = (
+        "GTAO World Radius property set",
+        "P1: GTAO World Radius property failed to set correctly")
     set_ssao_strength = (
         "SSAO Strength property set",
         "P1: SSAO Strength property failed to set correctly")
@@ -123,28 +129,31 @@ def AtomEditorComponents_SSAO_AddedToEntity():
     7) Verify SSAO component is enabled.
     8) Toggle Enable SSAO (default True)
     9) Toggle Enable Blur False (default True)
-    10) Set AO Type to SSAO/GTAO then return to default
-    11) Set SSAO Strength to high/low values then return to default
-    12) Set SSAO Sample Radius to high/low values then return to default
-    13) Set Blur Strength to high/low values then return to default
-    14) Set Blur Edge Threshold to high/low values then return to default
-    15) Set Blur Sharpness to high/low values then return to default
-    16) Toggle Enable Downsample (default True)
-    17) Toggle Enabled Override (default True)
-    18) Set Strength Override to 0.0 then return to default 1.0
-    19) Set SamplingRadius Override to 0.0 then return to default 1.0
-    20) Toggle EnableBlur Override (default True)
-    21) Set BlurConstFalloff Override to 0.0 then return to default 1.0
-    22) Set BlurDepthFalloffStrength Override to 0.0 then return to default 1.0
-    23) Set BlurDepthFalloffThreshold Override to 0.0 then return to default 1.0
-    24) Toggle EnableDownsample Override (default True)
-    25) Enter/Exit game mode.
-    26) Test IsHidden.
-    27) Test IsVisible.
-    28) Delete SSAO entity.
-    29) UNDO deletion.
-    30) REDO deletion.
-    31) Look for errors.
+    10) Set AO Method to GTAO
+    11) Set GTAO Quality to high/low values then return to default
+    12) Set GTAO World Radius to high/low values then return to default
+    13) Set AO Method to default (default SSAO)
+    14) Set SSAO Strength to high/low values then return to default
+    15) Set SSAO Sample Radius to high/low values then return to default
+    16) Set Blur Strength to high/low values then return to default
+    17) Set Blur Edge Threshold to high/low values then return to default
+    18) Set Blur Sharpness to high/low values then return to default
+    19) Toggle Enable Downsample (default True)
+    20) Toggle Enabled Override (default True)
+    21) Set Strength Override to 0.0 then return to default 1.0
+    22) Set SamplingRadius Override to 0.0 then return to default 1.0
+    23) Toggle EnableBlur Override (default True)
+    24) Set BlurConstFalloff Override to 0.0 then return to default 1.0
+    25) Set BlurDepthFalloffStrength Override to 0.0 then return to default 1.0
+    26) Set BlurDepthFalloffThreshold Override to 0.0 then return to default 1.0
+    27) Toggle EnableDownsample Override (default True)
+    28) Enter/Exit game mode.
+    29) Test IsHidden.
+    30) Test IsVisible.
+    31) Delete SSAO entity.
+    32) UNDO deletion.
+    33) REDO deletion.
+    34) Look for errors.
 
     :return: None
     """
@@ -153,7 +162,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import (AtomComponentProperties, AO_METHODS)
+    from Atom.atom_utils.atom_constants import (AtomComponentProperties, AO_METHODS, GTAO_QUALITY)
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -186,7 +195,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_entity.has_component(AtomComponentProperties.ao()))
 
         # 5. Verify SSAO component not enabled.
-        Report.result(Tests.ssao_component_disabled, not ssao_component.is_enabled())
+        Report.result(Tests.ao_component_disabled, not ssao_component.is_enabled())
 
         # 6. Add PostFX Layer component since it is required by the SSAO component.
         ssao_entity.add_component(AtomComponentProperties.postfx_layer())
@@ -195,18 +204,18 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_entity.has_component(AtomComponentProperties.postfx_layer()))
 
         # 7. Verify SSAO component is enabled.
-        Report.result(Tests.ssao_component_enabled, ssao_component.is_enabled())
+        Report.result(Tests.ao_component_enabled, ssao_component.is_enabled())
 
         # 8. Toggle Enable SSAO (default True)
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable SSAO'), False)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable AO'), False)
         Report.result(
             Tests.enable_ssao,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable SSAO')) is False)
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable AO')) is False)
 
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable SSAO'), True)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable AO'), True)
         Report.result(
             Tests.enable_ssao,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable SSAO')) is True)
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable AO')) is True)
 
         # 9. Toggle Enable Blur False (default True)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable Blur'), False)
@@ -219,18 +228,45 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.enable_blur,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable Blur')) is True)
 
-        # 10. Set AO Type to SSAO/GTAO then return to default
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('AO Type'), AO_METHODS['GTAO'])
+        # 10. Set AO Method to GTAO
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('AO Method'), AO_METHODS['GTAO'])
         Report.result(
-            Tests.set_ao_type,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('AO Type')) == AO_METHODS['GTAO'])
+            Tests.set_ao_method,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('AO Method')) == AO_METHODS['GTAO'])
 
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('AO Type'), AO_METHODS['SSAO'])
+        # 11. Set GTAO Quality to high/low values then return to default
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('GTAO Quality'), GTAO_QUALITY['SuperHigh'])
         Report.result(
-            Tests.set_ao_type,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('AO Type')) == AO_METHODS['SSAO'])
+            Tests.set_gtao_quality,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('GTAO Quality')) == GTAO_QUALITY['SuperHigh'])
 
-        # 11. Set SSAO Strength to high/low values then return to default
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('GTAO Quality'), GTAO_QUALITY['SuperLow'])
+        Report.result(
+            Tests.set_gtao_quality,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('GTAO Quality')) == GTAO_QUALITY['SuperLow'])
+
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('GTAO Quality'), GTAO_QUALITY['Medium'])
+
+        # 12. Set GTAO World Radius to high/low values then return to default
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('GTAO World Radius'), 5.0)
+        Report.result(
+            Tests.set_gtao_radius,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('GTAO World Radius')) == 5.0)
+
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('GTAO World Radius'), 1.0)
+        Report.result(
+            Tests.set_gtao_radius,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('GTAO World Radius')) == 1.0)
+
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('SSAO Strength'), 2.0)
+
+        # 13. Set AO Method to default (SSAO)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('AO Method'), AO_METHODS['SSAO'])
+        Report.result(
+            Tests.set_ao_method,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('AO Method')) == AO_METHODS['SSAO'])
+
+        # 14. Set SSAO Strength to high/low values then return to default
         ssao_component.set_component_property_value(AtomComponentProperties.ao('SSAO Strength'), 2.0)
         Report.result(
             Tests.set_ssao_strength,
@@ -243,7 +279,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
 
         ssao_component.set_component_property_value(AtomComponentProperties.ao('SSAO Strength'), 1.0)
 
-        # 12. Set Sample Radius to high/low values then return to default
+        # 15. Set Sample Radius to high/low values then return to default
         ssao_component.set_component_property_value(AtomComponentProperties.ao('SSAO Sampling Radius'), 0.25)
         Report.result(
             Tests.set_sample_radius,
@@ -256,7 +292,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
 
         ssao_component.set_component_property_value(AtomComponentProperties.ao('SSAO Sampling Radius'), 0.05)
 
-        # 13. Set Blur Strength to high/low values then return to default
+        # 16. Set Blur Strength to high/low values then return to default
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Blur Strength'), 1.0)
         Report.result(
             Tests.set_blur_strength,
@@ -269,7 +305,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
 
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Blur Strength'), 0.85)
 
-        # 14. Set Blur Edge Threshold to high/low values then return to default
+        # 17. Set Blur Edge Threshold to high/low values then return to default
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Blur Edge Threshold'), 1.0)
         Report.result(
             Tests.set_blur_edge_threshold,
@@ -280,7 +316,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.set_blur_edge_threshold,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Blur Edge Threshold')) == 0.0)
 
-        # 15. Set Blur Sharpness to high/low values then return to default
+        # 18. Set Blur Sharpness to high/low values then return to default
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Blur Sharpness'), 400.0)
         Report.result(
             Tests.set_blur_sharpness,
@@ -293,7 +329,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
 
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Blur Sharpness'), 200.0)
 
-        # 16. Toggle Enable Downsample (default True)
+        # 19. Toggle Enable Downsample (default True)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Enable Downsample'), False)
         Report.result(
             Tests.enable_downsample,
@@ -304,7 +340,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.enable_downsample,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Enable Downsample')) is True)
 
-        # 17. Toggle Enabled Override (default True)
+        # 20. Toggle Enabled Override (default True)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Enabled Override'), False)
         Report.result(
             Tests.enable_downsample,
@@ -315,7 +351,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.enable_downsample,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Enabled Override')) is True)
 
-        # 18. Set Strength Override to 0.0 then return to default 1.0
+        # 21. Set Strength Override to 0.0 then return to default 1.0
         ssao_component.set_component_property_value(AtomComponentProperties.ao('Strength Override'), 0.0)
         Report.result(
             Tests.set_strength_override,
@@ -326,7 +362,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.set_strength_override,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Strength Override')) == 1.0)
 
-        # 19. Set SamplingRadius Override to 0.0 then return to default 1.0
+        # 22. Set SamplingRadius Override to 0.0 then return to default 1.0
         ssao_component.set_component_property_value(AtomComponentProperties.ao('SamplingRadius Override'), 0.0)
         Report.result(
             Tests.set_samplingradius_override,
@@ -337,7 +373,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.set_samplingradius_override,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('SamplingRadius Override')) == 1.0)
 
-        # 20. Toggle EnableBlur Override (default True)
+        # 23. Toggle EnableBlur Override (default True)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('EnableBlur Override'), False)
         Report.result(
             Tests.enable_blur_override,
@@ -348,7 +384,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             Tests.enable_blur_override,
             ssao_component.get_component_property_value(AtomComponentProperties.ao('EnableBlur Override')) is True)
 
-        # 21. Set BlurConstFalloff Override to 0.0 then return to default 1.0
+        # 24. Set BlurConstFalloff Override to 0.0 then return to default 1.0
         ssao_component.set_component_property_value(AtomComponentProperties.ao('BlurConstFalloff Override'), 0.0)
         Report.result(
             Tests.set_blur_const_falloff,
@@ -361,7 +397,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_component.get_component_property_value(
                 AtomComponentProperties.ao('BlurConstFalloff Override')) == 1.0)
 
-        # 22. Set BlurDepthFalloffStrength Override to 0.0 then return to default 1.0
+        # 25. Set BlurDepthFalloffStrength Override to 0.0 then return to default 1.0
         ssao_component.set_component_property_value(
             AtomComponentProperties.ao('BlurDepthFalloffStrength Override'), 0.0)
         Report.result(
@@ -376,7 +412,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_component.get_component_property_value(
                 AtomComponentProperties.ao('BlurDepthFalloffStrength Override')) == 1.0)
 
-        # 23. Set BlurDepthFalloffThreshold Override to 0.0 then return to default 1.0
+        # 26. Set BlurDepthFalloffThreshold Override to 0.0 then return to default 1.0
         ssao_component.set_component_property_value(
             AtomComponentProperties.ao('BlurDepthFalloffThreshold Override'), 0.0)
         Report.result(
@@ -391,7 +427,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_component.get_component_property_value(
                 AtomComponentProperties.ao('BlurDepthFalloffThreshold Override')) == 1.0)
 
-        # 24. Toggle EnableDownsample Override (default true)
+        # 27. Toggle EnableDownsample Override (default true)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('EnableDownsample Override'), False)
         Report.result(
             Tests.enable_downsample_override,
@@ -404,35 +440,35 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_component.get_component_property_value(
                 AtomComponentProperties.ao('EnableDownsample Override')) is True)
 
-        # 25. Enter/Exit game mode.
+        # 28. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 26. Test IsHidden.
+        # 29. Test IsHidden.
         ssao_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, ssao_entity.is_hidden() is True)
 
-        # 27. Test IsVisible.
+        # 30. Test IsVisible.
         ssao_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, ssao_entity.is_visible() is True)
 
-        # 28. Delete SSAO entity.
+        # 31. Delete SSAO entity.
         ssao_entity.delete()
         Report.result(Tests.entity_deleted, not ssao_entity.exists())
 
-        # 29. UNDO deletion.
+        # 32. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, ssao_entity.exists())
 
-        # 30. REDO deletion.
+        # 33. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not ssao_entity.exists())
 
-        # 31. Look for errors and asserts.
+        # 34. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
