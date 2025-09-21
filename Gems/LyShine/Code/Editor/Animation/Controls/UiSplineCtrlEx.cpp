@@ -7,7 +7,6 @@
  */
 
 
-#include "EditorCommon.h"
 #include <Animation/Controls/UiSplineCtrlEx.h>
 #include <Editor/Resource.h>
 //#include "MemDC.h"
