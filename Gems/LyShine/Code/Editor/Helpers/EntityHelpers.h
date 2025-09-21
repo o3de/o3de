@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
+#include <LyShine/Bus/UiTransform2dBus.h>
+
+class QPoint;
+class HierarchyItem;
+
+namespace AZ
+{
+    class Entity;
+}
+
+namespace ViewportHelpers
+{
+    struct ElementEdges;
+}
+
+namespace EntityHelpers
+{
+    using EntityIdList = AzToolsFramework::EntityIdList;
+
+    using EntityToHierarchyItemMap = AZStd::map<AZ::EntityId, HierarchyItem*>;
+
+    AZ::Vector2 RoundXY(const AZ::Vector2& v);
+    AZ::Vector3 RoundXY(const AZ::Vector3& v);
+
+    AZ::Vector3 MakeVec3(const AZ::Vector2& v);
+
+    float Snap(float value, float snapDistance);
+    AZ::Vector2 Snap(const AZ::Vector2& v, float snapDistance);
+    UiTransform2dInterface::Offsets Snap(
+        const UiTransform2dInterface::Offsets& offs, const ViewportHelpers::ElementEdges& grabbedEdges, float snapDistance);
+
+    void MoveElementToGlobalPosition(AZ::Entity* element, const QPoint& globalPos);
+
+    //! Helper function to get parent element using Ebus.
+    AZ::Entity* GetParentElement(const AZ::Entity* element);
+    AZ::Entity* GetParentElement(const AZ::EntityId& elementId);
+
+    AZ::Entity* GetEntity(AZ::EntityId id);
+
+    void ComputeCanvasSpaceRectNoScaleRotate(
+        AZ::EntityId elementId, UiTransform2dInterface::Offsets offsets, UiTransformInterface::Rect& rect);
+    AZ::Vector2 ComputeCanvasSpacePivotNoScaleRotate(AZ::EntityId elementId, UiTransform2dInterface::Offsets offsets);
+
+    AZStd::string GetHierarchicalElementName(AZ::EntityId entityId);
+
+    //! Returns the common ancestor of element1 and element2 and also the children of that common ancestor
+    //! that element1 and element2 are descended from
+    AZ::Entity* GetCommonAncestor(
+        AZ::Entity* element1, AZ::Entity* element2, AZ::Entity*& element1NextAncestor, AZ::Entity*& element2NextAncestor);
+
+    //! returns true if element1 is before element2 in the element hierarchy
+    bool CompareOrderInElementHierarchy(AZ::Entity* element1, AZ::Entity* element2);
+
+    //! Move an element by a local pixel offset using the offsets
+    void MoveByLocalDeltaUsingOffsets(AZ::EntityId entityId, AZ::Vector2 deltaInLocalSpace);
+
+    //! Move an element by a local pixel offset using the offsets from a given starting offset
+    void MoveByLocalDeltaUsingOffsets(
+        AZ::EntityId entityId, const UiTransform2dInterface::Offsets& startingOffsets, AZ::Vector2 deltaInLocalSpace);
+
+    //! Move an element by a local pixel offset using the anchors
+    AZ::Vector2 MoveByLocalDeltaUsingAnchors(
+        AZ::EntityId entityId, AZ::EntityId parentEntityId, AZ::Vector2 deltaInLocalSpace, bool restrictDirection);
+
+    //! Move an element by a local pixel offset using the anchors from a given starting offset
+    AZ::Vector2 MoveByLocalDeltaUsingAnchors(
+        AZ::EntityId entityId,
+        AZ::EntityId parentEntityId,
+        const UiTransform2dInterface::Anchors& startingAnchors,
+        AZ::Vector2 deltaInLocalSpace,
+        bool restrictDirection);
+
+    //! Given a delta in canvas space transform it to local space. Note: for a move you want to pass in the parent element
+    AZ::Vector2 TransformDeltaFromCanvasToLocalSpace(AZ::EntityId entityId, AZ::Vector2 deltaInCanvasSpace);
+
+    //! Given a delta in local space transform it to canvas space. Note: for a move you want to pass in the parent element
+    AZ::Vector2 TransformDeltaFromLocalToCanvasSpace(AZ::EntityId entityId, AZ::Vector2 deltaInLocalSpace);
+
+    //! Given a delta in viewport space transform it to canvas space.
+    AZ::Vector2 TransformDeltaFromViewportToCanvasSpace(AZ::EntityId canvasEntityId, AZ::Vector2 deltaInViewportSpace);
+
+} // namespace EntityHelpers

@@ -7,9 +7,9 @@
  */
 
 #include "LyShineEditorSystemComponent.h"
-#include "EditorWindow.h"
-#include "PropertyHandlerCanvasAsset.h"
-#include "PropertyHandlers.h"
+#include "Windows/EditorWindow/EditorWindow.h"
+#include "Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlers.h"
+#include "Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerCanvasAsset.h"
 
 // UI_ANIMATION_REVISIT, added includes so that we can register the UI Animation system on startup
 #include "Animation/UiAnimViewSequenceManager.h"
