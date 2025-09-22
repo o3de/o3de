@@ -200,7 +200,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME EditorCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Legacy
-        AUTOMOC
         FILES_CMAKE
             editor_core_test_files.cmake
         INCLUDE_DIRECTORIES
