@@ -8,15 +8,15 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/string/string.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Interface class that the UI Editor needs to implement
-class UiEditorInernalRequests
-    : public AZ::EBusTraits
+class UiEditorInernalRequests : public AZ::EBusTraits
 {
 public: // member functions
-
     //! Get the selected entityIds in the UiEditor
     virtual AzToolsFramework::EntityIdList GetSelectedEntityIds() = 0;
 
@@ -31,11 +31,9 @@ typedef AZ::EBus<UiEditorInernalRequests> UiEditorInternalRequestBus;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Interface class that the UI Editor needs to implement
-class UiEditorInternalNotifications
-    : public AZ::EBusTraits
+class UiEditorInternalNotifications : public AZ::EBusTraits
 {
 public:
-
     //! Called when a property on the selected entities has changed
     virtual void OnSelectedEntitiesPropertyChanged() = 0;
 

@@ -9,10 +9,11 @@
 #include "UiAnimUndoManager.h"
 #include "UiAnimUndoObject.h"
 #include "Undo/IUndoManagerListener.h"
+#include "Undo/UndoStack.h"
+
 #include <CryCommon/StlUtils.h>
 
 // UI Editor
-#include "EditorCommon.h"
 #include <QUndoCommand>
 
 UiAnimUndoManager* UiAnimUndoManager::s_instance = nullptr;

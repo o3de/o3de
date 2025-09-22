@@ -6,7 +6,19 @@
  *
  */
 
-#include "EditorCommon.h"
+#include "UiEditorEntityContext.h"
+
+#include "Commands/CommandHierarchyItemDelete.h"
+#include "Commands/CommandHierarchyItemCreateFromData.h"
+#include "Helpers/EntityHelpers.h"
+#include "Helpers/HierarchyHelpers.h"
+#include "Helpers/SelectionHelpers.h"
+#include "Widgets/HierarchyWidget/HierarchyWidget.h"
+#include "Widgets/HierarchyWidget/HierarchyItem.h"
+#include "Widgets/HierarchyWidget/TreeWidgetItemList.h"
+#include "Windows/EditorWindow/EditorWindow.h"
+#include "Undo/UndoStack.h"
+
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -24,18 +36,17 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/Slice/SliceCompilation.h>
-#include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Slice/SliceCompilation.h>
+#include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
+#include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/Tools/UiSystemToolsBus.h>
 #include <LyShine/UiComponentTypes.h>
-
-#include "UiEditorEntityContext.h"
 
 namespace Internal
 {
