@@ -8,10 +8,12 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <LyShine/UiAssetTypes.h>
+#endif
 
 namespace LyShineEditor
 {

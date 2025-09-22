@@ -7,12 +7,14 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/std/functional.h>
 #include <LyShine/ISprite.h>
 #include <QDialog>
 #include <QGraphicsItem>
 #include <QObject>
 #include <QString>
+#endif
 
 class QGraphicsPixmapItem;
 class QGraphicsScene;

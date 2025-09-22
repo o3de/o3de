@@ -7,9 +7,11 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include "TreeWidgetItemList.h"
 
 #include <QMenu>
+#endif
 
 class QPoint;
 class HierarchyWidget;

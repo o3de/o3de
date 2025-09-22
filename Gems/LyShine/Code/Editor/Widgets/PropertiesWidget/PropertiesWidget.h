@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include "Helpers/SerializeHelpers.h"
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
@@ -18,6 +19,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QSize>
+#endif
 
 class PropertiesContainer;
 class EditorWindow;

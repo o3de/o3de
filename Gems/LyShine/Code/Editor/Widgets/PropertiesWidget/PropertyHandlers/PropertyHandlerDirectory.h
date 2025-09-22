@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -14,6 +15,7 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
+#endif
 
 class PropertyDirectoryCtrl : public QWidget
 {

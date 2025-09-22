@@ -36,3 +36,5 @@ void ComponentButton::UserSelectionChanged([[maybe_unused]] HierarchyItemRawPtrL
 {
     // no longer need to enable/disable because we always show the button, if nothing is selected it adds to the canvas entity
 }
+
+#include <moc_ComponentButton.cpp>

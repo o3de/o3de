@@ -7,8 +7,10 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringLineEditCtrl.hxx>
+#endif
 
 class PropertyHandlerChar
     : private QObject

@@ -24,41 +24,24 @@
 #include "Windows/EditorCommon.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
-#include <UiRenderer.h>
-#include <UiCanvasComponent.h>
-#include <Settings.h>
-#include <LyShine/Bus/UiEditorCanvasBus.h>
-#include <LyShine.h>
-#include <EditorDefs.h>
-#include <Draw2d.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-
-#include <LyShine/Bus/UiEditorCanvasBus.h>
-
-#include "LyShine.h"
-#include "UiRenderer.h"
-#include "ViewportNudge.h"
-#include "ViewportPivot.h"
-#include "ViewportSnap.h"
-#include "ViewportElement.h"
-#include "RulerWidget.h"
-#include "CanvasHelpers.h"
-#include "AssetDropHelpers.h"
-#include "Draw2d.h"
-#include "QtHelpers.h"
-#include <QtGui/private/qhighdpiscaling_p.h>
-
-#include <QGridLayout>
-
-#include <AzCore/std/containers/map.h>
-#include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/map.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <Draw2d.h>
+#include <EditorDefs.h>
+#include <LyShine.h>
+#include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <Settings.h>
+#include <UiCanvasComponent.h>
+#include <UiRenderer.h>
 
 #include <QGridLayout>
 #include <QSettings>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_KEY         "ViewportWidget::m_drawElementBordersFlags"
 #define UICANVASEDITOR_SETTINGS_VIEWPORTWIDGET_DRAW_ELEMENT_BORDERS_DEFAULT     ( ViewportWidget::DrawElementBorders_Unselected )

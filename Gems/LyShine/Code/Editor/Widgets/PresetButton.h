@@ -7,10 +7,12 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/std/functional.h>
 
 #include <QIcon>
 #include <QPushButton>
+#endif
 
 class QString;
 

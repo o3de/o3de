@@ -7,12 +7,14 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include "SlicerEdit.h"
 
 #include "SpriteBorderEditorCommon.h"
 
 #include <LyShine/Bus/UiImageBus.h>
 #include <QLineEdit>
+#endif
 
 class SpriteBorderEditor;
 class SlicerManipulator;

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 
@@ -16,6 +17,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx>
 
 #include <LyShine/Bus/UiParticleEmitterBus.h>
+#endif
 
 class PropertyUiParticleFloatKeyframeCtrl : public QWidget
 {

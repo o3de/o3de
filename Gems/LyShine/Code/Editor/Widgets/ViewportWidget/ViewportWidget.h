@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include "Draw2d.h"
 #include "Interaction/ViewportAnchor.h"
 #include "Interaction/ViewportInteraction.h"
@@ -26,6 +27,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <IFont.h>
+#endif
 
 #include <QTimer>
 
