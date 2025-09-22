@@ -82,10 +82,10 @@ class Tests:
     enable_override = (
         "Enable Override property set",
         "P1: Enable Override property failed to set correctly")
-    set_strength_override = (
+    set_ssao_strength_override = (
         "Strength Override property set",
         "P1: Strength Override property failed to set correctly")
-    set_samplingradius_override = (
+    set_ssao_samplingradius_override = (
         "SamplingRadius Override property set",
         "P1: SamplingRadius Override property failed to set correctly")
     enable_blur_override = (
@@ -352,26 +352,26 @@ def AtomEditorComponents_SSAO_AddedToEntity():
             ssao_component.get_component_property_value(AtomComponentProperties.ao('Enabled Override')) is True)
 
         # 21. Set Strength Override to 0.0 then return to default 1.0
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('Strength Override'), 0.0)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('SsaoStrength Override'), 0.0)
         Report.result(
-            Tests.set_strength_override,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('Strength Override')) == 0.0)
+            Tests.set_ssao_strength_override,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('SsaoStrength Override')) == 0.0)
 
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('Strength Override'), 1.0)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('SsaoStrength Override'), 1.0)
         Report.result(
-            Tests.set_strength_override,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('Strength Override')) == 1.0)
+            Tests.set_ssao_strength_override,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('SsaoStrength Override')) == 1.0)
 
         # 22. Set SamplingRadius Override to 0.0 then return to default 1.0
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('SamplingRadius Override'), 0.0)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('SsaoSamplingRadius Override'), 0.0)
         Report.result(
-            Tests.set_samplingradius_override,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('SamplingRadius Override')) == 0.0)
+            Tests.set_ssao_samplingradius_override,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('SsaoSamplingRadius Override')) == 0.0)
 
-        ssao_component.set_component_property_value(AtomComponentProperties.ao('SamplingRadius Override'), 1.0)
+        ssao_component.set_component_property_value(AtomComponentProperties.ao('SsaoSamplingRadius Override'), 1.0)
         Report.result(
-            Tests.set_samplingradius_override,
-            ssao_component.get_component_property_value(AtomComponentProperties.ao('SamplingRadius Override')) == 1.0)
+            Tests.set_ssao_samplingradius_override,
+            ssao_component.get_component_property_value(AtomComponentProperties.ao('SsaoSamplingRadius Override')) == 1.0)
 
         # 23. Toggle EnableBlur Override (default True)
         ssao_component.set_component_property_value(AtomComponentProperties.ao('EnableBlur Override'), False)

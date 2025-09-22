@@ -252,8 +252,8 @@ class AtomComponentProperties:
           - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
           - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
           - 'Enabled Override' toggles a collection of override values (bool)
-          - 'Strength Override' (float 0.0 to default 1.0)
-          - 'SamplingRadius Override' (float 0.0 to default 1.0)
+          - 'SSAOStrength Override' (float 0.0 to default 1.0)
+          - 'SSAOSamplingRadius Override' (float 0.0 to default 1.0)
           - 'EnableBlur Override' toggles blur overrides (bool)
           - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
           - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
@@ -281,8 +281,8 @@ class AtomComponentProperties:
             'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
             'Enable Downsample': 'Controller|Configuration|Enable Downsample',
             'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
-            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
-            'SamplingRadius Override': 'Controller|Configuration|Overrides|SamplingRadius Override',
+            'SsaoStrength Override': 'Controller|Configuration|Overrides|SsaoStrength Override',
+            'SsaoSamplingRadius Override': 'Controller|Configuration|Overrides|SsaoSamplingRadius Override',
             'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
             'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
             'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
