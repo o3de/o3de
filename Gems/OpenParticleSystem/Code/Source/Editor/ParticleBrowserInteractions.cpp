@@ -6,9 +6,13 @@
  *
  */
 
+#include "ParticleBrowserInteractions.h"
+
 #include <AzCore/std/string/wildcard.h>
-#include <Editor/ParticleBrowserInteractions.h>
 #include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+
+#include <QObject>
+#include <QIcon>
 
 namespace OpenParticle
 {

@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
+
 #include <QWidget>
-#endif
 
 namespace AzPhysics
 {
@@ -51,7 +50,7 @@ namespace PhysX
                 const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
                 const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
-            QScopedPointer<Ui::EditorWindowClass> m_ui;
+            Ui::EditorWindowClass* m_ui;
         };
     }
 };
