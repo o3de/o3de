@@ -106,6 +106,15 @@
                    </attribute>
                    <layout class="QGridLayout" name="gridLayout_9"/>
                   </widget>
+                  <widget class="QWidget" name="windowsTab">
+                   <attribute name="title">
+                    <string>Windows</string>
+                   </attribute>
+                   <property name="maximumHeight">
+                    <number>70</number>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_10"/>
+                  </widget>
                  </widget>
                 </item>
                </layout>
