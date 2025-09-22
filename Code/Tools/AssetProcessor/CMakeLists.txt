@@ -19,7 +19,6 @@ ly_add_target(
     NAME AssetProcessor.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         assetprocessor_static_files.cmake
         Platform/${PAL_PLATFORM_NAME}/assetprocessor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -116,7 +115,6 @@ ly_add_target(
 ly_add_target(
     NAME AssetProcessorBatch EXECUTABLE
     NAMESPACE AZ
-    AUTOMOC
     FILES_CMAKE
         assetprocessor_batch_files.cmake
     INCLUDE_DIRECTORIES
@@ -159,7 +157,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME AssetProcessor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
         AUTOMOC
-        AUTORCC
         FILES_CMAKE
             assetprocessor_test_files.cmake
         INCLUDE_DIRECTORIES
