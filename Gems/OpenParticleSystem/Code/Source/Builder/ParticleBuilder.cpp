@@ -94,8 +94,6 @@ namespace OpenParticle
             return;
         }
 
-        AssetBuilderSDK::JobDescriptor descriptor;
-        descriptor.m_jobKey = jobKey;
         AZStd::string fullSourcePath;
         AZStd::set<AZStd::string> dependencyPaths;
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
@@ -108,6 +106,8 @@ namespace OpenParticle
 
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
         {
+            AssetBuilderSDK::JobDescriptor descriptor;
+            descriptor.m_jobKey = jobKey;
             descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
             descriptor.m_critical = false;
             descriptor.m_priority = 1; // since this is an entry point asset, we should prioritize it above the background
