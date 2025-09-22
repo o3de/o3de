@@ -24,20 +24,20 @@
 #include "Windows/EditorCommon.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
-#include <UiRenderer.h>
-#include <UiCanvasComponent.h>
-#include <Settings.h>
-#include <LyShine/Bus/UiEditorCanvasBus.h>
-#include <LyShine.h>
-#include <EditorDefs.h>
-#include <Draw2d.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/map.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <Draw2d.h>
+#include <EditorDefs.h>
+#include <LyShine.h>
+#include <LyShine/Bus/UiEditorCanvasBus.h>
+#include <Settings.h>
+#include <UiCanvasComponent.h>
+#include <UiRenderer.h>
 
 #include <QGridLayout>
 #include <QSettings>
