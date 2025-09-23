@@ -30,6 +30,8 @@
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Vehicle.h>
+#include <AzFramework/Physics/Wheel.h>
 
 namespace Physics
 {
@@ -135,6 +137,8 @@ namespace Physics
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);
             ReflectCharacterBus(context);
+            VehicleConfiguration::Reflect(context);
+            WheelConfiguration::Reflect(context);
         }
     }
 
