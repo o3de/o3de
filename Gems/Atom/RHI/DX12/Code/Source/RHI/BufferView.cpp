@@ -120,5 +120,10 @@ namespace AZ
         {
             return m_staticReadWriteDescriptor.m_index;
         }
+
+        uint64_t BufferView::GetDeviceAddress() const
+        {
+            return GetGpuAddress();
+        }
     }
 }

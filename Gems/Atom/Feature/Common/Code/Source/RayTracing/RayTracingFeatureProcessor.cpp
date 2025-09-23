@@ -50,7 +50,10 @@ namespace AZ
             {
                 return;
             }
-            
+
+            m_rayTracingClusterAccelerationStructureEnabled =
+                RHI::RHISystemInterface::Get()->GetRayTracingClusterAccelerationStructureSupport() != RHI::MultiDevice::NoDevices;
+
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessorInterface>();
             m_meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessorInterface>();
 
@@ -288,6 +291,18 @@ namespace AZ
                 subMesh.m_subMeshIndex = subMeshIndex;
                 subMesh.m_globalIndex = subMeshGlobalIndex;
 
+                if (subMesh.IsClusterMesh())
+                {
+                    AZ_Assert(m_rayTracingClusterAccelerationStructureEnabled, "Ray tracing cluster acceleration structure not supported");
+
+                    [[maybe_unused]] auto meshInfoEntry = m_meshFeatureProcessor->GetMeshInfoEntry(subMesh.m_meshInfoHandle);
+                    AZ_Assert(meshInfoEntry, "MeshInfoEntry for the given MeshInfoHandle not found");
+                    AZ_Assert(
+                        meshInfoEntry->m_clusterOffsetBuffer,
+                        "When a Cluster-BLAS descriptor is assigned to a ray tracing SubMesh, a cluster offset buffer also needs to be "
+                        "present in the corresponding MeshInfoEntry");
+                }
+
                 // add to the list of global subMeshIndices, which will be stored in the Mesh
                 subMeshIndices.push_back(subMeshGlobalIndex);
             }
@@ -344,17 +359,24 @@ namespace AZ
 
                     SubMeshBlasInstance subMeshBlasInstance;
 
-                    RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
-                    blasDescriptor.m_buildFlags = buildFlags;
+                    if (subMesh.IsClusterMesh())
+                    {
+                        subMeshBlasInstance.m_clusterBlasDescriptor = subMesh.m_clusterBlasDescriptor;
+                    }
+                    else
+                    {
+                        RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
+                        blasDescriptor.m_buildFlags = buildFlags;
 
-                    AZ_Assert(
-                        positionIt->second.m_streamBufferView.GetByteCount() > 0,
-                        "The \"POSITION\" semantic of MeshInfo needs to have a valid StreamBufferView");
+                        AZ_Assert(
+                            positionIt->second.m_streamBufferView.GetByteCount() > 0,
+                            "The \"POSITION\" semantic of MeshInfo needs to have a valid StreamBufferView");
 
-                    RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
-                    blasGeometry.m_vertexFormat = position.m_vertexFormat;
-                    blasGeometry.m_vertexBuffer = positionIt->second.m_streamBufferView;
-                    blasGeometry.m_indexBuffer = indexBuffer.m_indexBufferView;
+                        RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
+                        blasGeometry.m_vertexFormat = position.m_vertexFormat;
+                        blasGeometry.m_vertexBuffer = positionIt->second.m_streamBufferView;
+                        blasGeometry.m_indexBuffer = indexBuffer.m_indexBufferView;
+                    }
 
                     itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
                 }
@@ -553,29 +575,45 @@ namespace AZ
                             {
                                 return false;
                             }
+
                             const auto& blasInstance = meshIt->second.m_subMeshes[subMesh.m_blasInstanceId.second];
-                            RHI::RayTracingBlas* blas = blasInstance.m_compactBlas.get();
-                            if (blas == nullptr || !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+
+                            RHI::DeviceRayTracingTlasInstance tlasInstance;
+                            tlasInstance.m_instanceID = subMesh.m_meshInfoHandle.GetIndex();
+                            tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
+                            tlasInstance.m_hitGroupIndex = 0;
+                            tlasInstance.m_transform = subMesh.m_mesh->m_transform;
+                            tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
+                            tlasInstance.m_transparent = isTransparent;
+
+                            if (subMesh.IsClusterMesh())
                             {
-                                blas = blasInstance.m_blas.get();
-                                if (blas && !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+                                tlasInstance.m_clusterBlas = blasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(deviceIndex);
+                            }
+                            else
+                            {
+                                RHI::RayTracingBlas* blas = blasInstance.m_compactBlas.get();
+                                if (blas == nullptr || !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
                                 {
-                                    // This might happen if the number of BLAS created per frame is limited
-                                    blas = nullptr;
+                                    blas = blasInstance.m_blas.get();
+                                    if (blas && !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+                                    {
+                                        // This might happen if the number of BLAS created per frame is limited
+                                        blas = nullptr;
+                                    }
+                                }
+                                if (blas)
+                                {
+                                    tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
                                 }
                             }
-                            if (blas)
+
+                            if (tlasInstance.m_blas || tlasInstance.m_clusterBlas)
                             {
-                                RHI::DeviceRayTracingTlasInstance& tlasInstance = tlasDescriptor[deviceIndex].m_instances.emplace_back();
-                                tlasInstance.m_instanceID = subMesh.m_meshInfoHandle.GetIndex();
-                                tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
-                                tlasInstance.m_hitGroupIndex = 0;
-                                tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
-                                tlasInstance.m_transform = subMesh.m_mesh->m_transform;
-                                tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
-                                tlasInstance.m_transparent = isTransparent;
+                                tlasDescriptor[deviceIndex].m_instances.push_back(AZStd::move(tlasInstance));
                                 maxInstanceId = AZStd::max(maxInstanceId, subMesh.m_meshInfoHandle.GetIndex());
                             }
+
                             return true;
                         });
                 }
@@ -736,45 +774,68 @@ namespace AZ
                     RHI::MultiDevice::DeviceMask createdOnDevices{};
                     for (auto& subMeshInstance : instance.m_subMeshes)
                     {
-                        // create the BLAS object and store it in the BLAS list
-                        if (RHI::CheckBitsAny(
-                                subMeshInstance.m_blasDescriptor.m_buildFlags,
-                                RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                        if (subMeshInstance.IsClusterMesh())
                         {
-                            if (subMeshInstance.m_compactionSizeQuery)
+                            if (subMeshInstance.m_clusterBlas)
                             {
+                                createdOnDevices = m_deviceMask & ~subMeshInstance.m_clusterBlas->GetDeviceMask();
                                 RHI::MultiDeviceObject::IterateDevices(
-                                    m_deviceMask & ~subMeshInstance.m_compactionSizeQuery->GetDeviceMask(),
+                                    createdOnDevices,
                                     [&](int deviceIndex)
                                     {
-                                        m_compactionQueryPool->AddDeviceToQuery(deviceIndex, subMeshInstance.m_compactionSizeQuery.get());
+                                        subMeshInstance.m_clusterBlas->AddDevice(deviceIndex, *m_bufferPools);
                                         return true;
                                     });
                             }
                             else
                             {
-                                subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
-                                m_compactionQueryPool->InitQuery(m_deviceMask, subMeshInstance.m_compactionSizeQuery.get());
+                                subMeshInstance.m_clusterBlas = aznew RHI::RayTracingClusterBlas;
+                                subMeshInstance.m_clusterBlas->CreateBuffers(m_deviceMask, &*subMeshInstance.m_clusterBlasDescriptor, *m_bufferPools);
+                                createdOnDevices = m_deviceMask;
                             }
-                            numCompactionQueriesEnqueued++;
-                        }
-
-                        if (subMeshInstance.m_blas)
-                        {
-                            createdOnDevices = m_deviceMask & ~subMeshInstance.m_blas->GetDeviceMask();
-                            RHI::MultiDeviceObject::IterateDevices(
-                                createdOnDevices,
-                                [&](int deviceIndex)
-                                {
-                                    subMeshInstance.m_blas->AddDevice(deviceIndex, *m_bufferPools);
-                                    return true;
-                                });
                         }
                         else
                         {
-                            subMeshInstance.m_blas = aznew RHI::RayTracingBlas;
-                            subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
-                            createdOnDevices = m_deviceMask;
+                            // create the BLAS object and store it in the BLAS list
+                            if (RHI::CheckBitsAny(
+                                    subMeshInstance.m_blasDescriptor.m_buildFlags,
+                                    RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                            {
+                                if (subMeshInstance.m_compactionSizeQuery)
+                                {
+                                    RHI::MultiDeviceObject::IterateDevices(
+                                        m_deviceMask & ~subMeshInstance.m_compactionSizeQuery->GetDeviceMask(),
+                                        [&](int deviceIndex)
+                                        {
+                                            m_compactionQueryPool->AddDeviceToQuery(deviceIndex, subMeshInstance.m_compactionSizeQuery.get());
+                                            return true;
+                                        });
+                                }
+                                else
+                                {
+                                    subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
+                                    m_compactionQueryPool->InitQuery(m_deviceMask, subMeshInstance.m_compactionSizeQuery.get());
+                                }
+                                numCompactionQueriesEnqueued++;
+                            }
+
+                            if (subMeshInstance.m_blas)
+                            {
+                                createdOnDevices = m_deviceMask & ~subMeshInstance.m_blas->GetDeviceMask();
+                                RHI::MultiDeviceObject::IterateDevices(
+                                    createdOnDevices,
+                                    [&](int deviceIndex)
+                                    {
+                                        subMeshInstance.m_blas->AddDevice(deviceIndex, *m_bufferPools);
+                                        return true;
+                                    });
+                            }
+                            else
+                            {
+                                subMeshInstance.m_blas = aznew RHI::RayTracingBlas;
+                                subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
+                                createdOnDevices = m_deviceMask;
+                            }
                         }
                     }
 

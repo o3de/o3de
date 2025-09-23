@@ -11,7 +11,6 @@
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <Mesh/MeshInfoManager.h>
 
-
 namespace AZ::Render
 {
     namespace GPU
@@ -53,45 +52,57 @@ namespace AZ::Render
             return nullptr;
         };
 
-        auto ConvertToSingleDevice =
-            [&](const BufferViewIndexAndOffset* bufferEntry, int32_t& bufferViewReadIndex, uint32_t& bufferViewByteOffset, uint32_t& format)
+        auto ConvertToSingleDevice = [&](const BufferViewIndexAndOffset* bufferEntry,
+                                         int32_t& bufferViewReadIndex,
+                                         uint32_t& bufferViewByteOffset,
+                                         uint32_t& bufferViewByteStride,
+                                         uint32_t& format)
         {
             if (bufferEntry)
             {
                 bufferViewReadIndex = static_cast<int32_t>(bufferEntry->m_bindlessReadIndex.at(deviceIndex));
                 bufferViewByteOffset = bufferEntry->m_byteOffset;
+                bufferViewByteStride =
+                    AZStd::max(bufferEntry->m_streamBufferView.GetByteStride(), RHI::GetVertexFormatSize(bufferEntry->m_vertexFormat));
                 format = AZStd::to_underlying(bufferEntry->m_vertexFormat);
             }
             else
             {
                 bufferViewReadIndex = -1;
                 bufferViewByteOffset = 0;
+                bufferViewByteStride = 0;
                 format = AZStd::to_underlying(RHI::VertexFormat::Unknown);
             }
         };
 
-        auto RegisterSemanticMeshBuffer =
-            [&](const char* name, int32_t& bufferViewReadIndex, uint32_t& bufferViewByteOffset, uint32_t& format)
+        auto RegisterSemanticMeshBuffer = [&](const char* name,
+                                              int32_t& bufferViewReadIndex,
+                                              uint32_t& bufferViewByteOffset,
+                                              uint32_t& bufferViewStride,
+                                              uint32_t& format)
         {
             const auto bufferEntry = FindSemanticInputBuffer(name);
-            ConvertToSingleDevice(bufferEntry, bufferViewReadIndex, bufferViewByteOffset, format);
+            ConvertToSingleDevice(bufferEntry, bufferViewReadIndex, bufferViewByteOffset, bufferViewStride, format);
         };
         auto RegisterIndexedSemanticMeshBuffer = [&](const char* name,
                                                      const size_t semanticIndex,
                                                      int32_t& bufferViewReadIndex,
                                                      uint32_t& bufferViewByteOffset,
+                                                     uint32_t& bufferViewByteStride,
                                                      uint32_t& format)
         {
             const auto bufferViewEntry = FindSemanticInputBuffer(name, semanticIndex);
-            ConvertToSingleDevice(bufferViewEntry, bufferViewReadIndex, bufferViewByteOffset, format);
+            ConvertToSingleDevice(bufferViewEntry, bufferViewReadIndex, bufferViewByteOffset, bufferViewByteStride, format);
         };
 
-        RegisterSemanticMeshBuffer("POSITION", out.m_positionBufferIndex, out.m_positionBufferByteOffset, out.m_positionFormat);
-        RegisterSemanticMeshBuffer("NORMAL", out.m_normalBufferIndex, out.m_normalBufferByteOffset, out.m_normalFormat);
-        RegisterSemanticMeshBuffer("TANGENT", out.m_tangentBufferIndex, out.m_tangentBufferByteOffset, out.m_tangentFormat);
-        RegisterSemanticMeshBuffer("BITANGENT", out.m_bitangentBufferIndex, out.m_bitangentBufferByteOffset, out.m_bitangentFormat);
-        RegisterIndexedSemanticMeshBuffer("UV", 0, out.m_uv0BufferIndex, out.m_uv0BufferByteOffset, out.m_uv0Format);
-        RegisterIndexedSemanticMeshBuffer("UV", 1, out.m_uv1BufferIndex, out.m_uv1BufferByteOffset, out.m_uv1Format);
+        // clang-format off
+        RegisterSemanticMeshBuffer("POSITION", out.m_positionBufferIndex, out.m_positionBufferByteOffset, out.m_positionBufferByteStride, out.m_positionFormat);
+        RegisterSemanticMeshBuffer("NORMAL", out.m_normalBufferIndex, out.m_normalBufferByteOffset, out.m_normalBufferByteStride, out.m_normalFormat);
+        RegisterSemanticMeshBuffer("TANGENT", out.m_tangentBufferIndex, out.m_tangentBufferByteOffset, out.m_tangentBufferByteStride, out.m_tangentFormat);
+        RegisterSemanticMeshBuffer("BITANGENT", out.m_bitangentBufferIndex, out.m_bitangentBufferByteOffset, out.m_bitangentBufferByteStride, out.m_bitangentFormat);
+        RegisterIndexedSemanticMeshBuffer("UV", 0, out.m_uv0BufferIndex, out.m_uv0BufferByteOffset, out.m_uv0BufferByteStride, out.m_uv0Format);
+        RegisterIndexedSemanticMeshBuffer("UV", 1, out.m_uv1BufferIndex, out.m_uv1BufferByteOffset, out.m_uv1BufferByteStride, out.m_uv1Format);
+        // clang-format on
 
         // TODO: add colorbuffer and blendmask here
 
@@ -99,13 +110,24 @@ namespace AZ::Render
         {
             out.m_indexBufferIndex = entry->m_indexBuffer.m_bindlessReadIndex.at(deviceIndex);
             out.m_indexBufferByteOffset = entry->m_indexBuffer.m_byteOffset;
+            out.m_indexBufferByteStride = RHI::GetIndexFormatSize(entry->m_indexBuffer.m_indexFormat);
             out.m_indexFormat = AZStd::to_underlying(entry->m_indexBuffer.m_indexFormat);
         }
         else
         {
             out.m_indexBufferIndex = -1;
             out.m_indexBufferByteOffset = 0;
+            out.m_indexBufferByteStride = 0;
             out.m_indexFormat = AZStd::to_underlying(RHI::IndexFormat::Unknown);
+        }
+
+        if (entry->m_clusterOffsetBuffer)
+        {
+            out.m_clusterBufferIndex = static_cast<int32_t>(entry->m_clusterOffsetBuffer->GetBindlessReadIndex().at(deviceIndex));
+        }
+        else
+        {
+            out.m_clusterBufferIndex = -1;
         }
 
         out.m_objectIdForTransform = entry->m_objectIdForTransform;
@@ -119,6 +141,10 @@ namespace AZ::Render
         if (entry->m_isSkinnedMesh)
         {
             out.m_flags |= GPU::MeshInfoFlags::SkinnedMesh;
+        }
+        if (entry->m_hasClusterGeometryBuffers)
+        {
+            out.m_flags |= GPU::MeshInfoFlags::ClusterGeometryBuffers;
         }
 
         return out;

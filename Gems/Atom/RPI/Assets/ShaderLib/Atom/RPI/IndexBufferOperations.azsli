@@ -12,9 +12,9 @@
 #include <Atom/RHI/IndexFormat.azsli>
 #include <Atom/RPI/VertexBufferOperations.azsli>
 
-uint CalculateIndexLoadOffset(const uint index, const uint startOffset, const IndexFormat format)
+uint CalculateIndexLoadOffset(const uint index, const uint startOffset, const uint bufferStride)
 {
-    return index * GetIndexFormatSize(format) + startOffset;
+    return index * bufferStride + startOffset;
 }
 
 uint3 LoadVertexIndices(ByteAddressBuffer buffer, uint byteOffset, IndexFormat format)

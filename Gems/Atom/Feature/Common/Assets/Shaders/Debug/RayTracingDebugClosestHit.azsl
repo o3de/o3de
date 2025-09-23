@@ -46,12 +46,23 @@ float3 GetFallbackPBRBaseColor(float2 barycentrics)
     return textureData.m_baseColor.rgb;
 }
 
+float3 GetClusterColor(inout bool noData)
+{
+    if (GetClusterId() == -1)
+    {
+        noData = true;
+        return float3(0.f, 0.f, 0.f);
+    }
+    return GetRandomColor(GetClusterId());
+}
+
 [shader("closesthit")]
 void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes attrib)
 {
     switch (GetRayTracingDebugViewMode())
     {
     case RayTracingDebugViewMode::InstanceID:     payload.m_color = GetRandomColor(InstanceID());             break;
+    case RayTracingDebugViewMode::ClusterID:      payload.m_color = GetClusterColor(payload.m_noData);        break;
     case RayTracingDebugViewMode::InstanceIndex:  payload.m_color = GetRandomColor(InstanceIndex());          break;
     case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());         break;
     case RayTracingDebugViewMode::Barycentrics:   payload.m_color = GetBarycentricColor(attrib.barycentrics); break;

@@ -127,6 +127,9 @@ namespace AZ
             // flag indicating if RayTracing is enabled, currently based on device support
             bool m_rayTracingEnabled = false;
 
+            // flag indicating if cluster-level acceleration structures (CLAS) are enabled, currently based on device support
+            bool m_rayTracingClusterAccelerationStructureEnabled = false;
+
             // mesh data for meshes that should be included in ray tracing operations,
             // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
             MeshMap m_meshes;

@@ -24,14 +24,14 @@ namespace EMStudio
     // NOTE: this class does not support changing proxy models (anywhere in the chain). 
     // The class will have to be recreated with the new proxy model.
     //
-    class SelectionProxyModel
+    class AnimGraphSelectionProxyModel
         : public QItemSelectionModel
     {
         Q_OBJECT
 
     public:
-        SelectionProxyModel(QItemSelectionModel* sourceSelectionModel, QAbstractProxyModel* proxyModel, QObject* parent = nullptr);
-        ~SelectionProxyModel() override;
+        AnimGraphSelectionProxyModel(QItemSelectionModel* sourceSelectionModel, QAbstractProxyModel* proxyModel, QObject* parent = nullptr);
+        ~AnimGraphSelectionProxyModel() override;
 
         void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command) override;
         void select(const QModelIndex &index, QItemSelectionModel::SelectionFlags command) override;

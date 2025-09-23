@@ -7,6 +7,28 @@
  */
 
 #include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/IndirectRayTracing.azsli>
+
+// Provides triangle cluster ID of a hit with a triangle for the ray being traced, or -1 if the hit object is not a cluster object.
+// Reference of this function will automatically add a builtin input 'ClusterIDNV' into the shader entry point. It must be called only in
+// closest hit or any hit shaders.
+// This function is called GetClusterId() to not collide with the potential future introduction of a ClusterId() function (similar to
+// InstanceId(), PrimitiveIndex()).
+int GetClusterId()
+{
+    // TODO(CLAS): Uncomment this once DXC can successfully compile this function
+#if 1
+    return -1;
+#else
+    // Only SPIRV support for now; otherwise it will be initialized to zero as a static variable
+    [[vk::ext_extension("SPV_NV_cluster_acceleration_structure")]]
+    [[vk::ext_capability(/* RayTracingClusterAccelerationStructureNV */ 5437)]]
+    [[vk::ext_builtin_input(/* ClusterIDNV */ 5436)]]
+    static const int clusterIDNV;
+
+    return clusterIDNV;
+#endif
+}
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
@@ -42,7 +64,52 @@ VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primiti
 {
     float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);
     VsInput vertex;
-    LoadInterpolatedVertexData(meshInfo, primitiveIndex, barycentrics, vertex);
+
+    if (meshInfo.m_clusterBufferIndex != -1)
+    {
+        ByteAddressBuffer clusterOffsetBuffer = Bindless::GetByteAddressBuffer(meshInfo.m_clusterBufferIndex);
+        RayTracingClasClusterOffsetInfo clusterInfo =
+            clusterOffsetBuffer.Load<RayTracingClasClusterOffsetInfo>(GetClusterId() * sizeof(RayTracingClasClusterOffsetInfo));
+
+        MeshInfo clusterMeshInfo = meshInfo;
+
+        if (meshInfo.m_flags & ClusterGeometryBuffers)
+        {
+            // Overwrite mesh buffer indices with cluster buffer indices
+            clusterMeshInfo.m_indexBufferIndex = clusterInfo.m_indexBindlessReadIndex;
+            clusterMeshInfo.m_positionBufferIndex = clusterInfo.m_positionBindlessReadIndex;
+            clusterMeshInfo.m_normalBufferIndex = clusterInfo.m_normalBindlessReadIndex;
+            clusterMeshInfo.m_uv0BufferIndex = clusterInfo.m_uv0BindlessReadIndex;
+            clusterMeshInfo.m_uv1BufferIndex = clusterInfo.m_uv1BindlessReadIndex;
+            clusterMeshInfo.m_tangentBufferIndex = clusterInfo.m_tangentBindlessReadIndex;
+            clusterMeshInfo.m_bitangentBufferIndex = clusterInfo.m_bitangentBindlessReadIndex;
+        }
+
+        // Overwrite mesh strides with cluster strides
+        clusterMeshInfo.m_indexBufferByteStride = clusterInfo.m_indexStride;
+        clusterMeshInfo.m_positionBufferByteStride = clusterInfo.m_positionStride;
+        clusterMeshInfo.m_normalBufferByteStride = clusterInfo.m_normalStride;
+        clusterMeshInfo.m_uv0BufferByteStride = clusterInfo.m_uv0Stride;
+        clusterMeshInfo.m_uv1BufferByteStride = clusterInfo.m_uv1Stride;
+        clusterMeshInfo.m_tangentBufferByteStride = clusterInfo.m_tangentStride;
+        clusterMeshInfo.m_bitangentBufferByteStride = clusterInfo.m_bitangentStride;
+
+        // Overwrite mesh offsets with cluster offsets
+        clusterMeshInfo.m_indexBufferByteOffset = clusterInfo.m_indexOffset;
+        clusterMeshInfo.m_positionBufferByteOffset = clusterInfo.m_positionOffset;
+        clusterMeshInfo.m_normalBufferByteOffset = clusterInfo.m_normalOffset;
+        clusterMeshInfo.m_uv0BufferByteOffset = clusterInfo.m_uv0Offset;
+        clusterMeshInfo.m_uv1BufferByteOffset = clusterInfo.m_uv1Offset;
+        clusterMeshInfo.m_tangentBufferByteOffset = clusterInfo.m_tangentOffset;
+        clusterMeshInfo.m_bitangentBufferByteOffset = clusterInfo.m_bitangentOffset;
+
+        LoadInterpolatedVertexData(clusterMeshInfo, primitiveIndex, barycentrics, vertex);
+    }
+    else
+    {
+        LoadInterpolatedVertexData(meshInfo, primitiveIndex, barycentrics, vertex);
+    }
+
     return vertex;
 }
 

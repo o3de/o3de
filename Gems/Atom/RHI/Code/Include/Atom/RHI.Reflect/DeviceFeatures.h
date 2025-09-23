@@ -65,6 +65,9 @@ namespace AZ::RHI
         //! Whether Ray Tracing support is available.
         bool m_rayTracing = false;
 
+        //! Whether Ray Tracing supports CLAS structures.
+        bool m_rayTracingClas = false;
+
         //! Whether Unbounded Array support is available.
         bool m_unboundedArrays = false;
 

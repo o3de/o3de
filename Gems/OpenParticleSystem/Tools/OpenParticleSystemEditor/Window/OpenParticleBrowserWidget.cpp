@@ -100,7 +100,7 @@ namespace OpenParticleSystemEditor
             if (pEutry && match.hasMatch())
             {
                 // pos, len
-                const AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
+                const AZStd::pair<size_t, size_t> highlight(match.capturedStart(), match.capturedLength());
                 QString preSelectedText = options.text.left(highlight.first);
                 int preSelectedTextLength = options.fontMetrics.horizontalAdvance(preSelectedText);
                 QString selectedText = options.text.mid(highlight.first, highlight.second);

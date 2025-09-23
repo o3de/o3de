@@ -18,6 +18,7 @@ namespace AZ::Render
     {
         InstanceIndex,
         InstanceID,
+        ClusterID,
         PrimitiveIndex,
         Barycentrics,
         Normals,

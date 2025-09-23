@@ -25,7 +25,7 @@ namespace EMStudio
     // forward declarations
     class AnimGraphPlugin;
     class AnimGraphSortFilterProxyModel;
-    class SelectionProxyModel;
+    class AnimGraphSelectionProxyModel;
 
     class NavigateWidget
         : public QWidget
@@ -52,7 +52,7 @@ namespace EMStudio
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         QTreeView* m_treeView;
         AnimGraphSortFilterProxyModel* m_filterProxyModel;
-        SelectionProxyModel* m_selectionProxyModel;
+        AnimGraphSelectionProxyModel* m_selectionProxyModel;
     };
 
 } // namespace EMStudio

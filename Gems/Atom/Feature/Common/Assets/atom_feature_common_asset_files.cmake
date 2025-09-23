@@ -263,6 +263,7 @@ set(FILES
     ShaderLib/Atom/Features/Bindless.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
     ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/IndirectRayTracing.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/InstancedTransforms.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
