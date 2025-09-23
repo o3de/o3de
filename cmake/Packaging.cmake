@@ -39,7 +39,7 @@ set(CPACK_SNAP_DISTRO "" CACHE STRING
 )
 
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 3.22.0)
+set(CPACK_DESIRED_CMAKE_VERSION 3.24.0)
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
@@ -63,6 +63,8 @@ else()
     set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_VERSION_STRING}")
 endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
+
+message(STATUS "CPack Package Version: ${CPACK_PACKAGE_VERSION}")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
 
@@ -89,6 +91,7 @@ include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
 if(NOT CPACK_GENERATOR)
+    message(STATUS "Packaging is not supported for this platform/configuration")
     return()
 endif()
 
