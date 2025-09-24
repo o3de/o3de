@@ -20,7 +20,7 @@
 #include <QMenuBar>
 #include <QPushButton>
 #include <QSize>
-#include <QToolbar>
+#include <QToolBar>
 
 PreviewAnimationList::PreviewAnimationList(EditorWindow* editorWindow)
     : QMainWindow(editorWindow)

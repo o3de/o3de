@@ -13,7 +13,7 @@
 
 #include <QCursor>
 #include <QPushButton>
-#include <QToolbar>
+#include <QToolBar>
 
 NewElementToolbarSection::NewElementToolbarSection(QToolBar* parent, bool addSeparator)
 {

@@ -18,7 +18,7 @@
 #include <QActionGroup>
 #include <QIcon>
 #include <QString>
-#include <QToolbar>
+#include <QToolBar>
 
 ModeToolbar::ModeToolbar(EditorWindow* parent)
     : QToolBar("Mode Toolbar", parent)

@@ -14,7 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QToolButton>
-#include <QToolbar>
+#include <QToolBar>
 
 AlignToolbarSection::AlignToolbarSection()
 {

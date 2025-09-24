@@ -15,7 +15,7 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QString>
-#include <QToolbar>
+#include <QToolBar>
 
 PreviewToolbar::PreviewToolbar(EditorWindow* parent)
     : QToolBar("Preview Toolbar", parent)

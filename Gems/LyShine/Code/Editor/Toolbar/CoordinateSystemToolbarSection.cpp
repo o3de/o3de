@@ -20,7 +20,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QString>
-#include <QToolbar>
+#include <QToolBar>
 
 namespace
 {

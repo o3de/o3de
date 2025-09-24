@@ -40,7 +40,7 @@
 #include <QUndoGroup>
 #include <QUndoView>
 #include <QList>
-#include <QToolbar>
+#include <QToolBar>
 
 static const bool debugViewUndoStack = false;
 

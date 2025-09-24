@@ -27,7 +27,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QTextStream>
-#include <QToolbar>
+#include <QToolBar>
 
 namespace
 {
