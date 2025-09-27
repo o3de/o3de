@@ -7,7 +7,7 @@
 #
 
 if(NOT PROJECT_NAME)
-    cmake_minimum_required(VERSION 3.22)
+    cmake_minimum_required(VERSION 3.24)
 
     # Utility function to look for an optional 'engine_finder_cmake_path'setting 
     function(get_engine_finder_cmake_path project_json_file_path path_value)
