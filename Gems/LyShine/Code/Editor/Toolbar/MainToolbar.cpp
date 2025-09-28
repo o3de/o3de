@@ -12,7 +12,7 @@
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
-#include <QDoubleSpinbox>
+#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QString>
 
