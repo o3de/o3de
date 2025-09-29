@@ -195,6 +195,7 @@ jobs:
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export LY_PACKAGE_SERVER_URLS="https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
+          export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
           export CMAKE_C_COMPILER_LAUNCHER=ccache
           export CMAKE_CXX_COMPILER_LAUNCHER=ccache
           export DISPLAY=:0
