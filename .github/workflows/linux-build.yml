@@ -158,7 +158,7 @@ jobs:
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
           cmakeVersion: "${{ inputs.cmake_version }}"
-          
+
       - name: Install specific clang version
         if: ${{ inputs.compiler == 'clang' && inputs.clang_version }}
         run: |
@@ -195,8 +195,6 @@ jobs:
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export LY_PACKAGE_SERVER_URLS="https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
-          export CC=${CC:-${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}}
-          export CXX=${CXX:-${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}}
           export CMAKE_C_COMPILER_LAUNCHER=ccache
           export CMAKE_CXX_COMPILER_LAUNCHER=ccache
           export DISPLAY=:0
