@@ -8,6 +8,8 @@
 
 name: AR
 
+run-name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.title || format('AR - {0}', github.ref_name)) }}
+
 on:
   pull_request:
   workflow_dispatch:
