@@ -76,6 +76,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("OrbitYawRotationInverted", &CameraMovementSettings::m_orbitYawRotationInverted)
         ->Field("PanInvertedX", &CameraMovementSettings::m_panInvertedX)
         ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY)
+        ->Field("ZoomInverted", &CameraMovementSettings::m_zoomInverted)
         ->Field("DefaultPosition", &CameraMovementSettings::m_defaultPosition)
         ->Field("DefaultOrientation", &CameraMovementSettings::m_defaultPitchYaw)
         ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance)
@@ -165,6 +166,11 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
                 &CameraMovementSettings::m_panInvertedY,
                 "Invert Pan Y",
                 "Invert direction of pan in local Y axis")
+            ->DataElement(
+                AZ::Edit::UIHandlers::CheckBox,
+                &CameraMovementSettings::m_zoomInverted,
+                "Invert Zoom Direction",
+                "Invert Mouse Wheel Zoom direction")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_captureCursorLook,
@@ -392,6 +398,7 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_orbitYawRotationInverted);
     SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_panInvertedX);
     SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_panInvertedY);
+    SandboxEditor::SetCameraZoomInverted(m_cameraMovementSettings.m_zoomInverted);
     SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
@@ -440,6 +447,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reset()
     SandboxEditor::ResetCameraOrbitYawRotationInverted();
     SandboxEditor::ResetCameraPanInvertedX();
     SandboxEditor::ResetCameraPanInvertedY();
+    SandboxEditor::ResetCameraZoomInverted();
     SandboxEditor::ResetCameraDefaultEditorPosition();
     SandboxEditor::ResetCameraDefaultOrbitDistance();
     SandboxEditor::ResetCameraDefaultEditorOrientation();
@@ -466,6 +474,7 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_orbitYawRotationInverted = SandboxEditor::CameraOrbitYawRotationInverted();
     m_panInvertedX = SandboxEditor::CameraPanInvertedX();
     m_panInvertedY = SandboxEditor::CameraPanInvertedY();
+    m_zoomInverted = SandboxEditor::CameraZoomInverted();
     m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();

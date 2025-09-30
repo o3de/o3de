@@ -1,0 +1,141 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// VkClusterAccelerationStructureClusterFlagBitsNV
+enum class RayTracingClasClusterFlags
+{
+    AllowDisableOpacityMicromaps = 1,
+};
+
+// VkClusterAccelerationStructureIndexFormatFlagBitsNV
+enum class RayTracingClasGeometryFlags
+{
+    CullDisable = 1,
+    NoDuplicateAnyHitInvocation = 2,
+    Opaque = 4,
+};
+
+// VkClusterAccelerationStructureIndexFormatFlagBitsNV
+enum class RayTracingClasIndexFormat
+{
+    UINT8 = 1,
+    UINT16 = 2,
+    UINT32 = 4,
+};
+
+// VkClusterAccelerationStructureBuildTriangleClusterInfoNV
+// Bit-packed fields expanded such that each member can be written to individually.
+struct RayTracingClasBuildTriangleClusterInfoExpanded
+{
+    uint                        m_clusterID;
+    RayTracingClasClusterFlags  m_clusterFlags;
+    uint                        m_triangleCount;
+    uint                        m_vertexCount;
+    uint                        m_positionTruncateBitCount;
+    RayTracingClasIndexFormat   m_indexType;
+    RayTracingClasIndexFormat   m_opacityMicromapIndexType;
+    uint                        m_baseGeometryIndex;
+    RayTracingClasGeometryFlags m_geometryFlags;
+    uint                        m_indexBufferStride;
+    uint                        m_vertexBufferStride;
+    uint                        m_geometryIndexAndFlagsBufferStride;
+    uint                        m_opacityMicromapIndexBufferStride;
+    uint64_t                    m_indexBufferAddress;
+    uint64_t                    m_vertexBufferAddress;
+    uint64_t                    m_geometryIndexAndFlagsBufferAddress;
+    uint64_t                    m_opacityMicromapArrayAddress;
+    uint64_t                    m_opacityMicromapIndexBufferAddress;
+};
+
+// VkClusterAccelerationStructureBuildTriangleClusterInfoNV
+// Packed struct which matches the size of the Vulkan struct such that it can be used directly for calls to the Vulkan API.
+struct RayTracingClasBuildTriangleClusterInfo
+{
+    uint     m_clusterID;
+    uint     m_clusterFlags;
+    uint     m_vertexAndIndexConfiguration;
+    uint     m_baseGeometryIndexAndGeometryFlags;
+    uint     m_indexAndVertexBufferStride;
+    uint     m_geometryIndexAndOpacityIndexIndexBufferStride;
+    uint64_t m_indexBufferAddress;
+    uint64_t m_vertexBufferAddress;
+    uint64_t m_geometryIndexAndFlagsBufferAddress;
+    uint64_t m_opacityMicromapArrayAddress;
+    uint64_t m_opacityMicromapIndexBufferAddress;
+};
+
+// Stores per-cluster buffer information, similar to the MeshInfo struct (MeshInfo.azsli).
+// When a cluster is hit in a ray tracing hit shader, these values are used instead of the values from the MeshInfo struct to read the
+// vertex data.
+struct RayTracingClasClusterOffsetInfo
+{
+    uint m_indexBindlessReadIndex;
+    uint m_indexOffset;
+    uint m_indexStride;
+
+    uint m_positionBindlessReadIndex;
+    uint m_positionOffset;
+    uint m_positionStride;
+
+    uint m_normalBindlessReadIndex;
+    uint m_normalOffset;
+    uint m_normalStride;
+
+    uint m_uv0BindlessReadIndex;
+    uint m_uv0Offset;
+    uint m_uv0Stride;
+
+    uint m_uv1BindlessReadIndex;
+    uint m_uv1Offset;
+    uint m_uv1Stride;
+
+    uint m_tangentBindlessReadIndex;
+    uint m_tangentOffset;
+    uint m_tangentStride;
+
+    uint m_bitangentBindlessReadIndex;
+    uint m_bitangentOffset;
+    uint m_bitangentStride;
+};
+
+inline RayTracingClasBuildTriangleClusterInfo RayTracingClasConvertBuildTriangleClusterInfo(
+    RayTracingClasBuildTriangleClusterInfoExpanded sourceInfo)
+{
+    RayTracingClasBuildTriangleClusterInfo targetInfo;
+
+    // Since bit-packed struct fields (eg. "uint m_triangleCount : 9;") cannot be used in azsl, the struct data nees to be manually packed
+    // into the format required by the graphics API.
+
+    targetInfo.m_clusterID = sourceInfo.m_clusterID;
+    targetInfo.m_clusterFlags = (uint)sourceInfo.m_clusterFlags;
+    targetInfo.m_vertexAndIndexConfiguration =
+        (sourceInfo.m_triangleCount                   & 0x1FF) |        // 9 bits [0-8]
+        ((sourceInfo.m_vertexCount                    & 0x1FF) <<  9) | // 9 bits [9-17]
+        ((sourceInfo.m_positionTruncateBitCount       & 0x3F)  << 18) | // 6 bits [18-23]
+        (((uint)sourceInfo.m_indexType                & 0xF)   << 24) | // 4 bits [24-27]
+        (((uint)sourceInfo.m_opacityMicromapIndexType & 0xF)   << 28);  // 4 bits [28-31]
+    targetInfo.m_baseGeometryIndexAndGeometryFlags =
+        (sourceInfo.m_baseGeometryIndex    & 0xFFFFFF) |  // 24 bits [0-23]
+                                                          //  5 bits [24-28] (reserved)
+        (((uint)sourceInfo.m_geometryFlags & 0x7) << 29); //  3 bits [29-31]
+    targetInfo.m_indexAndVertexBufferStride =
+        (sourceInfo.m_indexBufferStride   & 0xFFFF) |        // 16 bits [0-15]
+        ((sourceInfo.m_vertexBufferStride & 0xFFFF) << 16);  // 16 bits [16-31]
+    targetInfo.m_geometryIndexAndOpacityIndexIndexBufferStride =
+        (sourceInfo.m_geometryIndexAndFlagsBufferStride & 0xFFFF) |       // 16 bits [0-15]
+        ((sourceInfo.m_opacityMicromapIndexBufferStride & 0xFFFF) << 16); // 16 bits [16-31]
+    targetInfo.m_indexBufferAddress = sourceInfo.m_indexBufferAddress;
+    targetInfo.m_vertexBufferAddress = sourceInfo.m_vertexBufferAddress;
+    targetInfo.m_geometryIndexAndFlagsBufferAddress = sourceInfo.m_geometryIndexAndFlagsBufferAddress;
+    targetInfo.m_opacityMicromapArrayAddress = sourceInfo.m_opacityMicromapArrayAddress;
+    targetInfo.m_opacityMicromapIndexBufferAddress = sourceInfo.m_opacityMicromapIndexBufferAddress;
+
+    return targetInfo;
+}

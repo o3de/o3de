@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    struct TransientBufferDescriptor
+    struct ATOM_RHI_REFLECT_API TransientBufferDescriptor
     {
         TransientBufferDescriptor() = default;
 

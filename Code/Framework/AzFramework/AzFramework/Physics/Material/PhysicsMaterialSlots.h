@@ -14,6 +14,7 @@
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -25,7 +26,7 @@ namespace Physics
     //! The class is used to store a list of material assets.
     //! Each material will be assigned to a slot and when reflected
     //! to edit context it will show it for each slot entry.
-    class MaterialSlots
+    class AZF_API MaterialSlots
     {
     public:
         AZ_CLASS_ALLOCATOR(Physics::MaterialSlots, AZ::SystemAllocator);

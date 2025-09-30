@@ -82,6 +82,6 @@ namespace EMotionFX
             &AzToolsFramework::EditorComponentAPIRequests::IsComponentEnabled,
             componentOutcome.GetValue().at(0)
         );
-        EXPECT_FALSE(isActive);
+        EXPECT_TRUE(isActive);
     }
 } // namespace EMotionFX

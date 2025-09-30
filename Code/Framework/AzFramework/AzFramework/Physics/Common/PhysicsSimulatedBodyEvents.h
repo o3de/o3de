@@ -9,6 +9,7 @@
 
 #include <AzCore/EBus/Event.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzPhysics
 {
@@ -53,33 +54,33 @@ namespace AzPhysics
         //! @param sceneHandle A handle to the scene that owns the simulated body.
         //! @param bodyHandle A handle to the simulated body.
         //! @param handler The handle to register.
-        void RegisterOnSyncTransformHandler(
+        AZF_API void RegisterOnSyncTransformHandler(
             AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle, OnSyncTransform::Handler& handler);
 
         //! Helper to register a Collision Event handler.
         //! @param sceneHandle A handle to the scene that owns the simulated body.
         //! @param bodyHandle A handle to the simulated body.
         //! @param handler The handle to register.
-        void RegisterOnCollisionBeginHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
+        AZF_API void RegisterOnCollisionBeginHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
             OnCollisionBegin::Handler& handler);
 
         //! see RegisterOnCollisionBeginHandler
-        void RegisterOnCollisionPersistHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
+        AZF_API void RegisterOnCollisionPersistHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
             OnCollisionPersist::Handler& handler);
 
         //! see RegisterOnCollisionBeginHandler
-        void RegisterOnCollisionEndHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
+        AZF_API void RegisterOnCollisionEndHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
             OnCollisionEnd::Handler& handler);
 
         //! Helper to register a Trigger Event handler.
         //! @param sceneHandle A handle to the scene that owns the simulated body.
         //! @param bodyHandle A handle to the simulated body.
         //! @param handler The handle to register.
-        void RegisterOnTriggerEnterHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
+        AZF_API void RegisterOnTriggerEnterHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
             OnTriggerEnter::Handler& handler);
 
         //! see RegisterOnTriggerEnterHandler
-        void RegisterOnTriggerExitHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
+        AZF_API void RegisterOnTriggerExitHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle,
             OnTriggerExit::Handler& handler);
     } // namespace SimulatedBodyEvents
 }

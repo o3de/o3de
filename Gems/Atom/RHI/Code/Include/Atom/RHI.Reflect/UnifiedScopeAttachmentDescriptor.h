@@ -22,7 +22,7 @@ namespace AZ::RHI
 {
     //! A unified descriptor of the binding of an attachment to a scope.
     //! Essentially a union of all possible ScopeAttachment types.
-    struct UnifiedScopeAttachmentDescriptor final
+    struct ATOM_RHI_REFLECT_API UnifiedScopeAttachmentDescriptor final
         : public ScopeAttachmentDescriptor
     {
         UnifiedScopeAttachmentDescriptor() { };

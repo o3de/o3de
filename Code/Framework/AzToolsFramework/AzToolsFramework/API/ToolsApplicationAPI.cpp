@@ -8,9 +8,14 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorRequests);
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ToolsApplicationEvents);
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EntitySelectionEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationEvents);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ToolsApplicationRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EntitySelectionEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPickModeNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEvents);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks);
 
 namespace AzToolsFramework
 {

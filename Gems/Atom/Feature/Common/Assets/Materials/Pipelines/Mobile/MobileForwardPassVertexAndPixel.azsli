@@ -18,6 +18,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
     VsOutput OUT = EvaluateVertexGeometry(IN, SV, GetMaterialParameters());
+    OUT.m_instanceId = instanceId;
     return OUT;
 }
 
@@ -38,7 +39,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, SV, isFrontFace, GetMaterialParameters());
 
-    Surface surface = EvaluateSurface(IN, geoData, GetMaterialParameters());
+    Surface surface = EvaluateSurface(IN, SV, geoData, GetMaterialParameters());
 
     LightingData lightingData = EvaluateLighting(surface, IN.position, views);
 

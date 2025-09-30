@@ -13,7 +13,7 @@ namespace AZ::Internal
     // and EBusBuilderBase template functions
     struct EBusBuilderBase;
 
-    class EBusAttributes
+    class AZCORE_API EBusAttributes
         : public GenericAttributes<EBusBuilderBase>
     {
     protected:
@@ -62,7 +62,7 @@ namespace AZ::Internal
     };
 
     /// Internal structure to maintain EBus information while describing it.
-    struct EBusBuilderBase
+    struct AZCORE_API EBusBuilderBase
         : public AZ::Internal::EBusAttributes
     {
         using Base = AZ::Internal::EBusAttributes;

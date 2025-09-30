@@ -79,7 +79,9 @@ namespace AZ
 
         namespace CompressionUtils
         {
-            bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath);
+            AZCORE_API bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath);
         }
-    }
-}
+    } // namespace IO
+} // namespace AZ
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);

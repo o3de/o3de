@@ -22,6 +22,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QMenu;
 
@@ -55,7 +58,7 @@ namespace AzToolsFramework
          * To learn more about editor components, see the
          * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
          */
-        class EditorComponentBase
+        class AZTF_API EditorComponentBase
             : public AZ::Component
         {
             friend class EditorEntityActionComponent;
@@ -437,4 +440,5 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+

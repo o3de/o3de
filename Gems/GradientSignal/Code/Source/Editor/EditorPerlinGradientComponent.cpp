@@ -45,6 +45,6 @@ namespace GradientSignal
         // The random seed has to be at least 1 to be valid on all platforms for this gradient type
         m_configuration.m_randomSeed = AZStd::max(rand(), 1);
 
-        return EditorGradientComponentBase::ConfigurationChanged();
+        return AZ::Crc32(EditorGradientComponentBase::ConfigurationChanged());
     }
 }

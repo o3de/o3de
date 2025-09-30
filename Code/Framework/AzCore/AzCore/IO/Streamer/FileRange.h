@@ -14,7 +14,7 @@ namespace AZ
     namespace IO
     {
         //! FileRange represents a subsection within a file.
-        class FileRange
+        class AZCORE_API FileRange
         {
         public:
             //! Creates a file range for the subsection of the file.

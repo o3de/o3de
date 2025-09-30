@@ -81,3 +81,10 @@ set(FILES
     AzCore/Debug/Profiler_Platform.inl
     ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
 )
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    ../Common/WinAPI/AzCore/Settings/CommandLineParser_WinAPI.cpp
+    ../Common/WinAPI/AzCore/Serialization/Locale_WinAPI.cpp
+    ../Common/WinAPI/AzCore/Socket/AzSocket_WinAPI.cpp
+    ../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl
+)

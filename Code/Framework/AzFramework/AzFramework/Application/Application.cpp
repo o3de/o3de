@@ -90,7 +90,6 @@ namespace AzFramework
     {
         static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
-        static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
         static constexpr const char* DeprecatedFileIOAliasesOldAliasKey = "OldAlias";
         static constexpr const char* DeprecatedFileIOAliasesNewAliasKey = "NewAlias";
@@ -800,16 +799,6 @@ namespace AzFramework
     {
         AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
         return true;
-    }
-
-    bool Application::ShouldAssertForLegacySlicesUsage() const
-    {
-        bool value = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, ApplicationInternal::s_legacySlicesAssertKey);
-        }
-        return value;
     }
 
 } // namespace AzFramework

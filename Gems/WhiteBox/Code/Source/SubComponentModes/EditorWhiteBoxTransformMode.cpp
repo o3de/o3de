@@ -645,7 +645,7 @@ namespace WhiteBox
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(mouseUpHandlerFn);
         translationManipulators->InstallLinearManipulatorMouseUpCallback(mouseUpHandlerFn);
 
-        translationManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        translationManipulators->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_manipulator = AZStd::move(translationManipulators);
     }
 
@@ -729,7 +729,7 @@ namespace WhiteBox
                 EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
             });
 
-        rotationManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        rotationManipulators->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_manipulator = AZStd::move(rotationManipulators);
     }
 
@@ -835,7 +835,7 @@ namespace WhiteBox
                 return mouseUpHandlerFn(action, ScaleType::Uniform);
             });
 
-        scaleManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        scaleManipulators->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_manipulator = AZStd::move(scaleManipulators);
     }
 

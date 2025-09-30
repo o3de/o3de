@@ -384,7 +384,6 @@ struct IVariable
 // Smart pointer to this parameter.
 typedef _smart_ptr<IVariable> IVariablePtr;
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /**
  **************************************************************************************
  * CVariableBase implements IVariable interface and provide default implementation
@@ -396,7 +395,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVariableBase
     : public IVariable
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     virtual ~CVariableBase() {}
 
@@ -649,12 +647,10 @@ protected:
     //! Optional user data pointer
     QVariant m_userData;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //! Extended data (Extended data is never copied, it's always private to this variable).
     WiredList m_wiredVars;
     OnSetCallbackList m_onSetFuncs;
     OnSetEnumCallbackList m_onSetEnumFuncs;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     uint16 m_flags;
     //! Limited to 8 flags.
@@ -882,9 +878,7 @@ public:
 
 protected:
     typedef std::vector<IVariablePtr> Variables;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Variables m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //! Any string value displayed in properties.
     QString m_strValue;
 };
@@ -1014,35 +1008,35 @@ namespace var_type
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
-            azsprintf(buf, "%f,%f", value.x, value.y);
+            azsnprintf(buf, sizeof(buf), "%f,%f", value.x, value.y);
             to.assign(buf);
         }
         void operator()(const Vec3& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Vec4& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", value.x, value.y, value.z, value.w);
             to.assign(buf);
         }
         void operator()(const Ang3& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", value.x, value.y, value.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
         void operator()(const Quat& value, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
             to.assign(buf);
         }
 
@@ -1050,35 +1044,35 @@ namespace var_type
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetR(), from.GetG(), from.GetB(), from.GetA());
             to.assign(buf);
         }
         void operator()(const AZ::Vector2& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[128] = { 0 };
-            azsprintf(buf, "%f,%f", from.GetX(), from.GetY());
+            azsnprintf(buf, sizeof(buf), "%f,%f", from.GetX(), from.GetY());
             to.assign(buf);
         }
         void operator()(const AZ::Vector3& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[192] = { 0 };
-            azsprintf(buf, "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f", from.GetX(), from.GetY(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Vector4& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
         }
         void operator()(const AZ::Quaternion& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             char buf[256] = { 0 };
-            azsprintf(buf, "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
+            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", from.GetX(), from.GetY(), from.GetZ(), from.GetZ());
             to.assign(buf);
         }
 
@@ -1741,13 +1735,11 @@ typedef _smart_ptr<IVarEnumList> IVarEnumListPtr;
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING;
 //! Selection list shown in combo box, for enumerated variable.
 template <class T>
 class CVarEnumListBase
     : public IVarEnumList
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CVarEnumListBase(){}
 
@@ -2036,19 +2028,15 @@ struct CSmartVariableArray
     VarType* GetVar() const { return pVar; };
 
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     _smart_ptr<VarType> pVar;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 //////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class EDITOR_CORE_API CVarBlock
     : public IVariableContainer
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     // Dtor.
     virtual ~CVarBlock() {}
@@ -2145,9 +2133,7 @@ protected:
     void GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources);
 
     typedef std::vector<IVariablePtr> Variables;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Variables m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 typedef _smart_ptr<CVarBlock> CVarBlockPtr;
@@ -2180,9 +2166,7 @@ protected:
     void CopyVariableValues(CVarObject* sourceObject);
 
 private:
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     CVarBlockPtr m_vars;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 Q_DECLARE_METATYPE(IVariable *);

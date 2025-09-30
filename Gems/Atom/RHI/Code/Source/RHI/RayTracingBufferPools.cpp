@@ -37,6 +37,36 @@ namespace AZ::RHI
         return m_blasBufferPool;
     }
 
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetDstImplicitBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_dstImplicitBufferPool;
+    }
+
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetDstAddressesArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_dstAddressesArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetDstSizesArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_dstSizesArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetSrcInfosArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_srcInfosArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetSrcInfosCountBufferPool() const
+    {
+        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        return m_srcInfosCountBufferPool;
+    }
+
     const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetTlasInstancesBufferPool() const
     {
         AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
@@ -126,6 +156,76 @@ namespace AZ::RHI
                     {
                         m_blasBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetBlasBufferPool().get();
                         m_blasBufferPool->m_descriptor = deviceBufferPool->GetBlasBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_dstImplicitBufferPool = aznew RHI::BufferPool();
+        m_dstImplicitBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_dstImplicitBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetDstImplicitBufferPool().get();
+                        m_dstImplicitBufferPool->m_descriptor = deviceBufferPool->GetDstImplicitBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_dstAddressesArrayBufferPool = aznew RHI::BufferPool();
+        m_dstAddressesArrayBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_dstAddressesArrayBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetDstAddressesArrayBufferPool().get();
+                        m_dstAddressesArrayBufferPool->m_descriptor = deviceBufferPool->GetDstAddressesArrayBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_dstSizesArrayBufferPool = aznew RHI::BufferPool();
+        m_dstSizesArrayBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_dstSizesArrayBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetDstSizesArrayBufferPool().get();
+                        m_dstSizesArrayBufferPool->m_descriptor = deviceBufferPool->GetDstSizesArrayBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_srcInfosArrayBufferPool = aznew RHI::BufferPool();
+        m_srcInfosArrayBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_srcInfosArrayBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetSrcInfosArrayBufferPool().get();
+                        m_srcInfosArrayBufferPool->m_descriptor = deviceBufferPool->GetSrcInfosArrayBufferPool()->GetDescriptor();
+                    });
+                return ResultCode::Success;
+            });
+
+        m_srcInfosCountBufferPool = aznew RHI::BufferPool();
+        m_srcInfosCountBufferPool->Init(
+            deviceMask,
+            [this]()
+            {
+                IterateObjects<DeviceRayTracingBufferPools>(
+                    [this]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+                    {
+                        m_srcInfosCountBufferPool->m_deviceObjects[deviceIndex] = deviceBufferPool->GetSrcInfosCountBufferPool().get();
+                        m_srcInfosCountBufferPool->m_descriptor = deviceBufferPool->GetSrcInfosCountBufferPool()->GetDescriptor();
                     });
                 return ResultCode::Success;
             });

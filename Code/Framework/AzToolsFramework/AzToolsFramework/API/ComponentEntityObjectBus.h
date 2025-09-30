@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -41,7 +43,7 @@ namespace AzToolsFramework
         virtual void RefreshVisibilityAndLock() = 0;
     };
 
-    using ComponentEntityEditorRequestBus = AZ::EBus < ComponentEntityEditorRequests >;
+    using ComponentEntityEditorRequestBus = AZ::EBus<ComponentEntityEditorRequests>;
 
     class ComponentEntityObjectRequests
         : public AZ::EBusTraits
@@ -61,6 +63,8 @@ namespace AzToolsFramework
         virtual AZ::EntityId GetAssociatedEntityId() = 0;
     };
 
-    using ComponentEntityObjectRequestBus = AZ::EBus < ComponentEntityObjectRequests >;
+    using ComponentEntityObjectRequestBus = AZ::EBus<ComponentEntityObjectRequests>;
 } // namespace AzToolsFramework
 
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityEditorRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ComponentEntityObjectRequests);

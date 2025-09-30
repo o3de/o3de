@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/EBus/EBus.h>
-
 #include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -47,3 +45,5 @@ namespace AzToolsFramework
     using EntityCompositionNotificationBus = AZ::EBus<EntityCompositionNotifications>;
 
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityCompositionNotifications);

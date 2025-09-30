@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/UserSettings/UserSettings.h>
 namespace AZ
 {
@@ -46,7 +48,7 @@ namespace AzToolsFramework
         
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
-        class PrefabUserSettings : public AZ::UserSettings
+        class AZTF_API PrefabUserSettings : public AZ::UserSettings
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabUserSettings, AZ::SystemAllocator);
@@ -62,7 +64,7 @@ namespace AzToolsFramework
         };
 
         //! Class to handle dialogs and windows related to prefab save operations.
-        class PrefabSaveHandler final
+        class AZTF_API PrefabSaveHandler final
             : public QObject
             , public AzQtComponents::DragAndDropEventsBus::Handler
             , public AzQtComponents::DragAndDropItemViewEventsBus::Handler

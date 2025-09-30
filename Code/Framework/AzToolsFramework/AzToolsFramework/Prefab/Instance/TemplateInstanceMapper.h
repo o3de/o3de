@@ -11,12 +11,13 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class TemplateInstanceMapper final
+        class AZTF_API TemplateInstanceMapper final
             : public TemplateInstanceMapperInterface
         {
         public:

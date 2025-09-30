@@ -35,6 +35,8 @@
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_VertexData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_PixelGeometryData.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_SurfaceData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+
 #else
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>

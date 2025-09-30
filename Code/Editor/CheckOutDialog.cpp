@@ -10,19 +10,13 @@
 #include "EditorDefs.h"
 
 #include "CheckOutDialog.h"
+#include "ui_CheckOutDialog.h"
 
 // Qt
 #include <QStyle>
 
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h> // for AzToolsFramework::SourceControlConnectionRequestBus
-
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#include "ui_CheckOutDialog.h"
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-
 
 // CCheckOutDialog dialog
 int CCheckOutDialog::m_lastResult = CCheckOutDialog::CANCEL;

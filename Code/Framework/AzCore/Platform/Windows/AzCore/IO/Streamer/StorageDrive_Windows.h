@@ -29,11 +29,11 @@ namespace AZ::IO::Requests
 
 namespace AZ::IO
 {
-    class StorageDriveWin
+    class AZCORE_API StorageDriveWin
         : public StreamStackEntry
     {
     public:
-        struct ConstructionOptions
+        struct AZCORE_API ConstructionOptions
         {
             ConstructionOptions();
 
@@ -101,7 +101,7 @@ namespace AZ::IO
             size_t m_fileHandleIndex{ InvalidFileCacheIndex };
         };
 
-        struct FileReadInformation
+        struct AZCORE_API FileReadInformation
         {
             AZStd::chrono::steady_clock::time_point m_startTime;
             FileRequest* m_request{ nullptr };

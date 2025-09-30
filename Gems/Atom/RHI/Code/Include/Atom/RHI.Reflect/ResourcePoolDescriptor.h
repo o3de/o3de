@@ -19,7 +19,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class ResourcePoolDescriptor
+    class ATOM_RHI_REFLECT_API ResourcePoolDescriptor
     {
     public:
         AZ_RTTI(ResourcePoolDescriptor, "{C4B9BF83-B171-4DB9-93D6-0879C7CEF5C2}");

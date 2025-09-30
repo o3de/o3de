@@ -39,6 +39,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanInvertedXSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedX";
     constexpr AZStd::string_view CameraPanInvertedYSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedY";
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
+    constexpr AZStd::string_view CameraZoomInvertedSetting = "/Amazon/Preferences/Editor/Camera/ZoomInverted";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
@@ -434,6 +435,16 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraPanSpeedSetting, speed);
     }
 
+    bool CameraZoomInverted()
+    {
+        return AzToolsFramework::GetRegistry(CameraZoomInvertedSetting, false);
+    }
+
+    void SetCameraZoomInverted(const bool inverted)
+    {
+        AzToolsFramework::SetRegistry(CameraZoomInvertedSetting, inverted);
+    }
+
     float CameraRotateSmoothness()
     {
         return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraRotateSmoothnessSetting, 5.0));
@@ -670,7 +681,7 @@ namespace SandboxEditor
 
     float CameraDefaultNearPlaneDistance()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.2));
     }
 
     void SetCameraDefaultNearPlaneDistance(const float distance)
@@ -680,7 +691,7 @@ namespace SandboxEditor
 
     float CameraDefaultFarPlaneDistance()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 1024.0));
     }
 
     void SetCameraDefaultFarPlaneDistance(const float distance)
@@ -700,7 +711,7 @@ namespace SandboxEditor
 
     float CameraDefaultFovDegrees()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(75.0)));
     }
 
     void SetCameraDefaultFovDegrees(const float fovDegrees)
@@ -781,6 +792,11 @@ namespace SandboxEditor
     void ResetCameraPanInvertedY()
     {
         AzToolsFramework::ClearRegistry(CameraPanInvertedYSetting);
+    }
+
+    void ResetCameraZoomInverted()
+    {
+        AzToolsFramework::ClearRegistry(CameraZoomInvertedSetting);
     }
 
     void ResetCameraDefaultEditorPosition()

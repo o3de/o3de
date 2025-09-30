@@ -101,9 +101,9 @@ namespace EMotionFX
         },
         {
             // utf-8 smiley
-            {u8"-newName \U0001F604"},
+            {reinterpret_cast<const char*>(u8"-newName \U0001F604")},
             {
-                {"newName", u8"\U0001F604"},
+                {"newName", reinterpret_cast<const char*>(u8"\U0001F604")},
             }
         },
     };

@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QWidgetAction>
 
@@ -30,7 +31,7 @@ namespace AzToolsFramework
     
     //! Editor Menu class definitions.
     //! Wraps a QMenu and provides additional functionality to handle and sort its items.
-    class EditorMenu final
+    class AZTF_API EditorMenu final
     {
     public:
         AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator);

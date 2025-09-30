@@ -108,4 +108,4 @@ namespace AZ
     } // namespace RPI
 }// namespace AZ
 
-DECLARE_EBUS_EXTERN_DLL_MULTI_ADDRESS(RPI::ShaderVariantFinderNotification);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(ATOM_RPI_REFLECT_API, AZ::RPI::ShaderVariantFinderNotification);

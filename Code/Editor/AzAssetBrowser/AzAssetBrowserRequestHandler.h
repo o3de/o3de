@@ -38,15 +38,8 @@ namespace AzToolsFramework
     }
 }
 
-// on windows, this is a DLL Exported class that derives from non-dll-exported
-// baseclasses, which issues a warning (which is then treated as an error).
-// However, all of the derived classes are ebus handlers that are all available in static
-// libraries or by direct header inclusions, so they ARE available:
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-
 // this also triggers a MEMBER warning on the actual EBus Handler we derive from
 // because it has members like m_node.
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 class AzAssetBrowserWindow;
 
@@ -103,7 +96,3 @@ protected:
     AzAssetBrowserWindow* FindAzAssetBrowserWindow(QWidget* widgetToStartSearchFrom);
     AzAssetBrowserWindow* FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget);
 };
-
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-

@@ -43,6 +43,36 @@ namespace AZ::RHI
         return m_blasBufferPool;
     }
 
+    const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetDstImplicitBufferPool() const
+    {
+        AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
+        return m_dstImplicitBufferPool;
+    }
+
+    const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetDstAddressesArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
+        return m_dstAddressesArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetDstSizesArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
+        return m_dstSizesArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetSrcInfosArrayBufferPool() const
+    {
+        AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
+        return m_srcInfosArrayBufferPool;
+    }
+
+    const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetSrcInfosCountBufferPool() const
+    {
+        AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
+        return m_srcInfosCountBufferPool;
+    }
+
     const RHI::Ptr<RHI::DeviceBufferPool>& DeviceRayTracingBufferPools::GetTlasInstancesBufferPool() const
     {
         AZ_Assert(m_initialized, "DeviceRayTracingBufferPools was not initialized");
@@ -108,6 +138,66 @@ namespace AZ::RHI
             m_blasBufferPool->SetName(Name("RayTracingBlasBufferPool"));
             [[maybe_unused]] RHI::ResultCode resultCode = m_blasBufferPool->Init(*device, bufferPoolDesc);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing BLAS buffer pool");
+        }
+
+        // create destination implicit buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetDstImplicitBufferBindFlags();
+
+            m_dstImplicitBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_dstImplicitBufferPool->SetName(Name("RayTracingDstImplicitBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_dstImplicitBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing destination implicit buffer pool");
+        }
+
+        // create destination addresses array buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetDstAddressesArrayBufferBindFlags();
+
+            m_dstAddressesArrayBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_dstAddressesArrayBufferPool->SetName(Name("RayTracingDstAddressesArrayBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_dstAddressesArrayBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing destination addresses array buffer pool");
+        }
+
+        // create destination sizes array buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetDstSizesArrayBufferBindFlags();
+
+            m_dstSizesArrayBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_dstSizesArrayBufferPool->SetName(Name("RayTracingDstSizesArrayBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_dstSizesArrayBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing destination sizes array buffer pool");
+        }
+
+        // create source infos array buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetSrcInfosArrayBufferBindFlags();
+
+            m_srcInfosArrayBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_srcInfosArrayBufferPool->SetName(Name("RayTracingSrcInfosArrayBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_srcInfosArrayBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing source infos array buffer pool");
+        }
+
+        // create source infos count buffer pool
+        {
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_bindFlags = GetSrcInfosCountBufferBindFlags();
+
+            m_srcInfosCountBufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_srcInfosCountBufferPool->SetName(Name("RayTracingSrcInfosCountBufferPool"));
+            [[maybe_unused]] RHI::ResultCode resultCode = m_srcInfosCountBufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to initialize ray tracing source infos count buffer pool");
         }
 
         // create TLAS Instances buffer pool

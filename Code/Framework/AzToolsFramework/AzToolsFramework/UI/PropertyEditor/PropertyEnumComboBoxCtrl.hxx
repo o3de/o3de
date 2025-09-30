@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_ENUMCOMBOBOX_CTRL
-#define PROPERTY_ENUMCOMBOBOX_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -30,7 +30,7 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    class PropertyEnumComboBoxCtrl
+    class AZTF_API PropertyEnumComboBoxCtrl
         : public QWidget
     {
         Q_OBJECT
@@ -202,35 +202,35 @@ namespace AzToolsFramework
 
     };
 
-    class charEnumPropertyComboBoxHandler
+    class AZTF_API charEnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<char>
     {
     public:
         AZ_CLASS_ALLOCATOR(charEnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class s8EnumPropertyComboBoxHandler
+    class AZTF_API s8EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s8>
     {
     public:
         AZ_CLASS_ALLOCATOR(s8EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class u8EnumPropertyComboBoxHandler
+    class AZTF_API u8EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u8>
     {
     public:
         AZ_CLASS_ALLOCATOR(u8EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class s16EnumPropertyComboBoxHandler
+    class AZTF_API s16EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s16>
     {
     public:
         AZ_CLASS_ALLOCATOR(s16EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class u16EnumPropertyComboBoxHandler
+    class AZTF_API u16EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u16>
     {
     public:
@@ -238,35 +238,33 @@ namespace AzToolsFramework
     };
 
     // Default: int
-    class defaultEnumPropertyComboBoxHandler
+    class AZTF_API defaultEnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<int>
     {
     public:
         AZ_CLASS_ALLOCATOR(defaultEnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class u32EnumPropertyComboBoxHandler
+    class AZTF_API u32EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u32>
     {
     public:
         AZ_CLASS_ALLOCATOR(u32EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class s64EnumPropertyComboBoxHandler
+    class AZTF_API s64EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::s64>
     {
     public:
         AZ_CLASS_ALLOCATOR(s64EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    class u64EnumPropertyComboBoxHandler
+    class AZTF_API u64EnumPropertyComboBoxHandler
         : public GenericEnumPropertyComboBoxHandler<AZ::u64>
     {
     public:
         AZ_CLASS_ALLOCATOR(u64EnumPropertyComboBoxHandler, AZ::SystemAllocator);
     };
 
-    void RegisterEnumComboBoxHandler();
+    AZTF_API void RegisterEnumComboBoxHandler();
 };
-
-#endif

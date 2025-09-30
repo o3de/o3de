@@ -23,9 +23,9 @@ namespace Archive
 {
     inline namespace literals
     {
-        constexpr AZ::u64 operator"" _kib(AZ::u64 value);
-        constexpr AZ::u64 operator"" _mib(AZ::u64 value);
-        constexpr AZ::u64 operator"" _gib(AZ::u64 value);
+        constexpr AZ::u64 operator ""_kib(AZ::u64 value);
+        constexpr AZ::u64 operator ""_mib(AZ::u64 value);
+        constexpr AZ::u64 operator ""_gib(AZ::u64 value);
     }
 
     // tag index that indicates the archived content being examined is uncompressed

@@ -17,12 +17,13 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     //! This component manages the lifecycle of the UI-related factories and interfaces and initializes the ones that are 
     //! supported by the current platform.
-    class NativeUISystemComponent
+    class AZF_API NativeUISystemComponent
         : public AZ::Component
     {
     public:

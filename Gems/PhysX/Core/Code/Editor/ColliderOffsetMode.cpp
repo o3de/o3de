@@ -39,7 +39,7 @@ namespace PhysX
         m_translationManipulators.SetNonUniformScale(nonUniformScale);
         m_translationManipulators.SetLocalPosition(colliderOffset);
         m_translationManipulators.AddEntityComponentIdPair(idPair);
-        m_translationManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_translationManipulators.Register(AzToolsFramework::GetMainManipulatorManagerId());
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
 
         m_translationManipulators.InstallLinearManipulatorMouseMoveCallback([this, idPair](

@@ -6,9 +6,9 @@
  *
  */
 
-#ifndef AZ_COMBOBOX_HXX
-#define AZ_COMBOBOX_HXX
+#pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -20,7 +20,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
-    class DHQComboBox
+    class AZTF_API DHQComboBox
         : public QComboBox
     {
     public:
@@ -40,5 +40,3 @@ namespace AzToolsFramework
         QString m_headerOverride;
     };
 }
-
-#endif

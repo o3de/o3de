@@ -43,7 +43,7 @@ namespace PhysX
         views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(manipulatorColor, manipulatorSize));
         m_manipulator->SetViews(AZStd::move(views));
 
-        m_manipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_manipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentId.GetEntityId());
     }
 

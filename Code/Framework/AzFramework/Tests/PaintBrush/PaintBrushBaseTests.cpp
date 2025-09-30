@@ -164,7 +164,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnBrushStrokeBegin)
             .WillByDefault(
-                [=](const AZ::Color& strokeColor)
+                [this](const AZ::Color& strokeColor)
                 {
                     EXPECT_THAT(TestColor, IsClose(strokeColor));
                     return TestColor;
@@ -190,7 +190,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnGetColor)
             .WillByDefault(
-                [=](const AZ::Vector3& brushCenterPoint)
+                [this](const AZ::Vector3& brushCenterPoint)
                 {
                     // We expect the brush center to match what we passed in but with a Z value of 0
                     // because we only support painting in 2D for now.
@@ -217,7 +217,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnGetColor)
             .WillByDefault(
-                [=](const AZ::Vector3& brushCenterPoint)
+                [this](const AZ::Vector3& brushCenterPoint)
                 {
                     // We expect the brush center to match what we passed in but with a Z value of 0
                     // because we only support painting in 2D for now.

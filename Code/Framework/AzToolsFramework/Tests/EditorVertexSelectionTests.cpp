@@ -161,7 +161,7 @@ namespace UnitTest
     {
         namespace aztf = AzToolsFramework;
         m_vertexSelection.Create(
-            AZ::EntityComponentIdPair(m_entityId, TestComponentId), aztf::g_mainManipulatorManagerId,
+            AZ::EntityComponentIdPair(m_entityId, TestComponentId), aztf::GetMainManipulatorManagerId(),
             AZStd::make_unique<aztf::NullHoverSelection>(), aztf::TranslationManipulators::Dimensions::Three,
             aztf::ConfigureTranslationManipulatorAppearance3d);
     }

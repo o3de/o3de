@@ -15,6 +15,9 @@
 ShaderResourceGroup SceneMaterialSrg : SRG_PerMaterial
 {
     ByteAddressBuffer m_materialTypeBufferIndices;
+    // fallback texture index for GetMaterialTexture() in case the texture index is negative.
+    uint m_nullTextureIndex;
+
 #ifdef AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY
     // sampler 0 is the default linear wrap sampler, the others are initialized by the MaterialSystem as needed
     Sampler m_samplers[SCENE_MATERIALS_MAX_SAMPLERS];
@@ -39,10 +42,9 @@ Texture2D GetMaterialTexture(const int readIndex)
     int localReadIndex = readIndex; 
     if (localReadIndex < 0)
     {
-        // TODO: choose a suitable fallback texture here.
-        localReadIndex = 0;
+        localReadIndex = SceneMaterialSrg::m_nullTextureIndex;
     }
-    return Bindless::GetTexture2D(readIndex);
+    return Bindless::GetTexture2D(localReadIndex);
 }
 
 const MaterialParameters GetMaterialParameters(const int materialTypeId, const int materialInstanceId)

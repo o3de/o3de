@@ -94,7 +94,7 @@ namespace AZ
 
         void MeshletsFeatureProcessor::Activate()
         {
-            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessor>();
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessorInterface>();
             AZ_Assert(m_transformServiceFeatureProcessor, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             EnableSceneNotification();
@@ -262,16 +262,17 @@ namespace AZ
 // Leave the following empty if using buffers rather than vertex streams.
 //                drawRequest.m_streamBufferViews = lodRenderData->m_renderStreamBuffersViews; 
 
-                RHI::DrawPacketBuilder drawPacketBuilder;
+                RHI::DrawPacketBuilder drawPacketBuilder(RHI::MultiDevice::AllDevices);
                 RHI::DrawIndexed drawIndexed;
 
                 drawIndexed.m_indexCount = lodRenderData->IndexCount;
                 drawIndexed.m_indexOffset = 0;
                 drawIndexed.m_vertexOffset = 0;
+                m_geometryView.SetDrawArguments(drawIndexed);
+                m_geometryView.SetIndexBufferView(lodRenderData->IndexBufferView);
 
                 drawPacketBuilder.Begin(nullptr);
-                drawPacketBuilder.SetDrawArguments(drawIndexed);
-                drawPacketBuilder.SetIndexBufferView(lodRenderData->IndexBufferView);
+                drawPacketBuilder.SetGeometryView(&m_geometryView);
 
                 // Add the object Id to the Srg - once instancing is supported, the ObjectId and the
                 // render Srg should be per instance / draw and not per object.
@@ -289,7 +290,7 @@ namespace AZ
 
                 // Change the following line in order to support instancing.
                 // For instancing the data cannot be associated 1:1 with the object
-                lodRenderData->MeshDrawPacket = drawPacketBuilder.End();
+                lodRenderData->MeshDrawPacket = drawPacketBuilder.End().get();
 
                 if (!lodRenderData->MeshDrawPacket)
                 {

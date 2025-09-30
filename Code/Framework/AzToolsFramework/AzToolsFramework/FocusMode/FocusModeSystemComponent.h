@@ -14,13 +14,14 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    bool IsInFocusSubTree(AZ::EntityId entityId, AZ::EntityId focusRootId);
+    AZTF_API bool IsInFocusSubTree(AZ::EntityId entityId, AZ::EntityId focusRootId);
 
     //! System Component to handle the Editor Focus Mode system
-    class FocusModeSystemComponent final
+    class AZTF_API FocusModeSystemComponent final
         : public AZ::Component
         , private FocusModeInterface
         , private EditorEntityInfoNotificationBus::Handler

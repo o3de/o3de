@@ -131,7 +131,7 @@ namespace GradientSignal
         // Create the paintbrush manipulator with the appropriate color space.
         m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(
             worldFromLocal, entityComponentIdPair, AzToolsFramework::PaintBrushColorMode::Greyscale);
-        m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_brushManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()

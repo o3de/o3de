@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -20,7 +21,7 @@ namespace AzToolsFramework
         class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
 
-        class PrefabOverridePublicHandler : public PrefabOverridePublicRequestBus::Handler
+        class AZTF_API PrefabOverridePublicHandler : public PrefabOverridePublicRequestBus::Handler
         {
         public:
             PrefabOverridePublicHandler();

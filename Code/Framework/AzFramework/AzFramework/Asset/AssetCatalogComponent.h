@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AzFramework
 {
     class AssetCatalog;
 
-    class AssetCatalogComponent
+    class AZF_API AssetCatalogComponent
         : public AZ::Component
     {
     public:

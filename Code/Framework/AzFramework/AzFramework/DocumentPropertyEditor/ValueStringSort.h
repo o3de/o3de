@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class ValueStringSort : public RowSortAdapter
+    class AZF_API ValueStringSort : public RowSortAdapter
     {
     public:
         ValueStringSort();

@@ -24,6 +24,10 @@ set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS "")
 # those 3rd Party targets ONLY.
 set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 
+# C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
+# This is problematic if 3rd-party libraries use such operations in header files.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
@@ -64,6 +68,8 @@ ly_append_configurations_options(
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
         /wd4324 #  warning C4324: 'std::tuple<...>': structure was padded due to alignment specifier. This warning is triggered whenever a simd type is used with the MSVC std::optional or std::tuple types, which is namespaced into AZStd
         /wd4251 # Don't warn if a class with dllexport attribute has nonstatic members which don't have the dllexport attribute
+        /wd4275 # non dll-interface class 'XXXXX' used as base for dll-interface class 'XXXXX'
+        /wd4910 # '__declspec(dllexport)' and 'extern' are incompatible on an explicit instantiation
 
         ###################
         # Enabled warnings (that are disabled by default from /W4)
@@ -79,6 +85,7 @@ ly_append_configurations_options(
         #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
         /we4774 # 'string' : format string expected in argument number is not a string literal
         /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
+        /we4855 # implicit capture of 'this' via '[=]' is deprecated in 'version'
         /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
         /we5233 # explicit lambda capture 'identifier' is not used
@@ -93,7 +100,7 @@ ly_append_configurations_options(
         /GS             # Enable Buffer security check
         /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
-        /Ob0            # Disables inline expansions
+        /Ob2            # Inline any suitable function
         /Od             # Disables optimization
     COMPILATION_PROFILE
         /GF             # Enable string pooling
@@ -127,13 +134,13 @@ ly_append_configurations_options(
 # More details about the compiler cache can be found in CompilerCache.cmake
 
 if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true") AND NOT O3DE_SCRIPT_ONLY)
-    o3de_compiler_cache_activation() # Activates the compiler cache
+    o3de_compiler_cache_activation(cache_exe_path) # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
     cmake_policy(SET CMP0141 NEW)
     set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
-    set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
-    set(CMAKE_CXX_COMPILER_LAUNCHER ${CMAKE_BINARY_DIR}/cl.exe)
+    set(CMAKE_C_COMPILER_LAUNCHER ${cache_exe_path})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${cache_exe_path})
 
     # Fallback to compiler flags if the debug format doesn't work, which can depend on CMake version
     ly_append_configurations_options(

@@ -10,6 +10,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include "StreamingInstallRequests.h"
+#include <AzFramework/AzFrameworkAPI.h>
 
  // Performance and release configurations disable trace notifications
  // enable this to display standard printfs for debugging
@@ -19,7 +20,7 @@ namespace AzFramework
 {
     namespace StreamingInstall
     {
-        class StreamingInstallSystemComponent : public AZ::Component
+        class AZF_API StreamingInstallSystemComponent : public AZ::Component
             , public StreamingInstallRequestBus::Handler
         {
         public:
@@ -84,4 +85,4 @@ namespace AzFramework
             AZStd::unique_ptr<Implementation> m_pimpl;
         };
     } //namespace StreamingInstall
-}
+} // namespace AzFramework

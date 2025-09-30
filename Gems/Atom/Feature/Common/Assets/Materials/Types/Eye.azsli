@@ -22,7 +22,8 @@
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_VertexEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_PixelGeometryEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_SurfaceEval.azsli>
-    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/Skin/Skin_LightingEval.azsli>
+
 #else
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
 #endif

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzFramework/Device/DeviceAttributeInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -21,7 +22,7 @@ namespace AzFramework
     //! set this value based on the amount physical RAM
     //! installed which may be more than is actually
     //! available for use.
-    class DeviceAttributeRAM : public DeviceAttribute
+    class AZF_API DeviceAttributeRAM : public DeviceAttribute
     {
     public:
         DeviceAttributeRAM();

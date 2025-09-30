@@ -25,7 +25,7 @@ namespace AZ::Data
         struct AssetDataStreamPrivate;
     }
 
-    class AssetDataStream : public AZ::IO::GenericStream
+    class AZCORE_API AssetDataStream : public AZ::IO::GenericStream
     {
     public:
         using VectorDataSource = AZStd::vector<AZ::u8, AZStd::allocator>;

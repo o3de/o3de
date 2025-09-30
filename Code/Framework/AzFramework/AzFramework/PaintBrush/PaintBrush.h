@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 #include <AzFramework/PaintBrush/PaintBrushSettings.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -29,7 +30,7 @@ namespace AzFramework
     //! knowledge of the exact shape, size, and hardness of the paintbrush. The separation allows the paintbrush to add
     //! features over time without having to change the listeners, and it enables more systems to use the paintbrush without requiring
     //! specialized logic inside the paintbrush itself.
-    class PaintBrush
+    class AZF_API PaintBrush
     {
 
     public:

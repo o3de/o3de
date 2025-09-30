@@ -23,7 +23,7 @@ namespace AZ
     class ReflectContext;
 
     //! 3-dimensional vector class.
-    class Vector3
+    class AZCORE_API Vector3
     {
     public:
 
@@ -247,6 +247,8 @@ namespace AZ
         Vector3& operator/=(const Vector3& rhs);
         Vector3& operator*=(float multiplier);
         Vector3& operator/=(float divisor);
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector3 GetSin() const;

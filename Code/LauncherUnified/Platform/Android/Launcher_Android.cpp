@@ -206,6 +206,7 @@ namespace
         {
             case APP_CMD_GAINED_FOCUS:
             {
+                androidEnv->SetIsRunning(true);
                 AzFramework::AndroidLifecycleEvents::Bus::Broadcast(
                     &AzFramework::AndroidLifecycleEvents::Bus::Events::OnGainedFocus);
             }
@@ -228,7 +229,6 @@ namespace
 
             case APP_CMD_RESUME:
             {
-                androidEnv->SetIsRunning(true);
                 AzFramework::AndroidLifecycleEvents::Bus::Broadcast(
                     &AzFramework::AndroidLifecycleEvents::Bus::Events::OnResume);
             }

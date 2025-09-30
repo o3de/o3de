@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Channels/InputChannelAxis3D.h>
 #include <AzFramework/Input/Channels/InputChannelQuaternion.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -22,8 +23,8 @@ namespace AzFramework
     //! instance of this generic class will work correctly on any platform that support motion input,
     //! while providing access to the device name and associated channel ids on any platform through
     //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
-    class InputDeviceMotion : public InputDevice
-                            , public InputMotionSensorRequestBus::Handler
+    class AZF_API InputDeviceMotion : public InputDevice
+                                    , public InputMotionSensorRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +211,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of motion input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////

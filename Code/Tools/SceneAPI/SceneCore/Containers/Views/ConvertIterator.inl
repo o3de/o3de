@@ -86,12 +86,12 @@ namespace AZ
                 }
 
                 template<typename Iterator, typename ReturnType>
-                bool ConvertIterator<Iterator, ReturnType, AZStd::input_iterator_tag>::operator==(const typename super::RootIterator& rhs) const
+                bool ConvertIterator<Iterator, ReturnType, AZStd::input_iterator_tag>::operator==(const ConvertIterator& rhs) const
                 {
                     return super::m_iterator == rhs.m_iterator;
                 }
                 template<typename Iterator, typename ReturnType>
-                bool ConvertIterator<Iterator, ReturnType, AZStd::input_iterator_tag>::operator!=(const typename super::RootIterator& rhs) const
+                bool ConvertIterator<Iterator, ReturnType, AZStd::input_iterator_tag>::operator!=(const ConvertIterator& rhs) const
                 {
                     return super::m_iterator != rhs.m_iterator;
                 }

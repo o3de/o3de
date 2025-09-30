@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -30,7 +31,7 @@
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 
-AZ_DECLARE_BUDGET(PrefabSystem);
+AZ_DECLARE_BUDGET_SHARED(PrefabSystem);
 
 namespace AZ
 {
@@ -50,7 +51,7 @@ namespace AzToolsFramework
         /**
         * The prefab system component provides a central point for owning manipulating prefabs.
         */
-        class PrefabSystemComponent
+        class AZTF_API PrefabSystemComponent
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler

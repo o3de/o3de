@@ -14,6 +14,7 @@
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -31,7 +32,7 @@ namespace AzToolsFramework
         //! Unlike other component modes, this is built as a separate pane because the controls might get fairly complex over time
         //! and will likely get used frequently while painting, so the user should have the ability to move and dock these settings
         //! to wherever is best for their paint session.
-        class GlobalPaintBrushSettingsWindow
+        class AZTF_API GlobalPaintBrushSettingsWindow
             : public QListView
             , private AzToolsFramework::IPropertyEditorNotify
             , private AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler
@@ -75,6 +76,6 @@ namespace AzToolsFramework
         };
 
         // simple factory method
-        GlobalPaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent = nullptr);
+        AZTF_API GlobalPaintBrushSettingsWindow* CreateNewPaintBrushSettingsWindow(QWidget* parent = nullptr);
     } // namespace AzToolsFramework::Internal
 } // namespace AzToolsFramework

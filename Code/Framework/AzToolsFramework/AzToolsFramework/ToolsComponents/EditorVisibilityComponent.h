@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include "EditorVisibilityBus.h"
 #include "EditorComponentBase.h"
 
@@ -15,7 +17,7 @@ namespace AzToolsFramework
     namespace Components
     {
         //! Controls whether an Entity is shown or hidden in the Editor.
-        class EditorVisibilityComponent
+        class AZTF_API EditorVisibilityComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorVisibilityRequestBus::Handler
         {

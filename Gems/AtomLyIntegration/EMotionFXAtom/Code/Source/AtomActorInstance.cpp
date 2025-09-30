@@ -694,6 +694,7 @@ namespace AZ::Render
             MeshHandleDescriptor meshDescriptor;
             meshDescriptor.m_entityId = m_entityId;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
+            meshDescriptor.m_productModelAsset = m_actorAsset->GetActor()->GetMeshAsset();
             meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
             meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
             meshDescriptor.m_isAlwaysDynamic = true;

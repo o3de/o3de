@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -23,7 +24,7 @@ namespace AzFramework
 
     //! An internal node within the tree.
     //! It contains all objects that are *fully contained* by the node, if an object spans multiple child nodes that object will be stored in the parent.
-    class OctreeNode
+    class AZF_API OctreeNode
         : public VisibilityNode
     {
     public:
@@ -91,7 +92,7 @@ namespace AzFramework
 
     //! Implementation of the visibility system interface.
     //! This uses a simple adaptive octree to support partitioning an object set for a specific scene and efficiently running gathers and visibility queries.
-    class OctreeScene
+    class AZF_API OctreeScene
         : public IVisibilityScene
     {
     public:
@@ -151,7 +152,7 @@ namespace AzFramework
 
     //! Implementation of the visibility system interface.
     //! This manages creating, destroying, and finding the underlying octrees that are associated with specific scenes
-    class OctreeSystemComponent
+    class AZF_API OctreeSystemComponent
         : public AZ::Component
         , public IVisibilitySystemRequestBus::Handler
     {

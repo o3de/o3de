@@ -6,18 +6,17 @@
  *
  */
 
-#ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATION_H
-#define AZTOOLSFRAMEWORK_TOOLSAPPLICATION_H
+#pragma once
+
 
 #include <AzCore/base.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
-
-#pragma once
 
 namespace AzToolsFramework
 {
@@ -26,9 +25,9 @@ namespace AzToolsFramework
         class UndoCacheInterface;
     }
 
-    class ToolsApplication
+    class AZTF_API ToolsApplication
         : public AzFramework::Application
-        , public ToolsApplicationRequests::Bus::Handler
+        , private ToolsApplicationRequests::Bus::Handler
         , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
@@ -191,5 +190,3 @@ namespace AzToolsFramework
         UndoSystem::UndoCacheInterface*             m_undoCacheInterface = nullptr;
     };
 } // namespace AzToolsFramework
-
-#endif // AZTOOLSFRAMEWORK_TOOLSAPPLICATION_H

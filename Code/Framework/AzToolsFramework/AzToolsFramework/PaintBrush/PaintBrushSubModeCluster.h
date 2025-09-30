@@ -10,11 +10,12 @@
 
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! Create and manage the Viewport UI SubMode cluster of buttons that enable the user to switch between paint modes.
-    class PaintBrushSubModeCluster : public AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler
+    class AZTF_API PaintBrushSubModeCluster : public AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler
     {
     public:
         PaintBrushSubModeCluster();

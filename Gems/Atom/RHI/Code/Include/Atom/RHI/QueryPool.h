@@ -24,7 +24,7 @@ namespace AZ::RHI
     //! QueryPool manages a map of device-specific QueryPools, which provide backing storage and context for query instances. The
     //! QueryPoolDescriptor contains properties defining memory characteristics of query pools. All queries created on a pool share the same
     //! backing and type.
-    class QueryPool : public ResourcePool
+    class ATOM_RHI_PUBLIC_API QueryPool : public ResourcePool
     {
         using Base = ResourcePool;
 

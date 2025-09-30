@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include "EditorComponentBase.h"
 #include "EditorPendingCompositionBus.h"
 
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     namespace Components
     {
         //! Custom serializer to handle component data in the composition component.
-        class EditorPendingCompositionComponentSerializer
+        class AZTF_API EditorPendingCompositionComponentSerializer
             : public AZ::BaseJsonSerializer
         {
         public:
@@ -32,7 +33,7 @@ namespace AzToolsFramework
         };
 
         //! Contains pending components to be added to the entity we are attached to.
-        class EditorPendingCompositionComponent
+        class AZTF_API EditorPendingCompositionComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorPendingCompositionRequestBus::Handler
         {

@@ -18,9 +18,11 @@ namespace AZ::Render
     {
         InstanceIndex,
         InstanceID,
+        ClusterID,
         PrimitiveIndex,
         Barycentrics,
         Normals,
         UVs,
+        BaseColor
     };
 } // namespace AZ::Render

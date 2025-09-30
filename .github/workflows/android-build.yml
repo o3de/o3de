@@ -14,22 +14,22 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      compiler: 
+      compiler:
         required: true
         type: string
-      config: 
+      config:
         required: true
         type: string
-      image: 
+      image:
         required: true
         type: string
-      platform: 
+      platform:
         required: true
         type: string
-      type: 
+      type:
         required: true
         type: string
-      last_artifact: 
+      last_artifact:
         required: false
         type: boolean
 
@@ -177,7 +177,11 @@ jobs:
       - name: Set MSBuild options
         # Configuire VS environment variables through the developer command prompt for MSVC
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
-                
+
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 #v4.4.2
+        with:
+          gradle-version: '8.12'
       - name: Configure environment
         # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
@@ -189,10 +193,14 @@ jobs:
 
           echo "Installing NDK ${{ env.NDK_VERSION }}..."
           & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+
+          echo "Accepting Android SDK licenses..."
+          "y`ny" | & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --licenses --sdk_root=$env:ANDROID_HOME
+
           echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV
           echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
           echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
-          echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
+          echo "USE_GRADLE_FROM_PATH=1" >> $env:GITHUB_ENV
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json
@@ -201,6 +209,7 @@ jobs:
         timeout-minutes: 330
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
+          $env:LY_PACKAGE_SERVER_URLS = "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp" 
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build

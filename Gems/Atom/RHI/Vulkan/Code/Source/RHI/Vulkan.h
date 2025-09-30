@@ -181,31 +181,48 @@ namespace AZ
         bool operator==(const VkBufferMemoryBarrier& lhs, const VkBufferMemoryBarrier& rhs);
         bool operator==(const VkImageMemoryBarrier& lhs, const VkImageMemoryBarrier& rhs);
 
-        /// Appends a list of Vulkan structs to end of the "next" chain
-        template<class T>
-        void AppendVkStruct(T& init, const AZStd::vector<void*>& nextStructs)
+        /// Appends Vulkan structs to the end of the "next" chain.
+        class StructAppender
         {
-            VkBaseOutStructure* baseStruct = reinterpret_cast<VkBaseOutStructure*>(&init);
-            // Find the last struct in the chain
-            while (baseStruct->pNext)
+        private:
+            VkBaseOutStructure* m_last;
+
+        public:
+            /// Initialize with the original struct
+            template<class T>
+            inline StructAppender(T& init)
+                : m_last(reinterpret_cast<VkBaseOutStructure*>(&init))
             {
-                baseStruct = baseStruct->pNext;
+                while (m_last->pNext)
+                {
+                    m_last = m_last->pNext;
+                }
             }
 
-            // Add the new structs to the chain
-            for (void* nextStruct : nextStructs)
+            /// Appends a Vulkan struct to end of the "next" chain
+            template<class T>
+            inline void append(T& nextStruct)
             {
-                baseStruct->pNext = reinterpret_cast<VkBaseOutStructure*>(nextStruct);
-                baseStruct = baseStruct->pNext;
+                m_last->pNext = reinterpret_cast<VkBaseOutStructure*>(&nextStruct);
+                m_last = m_last->pNext;
             }
-        }
 
-        /// Appends a Vulkan struct to end of the "next" chain
-        template<class T>
-        void AppendVkStruct(T& init, void* nextStruct)
-        {
-            AppendVkStruct(init, AZStd::vector<void*>{ nextStruct });
-        }
+            /// Appends multiple Vulkan structs to end of the "next" chain
+            inline void append(const AZStd::vector<void*>& nextStructs)
+            {
+                for (void* nextStruct : nextStructs)
+                {
+                    m_last->pNext = reinterpret_cast<VkBaseOutStructure*>(nextStruct);
+                    m_last = m_last->pNext;
+                }
+            }
+
+            /// Sets the next pointer of the last element to nullptr mark the ending of the chain.
+            inline void finish()
+            {
+                m_last->pNext = nullptr;
+            }
+        };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(VkImageLayout);
     }

@@ -362,24 +362,18 @@ namespace spline
     }
 
     /****************************************************************************
-    **                            Key classes                                                                    **
+    **                            Key classes                                  **
     ****************************************************************************/
-    template    <class T>
-    struct  SplineKey
+    template <class T>
+    struct SplineKey
     {
-        typedef T   value_type;
+        typedef T value_type;
 
-        float               time;       //!< Key time.
-        int                 flags;  //!< Key flags.
-        value_type  value;  //!< Key value.
-        value_type  ds;         //!< Incoming tangent.
-        value_type  dd;         //!< Outgoing tangent.
-        SplineKey()
-        {
-            memset(this, 0, sizeof(SplineKey));
-        }
-
-        SplineKey& operator=(const SplineKey& src) { memcpy(this, &src, sizeof(*this)); return *this; }
+        float time = 0;                 //!< Key time.
+        int flags = 0;                  //!< Key flags.
+        value_type value = type_zero(); //!< Key value.
+        value_type ds = type_zero();    //!< Incoming tangent.
+        value_type dd = type_zero();    //!< Outgoing tangent.
 
         static void Reflect(AZ::ReflectContext* context) {}
     };

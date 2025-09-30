@@ -37,9 +37,9 @@ namespace UnitTest
 
         LeakDetectionBase() = default;
         LeakDetectionBase(const LeakDetectionBase&) = default;
-        LeakDetectionBase(LeakDetectionBase&&) = default;
-        LeakDetectionBase& operator=(const LeakDetectionBase&) = default;
-        LeakDetectionBase& operator=(LeakDetectionBase&&) = default;
+        LeakDetectionBase(LeakDetectionBase&&) = delete;
+        LeakDetectionBase& operator=(const LeakDetectionBase&) = delete;
+        LeakDetectionBase& operator=(LeakDetectionBase&&) = delete;
         virtual ~LeakDetectionBase() = default;
 
         AllocatedSizesMap GetAllocatedSizes()
@@ -65,7 +65,7 @@ namespace UnitTest
         {
             if (m_cleanUpGenericClassInfo)
             {
-                AZ::GetCurrentSerializeContextModule().Cleanup();
+                AZ::GetGlobalSerializeContextModule().Cleanup();
             }
             AZ::AllocatorManager::Instance().GarbageCollect();
 
@@ -139,39 +139,61 @@ namespace UnitTest
     {
     public:
         //Benchmark interface
-        void SetUp(const ::benchmark::State&) override
+
+        // Note that the "this" pointer is going to be a singleton, but this function gets called once per thread
+        // and is done overlapping with other threads calling the same function on the same `this` pointer, so
+        // do things that are thread-safe here, and only initialize things once.
+        void SetUp(const ::benchmark::State& state) override
+        {
+            
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
+
+            if (state.thread_index() == 0)
+            {
+                AZ::AllocatorManager::Instance().EnterProfilingMode();
+                m_allocatedSizes = GetAllocatedSizes();
+            }
+        }
+        void SetUp(::benchmark::State& state) override
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
-            m_allocatedSizes = GetAllocatedSizes();
-        }
-        void SetUp(::benchmark::State&) override
-        {
-            AZ::AllocatorManager::Instance().EnterProfilingMode();
-            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_FULL);
-            m_allocatedSizes = GetAllocatedSizes();
+            if (state.thread_index() == 0)
+            {
+                AZ::AllocatorManager::Instance().EnterProfilingMode();
+                m_allocatedSizes = GetAllocatedSizes();
+            }
         }
 
-        void TearDown(const ::benchmark::State&) override
+        void TearDown(const ::benchmark::State& state) override
         {
-            CheckAllocatorsForLeaks();
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
-            AZ::AllocatorManager::Instance().ExitProfilingMode();
+            if (state.thread_index() == 0)
+            {
+                CheckAllocatorsForLeaks();
+                AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
+                AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
+                AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+                AZ::AllocatorManager::Instance().ExitProfilingMode();
+                m_allocatedSizes = {};
+            }
         }
 
-        void TearDown(::benchmark::State&) override
+        void TearDown(::benchmark::State& state) override
         {
-            CheckAllocatorsForLeaks();
-            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
-            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
-            AZ::AllocatorManager::Instance().ExitProfilingMode();
+            if (state.thread_index() == 0)
+            {
+                CheckAllocatorsForLeaks();
+                AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
+                AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
+                AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+                AZ::AllocatorManager::Instance().ExitProfilingMode();
+                m_allocatedSizes = {};
+            }
+
         }
     };
 

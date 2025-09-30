@@ -40,7 +40,7 @@ namespace AZ
             Submitted,
             Signalled,
         };
-        class CompiledTaskGraphTracker final
+        class AZCORE_API CompiledTaskGraphTracker final
         {
         public:
             CompiledTaskGraphTracker(TaskExecutor* executor [[maybe_unused]])
@@ -74,7 +74,7 @@ namespace AZ
 #endif
         };
 
-        class CompiledTaskGraph final
+        class AZCORE_API CompiledTaskGraph final
         {
         public:
             AZ_CLASS_ALLOCATOR(CompiledTaskGraph, SystemAllocator);
@@ -116,7 +116,7 @@ namespace AZ
         class TaskWorker;
     } // namespace Internal
 
-    class TaskExecutor final
+    class AZCORE_API TaskExecutor final
     {
     public:
         AZ_CLASS_ALLOCATOR(TaskExecutor, SystemAllocator);

@@ -37,17 +37,17 @@ namespace AZ
         // Save functions
 
         //! Save a json document to text. Otherwise returns a failure with error message.
-        AZ::Outcome<void, AZStd::string> WriteJsonString(const rapidjson::Document& document, AZStd::string& jsonText, WriteJsonSettings settings = WriteJsonSettings{});
+        AZCORE_API AZ::Outcome<void, AZStd::string> WriteJsonString(const rapidjson::Document& document, AZStd::string& jsonText, WriteJsonSettings settings = WriteJsonSettings{});
 
         //! Save a json document to a file. Otherwise returns a failure with error message.
-        AZ::Outcome<void, AZStd::string> WriteJsonFile(const rapidjson::Document& document, AZStd::string_view filePath, WriteJsonSettings settings = WriteJsonSettings{});
+        AZCORE_API AZ::Outcome<void, AZStd::string> WriteJsonFile(const rapidjson::Document& document, AZStd::string_view filePath, WriteJsonSettings settings = WriteJsonSettings{});
 
         //! Save a json document to a stream. Otherwise returns a failure with error message.
-        AZ::Outcome<void, AZStd::string> WriteJsonStream(const rapidjson::Document& document, IO::GenericStream& stream, WriteJsonSettings settings = WriteJsonSettings{});
+        AZCORE_API AZ::Outcome<void, AZStd::string> WriteJsonStream(const rapidjson::Document& document, IO::GenericStream& stream, WriteJsonSettings settings = WriteJsonSettings{});
 
-        AZ::Outcome<void, AZStd::string> SaveObjectToStreamByType(const void* objectPtr, const Uuid& objectType, IO::GenericStream& stream,
+        AZCORE_API AZ::Outcome<void, AZStd::string> SaveObjectToStreamByType(const void* objectPtr, const Uuid& objectType, IO::GenericStream& stream,
             const void* defaultObjectPtr = nullptr, const JsonSerializerSettings* settings = nullptr);
-        AZ::Outcome<void, AZStd::string> SaveObjectToFileByType(const void* objectPtr, const Uuid& objectType, const AZStd::string& filePath,
+        AZCORE_API AZ::Outcome<void, AZStd::string> SaveObjectToFileByType(const void* objectPtr, const Uuid& objectType, const AZStd::string& filePath,
             const void* defaultObjectPtr = nullptr, const JsonSerializerSettings* settings = nullptr);
 
         template <typename ObjectType>
@@ -68,22 +68,22 @@ namespace AZ
         // Load functions
 
         //! Parse json text. Returns a failure with error message if the content is not valid JSON.
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonString(AZStd::string_view jsonText);
+        AZCORE_API AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonString(AZStd::string_view jsonText);
 
         //! Parse a json file. Returns a failure with error message if the content is not valid JSON or if
         //! the file size is larger than the max file size provided.
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(
+        AZCORE_API AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
         //! Parse a json stream. Returns a failure with error message if the content is not valid JSON.
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonStream(IO::GenericStream& stream);
+        AZCORE_API AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonStream(IO::GenericStream& stream);
 
         //! Load object with known class type
         //! Even if errorsOut contains errors, the load to an object could have succeeded
-        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
+        AZCORE_API AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
             AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr);
 
-        AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
+        AZCORE_API AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
             AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr);
 
         template <typename ObjectType>
@@ -95,10 +95,10 @@ namespace AZ
 
         //! Load object with known class type
         //! returns a failure on any error encountered during loading
-        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
+        AZCORE_API AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
             const JsonDeserializerSettings* settings = nullptr);
 
-        AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
+        AZCORE_API AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
             const JsonDeserializerSettings* settings = nullptr);
 
         template <typename ObjectType>
@@ -126,8 +126,8 @@ namespace AZ
         }
 
         //! Load any object
-        AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromStream(IO::GenericStream& stream, const JsonDeserializerSettings* settings = nullptr);
-        AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromFile(const AZStd::string& filePath,const JsonDeserializerSettings* settings = nullptr);
+        AZCORE_API AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromStream(IO::GenericStream& stream, const JsonDeserializerSettings* settings = nullptr);
+        AZCORE_API AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromFile(const AZStd::string& filePath,const JsonDeserializerSettings* settings = nullptr);
 
     } // namespace JsonSerializationUtils
 } // namespace Az

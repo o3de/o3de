@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelAnalog.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional analog input values and a position.
     //! Example: touch with pressure and position
-    class InputChannelAnalogWithPosition2D : public InputChannelAnalog
+    class AZF_API InputChannelAnalogWithPosition2D : public InputChannelAnalog
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

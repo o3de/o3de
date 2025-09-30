@@ -30,6 +30,11 @@ namespace AzToolsFramework::Prefab
 {
     const AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
+    AZStd::string_view GetHotReloadToggleKey()
+    {
+        return HotReloadToggleKey;
+    }
+
     bool IsHotReloadingEnabled()
     {
         bool isHotReloadingEnabled = false;

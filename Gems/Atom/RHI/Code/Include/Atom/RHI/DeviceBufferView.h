@@ -16,7 +16,7 @@ namespace AZ::RHI
 
     //! DeviceBufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
     //! It associates 1-to-1 with a BufferViewDescriptor.
-    class DeviceBufferView
+    class ATOM_RHI_PUBLIC_API DeviceBufferView
         : public DeviceResourceView
     {
     public:
@@ -24,6 +24,7 @@ namespace AZ::RHI
         virtual ~DeviceBufferView() = default;
 
         static constexpr uint32_t InvalidBindlessIndex = static_cast<uint32_t>(-1);
+        static constexpr uint64_t InvalidDeviceAddress = static_cast<uint64_t>(-1);
 
         //! Initializes the buffer view with the provided buffer and view descriptor.
         ResultCode Init(const DeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor);
@@ -52,6 +53,11 @@ namespace AZ::RHI
         virtual uint32_t GetBindlessReadWriteIndex() const
         {
             return InvalidBindlessIndex;
+        }
+
+        virtual uint64_t GetDeviceAddress() const
+        {
+            return InvalidDeviceAddress;
         }
 
     protected:

@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/PlatformDef.h>
 
 #include <QString>
@@ -30,7 +32,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class ComponentTypeMimeData
+    class AZTF_API ComponentTypeMimeData
     {
     public:
 
@@ -43,7 +45,7 @@ namespace AzToolsFramework
         static bool Get(const QMimeData* mimeData, ClassDataContainer& container);
     };
 
-    class ComponentMimeData
+    class AZTF_API ComponentMimeData
     {
     public:
         virtual ~ComponentMimeData() = default;

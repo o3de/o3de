@@ -68,6 +68,6 @@ namespace AZ
 
         //! helper function for getting the profiler capture location from the settings registry that
         //! includes fallback handing in the event the registry value can't be determined
-        AZ::IO::FixedMaxPathString GetProfilerCaptureLocation();
+        AZCORE_API AZ::IO::FixedMaxPathString GetProfilerCaptureLocation();
     } // namespace Debug
 } // namespace AZ

@@ -67,11 +67,11 @@ namespace AZ
     }
     namespace CommonOnDemandReflections
     {
-        void ReflectCommonString(ReflectContext* context);
-        void ReflectCommonFixedString(ReflectContext* context);
-        void ReflectCommonStringView(ReflectContext* context);
-        void ReflectStdAny(ReflectContext* context);
-        void ReflectVoidOutcome(ReflectContext* context);
+        AZCORE_API void ReflectCommonString(ReflectContext* context);
+        AZCORE_API void ReflectCommonFixedString(ReflectContext* context);
+        AZCORE_API void ReflectCommonStringView(ReflectContext* context);
+        AZCORE_API void ReflectStdAny(ReflectContext* context);
+        AZCORE_API void ReflectVoidOutcome(ReflectContext* context);
     }
 
     /// OnDemand reflection for AZStd::intrusive_ptr

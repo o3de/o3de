@@ -14,16 +14,12 @@
 
 namespace AZStd
 {
-    class stateless_allocator
+    class AZCORE_API stateless_allocator
     {
     public:
         AZ_TYPE_INFO(stateless_allocator, "{E4976C53-0B20-4F39-8D41-0A76F59A7D68}");
 
         AZ_ALLOCATOR_DEFAULT_TRAITS
-
-        stateless_allocator() = default;
-        stateless_allocator(const stateless_allocator& rhs) = default;
-        stateless_allocator& operator=(const stateless_allocator& rhs) = default;
 
         pointer allocate(size_type byteSize, align_type alignment = 1);
         void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0);
@@ -40,6 +36,6 @@ namespace AZStd
         bool is_delayed_recycling();
     };
 
-    bool operator==(const stateless_allocator& left, const stateless_allocator& right);
-    bool operator!=(const stateless_allocator& left, const stateless_allocator& right);
+    AZCORE_API bool operator==(const stateless_allocator& left, const stateless_allocator& right);
+    AZCORE_API bool operator!=(const stateless_allocator& left, const stateless_allocator& right);
 }

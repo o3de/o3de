@@ -1,0 +1,45 @@
+#pragma once
+
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <OpenParticle/ParticleCommon.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+struct VertexInput
+{
+    float3 m_position : POSITION;
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT;
+    float3 m_offset : OFFSET;
+    float4 m_color : COLOR;
+    float4 m_rotation : INITROTATION;
+    float4 m_rotateVector : ROTATEVECTOR;
+    float3 m_scale : SCALE;
+};
+
+struct VertexOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VertexOutput MainVS(VertexInput input, uint instanceId : SV_instanceID)
+{
+    VertexOutput output;
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    float3x3 localRotation = AxisRadianToMatrix(input.m_rotation);
+    float3 localPosition = mul(localRotation, input.m_position * input.m_scale);
+    localPosition = mul(QuaternionToMatrix(QuatNormalize(input.m_rotateVector)), localPosition);
+
+    float3 worldPosition = mul(objectToWorld, float4(localPosition, 1.0)).xyz;
+    worldPosition += input.m_offset;
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    return output;
+}

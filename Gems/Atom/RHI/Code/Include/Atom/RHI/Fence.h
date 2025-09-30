@@ -14,7 +14,7 @@ namespace AZ::RHI
 {
     //! A multi-device synchronization primitive, holding device-specific Fences, than can be used to insert
     //! dependencies between a queue and a host
-    class Fence : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API Fence : public MultiDeviceObject
     {
     public:
         AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);

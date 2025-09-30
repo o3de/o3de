@@ -13,7 +13,7 @@
 
 namespace AZ::NativeUI
 {
-    class NativeUISystem
+    class AZCORE_API NativeUISystem
         : public NativeUIRequestBus::Handler
     {
     public:

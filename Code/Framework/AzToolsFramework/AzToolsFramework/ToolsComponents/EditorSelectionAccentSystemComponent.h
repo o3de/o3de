@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include "EditorSelectionAccentingBus.h"
@@ -15,7 +16,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class EditorSelectionAccentSystemComponent
+        class AZTF_API EditorSelectionAccentSystemComponent
             : public AZ::Component
             , public AzToolsFramework::ToolsApplicationEvents::Bus::Handler
             , public AzToolsFramework::Components::EditorSelectionAccentingRequestBus::Handler

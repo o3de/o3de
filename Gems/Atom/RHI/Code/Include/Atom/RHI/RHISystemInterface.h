@@ -16,7 +16,11 @@
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(RHI);
+#else
+AZ_DECLARE_BUDGET_SHARED(RHI);
+#endif
 
 namespace AZ::RHI
 {
@@ -31,7 +35,7 @@ namespace AZ::RHI
     struct TransientAttachmentStatistics;
     struct TransientAttachmentPoolDescriptor;
 
-    class RHISystemInterface
+    class ATOM_RHI_PUBLIC_API RHISystemInterface
     {
     public:
         AZ_RTTI(RHISystemInterface, "{B70BB184-D7D5-4C15-9C82-C9459F552F13}");
@@ -53,6 +57,8 @@ namespace AZ::RHI
         virtual int GetDeviceCount() = 0;
 
         virtual MultiDevice::DeviceMask GetRayTracingSupport() = 0;
+
+        virtual MultiDevice::DeviceMask GetRayTracingClusterAccelerationStructureSupport() = 0;
 
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 

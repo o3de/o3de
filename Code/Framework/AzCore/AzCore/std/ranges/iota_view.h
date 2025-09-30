@@ -272,21 +272,76 @@ namespace AZStd::ranges
         template<bool Enable = Internal::advanceable<W>, class = enable_if_t<Enable>>
         constexpr iterator& operator+=(difference_type n)
         {
-            m_value += n;
+            if constexpr (AZStd::Internal::is_integer_like<W>)
+            {
+                if constexpr (AZStd::Internal::is_signed_integer_like<W>)
+                {
+                    m_value = static_cast<W>(m_value + n);
+                }
+                else
+                {
+                    // If m_value is unsigned and n is signed, adding n to m_value would lead to a compile warning due to signed/unsigned
+                    // mismatch. Converting n to unsigned, however, leads to wrong results for negative values of n, so two separate
+                    // branches are required.
+                    if (n >= difference_type(0))
+                    {
+                        m_value += static_cast<W>(n);
+                    }
+                    else
+                    {
+                        m_value -= static_cast<W>(-n);
+                    }
+                }
+            }
+            else
+            {
+                m_value += n;
+            }
             return *this;
         }
 
         template<bool Enable = Internal::advanceable<W>, class = enable_if_t<Enable>>
         constexpr iterator& operator-=(difference_type n)
         {
-            m_value -= n;
+            if constexpr (AZStd::Internal::is_integer_like<W>)
+            {
+                if constexpr (AZStd::Internal::is_signed_integer_like<W>)
+                {
+                    m_value = static_cast<W>(m_value - n);
+                }
+                else
+                {
+                    // If m_value is unsigned and n is signed, subtracting n from m_value would lead to a compile warning due to
+                    // signed/unsigned mismatch. Converting n to unsigned, however, leads to wrong results for negative values of n, so two
+                    // separate branches are required.
+                    if (n >= difference_type{ 0 })
+                    {
+                        m_value -= static_cast<W>(n);
+                    }
+                    else
+                    {
+                        m_value += static_cast<W>(-n);
+                    }
+                }
+            }
+            else
+            {
+                m_value -= n;
+            }
             return *this;
         }
 
         template<bool Enable = Internal::advanceable<W>, class = enable_if_t<Enable>>
         constexpr W operator[](difference_type n) const
         {
-            return m_value + n;
+            if constexpr (AZStd::Internal::is_integer_like<W>)
+            {
+                return static_cast<W>(m_value + static_cast<W>(n));
+            }
+            else
+            {
+                return static_cast<W>(m_value + n);
+            }
         }
 
         template<bool Enable = equality_comparable<W>, class = enable_if_t<Enable>>

@@ -47,11 +47,9 @@ namespace AZ
          * Likewise, if a getter method fails, an error is emitted and an empty value or empty array
          * is returned. If validation is disabled, the operation is always performed.
          */
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_PUBLIC_API ShaderResourceGroup final
             : public AZ::Data::InstanceData
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class ShaderSystem;
             friend class ShaderResourceGroupPool;
 
@@ -546,5 +544,20 @@ namespace AZ
             return false;
         }
 
+        template <typename T>
+        T ShaderResourceGroup::GetConstant(RHI::ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
+        {
+            return m_data.GetConstant<T>(inputIndex, arrayIndex);
+        }
+
+        template <typename T>
+        T ShaderResourceGroup::GetConstant(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
+        {
+            if (inputIndex.ValidateOrFindConstantIndex(GetLayout()))
+            {
+                return GetConstant<T>(inputIndex.GetConstantIndex(), arrayIndex);
+            }
+            return false;
+        }
     } // namespace RPI
 } // namespace AZ

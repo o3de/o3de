@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -21,7 +22,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     //! GlobalPaintBrushSettingsSystemComponent owns the current global paintbrush settings for the Editor.
-    class GlobalPaintBrushSettingsSystemComponent
+    class AZTF_API GlobalPaintBrushSettingsSystemComponent
         : public AZ::Component
         , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
         , private AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Handler

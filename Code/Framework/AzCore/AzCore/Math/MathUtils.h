@@ -731,5 +731,5 @@ namespace AZ
 
     //! Creates a unit quaternion uniformly sampled from the space of all possible rotations.
     //! See Graphics Gems III, chapter 6.
-    Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
+    AZCORE_API Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
 }

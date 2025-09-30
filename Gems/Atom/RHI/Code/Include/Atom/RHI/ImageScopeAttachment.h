@@ -19,7 +19,7 @@ namespace AZ::RHI
 
     //! A specialization of a scope attachment for images. Provides
     //! access to the image view and image scope attachment descriptor.
-    class ImageScopeAttachment
+    class ATOM_RHI_PUBLIC_API ImageScopeAttachment
         : public ScopeAttachment
     {
         friend class FrameGraphCompiler;

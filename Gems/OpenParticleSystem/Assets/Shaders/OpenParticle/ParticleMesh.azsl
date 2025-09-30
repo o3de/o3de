@@ -1,0 +1,163 @@
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
+
+#include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/BlendUtility.azsli>
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
+
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/SpecularInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/AlphaInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/BaseColorInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/RoughnessInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/MetallicInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/NormalInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/ClearCoatInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/OcclusionInput.azsli"
+#include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/EmissiveInput.azsli"
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_METALLIC()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_CLEAR_COAT()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EMISSIVE()
+
+// ---------- Vertex Shader ----------
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT;
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+    float3 m_offset : OFFSET;
+    float4 m_color : COLOR;
+    float4 m_rotation : INITROTATION;
+    float4 m_rotateVector : ROTATEVECTOR;
+    float3 m_scale : SCALE;
+    uint m_instanceId : SV_InstanceID;  // Needed for intance draw
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_Depth to compile
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+    float4 m_color : COLOR;
+    uint m_instanceId: SV_InstanceID;
+};
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+
+#include <Atom/Features/SampleBrdfMap.azsli>
+#include <Atom/Features/GoboTexture.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+#include <OpenParticle/ParticleCommon.azsli>
+
+#include "ParticleMeshMaterialParameters.azsli"
+#include <Atom/Features/Materials/SingleMaterialSrg.azsli>
+#include "ParticleMeshMaterialEval.azsli"
+
+void TransformUvs(in float2 IN[UvSetCount], out float2 OUT[UvSetCount])
+{
+    OUT[0] = mul(GetMaterialParameters().m_uvMatrix, float3(IN[0], 1.0)).xy;
+    OUT[1] = IN[1];
+}
+
+
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(IN.m_instanceId);
+    float3x3 localRotation = AxisRadianToMatrix(IN.m_rotation);
+    float3 localPosition = mul(localRotation, IN.m_position * IN.m_scale);
+    localPosition = mul(QuaternionToMatrix(QuatNormalize(IN.m_rotateVector)), localPosition);
+
+    float3 worldPosition = mul(objectToWorld, float4(localPosition, 1.0)).xyz;
+    worldPosition += IN.m_offset;
+    OUT.m_worldPosition = worldPosition;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    float2 uvs[UvSetCount] = { IN.m_uv0, IN.m_uv1 };
+    TransformUvs(uvs, OUT.m_uv);
+
+    float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId);
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    
+    OUT.m_color = IN.m_color;
+    OUT.m_instanceId = IN.m_instanceId;
+    return OUT;
+}
+
+ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutput OUT;
+
+    float depth = 0;
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#if UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+#endif
+#if OUTPUT_DEPTH
+    OUT.m_depth = depth;
+#endif
+
+    return OUT;
+}
+
+[earlydepthstencil]
+ForwardPassOutput MainPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutput OUT;
+
+    float depth = 0;
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#if UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+#endif
+#if OUTPUT_DEPTH
+    OUT.m_depth = depth;
+#endif
+
+    return OUT;
+}

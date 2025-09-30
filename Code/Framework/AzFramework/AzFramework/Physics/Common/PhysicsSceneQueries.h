@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialId.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -124,13 +125,13 @@ namespace AzPhysics
         using AsyncBatchCallback = AZStd::function<void(AsyncRequestId requestId, SceneQueryHitsList hits)>;
 
         //! Helper used to reflect all required objects in PhysicsSceneQuery.h
-        void ReflectSceneQueryObjects(AZ::ReflectContext* context);
+        AZF_API void ReflectSceneQueryObjects(AZ::ReflectContext* context);
 
     } // namespace SceneQuery
 
     //! Base Scene Query request.
     //! Not valid to be used with Scene::QueryScene functions
-    struct SceneQueryRequest
+    struct AZF_API SceneQueryRequest
     {
         enum class RequestType : AZ::u8
         {
@@ -159,7 +160,7 @@ namespace AzPhysics
     using SceneQueryRequests = AZStd::vector<AZStd::shared_ptr<SceneQueryRequest>>;
 
     //! Casts a ray from a starting pose along a direction returning objects that intersected with the ray.
-    struct RayCastRequest final :
+    struct AZF_API RayCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -181,7 +182,7 @@ namespace AzPhysics
     };
 
     //! Sweeps a shape from a starting pose along a direction returning objects that intersected with the shape.
-    struct ShapeCastRequest final :
+    struct AZF_API ShapeCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -205,21 +206,21 @@ namespace AzPhysics
     namespace ShapeCastRequestHelpers
     {
         //! Helper to create a ShapeCastRequest with a SphereShapeConfiguration as its shape configuration.
-        ShapeCastRequest CreateSphereCastRequest(float radius,
+        AZF_API ShapeCastRequest CreateSphereCastRequest(float radius,
             const AZ::Transform& startPose, const AZ::Vector3& direction, float distance, 
             SceneQuery::QueryType queryType = SceneQuery::QueryType::StaticAndDynamic,
             CollisionGroup collisionGroup = CollisionGroup::All,
             SceneQuery::FilterCallback filterCallback = nullptr);
 
         //! Helper to create a ShapeCastRequest with a BoxShapeConfiguration as its shape configuration.
-        ShapeCastRequest CreateBoxCastRequest(const AZ::Vector3& boxDimensions,
+        AZF_API ShapeCastRequest CreateBoxCastRequest(const AZ::Vector3& boxDimensions,
             const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
             SceneQuery::QueryType queryType = SceneQuery::QueryType::StaticAndDynamic,
             CollisionGroup collisionGroup = CollisionGroup::All,
             SceneQuery::FilterCallback filterCallback = nullptr);
 
         //! Helper to create a ShapeCastRequest with a CapsuleShapeConfiguration as its shape configuration.
-        ShapeCastRequest CreateCapsuleCastRequest(float capsuleRadius, float capsuleHeight,
+        AZF_API ShapeCastRequest CreateCapsuleCastRequest(float capsuleRadius, float capsuleHeight,
             const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
             SceneQuery::QueryType queryType = SceneQuery::QueryType::StaticAndDynamic,
             CollisionGroup collisionGroup = CollisionGroup::All,
@@ -228,7 +229,7 @@ namespace AzPhysics
     } // namespace ShapeCastRequestHelpers
 
     //! Searches a region enclosed by a specified shape for any overlapping objects in the scene.
-    struct OverlapRequest final :
+    struct AZF_API OverlapRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -250,21 +251,21 @@ namespace AzPhysics
     namespace OverlapRequestHelpers
     {
         //! Helper to create a OverlapRequest with a SphereShapeConfiguration as its shape configuration.
-        OverlapRequest CreateSphereOverlapRequest(float radius,const AZ::Transform& pose,
+        AZF_API OverlapRequest CreateSphereOverlapRequest(float radius,const AZ::Transform& pose,
             SceneQuery::OverlapFilterCallback filterCallback = nullptr);
 
         //! Helper to create a OverlapRequest with a BoxShapeConfiguration as its shape configuration.
-        OverlapRequest CreateBoxOverlapRequest(const AZ::Vector3& dimensions, const AZ::Transform& pose,
+        AZF_API OverlapRequest CreateBoxOverlapRequest(const AZ::Vector3& dimensions, const AZ::Transform& pose,
             SceneQuery::OverlapFilterCallback filterCallback = nullptr);
 
         //! Helper to create a OverlapRequest with a CapsuleShapeConfiguration as its shape configuration.
-        OverlapRequest CreateCapsuleOverlapRequest(float height, float radius, const AZ::Transform& pose,
+        AZF_API OverlapRequest CreateCapsuleOverlapRequest(float height, float radius, const AZ::Transform& pose,
             SceneQuery::OverlapFilterCallback filterCallback = nullptr);
 
     } // namespace OverlapRequestHelpers
 
     //! Structure that contains information of an individual hit related to a SceneQuery.
-    struct SceneQueryHit
+    struct AZF_API SceneQueryHit
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(SceneQueryHit, "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}");
@@ -301,7 +302,7 @@ namespace AzPhysics
     };
 
     //! Structure that contains all hits related to a SceneQuery.
-    struct SceneQueryHits
+    struct AZF_API SceneQueryHits
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(SceneQueryHits, "{BAFCC4E7-A06B-4909-B2AE-C89D9E84FE4E}");

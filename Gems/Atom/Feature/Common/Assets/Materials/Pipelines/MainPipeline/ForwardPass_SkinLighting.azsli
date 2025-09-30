@@ -46,13 +46,8 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
-// called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspicious like
-// a mistake of some kind.
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/Skin/Skin_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/Skin/Skin_LightingEval.azsli"
-
+// Lighting eval functions from the forward-pass that use functions defined by the material
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
 #include "ForwardPassVertexAndPixel.azsli"
 

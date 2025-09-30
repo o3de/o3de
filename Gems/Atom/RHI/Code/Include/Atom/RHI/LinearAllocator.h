@@ -14,7 +14,7 @@ namespace AZ::RHI
 {
     //! A linear allocator where each allocation is a simple increment to the cursor. Garbage collection
     //! controls when the cursor resets back to the beginning.
-    class LinearAllocator final
+    class ATOM_RHI_PUBLIC_API LinearAllocator final
         : public Allocator
     {
     public:

@@ -202,5 +202,7 @@ namespace GraphModelIntegrationTest
     void GraphModelTestEnvironment::TeardownEnvironment()
     {
         delete m_application;
+
+        AZ::AllocatorManager::Instance().GarbageCollect();
     }
 }

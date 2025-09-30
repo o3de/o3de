@@ -114,9 +114,9 @@ namespace LmbrCentral
         }
 
         m_vertexSelection.Create(
-            GetEntityComponentIdPair(), g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), GetMainManipulatorManagerId(),
             AZStd::make_unique<LineSegmentHoverSelection<AZ::Vector2>>(
-                GetEntityComponentIdPair(), g_mainManipulatorManagerId),
+                GetEntityComponentIdPair(), GetMainManipulatorManagerId()),
             TranslationManipulators::Dimensions::Two,
             ConfigureTranslationManipulatorAppearance2d);
 
@@ -163,7 +163,7 @@ namespace LmbrCentral
                 m_heightManipulator->SetBoundsDirty();
             });
 
-        m_heightManipulator->Register(g_mainManipulatorManagerId);
+        m_heightManipulator->Register(GetMainManipulatorManagerId());
     }
 
     void EditorPolygonPrismShapeComponentMode::DestroyManipulators()
@@ -238,7 +238,7 @@ namespace LmbrCentral
             polygonPrism, GetEntityId(), &PolygonPrismShapeComponentRequests::GetPolygonPrism);
 
         m_vertexSelection.CreateTranslationManipulator(
-            GetEntityComponentIdPair(), AzToolsFramework::g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), AzToolsFramework::GetMainManipulatorManagerId(),
             polygonPrism->m_vertexContainer.GetVertices()[index], index);
     }
 

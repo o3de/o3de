@@ -53,13 +53,7 @@
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-// TODO(MaterialPipeline): I don't like how this file #includes something from BasePBR. I'd rather it include a file
-// called StandardPBR_LightingData.azsli which just #includes the BasePBR file. Otherwise this looks suspicious like
-// a mistake of some kind.
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
 #include "../Common/TransparentPassVertexAndPixel.azsli"
 

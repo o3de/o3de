@@ -15,6 +15,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -32,7 +33,7 @@ namespace AzFramework
         * Currently used to request synchronous asset compilation, provide notifications
         * when assets are updated, and to query asset status
         */
-        class AssetSystemComponent
+        class AZF_API AssetSystemComponent
             : public AZ::Component
             , private AssetSystemRequestBus::Handler
             , private AZ::SystemTickBus::Handler
@@ -169,6 +170,10 @@ namespace AzFramework
             AZStd::string m_assetProcessorIP;
             AZ::u16 m_assetProcessorPort = 45643;
             bool m_configured = false;
+
+            // set to false in tools like asset builders which are responsible for building assets themselves
+            // and thus should not be allowed to send blocking requests that would cause a deadlock.
+            bool m_allowSyncRequests = true;
         };
     } // namespace AssetSystem
 } // namespace AzFramework

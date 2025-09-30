@@ -16,7 +16,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    struct Interval
+    struct ATOM_RHI_REFLECT_API Interval
     {
         AZ_TYPE_INFO(Interval, "{B121C9FE-1C23-4721-9C3E-6BE036612743}");
         static void Reflect(AZ::ReflectContext* context);

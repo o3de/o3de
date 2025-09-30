@@ -62,26 +62,26 @@ namespace AZStd
 
 
     // Explicit instantiations of the GetO3de* functions for char_traits<char>
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(char_traits, char)
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(char_traits, char)
 
     // Explicit instantiations of the GetO3de* functions for basic_string_view<char, char_traits<char>> aka AZStd::string_view
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_string_view, char, char_traits<char>);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_string_view, char, char_traits<char>);
 
     // Explicit instantiations of the GetO3de* functions for basic_string<char, char_traits<char>, allocator> aka AZStd::string
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_string, char, char_traits<char>, allocator);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_string, char, char_traits<char>, allocator);
 
     // Explicit instantiations of the GetO3de* functions for basic_string<char, char_traits<char>, AZ::AZStdAlloc<AZ::OsAllocator>> aka AZ::OSString
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_string, char, char_traits<char>, AZ::OSStdAllocator);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_string, char, char_traits<char>, AZ::OSStdAllocator);
 
     // Explicit instantiations of the GetO3de* functions for fixed_string<char, 1024, char_traits<char>> aka AZStd::fixed_string<1024>
     // Other aliases: AZ::IO::FixedMaxPathString, AZ::SettingsRegistryInterface::FixedValueString
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_fixed_string, char, 1024, char_traits<char>);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_fixed_string, char, 1024, char_traits<char>);
 
     // Explicit instantiations of the GetO3de* functions for fixed_string<char, 512, char_traits<char>> aka AZStd::fixed_string<512>
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_fixed_string, char, 512, char_traits<char>);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_fixed_string, char, 512, char_traits<char>);
 
     // Explicit instantiations of the GetO3de* functions for fixed_string<char, 256, char_traits<char>> aka AZStd::fixed_string<256>
     // Other aliases: AZ::CVarFixedString
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(basic_fixed_string, char, 256, char_traits<char>);
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_API_INSTANTIATE(basic_fixed_string, char, 256, char_traits<char>);
 
 }

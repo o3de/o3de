@@ -5,12 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef SCRIPT_REMOTE_DEBUGGING_H
-#define SCRIPT_REMOTE_DEBUGGING_H
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Script/ScriptContextDebug.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 /*
  * Remote script debugging is accomplished through the ScriptDebugAgent, which
@@ -115,8 +114,6 @@ namespace AzFramework
 
     typedef AZStd::vector<ScriptUserEBusInfo> ScriptUserEBusList;
 
-    AZ::ComponentDescriptor* CreateScriptDebugAgentFactory();
+    AZF_API AZ::ComponentDescriptor* CreateScriptDebugAgentFactory();
 }   // namespace AzFramework
 
-#endif  // SCRIPT_REMOTE_DEBUGGING_H
-#pragma once

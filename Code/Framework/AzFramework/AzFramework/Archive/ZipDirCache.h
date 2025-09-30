@@ -23,12 +23,13 @@
 #include <AzFramework/Archive/Codec.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
 #include <AzFramework/Archive/ZipDirTree.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
     struct FileDataRecord;
 
-    class Cache
+    class AZF_API Cache
         : public AZStd::intrusive_base
     {
     public:

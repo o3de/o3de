@@ -44,7 +44,7 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor) const
     {
         return Base::GetResourceView(imageViewDescriptor);
     }
@@ -86,16 +86,5 @@ namespace AZ::RHI
     void Image::Shutdown()
     {
         Resource::Shutdown();
-    }
-
-    void ImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const DeviceImageSubresourceLayout &deviceLayout)
-    {
-        MultiDeviceObject::IterateDevices(
-            deviceMask,
-            [this, deviceLayout](int deviceIndex)
-            {
-                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
-                return true;
-            });
     }
 } // namespace AZ::RHI

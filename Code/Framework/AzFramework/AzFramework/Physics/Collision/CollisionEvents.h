@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -30,7 +31,7 @@ namespace AzPhysics
     struct SimulatedBody;
 
     //! Trigger event raised when an object enters/exits a trigger shape.
-    struct TriggerEvent
+    struct AZF_API TriggerEvent
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(TriggerEvent, "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}");
@@ -58,7 +59,7 @@ namespace AzPhysics
     using TriggerEventList = AZStd::vector<TriggerEvent>;
 
     //! Stores information about the contacts between two overlapping shapes.
-    struct Contact
+    struct AZF_API Contact
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(Contact, "{D7439508-ED10-4395-9D48-1FC3D7815361}");
@@ -73,7 +74,7 @@ namespace AzPhysics
     };
 
     //! A collision event raised when two objects, neither of which can be triggers, overlap.
-    struct CollisionEvent
+    struct AZF_API CollisionEvent
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(CollisionEvent, "{7602AA36-792C-4BDC-BDF8-AA16792151A3}");

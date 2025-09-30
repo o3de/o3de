@@ -466,48 +466,48 @@ namespace AZ::Date
     //! returns ISO 8601 extended format date + time based on the current time
     //! The timestamp will be in the format of "YYYY-MM-DD[T]HH:MM:SS[Z]"
     //! Ex. "2025-04-21T13:17:55"
-    bool GetIso8601ExtendedFormatNow(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601ExtendedFormatNow(Iso8601TimestampString& utcTimestamp);
 
     //! returns ISO 8601 extended format date + time based on the current time with fractional milliseconds included
     //! The timestamp will be in the format of "YYYY-MM-DD[T]HH:MM:SS.fff[Z]"
     //! Ex. "2025-04-21T13:17:55.537Z"
-    bool GetIso8601ExtendedFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601ExtendedFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
 
     //! returns ISO 8601 extended format date + timebased on the current time with fractional microseconds included
     //! The timestamp will be in the format of "YYYY-MM-DD[T]HH:MM:SS.ffffff[Z]"
     //! Ex. "2025-04-21T13:17:55.537982Z"
-    bool GetIso8601ExtendedFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601ExtendedFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
 
     //! returns ISO 8601 basic format date + timebased on the current time
     //! The timestamp will be in the format of "YYYYMMDD[T]HHMMSS[Z]"
     //! Ex. "20250421T131755537982Z"
-    bool GetIso8601BasicFormatNow(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601BasicFormatNow(Iso8601TimestampString& utcTimestamp);
 
     //! returns ISO 8601 extended format date + timebased on the current time with fractional milliseconds included
     //! The timestamp will be in the format of "YYYY-MM-DD[T]HH:MM:SS.fff[Z]"
     //! Ex. 20250421T131755.537Z
-    bool GetIso8601BasicFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601BasicFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
 
     //! returns ISO 8601 extended format date + timebased on the current time with fractional microseconds included
     //! The timestamp will be in the format of "YYYYMMDD[T]HHMMSS.ffffff[Z]"
     //! Ex. "20250421T131755.537982Z"
-    bool GetIso8601BasicFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetIso8601BasicFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
 
     //! returns a non-standard ISO 8601 style timestampe which is safe to use as a filename on Windows and Posix platforms
     //! It combines the extended format for the date portion with the basic format for the time portion
     //! The timestamp will be in the format of "YYYY-MM-DD[T]HHMMSS[Z]"
     //! Ex. "2025-04-21T131755Z"
-    bool GetFilenameCompatibleFormatNow(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetFilenameCompatibleFormatNow(Iso8601TimestampString& utcTimestamp);
 
     //! returns a non-standard ISO 8601 style timestampe which is safe to use as a filename on Windows and Posix platforms
     //! It combines the extended format for the date portion with the basic format for the time portion
     //! The timestamp includes fractional milliseconds and it will be in the format of "YYYY-MM-DD[T]HHMMSS.fff[Z]"
     //! Ex. "2025-04-21T131755.537Z"
-    bool GetFilenameCompatibleFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetFilenameCompatibleFormatNowWithMilliseconds(Iso8601TimestampString& utcTimestamp);
 
     //! returns a non-standard ISO 8601 style timestampe which is safe to use as a filename on Windows and Posix platforms
     //! It combines the extended format for the date portion with the basic format for the time portion
     //! The timestamp includes fractional microseconds and it will be in the format of "YYYY-MM-DD[T]HHMMSS.ffffff[Z]"
     //! Ex. "2025-04-21T131755.537982Z"
-    bool GetFilenameCompatibleFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
+    AZCORE_API bool GetFilenameCompatibleFormatNowWithMicroseconds(Iso8601TimestampString& utcTimestamp);
 }

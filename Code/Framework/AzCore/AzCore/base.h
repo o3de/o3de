@@ -25,7 +25,7 @@ namespace AZ::Internal
         static constexpr size_t value = sizeof(T) / sizeof(std::remove_extent_t<T>);
     };
 }
-#define AZ_ARRAY_SIZE(__a)  AZ::Internal::StaticArraySize<std::remove_reference_t<decltype(__a)>>::value
+#define AZ_ARRAY_SIZE(__a)  AZ::Internal::StaticArraySize<::std::remove_reference_t<decltype(__a)>>::value
 
 
 #ifndef AZ_SIZE_ALIGN_UP
@@ -43,14 +43,14 @@ namespace AZ::Internal
 
 #if defined(AZ_MONOLITHIC_BUILD)
     #define AZCORE_API
-    #define AZCORE_API_EXTERN
+    #define AZCORE_API_EXPORT
 #else
     #if defined(AZCORE_EXPORTS)
-        #define AZCORE_API        AZ_DLL_EXPORT
-        #define AZCORE_API_EXTERN AZ_DLL_EXPORT_EXTERN
+        #define AZCORE_API              AZ_DLL_EXPORT
+        #define AZCORE_API_EXPORT       AZ_DLL_EXPORT
     #else
-        #define AZCORE_API        AZ_DLL_IMPORT
-        #define AZCORE_API_EXTERN AZ_DLL_IMPORT_EXTERN
+        #define AZCORE_API              AZ_DLL_IMPORT
+        #define AZCORE_API_EXPORT       
     #endif
 #endif
 

@@ -21,8 +21,8 @@ namespace ImageProcessingAtom
     {
         AZ_TYPE_INFO(CubemapSettings, "{A4046BCB-E42E-4C77-AF77-1A1AD9B7CC64}");
         AZ_CLASS_ALLOCATOR(CubemapSettings, AZ::SystemAllocator);
-        bool operator!=(const CubemapSettings& other);
-        bool operator==(const CubemapSettings& other);
+        bool operator!=(const CubemapSettings& other) const;
+        bool operator==(const CubemapSettings& other) const;
         static void Reflect(AZ::ReflectContext* context);
 
         // "cm_ftype", cubemap angular filter type: gaussian, cone, disc, cosine, cosine_power, ggx

@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegateBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -42,7 +43,7 @@ namespace AzToolsFramework
         };
 
         //! Handles all aspects of the ViewportUi Switcher related to Component Mode.
-        class ComponentModeSwitcher
+        class AZTF_API ComponentModeSwitcher
             : private EditorComponentModeNotificationBus::Handler
             , private ViewportEditorModeNotificationsBus::Handler
             , private EntityCompositionNotificationBus::Handler

@@ -21,7 +21,7 @@ namespace AZ::RHI
 
     //! A multi-device descriptor for the IndirectBufferSignature, holding both an IndirectBufferLayout (identical across
     //! devices) as well as a PipelineState
-    struct IndirectBufferSignatureDescriptor
+    struct ATOM_RHI_PUBLIC_API IndirectBufferSignatureDescriptor
     {
         //! Returns the device-specific DeviceIndirectBufferSignatureDescriptor for the given index
         DeviceIndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
@@ -37,7 +37,7 @@ namespace AZ::RHI
     //!
     //! It also exposes implementation dependent offsets for the commands in
     //! a layout. This information is useful when writing commands into a buffer.
-    class IndirectBufferSignature : public MultiDeviceObject
+    class ATOM_RHI_PUBLIC_API IndirectBufferSignature : public MultiDeviceObject
     {
         using Base = RHI::MultiDeviceObject;
 

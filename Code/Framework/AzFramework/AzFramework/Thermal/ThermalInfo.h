@@ -9,6 +9,7 @@
 
 #pragma once
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // The different types of temperature sensor that could be available on the device.
 enum class ThermalSensorType : int
@@ -47,4 +48,4 @@ public:
 
 using ThermalInfoRequestsBus = AZ::EBus<ThermalInfoHandler>;
 
-
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, ThermalInfoHandler);

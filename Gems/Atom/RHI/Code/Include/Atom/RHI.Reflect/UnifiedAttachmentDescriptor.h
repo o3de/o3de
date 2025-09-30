@@ -17,7 +17,7 @@ namespace AZ::RHI
 {
     //! A unified attachment descriptor used to store either an image or a buffer descriptor.
     //! Used primarily to simplify pass attachment logic while supporting both attachment types.
-    struct UnifiedAttachmentDescriptor
+    struct ATOM_RHI_REFLECT_API UnifiedAttachmentDescriptor
     {
         UnifiedAttachmentDescriptor();
         UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor);

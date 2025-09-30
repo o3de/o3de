@@ -22,6 +22,8 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
+#include <Atom/Feature/Base.h>
+
 #include <imgui/imgui.h>
 
 namespace AZ
@@ -53,7 +55,7 @@ namespace AZ
         };
 
         //! This pass owns and manages activation of an Imgui context.
-        class ImGuiPass
+        class ATOM_FEATURE_COMMON_API ImGuiPass
             : public RPI::RenderPass
             , private AzFramework::InputChannelEventListener
             , private AzFramework::InputTextEventListener

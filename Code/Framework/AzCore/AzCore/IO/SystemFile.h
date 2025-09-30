@@ -29,7 +29,7 @@ namespace AZ
         /**
          * Platform independent wrapper for system file.
          */
-        class SystemFile
+        class AZCORE_API SystemFile
         {
         public:
             enum OpenMode
@@ -180,7 +180,7 @@ namespace AZ
          *   printf("Test"); // < prints to stdout
          */
 
-        class FileDescriptorRedirector
+        class AZCORE_API FileDescriptorRedirector
         {
         public:
             enum class Mode
@@ -225,7 +225,7 @@ namespace AZ
          *   redirectStdout.Stop(StdoutVisitor); // Invokes visitor 0 or more times with captured data
          *   EXPECT_TRUE(testWasOutput);
          */
-        class FileDescriptorCapturer
+        class AZCORE_API FileDescriptorCapturer
         {
         public:
 
@@ -301,5 +301,5 @@ namespace AZ
 namespace AZ::IO::Posix
 {
     // Returns file descriptor from C FILE* struct
-    int Fileno(FILE* stream);
+    AZCORE_API int Fileno(FILE* stream);
 }

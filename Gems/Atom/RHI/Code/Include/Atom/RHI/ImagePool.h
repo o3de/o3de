@@ -66,7 +66,7 @@ namespace AZ::RHI
     //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
     //! attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
     //! If transient images are required, they can be created from the frame scheduler itself.
-    class ImagePool : public ImagePoolBase
+    class ATOM_RHI_PUBLIC_API ImagePool : public ImagePoolBase
     {
     public:
         AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);

@@ -33,7 +33,7 @@ namespace AZ::RHI
         MultiDevice
     };
 
-    class RHISystem final
+    class ATOM_RHI_PUBLIC_API RHISystem final
         : public RHISystemInterface
         , public RHIMemoryStatisticsInterface
     {
@@ -69,6 +69,7 @@ namespace AZ::RHI
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
         MultiDevice::DeviceMask GetRayTracingSupport() override;
+        MultiDevice::DeviceMask GetRayTracingClusterAccelerationStructureSupport() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;

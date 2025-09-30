@@ -47,7 +47,7 @@ namespace AZ::RHI
     //!          ->Channel("UV1", RHI::Format::R32G32_FLOAT);
     //!      layout = layoutBuilder.End();
     //!    @endcode
-    class InputStreamLayoutBuilder
+    class ATOM_RHI_REFLECT_API InputStreamLayoutBuilder
     {
     public:
 
@@ -56,7 +56,7 @@ namespace AZ::RHI
         //! calculated automatically based on the Channels and Padding that are registered. Note that all padding
         //! in the structure must be registered including at the end of the structure, not just between channels, 
         //! in order to calculate the correct stride.
-        class BufferDescriptorBuilder
+        class ATOM_RHI_REFLECT_API BufferDescriptorBuilder
         {
             friend class InputStreamLayoutBuilder;
 

@@ -74,7 +74,7 @@ namespace AZ
             // particularly when slices are involved.
             // Note that m_visualizationMeshHandle had to be set up first, because AssetBus BusConnect() might call ReflectionProbe::OnAssetReady() immediately on this callstack.
             m_visualizationMaterialAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::MaterialAsset>(
-                "Materials/ReflectionProbe/ReflectionProbeVisualization.azmaterial",
+                "materials/reflectionprobe/reflectionprobevisualization.azmaterial",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
             m_visualizationMaterialAsset.QueueLoad();
             Data::AssetBus::Handler::BusConnect(m_visualizationMaterialAsset.GetId());

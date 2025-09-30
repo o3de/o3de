@@ -17,6 +17,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////
 //NetworkFileIO implements FileIOBase for serving all file system requests via the asset
@@ -66,7 +67,7 @@ namespace AZ
 {
     namespace IO
     {
-        class NetworkFileIO
+        class AZF_API NetworkFileIO
             : public FileIOBase
         {
         public:
@@ -124,7 +125,7 @@ namespace AZ
         #define RemoteFileIO NetworkFileIO 
 #else
         //////////////////////////////////////////////////////////////////////////
-        class RemoteFileCache
+        class AZF_API RemoteFileCache
         {
         public:
             AZ_CLASS_ALLOCATOR(RemoteFileCache, OSAllocator);
@@ -167,7 +168,7 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
 
-        class RemoteFileIO
+        class AZF_API RemoteFileIO
             : public NetworkFileIO
 #ifdef REMOTEFILEIO_CACHE_FILETREE
             , private AzFramework::AssetCatalogEventBus::Handler

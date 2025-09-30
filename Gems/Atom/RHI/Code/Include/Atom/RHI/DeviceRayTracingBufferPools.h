@@ -20,7 +20,7 @@ namespace AZ::RHI
     //! This class encapsulates all of the BufferPools needed for ray tracing, freeing the application
     //! from setting up and managing the buffers pools individually.
     //!
-    class DeviceRayTracingBufferPools
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingBufferPools
         : public DeviceObject
     {
     public:
@@ -33,6 +33,11 @@ namespace AZ::RHI
         const RHI::Ptr<RHI::DeviceBufferPool>& GetScratchBufferPool() const;
         const RHI::Ptr<RHI::DeviceBufferPool>& GetAabbStagingBufferPool() const;
         const RHI::Ptr<RHI::DeviceBufferPool>& GetBlasBufferPool() const;
+        const RHI::Ptr<RHI::DeviceBufferPool>& GetDstImplicitBufferPool() const;
+        const RHI::Ptr<RHI::DeviceBufferPool>& GetDstAddressesArrayBufferPool() const;
+        const RHI::Ptr<RHI::DeviceBufferPool>& GetDstSizesArrayBufferPool() const;
+        const RHI::Ptr<RHI::DeviceBufferPool>& GetSrcInfosArrayBufferPool() const;
+        const RHI::Ptr<RHI::DeviceBufferPool>& GetSrcInfosCountBufferPool() const;
         const RHI::Ptr<RHI::DeviceBufferPool>& GetTlasInstancesBufferPool() const;
         const RHI::Ptr<RHI::DeviceBufferPool>& GetTlasBufferPool() const;
 
@@ -46,6 +51,11 @@ namespace AZ::RHI
         virtual RHI::BufferBindFlags GetScratchBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer; }
         virtual RHI::BufferBindFlags GetAabbStagingBufferBindFlags() const { return RHI::BufferBindFlags::CopyRead; }
         virtual RHI::BufferBindFlags GetBlasBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
+        virtual RHI::BufferBindFlags GetDstImplicitBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
+        virtual RHI::BufferBindFlags GetDstAddressesArrayBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
+        virtual RHI::BufferBindFlags GetDstSizesArrayBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure; }
+        virtual RHI::BufferBindFlags GetSrcInfosArrayBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::Indirect; }
+        virtual RHI::BufferBindFlags GetSrcInfosCountBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::Indirect; }
         virtual RHI::BufferBindFlags GetTlasInstancesBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite; }
         virtual RHI::BufferBindFlags GetTlasBufferBindFlags() const { return RHI::BufferBindFlags::RayTracingAccelerationStructure; }
 
@@ -55,6 +65,11 @@ namespace AZ::RHI
         RHI::Ptr<RHI::DeviceBufferPool> m_scratchBufferPool;
         RHI::Ptr<RHI::DeviceBufferPool> m_aabbStagingBufferPool;
         RHI::Ptr<RHI::DeviceBufferPool> m_blasBufferPool;
+        RHI::Ptr<RHI::DeviceBufferPool> m_dstImplicitBufferPool;
+        RHI::Ptr<RHI::DeviceBufferPool> m_dstAddressesArrayBufferPool;
+        RHI::Ptr<RHI::DeviceBufferPool> m_dstSizesArrayBufferPool;
+        RHI::Ptr<RHI::DeviceBufferPool> m_srcInfosArrayBufferPool;
+        RHI::Ptr<RHI::DeviceBufferPool> m_srcInfosCountBufferPool;
         RHI::Ptr<RHI::DeviceBufferPool> m_tlasInstancesBufferPool;
         RHI::Ptr<RHI::DeviceBufferPool> m_tlasBufferPool;
     };

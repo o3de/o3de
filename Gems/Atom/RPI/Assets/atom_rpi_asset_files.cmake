@@ -10,6 +10,7 @@ set(FILES
     ShaderLib/Atom/RPI/DummyEntryFunctions.azsli
     ShaderLib/Atom/RPI/Math.azsli
     ShaderLib/Atom/RPI/TangentSpace.azsli
+    ShaderLib/Atom/RPI/VertexBufferOperations.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultSceneSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli

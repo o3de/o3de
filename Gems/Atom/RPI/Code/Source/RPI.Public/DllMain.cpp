@@ -11,15 +11,10 @@
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-extern "C" AZ_DLL_EXPORT void CleanUpRpiPublicGenericClassInfo()
-{
-    AZ::GetCurrentSerializeContextModule().Cleanup();
-}
-
 #endif
 
 #include <Atom/RPI.Public/SceneBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(RPI::SceneNotification);
-DECLARE_EBUS_INSTANTIATION_DLL_MULTI_ADDRESS(RPI::ShaderReloadNotifications);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(ATOM_RPI_PUBLIC_API, AZ::RPI::SceneNotification);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(ATOM_RPI_PUBLIC_API, AZ::RPI::ShaderReloadNotifications);

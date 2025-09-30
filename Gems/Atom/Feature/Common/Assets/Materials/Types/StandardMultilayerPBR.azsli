@@ -69,6 +69,9 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_SurfaceEval.azsli>
 
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
+
 #elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 
     bool ShouldHandleParallax()
@@ -86,7 +89,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexEval.azsli>
     #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli>
 
-    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+    void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
     {
         // do nothing, this is where alpha clip can be done if it's supported
     }

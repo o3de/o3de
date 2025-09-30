@@ -35,15 +35,18 @@ namespace EMotionFX
                 AZ::u32 GetStartFrame() const;
                 AZ::u32 GetEndFrame() const;
                 bool GetProcessRangeRuleConversion() const;
+                float GetPlaybackSpeed() const;
                 void SetStartFrame(AZ::u32 frame);
                 void SetEndFrame(AZ::u32 frame);
                 void SetProcessRangeRuleConversion(bool processRangeRuleConversion);
+                void SetPlaybackSpeed(float speed);
 
                 static void Reflect(AZ::ReflectContext* context);
 
             protected:
                 AZ::u32 m_startFrame;
                 AZ::u32 m_endFrame;
+                float   m_playbackSpeed = 1.0f;
                 bool    m_processRangeRuleConversion;    // if true, this rule is converted from the old data in MotionGroup.
             };
         } // Rule

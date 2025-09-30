@@ -19,7 +19,7 @@ namespace AZ
 
     //! A vector class with 4 components.
     //! To convert back to a Vector3, call the GetHomogenized function.
-    class Vector4
+    class AZCORE_API Vector4
     {
     public:
 
@@ -256,6 +256,8 @@ namespace AZ
         Vector4& operator/=(const Vector4& rhs);
         Vector4& operator*=(float multiplier);
         Vector4& operator/=(float divisor);
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector4 GetSin() const;

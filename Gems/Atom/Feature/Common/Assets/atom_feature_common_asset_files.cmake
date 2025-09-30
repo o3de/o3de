@@ -263,6 +263,7 @@ set(FILES
     ShaderLib/Atom/Features/Bindless.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
     ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/IndirectRayTracing.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/InstancedTransforms.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
@@ -308,7 +309,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/DefaultObjectSrg.azsli
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
     ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
@@ -316,7 +316,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Lights/DirectionalLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DiskLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/Ibl.azsli
-    ShaderLib/Atom/Features/PBR/Lights/IblForward.azsli
     ShaderLib/Atom/Features/PBR/Lights/Lights.azsli
     ShaderLib/Atom/Features/PBR/Lights/LightTypesCommon.azsli
     ShaderLib/Atom/Features/PBR/Lights/Ltc.azsli
@@ -336,8 +335,28 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassCapsuleLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassDecals.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassDirectionalLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassDiskLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassIbl.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassPipelineCallbacks.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassPointLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassPolygonLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassQuadLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSimplePointLights.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSimpleSpotLights.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli
+    ShaderLib/Atom/Features/Pipeline/Forward/Readme.md
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfo.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial_Defines.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRStandardLighting.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfo.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfoUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli
@@ -352,8 +371,6 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/Tonemap.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingGlobalSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl

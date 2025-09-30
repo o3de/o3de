@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Features/MeshInfo/MeshInfoBufferUtil.azsli>
+
+void LoadInterpolatedVertexData(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, inout VsInput vertex)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    // Note: this variables and loads should be optimized away if the result isn't used
+    float3 position = float3(0, 0, 0);
+    float3 normal = float3(0, 0, 0);
+    float4 tangent = float4(0, 0, 0, 0);
+    float3 bitangent = float3(0, 0, 0);
+    float2 uv0 = float2(0, 0);
+    float2 uv1 = float2(0, 0);
+    // TODO: add color and blend-mask
+    [unroll]
+    for (int index = 0; index < 3; ++index)
+    {
+        position += LoadPosition(meshInfo, triangleIndices[index]) * barycentrics[index];
+        normal += LoadNormal(meshInfo, triangleIndices[index]) * barycentrics[index];
+        tangent += LoadTangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv0 += LoadUv0(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv1 += LoadUv1(meshInfo, triangleIndices[index]) * barycentrics[index];
+        bitangent += LoadBitangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+    }
+    tangent.xyz = normalize(tangent.xyz);
+    tangent.w = sign(tangent.w);
+    normal = normalize(normal);
+    bitangent = normalize(bitangent);
+
+#if MATERIAL_USES_VERTEX_POSITION
+    vertex.position = position;
+#endif
+#if MATERIAL_USES_VERTEX_NORMAL
+    vertex.normal = normal;
+#endif
+#if MATERIAL_USES_VERTEX_TANGENT
+    vertex.tangent = tangent;
+#endif
+
+#if MATERIAL_USES_VERTEX_BITANGENT
+    vertex.bitangent = bitangent;
+#endif
+#if MATERIAL_USES_VERTEX_UV
+    vertex.uv0 = uv0;
+    vertex.uv1 = uv1;
+#endif
+#if MATERIAL_USES_VERTEX_COLOR
+    vertex.m_optional_color0 = float4(0, 0, 0, 0);
+#endif
+#if MATERIAL_USES_VERTEX_BLENDMASK
+    vertex.m_optional_blendMask = float4(0, 0, 0, 0);
+#endif
+}
+

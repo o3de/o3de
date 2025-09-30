@@ -1,0 +1,72 @@
+#pragma once
+
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
+
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <OpenParticle/ParticleCommon.azsli>
+#include <OpenParticle/ParticleAlphaUtils.azsli>
+#include <OpenParticle/ParticleEmissiveInput.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    Texture2D m_baseColorMap;
+    float m_alphaCutoff;
+
+    float3      m_emissiveColor;
+    float       m_emissiveIntensity;
+    Texture2D   m_emissiveMap;
+    uint        m_emissiveMapUvIndex;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+}
+
+struct VertexInput
+{
+    float4 position : POSITION;
+    float4 color : COLOR;
+    float2 uv0 : UV0;
+};
+
+struct VertexOutput
+{
+    float4 position : SV_Position;
+    float4 color : COLOR;
+    float2 uv : UV0;
+};
+
+VertexOutput MainVS(in VertexInput input)
+{
+    VertexOutput output;
+    float3 cameraDir = normalize(ViewSrg::m_worldPosition - input.position.xyz);
+
+    float4 worldPosition = float4(input.position.xyz, 1.0);
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    output.color = input.color;
+    output.uv = input.uv0;
+    return output;
+}
+
+struct PixelOutput
+{
+     float4 color : SV_Target0;
+};
+
+PixelOutput MainPS(in VertexOutput input)
+{
+    PixelOutput output;
+    output.color = input.color * MaterialSrg::m_baseColorMap.Sample(MaterialSrg::m_sampler, input.uv);
+    float2 emissiveUv = input.uv;
+    float3 emissiveValue = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv,
+        MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+    output.color.rgb += emissiveValue;
+    CheckClipping(output.color.a, MaterialSrg::m_alphaCutoff);
+    return output;
+}

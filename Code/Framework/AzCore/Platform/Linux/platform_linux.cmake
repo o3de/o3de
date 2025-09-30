@@ -14,9 +14,9 @@
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        pthread
         3rdParty::unwind
         atomic
     PUBLIC
+        pthread
         ${CMAKE_DL_LIBS}
 )

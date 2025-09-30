@@ -526,7 +526,7 @@ namespace AzToolsFramework
 
         if (attrib == AZ::Edit::Attributes::RequiredService)
         {
-            AZ::ComponentServiceType requiredService = 0;
+            AZ::ComponentServiceType requiredService(0);
             AZ::ComponentDescriptor::DependencyArrayType requiredServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(requiredService))
             {
@@ -539,7 +539,7 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ::Edit::Attributes::IncompatibleService)
         {
-            AZ::ComponentServiceType incompatibleService = 0;
+            AZ::ComponentServiceType incompatibleService(0);
             AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
             if (attrValue->template Read<AZ::ComponentServiceType>(incompatibleService))
             {

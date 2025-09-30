@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -51,7 +52,7 @@ namespace AzFramework
     //!        Dependent Asset Buffer Size:    1 MB
     //!        Dependency Depth:               2
     //!        Assets Per Dependency:          5
-    class BenchmarkSettingsAsset
+    class AZF_API BenchmarkSettingsAsset
         : public AZ::Data::AssetData
     {
     public:

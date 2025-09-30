@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -25,7 +26,7 @@ namespace AzToolsFramework
         using TemplateReference = AZStd::optional<AZStd::reference_wrapper<Template>>;
 
         // A prefab template is the primary product of loading a prefab file from disk. 
-        class Template
+        class AZTF_API Template
         {
         public:
             AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator);

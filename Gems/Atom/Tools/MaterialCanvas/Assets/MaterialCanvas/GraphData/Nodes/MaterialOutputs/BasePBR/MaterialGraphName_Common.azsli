@@ -31,6 +31,10 @@ bool NeedsTangentFrame()
 
 #include "MaterialGraphName_SurfaceEval.azsli"
 
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>
+
 #else
 
 #include "MaterialGraphName_DepthVertexEval.azsli"

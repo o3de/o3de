@@ -140,6 +140,64 @@ AZ_POP_DISABLE_WARNING \
     static AZ::TypeId RTTI_Type(); \
     static const char* RTTI_TypeName();
 
+#define AZ_RTTI_NO_TYPE_INFO_TEMPLATE_INLINE_(_Template, _Type, _Base) \
+AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override") \
+    virtual AZ::TypeId RTTI_GetType() const \
+    {\
+        return RTTI_Type();\
+    }\
+    virtual const char* RTTI_GetTypeName() const\
+    {\
+        return RTTI_TypeName();\
+    }\
+    virtual bool RTTI_IsTypeOf(const AZ::TypeId& typeId) const\
+    {\
+        return RTTI_IsContainType(typeId);\
+    }\
+    virtual void RTTI_EnumTypes(AZ::RTTI_EnumCallback cb, void* userData)\
+    {\
+        return RTTI_EnumHierarchy(cb, userData);\
+    }\
+    virtual const void* RTTI_AddressOf(const AZ::TypeId& id) const\
+    {\
+        using BaseType1 = _Base;\
+        if (id == RTTI_Type())\
+        {\
+            return this;\
+        }\
+        return AZ::Internal::RttiCaller<BaseType1>::RTTI_AddressOf(this, id);\
+    }\
+    virtual void* RTTI_AddressOf(const AZ::TypeId& id)\
+    {\
+        using BaseType1 = _Base;\
+        if (id == RTTI_Type())\
+        {\
+            return this;\
+        }\
+        return AZ::Internal::RttiCaller<BaseType1>::RTTI_AddressOf(this, id);\
+    }\
+    AZ_POP_DISABLE_WARNING \
+    static bool RTTI_IsContainType(const AZ::TypeId& id)\
+    {\
+        using BaseType1 = _Base;\
+        return id == RTTI_Type() || AZ::Internal::RttiCaller<BaseType1>::RTTI_IsContainType(id);\
+    }\
+    static void RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData)\
+    {\
+        using BaseType1 = _Base;\
+        cb(RTTI_Type(), userData);\
+        AZ::Internal::RttiCaller<BaseType1>::RTTI_EnumHierarchy(cb, userData);\
+    };\
+    static AZ::TypeId RTTI_Type()\
+    {\
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_Template<_Type>>{});\
+    }\
+    static const char* RTTI_TypeName()\
+    {\
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<_Template<_Type>>{});\
+        return s_typeName.c_str();\
+    }
+
 // Common implementation functions for any class with RTTI
 // The virtual functions are defined here
 #define AZ_RTTI_NO_TYPE_INFO_IMPL_COMMON(ClassName_, TemplateParamsInParen, Inline_) \
@@ -648,6 +706,12 @@ AZ_POP_DISABLE_WARNING
  * as part of CRTP
  */
 #define AZ_RTTI_NO_TYPE_INFO_DECL() AZ_RTTI_NO_TYPE_INFO_DECL_()
+
+/*
+ * Macro which adds the inline implementations of the virtual functions required for RTTI to
+ * the class declaration. This does add overloads required for TypeInfo to the class.
+ */
+#define AZ_RTTI_NO_TYPE_INFO_TEMPLATE_INLINE(_Template, _Type, _Base) AZ_RTTI_NO_TYPE_INFO_TEMPLATE_INLINE_(_Template, _Type, _Base)
 
 /*
  * Adds implementation of RTTI functions to the current file

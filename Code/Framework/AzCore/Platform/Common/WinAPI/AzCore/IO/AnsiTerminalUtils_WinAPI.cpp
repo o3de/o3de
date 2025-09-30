@@ -6,7 +6,7 @@
  *
  */
 #include <AzCore/PlatformIncl.h>
-
+#include <AzCore/IO/AnsiTerminalUtils.h>
 #include <io.h>
 
 namespace AZ::IO::Posix

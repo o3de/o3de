@@ -23,7 +23,7 @@ namespace AZ
     //! Stores a matrix with 3 rows and 4 columns.
     //! The 3x3 matrix formed of the first 3 columns may represent rotation, scale and/or shear, and the final column
     //! represents translation.
-    class Matrix3x4
+    class AZCORE_API Matrix3x4
     {
     public:
 
@@ -259,6 +259,12 @@ namespace AZ
 
         //! Operator for transforming a Vector4.
         [[nodiscard]] Vector4 operator*(const Vector4& rhs) const;
+
+        //! Access the row vector.
+        //! @{
+        [[nodiscard]] Vector4& operator[](const size_t row);
+        [[nodiscard]] const Vector4& operator[](const size_t row) const;
+        //! @}
 
         //! Post-multiplies the matrix by a vector, using only the 3x3 part of the matrix.
         [[nodiscard]] Vector3 Multiply3x3(const Vector3& rhs) const;

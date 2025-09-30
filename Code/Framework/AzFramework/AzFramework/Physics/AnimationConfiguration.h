@@ -10,12 +10,13 @@
 
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     /// Configuration for animated physics structures which are more detailed than the character controller.
     /// For example, ragdoll or hit detection configurations.
-    class AnimationConfiguration
+    class AZF_API AnimationConfiguration
     {
     public:
         AZ_RTTI(AnimationConfiguration, "{6D53168F-470E-4B41-986A-612506F09B40}");

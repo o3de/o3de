@@ -14,14 +14,20 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
-    class FileEntryTree
+    class AZF_API FileEntryTree
     {
     public:
         AZ_CLASS_ALLOCATOR(FileEntryTree, AZ::SystemAllocator);
-        ~FileEntryTree () {Clear(); }
+
+        FileEntryTree() = default;
+
+        virtual ~FileEntryTree () {Clear(); }
+
+        AZ_DISABLE_COPY(FileEntryTree);
 
         // adds a file to this directory
         // Function can modify szPath input

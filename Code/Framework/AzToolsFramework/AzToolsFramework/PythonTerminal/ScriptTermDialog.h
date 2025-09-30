@@ -13,6 +13,8 @@
 #define CRYINCLUDE_EDITOR_SCRIPTTERMDIALOG_H
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -34,7 +36,7 @@ namespace Ui {
 
 namespace AzToolsFramework
 {
-    class CScriptTermDialog
+    class AZTF_API CScriptTermDialog
         : public QWidget
         , protected EditorPythonConsoleNotificationBus::Handler
         , protected EditorPreferencesNotificationBus::Handler

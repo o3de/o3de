@@ -28,7 +28,7 @@ namespace AZ::RHI
     //! Each platform specializes this data structure with platform-specific data necessary to compile
     //! an entry point of a shader stage on a PSO. The platform-independent runtime does not need to care
     //! about specifics, the function is merely an opaque data stream passed to the pipeline state descriptor.
-    class ShaderStageFunction
+    class ATOM_RHI_REFLECT_API ShaderStageFunction
         : public AZStd::intrusive_base
     {
     public:

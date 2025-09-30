@@ -7,26 +7,25 @@
  */
 #pragma once
 
-#include <AzCore/Math/Uuid.h>
+#include "UiEditorEntityContextBus.h"
+
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Slice/SliceComponent.h>
-
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
-
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
-
 #include <Cry_Vector2.h>
-
 #include <LyShine/UiEntityContext.h>
-#include "UiEditorEntityContextBus.h"
 
 namespace AZ
 {
     class SerializeContext;
+    class Entity;
 }
 
 namespace AzFramework

@@ -7,6 +7,28 @@
  */
 
 #include <Atom/Features/Bindless.azsli>
+#include <Atom/Features/IndirectRayTracing.azsli>
+
+// Provides triangle cluster ID of a hit with a triangle for the ray being traced, or -1 if the hit object is not a cluster object.
+// Reference of this function will automatically add a builtin input 'ClusterIDNV' into the shader entry point. It must be called only in
+// closest hit or any hit shaders.
+// This function is called GetClusterId() to not collide with the potential future introduction of a ClusterId() function (similar to
+// InstanceId(), PrimitiveIndex()).
+int GetClusterId()
+{
+    // TODO(CLAS): Uncomment this once DXC can successfully compile this function
+#if 1
+    return -1;
+#else
+    // Only SPIRV support for now; otherwise it will be initialized to zero as a static variable
+    [[vk::ext_extension("SPV_NV_cluster_acceleration_structure")]]
+    [[vk::ext_capability(/* RayTracingClusterAccelerationStructureNV */ 5437)]]
+    [[vk::ext_builtin_input(/* ClusterIDNV */ 5436)]]
+    static const int clusterIDNV;
+
+    return clusterIDNV;
+#endif
+}
 
 // returns the normalized camera view ray into the scene for this raytracing dispatch thread
 float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInverseMatrix)
@@ -17,145 +39,97 @@ float3 GetViewRayDirection(float4x4 projectionInverseMatrix, float4x4 viewInvers
     return normalize(mul(viewInverseMatrix, float4(viewDir.xyz, 0.0f)).xyz);
 }
 
-// returns the vertex indices for the primitive hit by the ray
-// Note: usable only in a raytracing Hit shader
-uint3 GetHitIndices(RayTracingSceneSrg::MeshInfo meshInfo)
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
+// tell the MeshInfoUtil what vertex-data we need
+#define MATERIAL_USES_VERTEX_POSITION 1
+#define MATERIAL_USES_VERTEX_NORMAL 1
+#define MATERIAL_USES_VERTEX_TANGENT 1
+#define MATERIAL_USES_VERTEX_BITANGENT 1
+#define MATERIAL_USES_VERTEX_UV 1
+
+struct VsInput
 {
-    // get the index buffer resource index from the indirection list
-    uint meshIndexBufferArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_INDEX_BUFFER_OFFSET)];
-
-    // compute the offset into the index buffer for this primitve of the mesh
-    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 12);
-
-    // load the indices for this primitive from the index buffer
-#if USE_BINDLESS_SRG
-    return Bindless::GetByteAddressBuffer(meshIndexBufferArrayIndex).Load3(offsetBytes);
-#else
-    return RayTracingSceneSrg::m_meshBuffers[meshIndexBufferArrayIndex].Load3(offsetBytes);
-#endif
-}
-
-// returns the interpolated vertex data for the primitive hit by the ray
-// Note: usable only in a raytracing hit shader
-struct VertexData
-{
-    float3 m_position;
-    float3 m_normal;
-    float4 m_tangent;       // optional: use only if MESH_BUFFER_FLAG_TANGENT in MeshData.m_bufferFlags is set
-    float3 m_bitangent;     // optional: use only if MESH_BUFFER_FLAG_BITANGENT in MeshData.m_bufferFlags is set
-    float2 m_uv;            // optional: use only if MESH_BUFFER_FLAG_UV in MeshData.m_bufferFlags is set
+    float3 position;
+    float3 normal;
+    float4 tangent;
+    float3 bitangent;
+    float2 uv0;
+    float2 uv1;
 };
 
-VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, float2 builtInBarycentrics)
+#include <Atom/Features/MeshInfo/MeshInfoUtil.azsli>
+
+VsInput GetHitInterpolatedVertexData(const MeshInfo meshInfo, const uint primitiveIndex, const float2 builtInBarycentrics)
 {
-    // retrieve the poly indices
-    uint3 indices = GetHitIndices(meshInfo);
+    float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);
+    VsInput vertex;
 
-    // compute barycentrics
-    float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);    
-
-    // compute the vertex data using barycentric interpolation
-    VertexData vertexData = (VertexData)0;
-    for (uint i = 0; i < 3; ++i)
+    if (meshInfo.m_clusterBufferIndex != -1)
     {
-        // position
+        ByteAddressBuffer clusterOffsetBuffer = Bindless::GetByteAddressBuffer(meshInfo.m_clusterBufferIndex);
+        RayTracingClasClusterOffsetInfo clusterInfo =
+            clusterOffsetBuffer.Load<RayTracingClasClusterOffsetInfo>(GetClusterId() * sizeof(RayTracingClasClusterOffsetInfo));
+
+        MeshInfo clusterMeshInfo = meshInfo;
+
+        if (meshInfo.m_flags & ClusterGeometryBuffers)
         {
-            // array index of the position buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexPositionArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_POSITION_BUFFER_OFFSET)];
-
-            // offset into the position buffer for this vertex
-            uint positionOffset = meshInfo.m_positionOffset + (indices[i] * 12);
-
-            // load the position data
-#if USE_BINDLESS_SRG
-            vertexData.m_position += asfloat(Bindless::GetByteAddressBuffer(meshVertexPositionArrayIndex).Load3(positionOffset)) * barycentrics[i];
-#else
-            vertexData.m_position += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexPositionArrayIndex].Load3(positionOffset)) * barycentrics[i];
-#endif
+            // Overwrite mesh buffer indices with cluster buffer indices
+            clusterMeshInfo.m_indexBufferIndex = clusterInfo.m_indexBindlessReadIndex;
+            clusterMeshInfo.m_positionBufferIndex = clusterInfo.m_positionBindlessReadIndex;
+            clusterMeshInfo.m_normalBufferIndex = clusterInfo.m_normalBindlessReadIndex;
+            clusterMeshInfo.m_uv0BufferIndex = clusterInfo.m_uv0BindlessReadIndex;
+            clusterMeshInfo.m_uv1BufferIndex = clusterInfo.m_uv1BindlessReadIndex;
+            clusterMeshInfo.m_tangentBufferIndex = clusterInfo.m_tangentBindlessReadIndex;
+            clusterMeshInfo.m_bitangentBufferIndex = clusterInfo.m_bitangentBindlessReadIndex;
         }
 
-        // normal
-        {
-            // array index of the normal buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexNormalArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_NORMAL_BUFFER_OFFSET)];
+        // Overwrite mesh strides with cluster strides
+        clusterMeshInfo.m_indexBufferByteStride = clusterInfo.m_indexStride;
+        clusterMeshInfo.m_positionBufferByteStride = clusterInfo.m_positionStride;
+        clusterMeshInfo.m_normalBufferByteStride = clusterInfo.m_normalStride;
+        clusterMeshInfo.m_uv0BufferByteStride = clusterInfo.m_uv0Stride;
+        clusterMeshInfo.m_uv1BufferByteStride = clusterInfo.m_uv1Stride;
+        clusterMeshInfo.m_tangentBufferByteStride = clusterInfo.m_tangentStride;
+        clusterMeshInfo.m_bitangentBufferByteStride = clusterInfo.m_bitangentStride;
 
-            // offset into the normal buffer for this vertex
-            uint normalOffset = meshInfo.m_normalOffset + (indices[i] * 12);
+        // Overwrite mesh offsets with cluster offsets
+        clusterMeshInfo.m_indexBufferByteOffset = clusterInfo.m_indexOffset;
+        clusterMeshInfo.m_positionBufferByteOffset = clusterInfo.m_positionOffset;
+        clusterMeshInfo.m_normalBufferByteOffset = clusterInfo.m_normalOffset;
+        clusterMeshInfo.m_uv0BufferByteOffset = clusterInfo.m_uv0Offset;
+        clusterMeshInfo.m_uv1BufferByteOffset = clusterInfo.m_uv1Offset;
+        clusterMeshInfo.m_tangentBufferByteOffset = clusterInfo.m_tangentOffset;
+        clusterMeshInfo.m_bitangentBufferByteOffset = clusterInfo.m_bitangentOffset;
 
-             // load the normal data
-#if USE_BINDLESS_SRG
-            vertexData.m_normal += asfloat(Bindless::GetByteAddressBuffer(meshVertexNormalArrayIndex).Load3(normalOffset)) * barycentrics[i];
-#else
-            vertexData.m_normal += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex].Load3(normalOffset)) * barycentrics[i];
-#endif
-        }
-
-        // tangent
-        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_TANGENT)
-        {
-            // array index of the tangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexTangentArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_TANGENT_BUFFER_OFFSET)];
-
-            // offset into the tangent buffer for this vertex
-            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
-
-            // load the tangent data
-#if USE_BINDLESS_SRG
-            vertexData.m_tangent += asfloat(Bindless::GetByteAddressBuffer(meshVertexTangentArrayIndex).Load4(tangentOffset)) * barycentrics[i];
-#else
-            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load4(tangentOffset)) * barycentrics[i];
-#endif
-        }
-
-        // bitangent
-        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_BITANGENT)
-        {
-            // array index of the bitangent buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexBitangentArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_BITANGENT_BUFFER_OFFSET)];
-
-            // offset into the bitangent buffer for this vertex
-            uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * 12);
-
-            // load the bitangent data
-#if USE_BINDLESS_SRG
-            vertexData.m_bitangent += asfloat(Bindless::GetByteAddressBuffer(meshVertexBitangentArrayIndex).Load3(bitangentOffset)) * barycentrics[i];
-#else
-            vertexData.m_bitangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexBitangentArrayIndex].Load3(bitangentOffset)) * barycentrics[i];
-#endif
-        }
-
-        // UV
-        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_UV)
-        {
-            // array index of the UV buffer for this mesh in the m_meshBuffers unbounded array
-            uint meshVertexUVArrayIndex = RayTracingSceneSrg::m_meshBufferIndices[NonUniformResourceIndex(meshInfo.m_bufferStartIndex + MESH_UV_BUFFER_OFFSET)];   
-
-            // offset into the UV buffer for this vertex
-            uint uvOffset = meshInfo.m_uvOffset + (indices[i] * 8);    
-    
-            // load the UV data
-#if USE_BINDLESS_SRG
-            vertexData.m_uv += asfloat(Bindless::GetByteAddressBuffer(meshVertexUVArrayIndex).Load2(uvOffset)) * barycentrics[i];
-#else
-            vertexData.m_uv += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexUVArrayIndex].Load2(uvOffset)) * barycentrics[i];
-#endif
-        }
+        LoadInterpolatedVertexData(clusterMeshInfo, primitiveIndex, barycentrics, vertex);
     }
-    
-    vertexData.m_normal = normalize(vertexData.m_normal);
-    vertexData.m_tangent.xyz = normalize(vertexData.m_tangent.xyz);
-    vertexData.m_tangent.w = sign(vertexData.m_tangent.w);
-    vertexData.m_bitangent = normalize(vertexData.m_bitangent);
+    else
+    {
+        LoadInterpolatedVertexData(meshInfo, primitiveIndex, barycentrics, vertex);
+    }
 
-    return vertexData;
+    return vertex;
 }
+
+VsInput GetHitInterpolatedVertexData(const uint instanceId, const uint primitiveIndex, const float2 builtInBarycentrics)
+{
+    MeshInfo meshInfo;
+    if (GetMeshInfoEntry(instanceId, meshInfo))
+    {
+        return GetHitInterpolatedVertexData(meshInfo, primitiveIndex, builtInBarycentrics);
+    }
+    return (VsInput)0;
+}
+
 
 uint GetBindlessBufferIndex()
 {
-    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_meshInfoCount][0];
+    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_blasMeshCount][0];
 }
 
 uint GetLocalInstanceIndex()
 {
-    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_meshInfoCount][1];
+    return RayTracingSceneSrg::m_proceduralGeometryInfo[NonUniformResourceIndex(InstanceIndex()) - RayTracingSceneSrg::m_blasMeshCount][1];
 }

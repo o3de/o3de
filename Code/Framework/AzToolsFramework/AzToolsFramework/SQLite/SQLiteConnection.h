@@ -1,6 +1,3 @@
-#ifndef AZFRAMEWORK_SQLITECONNECTION_H
-#define AZFRAMEWORK_SQLITECONNECTION_H
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,6 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+ #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -41,7 +42,7 @@ namespace AzToolsFramework
 
         /** AzToolsFramework::SQLite::Connection represents a barebones, single-threaded connection to a SQLite database
         */
-        class Connection
+        class AZTF_API Connection
         {
         public:
             AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator)
@@ -99,18 +100,18 @@ namespace AzToolsFramework
             StatementContainer m_statementPrototypes;
         };
 
-        AZStd::string GetColumnText(sqlite3_stmt* statement, int col);
-        int GetColumnInt(sqlite3_stmt* statement, int col);
-        double GetColumnDouble(sqlite3_stmt* statement, int col);
-        const void* GetColumnBlob(sqlite3_stmt* statement, int col);
-        int GetColumnBlobBytes(sqlite3_stmt* statement, int col);
-        AZ::s64 GetColumnInt64(sqlite3_stmt* statement, int col);
-        AZ::Uuid GetColumnUuid(sqlite3_stmt* statement, int col);
+        AZTF_API AZStd::string GetColumnText(sqlite3_stmt* statement, int col);
+        AZTF_API int GetColumnInt(sqlite3_stmt* statement, int col);
+        AZTF_API double GetColumnDouble(sqlite3_stmt* statement, int col);
+        AZTF_API const void* GetColumnBlob(sqlite3_stmt* statement, int col);
+        AZTF_API int GetColumnBlobBytes(sqlite3_stmt* statement, int col);
+        AZTF_API AZ::s64 GetColumnInt64(sqlite3_stmt* statement, int col);
+        AZTF_API AZ::Uuid GetColumnUuid(sqlite3_stmt* statement, int col);
 
         /** A statement is a live, working-right now statement (or a cached one) which you are currently executing.
          *  All binding is by reference, so you must not destroy the bound objects before executing the statement.
         */
-        class Statement
+        class AZTF_API Statement
         {
         public:
             AZ_CLASS_ALLOCATOR(Statement, AZ::SystemAllocator);
@@ -170,7 +171,7 @@ namespace AzToolsFramework
         // a utility class which auto-finalizes a statement in a scope.
         // use Get() to retrieve the statement.  it will be null if it couldn't find it.
         // The auto finalizer owns the statement
-        class StatementAutoFinalizer
+        class AZTF_API StatementAutoFinalizer
         {
         public:
             StatementAutoFinalizer() = default;
@@ -190,7 +191,7 @@ namespace AzToolsFramework
         //! A utility class to limit a transaction by scope
         //! unless you tell it to commit the transaction it will revert automatically
         //! if scope is lost for any reason
-        class ScopedTransaction
+        class AZTF_API ScopedTransaction
         {
         public:
             ScopedTransaction(Connection* connect);
@@ -206,5 +207,3 @@ namespace AzToolsFramework
         };
     } // namespace SQLite
 } // namespace AzFramework
-
-#endif //AZFRAMEWORK_SQLITECONNECTION_H

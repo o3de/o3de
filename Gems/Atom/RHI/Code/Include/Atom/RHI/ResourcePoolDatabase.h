@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI/Base.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/containers/vector.h>
@@ -26,7 +27,7 @@ namespace AZ::RHI
     //!
     //! DeviceResourcePool is friended to the class in order to allow it to control
     //! attachment / detachment from the database.
-    class ResourcePoolDatabase final
+    class ATOM_RHI_PUBLIC_API ResourcePoolDatabase final
     {
     public:
         ResourcePoolDatabase() = default;

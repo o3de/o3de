@@ -33,7 +33,7 @@ namespace AZ::IO
     /**
      * Data streamer.
      */
-    class Streamer final
+    class AZCORE_API Streamer final
         : public AZ::IO::IStreamer
     {
         friend Streamer_SchedulerTest_RequestSorting_Test;

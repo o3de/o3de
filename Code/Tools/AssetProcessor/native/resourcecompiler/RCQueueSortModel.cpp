@@ -9,6 +9,13 @@
 #include <native/AssetDatabase/AssetDatabase.h>
 #include "rcjoblistmodel.h"
 
+namespace RCQueueSortModel_Internal
+{
+    // Used as a debugging flag.  You can set this to true to only process critical jobs to make sure
+    // that the application properly requests jobs that may not have completed yet during initial startup.
+    static constexpr bool s_debug_OnlyProcessCriticalJobs = false;
+}
+
 namespace AssetProcessor
 {
     RCQueueSortModel::RCQueueSortModel(QObject* parent)
@@ -43,7 +50,7 @@ namespace AssetProcessor
         if (actualJob)
         {
             AZ_Printf(
-                AssetProcessor::DebugChannel,
+                AssetProcessor::ConsoleChannel,
                 "    Job %04i: (Escalation: %i) (Priority: %3i) (Status: %10s) (Crit? %s) (Plat: %s) (MissingDeps? %s) - %s\n",
                 idx,
                 actualJob->JobEscalation(),
@@ -56,30 +63,30 @@ namespace AssetProcessor
 
             for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
             {
-                AZ_Printf(AssetProcessor::DebugChannel, "        Depends on: %s\n",
-                    jobDependencyInternal.ToString().c_str());
+                AZ_Printf(AssetProcessor::ConsoleChannel, "        Depends on: %s%s\n",
+                    jobDependencyInternal.ToString().c_str(),
+                    jobDependencyInternal.m_isMissingSource ? " - missing source" : "");
             }
         }
     }
 
     void RCQueueSortModel::DumpJobListInSortOrder()
     {
-        AZ_Printf(AssetProcessor::DebugChannel, "------------------------------------------------------------\n");
-        AZ_Printf(AssetProcessor::DebugChannel, "RCQueueSortModel: Printing Job list in sorted order:\n");
+        AZ_Printf(AssetProcessor::ConsoleChannel, "------------------------------------------------------------\n");
+        AZ_Printf(AssetProcessor::ConsoleChannel, "RCQueueSortModel: Printing Job list in sorted order:\n");
         for (int idx = 0; idx < rowCount(); ++idx)
         {
             QModelIndex parentIndex = mapToSource(index(idx, 0));
             RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
             PrintJob(actualJob, idx);
         }
-
-        RCJob* nextJob = GetNextPendingJob();
-        AZ_Printf(AssetProcessor::DebugChannel, "Next job:\n")
-        PrintJob(nextJob, 0);
+        AZ_Printf(AssetProcessor::ConsoleChannel, "------------------------------------------------------------\n");
     }
 
     RCJob* RCQueueSortModel::GetNextPendingJob()
     {
+        using namespace RCQueueSortModel_Internal;
+
         if (m_dirtyNeedsResort)
         {
             setDynamicSortFilter(false);
@@ -87,6 +94,10 @@ namespace AssetProcessor
             setDynamicSortFilter(true);
             m_dirtyNeedsResort = false;
         }
+
+        // anyPendingJob contains the first job in the queue that either could be started right now, or is waiting for a dependency to be resolved.
+        // if we get to the end of the queue and no job is immediately started, we start this job anyway just to try to clear any queue log jams.
+
         RCJob* anyPendingJob = nullptr;
         bool waitingOnCatalog = false; // If we find an asset thats waiting on the catalog, don't assume there's a cyclic dependency.  We'll wait until the catalog is updated and then check again.
 
@@ -96,6 +107,13 @@ namespace AssetProcessor
             RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
             if ((actualJob) && (actualJob->GetState() == RCJob::pending))
             {
+                if (!anyPendingJob)
+                {
+                    // anyPendingJob is always the first available job that could be processed in order to unblock the queue.
+                    // its not necesarily the best job to process.
+                    anyPendingJob = actualJob;
+                }
+
                 // If this job has a missing dependency, and there are any jobs in flight,
                 // don't queue it until those jobs finish, in case they resolve the dependency.
                 // This does mean that if there are multiple queued jobs with missing dependencies,
@@ -120,17 +138,17 @@ namespace AssetProcessor
                     continue;
                 }
 
+                bool canProcessJob = true;
                 if (actualJob->HasMissingSourceDependency())
                 {
-                    AZ_Warning(
-                        AssetProcessor::ConsoleChannel,
-                        false,
-                        "No job was found to match the job dependency criteria declared by file %s.\n"
-                        "This may be due to a mismatched job key.\n"
-                        "Job ordering will not be guaranteed and could result in errors or unexpected output.",
-                        actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
+                    // Jobs with missing source dependencies are not an actual warning or error case, since their dependencies can
+                    // appear later.   We skip over them until there are none left in the queue.
+                    // Once nothing is left in the queue except for jobs with missing dependencies, we unblock the first one and run
+                    // it anyway to try to clear any log jams and that's when its appropriate to issue a warning.
+                    canProcessJob = false;
                 }
-                bool canProcessJob = true;
+
+                // If the job has any other jobs its waiting for, we can't process it yet.
                 for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
                 {
                     if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order ||
@@ -147,18 +165,42 @@ namespace AssetProcessor
                             jobDependency.m_platformIdentifier.c_str(),
                             jobDependency.m_jobKey.c_str());
 
-                        if (m_sourceModel->isInFlight(elementId) || m_sourceModel->isInQueue(elementId))
+                        bool isInFlight = m_sourceModel->isInFlight(elementId);
+                        bool isInQueue = false;
+                        if (!isInFlight) // it can't be in flight and in the queue also.
                         {
-                            // escalate the job we depend on, if we're critical or escalated ourselves.
-                            if ((actualJob->JobEscalation() != AssetProcessor::DefaultEscalation) || (actualJob->IsCritical()))
+                            isInQueue = m_sourceModel->isInQueue(elementId);
+                        }
+
+                        if (isInFlight || isInQueue)
+                        {
+                            if (isInQueue)
                             {
-                                m_sourceModel->UpdateJobEscalation(elementId, AssetProcessor::CriticalDependencyEscalation);
+                                // escalate the job we depend on, if we're critical or escalated ourselves.  No point in doing this
+                                // if the job we're about to escalate is already in flight.
+                                if ((actualJob->JobEscalation() != AssetProcessor::DefaultEscalation) || (actualJob->IsCritical()))
+                                {
+                                    m_sourceModel->UpdateJobEscalation(elementId, AssetProcessor::CriticalDependencyEscalation);
+                                }
+                                else
+                                {
+                                    // increase its priority, but don't escalate it, so that it will always go in front of this job.
+                                    m_sourceModel->UpdateJobPriority(elementId, actualJob->GetPriority() + 1);
+                                }
                             }
 
                             canProcessJob = false;
                             if (!anyPendingJob || (anyPendingJob->HasMissingSourceDependency() && !actualJob->HasMissingSourceDependency()))
                             {
-                                anyPendingJob = actualJob;
+                                // This job is a better candidate to unlock the queue than the previous pending job we found.
+                                // or we found no prior one.
+
+                                bool jobIsImportant = (actualJob->IsCritical() || actualJob->JobEscalation() != AssetProcessor::DefaultEscalation);
+                                bool processingNonImportantJobs = !s_debug_OnlyProcessCriticalJobs;
+                                if (processingNonImportantJobs || jobIsImportant)
+                                {
+                                    anyPendingJob = actualJob;
+                                }
                             }
                         }
                         else if(m_sourceModel->isWaitingOnCatalog(elementId))
@@ -171,23 +213,40 @@ namespace AssetProcessor
 
                 if (canProcessJob)
                 {
+                    if (s_debug_OnlyProcessCriticalJobs) // note that s_debug_OnlyProcessCriticalJobs is constexpr so this will be optimized out
+                    {
+                        bool isCritical = actualJob->IsCritical();
+                        bool isEscalated = (actualJob->JobEscalation() != AssetProcessor::DefaultEscalation);
+                        if ((!isCritical) && (!isEscalated))
+                        {
+                            // If we're only processing critical jobs, skip this one.
+                            continue;
+                        }
+
+                    }
+
                     return actualJob;
                 }
             }
         }
 
-        // Either there are no jobs to do or there is a cyclic order job dependency.
+        // Either there are no jobs to do or there is a cyclic order job dependency or the only jobs left are waiting for other jobs
+        // to complete that will never appear.
+        // Unblock the first job we can in case this clears the log jam.
         if (anyPendingJob && m_sourceModel->jobsInFlight() == 0 && !waitingOnCatalog)
         {
-            AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job order dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
+            // there's only a tiny amount of space to print things in the log, so keep the message terse but visible!
+            AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                "Job (%s, %s, %s, %s) missing dependencies - check logs in Project/User/Log folder! \n",
                 anyPendingJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), anyPendingJob->GetJobKey().toUtf8().data(),
                 anyPendingJob->GetJobEntry().m_platformInfo.m_identifier.c_str(), anyPendingJob->GetBuilderGuid().ToString<AZStd::string>().c_str());
+
+            // Dump the job list to that folder.  It will include all remaining jobs, what dependencies are missing, etc, for debugging.
+            DumpJobListInSortOrder();
             return anyPendingJob;
         }
-        else
-        {
-            return nullptr;
-        }
+
+        return nullptr;
     }
 
     bool RCQueueSortModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
@@ -220,19 +279,12 @@ namespace AssetProcessor
             return autoFailLeft;
         }
 
-        // Check if either job was marked as having a missing source dependency.
-        // This means that the job is looking for another source asset and job to exist before it runs, but
-        // that source doesn't exist yet. Those jobs are deferred to run later, in case the dependency eventually shows up.
-        // The dependency may be on an intermediate asset that will be generated later in asset processing.
-        if (leftJob->HasMissingSourceDependency() != rightJob->HasMissingSourceDependency())
-        {
-            if (rightJob->HasMissingSourceDependency())
-            {
-                return true; // left does not have a missing source dependency, but right does, so left wins.
-            }
-            return false; // Right does not have a missing source dependency, but left does, so right wins.
-        }
-
+        // While it may be tempting to sort jobs that are missing source dependencies to the end of the queue,
+        // the nature of this queue is that it is a priority queue, and the jobs that are missing source dependencies
+        // may still be priority jobs that need to be processed as quickly as possible, ie, as soon as their missing dependencies
+        // are resolved.  If a job is missing a source dependency, the job starting system will simply skip over it and leave it in the
+        // queue until the dependency is resolved, at which point it will be processed.
+             
         // Common platform jobs generate intermediate assets. These generate additional jobs, and the intermediate assets
         // can be source and/or job dependencies for other, queued assets.
         // Run intermediate assets before active platform and host platform jobs.
@@ -243,6 +295,14 @@ namespace AssetProcessor
         // you should prioritize those assets.
         if (!platformsMatch)
         {
+            bool leftIsCommon = (leftJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName);
+            bool rightIsCommon = (rightJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName);
+
+            if (leftIsCommon != rightIsCommon)
+            {
+                return leftIsCommon;
+            }
+
             bool leftActive = m_currentlyConnectedPlatforms.contains(leftJob->GetPlatformInfo().m_identifier.c_str());
             bool rightActive = m_currentlyConnectedPlatforms.contains(rightJob->GetPlatformInfo().m_identifier.c_str());
 

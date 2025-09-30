@@ -856,7 +856,7 @@ namespace AZ
 
             AZ_PROFILE_FUNCTION(RHI);
             const auto& viewports = m_state.m_viewportState.m_states;
-            MTLViewport metalViewports[viewports.size()];
+            AZStd::vector<MTLViewport> metalViewports(viewports.size());
 
             for (uint32_t i = 0; i < viewports.size(); ++i)
             {
@@ -869,7 +869,7 @@ namespace AZ
             }
 
             id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            [renderEncoder setViewports: metalViewports
+            [renderEncoder setViewports: metalViewports.data()
                                   count: viewports.size()];
             m_state.m_viewportState.m_isDirty = false;
         }
@@ -906,6 +906,18 @@ namespace AZ
         }
 
         void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
+        void CommandList::BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

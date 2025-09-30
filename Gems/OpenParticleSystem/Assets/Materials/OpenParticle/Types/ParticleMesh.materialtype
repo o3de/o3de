@@ -1,0 +1,91 @@
+{
+    "description": "Material Type with properties used to define particle mesh.",
+    "version": 4,
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            {
+                "$import": "MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/ClearCoatPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh_Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Shaders/OpenParticle/ParticleMesh_DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
+        {
+            "file": "Shaders/OpenParticle/DepthPassTransparentMin.shader",
+            "tag": "DepthPassTransparentMin"
+        },
+        {
+            "file": "Shaders/OpenParticle/DepthPassTransparentMax.shader",
+            "tag": "DepthPassTransparentMax"
+        }        
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/OpenParticle/Types/StandardPBR_ShaderEnable.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

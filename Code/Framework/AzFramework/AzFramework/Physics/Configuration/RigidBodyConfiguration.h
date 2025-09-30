@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
 namespace AzPhysics
 {
     //! Configuration used to Add Rigid bodies to a Scene.
-    struct RigidBodyConfiguration
+    struct AZF_API RigidBodyConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:

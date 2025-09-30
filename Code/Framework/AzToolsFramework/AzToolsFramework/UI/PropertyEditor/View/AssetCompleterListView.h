@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
@@ -20,7 +23,7 @@ AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
 {
     //! Delegate on the asset autocompleter that enables html styling (used to show highlight of searched word)
-    class AssetCompleterDelegate : public QStyledItemDelegate
+    class AZTF_API AssetCompleterDelegate : public QStyledItemDelegate
     {
     public:
         explicit AssetCompleterDelegate(QObject *parent = nullptr);
@@ -34,7 +37,7 @@ namespace AzToolsFramework
     };
 
     //! List View of suggestions in the Asset Autocompleter for PropertyAssetCtrl
-    class AssetCompleterListView
+    class AZTF_API AssetCompleterListView
         : public QListView
     {
         Q_OBJECT

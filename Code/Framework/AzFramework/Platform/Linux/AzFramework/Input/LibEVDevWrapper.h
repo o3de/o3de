@@ -9,6 +9,7 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // This header provides compatibility with the linux specific libevdev module, but without having to have the header
 // present and without statically linking to it, by pulling in the shared library and finding the functions in it.
@@ -28,7 +29,7 @@ extern "C"
 namespace AzFramework
 {
     // meant to be a purely public struct to expose the functions.
-    struct LibEVDevWrapper
+    struct AZF_API LibEVDevWrapper
     {
         using functionType_libevdev_free                = void(*)(struct libevdev *dev);
         using functionType_libevdev_new_from_fd         = int(*)(int fd, struct libevdev **dev);

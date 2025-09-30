@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -20,7 +21,7 @@ namespace AZ
 namespace AzFramework
 {
     //! This struct stores gem related information
-    struct GemInfo
+    struct AZF_API GemInfo
     {
         AZ_CLASS_ALLOCATOR(GemInfo, AZ::SystemAllocator);
         GemInfo(AZStd::string name);
@@ -38,5 +39,5 @@ namespace AzFramework
 
     //! Returns a list of GemInfo of all the gems that are active for the for the specified game project. 
     //! Please note that the game project could be in a different location to the engine therefore we need the assetRoot param.
-    bool GetGemsInfo(AZStd::vector<GemInfo>& gemInfoList, AZ::SettingsRegistryInterface& settingsRegistry);
+    AZF_API bool GetGemsInfo(AZStd::vector<GemInfo>& gemInfoList, AZ::SettingsRegistryInterface& settingsRegistry);
 }

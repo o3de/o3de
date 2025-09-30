@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -23,7 +25,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
     }; // namespace Prefab
 
-    class PrefabUiHandler : public EditorEntityUiHandlerBase
+    class AZTF_API PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator);

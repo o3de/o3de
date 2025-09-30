@@ -140,3 +140,7 @@ namespace AZ
 
     using SliceMetadataInfoNotificationBus = EBus<SliceMetadataInfoNotifications>;
 } // namespace AZ
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoManipulationRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceMetadataInfoNotifications)

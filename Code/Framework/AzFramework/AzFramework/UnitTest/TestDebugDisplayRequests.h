@@ -10,11 +10,12 @@
 
 #include <AzCore/std/containers/stack.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace UnitTest
 {
     //! Null implementation of DebugDisplayRequests for dummy draw calls.
-    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
+    class AZF_API NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
     {
     public:
         virtual ~NullDebugDisplayRequests() = default;
@@ -22,7 +23,7 @@ namespace UnitTest
 
     //! Minimal implementation of DebugDisplayRequests to support testing shapes.
     //! Stores a list of points based on received draw calls to delineate the exterior of the object requested to be drawn.
-    class TestDebugDisplayRequests : public AzFramework::DebugDisplayRequests
+    class AZF_API TestDebugDisplayRequests : public AzFramework::DebugDisplayRequests
     {
     public:
         TestDebugDisplayRequests();

@@ -20,7 +20,7 @@ namespace AZ
     class EnumConstantJsonSerializer : public BaseJsonSerializer
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(EnumConstantJsonSerializer);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, EnumConstantJsonSerializer);
         AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL;
 
@@ -36,4 +36,5 @@ namespace AZ
             const Uuid& valueTypeId,
             JsonSerializerContext& context) override;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, EnumConstantJsonSerializer);
 } // namespace AZ

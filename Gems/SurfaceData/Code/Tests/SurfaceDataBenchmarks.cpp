@@ -280,7 +280,7 @@ namespace UnitTest
         // Create a list of randomly-generated tag values.
         for (auto& tag : tags)
         {
-            tag = randomGenerator.GetRandom();
+            tag = AZ::Crc32(randomGenerator.GetRandom());
         }
 
         for ([[maybe_unused]] auto _ : state)
@@ -320,7 +320,7 @@ namespace UnitTest
         for (auto& tag : tags)
         {
             // Specifically always set the last bit so that we can create comparison tags that won't match.
-            tag = randomGenerator.GetRandom() | 0x01;
+            tag = AZ::Crc32(randomGenerator.GetRandom() | 0x01);
 
             // Add the tag to our weights list with a random weight.
             weights.AddSurfaceTagWeight(tag, randomGenerator.GetRandomFloat());
@@ -331,7 +331,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector comparisonTags;
         for (auto& tag : tags)
         {
-            comparisonTags.emplace_back(tag ^ 0x01);
+            comparisonTags.emplace_back(AZ::Crc32(tag ^ 0x01));
         }
 
         for ([[maybe_unused]] auto _ : state)

@@ -634,10 +634,26 @@ namespace AZ
         // The /O3DE/Application/LifecycleEvents array contains a valid set of lifecycle events
         // Those lifecycle events are normally read from the <engine-root>/Registry
         // which isn't merged until ComponentApplication::Create invokes MergeSettingsToRegistry
-        // So pre-populate the valid lifecycle even entries
+        // So pre-populate the valid lifecycle event entries which are invoked before the settings registry is
+        // fully populated (e.g. loaded from every gem, for example).
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemAllocatorCreated");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemAllocatorPendingDestruction");
+
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SettingsRegistryAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SettingsRegistryUnavailable");
+
         ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ConsoleAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ConsoleUnavailable");
+        
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ReflectionManagerAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "ReflectionManagerUnavailable");
+
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "GemsLoaded");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "GemsUnloaded");
+
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemComponentsActivated");
+        ComponentApplicationLifecycle::RegisterEvent(settingsRegistry, "SystemComponentsDeactivated");
+
         ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SystemAllocatorCreated", R"({})");
         ComponentApplicationLifecycle::SignalEvent(settingsRegistry, "SettingsRegistryAvailable", R"({})");
     }
@@ -677,12 +693,11 @@ namespace AZ
             {
                 // Default to looking for startup config file at "<exe-directory>/startup.cfg" if the O3DE_STARTUP_CFG_FILE env is not set
                 startupCfgPath =
-                    AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                    AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / SettingsRegistryConstants::RegistryFolder / "startup.cfg";
                 if (!AZ::IO::SystemFile::Exists(startupCfgPath.c_str()))
                 {
                     // If a <exe-directory>/startup.cfg doesn't exist, try to locate the startup config file at "~/.o3de/Registry/startup.cfg"
-                    startupCfgPath =
-                        AZ::IO::FixedMaxPath(AZ::Utils::GetO3deManifestDirectory()) / SettingsRegistryInterface::RegistryFolder / "startup.cfg";
+                    startupCfgPath = AZ::IO::FixedMaxPath(AZ::Utils::GetO3deManifestDirectory()) / SettingsRegistryConstants::RegistryFolder / "startup.cfg";
                 }
             }
 
@@ -1031,6 +1046,10 @@ namespace AZ
         // budgets initialized cross boundary are freed properly
         m_budgetTracker.Reset();
 #endif
+        // Cleanup the SerializeContext ClassInfos before we unload the modules since some ClassInfos will have
+        // symbols that were registered from the modules and will cause issues if the modules are unloaded before
+        // we clean them up
+        AZ::GetGlobalSerializeContextModule().Cleanup();
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();

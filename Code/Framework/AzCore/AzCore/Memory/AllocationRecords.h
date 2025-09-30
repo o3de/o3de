@@ -56,7 +56,7 @@ namespace AZ
         /**
          * Example of records enumeration callback.
          */
-        struct PrintAllocationsCB
+        struct AZCORE_API PrintAllocationsCB
         {
             PrintAllocationsCB(bool isDetailed = false, bool includeNameAndFilename = false)
                 : m_isDetailed(isDetailed), m_includeNameAndFilename(includeNameAndFilename) {}
@@ -70,7 +70,7 @@ namespace AZ
         /**
          * Guard value is used to guard different memory allocations for stomping.
          */
-        struct GuardValue
+        struct AZCORE_API GuardValue
         {
             static const u32 m_defValue = 0xbad0babe;
             GuardValue()    { m_value = (m_defValue ^ (u32)((size_t) this)); }
@@ -105,7 +105,7 @@ namespace AZ
         * This is where the memory guard will be located. Failure to do so will cause failed memory stomps
         * and possible memory corruption.
         */
-        class AllocationRecords
+        class AZCORE_API AllocationRecords
         {
         public:
             using Mode = AllocationRecordMode;

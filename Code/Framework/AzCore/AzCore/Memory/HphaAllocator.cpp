@@ -2617,6 +2617,6 @@ namespace AZ
     }
 
     // explicitly instantiate both the non-debug and debug schema classes
-    template class HphaSchemaBase<false>;
-    template class HphaSchemaBase<true>;
+    template class AZCORE_API_EXPORT HphaSchemaBase<false>;
+    template class AZCORE_API_EXPORT HphaSchemaBase<true>;
 } // namespace AZ

@@ -33,7 +33,7 @@ namespace AZ::RHI
         return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const
     {
         return Base::GetResourceView(bufferViewDescriptor);
     }
@@ -43,6 +43,21 @@ namespace AZ::RHI
         HashValue64 hash = HashValue64{ 0 };
         hash = m_descriptor.GetHash();
         return hash;
+    }
+
+    AZStd::unordered_map<int, uint64_t> Buffer::GetDeviceAddress() const
+    {
+        AZStd::unordered_map<int, uint64_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceBuffer(deviceIndex)->GetDeviceAddress();
+                return true;
+            });
+
+        return result;
     }
 
     void Buffer::Shutdown()

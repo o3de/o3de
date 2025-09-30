@@ -138,6 +138,7 @@ namespace UnitTest
     {
         const AzFramework::ModifierKeyStates orbitModifierKeystate = OrbitModifierKeyStates(m_orbitChannelId);
 
+
         // begin orbit camera
         const bool consumed1 = HandleEventAndUpdate(AzFramework::InputState{
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceKeyboard::Key::ModifierAltL, AzFramework::InputChannel::State::Began },

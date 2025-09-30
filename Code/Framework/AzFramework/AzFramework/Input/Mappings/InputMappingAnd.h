@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Mappings/InputMapping.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that maps multiple different sources to a single output using 'AND' logic.
     //! Example: "gamepad_button_L1" AND "gamepad_button_R1" -> "gameplay_strong_attack"
-    class InputMappingAnd : public InputMapping
+    class AZF_API InputMappingAnd : public InputMapping
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

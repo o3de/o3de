@@ -9,5 +9,5 @@
 
 namespace AZStd
 {
-    template class basic_fixed_string<char, 1024>;
+    template class AZCORE_API_EXPORT basic_fixed_string<char, 1024>;
 } // namespace AZStd

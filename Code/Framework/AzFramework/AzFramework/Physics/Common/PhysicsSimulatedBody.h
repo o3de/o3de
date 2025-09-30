@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -36,7 +37,7 @@ namespace AzPhysics
     struct TriggerEvent;
 
     //! Base class for all Simulated bodies in Physics.
-    struct SimulatedBody
+    struct AZF_API SimulatedBody
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::SimulatedBody, "{BCC37A4F-1C05-4660-9E41-0CCF2D5E7175}");

@@ -19,6 +19,7 @@
 #include <Generation/Components/UVsGenerator/UVsGenerateComponent.h>
 #include <Generation/Components/UVsGenerator/UVsPreExportComponent.h>
 #include <Generation/Components/MeshOptimizer/MeshOptimizerComponent.h>
+#include <SceneAPI/SceneBuilder/ImportContextRegistryComponent.h>
 #include <Source/SceneProcessingModule.h>
 
 namespace AZ
@@ -42,6 +43,7 @@ namespace AZ
                 {
                     SceneProcessingConfig::SceneProcessingConfigSystemComponent::CreateDescriptor(),
                     SceneProcessingConfig::SoftNameBehavior::CreateDescriptor(),
+                    SceneAPI::SceneBuilder::ImportContextRegistryComponent::CreateDescriptor(),
                     SceneBuilder::BuilderPluginComponent::CreateDescriptor(),
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
                     AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),

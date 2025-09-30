@@ -11,6 +11,7 @@
 #include <AzCore/std/math.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -40,7 +41,7 @@ namespace AzToolsFramework
     };
 
     //! Build a ManipulatorInteraction structure from the incoming viewport interaction.
-    ManipulatorInteraction BuildManipulatorInteraction(
+    AZTF_API ManipulatorInteraction BuildManipulatorInteraction(
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& worldRayOrigin,
@@ -49,35 +50,35 @@ namespace AzToolsFramework
     //! Calculate the offset along an axis to adjust a position to stay snapped to a given grid size.
     //! @note This is snap up or down to the nearest grid segment (e.g. 0.2 snaps to 0.0 -> delta 0.2,
     //! 0.7 snaps to 1.0 -> delta 0.3).
-    AZ::Vector3 CalculateSnappedOffset(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
+    AZTF_API AZ::Vector3 CalculateSnappedOffset(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
 
     //! Return the amount to snap from the starting position given the current grid size.
     //! @note A movement of more than half size (in either direction) will cause a snap by size.
-    AZ::Vector3 CalculateSnappedAmount(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
+    AZTF_API AZ::Vector3 CalculateSnappedAmount(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
 
     //! Overload of CalculateSnappedOffset taking multiple axes.
-    AZ::Vector3 CalculateSnappedOffset(
+    AZTF_API AZ::Vector3 CalculateSnappedOffset(
         const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, size_t snapAxesCount, float size);
 
     //! Return the final snapped position according to size (unsnappedPosition + CalculateSnappedOffset).
-    AZ::Vector3 CalculateSnappedPosition(
+    AZTF_API AZ::Vector3 CalculateSnappedPosition(
         const AZ::Vector3& unsnappedPosition, const AZ::Vector3* snapAxes, size_t snapAxesCount, float size);
 
     //! Wrapper for grid snapping and grid size bus calls.
-    GridSnapParameters GridSnapSettings(int viewportId);
+    AZTF_API GridSnapParameters GridSnapSettings(int viewportId);
 
     //! Wrapper for angle snapping enabled bus call.
-    bool AngleSnapping(int viewportId);
+    AZTF_API bool AngleSnapping(int viewportId);
 
     //! Wrapper for angle snapping increment bus call.
     //! @return Angle in degrees.
-    float AngleStep(int viewportId);
+    AZTF_API float AngleStep(int viewportId);
 
     //! Wrapper for grid rendering check call.
-    bool ShowingGrid(int viewportId);
+    AZTF_API bool ShowingGrid(int viewportId);
 
     //! Render the grid used for snapping.
-    void DrawSnappingGrid(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Transform& worldFromLocal, float squareSize);
+    AZTF_API void DrawSnappingGrid(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Transform& worldFromLocal, float squareSize);
 
     //! Round to x number of significant digits.
     //! @param value Number to round.

@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -32,7 +33,7 @@ namespace AzToolsFramework
         virtual AZ::Outcome<AZ::Uuid, AZStd::string> CreateSourceUuid(AZ::IO::PathView absoluteFilePath) = 0;
     };
 
-    class UuidUtilComponent
+    class AZTF_API UuidUtilComponent
         : public AZ::Component
         , AZ::Interface<IUuidUtil>::Registrar
     {

@@ -75,7 +75,7 @@ namespace AZ
         //! A lightweight result returned by all major functions in the Json Serialization.
         //! This is essentially a 32 bit integer but with additional functionality to be
         //! more descriptive than a standard integer result code.
-        union ResultCode
+        union AZCORE_API ResultCode
         {
         public:
             explicit ResultCode(Tasks task);
@@ -126,7 +126,7 @@ namespace AZ
         //! Result is a wrapper around ResultCode to encourage serializer to report results
         //! at least once per load/store call. The most common use is to call context.Report
         //! which returns a Result (which can also be used as a ResultCode).
-        class Result
+        class AZCORE_API Result
         {
         public:
             Result(const JsonIssueCallback& callback, AZStd::string_view message, ResultCode result, AZStd::string_view path);

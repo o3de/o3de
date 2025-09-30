@@ -19,6 +19,7 @@
 #include <QAbstractItemView>
 #include <QStyledItemDelegate>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzQtComponents
 {
@@ -36,7 +37,7 @@ namespace AzToolsFramework
         class AssetBrowserTreeToTableProxyModel;
         class AssetBrowserModel;
 
-        class TableViewDelegate
+        class AZTF_API TableViewDelegate
             : public QStyledItemDelegate
         {
             Q_OBJECT
@@ -51,7 +52,7 @@ namespace AzToolsFramework
             void renameTableEntry(const QString& value) const;
         };
 
-        class AssetBrowserTableView
+        class AZTF_API AssetBrowserTableView
             : public QWidget
         {
             Q_OBJECT

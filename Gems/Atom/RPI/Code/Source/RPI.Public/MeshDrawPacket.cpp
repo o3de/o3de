@@ -36,12 +36,13 @@ namespace AZ
         MeshDrawPacket::MeshDrawPacket(
             ModelLod& modelLod,
             size_t modelLodMeshIndex,
+            int32_t meshInfoIndex,
             Data::Instance<Material> materialOverride,
             Data::Instance<ShaderResourceGroup> objectSrg,
-            const MaterialModelUvOverrideMap& materialModelUvMap
-        )
+            const MaterialModelUvOverrideMap& materialModelUvMap)
             : m_modelLod(&modelLod)
             , m_modelLodMeshIndex(modelLodMeshIndex)
+            , m_meshInfoIndex(meshInfoIndex)
             , m_objectSrg(objectSrg)
             , m_material(materialOverride)
             , m_materialModelUvMap(materialModelUvMap)
@@ -328,8 +329,17 @@ namespace AZ
                 {
                     return false;
                 }
-
-                const bool isRasterShader = (shaderItem.GetShaderAsset()->GetPipelineStateType() == RHI::PipelineStateType::Draw);
+                bool isRasterShader = true;
+                if (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster)
+                {
+                    // backwards compatability: DrawItemType::Raster is the fallback type if none is provided, and we supported
+                    // dispatch-items before the DrawItemType, using the piplineState-Type to determine if we need a dispatch item.
+                    isRasterShader = (shaderItem.GetShaderAsset()->GetPipelineStateType() == RHI::PipelineStateType::Draw);
+                }
+                else if (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Dispatch)
+                {
+                    isRasterShader = false;
+                }
                 if (isRasterShader && !parentScene.HasOutputForPipelineState(drawListTag))
                 {
                     // drawListTag not found in this scene, so don't render this item
@@ -442,6 +452,11 @@ namespace AZ
                         RHI::ShaderInputNameIndex nameIndex(AZ_NAME_LITERAL("m_modelLodMeshIndex"));
                         drawSrg->SetConstant(nameIndex, aznumeric_cast<uint32_t>(m_modelLodMeshIndex));
                     }
+                    {
+                        // Pass MeshInfoIndex to the shader if the draw SRG has it.
+                        RHI::ShaderInputNameIndex nameIndex("m_meshInfoIndex");
+                        drawSrg->SetConstant(nameIndex, m_meshInfoIndex);
+                    }
 
                     // TODO: Does it make sense to call Compile() in the case where both SetConstant() calls above fail?
                     // Leaving it as always calling Compile() as precaution that there's code somewhere else that assumes
@@ -474,7 +489,7 @@ namespace AZ
                     AZ_Error(
                         "MeshDrawPacket",
                         (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
-                        (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
+                            (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
                         "Shader %s has mis-matched root constant layout in material %s. "
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.",
@@ -525,7 +540,9 @@ namespace AZ
             m_material->ForAllShaderItems(
                 [&](const Name& materialPipelineName, const ShaderCollection::Item& shaderItem)
                 {
-                    if (shaderItem.IsEnabled())
+                    if (shaderItem.IsEnabled() &&
+                        (shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Raster ||
+                         shaderItem.GetDrawItemType() == RPI::ShaderCollection::Item::DrawItemType::Dispatch))
                     {
                         if (shaderList.size() == RHI::DrawPacketBuilder::DrawItemCountMax)
                         {

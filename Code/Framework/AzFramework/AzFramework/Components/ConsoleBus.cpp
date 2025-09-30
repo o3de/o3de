@@ -8,6 +8,7 @@
 
 #include "ConsoleBus.h"
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -47,3 +48,6 @@ namespace AzFramework
         }
     }
 }
+
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ConsoleRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ConsoleNotifications);

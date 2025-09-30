@@ -68,7 +68,6 @@ namespace ImageProcessingAtomEditor
         bool m_validImage = true;
 
         void SaveTextureSetting(AZStd::string outputPath);
-        void DeleteLegacySetting();
     };
 } //namespace ImageProcessingAtomEditor
 

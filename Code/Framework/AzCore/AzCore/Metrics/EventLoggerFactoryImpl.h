@@ -16,7 +16,7 @@
 namespace AZ::Metrics
 {
     class IEventLogger;
-    class EventLoggerFactoryImpl final
+    class AZCORE_API EventLoggerFactoryImpl final
         : public IEventLoggerFactory
     {
     public:

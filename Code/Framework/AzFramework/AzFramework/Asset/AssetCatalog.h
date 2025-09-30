@@ -17,6 +17,7 @@
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -26,7 +27,7 @@ namespace AzFramework
     /*
      * An asset catalog keeps a registry of asset data information (file name, size, type, etc)
      */
-    class AssetCatalog
+    class AZF_API AssetCatalog
         : public AZ::Data::AssetCatalog
         , public AZ::Data::AssetCatalogRequestBus::Handler
         , private AssetSystem::NetworkAssetUpdateInterface

@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
         foreach (const QString& tag, tags)
         {
             TagWidget* tagWidget = new TagWidget({tag, tag});
-            connect(tagWidget, &TagWidget::TagClicked, this, [=](const Tag& clickedTag){ emit TagClicked(clickedTag); });
+            connect(tagWidget, &TagWidget::TagClicked, this, [this](const Tag& clickedTag){ emit TagClicked(clickedTag); });
             layout()->addWidget(tagWidget);
         }
     }
@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         foreach (const Tag& tag, tags)
         {
             TagWidget* tagWidget = new TagWidget(tag);
-            connect(tagWidget, &TagWidget::TagClicked, this, [=](const Tag& clickedTag){ emit TagClicked(clickedTag); });
+            connect(tagWidget, &TagWidget::TagClicked, this, [this](const Tag& clickedTag){ emit TagClicked(clickedTag); });
             layout()->addWidget(tagWidget);
         }
     }

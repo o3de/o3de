@@ -16,8 +16,9 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Archive/ZipFileFormat.h>
-
+#include <AzFramework/AzFrameworkAPI.h>
 #if AZ_TRAIT_USE_WINDOWS_FILE_API && AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
 #define SUPPORT_UNBUFFERED_IO
 #endif
@@ -34,7 +35,7 @@ namespace AZ::IO
 namespace AZ::IO::ZipDir
 {
     struct FileEntry;
-    struct CZipFile
+    struct AZF_API CZipFile
     {
         AZ::IO::HandleType m_fileHandle;
 #ifdef SUPPORT_UNBUFFERED_IO
@@ -97,7 +98,7 @@ namespace AZ::IO::ZipDir
     };
 
     // the error describes the reason of the error, as well as the error code, line of code where it happened etc.
-    struct Error
+    struct AZF_API Error
     {
         Error(ErrorEnum _nError, const char* _szDescription, const char* _szFunction, const char* _szFile, unsigned _nLine)
             : nError(_nError)
@@ -145,33 +146,33 @@ namespace AZ::IO::ZipDir
 
     // Uncompresses raw (without wrapping) data that is compressed with method 8 (deflated) in the Zip file
     // returns one of the Z_* errors (Z_OK upon success)
-    int ZipRawUncompress(void* pUncompressed, size_t* pDestSize, const void* pCompressed, size_t nSrcSize);
+    AZF_API int ZipRawUncompress(void* pUncompressed, size_t* pDestSize, const void* pCompressed, size_t nSrcSize);
 
     // compresses the raw data into raw data. The buffer for compressed data itself with the heap passed. Uses method 8 (deflate)
     // returns one of the Z_* errors (Z_OK upon success), and the size in *pDestSize. the pCompressed buffer must be at least nSrcSize*1.001+12 size
-    int ZipRawCompress(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
-    int ZipRawCompressZSTD(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
-    int ZipRawCompressLZ4(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
+    AZF_API int ZipRawCompress(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
+    AZF_API int ZipRawCompressZSTD(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
+    AZF_API int ZipRawCompressLZ4(const void* pUncompressed, size_t* pDestSize, void* pCompressed, size_t nSrcSize, int nLevel);
 
     // fseek wrapper with memory in file support.
-    int64_t FSeek(CZipFile* zipFile, int64_t origin, int command);
+    AZF_API int64_t FSeek(CZipFile* zipFile, int64_t origin, int command);
 
     // fread wrapper with file in memory  support
-    int64_t FRead(CZipFile* zipFile, void* data, size_t nElemSize, size_t nCount);
+    AZF_API int64_t FRead(CZipFile* zipFile, void* data, size_t nElemSize, size_t nCount);
 
     // ftell wrapper with file in memory support
-    int64_t FTell(CZipFile* zipFile);
+    AZF_API int64_t FTell(CZipFile* zipFile);
 
-    int FEof(CZipFile* zipFile);
+    AZF_API int FEof(CZipFile* zipFile);
 
 
     //////////////////////////////////////////////////////////////////////////
-    struct SExtraZipFileData
+    struct AZF_API SExtraZipFileData
     {
         uint64_t nLastModifyTime{};
     };
 
-    struct FileEntryBase
+    struct AZF_API FileEntryBase
     {
         FileEntryBase() = default;
         FileEntryBase(const ZipFile::CDRFileHeader& header, const SExtraZipFileData& extra);
@@ -209,8 +210,7 @@ namespace AZ::IO::ZipDir
 
         using FileEntryBase::FileEntryBase;
 
-        FileEntry(const FileEntry&) = delete;
-        FileEntry& operator=(const FileEntry&) = delete;
+        AZ_DISABLE_COPY_MOVE(FileEntry);
 
         bool IsInitialized()
         {
@@ -241,29 +241,29 @@ namespace AZ::IO::ZipDir
 
     // tries to refresh the file entry from the given file (reads from there if needed)
     // returns the error code if the operation was impossible to complete
-    ErrorEnum Refresh(CZipFile* f, FileEntryBase* pFileEntry);
+    AZF_API ErrorEnum Refresh(CZipFile* f, FileEntryBase* pFileEntry);
 
     // writes into the file local header (NOT including the name, only the header structure)
     // the file must be opened both for reading and writing
-    ErrorEnum UpdateLocalHeader(AZ::IO::HandleType fileHandle, FileEntryBase* pFileEntry);
+    AZF_API ErrorEnum UpdateLocalHeader(AZ::IO::HandleType fileHandle, FileEntryBase* pFileEntry);
 
     // writes into the file local header - without Extra data
     // puts the new offset to the file data to the file entry
     // in case of error can put INVALID_DATA_OFFSET into the data offset field of file entry
-    ErrorEnum WriteLocalHeader(AZ::IO::HandleType fileHandle, FileEntryBase* pFileEntry, AZStd::string_view szRelativePath);
+    AZF_API ErrorEnum WriteLocalHeader(AZ::IO::HandleType fileHandle, FileEntryBase* pFileEntry, AZStd::string_view szRelativePath);
 
     // conversion routines for the date/time fields used in Zip
-    uint16_t DOSDate(tm*);
-    uint16_t DOSTime(tm*);
+    AZF_API uint16_t DOSDate(tm*);
+    AZF_API uint16_t DOSTime(tm*);
 
-    const char* DOSTimeCStr(uint16_t nTime);
-    const char* DOSDateCStr(uint16_t nTime);
+    AZF_API const char* DOSTimeCStr(uint16_t nTime);
+    AZF_API const char* DOSDateCStr(uint16_t nTime);
 
     struct DirHeader;
     // this structure represents a subdirectory descriptor in the directory record.
     // it points to the actual directory info (list of its subdirs and files), as well
     // as on its name
-    struct DirEntry
+    struct AZF_API DirEntry
     {
         AZ_CLASS_ALLOCATOR(DirEntry, AZ::SystemAllocator);
         uint32_t nDirHeaderOffset{}; // offset, in bytes, relative to this object, of the actual directory record header
@@ -290,7 +290,7 @@ namespace AZ::IO::ZipDir
 
     // this is the head of the directory record
     // the name pool follows straight the directory and file entries.
-    struct DirHeader
+    struct AZF_API DirHeader
     {
         uint16_t numDirs{}; // number of directory entries - DirEntry structures
         uint16_t numFiles{}; // number of file entries - FileEntry structures
@@ -342,7 +342,7 @@ namespace AZ::IO::ZipDir
     };
 
     // this is the sorting predicate for directory entries
-    struct DirEntrySortPred
+    struct AZF_API DirEntrySortPred
     {
         DirEntrySortPred(const char* pNamePool)
             : m_pNamePool{ pNamePool }
@@ -382,7 +382,7 @@ namespace AZ::IO::ZipDir
         const char* m_pNamePool;
     };
 
-    struct UncompressLookahead
+    struct AZF_API UncompressLookahead
     {
         inline static constexpr size_t Capacity = 16384;
 

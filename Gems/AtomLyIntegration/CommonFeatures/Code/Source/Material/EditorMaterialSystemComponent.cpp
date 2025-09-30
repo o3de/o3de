@@ -316,7 +316,7 @@ namespace AZ
             // the handling code to be executed on the main thread. This prevents any non
             // thread-safe code, such as Qt updates, from running on alternate threads
             AZ::SystemTickBus::QueueFunction(
-                [=]()
+                [=, this]()
                 {
                     PurgePreviews();
 

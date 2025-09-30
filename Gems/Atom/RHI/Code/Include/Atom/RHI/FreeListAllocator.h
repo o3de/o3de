@@ -27,7 +27,7 @@ namespace AZ::RHI
         BestFit
     };
 
-    class FreeListAllocator final
+    class ATOM_RHI_PUBLIC_API FreeListAllocator final
         : public Allocator
     {
     public:

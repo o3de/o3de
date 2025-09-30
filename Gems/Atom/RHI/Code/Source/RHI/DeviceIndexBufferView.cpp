@@ -11,20 +11,6 @@
 
 namespace AZ::RHI
 {
-    uint32_t GetIndexFormatSize(IndexFormat indexFormat)
-    {
-        switch (indexFormat)
-        {
-        case IndexFormat::Uint16:
-            return 2;
-        case IndexFormat::Uint32:
-            return 4;
-        default:
-            AZ_Error("RHI", false, "Unknown index format %d", (uint32_t)indexFormat);
-            return 4;
-        }
-    }
-
     DeviceIndexBufferView::DeviceIndexBufferView(
         const DeviceBuffer& buffer,
         uint32_t byteOffset,

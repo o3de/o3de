@@ -193,15 +193,15 @@ void ApplySimplePointLight(SimplePointLight light, Surface surface, inout Lighti
 // and once done, all light types can use the culling. 
 // Not that the current culling scheme assumes light types lists order and is bogus if 
 // some light types are not used or out of order (Atom's To Do list)
-void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
+void ApplyCulledSimplePointLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS], inout LightCullingTileIterator tileIterator)
 {
-    lightingData.tileIterator.LoadAdvance();
+    tileIterator.LoadAdvance();
 
     int lightCount = 0;
-    while( !lightingData.tileIterator.IsDone() && lightCount<1) 
+    while( !tileIterator.IsDone() && lightCount<1) 
     { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
-        lightingData.tileIterator.LoadAdvance();
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
 
         SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
         ApplySimplePointLight(light, surface, lightingData, views);
@@ -344,14 +344,15 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData, const
 //                             Disk Lights
 //==============================================================================
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassDiskLights.azsli>
 
 void ApplyAllDiskLights(Surface surface, inout LightingData lightingData, const float3 views[MAX_SHADING_VIEWS])
 {    
     SetNormalAndUpdateLightingParams(surface.tangent, lightingData.dirToCamera[0], views, surface, lightingData);
     for (int l = 0; l < ViewSrg::m_diskLightCount; ++l)
     {
-        DiskLight light = ViewSrg::m_diskLights[l];
-        ApplyDiskLight(light, surface, lightingData);
+        // Note: this doesn't use our GetHairBackLighting() - function
+        ApplyDiskLight(l, surface, lightingData);
     }
 }
 
@@ -476,14 +477,14 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, const float3 vie
 //                       Light Types Application
 // 
 //==============================================================================
-void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords, const float3 views[MAX_SHADING_VIEWS])
+void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords, const float3 views[MAX_SHADING_VIEWS], inout LightCullingTileIterator tileIterator)
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
 
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 
-//    ApplyDecals(lightingData.tileIterator, surface);
+//    ApplyDecals(tileIterator, surface);
 
     if (o_enableDirectionalLights)
     {

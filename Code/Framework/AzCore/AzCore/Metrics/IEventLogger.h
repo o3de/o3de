@@ -91,7 +91,7 @@ namespace AZ::Metrics
     //! https://eel.is/c++draft/containers#span.overview-4
     //! The reason why EventValue can't be complete is because it is a recursive type
     //! that has a reference to an array of child event values
-    struct EventArray
+    struct AZCORE_API EventArray
     {
         constexpr EventArray() = default;
         constexpr explicit EventArray(AZStd::span<EventValue> arrayValues);
@@ -106,7 +106,7 @@ namespace AZ::Metrics
 
     //! AZStd/std::span requires a complete type, so an EventField pointer and a size member
     //! is stored in the public API exposes a span interface
-    struct EventObject
+    struct AZCORE_API EventObject
     {
         constexpr EventObject() = default;
         constexpr explicit EventObject(AZStd::span<EventField> objectFields);
@@ -120,7 +120,7 @@ namespace AZ::Metrics
     };
 
     //! Implementation of Event Value struct used to reference JSON like types
-    struct EventValue
+    struct AZCORE_API EventValue
     {
         constexpr EventValue();
         template<class T, class Alt = AZStd::variant_detail::best_alternative_t<T,
@@ -154,7 +154,7 @@ namespace AZ::Metrics
     };
 
     //! Event field can now be defined now that EventValue is complete
-    struct EventField
+    struct AZCORE_API EventField
     {
         constexpr EventField();
         constexpr EventField(AZStd::string_view name, EventValue value);
@@ -194,7 +194,7 @@ namespace AZ::Metrics
         (ContentLeave, ')')
         );
 
-    struct EventDesc
+    struct AZCORE_API EventDesc
     {
         EventDesc();
 

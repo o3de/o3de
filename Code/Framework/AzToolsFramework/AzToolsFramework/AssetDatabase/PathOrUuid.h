@@ -10,10 +10,12 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework::AssetDatabase
 {
-    class PathOrUuid
+    class AZTF_API PathOrUuid
     {
     public:
         PathOrUuid() = default;
@@ -42,7 +44,7 @@ namespace AzToolsFramework::AssetDatabase
 namespace AZStd
 {
     template<>
-    struct hash<AzToolsFramework::AssetDatabase::PathOrUuid>
+    struct AZTF_API hash<AzToolsFramework::AssetDatabase::PathOrUuid>
     {
         AZStd::size_t operator()(const AzToolsFramework::AssetDatabase::PathOrUuid& obj) const;
     };

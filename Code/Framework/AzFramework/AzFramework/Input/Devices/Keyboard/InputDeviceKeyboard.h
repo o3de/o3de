@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -27,8 +28,8 @@ namespace AzFramework
     //! instance of this generic class will work correctly on any platform supporting keyboard input,
     //! while providing access to the device name and associated channel ids on any platform through
     //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
-    class InputDeviceKeyboard : public InputDevice
-                              , public InputTextEntryRequestBus::Handler
+    class AZF_API InputDeviceKeyboard : public InputDevice
+                                      , public InputTextEntryRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -450,7 +451,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of keyboard input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -558,5 +559,5 @@ namespace AzFramework
         InputDeviceImplementationRequestHandler<InputDeviceKeyboard> m_implementationRequestHandler;
     };
 
-    ModifierKeyMask GetCorrespondingModifierKeyMask(const InputChannelId& channelId);
+    AZF_API ModifierKeyMask GetCorrespondingModifierKeyMask(const InputChannelId& channelId);
 } // namespace AzFramework

@@ -41,7 +41,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, SV, isFrontFace, GetMaterialParameters());
 
-    Surface surface = EvaluateSurface(IN, geoData, GetMaterialParameters());
+    Surface surface = EvaluateSurface(IN, SV, geoData, GetMaterialParameters());
 
     LightingData lightingData = EvaluateLighting(surface, IN.position, views);
 

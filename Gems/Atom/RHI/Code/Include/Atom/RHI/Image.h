@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
     //! @see DeviceImageView on how to interpret contents of an image.
-    class Image : public Resource
+    class ATOM_RHI_PUBLIC_API Image : public Resource
     {
         friend class ImagePoolBase;
         friend class ImagePool;
@@ -51,7 +51,7 @@ namespace AZ::RHI
         const ImageDescriptor& GetDescriptor() const;
 
         //! Returns the multi-device DeviceImageView
-        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor) const;
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents
@@ -66,11 +66,6 @@ namespace AZ::RHI
         //!  @param totalSizeInBytes
         //!      [Optional] If specified, will be filled with the total size necessary to contain all subresources.
         void GetSubresourceLayout(ImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags = ImageAspectFlags::All) const;
-
-        //! Returns the set of queue classes that are supported for usage as an attachment on the frame scheduler.
-        //! Effectively, for a scope of a specific hardware class to use the image as an attachment, the queue must
-        //! be present in this mask. This does not apply to non-attachment images on the Compute / Graphics queue.
-        HardwareQueueClassMask GetSupportedQueueMask() const;
 
         //! Returns the image frame attachment if the image is currently attached. This is assigned when the image
         //! is imported into the frame scheduler (which is reset every frame). This value will be null for non-attachment

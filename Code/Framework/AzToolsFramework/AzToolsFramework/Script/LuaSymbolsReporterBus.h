@@ -7,14 +7,16 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Script
     {
-        struct LuaPropertySymbol
+        struct AZTF_API LuaPropertySymbol
         {
             AZ_TYPE_INFO(LuaPropertySymbol, "{5AFB147F-50A4-4F00-9F82-D8D5BBC970D6}");
             static void Reflect(AZ::ReflectContext* context);
@@ -26,7 +28,7 @@ namespace AzToolsFramework
             AZStd::string ToString() const;
         };
 
-        struct LuaMethodSymbol
+        struct AZTF_API LuaMethodSymbol
         {
             AZ_TYPE_INFO(LuaMethodSymbol, "{7B074A36-C81D-46A0-8D2F-62E426EBE38A}");
             static void Reflect(AZ::ReflectContext* context);
@@ -37,7 +39,7 @@ namespace AzToolsFramework
             AZStd::string ToString() const;
         };
 
-        struct LuaClassSymbol
+        struct AZTF_API LuaClassSymbol
         {
             AZ_TYPE_INFO(LuaClassSymbol, "{5FBE5841-A8E1-44B6-BEDA-22302CF8DF5F}");
             static void Reflect(AZ::ReflectContext* context);
@@ -50,7 +52,7 @@ namespace AzToolsFramework
             AZStd::string ToString() const;
         };
 
-        struct LuaEBusSender
+        struct AZTF_API LuaEBusSender
         {
             AZ_TYPE_INFO(LuaEBusSender, "{23EE4188-0924-49DB-BF3F-EB7AAB6D5E5C}");
             static void Reflect(AZ::ReflectContext* context);
@@ -62,7 +64,7 @@ namespace AzToolsFramework
             AZStd::string ToString() const;
         };
 
-        struct LuaEBusSymbol
+        struct AZTF_API LuaEBusSymbol
         {
             AZ_TYPE_INFO(LuaEBusSymbol, "{381C5639-A916-4D2E-B825-50A3F2D93137}");
             static void Reflect(AZ::ReflectContext* context);
@@ -108,3 +110,5 @@ namespace AzToolsFramework
 
     } // namespace Script
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::Script::LuaSymbolsReporterRequests, AzToolsFramework::Script::LuaSymbolsReporterBusTraits);

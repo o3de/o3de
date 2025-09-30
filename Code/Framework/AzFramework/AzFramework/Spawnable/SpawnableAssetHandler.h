@@ -11,10 +11,11 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class SpawnableAssetHandler final
+    class AZF_API SpawnableAssetHandler final
         : public AZ::Data::AssetHandler
         , public AZ::AssetTypeInfoBus::MultiHandler
     {

@@ -1046,7 +1046,7 @@ namespace AZ
             // create the BLAS object
             RHI::RayTracingBlasDescriptor blasDescriptor;
             RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
-            blasGeometry.m_vertexFormat = PositionStreamFormat;
+            blasGeometry.m_vertexFormat = RHI::ConvertToVertexFormat(PositionStreamFormat);
             blasGeometry.m_vertexBuffer = m_visualizationVB;
             blasGeometry.m_indexBuffer = m_visualizationIB;
 

@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
@@ -25,7 +26,7 @@ namespace AzToolsFramework
     
     //! ToolBar Manager class definition.
     //! Handles Editor ToolBars and allows registration and access across tools.
-    class ToolBarManager
+    class AZTF_API ToolBarManager
         : private ToolBarManagerInterface
         , private ToolBarManagerInternalInterface
         , private AZ::SystemTickBus::Handler

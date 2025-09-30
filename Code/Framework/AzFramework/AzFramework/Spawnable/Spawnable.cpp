@@ -395,6 +395,9 @@ namespace AzFramework
     //
     // Spawnable
     //
+    Spawnable::Spawnable() = default;
+
+    Spawnable::~Spawnable() = default;
 
     Spawnable::Spawnable(const AZ::Data::AssetId& id, AssetStatus status)
         : AZ::Data::AssetData(id, status)

@@ -7,11 +7,12 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/EBus/EBus.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -66,3 +67,5 @@ namespace AzToolsFramework
     using EditorEntitySearchBus = AZ::EBus<EditorEntitySearchRequests>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntitySearchRequests);

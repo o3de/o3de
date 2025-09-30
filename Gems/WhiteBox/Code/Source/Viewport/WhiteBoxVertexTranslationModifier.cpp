@@ -112,7 +112,7 @@ namespace WhiteBox
         m_translationManipulator = MultiLinearManipulator::MakeShared(
             AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
 
-        m_translationManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_translationManipulator->AddEntityComponentIdPair(m_entityComponentIdPair);
         m_translationManipulator->SetLocalPosition(Api::VertexPosition(*whiteBox, m_vertexHandle));
 

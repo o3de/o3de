@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -35,7 +37,7 @@ namespace AzToolsFramework
 
         /// Helper to provide ComponentMode button in the Entity Inspector and double click
         /// handling in the viewport for entering/exiting ComponentMode.
-        class ComponentModeDelegate
+        class AZTF_API ComponentModeDelegate
             : private ComponentModeDelegateRequestBus::Handler
             , private EntitySelectionEvents::Bus::Handler
             , private EditorEntityVisibilityNotificationBus::Handler
@@ -150,7 +152,7 @@ namespace AzToolsFramework
 
         /// If this Entity had a Component supporting a ComponentMode, would
         /// it be possible for it to enter it given the current Editor state.
-        bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
+        AZTF_API bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
 
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

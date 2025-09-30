@@ -14,6 +14,7 @@
 #include <QPointer>
 #endif
 #include <Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -22,7 +23,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserListModel
+        class AZTF_API AssetBrowserListModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
         {

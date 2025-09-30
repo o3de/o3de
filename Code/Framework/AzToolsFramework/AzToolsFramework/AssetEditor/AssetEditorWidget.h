@@ -11,6 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QWidget>
 #include <QToolButton>
@@ -49,7 +50,7 @@ namespace AzToolsFramework
         class AssetEditorTab;
 
         //! Stores the recent used folder and file settings used by the Asset Editor
-        class AssetEditorWidgetUserSettings final
+        class AZTF_API AssetEditorWidgetUserSettings final
         {
         public:
 
@@ -75,7 +76,7 @@ namespace AzToolsFramework
         };
 
          //! Provides ability to create, edit, and save reflected assets.
-        class AssetEditorWidget
+        class AZTF_API AssetEditorWidget
             : public QWidget
         {
             Q_OBJECT

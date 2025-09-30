@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class JsonDoubleSerializer
+    class AZCORE_API JsonDoubleSerializer
         : public BaseJsonSerializer
     {
     public:
@@ -27,7 +27,7 @@ namespace AZ
         OperationFlags GetOperationsFlags() const override;
     };
 
-    class JsonFloatSerializer
+    class AZCORE_API JsonFloatSerializer
         : public BaseJsonSerializer
     {
     public:

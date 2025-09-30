@@ -338,6 +338,18 @@ namespace AZ
                 ->Method("SetShaderParameterValue_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Color>)
                 ->Method("SetShaderParameterValue_Matrix3x3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix3x3>)
                 ->Method("SetShaderParameterValue_Matrix4x4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix4x4>)
+                // backwards compatability
+                ->Method("SetShaderConstant_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<bool>)
+                ->Method("SetShaderConstant_int", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<int32_t>)
+                ->Method("SetShaderConstant_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<uint32_t>)
+                ->Method("SetShaderConstant_float", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<float>)
+                ->Method("SetShaderConstant_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector2>)
+                ->Method("SetShaderConstant_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector3>)
+                ->Method("SetShaderConstant_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Vector4>)
+                ->Method("SetShaderConstant_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Color>)
+                ->Method("SetShaderConstant_Matrix3x3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix3x3>)
+                ->Method("SetShaderConstant_Matrix4x4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderParameterValue<Matrix4x4>)
+
                 ->Method(
                     "SetInternalMaterialPropertyValue_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<bool>)
                 ->Method(

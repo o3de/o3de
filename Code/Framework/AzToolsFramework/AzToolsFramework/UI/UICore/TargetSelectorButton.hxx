@@ -6,8 +6,9 @@
  *
  */
 
-#ifndef INC_TARGETSELECTORBUTTON_H
-#define INC_TARGETSELECTORBUTTON_H
+#pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -17,11 +18,10 @@
 #include <qwidgetaction.h>
 #endif
 
-#pragma once
 
 namespace AzToolsFramework
 {
-    class TargetSelectorButton
+    class AZTF_API TargetSelectorButton
         : public QPushButton
     {
         Q_OBJECT
@@ -46,7 +46,7 @@ namespace AzToolsFramework
     };
 
 
-    class TargetSelectorButtonAction
+    class AZTF_API TargetSelectorButtonAction
         : public QWidgetAction
     {
         Q_OBJECT
@@ -64,5 +64,3 @@ namespace AzToolsFramework
         AZ::Crc32 m_remoteToolsKey;
     };
 }
-
-#endif

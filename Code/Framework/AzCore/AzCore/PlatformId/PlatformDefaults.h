@@ -99,12 +99,12 @@ namespace AZ
         // Additional byte is added to take into account the comma
         using AssetPlatformCombinedString = AZStd::fixed_string < (AssetPlatformFixedString{}.max_size() + 1)* PlatformId::NumPlatformIds > ;
 
-        const char* PlatformIdToPalFolder(PlatformId platform);
+        AZCORE_API const char* PlatformIdToPalFolder(PlatformId platform);
 
-        const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform);
+        AZCORE_API const char* OSPlatformToDefaultAssetPlatform(AZStd::string_view osPlatform);
 
         //! Platform Helper is an utility class that can be used to retrieve platform related information
-        class PlatformHelper
+        class AZCORE_API PlatformHelper
         {
         public:
 

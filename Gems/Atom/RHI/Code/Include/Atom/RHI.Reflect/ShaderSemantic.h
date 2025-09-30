@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -14,7 +15,7 @@
 namespace AZ::RHI
 {
     //! Describes a shader semantic (name + index). This should match the semantic declared in AZSL.
-    class ShaderSemantic
+    class ATOM_RHI_REFLECT_API ShaderSemantic
     {
     public:
         AZ_TYPE_INFO(ShaderSemantic, "{C6FFF25F-FE52-4D08-8D96-D04C14048816}");

@@ -15,6 +15,7 @@
 #include <AzFramework/Input/Channels/InputChannelAxis2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigital.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -25,9 +26,9 @@ namespace AzFramework
     //! instance of this generic class will work correctly on any platform supporting game-pad input,
     //! while providing access to the device name and associated channel ids on any platform through
     //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
-    class InputDeviceGamepad : public InputDevice
-                             , public InputHapticFeedbackRequestBus::Handler
-                             , public InputLightBarRequestBus::Handler
+    class AZF_API InputDeviceGamepad : public InputDevice
+                                     , public InputHapticFeedbackRequestBus::Handler
+                                     , public InputLightBarRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +185,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The factory class to create a custom implementation for this input device
-        class ImplementationFactory
+        class AZF_API ImplementationFactory
         {
         public:
             AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
@@ -285,7 +286,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of game-pad input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -367,7 +368,7 @@ namespace AzFramework
         protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Platform agnostic representation of a raw game-pad state
-            struct RawGamepadState
+            struct AZF_API RawGamepadState
             {
                 ////////////////////////////////////////////////////////////////////////////////////
                 //! Constructor

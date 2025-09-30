@@ -16,6 +16,9 @@
 #include <QScopedPointer>
 #endif
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
 class QKeyEvent;
 class QModelIndex;
 class QItemSelection;
@@ -37,7 +40,7 @@ namespace AzToolsFramework
         class AssetBrowserModel;
         class AssetSelectionModel;
 
-        class AssetPickerDialog
+        class AZTF_API AssetPickerDialog
             : public QDialog
         {
             Q_OBJECT

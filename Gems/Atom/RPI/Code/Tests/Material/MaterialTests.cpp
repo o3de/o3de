@@ -865,14 +865,15 @@ namespace UnitTest
         //               "peculiar"
         //               "shaderB"
 
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, DrawItemType::Raster, Name{"PipalineB"});
         materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParameterLayout);
 
         // PipalineA's EnableSpecialFeature connects to its "special" shader
@@ -964,15 +965,17 @@ namespace UnitTest
         //               "shaderA"
         //               "peculiar"
         //               "shaderB"
+        
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
 
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader1"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shader2"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"special"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderA"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"peculiar"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, ShaderVariantId{}, Name{"shaderB"}, DrawItemType::Raster, Name{"PipalineB"});
         materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParameterLayout);
 
         // PipalineA's EnableSpecialFeature connects to its "special" shader
@@ -1073,14 +1076,16 @@ namespace UnitTest
         //           Functors
         //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "peculiar" shader
         
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
+
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, DrawItemType::Raster, Name{"PipalineB"});
         materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParameterLayout);
 
         // PipalineA's EnableSpecialFeature connects to its "special" shader
@@ -1190,14 +1195,16 @@ namespace UnitTest
         //           Functors
         //               ShaderEnablePipelineFunctor uses "EnableSpecialFeature" to enable/disable the "peculiar" shader
 
+        using DrawItemType = MaterialTypeAssetCreator::DrawItemType;
+
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, Name{"PipalineA"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, Name{"PipalineB"});
-        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader1"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shader2"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"special"}, DrawItemType::Raster, Name{"PipalineA"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderA"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"peculiar"}, DrawItemType::Raster, Name{"PipalineB"});
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"shaderB"}, DrawItemType::Raster, Name{"PipalineB"});
         materialTypeCreator.SetMaterialShaderParameterLayout(m_testMaterialShaderParameterLayout);
 
         // PipalineA's EnableSpecialFeature connects to its "special" shader

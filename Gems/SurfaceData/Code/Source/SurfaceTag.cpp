@@ -37,9 +37,9 @@ namespace SurfaceData
                 SurfaceTag surfaceTag;
                 if (classElement.GetData(surfaceTag))
                 {
-                    if (surfaceTag == AZ_CRC_CE("(default)"))
+                    if (AZ::Crc32(surfaceTag) == AZ_CRC_CE("(default)"))
                     {
-                        surfaceTag = Constants::s_unassignedTagCrc;
+                        surfaceTag = SurfaceTag(Constants::s_unassignedTagCrc);
                         classElement.SetData(context, surfaceTag);
                     }
                 }

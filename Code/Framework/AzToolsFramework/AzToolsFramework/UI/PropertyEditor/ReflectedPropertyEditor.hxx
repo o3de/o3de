@@ -6,11 +6,10 @@
  *
  */
 
-#ifndef REFLECTEDPROPERTYEDITOR_H
-#define REFLECTEDPROPERTYEDITOR_H
-
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -46,7 +45,7 @@ namespace AzToolsFramework
      * in the Reflected Property editor control, with the GUI arrangement specified in the edit reflection for
      * those objects.
      */
-    class ReflectedPropertyEditor
+    class AZTF_API ReflectedPropertyEditor
         : public QFrame
         , public IPropertyEditor
     {
@@ -193,5 +192,3 @@ namespace AzToolsFramework
         void OnPropertyRowRequestContainerAddItem(PropertyRowWidget* widget, InstanceDataNode* node);
     };
 }
-
-#endif

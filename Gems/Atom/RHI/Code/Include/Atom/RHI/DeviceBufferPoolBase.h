@@ -15,7 +15,7 @@ namespace AZ::RHI
     //! A simple base class for buffer pools. This mainly exists so that various
     //! buffer pool implementations can have some type safety separate from other
     //! resource pool types.
-    class DeviceBufferPoolBase
+    class ATOM_RHI_PUBLIC_API DeviceBufferPoolBase
         : public DeviceResourcePool
     {
     public:
@@ -42,9 +42,6 @@ namespace AZ::RHI
 
     private:
         using DeviceResourcePool::InitResource;
-
-        /// Returns whether there are any mapped buffers.
-        bool ValidateNoMappedBuffers() const;
 
         /// Debug reference count used to track map / unmap operations across all buffers in the pool.
         AZStd::atomic_uint m_mapRefCount = {0};

@@ -11,12 +11,14 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/AzFrameworkAPI.h>
+
 
 namespace AZ::DocumentPropertyEditor
 {
     //! Class wrapping file management required to save SettingsRegistry data to file as well as load
     //! json data from file to the SettingsRegistry.
-    class SettingsRegistrar
+    class AZF_API SettingsRegistrar
     {
     public:
         //! Saves all settings stored at the given SettingsRegistry key into a file at the given filepath. The
@@ -98,6 +100,6 @@ namespace AZ::DocumentPropertyEditor
         bool RemoveSettingFromRegistry(AZStd::string_view registryPath, AZ::SettingsRegistryInterface* registry = nullptr) const;
 
         //! The file extension expected for SettingsRegistry files.
-        static constexpr const char* SettingsRegistryFileExt = AZ::SettingsRegistryInterface::Extension;
+        static constexpr const char* SettingsRegistryFileExt = AZ::SettingsRegistryConstants::Extension;
     };
 } // namespace AZ::DocumentPropertyEditor

@@ -11,6 +11,7 @@ set(FILES
     3rdParty/ACES/ACES/Aces.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
+    Include/Atom/Feature/Base.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
@@ -43,8 +44,11 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
+    Include/Atom/Feature/Material/FallbackPBRMaterial.h
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
+    Include/Atom/Feature/Mesh/MeshInfo.h
+    Include/Atom/Feature/Mesh/MeshInfoBus.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/Mesh/StreamBufferViewsBuilderInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h
@@ -112,7 +116,6 @@ set(FILES
     Include/Atom/Feature/RayTracing/RayTracingIndexList.h
     Include/Atom/Feature/RayTracing/RayTracingPass.h
     Include/Atom/Feature/RayTracing/RayTracingPassData.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl

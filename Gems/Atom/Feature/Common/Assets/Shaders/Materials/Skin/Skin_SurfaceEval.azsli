@@ -95,10 +95,12 @@ Surface EvaluateSurface_Skin(
     real4 wrinkleBlendFactors,
     bool isFrontFace,
     float4 uvDxDy,
-    bool customDerivatives)
+    bool customDerivatives, 
+    VsSystemValues SV)
 {
     Surface surface;
     surface.position = positionWS;
+    surface.lightingChannels = GetLightingChannelMask(SV);
 
     // ------- Detail Layer Setup -------
     
@@ -289,7 +291,8 @@ Surface EvaluateSurface_Skin(
     float2 uvs[UvSetCount],
     float2 detailUv,
     real4 wrinkleBlendFactors,
-    bool isFrontFace)
+    bool isFrontFace,
+    VsSystemValues SV)
 {
     return EvaluateSurface_Skin(
         params,
@@ -301,11 +304,12 @@ Surface EvaluateSurface_Skin(
         detailUv,
         wrinkleBlendFactors,
         isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */
+        false,  /* customDerivatives */
+        SV);
 }
 
-Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+Surface EvaluateSurface_Skin(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
 {
     return EvaluateSurface_Skin(
         params,
@@ -318,10 +322,11 @@ Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const Mater
         geoData.wrinkleBlendFactors,
         geoData.isFrontFace,
         uvDxDy,
-        customDerivatives);
+        customDerivatives, 
+        SV);
 }
 
-Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+Surface EvaluateSurface_Skin(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
 {
     return EvaluateSurface_Skin(
         params,
@@ -333,6 +338,7 @@ Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData, const Mater
         geoData.detailUv,
         geoData.wrinkleBlendFactors,
         geoData.isFrontFace,
-        float4(0.0f, 0.0f, 0.0f, 0.0f),
-        false);
+        float4(0.0f, 0.0f, 0.0f, 0.0f), /* uvDxDy */ 
+        false,  /* customDerivatives */
+        SV);
 }

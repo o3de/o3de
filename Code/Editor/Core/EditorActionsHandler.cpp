@@ -566,7 +566,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             "o3de.action.editor.exit",
             actionProperties,
-            [=]
+            [this]
             {
                 m_mainWindow->window()->close();
             }

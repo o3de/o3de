@@ -29,7 +29,7 @@ namespace AZ::Settings
 
 namespace AZ::Settings::Platform
 {
-    CommandLineOptionPrefixArray GetDefaultOptionPrefixes();
+    AZCORE_API CommandLineOptionPrefixArray GetDefaultOptionPrefixes();
 }
 
 namespace AZ::Settings
@@ -51,7 +51,7 @@ namespace AZ::Settings
     //! in how it stores its settings.
     //! Suggestion: Use structures such as fixed_vector and fixed_string to store the settings
     //! in the user callback to avoid heap allocations and rely entirely on stack memory instead
-    struct CommandLineParserSettings
+    struct AZCORE_API CommandLineParserSettings
     {
         //! Callback invoked for positional argument or a completed option argument.
         //! A completed option argument will contain any value associated with the option name
@@ -158,7 +158,7 @@ namespace AZ::Settings
     //! @param configParseSettings struct defining how the command line arguments should be parsed
     //! @return success outcome if the each token on the command line was parsed successfully,
     //! otherwise a failure string with the parse error is returned
-    CommandLineParseOutcome ParseCommandLine(
+    AZCORE_API CommandLineParseOutcome ParseCommandLine(
         AZStd::span<AZStd::string_view const> commandLine, const CommandLineParserSettings& commandLineParserSettings);
 
     //! Parses a set of command line arguments using the defacto integer argument count parameter and char double pointer to the argument
@@ -166,8 +166,8 @@ namespace AZ::Settings
     //! NOTE: All arguments are parsed including the argument at index 0, which is normally used for the executable name
     //! @param argc number of command line arguments
     //! @param argv pointer to the begining of array of c-strings pointing to each command line argument
-    CommandLineParseOutcome ParseCommandLine(int argc, char** argv, const CommandLineParserSettings& commandLineParserSettings);
+    AZCORE_API CommandLineParseOutcome ParseCommandLine(int argc, char** argv, const CommandLineParserSettings& commandLineParserSettings);
 
     //! Removes surrounding double quotes around a command line argument value
-    AZStd::string_view UnquoteArgument(AZStd::string_view arg);
+    AZCORE_API AZStd::string_view UnquoteArgument(AZStd::string_view arg);
 } // namespace AZ::Settings

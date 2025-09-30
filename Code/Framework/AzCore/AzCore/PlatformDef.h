@@ -23,6 +23,8 @@
                                + __GNUC_PATCHLEVEL__)
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
+    // DLL exporting and extern as mutually exclusive for MSVC compilers but needed for clang/gcc, so omit the keyword when declaring an exported template
+    // (see https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4910?view=msvc-170)
 #else
 #   error This compiler is not supported
 #endif
@@ -111,17 +113,6 @@
 #define AZ_POP_DISABLE_WARNING                          \
     __pragma(warning(pop))
 
-
-/// Classes in Editor Sandbox and Tools which dll export there interfaces, but inherits from a base class that doesn't dll export
-/// will trigger a warning
-#define AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING AZ_PUSH_DISABLE_WARNING(4275, "-Wunknown-warning-option")
-#define AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING AZ_POP_DISABLE_WARNING
-/// Disables a warning for dll exported classes which has non dll-exported members as this can cause ABI issues if the layout of those classes differs between dlls.
-/// QT classes such as QList, QString, QMap, etc... and Cry Math classes such Vec3, Quat, Color don't dllexport their interfaces
-/// Therefore this macro can be used to disable the warning when caused by 3rdParty libraries
-#define AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING AZ_POP_DISABLE_WARNING
-
 #   define AZ_FORCE_INLINE  __forceinline
 
 /// Pointer will be aliased.
@@ -185,11 +176,6 @@
     _Pragma("GCC diagnostic pop")
 
 #endif // defined(AZ_COMPILER_CLANG)
-
-#define AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-#define AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-#define AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #   define AZ_FORCE_INLINE  inline
 

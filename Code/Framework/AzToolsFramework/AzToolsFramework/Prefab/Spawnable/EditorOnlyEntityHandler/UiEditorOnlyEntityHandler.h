@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
@@ -19,7 +20,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     *    are removed "in-place".
     * - Validates that no editor entities are referenced by non-editor entities.
     */
-    class UiEditorOnlyEntityHandler
+    class AZTF_API UiEditorOnlyEntityHandler
         : public EditorOnlyEntityHandler
     {
     public:

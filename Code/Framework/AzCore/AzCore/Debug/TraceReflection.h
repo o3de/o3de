@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/base.h>
+
 namespace AZ
 {
     class ReflectContext;
@@ -16,6 +18,6 @@ namespace AZ
         /**
          * Reflect trace events(errors, warnings, asserts, etc)
          */
-        void TraceReflect(AZ::ReflectContext* context);
+        AZCORE_API void TraceReflect(AZ::ReflectContext* context);
     }
 }

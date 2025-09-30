@@ -24,9 +24,7 @@
 #include "Util/AutoDirectoryRestoreFileDialog.h"    // for CAutoDirectoryRestoreFileDialog
 #include "LyViewPaneNames.h"                        // for LyViewPane::
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_SettingsManagerDialog.h"
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 //////////////////////////////////////////////////////////////////////////
 CSettingsManagerDialog::CSettingsManagerDialog(QWidget* pParent)

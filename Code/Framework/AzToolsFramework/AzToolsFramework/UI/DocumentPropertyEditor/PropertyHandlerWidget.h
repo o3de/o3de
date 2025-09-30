@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #if !defined(Q_MOC_RUN)
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
@@ -23,7 +24,7 @@ namespace AzToolsFramework
     //! Property handler widgets are registered to the PropertyEditorToolsSystemInterface and
     //! instantiated as part of the DocumentPropertyEditor, with one handler instance being constructed
     //! for each property editor.
-    class PropertyHandlerWidgetInterface
+    class AZTF_API PropertyHandlerWidgetInterface
     {
     public:
         virtual ~PropertyHandlerWidgetInterface() = default;

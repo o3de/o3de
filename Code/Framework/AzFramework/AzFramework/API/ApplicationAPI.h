@@ -18,6 +18,7 @@
 #include <AzCore/PlatformIncl.h>
 
 #include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -115,9 +116,6 @@ namespace AzFramework
         /// Returns true if Prefab System is enabled for use with levels, false if legacy level system is enabled (level.pak)
         /// @deprecated Use 'IsPrefabSystemEnabled' instead
         virtual bool IsPrefabSystemForLevelsEnabled() const { return false; }
-
-        /// Returns true if code should assert when the Legacy Slice System is used
-        virtual bool ShouldAssertForLegacySlicesUsage() const { return false; }
 
         /*!
         * Returns a Type Uuid of the component for the given componentId and entityId.
@@ -250,4 +248,7 @@ namespace AzFramework
     using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
-DECLARE_EBUS_EXTERN(AzFramework::ApplicationRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ApplicationRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::ApplicationLifecycleEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::LevelLoadBlockerRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::LevelSystemLifecycleNotifications);

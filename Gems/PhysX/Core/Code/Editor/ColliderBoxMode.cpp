@@ -24,7 +24,7 @@ namespace PhysX
     {
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_boxEdit.get(), idPair);
         AzToolsFramework::InstallBoxViewportEditFunctions(m_boxEdit.get(), idPair);
-        m_boxEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
+        m_boxEdit->Setup(AzToolsFramework::GetMainManipulatorManagerId());
         m_boxEdit->AddEntityComponentIdPair(idPair);
     }
 

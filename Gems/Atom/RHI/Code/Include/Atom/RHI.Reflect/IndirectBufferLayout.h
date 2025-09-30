@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -45,7 +46,7 @@ namespace AZ::RHI
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::IndirectCommandTiers);
 
     //! Arguments when setting an indirect Vertex Buffer View command.
-    struct IndirectBufferViewArguments
+    struct ATOM_RHI_REFLECT_API IndirectBufferViewArguments
     {
         AZ_TYPE_INFO(IndirectBufferViewArguments, "{C929045D-739C-4E9C-9C4E-1945E0C9FF2D}");
         static void Reflect(ReflectContext* context);
@@ -60,7 +61,7 @@ namespace AZ::RHI
     }
 
     //! Describes one indirect command that is part of an indirect layout.
-    struct IndirectCommandDescriptor
+    struct ATOM_RHI_REFLECT_API IndirectCommandDescriptor
     {
         AZ_TYPE_INFO(IndirectCommandDescriptor, "{A5A7351F-A86A-42FC-BE90-39DBDA8EAAA5}");
         static void Reflect(ReflectContext* context);
@@ -114,7 +115,7 @@ namespace AZ::RHI
     //!
     //! To use the class, add commands using AddIndirectCommand, and call Finalize to
     //! complete the construction of the layout.
-    struct IndirectBufferLayout
+    struct ATOM_RHI_REFLECT_API IndirectBufferLayout
     {
     public:
         AZ_TYPE_INFO(IndirectBufferLayout, "{1D9A08FE-0C13-4AB4-9556-ECE97A27F42D}");

@@ -31,7 +31,7 @@ namespace AZ::RHI
     //! DeviceRayTracingShaderTableDescriptor
     //!
     //!  Describes a single-device ray tracing shader table.
-    class DeviceRayTracingShaderTableDescriptor
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingShaderTableDescriptor
     {
     public:
         void RemoveHitGroupRecords(uint32_t key);
@@ -46,7 +46,7 @@ namespace AZ::RHI
 
     //! Shader Table
     //! Specifies the ray generation, miss, and hit shaders used during the ray tracing process
-    class DeviceRayTracingShaderTable
+    class ATOM_RHI_PUBLIC_API DeviceRayTracingShaderTable
         : public DeviceObject
     {
     public:

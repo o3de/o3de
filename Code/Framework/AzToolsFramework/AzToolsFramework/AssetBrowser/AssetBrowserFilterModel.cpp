@@ -9,7 +9,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 #include <AzCore/Console/IConsole.h>
@@ -25,9 +24,8 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 
-AZ_CVAR(
-    bool, ed_useNewAssetBrowserListView, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Use the new AssetBrowser ListView for searching assets.");
+AZ_CVAR_API_EXTERNED(AZTF_API, bool, ed_useNewAssetBrowserListView);
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser

@@ -91,9 +91,6 @@ namespace AZ
             ToRawStringList(requiredLayerStrings, requiredLayers);
             ToRawStringList(requiredExtensionStrings, requiredExtensions);
 
-            RawStringList optionalExtensions = physicalDevice.FilterSupportedOptionalExtensions();
-            requiredExtensions.insert(requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
-
             // We now need to find the queues that the physical device has available and make sure
             // it has what we need. We're just expecting a Graphics queue for now.
             BuildDeviceQueueInfo(physicalDevice);
@@ -234,75 +231,94 @@ namespace AZ
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
-            VkBaseOutStructure& chainInit = reinterpret_cast<VkBaseOutStructure&>(descriptorIndexingFeatures);
-            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
-            const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
-                physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
-            descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing;
-            descriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing;
-            descriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing;
-            descriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing;
-            descriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing;
-            descriptorIndexingFeatures.descriptorBindingPartiallyBound = physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound;
-            descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
-            descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
-            descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind = physicalDeviceDescriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind;
-            descriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind = physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind;
-            descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
-            auto bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
-            auto depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
-            auto rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
-            auto shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
+            VkDeviceCreateInfo deviceInfo = {};
+            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures;
+            VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled;
+            VkPhysicalDeviceRayQueryFeaturesKHR rayQueryFeatures;
+            VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT shaderImageAtomicInt64;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
-            robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-            robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobustness2Features().nullDescriptor;
 
-            bufferDeviceAddressFeatures.pNext = nullptr;
-            depthClipEnabled.pNext = nullptr;
-            rayQueryFeatures.pNext = nullptr;
-            shaderImageAtomicInt64.pNext = nullptr;
-            robustness2.pNext = nullptr;
+            StructAppender deviceInfoAppender(deviceInfo);
 
-            AppendVkStruct(
-                chainInit, { &bufferDeviceAddressFeatures, &depthClipEnabled, &rayQueryFeatures, &shaderImageAtomicInt64, &robustness2 });
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::DepthClipEnable))
+            {
+                depthClipEnabled = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures();
 
-            auto subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
+                deviceInfoAppender.append(depthClipEnabled);
+            }
+
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ShaderImageAtomicInt64))
+            {
+                shaderImageAtomicInt64 = physicalDevice.GetShaderImageAtomicInt64Features();
+
+                deviceInfoAppender.append(shaderImageAtomicInt64);
+            }
+
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::Robustness2))
+            {
+                robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+                robustness2.nullDescriptor = physicalDevice.GetPhysicalDeviceRobustness2Features().nullDescriptor;
+
+                deviceInfoAppender.append(robustness2);
+            }
+
+            VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT subpassMergeFeedback;
+
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback))
+            {
+                subpassMergeFeedback = physicalDevice.GetPhysicalSubpassMergeFeedbackFeatures();
 
 #if !defined(AZ_RELEASE_BUILD)
-            subpassMergeFeedback.subpassMergeFeedback = false;
+                subpassMergeFeedback.subpassMergeFeedback = false;
 #endif
-            if (!subpassMergeFeedback.subpassMergeFeedback &&
-                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SubpassMergeFeedback))
-            {
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
-                subpassMergeFeedback.pNext = nullptr;
-                AppendVkStruct(chainInit, &subpassMergeFeedback);
+                if (subpassMergeFeedback.subpassMergeFeedback)
+                {
+                    deviceInfoAppender.append(subpassMergeFeedback);
+                }
+                else
+                {
+                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::SubpassMergeFeedback);
+                }
             }
 
-            auto fragmentDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
-            auto fragmentShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
+            VkPhysicalDeviceFragmentDensityMapFeaturesEXT fragmentDensityMapFeatures;
+            VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragmentShadingRateFeatures;
 
-            if (fragmentShadingRateFeatures.attachmentFragmentShadingRate)
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
-                // Must disable the "FragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
-                fragmentShadingRateFeatures.pNext = nullptr;
-                AppendVkStruct(chainInit, &fragmentShadingRateFeatures);
+                fragmentShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
+
+                if (fragmentShadingRateFeatures.attachmentFragmentShadingRate)
+                {
+                    // Must disable the "FragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
+                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
+                    deviceInfoAppender.append(fragmentShadingRateFeatures);
+                }
+                else
+                {
+                    // We only support NonSubsampledImages when using fragment density map
+                    // Must disable the "FragmentShadingRate" usage so "fragmentDensityMap" can be enabled.
+                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
+                }
             }
-            else if (fragmentDensityMapFeatures.fragmentDensityMap && fragmentDensityMapFeatures.fragmentDensityMapNonSubsampledImages)
+
+            // if the extension is not supported or we got disabled within the if above we won't go into this if
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
             {
-                // We only support NonSubsampledImages when using fragment density map
-                // Must disable the "FragmentShadingRate" usage if "fragmentDensityMap" is enabled.
-                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
-                fragmentDensityMapFeatures.pNext = nullptr;
-                AppendVkStruct(chainInit, &fragmentDensityMapFeatures);
+                fragmentDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
+
+                if (fragmentDensityMapFeatures.fragmentDensityMap && fragmentDensityMapFeatures.fragmentDensityMapNonSubsampledImages)
+                {
+                    deviceInfoAppender.append(fragmentDensityMapFeatures);
+                }
+                else
+                {
+                    physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
+                }
             }
 
             VkPhysicalDeviceVulkan12Features vulkan12Features = {};
@@ -310,50 +326,80 @@ namespace AZ
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
             VkPhysicalDeviceShaderAtomicInt64Features shaderAtomicInt64 = {};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+            VkPhysicalDeviceClusterAccelerationStructureFeaturesNV clusterAccelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
 
-            VkDeviceCreateInfo deviceInfo = {};
-            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-            auto timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
-            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
-            // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
+            VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore;
+            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead the respective extensions.
             if (majorVersion >= 1 && minorVersion >= 2)
             {
+                const auto& physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
+
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-                vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
-                vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
-                vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
-                vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
-                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorIndexing;
-                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingVariableDescriptorCount;
-                // We use the "VkPhysicalDeviceBufferDeviceAddressFeatures" instead of the "VkPhysicalDeviceVulkan12Features" for buffer device address
-                // because some drivers (e.g. Intel) don't report any features of buffer device address through the "PhysicalDeviceVulkan12Features" but they do
-                // through the "VK_EXT_buffer_device_address" extension.
+                vulkan12Features.drawIndirectCount = physicalDeviceVulkan12Features.drawIndirectCount;
+                vulkan12Features.shaderFloat16 = physicalDeviceVulkan12Features.shaderFloat16;
+                vulkan12Features.shaderInt8 = physicalDeviceVulkan12Features.shaderInt8;
+                vulkan12Features.separateDepthStencilLayouts = physicalDeviceVulkan12Features.separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDeviceVulkan12Features.descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorIndexing = physicalDeviceVulkan12Features.descriptorIndexing;
+                vulkan12Features.descriptorBindingVariableDescriptorCount =
+                    physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount;
+                vulkan12Features.shaderInputAttachmentArrayDynamicIndexing =
+                    physicalDeviceVulkan12Features.shaderInputAttachmentArrayDynamicIndexing;
+                vulkan12Features.shaderUniformTexelBufferArrayDynamicIndexing =
+                    physicalDeviceVulkan12Features.shaderUniformTexelBufferArrayDynamicIndexing;
+                vulkan12Features.shaderStorageTexelBufferArrayDynamicIndexing =
+                    physicalDeviceVulkan12Features.shaderStorageTexelBufferArrayDynamicIndexing;
+                vulkan12Features.shaderUniformBufferArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderUniformBufferArrayNonUniformIndexing;
+                vulkan12Features.shaderSampledImageArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderSampledImageArrayNonUniformIndexing;
+                vulkan12Features.shaderStorageBufferArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderStorageBufferArrayNonUniformIndexing;
+                vulkan12Features.shaderStorageImageArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderStorageImageArrayNonUniformIndexing;
+                vulkan12Features.shaderInputAttachmentArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderInputAttachmentArrayNonUniformIndexing;
+                vulkan12Features.shaderUniformTexelBufferArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderUniformTexelBufferArrayNonUniformIndexing;
+                vulkan12Features.shaderStorageTexelBufferArrayNonUniformIndexing =
+                    physicalDeviceVulkan12Features.shaderStorageTexelBufferArrayNonUniformIndexing;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDeviceVulkan12Features.descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorBindingVariableDescriptorCount =
+                    physicalDeviceVulkan12Features.descriptorBindingVariableDescriptorCount;
+                vulkan12Features.runtimeDescriptorArray = physicalDeviceVulkan12Features.runtimeDescriptorArray;
+                vulkan12Features.descriptorBindingSampledImageUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageImageUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingStorageImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingStorageBufferUpdateAfterBind;
+
+                // We use the "VkPhysicalDeviceBufferDeviceAddressFeatures" instead of the "VkPhysicalDeviceVulkan12Features" for buffer
+                // device address because some drivers (e.g. Intel) don't report any features of buffer device address through the
+                // "PhysicalDeviceVulkan12Features" but they do through the "VK_EXT_buffer_device_address" extension.
                 vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress;
-                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddressMultiDevice;
-                vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
-                vulkan12Features.shaderSharedInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderSharedInt64Atomics;
-                vulkan12Features.shaderBufferInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderBufferInt64Atomics;
-                vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingSampledImageUpdateAfterBind;
-                vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageImageUpdateAfterBind;
-                vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageBufferUpdateAfterBind;
-                vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
-                vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
-                vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
-                vulkan12Features.timelineSemaphore = timelineSemaphore.timelineSemaphore;
+                vulkan12Features.bufferDeviceAddressMultiDevice =
+                    physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddressMultiDevice;
 
-                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+                vulkan12Features.runtimeDescriptorArray = physicalDeviceVulkan12Features.runtimeDescriptorArray;
+                vulkan12Features.shaderSharedInt64Atomics = physicalDeviceVulkan12Features.shaderSharedInt64Atomics;
+                vulkan12Features.shaderBufferInt64Atomics = physicalDeviceVulkan12Features.shaderBufferInt64Atomics;
+                vulkan12Features.descriptorBindingSampledImageUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingSampledImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageImageUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingStorageImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind =
+                    physicalDeviceVulkan12Features.descriptorBindingStorageBufferUpdateAfterBind;
+                vulkan12Features.descriptorBindingUpdateUnusedWhilePending =
+                    physicalDeviceVulkan12Features.descriptorBindingUpdateUnusedWhilePending;
+                vulkan12Features.shaderOutputViewportIndex = physicalDeviceVulkan12Features.shaderOutputViewportIndex;
+                vulkan12Features.shaderOutputLayer = physicalDeviceVulkan12Features.shaderOutputLayer;
+#ifndef DISABLE_TIMELINE_SEMAPHORES
+                vulkan12Features.timelineSemaphore = physicalDeviceVulkan12Features.timelineSemaphore;
+#endif
 
-                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
-                rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
-
-                AppendVkStruct(chainInit, { &vulkan12Features, &accelerationStructureFeatures, &rayTracingPipelineFeatures });
-                // Do not start from the chainInit, but from the depthClipEnabled struct
-                deviceInfo.pNext = &depthClipEnabled;
+                deviceInfoAppender.append(vulkan12Features);
             }
             else
             {
@@ -363,13 +409,125 @@ namespace AZ
                 separateDepthStencil.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
                 separateDepthStencil.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceSeparateDepthStencilFeatures().separateDepthStencilLayouts;
 
-                shaderAtomicInt64.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES;
-                shaderAtomicInt64.shaderBufferInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderBufferInt64Atomics;
-                shaderAtomicInt64.shaderSharedInt64Atomics = physicalDevice.GetShaderAtomicInt64Features().shaderSharedInt64Atomics;
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ShaderFloat16Int8))
+                {
+                    deviceInfoAppender.append(float16Int8);
+                }
 
-                AppendVkStruct(chainInit, { &float16Int8, &separateDepthStencil, &shaderAtomicInt64, &timelineSemaphore });
-                deviceInfo.pNext = &chainInit;
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::SeparateDepthStencilLayouts))
+                {
+                    deviceInfoAppender.append(separateDepthStencil);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::DescriptorIndexing))
+                {
+                    descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+                    const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
+                        physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
+                    descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing;
+                    descriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing;
+                    descriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing;
+                    descriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing =
+                        physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing;
+                    descriptorIndexingFeatures.descriptorBindingPartiallyBound =
+                        physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound;
+                    descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount =
+                        physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
+                    descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
+                    descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind =
+                        physicalDeviceDescriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind;
+                    descriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind =
+                        physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind;
+                    descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind =
+                        physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
+
+                    deviceInfoAppender.append(descriptorIndexingFeatures);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::BufferDeviceAddress))
+                {
+                    bufferDeviceAddressFeatures = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
+
+                    deviceInfoAppender.append(bufferDeviceAddressFeatures);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ShaderAtomicInt64))
+                {
+                    shaderAtomicInt64 = physicalDevice.GetShaderAtomicInt64Features();
+
+                    deviceInfoAppender.append(shaderAtomicInt64);
+                }
+
+#ifdef DISABLE_TIMELINE_SEMAPHORES
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::TimelineSempahore);
+#else
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::TimelineSempahore))
+                {
+                    timelineSemaphore = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures();
+
+                    deviceInfoAppender.append(timelineSemaphore);
+                }
+#endif
             }
+
+            if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
+            {
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                accelerationStructureFeatures.accelerationStructure =
+                    physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+
+                deviceInfoAppender.append(accelerationStructureFeatures);
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayTracingPipeline))
+                {
+                    rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                    rayTracingPipelineFeatures.rayTracingPipeline =
+                        physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                    rayTracingPipelineFeatures.rayTracingPipelineTraceRaysIndirect =
+                        physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipelineTraceRaysIndirect;
+
+                    deviceInfoAppender.append(rayTracingPipelineFeatures);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
+                {
+                    rayQueryFeatures = physicalDevice.GetRayQueryFeatures();
+
+                    deviceInfoAppender.append(rayQueryFeatures);
+                }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ClusterAccelerationStructure))
+                {
+                    clusterAccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV;
+                    clusterAccelerationStructureFeatures.clusterAccelerationStructure = physicalDevice.GetPhysicalDeviceClusterAccelerationStructureFeatures().clusterAccelerationStructure;
+
+                    deviceInfoAppender.append(clusterAccelerationStructureFeatures);
+                }
+            }
+            else
+            {
+                // make sure all ray tracing extensions are disabled
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayTracingPipeline);
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayQuery);
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::ClusterAccelerationStructure);
+            }
+
+            deviceInfoAppender.finish();
 
 #if defined(USE_NSIGHT_AFTERMATH)
             requiredExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
@@ -387,6 +545,9 @@ namespace AZ
             aftermathInfo.pNext = deviceInfo.pNext;
             deviceInfo.pNext = &aftermathInfo;
 #endif
+
+            RawStringList optionalExtensions = physicalDevice.GetEnabledOptionalExtensions();
+            requiredExtensions.insert(requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
@@ -1086,7 +1247,7 @@ namespace AZ
             // if there is no device time domain we reset the host one as this is pointless then
             if (!deviceTimeDomainFound)
             {
-                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
+                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_KHR;
             }
         }
 
@@ -1229,6 +1390,11 @@ namespace AZ
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
+            uint32_t physicalDeviceVersion = physicalDevice.GetVulkanVersion();
+            uint32_t majorVersion = VK_VERSION_MAJOR(physicalDeviceVersion);
+            uint32_t minorVersion = VK_VERSION_MINOR(physicalDeviceVersion);
+            auto vulkan12{ majorVersion >= 1 && minorVersion >= 2 };
+
             m_features.m_geometryShader = (m_enabledDeviceFeatures.geometryShader == VK_TRUE);
             m_features.m_computeShader = true;
             m_features.m_independentBlend = (m_enabledDeviceFeatures.independentBlend == VK_TRUE);
@@ -1290,14 +1456,19 @@ namespace AZ
             // to determine if ray tracing is supported on this device
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-            m_features.m_unboundedArrays = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
+            StringList::iterator itRayTracingClasExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            m_features.m_unboundedArrays = vulkan12
+                ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderStorageTexelBufferArrayNonUniformIndexing
+                : physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
             if (m_features.m_unboundedArrays)
             {
                 // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
+                m_features.m_rayTracingClas = (itRayTracingClasExtension != deviceExtensions.end());
             }
 
-            m_features.m_float16 = physicalDevice.GetPhysicalDeviceFloat16Int8Features().shaderFloat16;
+            m_features.m_float16 = vulkan12 ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16
+                                            : physicalDevice.GetPhysicalDeviceFloat16Int8Features().shaderFloat16;
 
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
@@ -1357,7 +1528,8 @@ namespace AZ
 #ifdef DISABLE_TIMELINE_SEMAPHORES
             m_features.m_signalFenceFromCPU = false;
 #else
-            m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
+            m_features.m_signalFenceFromCPU = vulkan12 ? physicalDevice.GetPhysicalDeviceVulkan12Features().timelineSemaphore
+                                                       : physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 #endif
             // These are two nested ifs instead of one because MSVC complains about a missing contexpr otherwise
             // The warning is C4127, but we can't add a constexpr when doing (constexpr && non-constexpr)

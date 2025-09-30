@@ -9,10 +9,12 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,7 +25,7 @@ namespace AzFramework
 {
     constexpr const char* AssetBundleManifestTypeId = "{8628A669-7B19-4C48-A7CB-F670CC9586FD}";
     // Class to describe metadata about an AssetBundle in Open 3D Engine
-    class AssetBundleManifest
+    class AZF_API AssetBundleManifest
     {
     public:
         AZ_TYPE_INFO(AssetBundleManifest, AssetBundleManifestTypeId);

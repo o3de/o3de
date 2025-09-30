@@ -24,11 +24,11 @@ namespace AZ
      * will be sub allocators, because we might have different memory system on consoles.
      * But the allocator utility system will use the system allocator.
      */
-    class SystemAllocator
+    class AZCORE_API SystemAllocator
         : public AllocatorBase
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(SystemAllocator);
+        AZ_TYPE_INFO_WITH_NAME_DECL_API(AZCORE_API, SystemAllocator);
         AZ_RTTI_NO_TYPE_INFO_DECL();
 
         SystemAllocator();
@@ -59,6 +59,8 @@ namespace AZ
 
         AZStd::unique_ptr<IAllocator> m_subAllocator;
     };
+    AZ_TYPE_INFO_WITH_NAME_DECL_EXT_API(AZCORE_API, SystemAllocator);
+
 }
 
 

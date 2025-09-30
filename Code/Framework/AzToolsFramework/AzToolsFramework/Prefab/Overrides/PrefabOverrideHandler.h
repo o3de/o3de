@@ -12,13 +12,14 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
         class PrefabSystemComponentInterface;
-        class PrefabOverrideHandler
+        class AZTF_API PrefabOverrideHandler
         {
         public:
             PrefabOverrideHandler();

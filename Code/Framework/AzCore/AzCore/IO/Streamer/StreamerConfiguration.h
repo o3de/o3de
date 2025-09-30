@@ -43,7 +43,7 @@ namespace AZ::IO
         size_t m_maxTransfer{ AZCORE_GLOBAL_NEW_ALIGNMENT };
     };
 
-    class IStreamerStackConfig
+    class AZCORE_API IStreamerStackConfig
     {
     public:
         AZ_RTTI(AZ::IO::IStreamerStackConfig, "{97266736-E55E-4BF4-9E4A-9D5A9FF4D230}");
@@ -55,7 +55,7 @@ namespace AZ::IO
         static void Reflect(ReflectContext* context);
     };
 
-    class StreamerConfig final
+    class AZCORE_API StreamerConfig final
     {
     public:
         AZ_RTTI(AZ::IO::StreamerConfig, "{B20540CB-A75C-45F9-A891-7ABFD9192E9F}");
@@ -71,8 +71,8 @@ namespace AZ::IO
     //!         only hardware is listed that is known to be used. This may be more performant, but can result is file
     //!         requests failing if they use an previously unknown path.
     //! @param reportHardware If true, hardware information will be printed to the log if available.
-    extern bool CollectIoHardwareInformation(HardwareInformation& info, bool includeAllHardware, bool reportHardware);
-    extern void ReflectNative(ReflectContext* context);
+    AZCORE_API bool CollectIoHardwareInformation(HardwareInformation& info, bool includeAllHardware, bool reportHardware);
+    AZCORE_API void ReflectNative(ReflectContext* context);
 
     //! Constant used to denote "file not found" in StreamStackEntry processing.
     inline static constexpr size_t s_fileNotFound = std::numeric_limits<size_t>::max();

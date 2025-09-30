@@ -2496,7 +2496,7 @@ namespace AzQtComponents
             }
 
             // do the rest after the show has been fully processed, just to be sure
-            QTimer::singleShot(0, [=]()
+            QTimer::singleShot(0, [=, this]()
             {
                 // Ensure that the dock window is shown, because we may have hidden it when the drag started
                 dock->show();

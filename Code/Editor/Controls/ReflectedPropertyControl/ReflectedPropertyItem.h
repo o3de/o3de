@@ -136,19 +136,15 @@ public:
 protected:
     PropertyType m_type;
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     //The variable being edited.
     _smart_ptr<IVariable> m_pVariable;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     //holds the CReflectedVar and syncs its value with IVariable when either changes
     ReflectedVarAdapter* m_reflectedVarAdapter;
     ReflectedVarContainerAdapter* m_reflectedVarContainerAdapter;
 
     ReflectedPropertyItem* m_parent;
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     std::vector<_smart_ptr<ReflectedPropertyItem> > m_childs;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     ReflectedPropertyControl* m_propertyCtrl;
 
@@ -159,10 +155,8 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QString m_strNoScriptDefault;
     QString m_strScriptDefault;
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     IVariable::OnSetCallback m_onSetCallback;
     IVariable::OnSetEnumCallback m_onSetEnumCallback;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 typedef _smart_ptr<ReflectedPropertyItem> ReflectedPropertyItemPtr;

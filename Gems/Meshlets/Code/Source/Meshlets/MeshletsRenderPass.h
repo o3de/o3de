@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 #include <MeshletsRenderObject.h>
 
@@ -47,8 +47,8 @@ namespace AZ
             static RPI::Ptr<MeshletsRenderPass> Create(const RPI::PassDescriptor& descriptor);
 
             // Adds the lod array of render data
-            bool FillDrawRequestData(RHI::DeviceDrawPacketBuilder::DeviceDrawRequest& drawRequest);
-            bool AddDrawPackets(AZStd::list<const RHI::DeviceDrawPacket*> drawPackets);
+            bool FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+            bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
 
             Data::Instance<RPI::Shader> GetShader();
 

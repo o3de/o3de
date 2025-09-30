@@ -5,6 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+
 namespace AzToolsFramework
 {
     namespace AssetSystem

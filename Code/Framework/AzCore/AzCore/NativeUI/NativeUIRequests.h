@@ -90,3 +90,5 @@ namespace AZ::NativeUI
 
     using NativeUIRequestBus = AZ::EBus<NativeUIRequests, NativeUIEBusTraits>;
 } // namespace AZ::NativeUI
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::NativeUI::NativeUIRequests, AZ::NativeUI::NativeUIEBusTraits);

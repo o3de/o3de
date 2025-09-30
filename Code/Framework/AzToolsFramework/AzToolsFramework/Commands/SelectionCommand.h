@@ -6,9 +6,6 @@
  *
  */
 
-#ifndef AZTOOLSFRAMEWORK_SELECTIONCOMMAND_H
-#define AZTOOLSFRAMEWORK_SELECTIONCOMMAND_H
-
 #pragma once
 
 #include <AzCore/base.h>
@@ -17,13 +14,14 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     /**
      * Stores an entity selection set for undo/redo.
      */
-    class SelectionCommand
+    class AZTF_API SelectionCommand
         : public UndoSystem::URSequencePoint
     {
     public:
@@ -49,4 +47,3 @@ namespace AzToolsFramework
     };
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_SELECTIONCOMMAND_H

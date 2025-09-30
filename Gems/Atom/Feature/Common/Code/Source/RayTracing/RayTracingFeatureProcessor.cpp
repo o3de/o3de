@@ -6,7 +6,9 @@
  *
  */
 
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
@@ -48,26 +50,16 @@ namespace AZ
             {
                 return;
             }
-            
+
+            m_rayTracingClusterAccelerationStructureEnabled =
+                RHI::RHISystemInterface::Get()->GetRayTracingClusterAccelerationStructureSupport() != RHI::MultiDevice::NoDevices;
+
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessorInterface>();
+            m_meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessorInterface>();
 
             // initialize the ray tracing buffer pools
             m_bufferPools = aznew RHI::RayTracingBufferPools;
             m_bufferPools->Init(deviceMask);
-
-            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-            for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
-                {
-                    m_meshBufferIndices[deviceIndex] = {};
-                    m_materialTextureIndices[deviceIndex] = {};
-                    m_meshInfos[deviceIndex] = {};
-                    m_materialInfos[deviceIndex] = {};
-                    m_proceduralGeometryMaterialInfos[deviceIndex] = {};
-                }
-            }
 
             // create TLAS attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
@@ -87,11 +79,6 @@ namespace AZ
             // create the RayTracingSceneSrg
             m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingSceneSrg"));
             AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
-
-            // create the RayTracingMaterialSrg
-            const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
-            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
-            AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
 
             // Setup RayTracingCompactionQueryPool
             {
@@ -152,7 +139,7 @@ namespace AZ
             ProceduralGeometryTypeWeakHandle geometryTypeHandle,
             const Uuid& uuid,
             const Aabb& aabb,
-            const SubMeshMaterial& material,
+            const MeshInfoHandle& meshInfoHandle,
             RHI::RayTracingAccelerationStructureInstanceInclusionMask instanceMask,
             uint32_t localInstanceIndex)
         {
@@ -168,6 +155,7 @@ namespace AZ
 
             ProceduralGeometry proceduralGeometry;
             proceduralGeometry.m_uuid = uuid;
+            proceduralGeometry.m_meshInfoHandle = meshInfoHandle;
             proceduralGeometry.m_typeHandle = geometryTypeHandle;
             proceduralGeometry.m_aabb = aabb;
             proceduralGeometry.m_instanceMask = static_cast<uint32_t>(instanceMask);
@@ -180,19 +168,11 @@ namespace AZ
             subMeshBlasInstance.m_blas = rayTracingBlas;
             meshBlasInstance.m_subMeshes.push_back(AZStd::move(subMeshBlasInstance));
 
-            MaterialInfo materialInfo;
-
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             m_proceduralGeometryLookup.emplace(uuid, m_proceduralGeometry.size());
             m_proceduralGeometry.push_back(proceduralGeometry);
-            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
-            for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                m_proceduralGeometryMaterialInfos[deviceIndex].emplace_back();
-                ConvertMaterial(m_proceduralGeometryMaterialInfos[deviceIndex].back(), material, deviceIndex);
-            }
             m_blasInstanceMap.emplace(Data::AssetId(uuid), meshBlasInstance);
 
             RHI::MultiDeviceObject::IterateDevices(
@@ -207,8 +187,6 @@ namespace AZ
 
             m_revision++;
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
-            m_materialInfoBufferNeedsUpdate = true;
-            m_indexListNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::SetProceduralGeometryTransform(
@@ -247,29 +225,6 @@ namespace AZ
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::SetProceduralGeometryMaterial(
-            const Uuid& uuid, const RayTracingFeatureProcessor::SubMeshMaterial& material)
-        {
-            if (!m_rayTracingEnabled)
-            {
-                return;
-            }
-
-            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
-            for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if (auto it = m_proceduralGeometryLookup.find(uuid); it != m_proceduralGeometryLookup.end())
-                {
-                    ConvertMaterial(m_proceduralGeometryMaterialInfos[deviceIndex][it->second], material, deviceIndex);
-                }
-            }
-
-            m_materialInfoBufferNeedsUpdate = true;
-        }
-
         void RayTracingFeatureProcessor::RemoveProceduralGeometry(const Uuid& uuid)
         {
             if (!m_rayTracingEnabled)
@@ -286,26 +241,15 @@ namespace AZ
             {
                 m_proceduralGeometryLookup[m_proceduralGeometry.back().m_uuid] = m_proceduralGeometryLookup[uuid];
                 m_proceduralGeometry[materialInfoIndex] = m_proceduralGeometry.back();
-                for (auto& [deviceIndex, materialInfos] : m_proceduralGeometryMaterialInfos)
-                {
-                    materialInfos[materialInfoIndex] = materialInfos.back();
-                }
             }
 
             m_proceduralGeometry.pop_back();
-
-            for (auto& [deviceIndex, materialInfos] : m_proceduralGeometryMaterialInfos)
-            {
-                materialInfos.pop_back();
-            }
 
             m_proceduralGeometryLookup.erase(uuid);
             RemoveBlasInstance(uuid);
 
             m_revision++;
             m_proceduralGeometryInfoBufferNeedsUpdate = true;
-            m_materialInfoBufferNeedsUpdate = true;
-            m_indexListNeedsUpdate = true;
         }
 
         int RayTracingFeatureProcessor::GetProceduralGeometryCount(ProceduralGeometryTypeWeakHandle geometryTypeHandle) const
@@ -347,19 +291,22 @@ namespace AZ
                 subMesh.m_subMeshIndex = subMeshIndex;
                 subMesh.m_globalIndex = subMeshGlobalIndex;
 
+                if (subMesh.IsClusterMesh())
+                {
+                    AZ_Assert(m_rayTracingClusterAccelerationStructureEnabled, "Ray tracing cluster acceleration structure not supported");
+
+                    [[maybe_unused]] auto meshInfoEntry = m_meshFeatureProcessor->GetMeshInfoEntry(subMesh.m_meshInfoHandle);
+                    AZ_Assert(meshInfoEntry, "MeshInfoEntry for the given MeshInfoHandle not found");
+                    AZ_Assert(
+                        meshInfoEntry->m_clusterOffsetBuffer,
+                        "When a Cluster-BLAS descriptor is assigned to a ray tracing SubMesh, a cluster offset buffer also needs to be "
+                        "present in the corresponding MeshInfoEntry");
+                }
+
                 // add to the list of global subMeshIndices, which will be stored in the Mesh
                 subMeshIndices.push_back(subMeshGlobalIndex);
-
-                // add MeshInfo and MaterialInfo entries
-                for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                {
-                    meshInfos.emplace_back();
-                }
-                for (auto& [deviceIndex, materialInfos] : m_materialInfos)
-                {
-                    materialInfos.emplace_back();
-                }
             }
+
 
             mesh.m_subMeshIndices = subMeshIndices;
 
@@ -399,16 +346,37 @@ namespace AZ
                 for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
                 {
                     const SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
+                    auto meshInfoEntry = m_meshFeatureProcessor->GetMeshInfoEntry(subMesh.m_meshInfoHandle);
+                    auto positionIt = meshInfoEntry->m_meshBuffers.find(RHI::ShaderSemantic{ AZ::Name{ "POSITION" } });
+                    if (positionIt == meshInfoEntry->m_meshBuffers.end())
+                    {
+                        // mesh has no position buffer?
+                        continue;
+                    }
+                    auto& position = positionIt->second;
+
+                    auto indexBuffer = meshInfoEntry->m_indexBuffer;
 
                     SubMeshBlasInstance subMeshBlasInstance;
 
-                    RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
-                    blasDescriptor.m_buildFlags = buildFlags;
+                    if (subMesh.IsClusterMesh())
+                    {
+                        subMeshBlasInstance.m_clusterBlasDescriptor = subMesh.m_clusterBlasDescriptor;
+                    }
+                    else
+                    {
+                        RHI::RayTracingBlasDescriptor& blasDescriptor = subMeshBlasInstance.m_blasDescriptor;
+                        blasDescriptor.m_buildFlags = buildFlags;
 
-                    RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
-                    blasGeometry.m_vertexFormat = subMesh.m_positionFormat;
-                    blasGeometry.m_vertexBuffer = subMesh.m_positionVertexBufferView;
-                    blasGeometry.m_indexBuffer = subMesh.m_indexBufferView;
+                        AZ_Assert(
+                            positionIt->second.m_streamBufferView.GetByteCount() > 0,
+                            "The \"POSITION\" semantic of MeshInfo needs to have a valid StreamBufferView");
+
+                        RHI::RayTracingGeometry& blasGeometry = blasDescriptor.m_geometries.emplace_back();
+                        blasGeometry.m_vertexFormat = position.m_vertexFormat;
+                        blasGeometry.m_vertexBuffer = positionIt->second.m_streamBufferView;
+                        blasGeometry.m_indexBuffer = indexBuffer.m_indexBufferView;
+                    }
 
                     itMeshBlasInstance->second.m_subMeshes.push_back(subMeshBlasInstance);
                 }
@@ -430,88 +398,8 @@ namespace AZ
                 m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]].m_blasInstanceId = { mesh.m_assetId, subMeshIndex };
             }
 
-            AZ::Transform noScaleTransform = mesh.m_transform;
-            noScaleTransform.ExtractUniformScale();
-            AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
-            rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
-            Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
-
-            Matrix3x4 reflectionProbeModelToWorld3x4 = Matrix3x4::CreateFromTransform(mesh.m_reflectionProbe.m_modelToWorld);
-
-            // store the mesh buffers and material textures in the resource lists
-            for (uint32_t subMeshIndex : mesh.m_subMeshIndices)
-            {
-                SubMesh& subMesh = m_subMeshes[subMeshIndex];
-                AZ_Assert(subMesh.m_indexShaderBufferView.get(), "RayTracing Mesh IndexBuffer cannot be null");
-                AZ_Assert(subMesh.m_positionShaderBufferView.get(), "RayTracing Mesh PositionBuffer cannot be null");
-                AZ_Assert(subMesh.m_normalShaderBufferView.get(), "RayTracing Mesh NormalBuffer cannot be null");
-
-                for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                {
-                    MeshInfo& meshInfo = meshInfos[subMesh.m_globalIndex];
-
-                    worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
-                    meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
-
-                    meshInfo.m_indexByteOffset = subMesh.m_indexBufferView.GetByteOffset();
-                    meshInfo.m_positionByteOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
-                    meshInfo.m_normalByteOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
-                    meshInfo.m_tangentByteOffset =
-                        subMesh.m_tangentShaderBufferView ? subMesh.m_tangentVertexBufferView.GetByteOffset() : 0;
-                    meshInfo.m_bitangentByteOffset =
-                        subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
-                    meshInfo.m_uvByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
-
-                    auto& materialInfos{ m_materialInfos[deviceIndex] };
-                    MaterialInfo& materialInfo = materialInfos[subMesh.m_globalIndex];
-                    ConvertMaterial(materialInfo, subMesh.m_material, deviceIndex);
-
-                    auto& meshBufferIndices = m_meshBufferIndices[deviceIndex];
-
-                    // add mesh buffers
-                    meshInfo.m_bufferStartIndex = meshBufferIndices.AddEntry(
-                    {
-#if USE_BINDLESS_SRG
-                        subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                        subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                        subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                        subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                        subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                        subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex
-#else
-                        m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
-                        m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
-                        m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
-                        m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
-                        m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
-                        m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
-#endif
-                    });
-
-                    // add reflection probe data
-                    if (mesh.m_reflectionProbe.m_reflectionProbeCubeMap.get())
-                    {
-                        materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex();
-                        if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
-                        {
-                            reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
-                            reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
-                            mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
-                            mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
-                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
-                            materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
-                            materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
-                        }
-                    }
-                }
-            }
-
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());
-
-            m_meshInfoBufferNeedsUpdate = true;
-            m_materialInfoBufferNeedsUpdate = true;
-            m_indexListNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::RemoveMesh(const AZ::Uuid& uuid)
@@ -550,45 +438,11 @@ namespace AZ
                     SubMesh& subMesh = m_subMeshes[subMeshIndex];
                     uint32_t globalIndex = subMesh.m_globalIndex;
 
-                    for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                    {
-                        MeshInfo& meshInfo = meshInfos[globalIndex];
-                        auto& meshBufferIndices = m_meshBufferIndices[deviceIndex];
-                        meshBufferIndices.RemoveEntry(meshInfo.m_bufferStartIndex);
-                    }
-                    for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
-                    {
-                        MaterialInfo& materialInfo = m_materialInfos[deviceIndex][globalIndex];
-                        materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
-                    }
-
-#if !USE_BINDLESS_SRG
-                    m_meshBuffers.RemoveResource(subMesh.m_indexShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_positionShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_normalShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_tangentShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
-                    m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
-
-                    m_materialTextures.RemoveResource(subMesh.m_material.m_baseColorImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_material.m_normalImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_material.m_metallicImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_material.m_roughnessImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_material.m_emissiveImageView.get());
-#endif
-
                     if (globalIndex < m_subMeshes.size() - 1)
                     {
-                        // the subMesh we're removing is in the middle of the global lists, remove by swapping the last element to its position in the list
+                        // the subMesh we're removing is in the middle of the global lists, remove by swapping the last element to its
+                        // position in the list
                         m_subMeshes[globalIndex] = m_subMeshes.back();
-
-                        for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                        {
-                            auto& materialInfos{ m_materialInfos[deviceIndex] };
-                            meshInfos[globalIndex] = meshInfos.back();
-                            materialInfos[globalIndex] = materialInfos.back();
-                        }
-
                         // update the global index for the swapped subMesh
                         m_subMeshes[globalIndex].m_globalIndex = globalIndex;
 
@@ -599,12 +453,7 @@ namespace AZ
                     }
 
                     m_subMeshes.pop_back();
-                    for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                    {
-                        auto& materialInfos{ m_materialInfos[deviceIndex] };
-                        meshInfos.pop_back();
-                        materialInfos.pop_back();
-                    }
+
                 }
 
                 // remove from the Mesh list
@@ -619,34 +468,8 @@ namespace AZ
                     m_subMeshes.clear();
                     m_blasInstanceMap.clear();
 
-                    for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                    {
-                        meshInfos.clear();
-                    }
-                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
-                    {
-                        materialInfos.clear();
-                    }
-
-                    for (auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
-                    {
-                        meshBufferIndices.Reset();
-                    }
-                    for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
-                    {
-                        materialTextureIndices.Reset();
-                    }
-
-#if !USE_BINDLESS_SRG
-                    m_meshBuffers.Reset();
-                    m_materialTextures.Reset();
-#endif
                 }
             }
-
-            m_meshInfoBufferNeedsUpdate = true;
-            m_materialInfoBufferNeedsUpdate = true;
-            m_indexListNeedsUpdate = true;
         }
 
         void RayTracingFeatureProcessor::SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
@@ -665,111 +488,6 @@ namespace AZ
                 mesh.m_transform = transform;
                 mesh.m_nonUniformScale = nonUniformScale;
                 m_revision++;
-
-                // create a world inverse transpose 3x4 matrix
-                AZ::Transform noScaleTransform = mesh.m_transform;
-                noScaleTransform.ExtractUniformScale();
-                AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
-                rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
-                Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
-
-                // update all MeshInfos for this Mesh with the new transform
-                for (const auto& subMeshIndex : mesh.m_subMeshIndices)
-                {
-                    for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                    {
-                        MeshInfo& meshInfo = meshInfos[subMeshIndex];
-                        worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
-                    }
-                }
-
-                m_meshInfoBufferNeedsUpdate = true;
-            }
-        }
-
-        void RayTracingFeatureProcessor::SetMeshReflectionProbe(const AZ::Uuid& uuid, const Mesh::ReflectionProbe& reflectionProbe)
-        {
-            if (!m_rayTracingEnabled)
-            {
-                return;
-            }
-
-            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
-            MeshMap::iterator itMesh = m_meshes.find(uuid);
-            if (itMesh != m_meshes.end())
-            {
-                Mesh& mesh = itMesh->second;
-
-                // update the Mesh reflection probe data
-                mesh.m_reflectionProbe = reflectionProbe;
-
-                // update all of the subMeshes
-                const Data::Instance<RPI::Image>& reflectionProbeCubeMap = reflectionProbe.m_reflectionProbeCubeMap;
-                Matrix3x4 reflectionProbeModelToWorld3x4 = Matrix3x4::CreateFromTransform(mesh.m_reflectionProbe.m_modelToWorld);
-
-                for (auto& subMeshIndex : mesh.m_subMeshIndices)
-                {
-                    SubMesh& subMesh = m_subMeshes[subMeshIndex];
-                    uint32_t globalIndex = subMesh.m_globalIndex;
-
-                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
-                    {
-                        MaterialInfo& materialInfo = materialInfos[globalIndex];
-
-                        materialInfo.m_reflectionProbeCubeMapIndex = reflectionProbeCubeMap.get()
-                            ? reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex()
-                            : InvalidIndex;
-                        if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
-                        {
-                            reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
-                            reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
-                            mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
-                            mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
-                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
-                            materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
-                            materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
-                        }
-                        else
-                        {
-                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = false;
-                        }
-                    }
-                }
-
-                m_materialInfoBufferNeedsUpdate = true;
-            }
-        }
-
-        void RayTracingFeatureProcessor::SetMeshMaterials(const AZ::Uuid& uuid, const SubMeshMaterialVector& subMeshMaterials)
-        {
-            if (!m_rayTracingEnabled)
-            {
-                return;
-            }
-
-            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
-            MeshMap::iterator itMesh = m_meshes.find(uuid);
-            if (itMesh != m_meshes.end())
-            {
-                Mesh& mesh = itMesh->second;
-
-                AZ_Assert(
-                    subMeshMaterials.size() == mesh.m_subMeshIndices.size(),
-                    "The size of subMeshes in SetMeshMaterial must be the same as in AddMesh");
-
-                for (auto& subMeshIndex : mesh.m_subMeshIndices)
-                {
-                    const SubMesh& subMesh = m_subMeshes[subMeshIndex];
-                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
-                    {
-                        ConvertMaterial(materialInfos[subMesh.m_globalIndex], subMeshMaterials[subMesh.m_subMeshIndex], deviceIndex);
-                    }
-                }
-
-                m_materialInfoBufferNeedsUpdate = true;
-                m_indexListNeedsUpdate = true;
             }
         }
 
@@ -833,9 +551,17 @@ namespace AZ
                         return true;
                     });
 
-                uint32_t instanceIndex = 0;
+                int32_t maxInstanceId = 0;
+
                 for (auto& subMesh : m_subMeshes)
                 {
+                    bool isTransparent = false;
+                    auto material = m_meshFeatureProcessor->GetFallbackPBRMaterialEntry(subMesh.m_meshInfoHandle);
+                    if (material)
+                    {
+                        isTransparent = material->m_materialParameters.m_irradianceColor.GetA() < 1.0f;
+                    }
+
                     RHI::MultiDeviceObject::IterateDevices(
                         m_deviceMask,
                         [&](int deviceIndex)
@@ -849,32 +575,47 @@ namespace AZ
                             {
                                 return false;
                             }
+
                             const auto& blasInstance = meshIt->second.m_subMeshes[subMesh.m_blasInstanceId.second];
-                            RHI::RayTracingBlas* blas = blasInstance.m_compactBlas.get();
-                            if (blas == nullptr || !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+
+                            RHI::DeviceRayTracingTlasInstance tlasInstance;
+                            tlasInstance.m_instanceID = subMesh.m_meshInfoHandle.GetIndex();
+                            tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
+                            tlasInstance.m_hitGroupIndex = 0;
+                            tlasInstance.m_transform = subMesh.m_mesh->m_transform;
+                            tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
+                            tlasInstance.m_transparent = isTransparent;
+
+                            if (subMesh.IsClusterMesh())
                             {
-                                blas = blasInstance.m_blas.get();
-                                if (blas && !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+                                tlasInstance.m_clusterBlas = blasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(deviceIndex);
+                            }
+                            else
+                            {
+                                RHI::RayTracingBlas* blas = blasInstance.m_compactBlas.get();
+                                if (blas == nullptr || !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
                                 {
-                                    // This might happen if the number of BLAS created per frame is limited
-                                    blas = nullptr;
+                                    blas = blasInstance.m_blas.get();
+                                    if (blas && !RHI::CheckBit(blas->GetDeviceMask(), deviceIndex))
+                                    {
+                                        // This might happen if the number of BLAS created per frame is limited
+                                        blas = nullptr;
+                                    }
+                                }
+                                if (blas)
+                                {
+                                    tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
                                 }
                             }
-                            if (blas)
+
+                            if (tlasInstance.m_blas || tlasInstance.m_clusterBlas)
                             {
-                                RHI::DeviceRayTracingTlasInstance& tlasInstance = tlasDescriptor[deviceIndex].m_instances.emplace_back();
-                                tlasInstance.m_instanceID = instanceIndex;
-                                tlasInstance.m_instanceMask = subMesh.m_mesh->m_instanceMask;
-                                tlasInstance.m_hitGroupIndex = 0;
-                                tlasInstance.m_blas = blas->GetDeviceRayTracingBlas(deviceIndex);
-                                tlasInstance.m_transform = subMesh.m_mesh->m_transform;
-                                tlasInstance.m_nonUniformScale = subMesh.m_mesh->m_nonUniformScale;
-                                tlasInstance.m_transparent = subMesh.m_material.m_irradianceColor.GetA() < 1.0f;
+                                tlasDescriptor[deviceIndex].m_instances.push_back(AZStd::move(tlasInstance));
+                                maxInstanceId = AZStd::max(maxInstanceId, subMesh.m_meshInfoHandle.GetIndex());
                             }
+
                             return true;
                         });
-
-                    instanceIndex++;
                 }
 
                 unsigned proceduralHitGroupIndex = 1; // Hit group 0 is used for normal meshes
@@ -892,7 +633,7 @@ namespace AZ
                         [&](int deviceIndex)
                         {
                             RHI::DeviceRayTracingTlasInstance& tlasInstance = tlasDescriptor[deviceIndex].m_instances.emplace_back();
-                            tlasInstance.m_instanceID = instanceIndex;
+                            tlasInstance.m_instanceID = proceduralGeometry.m_meshInfoHandle.GetIndex();
                             tlasInstance.m_instanceMask = proceduralGeometry.m_instanceMask;
                             tlasInstance.m_hitGroupIndex = geometryTypeMap[proceduralGeometry.m_typeHandle->m_name];
                             tlasInstance.m_blas = proceduralGeometry.m_blas->GetDeviceRayTracingBlas(deviceIndex);
@@ -900,8 +641,6 @@ namespace AZ
                             tlasInstance.m_nonUniformScale = proceduralGeometry.m_nonUniformScale;
                             return true;
                         });
-
-                    instanceIndex++;
                 }
 
                 // create the TLAS buffers based on the descriptor
@@ -943,7 +682,7 @@ namespace AZ
                 return;
             }
 
-            if (m_rayTracingSceneSrg->IsQueuedForCompile() || m_rayTracingMaterialSrg->IsQueuedForCompile())
+            if (m_rayTracingSceneSrg->IsQueuedForCompile())
             {
                 //[GFX TODO][ATOM-14792] AtomSampleViewer: Reset scene and feature processors before switching to sample
                 return;
@@ -951,23 +690,11 @@ namespace AZ
 
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-
-            if (HasMeshGeometry())
-            {
-                UpdateMeshInfoBuffer();
-            }
             if (HasProceduralGeometry())
             {
                 UpdateProceduralGeometryInfoBuffer();
             }
-            if (HasGeometry())
-            {
-                UpdateMaterialInfoBuffer();
-                UpdateIndexLists();
-            }
-
             UpdateRayTracingSceneSrg();
-            UpdateRayTracingMaterialSrg();
         }
 
         const void RayTracingFeatureProcessor::MarkBlasInstanceForCompaction(int deviceIndex, Data::AssetId assetId)
@@ -1047,45 +774,68 @@ namespace AZ
                     RHI::MultiDevice::DeviceMask createdOnDevices{};
                     for (auto& subMeshInstance : instance.m_subMeshes)
                     {
-                        // create the BLAS object and store it in the BLAS list
-                        if (RHI::CheckBitsAny(
-                                subMeshInstance.m_blasDescriptor.m_buildFlags,
-                                RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                        if (subMeshInstance.IsClusterMesh())
                         {
-                            if (subMeshInstance.m_compactionSizeQuery)
+                            if (subMeshInstance.m_clusterBlas)
                             {
+                                createdOnDevices = m_deviceMask & ~subMeshInstance.m_clusterBlas->GetDeviceMask();
                                 RHI::MultiDeviceObject::IterateDevices(
-                                    m_deviceMask & ~subMeshInstance.m_compactionSizeQuery->GetDeviceMask(),
+                                    createdOnDevices,
                                     [&](int deviceIndex)
                                     {
-                                        m_compactionQueryPool->AddDeviceToQuery(deviceIndex, subMeshInstance.m_compactionSizeQuery.get());
+                                        subMeshInstance.m_clusterBlas->AddDevice(deviceIndex, *m_bufferPools);
                                         return true;
                                     });
                             }
                             else
                             {
-                                subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
-                                m_compactionQueryPool->InitQuery(m_deviceMask, subMeshInstance.m_compactionSizeQuery.get());
+                                subMeshInstance.m_clusterBlas = aznew RHI::RayTracingClusterBlas;
+                                subMeshInstance.m_clusterBlas->CreateBuffers(m_deviceMask, &*subMeshInstance.m_clusterBlasDescriptor, *m_bufferPools);
+                                createdOnDevices = m_deviceMask;
                             }
-                            numCompactionQueriesEnqueued++;
-                        }
-
-                        if (subMeshInstance.m_blas)
-                        {
-                            createdOnDevices = m_deviceMask & ~subMeshInstance.m_blas->GetDeviceMask();
-                            RHI::MultiDeviceObject::IterateDevices(
-                                createdOnDevices,
-                                [&](int deviceIndex)
-                                {
-                                    subMeshInstance.m_blas->AddDevice(deviceIndex, *m_bufferPools);
-                                    return true;
-                                });
                         }
                         else
                         {
-                            subMeshInstance.m_blas = aznew RHI::RayTracingBlas;
-                            subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
-                            createdOnDevices = m_deviceMask;
+                            // create the BLAS object and store it in the BLAS list
+                            if (RHI::CheckBitsAny(
+                                    subMeshInstance.m_blasDescriptor.m_buildFlags,
+                                    RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_COMPACTION))
+                            {
+                                if (subMeshInstance.m_compactionSizeQuery)
+                                {
+                                    RHI::MultiDeviceObject::IterateDevices(
+                                        m_deviceMask & ~subMeshInstance.m_compactionSizeQuery->GetDeviceMask(),
+                                        [&](int deviceIndex)
+                                        {
+                                            m_compactionQueryPool->AddDeviceToQuery(deviceIndex, subMeshInstance.m_compactionSizeQuery.get());
+                                            return true;
+                                        });
+                                }
+                                else
+                                {
+                                    subMeshInstance.m_compactionSizeQuery = aznew RHI::RayTracingCompactionQuery;
+                                    m_compactionQueryPool->InitQuery(m_deviceMask, subMeshInstance.m_compactionSizeQuery.get());
+                                }
+                                numCompactionQueriesEnqueued++;
+                            }
+
+                            if (subMeshInstance.m_blas)
+                            {
+                                createdOnDevices = m_deviceMask & ~subMeshInstance.m_blas->GetDeviceMask();
+                                RHI::MultiDeviceObject::IterateDevices(
+                                    createdOnDevices,
+                                    [&](int deviceIndex)
+                                    {
+                                        subMeshInstance.m_blas->AddDevice(deviceIndex, *m_bufferPools);
+                                        return true;
+                                    });
+                            }
+                            else
+                            {
+                                subMeshInstance.m_blas = aznew RHI::RayTracingBlas;
+                                subMeshInstance.m_blas->CreateBuffers(m_deviceMask, &subMeshInstance.m_blasDescriptor, *m_bufferPools);
+                                createdOnDevices = m_deviceMask;
+                            }
                         }
                     }
 
@@ -1222,23 +972,6 @@ namespace AZ
             }
         }
 
-        void RayTracingFeatureProcessor::UpdateMeshInfoBuffer()
-        {
-            if (m_meshInfoBufferNeedsUpdate)
-            {
-                AZStd::unordered_map<int, const void*> rawMeshInfos;
-
-                for (auto& [deviceIndex, meshInfos] : m_meshInfos)
-                {
-                    rawMeshInfos[deviceIndex] = meshInfos.data();
-                }
-
-                size_t meshInfoByteCount = m_meshInfos.begin()->second.size() * sizeof(MeshInfo);
-                m_meshInfoGpuBuffer.AdvanceCurrentBufferAndUpdateData(rawMeshInfos, meshInfoByteCount);
-                m_meshInfoBufferNeedsUpdate = false;
-            }
-        }
-
         void RayTracingFeatureProcessor::UpdateProceduralGeometryInfoBuffer()
         {
             if (!m_proceduralGeometryInfoBufferNeedsUpdate)
@@ -1274,99 +1007,6 @@ namespace AZ
             m_proceduralGeometryInfoGpuBuffer.AdvanceCurrentBufferAndUpdateData(
                 rawProceduralGeometryInfos, m_proceduralGeometry.size() * 2 * sizeof(uint32_t));
             m_proceduralGeometryInfoBufferNeedsUpdate = false;
-        }
-
-        void RayTracingFeatureProcessor::UpdateMaterialInfoBuffer()
-        {
-            if (m_materialInfoBufferNeedsUpdate)
-            {
-                m_materialInfoGpuBuffer.AdvanceCurrentElement();
-                m_materialInfoGpuBuffer.CreateOrResizeCurrentBufferWithElementCount<MaterialInfo>(
-                    m_subMeshCount + m_proceduralGeometryMaterialInfos.begin()->second.size());
-                m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_materialInfos);
-                m_materialInfoGpuBuffer.UpdateCurrentBufferData(m_proceduralGeometryMaterialInfos, m_subMeshCount);
-                m_materialInfoBufferNeedsUpdate = false;
-            }
-        }
-
-        void RayTracingFeatureProcessor::UpdateIndexLists()
-        {
-            if (m_indexListNeedsUpdate)
-            {
-#if !USE_BINDLESS_SRG
-                // resolve to the true indices using the indirection list
-                // Note: this is done on the CPU to avoid double-indirection in the shader
-                AZStd::unordered_map<int, IndexVector> resolvedMeshBufferIndicesMap;
-
-                for (const auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
-                {
-                    IndexVector& resolvedMeshBufferIndices = resolvedMeshBufferIndicesMap[deviceIndex];
-                    resolvedMeshBufferIndices.resize(meshBufferIndices.GetIndexList().size());
-                    uint32_t resolvedMeshBufferIndex = 0;
-                    for (auto& meshBufferIndex : meshBufferIndices.GetIndexList())
-                    {
-                        if (!meshBufferIndices.IsValidIndex(meshBufferIndex))
-                        {
-                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = InvalidIndex;
-                        }
-                        else
-                        {
-                            resolvedMeshBufferIndices[resolvedMeshBufferIndex++] = m_meshBuffers.GetIndirectionList()[meshBufferIndex];
-                        }
-                    }
-                }
-
-                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMeshBufferIndicesMap);
-#else
-                AZStd::unordered_map<int, const void*> rawMeshData;
-
-                for (auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
-                {
-                    rawMeshData[deviceIndex] = meshBufferIndices.GetIndexList().data();
-                }
-
-                size_t newMeshBufferIndicesByteCount = m_meshBufferIndices.begin()->second.GetIndexList().size() * sizeof(uint32_t);
-                m_meshBufferIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(rawMeshData, newMeshBufferIndicesByteCount);
-#endif
-
-#if !USE_BINDLESS_SRG
-                // resolve to the true indices using the indirection list
-                // Note: this is done on the CPU to avoid double-indirection in the shader
-                AZStd::unordered_map<int, IndexVector> resolvedMaterialTextureIndicesMap;
-
-                for (const auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
-                {
-                    IndexVector& resolvedMaterialTextureIndices = resolvedMaterialTextureIndicesMap[deviceIndex];
-                    resolvedMaterialTextureIndices.resize(materialTextureIndices.GetIndexList().size());
-                    uint32_t resolvedMaterialTextureIndex = 0;
-                    for (auto& materialTextureIndex : materialTextureIndices.GetIndexList())
-                    {
-                        if (!materialTextureIndices.IsValidIndex(materialTextureIndex))
-                        {
-                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = InvalidIndex;
-                        }
-                        else
-                        {
-                            resolvedMaterialTextureIndices[resolvedMaterialTextureIndex++] = m_materialTextures.GetIndirectionList()[materialTextureIndex];
-                        }
-                    }
-                }
-
-                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(resolvedMaterialTextureIndicesMap);
-#else
-                AZStd::unordered_map<int, const void*> rawMaterialData;
-
-                for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
-                {
-                    rawMaterialData[deviceIndex] = materialTextureIndices.GetIndexList().data();
-                }
-
-                size_t newMaterialTextureIndicesByteCount = m_materialTextureIndices.begin()->second.GetIndexList().size() * sizeof(uint32_t);
-                m_materialTextureIndicesGpuBuffer.AdvanceCurrentBufferAndUpdateData(rawMaterialData, newMaterialTextureIndicesByteCount);
-#endif
-
-                m_indexListNeedsUpdate = false;
-            }
         }
 
         void RayTracingFeatureProcessor::UpdateRayTracingSceneSrg()
@@ -1467,17 +1107,8 @@ namespace AZ
                 m_rayTracingSceneSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetExposure());
             }
 
-            if (m_meshInfoGpuBuffer.IsCurrentBufferValid())
-            {
-                bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshInfo"));
-                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer.GetCurrentBufferView());
-            }
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_meshInfoCount"));
+            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_blasMeshCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, m_subMeshCount);
-
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshBufferIndices"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer.GetCurrentBufferView());
 
             if (m_proceduralGeometryInfoGpuBuffer.IsCurrentBufferValid())
             {
@@ -1485,29 +1116,7 @@ namespace AZ
                 m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_proceduralGeometryInfoGpuBuffer.GetCurrentBufferView());
             }
 
-#if !USE_BINDLESS_SRG
-            RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
-            m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers.GetResourceList());
-#endif
             m_rayTracingSceneSrg->Compile();
-        }
-
-        void RayTracingFeatureProcessor::UpdateRayTracingMaterialSrg()
-        {
-            const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTracingMaterialSrg->GetLayout();
-            RHI::ShaderInputBufferIndex bufferIndex;
-
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer.GetCurrentBufferView());
-
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialTextureIndices"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer.GetCurrentBufferView());
-
-#if !USE_BINDLESS_SRG
-            RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
-            m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, m_materialTextures.GetResourceList());
-#endif
-            m_rayTracingMaterialSrg->Compile();
         }
 
         void RayTracingFeatureProcessor::RemoveBlasInstance(Data::AssetId id)
@@ -1552,44 +1161,6 @@ namespace AZ
             }
 
             return buildFlags;
-        }
-
-        void RayTracingFeatureProcessor::ConvertMaterial(MaterialInfo& materialInfo, const SubMeshMaterial& subMeshMaterial, int deviceIndex)
-        {
-            subMeshMaterial.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
-            subMeshMaterial.m_emissiveColor.StoreToFloat4(materialInfo.m_emissiveColor.data());
-            subMeshMaterial.m_irradianceColor.StoreToFloat4(materialInfo.m_irradianceColor.data());
-            materialInfo.m_metallicFactor = subMeshMaterial.m_metallicFactor;
-            materialInfo.m_roughnessFactor = subMeshMaterial.m_roughnessFactor;
-            materialInfo.m_textureFlags = subMeshMaterial.m_textureFlags;
-
-            if (materialInfo.m_textureStartIndex != InvalidIndex)
-            {
-                m_materialTextureIndices[deviceIndex].RemoveEntry(materialInfo.m_textureStartIndex);
-#if !USE_BINDLESS_SRG
-                m_materialTextures.RemoveResource(subMeshMaterial.m_baseColorImageView.get());
-                m_materialTextures.RemoveResource(subMeshMaterial.m_normalImageView.get());
-                m_materialTextures.RemoveResource(subMeshMaterial.m_metallicImageView.get());
-                m_materialTextures.RemoveResource(subMeshMaterial.m_roughnessImageView.get());
-                m_materialTextures.RemoveResource(subMeshMaterial.m_emissiveImageView.get());
-#endif
-            }
-
-            materialInfo.m_textureStartIndex = m_materialTextureIndices[deviceIndex].AddEntry({
-#if USE_BINDLESS_SRG
-                subMeshMaterial.m_baseColorImageView.get() ? subMeshMaterial.m_baseColorImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_normalImageView.get() ? subMeshMaterial.m_normalImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_metallicImageView.get() ? subMeshMaterial.m_metallicImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_roughnessImageView.get() ? subMeshMaterial.m_roughnessImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_emissiveImageView.get() ? subMeshMaterial.m_emissiveImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex
-#else
-                m_materialTextures.AddResource(subMeshMaterial.m_baseColorImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_normalImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_metallicImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_roughnessImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_emissiveImageView.get())
-#endif
-            });
         }
     } // namespace Render
 }

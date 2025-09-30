@@ -28,7 +28,7 @@ namespace AZ
      * Note: as a debugging tool, one can temporarily force a JobContext to run all jobs synchronously by altering the provided JobManagerDesc to contain zero JobManagerThreadDesc.
      * This is best done done on a per-JobContext basis.  The default JobContect is created by the JobManagerComponent.
      */
-    class JobManager
+    class AZCORE_API JobManager
     {
     public:
         /**

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelAnalog.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional axis input values.
     //! Example: game-pad thumb-stick x or y
-    class InputChannelAxis1D : public InputChannelAnalog
+    class AZF_API InputChannelAxis1D : public InputChannelAnalog
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

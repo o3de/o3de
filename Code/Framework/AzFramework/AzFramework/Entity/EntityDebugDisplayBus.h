@@ -21,6 +21,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -31,7 +32,7 @@ class ITexture;
 
 namespace AzFramework
 {
-    inline constexpr AZ::s32 g_defaultSceneEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId"); // default id to draw to all viewports in the default scene
+    constexpr AZ::Crc32 g_defaultSceneEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId"); // default id to draw to all viewports in the default scene
 
     // Notes:
     //   Don't change the xxxShift values, they need to match the values from legacy cry rendering
@@ -340,3 +341,8 @@ namespace AzFramework
 
     using DebugDisplayEventBus = AZ::EBus<DebugDisplayEvents>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::DebugDisplayRequests)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::EntityDebugDisplayEvents)
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::ViewportDebugDisplayEvents)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::DebugDisplayEvents)

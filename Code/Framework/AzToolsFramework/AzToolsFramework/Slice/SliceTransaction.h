@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
@@ -36,7 +37,7 @@ namespace AzToolsFramework
          * A single transaction should not be interacted with simultaneously from different threads.
          * However, it is safe to pass a transaction pointer across threads, to jobs, etc.
          */
-        class SliceTransaction
+        class AZTF_API SliceTransaction
         {
         public:
 

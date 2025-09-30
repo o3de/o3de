@@ -9,6 +9,7 @@
 
 #include <AzFramework/PaintBrush/PaintBrushSettings.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -29,7 +30,7 @@ namespace AzToolsFramework
 
     //! Defines the specific global paintbrush settings.
     //! They can be modified directly through the Property Editor or indirectly via the GlobalPaintBrushSettingsRequestBus.
-    class GlobalPaintBrushSettings : public AzFramework::PaintBrushSettings
+    class AZTF_API GlobalPaintBrushSettings : public AzFramework::PaintBrushSettings
     {
     public:
         AZ_CLASS_ALLOCATOR(GlobalPaintBrushSettings, AZ::SystemAllocator);

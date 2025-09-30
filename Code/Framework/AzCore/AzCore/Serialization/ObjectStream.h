@@ -83,7 +83,7 @@ namespace AZ
      * ObjectStream
      *
      */
-    class ObjectStream
+    class AZCORE_API ObjectStream
         : public DataStream
     {
     public:

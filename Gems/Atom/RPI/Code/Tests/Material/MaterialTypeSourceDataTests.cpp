@@ -1092,10 +1092,9 @@ namespace UnitTest
         MaterialPropertySourceData* property = propertyGroup->AddProperty("MyInt");
         property->m_dataType = MaterialPropertyDataType::Int;
         property->m_outputConnections.push_back(MaterialPropertySourceData::Connection{MaterialPropertyOutputType::ShaderOption, AZStd::string("DoesNotExist")});
-        
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
-        AZ_TEST_STOP_TRACE_SUPPRESSION(2); // There happens to be an extra assert for "Cannot continue building MaterialAsset because 1 error(s) reported"
+
+        // elevate warnings to errors
+        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom(), "", true);
 
         EXPECT_FALSE(materialTypeOutcome.IsSuccess());
     }

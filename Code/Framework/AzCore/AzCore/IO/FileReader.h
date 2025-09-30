@@ -20,7 +20,7 @@ namespace AZ::IO
     //! to either the FileIOBase or SystemFile classes based if a FileIOBase* instance has been supplied
     //! to the FileSystemReader class
     //! the SettingsRegistry option to use FileIO
-    class FileReader
+    class AZCORE_API FileReader
     {
         using HandleType = AZ::u32;
         using FileHandleType = AZStd::variant<AZStd::monostate, AZ::IO::SystemFile, HandleType>;

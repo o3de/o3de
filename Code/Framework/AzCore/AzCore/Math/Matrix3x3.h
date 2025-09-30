@@ -22,7 +22,7 @@ namespace AZ
 
     //! Matrix with 3 rows and 3 columns.
     //! See Matrix4x4 for general information about matrices.
-    class Matrix3x3
+    class AZCORE_API Matrix3x3
     {
     public:
 
@@ -192,6 +192,12 @@ namespace AZ
 
         bool operator==(const Matrix3x3& rhs) const;
         bool operator!=(const Matrix3x3& rhs) const;
+
+        //! Access the row vector.
+        //! @{
+        Vector3& operator[](const size_t row);
+        const Vector3& operator[](const size_t row) const;
+        //! @}
 
         //! Transpose calculation, flips the rows and columns.
         //! @{

@@ -12,6 +12,7 @@
 // be available to tools, not the runtime.
 
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -28,7 +29,7 @@ namespace AzToolsFramework
         //!  so that it will re-process the asset if the timestamp updates but has no changes.
         //!  This is useful for Editor tools: Content creators sometimes purposely save files
         //!  with no changes to force an asset to reprocess.
-        class AssetFingerprintClearRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
+        class AZTF_API AssetFingerprintClearRequest : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
             AZ_CLASS_ALLOCATOR(AssetFingerprintClearRequest, AZ::OSAllocator);
@@ -45,7 +46,7 @@ namespace AzToolsFramework
 
         //! This will be send in response to the AssetFingerprintClearRequest request,
         //! and will contain if a fingerprint was actually cleared.
-        class AssetFingerprintClearResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
+        class AZTF_API AssetFingerprintClearResponse : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
             AZ_CLASS_ALLOCATOR(AssetFingerprintClearResponse, AZ::OSAllocator);
@@ -60,7 +61,7 @@ namespace AzToolsFramework
         };
 
         //!  Request the jobs information for a given asset from the AssetProcessor
-        class AssetJobsInfoRequest
+        class AZTF_API AssetJobsInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -82,7 +83,7 @@ namespace AzToolsFramework
 
         //! This will be send in response to the AssetJobsInfoRequest request,
         //! and will contain jobs information for the requested asset along with the jobid
-        class AssetJobsInfoResponse
+        class AZTF_API AssetJobsInfoResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -99,7 +100,7 @@ namespace AzToolsFramework
         };
 
         //!  Request the log data for a given jobId from the AssetProcessor
-        class AssetJobLogRequest
+        class AZTF_API AssetJobLogRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -115,7 +116,7 @@ namespace AzToolsFramework
         };
 
         //! This will be sent in response to the AssetJobLogRequest request, and will contain the complete job log as a string
-        class AssetJobLogResponse
+        class AZTF_API AssetJobLogResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -132,7 +133,7 @@ namespace AzToolsFramework
         };
         
         //! Tools side message that a source file has changed or been removed
-        class SourceFileNotificationMessage
+        class AZTF_API SourceFileNotificationMessage
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -158,7 +159,7 @@ namespace AzToolsFramework
             NotificationType m_type;
         };
 
-        class GetAbsoluteAssetDatabaseLocationRequest
+        class AZTF_API GetAbsoluteAssetDatabaseLocationRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -170,7 +171,7 @@ namespace AzToolsFramework
             unsigned int GetMessageType() const override;
         };
 
-        class GetAbsoluteAssetDatabaseLocationResponse
+        class AZTF_API GetAbsoluteAssetDatabaseLocationResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -185,7 +186,7 @@ namespace AzToolsFramework
             AZStd::string m_absoluteAssetDatabaseLocation;
         };
 
-        class GetScanFoldersRequest
+        class AZTF_API GetScanFoldersRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -199,7 +200,7 @@ namespace AzToolsFramework
             unsigned int GetMessageType() const override;
         };
 
-        class GetScanFoldersResponse
+        class AZTF_API GetScanFoldersResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -218,7 +219,7 @@ namespace AzToolsFramework
         };
 
 
-        class GetAssetSafeFoldersRequest
+        class AZTF_API GetAssetSafeFoldersRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -232,7 +233,7 @@ namespace AzToolsFramework
             unsigned int GetMessageType() const override;
         };
 
-        class GetAssetSafeFoldersResponse
+        class AZTF_API GetAssetSafeFoldersResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -250,7 +251,7 @@ namespace AzToolsFramework
             AZStd::vector<AZStd::string> m_assetSafeFolders;
         };
 
-        class FileInfosNotificationMessage
+        class AZTF_API FileInfosNotificationMessage
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -274,7 +275,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! Request the enabled status of an asset platform
-        class AssetProcessorPlatformStatusRequest
+        class AZTF_API AssetProcessorPlatformStatusRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -290,7 +291,7 @@ namespace AzToolsFramework
 
         //! This will be sent in response to the AssetProcessorPlatformStatusRequest request,
         //! indicating if the asset platform is currently enabled or not
-        class AssetProcessorPlatformStatusResponse
+        class AZTF_API AssetProcessorPlatformStatusResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -305,7 +306,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! Request the total number of pending jobs for an asset platform
-        class AssetProcessorPendingPlatformAssetsRequest
+        class AZTF_API AssetProcessorPendingPlatformAssetsRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -322,7 +323,7 @@ namespace AzToolsFramework
 
         //! This will be sent in response to the AssetProcessorPendingPlatformAssetsRequest request,
         //! indicating the number of pending assets for the specified platform
-        class AssetProcessorPendingPlatformAssetsResponse
+        class AZTF_API AssetProcessorPendingPlatformAssetsResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -336,7 +337,7 @@ namespace AzToolsFramework
         };
 
         // WantAssetBrowserShowRequest
-        class WantAssetBrowserShowRequest
+        class AZTF_API WantAssetBrowserShowRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -350,7 +351,7 @@ namespace AzToolsFramework
         };
 
         // WantAssetBrowserShowResponse
-        class WantAssetBrowserShowResponse
+        class AZTF_API WantAssetBrowserShowResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -366,7 +367,7 @@ namespace AzToolsFramework
         };
 
         // AssetBrowserShowRequest
-        class AssetBrowserShowRequest
+        class AZTF_API AssetBrowserShowRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -382,7 +383,7 @@ namespace AzToolsFramework
         };
 
         // SourceAssetProductsInfoRequest
-        class SourceAssetProductsInfoRequest
+        class AZTF_API SourceAssetProductsInfoRequest
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
@@ -399,7 +400,7 @@ namespace AzToolsFramework
         };
 
         // SourceAssetProductsInfoResponse
-        class SourceAssetProductsInfoResponse
+        class AZTF_API SourceAssetProductsInfoResponse
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:

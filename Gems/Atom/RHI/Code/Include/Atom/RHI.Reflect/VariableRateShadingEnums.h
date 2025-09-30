@@ -82,7 +82,7 @@ namespace AZ::RHI
 
     //! Represents a texel value of a shading rate.
     //! Some implementations use a two component image format, others only one.
-    struct ShadingRateImageValue
+    struct ATOM_RHI_REFLECT_API ShadingRateImageValue
     {
         uint8_t m_x; // First component value.
         uint8_t m_y; // Second component value (may be 0 if not used).

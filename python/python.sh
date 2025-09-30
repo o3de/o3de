@@ -77,7 +77,7 @@ fi
 
 # Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
 # needed to run python within the venv properly
-PYTHON_VENV=$HOME/.o3de/Python/venv/$ENGINE_ID
+PYTHON_VENV=${USERPROFILE:-"$HOME"}/.o3de/Python/venv/$ENGINE_ID
 if [[ "$OSTYPE" == "msys" ]];  #git bash on windows
 then
     PYTHON_VENV_ACTIVATE=$PYTHON_VENV/Scripts/activate

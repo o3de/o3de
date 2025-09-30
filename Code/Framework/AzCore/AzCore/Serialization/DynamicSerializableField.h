@@ -22,7 +22,7 @@ namespace AZ
      * It is currently used by the script component. We could use this for
      * other purposes but we may have to make it more robust and user-friendly.
      */
-    class DynamicSerializableField
+    class AZCORE_API DynamicSerializableField
     {
     public:
         AZ_TYPE_INFO(DynamicSerializableField, "{D761E0C2-A098-497C-B8EB-EA62F5ED896B}")

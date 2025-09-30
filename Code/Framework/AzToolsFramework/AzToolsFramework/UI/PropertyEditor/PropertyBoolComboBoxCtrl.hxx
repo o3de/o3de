@@ -5,11 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef PROPERTY_BOOLCOMBOBOX_CTRL
-#define PROPERTY_BOOLCOMBOBOX_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -26,7 +25,7 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    class PropertyBoolComboBoxCtrl
+    class AZTF_API PropertyBoolComboBoxCtrl
         : public GenericComboBoxCtrl<bool>
     {
         Q_OBJECT
@@ -43,7 +42,7 @@ namespace AzToolsFramework
         void UpdateTabOrder() override;
     };
 
-    class BoolPropertyComboBoxHandler
+    class AZTF_API BoolPropertyComboBoxHandler
         : QObject
         , public PropertyHandler<bool, PropertyBoolComboBoxCtrl>
     {
@@ -61,7 +60,5 @@ namespace AzToolsFramework
         virtual bool ReadValuesIntoGUI(size_t index, PropertyBoolComboBoxCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterBoolComboBoxHandler();
+    AZTF_API void RegisterBoolComboBoxHandler();
 };
-
-#endif

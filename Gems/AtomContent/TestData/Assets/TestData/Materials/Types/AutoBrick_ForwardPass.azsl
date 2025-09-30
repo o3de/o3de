@@ -24,7 +24,6 @@ struct MaterialParameters {};
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
 
 struct VSInput
 {
@@ -208,10 +207,11 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     // ------- LightingData -------
 
     LightingData lightingData;
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
+    LightCullingTileIterator tileIterator;
+    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
     // Shadow
     lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
@@ -225,10 +225,10 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     // ------- Lighting Calculation -------
 
     // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
+    ApplyDecals(tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, IN.m_position);
+    ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
 
     // Apply Image Based Lighting (IBL)
     ApplyIblForward(surface, lightingData);

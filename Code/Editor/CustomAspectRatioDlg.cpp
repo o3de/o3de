@@ -15,9 +15,7 @@
 
 #include "CustomAspectRatioDlg.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_CustomAspectRatioDlg.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #define MIN_ASPECT 1
 #define MAX_ASPECT 16384

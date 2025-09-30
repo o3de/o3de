@@ -53,13 +53,11 @@ namespace AZ
         //! which can be used to render meshes at runtime.
         //! 
         //! Use a MaterialTypeAssetCreator to create a MaterialTypeAsset.
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialTypeAsset
             : public AZ::Data::AssetData
             , public Data::AssetBus::MultiHandler
             , public AssetInitBus::Handler
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
 
@@ -123,18 +121,24 @@ namespace AZ
             //! agreement between the FeatureProcessor and the shaders, but an example might be world-transform for a model.
             //! All shaders in a material will have the same per-object SRG layout.
             //! @param supervariantIndex: supervariant index to get the layout from.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(
+                const SupervariantIndex& supervariantIndex,
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
-            //! because it will discover the index from the name.  
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const Name& supervariantName) const;
+            //! because it will discover the index from the name.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(
+                const Name& supervariantName,
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout() const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Returns a ShaderAsset from @m_shaderCollection that contains the ObjectSrg layout.
-            const Data::Asset<ShaderAsset>& GetShaderAssetForObjectSrg() const;
+            const Data::Asset<ShaderAsset>& GetShaderAssetForObjectSrg(
+                const ShaderCollection::Item::DrawItemType drawItemType = ShaderCollection::Item::DrawItemType::Raster) const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
@@ -202,7 +206,8 @@ namespace AZ
             //! to the shader rather than duplicate the SRG layouts to avoid duplication and also because the ShaderAsset
             //! is needed to create an instance of the SRG so it's convenient to just keep a reference to the ShaderAsset.
             Data::Asset<ShaderAsset> m_shaderWithMaterialSrg;
-            Data::Asset<ShaderAsset> m_shaderWithObjectSrg;
+            AZStd::array<Data::Asset<ShaderAsset>, AZStd::to_underlying(ShaderCollection::Item::DrawItemType::MaxCount)>
+                m_shaderWithObjectSrg;
 
             //! The version of this MaterialTypeAsset. If the version is greater than 1, actions performed
             //! to update this MaterialTypeAsset will be in m_materialVersionUpdateMap
@@ -217,10 +222,8 @@ namespace AZ
             bool m_isNonSerializedDataInitialized = false;
         };
 
-        AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
         class ATOM_RPI_REFLECT_API MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
         {
-            AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
             using Base = AssetHandler<MaterialTypeAsset>;
         public:
             AZ_RTTI(MaterialTypeAssetHandler, "{08568C59-CB7A-4F8F-AFCD-0B69F645B43F}", Base);

@@ -12,12 +12,13 @@
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentSchema.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! Helper class that builds a DOM suitable for usage in a DocumentAdapter.
     //! Uses a visitor pattern to establish node elements.
-    class AdapterBuilder
+    class AZF_API AdapterBuilder
     {
     public:
         AdapterBuilder() = default;

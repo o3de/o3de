@@ -245,7 +245,7 @@ namespace AZ
             if (m_lightType == AreaLightComponentConfig::LightType::Unknown)
             {
                 // Light type is unknown, see if it can be determined from a shape component.
-                Crc32 shapeType = Crc32(0);
+                Crc32 shapeType = Crc32();
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(shapeType, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
                 
                 constexpr Crc32 SphereShapeTypeId = AZ_CRC_CE("Sphere");

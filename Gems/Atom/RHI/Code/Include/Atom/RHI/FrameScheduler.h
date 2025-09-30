@@ -125,7 +125,7 @@ namespace AZ::RHI
     //! if the ResourceEventBus is replaced with a non-singleton queue data structure. Currently, it
     //! is only possible to flush this queue globally, which is incompatible with multiple frame schedulers.
     //! See [LY-83241] for more information.
-    class FrameScheduler final
+    class ATOM_RHI_PUBLIC_API FrameScheduler final
         : public FrameGraphBuilder
     {
     public:
@@ -182,9 +182,6 @@ namespace AZ::RHI
 
         //! Adds a DeviceRayTracingShaderTable to be built this frame
         void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable);
-
-        //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
-        const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
     private:
         AZStd::unordered_map<int, ScopeId> m_rootScopeIds;

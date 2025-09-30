@@ -33,7 +33,7 @@ namespace AZ::RHI
     //! Query pool provides backing storage and context for query instances. The QueryPoolDescriptor
     //! contains properties defining memory characteristics of query pools. All queries created on a pool
     //! share the same backing and type.
-    class DeviceQueryPool
+    class ATOM_RHI_PUBLIC_API DeviceQueryPool
         : public DeviceResourcePool
     {
         using Base = DeviceResourcePool;

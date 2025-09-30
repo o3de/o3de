@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RHI/DispatchItem.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -20,11 +21,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct DispatchItem;
-    }
-
     namespace Meshlets
     {
         //! Multi Dispatch Pass - this pass will handle multiple dispatch submission
@@ -47,7 +43,7 @@ namespace AZ
             static RPI::Ptr<MultiDispatchComputePass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Thread-safe function for adding the frame's dispatch items
-            void AddDispatchItems(AZStd::list<RHI::DeviceDispatchItem*>& dispatchItems);
+            void AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems);
 
             // Pass behavior overrides
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
@@ -70,7 +66,7 @@ namespace AZ
             void BuildShaderAndRenderData();
 
         private:
-            AZStd::unordered_set<const RHI::DeviceDispatchItem*> m_dispatchItems;
+            AZStd::unordered_set<const RHI::DispatchItem*> m_dispatchItems;
         };
 
     }   // namespace Meshlets

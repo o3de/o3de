@@ -39,7 +39,7 @@ namespace AZ
         } // namespace JNI
 
 
-        class AndroidEnv
+        class AZCORE_API AndroidEnv
         {
         public:
             AZ_TYPE_INFO(AndroidEnv, "{E51A8876-7A26-4CB1-BA88-394A128728C7}")

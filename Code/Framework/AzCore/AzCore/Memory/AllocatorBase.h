@@ -19,7 +19,7 @@ namespace AZ
     /**
     * AllocatorBase - all AZ-compatible allocators should inherit from this implementation of IAllocator.
     */
-    class AllocatorBase : public IAllocator
+    class AZCORE_API AllocatorBase : public IAllocator
     {
     protected:
         AllocatorBase();

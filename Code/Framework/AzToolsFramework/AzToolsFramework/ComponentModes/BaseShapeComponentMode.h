@@ -11,16 +11,17 @@
 #include <AzToolsFramework/ComponentModes/BaseShapeViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/ShapeComponentModeBus.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallBaseShapeViewportEditFunctions(
+    AZTF_API void InstallBaseShapeViewportEditFunctions(
         BaseShapeViewportEdit* baseShapeViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! Base class for shape component modes.
     //! Handles common logic such as setting up sub-modes for dimensions and translation offset, handling mode
     //! selection, registering actions, etc.
-    class BaseShapeComponentMode
+    class AZTF_API BaseShapeComponentMode
         : public ComponentModeFramework::EditorBaseComponentMode
         , public ShapeComponentModeRequestBus::Handler
     {

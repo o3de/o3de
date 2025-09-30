@@ -18,7 +18,7 @@
 
 namespace AZ::Debug
 {
-    AZ_CVAR_EXTERNED(int, bg_traceLogLevel);
+    AZ_CVAR_API_EXTERNED(AZCORE_API, int, bg_traceLogLevel);
 }
 
 /**

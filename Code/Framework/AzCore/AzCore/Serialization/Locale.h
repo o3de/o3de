@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzCore/Serialization/Locale_Platform.h>
 
 namespace AZ
@@ -25,7 +26,7 @@ namespace AZ
         //! You can repeatedly call Activate and Deactivate.
         //!
         //! Platform-specific implementations will not allocate on the heap, so this object can be used before the heap is ready.
-        class ScopedSerializationLocale final : public ScopedSerializationLocale_Platform
+        class AZCORE_API ScopedSerializationLocale final : public ScopedSerializationLocale_Platform
         {
             public:
                 ScopedSerializationLocale(bool autoActivate = true);

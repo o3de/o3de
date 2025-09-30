@@ -12,6 +12,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -103,7 +104,7 @@ namespace AzToolsFramework
 
     //! Returns the union of all editor selection bounds on a given Entity.
     //! @note The returned Aabb is in world space.
-    AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo);
+    AZTF_API AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo);
 } // namespace AzToolsFramework
 
-DECLARE_EBUS_EXTERN(AzToolsFramework::EditorComponentSelectionRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentSelectionRequests);

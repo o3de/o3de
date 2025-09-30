@@ -12,6 +12,7 @@
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Archive/ZipDirCache.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
@@ -31,7 +32,7 @@ namespace AZ::IO
         }
     };
 
-    class NestedArchive
+    class AZF_API NestedArchive
         : public INestedArchive
     {
     public:

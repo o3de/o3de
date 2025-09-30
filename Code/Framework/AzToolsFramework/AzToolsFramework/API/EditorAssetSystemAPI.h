@@ -8,13 +8,15 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Crc.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/PlatformDef.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -37,7 +39,6 @@ namespace AzToolsFramework
             : public AZ::EBusTraits
         {
         public:
-
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // single bus
 
@@ -141,10 +142,26 @@ namespace AzToolsFramework
             virtual bool ClearFingerprintForAsset(const AZStd::string& sourcePath) = 0;
         };
 
+        //! Given a file name and expected asset type, try to find the asset id for it using a heuristic approach.
+        //! * First, it will try to look for an exact known match in the catalog for that actual file name.
+        //! * If that fails, it will look for a source file with that name and see if it produces assets of the given type.
+        //!   If that succeeds, it will check the returned list of assets and find the one that best matches with the given
+        //!   file name and type.
+        //! This function should only be used to convert legacy data that used file names to refer to assets.
+        //! It is not necessary to use this function if you already have an asset id or uuid, and asset references
+        //! should always be preferred if possible, since this function can fail, especially if the file name requested
+        //! is unrelated to the actual source file name that produces this asset (for example, a passing in a product file
+        //! name like "sphere.azmodel" when the actual source file is "shapes.fbx", there simply is not enough information
+        //! in just that string to know what the source file is unless it has already been compiled and is in the catalog).
+        //! @param fileName The file name to look for.  Source file, product file, use relative paths though.
+        //! @param assetTypeId The expected type of the asset.  A null typeid will accept any asset type.
+        //!        If you specify a typeId, it will only return a valid asset id if the type matches, even if it finds an asset
+        //!        in the catalog with the exact name.
+        AZTF_API AZ::Data::AssetId FindAssetIdFromFileName(AZStd::string_view fileName, AZ::Data::AssetType assetTypeId);
 
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension
-        class AssetSystemNotifications
+        class AssetSystemNotifications 
             : public AZ::EBusTraits
         {
         public:
@@ -176,10 +193,10 @@ namespace AzToolsFramework
             Missing //indicate that the job is not present for example if the source file is not there, or if job key is not there
         };
 
-        extern const char* JobStatusString(JobStatus status);
+        AZTF_API const char* JobStatusString(JobStatus status);
 
         //! This struct is used for responses and requests about Asset Processor Jobs
-        struct JobInfo
+        struct AZTF_API JobInfo
         {
             AZ_TYPE_INFO(JobInfo, "{276C9DE3-0C81-4721-91FE-F7C961D28DA8}")
             JobInfo();
@@ -264,7 +281,7 @@ namespace AzToolsFramework
         };
 
         //! Returns "mac", "pc", or "linux" statically.
-        const char* GetHostAssetPlatform();
+        AZTF_API const char* GetHostAssetPlatform();
 
     } // namespace AssetSystem
     using AssetSystemBus = AZ::EBus<AssetSystem::AssetSystemNotifications>;
@@ -274,5 +291,9 @@ namespace AzToolsFramework
 
 namespace AZStd
 {
-    extern template class vector<AzToolsFramework::AssetSystem::JobInfo>;
+    extern template class AZTF_API vector<AzToolsFramework::AssetSystem::JobInfo>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemRequest);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetSystem::AssetSystemJobRequest);

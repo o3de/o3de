@@ -20,6 +20,7 @@
 
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 
 namespace AZ
@@ -41,7 +42,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class Application
+    class AZF_API Application
         : public AZ::ComponentApplication
         , public AZ::UserSettingsFileLocatorBus::Handler
         , public ApplicationRequests::Bus::Handler
@@ -113,7 +114,6 @@ namespace AzFramework
         bool ArePrefabWipFeaturesEnabled() const override;
         void SetPrefabSystemEnabled(bool enable) override;
         bool IsPrefabSystemForLevelsEnabled() const override;
-        bool ShouldAssertForLegacySlicesUsage() const override;
 
 #pragma push_macro("GetCommandLine")
 #undef GetCommandLine
@@ -194,6 +194,9 @@ namespace AzFramework
 
     };
 } // namespace AzFramework
-
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 

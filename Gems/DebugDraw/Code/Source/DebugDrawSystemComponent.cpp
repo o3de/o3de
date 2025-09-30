@@ -142,7 +142,7 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeObbsMutex);
-            for (const auto& obb : m_activeObbs)
+            for (auto& obb : m_activeObbs)
             {
                 RemoveRaytracingData(obb);
             }
@@ -154,7 +154,7 @@ namespace DebugDraw
         }
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_activeSpheresMutex);
-            for (const auto& sphere : m_activeSpheres)
+            for (auto& sphere : m_activeSpheres)
             {
                 RemoveRaytracingData(sphere);
             }
@@ -1127,6 +1127,9 @@ namespace DebugDraw
             m_rayTracingFeatureProcessor =
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
 
+            m_meshFeatureProcessor =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(element.m_targetEntityId);
+
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/sphereintersection.azshader");
             auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
@@ -1166,15 +1169,33 @@ namespace DebugDraw
 
         m_spheresRayTracingIndicesBuffer->UpdateData(&element.m_radius, sizeof(float), element.m_localInstanceIndex * sizeof(float));
 
-        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
-        material.m_baseColor = element.m_color;
-        material.m_roughnessFactor = 0.9f;
+        // Create and update the meshinfo-entry for the procedural mesh
+        element.m_meshInfoHandle = m_meshFeatureProcessor->AcquireMeshInfoEntry();
+        m_meshFeatureProcessor->UpdateMeshInfoEntry(
+            element.m_meshInfoHandle,
+            [](AZ::Render::MeshInfoEntry* entry)
+            {
+                // enable all lighting channels for the procedural mesh.
+                // everything else is empty
+                entry->m_lightingChannels = AZStd::numeric_limits<uint32_t>::max();
+                return true;
+            });
+
+        // The FallbackPBR - entry was created with the AcquireMeshInfoEntry() call above, but we have to fill the data
+        m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
+            element.m_meshInfoHandle,
+            [&element](AZ::Render::FallbackPBR::MaterialEntry* entry)
+            {
+                entry->m_materialParameters.m_baseColor = element.m_color;
+                entry->m_materialParameters.m_roughnessFactor = 0.9f;
+                return true;
+            });
 
         m_rayTracingFeatureProcessor->AddProceduralGeometry(
             m_sphereRayTracingTypeHandle.GetWeakHandle(),
             UuidFromEntityId(element.m_targetEntityId),
             AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.f),
-            material,
+            element.m_meshInfoHandle,
             AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH,
             element.m_localInstanceIndex);
     }
@@ -1198,20 +1219,38 @@ namespace DebugDraw
                 m_rayTracingFeatureProcessor->RegisterProceduralGeometryType("DebugDraw::Obb", rayTracingShader, "ObbIntersection");
         }
 
-        AZ::Render::RayTracingFeatureProcessorInterface::SubMeshMaterial material;
-        material.m_baseColor = element.m_color;
-        material.m_roughnessFactor = 0.9f;
+        element.m_meshInfoHandle = m_meshFeatureProcessor->AcquireMeshInfoEntry();
+
+        m_meshFeatureProcessor->UpdateMeshInfoEntry(
+            element.m_meshInfoHandle,
+            [](AZ::Render::MeshInfoEntry* entry)
+            {
+                // enable all lighting channels for the procedural mesh.
+                // everything else is empty
+                entry->m_lightingChannels = AZStd::numeric_limits<uint32_t>::max();
+                return true;
+            });
+
+        // The FallbackPBR - entry was created with the AcquireMeshInfoEntry() call above, but we have to fill the data
+        m_meshFeatureProcessor->UpdateFallbackPBRMaterialEntry(
+            element.m_meshInfoHandle,
+            [&element](AZ::Render::FallbackPBR::MaterialEntry* entry)
+            {
+                entry->m_materialParameters.m_baseColor = element.m_color;
+                entry->m_materialParameters.m_roughnessFactor = 0.9f;
+                return true;
+            });
 
         m_rayTracingFeatureProcessor->AddProceduralGeometry(
             m_obbRayTracingTypeHandle.GetWeakHandle(),
             UuidFromEntityId(element.m_targetEntityId),
             AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.f),
-            material,
+            element.m_meshInfoHandle,
             AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH,
             0);
     }
 
-    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawSphereElementWrapper& element)
+    void DebugDrawSystemComponent::RemoveRaytracingData(DebugDrawSphereElementWrapper& element)
     {
         if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
         {
@@ -1223,10 +1262,12 @@ namespace DebugDraw
                 m_spheresRayTracingIndicesBuffer.reset();
                 m_spheresRayTracingIndices.Reset();
             }
+            m_meshFeatureProcessor->ReleaseMeshInfoEntry(element.m_meshInfoHandle);
+            element.m_meshInfoHandle = AZ::Render::MeshInfoHandle{};
         }
     }
 
-    void DebugDrawSystemComponent::RemoveRaytracingData(const DebugDrawObbElementWrapper& element)
+    void DebugDrawSystemComponent::RemoveRaytracingData(DebugDrawObbElementWrapper& element)
     {
         if (m_rayTracingFeatureProcessor && element.m_isRayTracingEnabled)
         {
@@ -1235,6 +1276,8 @@ namespace DebugDraw
             {
                 m_obbRayTracingTypeHandle.Free();
             }
+            m_meshFeatureProcessor->ReleaseMeshInfoEntry(element.m_meshInfoHandle);
+            element.m_meshInfoHandle = AZ::Render::MeshInfoHandle{};
         }
     }
 } // namespace DebugDraw

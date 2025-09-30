@@ -12,6 +12,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -140,3 +141,6 @@ namespace AzFramework
     };
     using InputSystemCursorConstraintRequestBus = AZ::EBus<InputSystemCursorConstraintRequests>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputSystemCursorRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemCursorConstraintRequests);

@@ -92,8 +92,8 @@ namespace AZ
                     ->Version(2)
                     ->Field("file", &ShaderVariantReferenceData::m_shaderFilePath)
                     ->Field("tag", &ShaderVariantReferenceData::m_shaderTag)
-                    ->Field("options", &ShaderVariantReferenceData::m_shaderOptionValues)
-                    ;
+                    ->Field("type", &ShaderVariantReferenceData::m_drawItemType)
+                    ->Field("options", &ShaderVariantReferenceData::m_shaderOptionValues);
 
                 serializeContext->Class<PropertyGroup>()
                     ->Version(2)
@@ -961,7 +961,7 @@ namespace AZ
                     }
 
                     materialTypeAssetCreator.AddShader(
-                        shaderAsset, options.GetShaderVariantId(), shaderRef.m_shaderTag, materialPipelineName);
+                        shaderAsset, options.GetShaderVariantId(), shaderRef.m_shaderTag, shaderRef.m_drawItemType, materialPipelineName);
 
                     // Gather UV names
                     const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();

@@ -10,10 +10,11 @@
 
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class SliceGameEntityOwnershipService
+    class AZF_API SliceGameEntityOwnershipService
         : public SliceEntityOwnershipService
         , private SliceGameEntityOwnershipServiceRequestBus::Handler
         , private SliceInstantiationResultBus::MultiHandler

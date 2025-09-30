@@ -188,7 +188,7 @@ namespace AZ::RHI
     };
 
     //! Validates the stream buffer views in a GeometryView
-    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
+    ATOM_RHI_PUBLIC_API bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, RHI::GeometryView& geometryView,
         const RHI::StreamBufferIndices& streamIndices);
 
 }

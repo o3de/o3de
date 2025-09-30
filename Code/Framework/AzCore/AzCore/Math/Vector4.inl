@@ -585,6 +585,18 @@ namespace AZ
         return *this;
     }
 
+    AZ_MATH_INLINE float& Vector4::operator[](const size_t i)
+    {
+        AZ_MATH_ASSERT(i < 4, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
+    AZ_MATH_INLINE const float& Vector4::operator[](const size_t i) const
+    {
+        AZ_MATH_ASSERT(i < 4, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
     AZ_MATH_INLINE Vector4 Vector4::GetSin() const
     {
         return Vector4(Simd::Vec4::Sin(m_value));

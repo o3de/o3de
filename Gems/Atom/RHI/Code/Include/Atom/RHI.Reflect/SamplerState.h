@@ -59,9 +59,9 @@ namespace AZ::RHI
         OpaqueWhite
     );
 
-    void ReflectSamplerStateEnums(ReflectContext* context);
+    void ATOM_RHI_REFLECT_API ReflectSamplerStateEnums(ReflectContext* context);
 
-    class SamplerState
+    class ATOM_RHI_REFLECT_API SamplerState
     {
     public:
         AZ_TYPE_INFO(SamplerState, "{03CF3A01-8C2B-4A65-8781-6C25CFF0475F}");

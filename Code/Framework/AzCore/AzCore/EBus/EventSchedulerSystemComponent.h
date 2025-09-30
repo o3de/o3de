@@ -44,7 +44,7 @@ namespace AZ
 
     //! @class EventSchedulerSystemComponent
     //! @brief This is scheduled event queue class to run all scheduled events at appropriate intervals.
-    class EventSchedulerSystemComponent
+    class AZCORE_API EventSchedulerSystemComponent
         : public Component
         , public TickBus::Handler
         , public IEventSchedulerRequestBus::Handler

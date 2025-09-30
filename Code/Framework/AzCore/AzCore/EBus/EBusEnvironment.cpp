@@ -38,7 +38,8 @@ namespace AZ
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ_THREAD_LOCAL EBusEnvironment* EBusEnvironmentTLSAccessors::s_tlsCurrentEnvironment = nullptr;
+
+        static AZ_THREAD_LOCAL EBusEnvironment* s_tlsCurrentEnvironment = nullptr; ///< Pointer to the current environment for the current thread.
 
         //////////////////////////////////////////////////////////////////////////
         EBusEnvironmentTLSAccessors::EBusEnvironmentTLSAccessors()

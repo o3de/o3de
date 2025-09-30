@@ -61,8 +61,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
 #include "MobileForwardPassVertexAndPixel.azsli"

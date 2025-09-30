@@ -67,9 +67,10 @@
         return geoData;
     }
 
-    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData, const MaterialParameters params)
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
     {
         Surface surface;
+        surface.lightingChannels = GetLightingChannelMask(SV);
         surface.position = geoData.positionWS;
         surface.vertexNormal = geoData.vertexNormal;
         surface.normal = geoData.vertexNormal;
@@ -84,6 +85,10 @@
 
         return surface;
     }
+
+    // use the lighting model (lightingData, BRDF - function and ApplyLights) from the BasePBR
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>
 
 #else
 

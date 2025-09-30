@@ -22,11 +22,7 @@
 #include "TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 
-
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <TrackView/ui_TVSequenceProps.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 CTVSequenceProps::CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWidget* pParent)
     : QDialog(pParent)

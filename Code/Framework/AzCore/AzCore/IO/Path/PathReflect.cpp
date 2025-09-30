@@ -7,13 +7,13 @@
  */
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/PathSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/StringFunc/StringFunc.h>
-
 namespace AZ::IO
 {
     template <typename PathType>

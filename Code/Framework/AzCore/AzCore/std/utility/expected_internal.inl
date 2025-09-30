@@ -24,7 +24,7 @@ namespace AZStd::Internal
     {
         if constexpr (!is_void_v<T>)
         {
-            construct_at(addressof(m_storage.m_value), AZStd::forward<Args>(args)...);
+            AZStd::construct_at(addressof(m_storage.m_value), AZStd::forward<Args>(args)...);
         }
     }
 
@@ -33,7 +33,7 @@ namespace AZStd::Internal
     constexpr expected_storage<T, E>::expected_storage(unexpect_t, Args&&... args)
         : m_hasValue{}
     {
-        construct_at(addressof(m_storage.m_unexpected), AZStd::forward<Args>(args)...);
+        AZStd::construct_at(addressof(m_storage.m_unexpected), AZStd::forward<Args>(args)...);
     }
     //! expected non-trivial destructor
     template<class T, class E>
@@ -61,12 +61,12 @@ namespace AZStd::Internal
         {
             if constexpr (!is_void_v<T>)
             {
-                construct_at(addressof(this->m_storage.m_value), rhs.m_storage.m_value);
+                AZStd::construct_at(addressof(this->m_storage.m_value), rhs.m_storage.m_value);
             }
         }
         else
         {
-            construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
+            AZStd::construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
         }
 
         this->m_hasValue = rhs.m_hasValue;
@@ -81,12 +81,12 @@ namespace AZStd::Internal
         {
             if constexpr (!is_void_v<T>)
             {
-                construct_at(addressof(this->m_storage.m_value), AZStd::move(rhs.m_storage.m_value));
+                AZStd::construct_at(addressof(this->m_storage.m_value), AZStd::move(rhs.m_storage.m_value));
             }
         }
         else
         {
-            construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
+            AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
         }
 
         this->m_hasValue = rhs.m_hasValue;
@@ -99,19 +99,19 @@ namespace AZStd::Internal
         if constexpr (is_nothrow_constructible_v<T, Args...>)
         {
             AZStd::destroy_at(addressof(oldval));
-            construct_at(addressof(newval), AZStd::forward<Args>(args)...);
+            AZStd::construct_at(addressof(newval), AZStd::forward<Args>(args)...);
         }
         else if constexpr (is_nothrow_move_constructible_v<T>)
         {
             T tmp(AZStd::forward<Args>(args)...);
             AZStd::destroy_at(addressof(oldval));
-            construct_at(addressof(newval), AZStd::move(tmp));
+            AZStd::construct_at(addressof(newval), AZStd::move(tmp));
         }
         else
         {
             // exceptions aren't used in AZStd, no this is hte same as the first block
             AZStd::destroy_at(addressof(oldval));
-            construct_at(addressof(newval), AZStd::forward<Args>(args)...);
+            AZStd::construct_at(addressof(newval), AZStd::forward<Args>(args)...);
         }
     }
 
@@ -136,7 +136,7 @@ namespace AZStd::Internal
             }
             else
             {
-                construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
             }
         }
         else if (rhs.m_hasValue)
@@ -182,7 +182,7 @@ namespace AZStd::Internal
             }
             else
             {
-                construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
             }
         }
         else if (rhs.m_hasValue)

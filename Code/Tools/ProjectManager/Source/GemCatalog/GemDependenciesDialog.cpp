@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
         QDialogButtonBox* dialogButtons = new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
         connect(dialogButtons, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(dialogButtons, &QDialogButtonBox::rejected, this,
-            [=]()
+            [=, this]()
             {
                 // de-select any Gems the user selected because they're canceling
                 for (const QModelIndex& gem : gemsToRemove)

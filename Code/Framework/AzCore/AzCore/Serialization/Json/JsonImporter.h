@@ -28,7 +28,7 @@ namespace AZ
         AZ::IO::Path m_resolvedFilePath;
     };
 
-    class BaseJsonImporter
+    class AZCORE_API BaseJsonImporter
     {
     public:
         AZ_RTTI(BaseJsonImporter, "{7B225807-7B43-430F-8B11-C794DCF5ACA5}");
@@ -80,7 +80,7 @@ namespace AZ
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ImportTracking);
 
-    class JsonImportResolver final
+    class AZCORE_API JsonImportResolver final
     {
     public:
 
@@ -155,7 +155,7 @@ namespace AZ
 
     //! Settings used to configure how resolution of a $import directive
     //! during JSON deserialization occurs
-    struct JsonImportSettings final
+    struct AZCORE_API JsonImportSettings final
     {
         //! Reporting callback used to output errors around $import resolution
         JsonSerializationResult::JsonIssueCallback m_reporting;
