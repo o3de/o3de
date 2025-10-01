@@ -22,7 +22,7 @@ namespace SimuCore::ParticleCore {
         float Tick(const BaseInfo& info) override;
         float Tick(const BaseInfo& info, const Particle& particle) override;
     private:
-        const static AZ::u32 MAX_CACHE_SIZE{100000};
+        static constexpr AZ::u32 MAX_CACHE_SIZE{100000};
         float RandomTick(AZ::u64 index);
 
         float minRange = 0.0f;

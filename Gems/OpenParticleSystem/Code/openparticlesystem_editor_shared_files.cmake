@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Source/Editor/OpenParticleSystemEditor.qrc
     Source/OpenParticleSystemEditorModule.cpp
     Source/OpenParticleSystemEditorSystemComponent.cpp
     Source/OpenParticleSystemEditorSystemComponent.h

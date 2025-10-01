@@ -72,7 +72,7 @@ namespace SimuCore::ParticleCore {
         Vector3 direction = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->position) - particle.globalPosition :
             data->position - particle.globalPosition;
-        if (float lengthSq = direction.GetLengthSq() > 0.f)
+        if (direction.GetLengthSq() > 0.f)
         {
             particle.velocity += direction / direction.GetLength() * (data->force * info.tickTime);
         }

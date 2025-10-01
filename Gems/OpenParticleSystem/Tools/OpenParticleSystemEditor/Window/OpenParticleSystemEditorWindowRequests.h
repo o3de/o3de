@@ -13,7 +13,7 @@
 
 namespace OpenParticleSystemEditor
 {
-    class OpenParticleSystemEditorWindowRequests : public AZ::EBusTraits
+    class EditorWindowRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
@@ -26,5 +26,5 @@ namespace OpenParticleSystemEditor
         virtual void SaveDocument() = 0;
     };
 
-    using OpenParticleSystemEditorWindowRequestsBus = AZ::EBus<OpenParticleSystemEditorWindowRequests>;
+    using EditorWindowRequestsBus = AZ::EBus<EditorWindowRequests>;
 } // namespace OpenParticleSystemEditor

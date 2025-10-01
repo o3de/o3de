@@ -26,9 +26,10 @@
 
 namespace OpenParticleSystemEditor
 {
+    class EffectorInspector;
     class OpenParticleSystemEditorWindow
         : public AzQtComponents::DockMainWindow
-        , public OpenParticleSystemEditorWindowRequestsBus::Handler
+        , public EditorWindowRequestsBus::Handler
         , public OpenParticle::EditorParticleOpenParticleRequestsBus::Handler
     {
         Q_OBJECT
@@ -36,38 +37,39 @@ namespace OpenParticleSystemEditor
         AZ_CLASS_ALLOCATOR(OpenParticleSystemEditorWindow, AZ::SystemAllocator);
 
         explicit OpenParticleSystemEditorWindow(QWidget* parent = nullptr);
-        ~OpenParticleSystemEditorWindow();
+        ~OpenParticleSystemEditorWindow() override;
 
     private:
         void SetupMenu();
         void SetupDocking();
         void SetupCentral();
-        void SetDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 orientation);
+        void SetDockWidget(const AZStd::string& name, QWidget* widget);
         void SetTabWidget(const AZStd::string& path);
 
         // ParticleEditorWindowRequestsBus
-        virtual void ActivateWindow() override;
-        virtual void OpenDocument(const AZStd::string& path) override;
-        virtual void CreateParticleFile(const AZStd::string& path) override;
-        virtual void SaveDocument() override;
+        void ActivateWindow() override;
+        void OpenDocument(const AZStd::string& path) override;
+        void CreateParticleFile(const AZStd::string& path) override;
+        void SaveDocument() override;
 
         // EditorParticleOpenParticleRequestsBus
-        virtual void OpenParticleFile(const AZStd::string& sourcePath) override;
-
+        void OpenParticleFile(const AZStd::string& sourcePath) override;
         bool SaveDialog();
+
         void closeEvent(QCloseEvent* event) override;
         bool RaiseOpendEmitter(const QString& path);
         void SetStatusMessage(const QString& message);
         bool IsDockWidgetVisible(const AZStd::string& name) const;
         void SetDockWidgetVisible(const AZStd::string& name, bool visible);
-        void SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation);
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area, AZ::u32 orientation);
+        void SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area);
+        bool AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area);
         void Checked(const QString& name);
         void UnChecked(const QString& name);
         void RemoveDockWidget(const AZStd::string& name);
         AZStd::vector<AZStd::string> GetDockWidgetNames() const;
 
         QMenuBar* m_menuBar = nullptr;
+
         bool m_opened = false;
         AZStd::unique_ptr<ParticleDocument> m_document;
         AZStd::unordered_map<AZStd::string, AZStd::unique_ptr<ParticleDocument>> m_tabWidgetDocument;
@@ -81,5 +83,6 @@ namespace OpenParticleSystemEditor
 
         AzQtComponents::FancyDocking* m_fancyDockingManager = nullptr;
         AzQtComponents::DockTabWidget* m_emitterTabWidget = nullptr;
+        EffectorInspector* m_effectorInspector = nullptr;
     };
 } // namespace OpenParticleSystemEditor

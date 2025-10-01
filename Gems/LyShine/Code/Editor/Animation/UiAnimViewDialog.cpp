@@ -44,8 +44,6 @@
 #include "UiAnimViewKeyPropertiesDlg.h"
 #include "UiEditorAnimationBus.h"
 
-#include "EditorCommon.h"
-
 #include <QAction>
 #include <QComboBox>
 #include <QInputDialog>
