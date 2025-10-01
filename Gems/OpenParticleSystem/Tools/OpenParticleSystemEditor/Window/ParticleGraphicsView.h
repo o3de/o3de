@@ -16,7 +16,7 @@
 #include <EffectorInspector.h>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
 #include <Window/ParticleItemWidget.h>
-#include <Window/ParticleGraphicsViewRequestsBus.h>
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
 #endif
 
 namespace OpenParticleSystemEditor

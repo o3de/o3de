@@ -35,4 +35,7 @@ set(FILES
     Source/Thumbnail/ParticleMaterialThumbnail.cpp
     Source/Thumbnail/ParticleMaterialThumbnailSystemComponent.h
     Source/Thumbnail/ParticleMaterialThumbnailSystemComponent.cpp
+    Source/Document/ParticleDocument.cpp
+    Source/Document/ParticleDocument.h
+    Source/Document/ParticleDocumentBus.h
 )

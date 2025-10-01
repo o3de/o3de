@@ -15,6 +15,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
 // Forward declarations
 namespace AZ

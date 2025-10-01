@@ -18,7 +18,7 @@
 #include <QUrl>
 #include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
-#include <Window/ParticleGraphicsViewRequestsBus.h>
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
 
 namespace OpenParticleSystemEditor
 {
