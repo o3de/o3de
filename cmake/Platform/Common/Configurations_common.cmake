@@ -78,3 +78,9 @@ check_pie_supported()
 
 # Determine if lld is installed to use as a default linker by supported platforms/configurations
 find_program(LLD_LINKER_INSTALLED lld)
+
+if (NOT TARGET ciso646-include)
+    # Temporarily gets around the inclusion of <ciso646> in some 3rd party libraries.
+    add_library(ciso646-include INTERFACE)
+    target_include_directories(ciso646-include INTERFACE ${CMAKE_CURRENT_LIST_DIR}/ciso646-include)
+endif()

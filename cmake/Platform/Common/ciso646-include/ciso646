@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// the library <ciso646> has been deprecated in C++17 and removed in C++20
+// however PhysX still includes it in some of their headers
+// NvCloth, Physx4, and Physx5 until we update it.
+
+// By providing this file on GCC and Clang we can avoid the include errors
+// without having to modify the PhysX or NvCloth source code
+
+// Note that the long term plan is to upgrade or remove libraries that depend on ciso646
+// so this is only a temporary fix
+
+// to use this file in a target add a dependency on ciso646-include.
+
