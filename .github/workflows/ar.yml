@@ -182,6 +182,8 @@ jobs:
             platform: Android
             type: asset_profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
             ndk_version: '25.1.8937393'
             gradle_version: '8.12'
             cmake_version: '~3.30.8'

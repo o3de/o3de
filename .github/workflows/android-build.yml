@@ -41,6 +41,12 @@ on:
       gradle_version:
         required: false
         type: string
+      msvc_toolset_version:
+        required: false
+        type: string
+      msvc_platform_toolset:
+        required: false
+        type: string
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -184,9 +190,21 @@ jobs:
         with:
           cmakeVersion: "${{ inputs.cmake_version }}"
 
+      - name: Install specific MSVC toolset
+        # Install and pin the MSVC toolset to support minimum required versions (for MSVC-based Android asset builds)
+        if: ${{ inputs.msvc_toolset_version && inputs.msvc_platform_toolset }}
+        run: |
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
+          --installPath "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise" `
+          --add "Microsoft.VisualStudio.Component.VC.${{ inputs.msvc_toolset_version }}.x86.x64" --quiet --wait
+          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV
+          echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
+
       - name: Set MSBuild options
         # Configuire VS environment variables through the developer command prompt for MSVC
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          toolset: ${{ inputs.msvc_toolset_version }}
 
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 #v4.4.2
