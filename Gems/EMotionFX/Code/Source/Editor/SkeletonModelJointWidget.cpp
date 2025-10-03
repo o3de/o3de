@@ -58,7 +58,7 @@ namespace EMotionFX
         separatorLayoutWidget->setLayout(separatorLayout);
         mainLayout->addWidget(separatorLayoutWidget);
 
-        connect(this, &SkeletonModelJointWidget::WidgetCountChanged, this, [=, this]() {
+        connect(this, &SkeletonModelJointWidget::WidgetCountChanged, this, [=]() {
             separatorLayoutWidget->setVisible(WidgetCount() > 0);
         });
 

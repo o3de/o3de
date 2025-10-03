@@ -225,7 +225,7 @@ namespace AssetProcessor
 
         if (queueDbCommandsOnMainThread && !m_shutdownRequested)
         {
-            AZ::SystemTickBus::QueueFunction([=, this]()
+            AZ::SystemTickBus::QueueFunction([=]()
             {
                 ReportMissingDependencies(productPK, databaseConnection, dependencyTokenName, missingDependencies, callback);
             });

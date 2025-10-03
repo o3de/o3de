@@ -144,7 +144,7 @@ namespace O3DE::ProjectManager
         TagContainerWidget* tagContainer = new TagContainerWidget();
         layout->addWidget(tagContainer);
 
-        auto update = [=, this]()
+        auto update = [=]()
         {
             const QVector<QModelIndex> tagIndices = getTagIndices();
             if (tagIndices.isEmpty())
