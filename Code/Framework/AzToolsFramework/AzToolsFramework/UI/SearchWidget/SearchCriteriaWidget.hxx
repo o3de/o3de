@@ -11,6 +11,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QtWidgets/QFrame>
+#include <QRegularExpression>
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/functional.h>
@@ -148,5 +149,5 @@ Q_SIGNALS:
         QString                m_defaultTag;
     };
 
-    using FilterByCategoryMap = AZStd::unordered_map<AZStd::string, QRegExp>;
+    using FilterByCategoryMap = AZStd::unordered_map<AZStd::string, QRegularExpression>;
 } // namespace AzToolsFramework

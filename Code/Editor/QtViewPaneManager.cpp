@@ -27,6 +27,8 @@
 #include <QCursor>
 #include <QTimer>
 #include <QGraphicsOpacityEffect>
+#include <QRegularExpression>
+
 #include "MainWindow.h"
 
 #include <algorithm>
@@ -1635,15 +1637,15 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     QString baseName = name;
 
     // Strip away any enumeration.
-    baseName = baseName.remove(QRegExp("\\([0-9]+\\)$"));
+    baseName = baseName.remove(QRegularExpression("\\([0-9]+\\)$"));
 
     // Build a regexp which will match just the name, or the name followed by a number in parentheses.
-    QRegExp pattern(name + "([ ]*\\([0-9]+\\))*");
+    QRegularExpression pattern(name + "([ ]*\\([0-9]+\\))*");
 
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
         {
-            return pattern.exactMatch(pane.m_name) && pane.IsVisible();
+            return pattern.match(pane.m_name).hasMatch() && pane.IsVisible();
         });
 
     QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
@@ -1651,11 +1653,13 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     if (foundPane == nullptr)
     {
         // if we couldn't find the pane based on the name (which will be the title), look it up by saveKeyName next
-        auto optionsIt = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
+        auto optionsIt = std::find_if(
+            m_registeredPanes.begin(),
+            m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
-        {
-            return pattern.exactMatch(pane.m_options.saveKeyName) && pane.IsVisible();
-        });
+            {
+                return pattern.match(pane.m_options.saveKeyName).hasMatch() && pane.IsVisible();
+            });
 
         foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
     }

@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
+#include <QRegularExpression>
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/IO/SystemFile.h>
@@ -242,8 +243,8 @@ void CFolderTreeCtrl::AddItem(const QString& path)
     AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Stem();
     folder = folder.ParentPath();
 
-    auto regex = QRegExp(m_fileNameSpec, Qt::CaseInsensitive, QRegExp::Wildcard);
-    if (regex.exactMatch(path))
+    auto regex = QRegularExpression(m_fileNameSpec, QRegularExpression::PatternOption::CaseInsensitiveOption);
+    if (regex.match(path).hasMatch())
     {
         CTreeItem* folderTreeItem = CreateFolderItems(QString::fromUtf8(folder.c_str(), static_cast<int>(folder.Native().size())));
         if(folderTreeItem)

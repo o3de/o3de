@@ -14,6 +14,7 @@
 // Qt
 #include <QDateTime>
 #include <QTimer>
+#include <QRegularExpression>
 
 
 CFileChangeMonitor* CFileChangeMonitor::s_pFileMonitorInstance = nullptr;
@@ -192,7 +193,7 @@ void CFileChangeMonitor::NotifyListeners(const QString &path, SFileChangeInfo::E
 {
     for (const auto &glob : m_ignoreMasks)
     {
-        QRegExp exp(glob, Qt::CaseInsensitive, QRegExp::Wildcard);
+        QRegularExpression exp(glob, QRegularExpression::PatternOption::CaseInsensitiveOption);
         if (path.contains(exp))
         {
             return; // mask matches, ignore event

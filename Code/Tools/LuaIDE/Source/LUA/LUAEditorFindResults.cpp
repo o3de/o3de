@@ -11,8 +11,9 @@
 #include "LUAEditorBlockState.h"
 
 #include <Source/LUA/moc_LUAEditorFindResults.cpp>
-
 #include <Source/LUA/ui_LUAEditorFindResults.h>
+
+#include <QRegularExpression>
 
 namespace LUAEditor
 {
@@ -52,7 +53,8 @@ namespace LUAEditor
                 setFormat(0, block.length(), textFormat);
 
                 textFormat.setForeground(colors->GetFindResultsMatchColor());
-                QRegExp regex(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                QRegularExpression regex(
+                    m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                 int index = 0;
                 if (m_regEx || m_wholeWord)
                 {
@@ -66,7 +68,7 @@ namespace LUAEditor
                 {
                     if (m_regEx || m_wholeWord)
                     {
-                        setFormat(index, regex.matchedLength(), textFormat);
+                        setFormat(index, regex.captureCount(), textFormat);
                     }
                     else
                     {

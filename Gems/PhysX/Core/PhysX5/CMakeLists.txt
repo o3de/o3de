@@ -108,6 +108,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
+        AUTOMOC
         AUTOUIC
         FILES_CMAKE
             ${physx_editor_files}

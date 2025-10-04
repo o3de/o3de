@@ -13,7 +13,9 @@
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
+
 #include <QString>
+#include <QRegularExpression>
 
 namespace AZ
 {
@@ -63,6 +65,6 @@ namespace AzToolsFramework
             AZStd::span<const AZ::ComponentServiceType> serviceFilter
         );
 
-        AZTF_API QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
+        AZTF_API QRegularExpression BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     }
 }

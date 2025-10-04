@@ -19,6 +19,7 @@
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QScrollArea>
+#include <QRegularExpression>
 
 namespace O3DE::ProjectManager
 {
@@ -106,8 +107,8 @@ namespace O3DE::ProjectManager
         {
             // this validation should roughly match the utils.validate_identifier which the cli
             // uses to validate project names
-            QRegExp validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
-            const bool result = validProjectNameRegex.exactMatch(m_projectName->lineEdit()->text());
+            QRegularExpression validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
+            const bool result = validProjectNameRegex.match(m_projectName->lineEdit()->text()).hasMatch();
             if (!result)
             {
                 projectNameIsValid = false;

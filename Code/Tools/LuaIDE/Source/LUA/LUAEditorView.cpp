@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QRegularExpression>
 
 namespace LUAEditor
 {
@@ -851,9 +852,10 @@ namespace LUAEditor
 
         if (operation.m_impl->m_isRegularExpression)
         {
-            QRegExp regEx;
-            regEx.setCaseSensitivity(operation.m_impl->m_isCaseSensitiveSearch ? Qt::CaseSensitivity::CaseSensitive : Qt::CaseSensitivity::CaseInsensitive);
-            regEx.setPattern(operation.m_impl->m_searchString);
+            QRegularExpression regEx(
+                operation.m_impl->m_searchString,
+                operation.m_impl->m_isCaseSensitiveSearch ? QRegularExpression::CaseInsensitiveOption
+                                                          : QRegularExpression::NoPatternOption);
             operation.m_impl->m_cursor = m_gui->m_luaTextEdit->document()->find(regEx, operation.m_impl->m_cursor, static_cast<QTextDocument::FindFlag>(flags));
             if (!operation && operation.m_impl->m_wrap)
             {

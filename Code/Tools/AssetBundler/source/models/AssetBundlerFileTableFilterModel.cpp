@@ -11,6 +11,7 @@
 #include <source/models/AssetBundlerAbstractFileTableModel.h>
 
 #include <QDateTime>
+#include <QRegularExpression>
 
 namespace AssetBundler
 {
@@ -31,7 +32,7 @@ namespace AssetBundler
     {
         // Override the default implemention since we want to define custom rules here 
         QModelIndex index = sourceModel()->index(sourceRow, m_displayNameCol, sourceParent);
-        QRegExp filter(filterRegExp());
+        QRegularExpression filter(filterRegularExpression());
 
         return sourceModel()->data(index).toString().toLower().contains(filter);
     }
