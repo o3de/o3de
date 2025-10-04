@@ -75,7 +75,7 @@ namespace AzToolsFramework
             this,
             &QPlainTextEdit::textChanged,
             selectAllAction,
-            [=]
+            [this, clearAction, selectAllAction]
             {
                 if (document() && !document()->isEmpty())
                 {
