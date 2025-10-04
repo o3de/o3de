@@ -540,7 +540,7 @@ void CUiAnimViewDialog::InitToolbar()
     ag->addAction(m_actions[ID_TV_MOVEKEY]);
     ag->addAction(m_actions[ID_TV_SLIDEKEY]);
     ag->addAction(m_actions[ID_TV_SCALEKEY]);
-    foreach(QAction* qaction2, ag->actions())
+    for (QAction* qaction2 : ag->actions())
     {
         qaction2->setCheckable(true);
     }
@@ -550,7 +550,7 @@ void CUiAnimViewDialog::InitToolbar()
     ag->addAction(m_actions[ID_TV_SNAP_MAGNET]);
     ag->addAction(m_actions[ID_TV_SNAP_FRAME]);
     ag->addAction(m_actions[ID_TV_SNAP_TICK]);
-    foreach(QAction* qaction2, ag->actions())
+    for (QAction* qaction2 : ag->actions())
     {
         qaction2->setCheckable(true);
     }
@@ -1538,8 +1538,10 @@ void CUiAnimViewDialog::SaveLayouts()
     settings.setValue("layout", stateData);
     settings.setValue("lastViewMode", static_cast<int>(m_lastMode));
     QStringList sl;
-    foreach(int i, m_wndSplitter->sizes())
-    sl << QString::number(i);
+    for (int i : m_wndSplitter->sizes())
+    {
+        sl << QString::number(i);
+    }
     settings.setValue("splitter", sl.join(","));
     settings.endGroup();
     settings.sync();
@@ -1562,7 +1564,7 @@ void CUiAnimViewDialog::ReadLayouts()
     {
         QStringList sl = settings.value("splitter").toString().split(",");
         QList<int> szl;
-        foreach (QString s, sl)
+        for (QString s : sl)
         {
             szl << s.toInt();
         }

@@ -1844,8 +1844,10 @@ void CTrackViewDialog::SaveLayouts()
     settings.setValue("layout", stateData);
     settings.setValue("lastViewMode", (int)m_lastMode);
     QStringList sl;
-    foreach(int i, m_wndSplitter->sizes())
-    sl << QString::number(i);
+    for (int i : m_wndSplitter->sizes())
+    {
+        sl << QString::number(i);
+    }
     settings.setValue("splitter", sl.join(","));
     settings.endGroup();
     settings.sync();

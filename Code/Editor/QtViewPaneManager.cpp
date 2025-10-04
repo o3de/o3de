@@ -1218,7 +1218,7 @@ void QtViewPaneManager::SaveLayout(QString layoutName)
     layoutName = layoutName.trimmed();
 
     ViewLayoutState state;
-    foreach(const QtViewPane &pane, m_registeredPanes)
+    for (const QtViewPane& pane : m_registeredPanes)
     {
         // Include all visible and tabbed panes in our layout, since tabbed panes
         // won't be visible if they aren't the active tab, but still need to be
@@ -1340,7 +1340,7 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
 {
     ViewLayoutState state;
 
-    foreach(const QtViewPane &pane, m_registeredPanes)
+    for (const QtViewPane& pane : m_registeredPanes)
     {
         // Include all visible and tabbed panes in our layout, since tabbed panes
         // won't be visible if they aren't the active tab, but still need to be

@@ -54,7 +54,7 @@ namespace ImageProcessingAtomEditor
         m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
 
         QStringList stringList;
-        foreach (const auto& presetName, m_presetList)
+        for (const auto& presetName : m_presetList)
         {
             stringList.append(QString(presetName.GetCStr()));
         }

@@ -236,7 +236,7 @@ namespace AzQtComponents
         }
 
         m_flavor = flavor;
-        foreach(auto edit, m_editElements)
+        for (auto edit : m_editElements)
         {
             edit->setFlavor(flavor);
         }

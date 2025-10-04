@@ -41,7 +41,7 @@ namespace OpenParticleSystemEditor
         if (event->button() == Qt::LeftButton)
         {
             m_pItemSelected = nullptr;
-            foreach (QGraphicsItem* item, items(event->scenePos()))
+            for (QGraphicsItem* item : items(event->scenePos()))
             {
                 if (item->type() == QGraphicsProxyWidget::Type)
                 {

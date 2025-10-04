@@ -67,7 +67,7 @@ void ColumnGroupProxyModel::RemoveGroup(int column)
 void ColumnGroupProxyModel::SetGroups(const QVector<int>& columns)
 {
     m_groups.clear();
-    foreach(int col, columns)
+    for (int col : columns)
     {
         m_groups.push_back(col);
         m_sortModel->AddColumnWithoutSorting(col);
@@ -101,8 +101,11 @@ Qt::SortOrder ColumnGroupProxyModel::SortOrder(int col) const
 QStringList ColumnGroupProxyModel::GroupForSourceIndex(const QModelIndex& sourceIndex) const
 {
     QStringList group;
-    foreach(int column, m_groups)
-    group.push_back(QString::fromLatin1("%1: %2").arg(headerData(column, Qt::Horizontal).toString(), sourceIndex.sibling(sourceIndex.row(), column).data().toString()));
+    for (int column : m_groups)
+    {
+        group.push_back(QString::fromLatin1("%1: %2").arg(
+            headerData(column, Qt::Horizontal).toString(), sourceIndex.sibling(sourceIndex.row(), column).data().toString()));
+    }
     return group;
 }
 
