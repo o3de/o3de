@@ -57,7 +57,6 @@ namespace AzToolsFramework
         setMinimumSize(60, 24);
 
         QHBoxLayout* frameLayout = new QHBoxLayout(this);
-        frameLayout->setMargin(0);
         frameLayout->setSpacing(4);
         frameLayout->setContentsMargins(4, 1, 4, 1);
 

@@ -57,7 +57,7 @@ namespace OpenParticleSystemEditor
 
         layout->setAlignment(Qt::AlignLeft);
         m_label = new QLabel();
-        m_label->setMargin(0);
+        m_label->setContentsMargins(0, 0, 0, 0);
         m_label->setMinimumWidth(32);
         m_label->setText(text);
         layout->addWidget(m_label);

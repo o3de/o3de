@@ -698,8 +698,7 @@ namespace AzToolsFramework
             m_painterLabel = new QLabel(pParent);
             m_painterLabel->setTextFormat(Qt::RichText);
             m_painterLabel->setAutoFillBackground(false);
-            m_painterLabel->setContentsMargins(4, 0, 4, 0);
-            m_painterLabel->setMargin(0);
+            m_painterLabel->setContentsMargins(0, 0, 0, 0);
             m_painterLabel->setIndent(0);
             m_painterLabel->hide();
         }

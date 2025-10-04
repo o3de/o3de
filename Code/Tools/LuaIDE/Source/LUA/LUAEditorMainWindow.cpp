@@ -561,7 +561,7 @@ namespace LUAEditor
         luaViewWidget->installEventFilter(this);
 
         m_ptrPerforceStatusWidget = new QLabel(tr("Pending Status"), this);
-        m_ptrPerforceStatusWidget->setMargin(2);
+        m_ptrPerforceStatusWidget->setContentsMargins(2, 2, 2, 2);
         m_ptrPerforceStatusWidget->setStyleSheet(QString("background: rgba(192,192,192,255); color: black;  border-style: inset;\nborder-width: 1px;\nborder-color: rgba(100,100,100,255);\nborder-radius: 8px;"));
         m_ptrPerforceStatusWidget->setAutoFillBackground(true);
         m_ptrPerforceStatusWidget->setTextInteractionFlags(Qt::NoTextInteraction);

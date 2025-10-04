@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
 
         QVBoxLayout* layout = new QVBoxLayout();
         // layout margin/alignment cannot be set with qss
-        layout->setMargin(15);
+        layout->setContentsMargins(15, 15, 15, 15);
         layout->setAlignment(Qt::AlignTop);
         setLayout(layout);
 

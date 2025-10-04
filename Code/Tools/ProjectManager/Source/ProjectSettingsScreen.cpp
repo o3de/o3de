@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         scrollArea->setWidget(scrollWidget);
 
         m_verticalLayout = new QVBoxLayout();
-        m_verticalLayout->setMargin(0);
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
         scrollWidget->setLayout(m_verticalLayout);
 
