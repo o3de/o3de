@@ -26,7 +26,6 @@ ly_add_target(
     NAME EditorCommon SHARED
     NAMESPACE Legacy
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         editorcommon_files.cmake
     INCLUDE_DIRECTORIES
