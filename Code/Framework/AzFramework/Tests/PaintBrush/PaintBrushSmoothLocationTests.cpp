@@ -51,7 +51,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnSmooth)
             .WillByDefault(
-                [this]([[maybe_unused]] const AZ::Color& color,
+                [this, TestBrushRadius]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     AZStd::span<const AZ::Vector3> valuePointOffsets,
