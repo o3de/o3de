@@ -139,7 +139,7 @@ namespace AssetProcessor
             connect(
                 m_ui->gotoAssetButton->m_ui->goToPushButton,
                 &QPushButton::clicked,
-                [=]
+                [this, upstreamSource]
                 {
                     GoToSource(SourceAssetReference(upstreamSource).AbsolutePath().c_str());
                 });
