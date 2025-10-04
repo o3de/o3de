@@ -203,7 +203,7 @@ namespace AZ
             uploadFence->SetSignalEventBitToSignal(0);
             uploadFence->SetSignalEventDependencies(1);
 
-            CommandQueue::Command command = [=, &device](void* queue)
+            CommandQueue::Command command = [this, request, residentMip, startMip, endMip, image, &device](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Image");
 
