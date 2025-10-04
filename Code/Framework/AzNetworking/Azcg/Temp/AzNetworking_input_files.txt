@@ -1,0 +1,1 @@
+AzNetworking/AutoGen/AutoPacketDispatcher_Header.jinja;AzNetworking/AutoGen/AutoPacketDispatcher_Inline.jinja;AzNetworking/AutoGen/AutoPackets_Header.jinja;AzNetworking/AutoGen/AutoPackets_Inline.jinja;AzNetworking/AutoGen/AutoPackets_Source.jinja;AzNetworking/AutoGen/CorePackets.AutoPackets.xml
