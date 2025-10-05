@@ -53,38 +53,32 @@ namespace LUAEditor
                 setFormat(0, block.length(), textFormat);
 
                 textFormat.setForeground(colors->GetFindResultsMatchColor());
-                QRegularExpression regex(
-                    m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
-                int index = 0;
                 if (m_regEx || m_wholeWord)
                 {
-                    index = text.indexOf(regex, index);
+                    QRegularExpression regex(
+                        m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
+                    QRegularExpressionMatch match = regex.match(text);
+                    int index = match.capturedStart();
+                    while (match.hasMatch())
+                    {
+                        const int length = match.capturedLength();
+                        setFormat(index, length, textFormat);
+
+                        match = regex.match(text, index + length);
+                        index = match.capturedStart();
+                    }
                 }
                 else
                 {
-                    index = text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
-                }
-                while (index > 1)
-                {
-                    if (m_regEx || m_wholeWord)
-                    {
-                        setFormat(index, regex.captureCount(), textFormat);
-                    }
-                    else
+                    int index = text.indexOf(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    while (index > 1)
                     {
                         setFormat(index, m_searchString.length(), textFormat);
-                    }
-
-                    ++index;
-                    if (m_regEx || m_wholeWord)
-                    {
-                        index = text.indexOf(regex, index);
-                    }
-                    else
-                    {
+                        ++index;
                         index = text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
                     }
                 }
+ 
             }
         }
     }

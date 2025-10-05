@@ -630,25 +630,29 @@ namespace LUAEditor
                         entry.m_lineNumber = line + 1;
                         entry.m_lineText = entry.m_lineText.trimmed();
 
-                        while (index > -1)
+                        if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                         {
-                            if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
+                            QRegularExpressionMatch match = regex.match(entry.m_lineText);
+                            index = match.capturedStart();
+                            while (match.hasMatch())
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, regex.captureCount()));
+                                const int length = match.capturedLength();
+                                entry.m_matches.push_back(AZStd::make_pair(index, length));
+
+                                match = regex.match(entry.m_lineText, index + length);
+                                index = match.capturedStart();
                             }
-                            else
+                        }
+                        else
+                        {
+                            while (index > -1)
                             {
                                 entry.m_matches.push_back(AZStd::make_pair(index, m_FIFData.m_SearchText.length()));
-                            }
-
-                            index++;
-                            if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
-                            {
-                                index = entry.m_lineText.indexOf(regex, index);
-                            }
-                            else
-                            {
-                                index = entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                                index++;
+                                index = entry.m_lineText.indexOf(
+                                    m_FIFData.m_SearchText,
+                                    index,
+                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
                             }
                         }
 
