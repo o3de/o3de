@@ -105,11 +105,11 @@ namespace OpenParticleSystemEditor
         m_okButton.setFixedWidth(80);
         m_cancelButton.setText(tr("Cancel"));
         m_cancelButton.setFixedWidth(80);
-        connect(&m_okButton, &QPushButton::clicked, this, [=, this]()
+        connect(&m_okButton, &QPushButton::clicked, this, [this]()
             {
                 accept();
             });
-        connect(&m_cancelButton, &QPushButton::clicked, this, [=, this]()
+        connect(&m_cancelButton, &QPushButton::clicked, this, [this]()
             {
                 reject();
             });
@@ -120,11 +120,11 @@ namespace OpenParticleSystemEditor
         m_gradientWidget->setAutoFillBackground(true);
         m_gradientWidget->AddGradient(new QLinearGradient(0, 0, 1, 0), QPainter::CompositionMode::CompositionMode_Source);
 
-        m_gradientColorPickerWidget->SetGradientChangedCB([=, this](QGradientStops _stops)
+        m_gradientColorPickerWidget->SetGradientChangedCB([this](QGradientStops _stops)
             {
                 this->OnGradientChanged(_stops);
             });
-        connect(m_lineEditLocation, &QLineEdit::editingFinished, this, [=, this]()
+        connect(m_lineEditLocation, &QLineEdit::editingFinished, this, [this]()
             {
                 // only update position if text is not empty
                 if (m_lineEditLocation->text().isEmpty())
@@ -140,12 +140,12 @@ namespace OpenParticleSystemEditor
                 m_gradientColorPickerWidget->SetSelectedKeyPosition(val);
                 m_lineEditLocation->clearFocus();
             });
-        m_gradientColorPickerWidget->SetLocationChangedCB([=, this](short location, [[maybe_unused]] QColor color)
+        m_gradientColorPickerWidget->SetLocationChangedCB([this](short location, [[maybe_unused]] QColor color)
             {
                 ShowKeys(location, color);
                 OnChangeUpdateDisplayedGradient();
             });
-        m_gradientColorPickerWidget->SetDefaultLocationChangedCB([=, this]()
+        m_gradientColorPickerWidget->SetDefaultLocationChangedCB([this]()
             {
                 ShowKeys();
                 OnChangeUpdateDisplayedGradient();

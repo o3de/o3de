@@ -77,7 +77,7 @@ namespace PhysX
         //! The target will be a position in meters for a linear degree of freedom, or an angle in radians for a rotational degree of
         //! freedom.
         virtual float GetDriveTarget(ArticulationJointAxis jointAxis) const = 0;
-        
+
         //! Set the target velocity for the motion associated with the given axis.
         //! The target velocity will be a linear velocity in meters per second for a linear degree of freedom, or an angular velocity in
         //! radians per second for a rotational degree of freedom.
@@ -106,7 +106,8 @@ namespace PhysX
         //! Get the current joint position.
         virtual float GetJointVelocity(ArticulationJointAxis jointAxis) const = 0;
 
-
+        //! Get whether this joint is the root of an articulation.
+        virtual bool IsRootArticulation() const = 0;
     };
 
     using ArticulationJointRequestBus = AZ::EBus<ArticulationJointRequests>;

@@ -356,7 +356,7 @@ namespace OpenParticleSystemEditor
         EBUS_EVENT(ParticleDocumentRequestBus, SetCopyName, pastedName);
 
         AzQtComponents::StyledDockWidget* styleDockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(m_dockWidgets[newEmitter.toUtf8().data()]);
-        connect(styleDockWidget, &AzQtComponents::StyledDockWidget::aboutToClose, [=, this]() {
+        connect(styleDockWidget, &AzQtComponents::StyledDockWidget::aboutToClose, [this, emitterInspectorTitle]() {
             if (m_opened && m_tabWidgetDocument[emitterInspectorTitle]->IsModified())
             {
                 QMessageBox::StandardButton button = QMessageBox::No;
@@ -385,7 +385,7 @@ namespace OpenParticleSystemEditor
             }
         });
 
-         connect(m_dockWidgets[newEmitter.toUtf8().data()], &QDockWidget::visibilityChanged, [=, this](bool isVisible) {
+         connect(m_dockWidgets[newEmitter.toUtf8().data()], &QDockWidget::visibilityChanged, [this, emitterInspectorTitle](bool isVisible) {
              if (isVisible) {
                  SetDistCtrlBusIDName(emitterInspectorTitle);
                  SetGradientColorBusIDName(emitterInspectorTitle);

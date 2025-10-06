@@ -7,15 +7,15 @@
  */
 
 #include <AzCore/Serialization/EditContext.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
+#include <AzFramework/Physics/NameConstants.h>
 #include <Editor/EditorJointCommon.h>
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorColliderComponent.h>
-#include <AzFramework/Physics/NameConstants.h>
 
 namespace PhysX
 {
@@ -23,7 +23,7 @@ namespace PhysX
     {
         const float LocalRotationMax = 360.0f;
         const float LocalRotationMin = -360.0f;
-    }
+    } // namespace
 
     void EditorArticulationLinkConfiguration::Reflect(AZ::ReflectContext* context)
     {
@@ -188,7 +188,7 @@ namespace PhysX
                         0, &ArticulationLinkConfiguration::m_angularLimitNegative, "Lower Angular Limit", "Lower limit of angular motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::HingePropertiesVisible)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_angularLimitPositive, "Upper Angular Limit", "Lower limit of angular motion.")
+                        0, &ArticulationLinkConfiguration::m_angularLimitPositive, "Upper Angular Limit", "Upper limit of angular motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::HingePropertiesVisible)
                     ->EndGroup()
 

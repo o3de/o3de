@@ -108,7 +108,7 @@ namespace AZ
                 fenceToSignal->SetSignalEventDependencies(1);
             }
 
-            CommandQueue::Command command = [=, this, &device](void* queue)
+            CommandQueue::Command command = [this, &device, byteCount, buffer, sourceData, request, uploadFence](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
@@ -203,7 +203,7 @@ namespace AZ
             uploadFence->SetSignalEventBitToSignal(0);
             uploadFence->SetSignalEventDependencies(1);
 
-            CommandQueue::Command command = [=, this, &device](void* queue)
+            CommandQueue::Command command = [this, request, residentMip, startMip, endMip, image, uploadFence, &device](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Image");
 

@@ -92,7 +92,7 @@ void CFileChangeMonitor::AddIgnoreFileMask(const char* pMask)
 
 void CFileChangeMonitor::RemoveIgnoreFileMask(const char* pMask, int aAfterDelayMsec)
 {
-    QTimer::singleShot(aAfterDelayMsec, [=, this]() {
+    QTimer::singleShot(aAfterDelayMsec, [this, pMask]() {
         m_ignoreMasks.removeAll(QString::fromLatin1(pMask));
     });
 }
