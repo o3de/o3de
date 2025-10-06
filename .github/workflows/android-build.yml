@@ -189,16 +189,35 @@ jobs:
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
           cmakeVersion: "${{ inputs.cmake_version }}"
+          
+      - name: Configure generator/toolset env for CMake
+        # Set the environment variables for the CMake generator and toolset depending on CMake version
+        run: |
+          $null = (cmake --version) -match 'cmake version ([0-9\.]+)'
+          [version]$v = $Matches[1]
+
+          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV 
+
+          if ($v.Major -gt 3 -or ($v.Major -eq 3 -and $v.Minor -ge 25)) {
+            # CMake >= 3.25: support 'version='
+            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
+          } else {
+            # CMake 3.24: omit 'version='; MSBuild toolset is selected by msvc-dev-cmd
+            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }}" >> $env:GITHUB_ENV
+          }
 
       - name: Install specific MSVC toolset
-        # Install and pin the MSVC toolset to support minimum required versions (for MSVC-based Android asset builds)
+        # Install a specific MSVC toolset into VS2022 (for MSVC-based Android asset builds)
         if: ${{ inputs.msvc_toolset_version && inputs.msvc_platform_toolset }}
         run: |
           & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
           --installPath "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise" `
           --add "Microsoft.VisualStudio.Component.VC.${{ inputs.msvc_toolset_version }}.x86.x64" --quiet --wait
-          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV
-          echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
+
+      - name: Set MSBuild options
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          toolset: ${{ inputs.msvc_toolset_version }}
 
       - name: Set MSBuild options
         # Configuire VS environment variables through the developer command prompt for MSVC
