@@ -193,12 +193,13 @@ jobs:
       - name: Configure generator/toolset env for CMake
         # Set the environment variables for the CMake generator and toolset depending on CMake version
         run: |
-          $null = (cmake --version) -match 'cmake version ([0-9\.]+)'
-          [version]$v = $Matches[1]
+          $cap = cmake -E capabilities | ConvertFrom-Json
+          $maj = [int]$cap.version.major
+          $min = [int]$cap.version.minor
 
           echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV 
 
-          if ($v.Major -gt 3 -or ($v.Major -eq 3 -and $v.Minor -ge 25)) {
+          if ($maj -gt 3 -or ($maj -eq 3 -and $min -ge 25)) {
             # CMake >= 3.25: support 'version='
             echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
           } else {
