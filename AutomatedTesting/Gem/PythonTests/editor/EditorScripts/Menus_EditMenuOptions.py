@@ -84,10 +84,16 @@ def Menus_EditMenuOptions_Work():
         except Exception as e:
             action_triggered = False
             print(e)
-        menu_action_triggered = (
-            f"{action.iconText()} action triggered successfully",
-            f"Failed to trigger {action.iconText()} action"
-        )
+        if action is not None:
+            menu_action_triggered = (
+                f"{action.iconText()} triggered successfully",
+                f"Failed to trigger {action.iconText()} action"
+            )
+        else:
+            menu_action_triggered = (
+                "No action provided to trigger successfully",
+                "No action provided to fail triggering"
+            )
         Report.result(menu_action_triggered, action_triggered)
 
 
