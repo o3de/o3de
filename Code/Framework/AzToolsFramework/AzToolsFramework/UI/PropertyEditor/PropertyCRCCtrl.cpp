@@ -103,7 +103,8 @@ namespace AzToolsFramework
         // parse newText.
         QRegularExpression hexes("(0x)?([0-9a-fA-F]{1,8})", QRegularExpression::PatternOption::CaseInsensitiveOption);
         QRegularExpressionMatch match = hexes.match(newText);
-        if (match.hasMatch() && match.lastCapturedIndex() > 1)
+        const bool exactMatch = match.hasMatch() && match.capturedLength() == newText.size();
+        if (exactMatch && match.lastCapturedIndex() > 1)
         {
             QString actualCap = match.captured(2);
             // this will be a string like FF11BB

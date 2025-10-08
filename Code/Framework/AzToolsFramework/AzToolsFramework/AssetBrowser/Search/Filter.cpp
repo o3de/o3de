@@ -228,7 +228,8 @@ namespace AzToolsFramework
         {
             // Return true if the filter is empty or the display name matches.
             QRegularExpressionMatch match = m_filterPattern.match(entry->GetDisplayName());
-            return m_filterPattern.pattern().isEmpty() || match.hasMatch();
+            const bool exactMatch = match.hasMatch() && match.capturedLength() == entry->GetDisplayName().size();
+            return m_filterPattern.pattern().isEmpty() || exactMatch;
         }
 
         //////////////////////////////////////////////////////////////////////////

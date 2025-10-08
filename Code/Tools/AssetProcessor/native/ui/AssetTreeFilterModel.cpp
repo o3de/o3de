@@ -48,7 +48,7 @@ namespace AssetProcessor
         }
 
         QRegularExpression filter(filterRegularExpression());
-        if (filter.isValid())
+        if (filter.pattern().isEmpty())
         {
             return true;
         }
@@ -74,7 +74,7 @@ namespace AssetProcessor
 
     bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegularExpression& filter, const AZ::Uuid& filterAsUuid) const
     {
-        if (filter.isValid())
+        if (filter.pattern().isEmpty())
         {
             // Match everything if there is no filter.
             return true;

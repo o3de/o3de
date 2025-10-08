@@ -108,7 +108,9 @@ namespace O3DE::ProjectManager
             // this validation should roughly match the utils.validate_identifier which the cli
             // uses to validate project names
             QRegularExpression validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
-            const bool result = validProjectNameRegex.match(m_projectName->lineEdit()->text()).hasMatch();
+            const QString& text = m_projectName->lineEdit()->text();
+            QRegularExpressionMatch match = validProjectNameRegex.match(text);
+            const bool result = match.hasMatch() && match.capturedLength() == text.length();
             if (!result)
             {
                 projectNameIsValid = false;

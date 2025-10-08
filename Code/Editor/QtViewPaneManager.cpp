@@ -1645,7 +1645,8 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
         {
-            return pattern.match(pane.m_name).hasMatch() && pane.IsVisible();
+            QRegularExpressionMatch match = pattern.match(pane.m_name);
+            return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
         });
 
     QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
@@ -1658,7 +1659,8 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
             m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
             {
-                return pattern.match(pane.m_options.saveKeyName).hasMatch() && pane.IsVisible();
+                QRegularExpressionMatch match = pattern.match(pane.m_options.saveKeyName);
+                return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
             });
 
         foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
