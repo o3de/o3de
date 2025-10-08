@@ -11,6 +11,8 @@
 
 #include "FileChangeMonitor.h"
 
+#include <AzCore/std/string/wildcard.h>
+
 // Qt
 #include <QDateTime>
 #include <QTimer>
@@ -193,9 +195,7 @@ void CFileChangeMonitor::NotifyListeners(const QString &path, SFileChangeInfo::E
 {
     for (const auto &glob : m_ignoreMasks)
     {
-        QString wildCard = QRegularExpression::wildcardToRegularExpression(glob);
-        QRegularExpression exp(wildCard, QRegularExpression::PatternOption::CaseInsensitiveOption);
-        if (path.contains(exp))
+        if (AZStd::wildcard_match(qPrintable(glob), qPrintable(path)))
         {
             return; // mask matches, ignore event
         }
