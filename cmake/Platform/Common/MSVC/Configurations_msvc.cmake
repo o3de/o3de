@@ -137,7 +137,6 @@ if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "t
     o3de_compiler_cache_activation(cache_exe_path) # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
-    cmake_policy(SET CMP0141 NEW)
     set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
     set(CMAKE_C_COMPILER_LAUNCHER ${cache_exe_path})
     set(CMAKE_CXX_COMPILER_LAUNCHER ${cache_exe_path})
