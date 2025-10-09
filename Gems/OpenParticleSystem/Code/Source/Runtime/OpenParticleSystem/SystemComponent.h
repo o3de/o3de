@@ -8,16 +8,14 @@
 
 #pragma once
 
+#include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
-#include <OpenParticleSystem/ParticleConfigurationRequestBus.h>
 
 namespace OpenParticle
 {
     class SystemComponent
         : public AZ::Component
-        , public ParticleConfigurationRequestBus::Handler
         , private AZ::TickBus::Handler
     {
     public:

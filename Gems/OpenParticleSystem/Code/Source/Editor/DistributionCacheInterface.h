@@ -13,7 +13,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticle
 {

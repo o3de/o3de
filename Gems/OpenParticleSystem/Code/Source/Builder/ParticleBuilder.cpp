@@ -15,7 +15,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
 
 namespace OpenParticle

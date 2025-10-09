@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <OpenParticleSystem/ParticleComponentConfig.h>
+
 #include <Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RHI/BufferPool.h>
@@ -17,12 +19,10 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <particle/core/ParticleSystem.h>
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
-#include <OpenParticleSystem/ParticlePipelineState.h>
 #include <EMotionFX/Source/ActorInstance.h>
-#include <OpenParticleSystem/ParticleComponentConfig.h>
-
+#include <OpenParticleSystem/ParticlePipelineState.h>
+#include <particle/core/ParticleSystem.h>
 
 namespace OpenParticle
 {

@@ -7,10 +7,10 @@
  */
 
 #include "BuilderComponent.h"
+#include <OpenParticleSystem/ParticleComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <OpenParticleSystem/ParticleComponent.h>
-#include <OpenParticleSystem/EditorParticleComponent.h>
+#include <Editor/EditorParticleComponent.h>
 
 namespace OpenParticle
 {

@@ -6,9 +6,8 @@
  *
  */
 
-#include "OpenParticleSystem/Serializer/ParticleBase.h"
-#include <AzCore/std/sort.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleBase.h>
+#include <Serializer/ParticleSourceData.h>
 #include "core/math/Constants.h"
 
 namespace OpenParticle

@@ -8,19 +8,18 @@
 
 set(FILES
     Source/Editor/EditorParticleComponent.cpp
-    Include/OpenParticleSystem/EditorParticleComponent.h
+    Source/Editor/EditorParticleComponent.h
     Source/Editor/EditorSystemComponent.cpp
     Source/Editor/EditorSystemComponent.h
     Source/Editor/ParticleBrowserInteractions.h
     Source/Editor/ParticleBrowserInteractions.cpp
-    Include/OpenParticleSystem/ParticleEditDataConfig.h
     Source/Editor/ParticleEditDataConfig.cpp
-    Include/OpenParticleSystem/Serializer/DataConvertor.h
-    Include/OpenParticleSystem/Serializer/ParticleBase.h
-    Include/OpenParticleSystem/Serializer/ParticleSourceData.h
-    Include/OpenParticleSystem/Serializer/ParticleSourceDataSerializer.h
-    Include/OpenParticleSystem/Serializer/ParticleAssetData.h
-    Include/OpenParticleSystem/EditorParticleSystemComponentRequestBus.h
+    Source/Serializer/DataConvertor.h
+    Source/Serializer/ParticleBase.h
+    Source/Serializer/ParticleSourceData.h
+    Source/Serializer/ParticleSourceDataSerializer.h
+    Source/Serializer/ParticleAssetData.h
+    Source/Editor/EditorParticleSystemComponentRequestBus.h
     Source/Editor/Serializer/DataConvertor.cpp
     Source/Editor/Serializer/ParticleBase.cpp
     Source/Editor/Serializer/ParticleSourceData.cpp
@@ -38,4 +37,6 @@ set(FILES
     Source/Document/ParticleDocument.cpp
     Source/Document/ParticleDocument.h
     Source/Document/ParticleDocumentBus.h
+    Source/Runtime/OpenParticleSystem/ParticleEditDataConfig.h
+
 )

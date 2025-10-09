@@ -21,8 +21,8 @@
 #include <AtomCore/Instance/InstanceData.h>
 #include <OpenParticleSystem/ParticleModel.h>
 
-#include <particle/core/Particle.h>
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
+#include <particle/core/Particle.h>
 
 namespace OpenParticle
 {

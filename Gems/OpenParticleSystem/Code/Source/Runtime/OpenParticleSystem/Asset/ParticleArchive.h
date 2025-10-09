@@ -18,7 +18,8 @@
 #include <particle/core/ParticleRender.h>
 #include <particle/core/ParticleSystem.h>
 
-#include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Public/Model/Model.h>
 
 #include <AzCore/RTTI/ReflectContext.h>

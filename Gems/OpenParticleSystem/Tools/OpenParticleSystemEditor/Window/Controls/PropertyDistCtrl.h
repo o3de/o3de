@@ -19,7 +19,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 #endif
 
 #include <QWidget>

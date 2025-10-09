@@ -8,12 +8,11 @@
 
 #include "ParticleSystemSerializer.h"
 
+#include <OpenParticleSystem/ParticleEditDataConfig.h>
 #include <API/EditorAssetSystemAPI.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
-#include <OpenParticleSystem/ParticleConfigurationRequestBus.h>
-#include <OpenParticleSystem/ParticleEditDataConfig.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 
 namespace OpenParticle
 {

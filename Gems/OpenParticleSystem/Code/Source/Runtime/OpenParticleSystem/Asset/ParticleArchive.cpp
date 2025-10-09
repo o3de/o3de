@@ -6,10 +6,11 @@
  *
  */
 
-#include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <OpenParticleSystem/Asset/ParticleArchive.h>
+#include "ParticleArchive.h"
+
 #include <OpenParticleSystem/ParticleConfig.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace OpenParticle
 {

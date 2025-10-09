@@ -8,9 +8,10 @@
  
 #pragma once
 
+#include "OpenParticleSystemBus.h"
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <OpenParticleSystem/OpenParticleSystemBus.h>
 
 namespace OpenParticleSystem
 {

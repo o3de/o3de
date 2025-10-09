@@ -13,7 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/variant.h>
 
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 
 namespace OpenParticle
 {

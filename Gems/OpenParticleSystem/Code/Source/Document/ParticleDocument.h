@@ -13,7 +13,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 #include <Document/ParticleDocumentBus.h>
 
 namespace OpenParticleSystemEditor

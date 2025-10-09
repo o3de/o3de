@@ -6,13 +6,13 @@
  *
  */
 
-#include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
+#include <Atom/RPI.Public/FeatureProcessorFactory.h>
+#include <AtomCore/Instance/InstanceDatabase.h>
 #include <OpenParticleSystem/ParticleComponent.h>
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 #include <OpenParticleSystem/SystemComponent.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace OpenParticle
 {
@@ -21,14 +21,12 @@ namespace OpenParticle
         Initialize();
         AZ::RPI::FeatureProcessorFactory::Get()
             ->RegisterFeatureProcessorWithInterface<ParticleFeatureProcessor, ParticleFeatureProcessorInterface>();
-        ParticleConfigurationRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
 
     void SystemComponent::Deactivate()
     {
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ParticleFeatureProcessor>();
-        ParticleConfigurationRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         ShutDown();
     }

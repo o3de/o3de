@@ -10,7 +10,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
-#include <OpenParticleSystem/Serializer/ParticleAssetData.h>
+#include <Serializer/ParticleAssetData.h>
 
 namespace OpenParticle
 {

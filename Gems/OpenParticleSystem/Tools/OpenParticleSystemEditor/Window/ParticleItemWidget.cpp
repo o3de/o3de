@@ -6,7 +6,8 @@
  *
  */
 
-#include <Window/ParticleItemWidget.h>
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <Document/ParticleDocumentBus.h>
 #include <QAction>
 #include <QByteArray>
 #include <QCursor>
@@ -16,9 +17,8 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QUrl>
-#include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
-#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <Window/ParticleItemWidget.h>
 
 namespace OpenParticleSystemEditor
 {

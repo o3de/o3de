@@ -14,7 +14,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <QComboBox>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 #include <ParticleCommonData.h>
 #include <QVBoxLayout>
 #include <QCoreApplication>

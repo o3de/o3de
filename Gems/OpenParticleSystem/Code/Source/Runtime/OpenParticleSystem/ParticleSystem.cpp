@@ -8,22 +8,23 @@
 
 #include <OpenParticleSystem/ParticleSystem.h>
 
+#include <OpenParticleSystem/ParticleEditorRequestBus.h>
+#include <OpenParticleSystem/ParticleFeatureProcessor.h>
+
 #include <Atom/Feature/RenderCommon.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <OpenParticleSystem/ParticleFeatureProcessor.h>
 #include <particle/core/ParticleHelper.h>
 
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <Integration/ActorComponentBus.h>
-#include <AzFramework/Components/CameraBus.h>
-#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
-#include <OpenParticleSystem/ParticleEditorRequestBus.h>
 
 #include "EMotionFX/Source/AnimGraphInstance.h"
 #include "EMotionFX/Source/MotionSystem.h"

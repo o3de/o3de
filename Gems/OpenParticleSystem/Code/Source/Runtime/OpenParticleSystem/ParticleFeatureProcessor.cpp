@@ -6,6 +6,8 @@
  *
  */
 
+#include "ParticleConstant.h"
+
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -15,9 +17,8 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
 
-#include <particle/core/ParticleDriver.h>
-#include <OpenParticleSystem/ParticleConstant.h>
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
+#include <particle/core/ParticleDriver.h>
 
 namespace OpenParticle
 {

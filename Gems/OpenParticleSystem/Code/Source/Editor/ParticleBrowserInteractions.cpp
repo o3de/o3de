@@ -9,12 +9,11 @@
 #include "ParticleBrowserInteractions.h"
 
 #include <AzCore/std/string/wildcard.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
 #include "AnimationContext.h"
 
-#include <QApplication>
 #include <QMenu>
 #include <QInputDialog>
 #include <QString>

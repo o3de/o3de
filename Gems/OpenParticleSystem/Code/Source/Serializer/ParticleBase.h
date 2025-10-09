@@ -16,8 +16,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 
-#include <OpenParticleSystem/ParticleConfig.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+#include <Runtime/OpenParticleSystem/ParticleConfig.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 
 namespace OpenParticle
 {

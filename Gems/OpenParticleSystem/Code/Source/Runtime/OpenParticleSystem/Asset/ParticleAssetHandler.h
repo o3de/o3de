@@ -8,9 +8,8 @@
  
 #pragma once
 
-#include "ParticleAsset.h"
+#include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 

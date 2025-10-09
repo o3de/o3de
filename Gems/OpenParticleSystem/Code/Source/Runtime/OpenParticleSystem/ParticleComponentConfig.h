@@ -8,9 +8,9 @@
  
 #pragma once
 
+#include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <AzCore/Component/Component.h>
-#include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <OpenParticleSystem/ParticleConstant.h>
 
 namespace OpenParticle

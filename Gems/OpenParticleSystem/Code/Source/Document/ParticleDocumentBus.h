@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticleSystemEditor
 {

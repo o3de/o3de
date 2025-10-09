@@ -8,7 +8,7 @@
 
 #include <Editor/EditorSystemComponent.h>
 
-#include "OpenParticleSystem/ParticleEditDataConfig.h"
+#include <OpenParticleSystem/ParticleEditDataConfig.h>
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -17,7 +17,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 
 #include <Editor/QtViewPaneManager.h>
 #include <QAction>

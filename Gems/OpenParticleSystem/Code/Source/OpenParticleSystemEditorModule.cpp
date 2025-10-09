@@ -9,13 +9,13 @@
 #include <OpenParticleSystemModuleInterface.h>
 #include <OpenParticleSystemEditorSystemComponent.h>
 
-#include <OpenParticleSystem/ParticleComponent.h>
+#include <Runtime/OpenParticleSystem/ParticleComponent.h>
 #include <Runtime/OpenParticleSystem/SystemComponent.h>
 
 #ifdef PARTICLE_EDITOR
-#include <Editor/EditorSystemComponent.h>
 #include <Editor/DistributionCacheComponent.h>
-#include <OpenParticleSystem/EditorParticleComponent.h>
+#include <Editor/EditorParticleComponent.h>
+#include <Editor/EditorSystemComponent.h>
 #include <OpenParticleSystemEditor/Viewport/OpenParticleViewportComponent.h>
 #include <ParticleMaterialThumbnailSystemComponent.h>
 #endif

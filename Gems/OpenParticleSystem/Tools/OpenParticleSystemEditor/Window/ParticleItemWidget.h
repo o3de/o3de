@@ -20,7 +20,7 @@
 #include <QPainter>
 #include <EffectorInspector.h>
 #include <Window/ParticleLineWidget.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 #endif
 
 namespace Ui

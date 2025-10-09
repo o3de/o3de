@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticle
 {

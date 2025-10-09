@@ -6,9 +6,10 @@
  *
  */
 
+#include "ParticleAsset.h"
+
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <OpenParticleSystem/Asset/ParticleAsset.h>
 
 namespace OpenParticle
 {

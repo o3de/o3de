@@ -7,16 +7,18 @@
  */
 
 #pragma once
+
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <EffectorInspector.h>
+#include <Window/ParticleItemWidget.h>
+
 #if !defined(Q_MOC_RUN)
 #include <QGraphicsView>
 #include <QMenu>
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Math/Vector2.h>
-#include <EffectorInspector.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
-#include <Window/ParticleItemWidget.h>
-#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <Serializer/ParticleSourceData.h>
 #endif
 
 namespace OpenParticleSystemEditor

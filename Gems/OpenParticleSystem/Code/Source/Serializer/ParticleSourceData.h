@@ -16,7 +16,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <OpenParticleSystem/Serializer/ParticleAssetData.h>
+#include <Serializer/ParticleAssetData.h>
 
 namespace OpenParticle
 {
