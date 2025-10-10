@@ -1595,5 +1595,3 @@ namespace AzQtComponents
 #endif
 
 } // namespace AzQtComponents
-
-#include "Components/moc_Style.cpp"

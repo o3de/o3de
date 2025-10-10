@@ -231,4 +231,3 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerSearchWidget.cpp>

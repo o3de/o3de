@@ -1266,4 +1266,3 @@ void HierarchyWidget::SetUniqueSelectionHighlight(const AZ::Entity* element)
     SetUniqueSelectionHighlight(HierarchyHelpers::ElementToItem(this, element, false));
 }
 
-#include <moc_HierarchyWidget.cpp>

@@ -37,4 +37,3 @@ bool CTrackViewExportKeyTimeDlg::IsSoundExportChecked() const
     return m_ui->m_soundTimeExport->isChecked();
 }
 
-#include <moc_TrackViewExportKeyTimeDlg.cpp>

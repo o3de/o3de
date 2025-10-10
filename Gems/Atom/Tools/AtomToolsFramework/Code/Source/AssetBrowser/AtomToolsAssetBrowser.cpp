@@ -444,4 +444,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/AssetBrowser/moc_AtomToolsAssetBrowser.cpp>

@@ -884,4 +884,3 @@ namespace GraphCanvas
     }
 }
 
-#include <Source/Widgets/moc_GraphCanvasComboBox.cpp>

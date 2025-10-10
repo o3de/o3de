@@ -194,4 +194,3 @@ void LevelTreeModel::AddItem(const QString& name, const QModelIndex& parent)
     }
 }
 
-#include <moc_LevelTreeModel.cpp>

@@ -41,4 +41,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <AssetBrowser/Previewer/moc_EmptyPreviewer.cpp>

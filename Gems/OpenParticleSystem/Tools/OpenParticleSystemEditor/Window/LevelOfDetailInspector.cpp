@@ -415,5 +415,3 @@ namespace OpenParticleSystemEditor
         return QWidget::eventFilter(obj, ev);
     }
 } // namespace OpenParticleSystemEditor
-
-#include <moc_LevelOfDetailInspector.cpp>

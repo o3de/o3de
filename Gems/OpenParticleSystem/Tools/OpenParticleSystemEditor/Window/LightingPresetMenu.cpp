@@ -132,5 +132,3 @@ namespace OpenParticleSystemEditor
     }
 
 } // namespace OpenParticleSystemEditor
-
-#include <moc_LightingPresetMenu.cpp>

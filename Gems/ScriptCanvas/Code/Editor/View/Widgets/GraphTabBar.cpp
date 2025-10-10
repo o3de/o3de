@@ -469,6 +469,5 @@ namespace ScriptCanvasEditor
             }
         }
 
-        #include <Editor/View/Widgets/moc_GraphTabBar.cpp>
     }
 }

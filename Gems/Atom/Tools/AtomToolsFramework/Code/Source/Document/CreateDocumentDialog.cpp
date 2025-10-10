@@ -138,4 +138,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Document/moc_CreateDocumentDialog.cpp>

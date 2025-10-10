@@ -209,4 +209,3 @@ void PropertyHandlerUiParticleColorKeyframe::Register()
         aznew PropertyHandlerUiParticleColorKeyframe());
 }
 
-#include <moc_PropertyHandlerUiParticleColorKeyframe.cpp>

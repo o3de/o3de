@@ -323,4 +323,3 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include <moc_ViewportTitleDlg.cpp>

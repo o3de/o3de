@@ -95,5 +95,3 @@ void FilesAlreadyExistDialog::closeEvent([[maybe_unused]] QCloseEvent* ev)
     QDialog::reject();
     Q_EMIT CancelAllProcesses();
 }
-
-#include <AssetImporter/UI/moc_FilesAlreadyExistDialog.cpp>

@@ -424,4 +424,3 @@ void CNewLevelDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
-#include <moc_NewLevelDialog.cpp>

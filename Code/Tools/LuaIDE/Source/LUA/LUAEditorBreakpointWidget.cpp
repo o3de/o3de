@@ -11,7 +11,6 @@
 #include "LUAEditorPlainTextEdit.hxx"
 #include "LUAEditorStyleMessages.h"
 
-#include <Source/LUA/moc_LUAEditorBreakpointWidget.cpp>
 
 #include <QTextBlockFormat>
 #include <QTextBlock>

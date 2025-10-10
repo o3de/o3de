@@ -360,4 +360,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-#include <Components/Widgets/moc_TreeView.cpp>

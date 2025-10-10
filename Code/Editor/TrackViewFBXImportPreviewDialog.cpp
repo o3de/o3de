@@ -140,4 +140,3 @@ void CTrackViewFBXImportPreviewDialog::OnBnUnselectAllClicked()
     static_cast<FBXImportModel*>(m_ui->m_tree->model())->setAllItemsChecked(false);
 }
 
-#include <moc_TrackViewFBXImportPreviewDialog.cpp>

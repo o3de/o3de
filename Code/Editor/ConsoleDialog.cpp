@@ -49,4 +49,3 @@ void CConsoleDialog::closeEvent(QCloseEvent* ev)
     QDialog::closeEvent(ev);
 }
 
-#include <moc_ConsoleDialog.cpp>
