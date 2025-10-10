@@ -479,4 +479,3 @@ namespace Editor
     }
 } // end namespace Editor
 
-#include <Core/moc_QtEditorApplication.cpp>

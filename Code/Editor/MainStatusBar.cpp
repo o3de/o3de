@@ -482,5 +482,3 @@ void GameInfoItem::OnShowContextMenu(const QPoint& pos)
     contextMenu.exec(mapToGlobal(pos));
 }
 
-#include <moc_MainStatusBar.cpp>
-#include <moc_MainStatusBarItems.cpp>

@@ -523,4 +523,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <SceneWidgets/moc_SceneGraphWidget.cpp>

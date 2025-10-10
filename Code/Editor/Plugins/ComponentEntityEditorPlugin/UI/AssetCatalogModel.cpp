@@ -739,5 +739,4 @@ AssetCatalogEntry* AssetCatalogModel::AssetData(const QModelIndex& index) const
 // End of context menu handling
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <UI/moc_AssetCatalogModel.cpp>
 

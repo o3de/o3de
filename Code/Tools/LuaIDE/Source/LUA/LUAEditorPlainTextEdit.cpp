@@ -12,7 +12,6 @@
 #include <Source/LUA/CodeCompletion/LUACompletionModel.hxx>
 #include <Source/LUA/CodeCompletion/LUACompleter.hxx>
 
-#include <Source/LUA/moc_LUAEditorPlainTextEdit.cpp>
 #include <Source/LUA/LUAEditorView.hxx>
 #include "LUAEditorContextMessages.h"
 

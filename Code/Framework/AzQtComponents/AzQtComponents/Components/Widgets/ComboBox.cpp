@@ -488,4 +488,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include <Components/Widgets/moc_ComboBox.cpp>

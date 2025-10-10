@@ -374,5 +374,4 @@ int UiAVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, flo
     return usageCount;
 }
 
-#include <Animation/moc_UiAVEventsDialog.cpp>
 

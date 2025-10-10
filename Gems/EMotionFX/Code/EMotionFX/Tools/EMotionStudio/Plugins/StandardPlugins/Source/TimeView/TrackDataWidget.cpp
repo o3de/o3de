@@ -2644,4 +2644,3 @@ namespace EMStudio
     }
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/moc_TrackDataWidget.cpp>

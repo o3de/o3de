@@ -3256,4 +3256,3 @@ ISplineCtrlUndo* AbstractSplineWidget::CreateSplineCtrlUndoObject(std::vector<IS
     return new CUndoSplineCtrlEx(this, splineContainer);
 }
 
-#include <Animation/Controls/moc_UiSplineCtrlEx.cpp>

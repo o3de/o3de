@@ -751,4 +751,3 @@ void AssetImporterWindow::FileChanged([[maybe_unused]] QString path)
     ReloadCurrentScene(true);
 }
 
-#include <moc_AssetImporterWindow.cpp>

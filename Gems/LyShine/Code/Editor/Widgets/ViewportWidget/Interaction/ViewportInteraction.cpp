@@ -1554,5 +1554,3 @@ void ViewportInteraction::UpdateCoordinateSystemToolbarSection()
     bool isMoveOrAnchorMode = m_interactionMode == InteractionMode::MOVE || m_interactionMode == InteractionMode::ANCHOR;
     m_editorWindow->GetCoordinateSystemToolbarSection()->SetIsEnabled(isMoveOrAnchorMode);
 }
-
-#include <moc_ViewportInteraction.cpp>

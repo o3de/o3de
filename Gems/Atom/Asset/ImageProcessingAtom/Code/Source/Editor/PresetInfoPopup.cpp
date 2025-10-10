@@ -120,4 +120,3 @@ namespace ImageProcessingAtomEditor
         resize(minimumSizeHint());
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_PresetInfoPopup.cpp>

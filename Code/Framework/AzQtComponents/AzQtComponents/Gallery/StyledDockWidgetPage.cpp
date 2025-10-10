@@ -258,4 +258,3 @@ void StyledDockWidgetPage::showMainWindow()
     });
 }
 
-#include "Gallery/moc_StyledDockWidgetPage.cpp"

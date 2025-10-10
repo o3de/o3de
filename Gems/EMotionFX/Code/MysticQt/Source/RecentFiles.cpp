@@ -278,4 +278,3 @@ namespace MysticQt
     }
 } // namespace MysticQt
 
-#include <MysticQt/Source/moc_RecentFiles.cpp>
