@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Component/EntityId.h>
@@ -24,7 +23,6 @@
 
 #include <QToolButton>
 #include <QWidget>
-#endif
 
 namespace GraphCanvas
 {

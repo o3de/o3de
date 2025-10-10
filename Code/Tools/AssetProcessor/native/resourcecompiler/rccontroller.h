@@ -8,11 +8,11 @@
 #ifndef RCCONTROLLER_H
 #define RCCONTROLLER_H
 
-#if !defined(Q_MOC_RUN)
 #include "RCCommon.h"
 
 #include <QObject>
 #include <QList>
+
 #include "native/utilities/AssetUtilEBusHelper.h"
 
 #include "rcjoblistmodel.h"
@@ -20,7 +20,6 @@
 
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#endif
 
 class RCcontrollerUnitTests;
 

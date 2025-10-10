@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+
 #include <QLabel>
 #include <QUrl>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QEvent)
 QT_FORWARD_DECLARE_CLASS(QMouseEvent)

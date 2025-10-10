@@ -9,13 +9,12 @@
 #pragma once
 
 // include MCore
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include "EMStudioConfig.h"
 #include "EMStudioPlugin.h"
+
 #include <QToolBar>
 #include <QPointer>
-#endif
 
 
 namespace EMStudio

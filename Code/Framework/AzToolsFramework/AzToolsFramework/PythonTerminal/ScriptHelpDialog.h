@@ -17,7 +17,6 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Debug/Trace.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QApplication>
 #include <QMainWindow>
 #include <QDialog>
@@ -29,7 +28,7 @@
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QScopedPointer>
-#endif
+
 class QResizeEvent;
 
 namespace Ui

@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 
 #include <GradientSignal/Editor/EditorGradientPreviewRenderer.h>
-#endif
 
 class QToolButton;
 

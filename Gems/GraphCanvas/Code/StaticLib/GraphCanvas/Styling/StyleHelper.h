@@ -8,8 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-
 #include <QColor>
 #include <QFont>
 #include <QFontInfo>
@@ -31,8 +29,6 @@
 #include <GraphCanvas/Styling/PseudoElement.h>
 #include <GraphCanvas/Types/Types.h>
 #include <GraphCanvas/Types/QtMetaTypes.h>
-
-#endif
 
 namespace GraphCanvas
 {

@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Component/EntityId.h>
 #include <Editor/Settings.h>
 #include <ScriptCanvas/Core/Core.h>
-#endif
 
 namespace Ui
 {

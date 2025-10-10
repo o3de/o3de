@@ -8,11 +8,9 @@
 #ifndef INICONFIGURATION_H
 #define INICONFIGURATION_H
 
-#if !defined(Q_MOC_RUN)
 #include <QDir>
 #include <QString>
 #include <QCoreApplication>
-#endif
 
 /** Reads the bootstrap file for listening port
  */

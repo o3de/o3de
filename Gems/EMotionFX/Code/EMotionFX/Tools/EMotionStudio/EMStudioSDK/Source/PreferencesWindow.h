@@ -10,12 +10,12 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
 #include <AzQtComponents/Components/Widgets/SegmentBar.h>
+
 #include <QDialog>
-#endif
+
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 

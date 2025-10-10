@@ -6,7 +6,6 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -34,7 +33,6 @@
 #include <QPushButton>
 #include <QString>
 #include <QVBoxLayout>
-#endif
 
 namespace GradientSignal::ImageCreatorUtils
 {

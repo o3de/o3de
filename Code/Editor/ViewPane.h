@@ -14,14 +14,12 @@
 // ViewPane.h : header file
 //
 
-#if !defined(Q_MOC_RUN)
 #include "ViewportTitleDlg.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzQtComponents/Components/ToolBarArea.h>
 #include <Include/SandboxAPI.h>
-#endif
 
 class CViewport;
 class QScrollArea;

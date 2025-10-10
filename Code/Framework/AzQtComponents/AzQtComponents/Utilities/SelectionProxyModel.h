@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QItemSelectionModel>
 #include <QVector>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QAbstractProxyModel)
 

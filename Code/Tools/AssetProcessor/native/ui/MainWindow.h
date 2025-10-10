@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <QStringList>
 #include <QStringListModel>
@@ -20,14 +19,6 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/ui/CacheServerData.h>
-
-#include <QElapsedTimer>
-#include <QMainWindow>
-#include <QPointer>
-#include <QStringList>
-#include <QStringListModel>
-#include <ui/BuilderListModel.h>
-#endif
 
 namespace AzToolsFramework
 {

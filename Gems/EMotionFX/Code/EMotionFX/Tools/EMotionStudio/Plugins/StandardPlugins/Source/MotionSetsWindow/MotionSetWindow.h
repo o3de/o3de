@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
@@ -16,6 +15,7 @@
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
+
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -23,7 +23,6 @@
 #include <QTreeWidget>
 #include <QLineEdit>
 #include <QDialog>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QComboBox)

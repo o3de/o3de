@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
@@ -19,7 +18,6 @@
 #include <QObject>
 #include <QString>
 #include <QTreeWidgetItem>
-#endif
 
 class HierarchyItem;
 class EditorWindow;
