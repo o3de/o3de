@@ -76,5 +76,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_StyledLineEdit.cpp"

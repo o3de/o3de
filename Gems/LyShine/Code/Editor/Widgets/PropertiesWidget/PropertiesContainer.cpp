@@ -1045,4 +1045,3 @@ void PropertiesContainer::SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox)
     );
 }
 
-#include <moc_PropertiesContainer.cpp>

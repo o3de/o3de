@@ -71,4 +71,3 @@ ProgressIndicatorPage::~ProgressIndicatorPage()
 {
 }
 
-#include "Gallery/moc_ProgressIndicatorPage.cpp"

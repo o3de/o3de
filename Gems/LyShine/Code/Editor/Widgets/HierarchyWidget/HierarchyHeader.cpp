@@ -98,4 +98,3 @@ void HierarchyHeader::enterEvent(QEvent* ev)
     QHeaderView::enterEvent(ev);
 }
 
-#include <moc_HierarchyHeader.cpp>

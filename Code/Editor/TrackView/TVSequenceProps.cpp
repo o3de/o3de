@@ -321,5 +321,3 @@ void CTVSequenceProps::OnBnClickedToSeconds(bool v)
 
     m_timeUnit = Seconds;
 }
-
-#include <TrackView/moc_TVSequenceProps.cpp>

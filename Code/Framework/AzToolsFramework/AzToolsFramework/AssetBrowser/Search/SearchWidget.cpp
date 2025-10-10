@@ -355,4 +355,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Search/moc_SearchWidget.cpp"

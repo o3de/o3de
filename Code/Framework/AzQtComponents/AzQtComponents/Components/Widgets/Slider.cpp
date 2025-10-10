@@ -956,4 +956,3 @@ double SliderDouble::convertPowerCurveValue(double value, bool fromSlider) const
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_Slider.cpp"

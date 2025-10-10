@@ -24,7 +24,6 @@
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/View/Widgets/UnitTestPanel/UnitTestTreeView.h>
-#include <Editor/View/Widgets/UnitTestPanel/moc_UnitTestTreeView.cpp>
 
 #include <Editor/View/Dialogs/ContainerWizard/ContainerWizard.h>
 

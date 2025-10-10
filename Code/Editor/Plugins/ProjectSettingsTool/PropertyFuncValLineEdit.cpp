@@ -183,4 +183,3 @@ namespace ProjectSettingsTool
     }
 } // namespace ProjectSettingsTool
 
-#include <moc_PropertyFuncValLineEdit.cpp>

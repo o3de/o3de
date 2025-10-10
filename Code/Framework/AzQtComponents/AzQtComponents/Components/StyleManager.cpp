@@ -284,7 +284,6 @@ namespace AzQtComponents
     }
 } // namespace AzQtComponents
 
-#include "Components/moc_StyleManager.cpp"
 
 #if defined(AZ_QT_COMPONENTS_STATIC)
     // If we're statically compiling the lib, we need to include the compiled rcc resources

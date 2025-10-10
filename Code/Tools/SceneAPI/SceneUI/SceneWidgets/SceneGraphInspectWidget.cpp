@@ -100,4 +100,3 @@ namespace AZ
     } // SceneAPI
 } // AZ
 
-#include <SceneWidgets/moc_SceneGraphInspectWidget.cpp>

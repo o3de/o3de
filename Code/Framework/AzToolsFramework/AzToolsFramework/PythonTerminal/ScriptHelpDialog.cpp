@@ -368,5 +368,3 @@ namespace AzToolsFramework
         setWindowTitle(QString("Script Help (Copied \"%1\" to clipboard)").arg(textForClipboard));
     }
 } // namespace AzToolsFramework
-
-#include <moc_ScriptHelpDialog.cpp>

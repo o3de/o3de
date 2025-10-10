@@ -310,4 +310,3 @@ ColorGrid::Mode ColorGrid::mode() const
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorGrid.cpp"

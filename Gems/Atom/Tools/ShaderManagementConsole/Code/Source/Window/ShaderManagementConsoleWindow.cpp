@@ -294,4 +294,3 @@ namespace ShaderManagementConsole
     }
 } // namespace ShaderManagementConsole
 
-#include <Window/moc_ShaderManagementConsoleWindow.cpp>

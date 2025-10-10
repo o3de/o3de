@@ -374,4 +374,3 @@ void CustomizeKeyboardDialog::DialogButtonClicked(const QAbstractButton* button)
     }
 }
 
-#include <moc_CustomizeKeyboardDialog.cpp>

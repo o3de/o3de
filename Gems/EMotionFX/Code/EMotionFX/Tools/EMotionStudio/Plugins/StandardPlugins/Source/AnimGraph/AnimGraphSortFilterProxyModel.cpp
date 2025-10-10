@@ -157,4 +157,3 @@ namespace EMStudio
 
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_AnimGraphSortFilterProxyModel.cpp>

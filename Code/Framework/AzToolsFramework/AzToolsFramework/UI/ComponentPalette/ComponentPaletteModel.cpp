@@ -30,4 +30,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/ComponentPalette/moc_ComponentPaletteModel.cpp"

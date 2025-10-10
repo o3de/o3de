@@ -87,4 +87,3 @@ namespace PhysX
     } // Editor
 } // PhysX
 
-#include <Editor/moc_PvdWidget.cpp>

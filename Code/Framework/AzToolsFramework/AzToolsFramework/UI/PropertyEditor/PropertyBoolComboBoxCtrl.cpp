@@ -113,4 +113,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_PropertyBoolComboBoxCtrl.cpp"

@@ -194,4 +194,3 @@ void PropertyHandlerSprite::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerSprite());
 }
 
-#include <moc_PropertyHandlerSprite.cpp>
