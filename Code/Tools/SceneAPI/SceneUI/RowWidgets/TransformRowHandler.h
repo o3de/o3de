@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneUI/RowWidgets/TransformRowWidget.h>
-#endif
 
 class QWidget;
 

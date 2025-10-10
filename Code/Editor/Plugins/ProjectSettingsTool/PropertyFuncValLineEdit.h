@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "FunctorValidator.h"
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringLineEditCtrl.hxx>
-#endif
 
 namespace ProjectSettingsTool
 {

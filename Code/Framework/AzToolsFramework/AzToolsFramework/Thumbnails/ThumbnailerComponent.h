@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/set.h>
@@ -17,7 +16,6 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 #include <QObject>
-#endif
 
 class QString;
 class QPixmap;

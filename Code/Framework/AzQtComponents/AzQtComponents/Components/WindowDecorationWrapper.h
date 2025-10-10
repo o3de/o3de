@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QFrame>
 #include <QPointer>
 #include <QChildEvent>
-#endif
 
 class QSettings;
 class QStyleOption;

@@ -9,10 +9,8 @@
 #define CRYINCLUDE_EDITOR_CUSTOMIZE_KEYBOARD_DIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include "KeyboardCustomizationSettings.h"
-#endif
 
 namespace Ui
 {

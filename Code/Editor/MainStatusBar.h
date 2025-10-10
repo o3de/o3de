@@ -11,11 +11,9 @@
 #define CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStatusBar>
 #include <QWidget>
 #include <QIcon>
-#endif
 
 class MainStatusBar;
 class QLabel;

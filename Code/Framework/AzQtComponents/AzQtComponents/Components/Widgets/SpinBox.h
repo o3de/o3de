@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QCursor>
 #include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QPointer>
-#endif
 
 class QAction;
 class QLineEdit;

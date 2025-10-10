@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Math/Matrix3x3.h>
-#endif
 
 namespace PhysX
 {

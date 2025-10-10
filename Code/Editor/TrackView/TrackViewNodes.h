@@ -12,7 +12,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -26,7 +25,6 @@
 #include <QTreeWidgetItem>
 
 #include <QWidget>
-#endif
 
 // forward declarations.
 class CTrackViewAnimNode;

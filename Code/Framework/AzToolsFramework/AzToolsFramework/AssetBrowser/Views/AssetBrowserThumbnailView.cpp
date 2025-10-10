@@ -26,11 +26,9 @@
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QVBoxLayout>
-#endif
 
 namespace AzToolsFramework
 {
