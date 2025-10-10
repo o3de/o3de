@@ -11,12 +11,10 @@
 #define CRYINCLUDE_EDITOR_CONTROLS_TIMELINECTRL_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Range.h"
 #include "SplineCtrlEx.h"
 #include "Controls/WndGridHelper.h"
 #include "Util/fastlib.h"
-#endif
 
 // Custom styles for this control.
 #define TL_STYLE_AUTO_DELETE    0x0001

@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "PropertyFuncValLineEdit.h"
 
 #include <AzCore/std/containers/unordered_map.h>
-#endif
 
 // Forward declares
 class QPushButton;

@@ -11,7 +11,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
@@ -25,7 +24,6 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QDoubleSpinBox;
 class QLineEdit;

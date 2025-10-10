@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <AzCore/Outcome/Outcome.h>
 
 #include <QObject>
 #include <QProcessEnvironment>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
 

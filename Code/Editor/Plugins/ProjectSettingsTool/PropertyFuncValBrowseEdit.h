@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "FunctorValidator.h"
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
-#endif
 
 namespace ProjectSettingsTool
 {

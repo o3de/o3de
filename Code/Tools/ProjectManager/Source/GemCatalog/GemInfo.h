@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QStringList>
 #include <QVector>
 #include <QMetaType>
-#endif
 
 namespace O3DE::ProjectManager
 {

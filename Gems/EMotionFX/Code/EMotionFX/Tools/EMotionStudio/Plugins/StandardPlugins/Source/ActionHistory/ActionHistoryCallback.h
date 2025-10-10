@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -22,7 +21,6 @@
 #include <QListWidget>
 #include <QDialog>
 #include <QTextEdit>
-#endif
 
 
 namespace EMStudio

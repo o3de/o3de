@@ -12,9 +12,7 @@
 #include <QLabel>
 #include <QButtonGroup>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

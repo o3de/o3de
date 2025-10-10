@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/DockTabWidget.h>
@@ -27,7 +26,6 @@
 #include <QScreen>
 #include <QSize>
 #include <QApplication>
-#endif
 
 class QDesktopWidget;
 class QTimer;

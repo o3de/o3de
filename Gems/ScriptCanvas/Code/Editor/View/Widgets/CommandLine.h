@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QDialog>
 #include <QLineEdit>
@@ -24,7 +23,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Console/Console.h>
-#endif
 
 namespace Ui
 {

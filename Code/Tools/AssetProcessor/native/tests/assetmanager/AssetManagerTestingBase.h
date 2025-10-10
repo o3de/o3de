@@ -10,16 +10,17 @@
 
 #include <API/AssetDatabaseBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#endif
 #include <AzCore/std/parallel/binary_semaphore.h>
+
 #include <Tests/Utils/Utils.h>
 #include <native/AssetManager/assetProcessorManager.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <resourcecompiler/rccontroller.h>
 #include <tests/UnitTestUtilities.h>
+
 #include <QCoreApplication>
+
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <utilities/UuidManager.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>

@@ -10,13 +10,11 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include "StyledLogPanel.h"
 #include "LogLine.h"
 
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#endif
 
 namespace AzToolsFramework
 {

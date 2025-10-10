@@ -10,11 +10,9 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <LyShine/Animation/IUiAnimation.h>
 
 #include <QDialog>
-#endif
 
 namespace Ui
 {

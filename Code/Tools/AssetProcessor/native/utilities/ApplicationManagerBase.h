@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
@@ -19,8 +18,8 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/UuidManager.h>
-#include <QtGui/qwindowdefs.h>
-#endif
+
+#include <qwindowdefs.h>
 
 namespace AzToolsFramework
 {
