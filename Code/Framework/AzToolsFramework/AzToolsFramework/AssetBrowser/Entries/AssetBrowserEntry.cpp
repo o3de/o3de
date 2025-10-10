@@ -501,4 +501,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Entries/moc_AssetBrowserEntry.cpp"

@@ -295,4 +295,3 @@ namespace AssetProcessor
 
 } // namespace AssetProcessor
 
-#include "native/FileProcessor/moc_FileProcessor.cpp"

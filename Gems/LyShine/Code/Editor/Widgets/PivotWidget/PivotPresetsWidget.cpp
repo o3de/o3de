@@ -76,4 +76,3 @@ void PivotPresetsWidget::SetPresetSelection(int presetIndex)
     m_presetIndex = presetIndex;
 }
 
-#include <moc_PivotPresetsWidget.cpp>

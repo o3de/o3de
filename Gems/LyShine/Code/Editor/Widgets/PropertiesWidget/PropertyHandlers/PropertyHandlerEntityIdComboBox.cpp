@@ -221,4 +221,3 @@ void PropertyEntityIdComboBoxCtrl::UpdateTabOrder()
     // There's only one QT widget on this property.
 }
 
-#include <moc_PropertyHandlerEntityIdComboBox.cpp>

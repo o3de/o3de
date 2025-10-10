@@ -190,4 +190,3 @@ void CUiAVSequenceProps::OnBnClickedTuSeconds(bool v)
     m_timeUnit = 0;
 }
 
-#include <Animation/moc_UiAVSequenceProps.cpp>

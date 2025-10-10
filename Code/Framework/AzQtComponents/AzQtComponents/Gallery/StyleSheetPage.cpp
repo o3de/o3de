@@ -183,4 +183,3 @@ StyleSheetPage::~StyleSheetPage()
 {
 }
 
-#include "Gallery/moc_StyleSheetPage.cpp"

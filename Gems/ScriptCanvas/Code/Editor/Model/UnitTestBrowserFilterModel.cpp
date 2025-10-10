@@ -8,7 +8,6 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Editor/Model/UnitTestBrowserFilterModel.h>
-#include <Editor/Model/moc_UnitTestBrowserFilterModel.cpp>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 

@@ -7,7 +7,6 @@
  */
 
 #include "LUAEditorSyntaxHighlighter.hxx"
-#include <Source/LUA/moc_LUAEditorSyntaxHighlighter.cpp>
 #include "LUAEditorStyleMessages.h"
 #include "LUAEditorBlockState.h"
 

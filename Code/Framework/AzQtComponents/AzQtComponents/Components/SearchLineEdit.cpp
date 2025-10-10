@@ -104,5 +104,3 @@ void SearchLineEdit::displayMenu()
         emit menuEntryClicked(actionSelected);
     }
 }
-
-#include "Components/moc_SearchLineEdit.cpp"

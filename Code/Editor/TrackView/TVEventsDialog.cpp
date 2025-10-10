@@ -390,5 +390,3 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
     }
     return usageCount;
 }
-
-#include <TrackView/moc_TVEventsDialog.cpp>

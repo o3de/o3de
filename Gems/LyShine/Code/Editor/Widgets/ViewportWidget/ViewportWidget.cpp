@@ -1270,5 +1270,3 @@ void ViewportWidget::ApplyRulerVisibility()
     m_rulerCorner->setFixedSize(rulerBreadth, rulerBreadth);
 }
 
-
-#include <moc_ViewportWidget.cpp>

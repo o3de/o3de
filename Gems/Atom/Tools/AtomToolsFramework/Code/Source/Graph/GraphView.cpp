@@ -721,4 +721,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Graph/moc_GraphView.cpp>

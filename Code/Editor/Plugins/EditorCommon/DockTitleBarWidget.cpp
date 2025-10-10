@@ -230,4 +230,3 @@ void CDockTitleBarWidget::OnCustomButtonPressed()
 }
 
 
-#include <moc_DockTitleBarWidget.cpp>

@@ -392,5 +392,4 @@ namespace GraphCanvas
         }
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/NodePalette/Model/moc_NodePaletteSortFilterProxyModel.cpp>
 }

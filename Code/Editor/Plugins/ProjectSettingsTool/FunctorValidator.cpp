@@ -38,4 +38,3 @@ namespace ProjectSettingsTool
     }
 } // namespace ProjectSettingsTool
 
-#include <moc_FunctorValidator.cpp>

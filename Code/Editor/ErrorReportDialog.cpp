@@ -542,4 +542,3 @@ void CErrorReportDialog::OnShowFieldChooser()
 }
 */
 
-#include <moc_ErrorReportDialog.cpp>

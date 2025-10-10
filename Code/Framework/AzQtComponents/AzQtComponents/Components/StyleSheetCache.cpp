@@ -433,4 +433,3 @@ QString StyleSheetCache::findStyleSheetPath(const QString& styleFileName)
 
 } // namespace AzQtComponents
 
-#include "Components/moc_StyleSheetCache.cpp"

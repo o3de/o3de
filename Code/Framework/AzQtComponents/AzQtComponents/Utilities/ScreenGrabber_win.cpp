@@ -255,4 +255,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Utilities/moc_ScreenGrabber.cpp"

@@ -765,6 +765,5 @@ namespace ScriptCanvasEditor
             }
         }
 
-#include <Editor/View/Widgets/moc_PropertyGrid.cpp>
     }
 }
