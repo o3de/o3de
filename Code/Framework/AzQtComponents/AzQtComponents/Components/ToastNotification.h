@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/ToastNotificationConfiguration.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -15,7 +14,6 @@
 #include <QDialog>
 #include <QMouseEvent>
 #include <QTimer>
-#endif
 
 namespace Ui
 {

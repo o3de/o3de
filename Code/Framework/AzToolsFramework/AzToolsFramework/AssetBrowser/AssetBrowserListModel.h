@@ -7,12 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <QSortFilterProxyModel>
 #include <QPersistentModelIndex>
 #include <QPointer>
-#endif
+
 #include <Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 

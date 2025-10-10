@@ -8,12 +8,10 @@
 #ifndef ERRORREPORTTABLEMODEL_H
 #define ERRORREPORTTABLEMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include "Util/AbstractSortModel.h"
 
 #include <QMetaType>
 #include <QPixmap>
-#endif
 
 
 class CErrorReport;

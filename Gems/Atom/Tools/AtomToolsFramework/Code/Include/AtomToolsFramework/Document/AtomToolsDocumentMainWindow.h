@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
-#endif
 
 class QDragEnterEvent;
 class QDragLeaveEvent;

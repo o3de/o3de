@@ -9,14 +9,13 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
+
 #include <QPointer>
 #include <QWidget>
-#endif // defined(Q_MOC_RUN)
 
 namespace AzToolsFramework
 {

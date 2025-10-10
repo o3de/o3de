@@ -9,15 +9,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "UiAnimViewNode.h"
 #include "UiAnimViewSequence.h"
 #include "Undo/IUndoManagerListener.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
+
 #include <QMap>
 #include <QTreeWidgetItem>
-#endif
 
 // forward declarations.
 class CUiAnimViewNode;

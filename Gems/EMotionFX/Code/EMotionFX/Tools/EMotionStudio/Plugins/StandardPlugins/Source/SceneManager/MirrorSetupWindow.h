@@ -9,14 +9,12 @@
 #pragma once
 
 // include MCore
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
+
 #include <QWidget>
 #include <QDialog>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QTableWidgetItem)

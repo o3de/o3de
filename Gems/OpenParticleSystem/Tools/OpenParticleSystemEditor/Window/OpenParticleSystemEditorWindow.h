@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
@@ -19,7 +18,6 @@
 #include <Editor/EditorParticleSystemComponentRequestBus.h>
 #include <Document/ParticleDocument.h>
 #include <OpenParticleSystemEditorWindowRequests.h>
-#endif
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/DockMainWindow.h>

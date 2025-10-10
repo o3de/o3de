@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include "../StandardPluginsConfig.h"
+
 #include <QAction>
 #include <QTreeWidget>
 #include <QWidget>
-#endif
 
 
 namespace EMStudio

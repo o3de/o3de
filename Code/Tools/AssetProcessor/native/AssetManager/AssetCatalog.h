@@ -8,28 +8,29 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <QObject>
 #include <QString>
 #include <QTimer>
 #include <QStringList>
 #include <QHash>
 #include <QDir>
+#include <QMutex>
+#include <QRecursiveMutex>
+#include <QMultiMap>
+
 #include "native/AssetDatabase/AssetDatabase.h"
 #include "native/assetprocessor.h"
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include "native/utilities/PlatformConfiguration.h"
+#include "AssetRequestHandler.h"
+
 #include <AzFramework/Asset/AssetRegistry.h>
-#include <QMutex>
-#include <QMultiMap>
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <native/connection/connection.h>
-#endif
-
-#include "AssetRequestHandler.h"
 
 namespace AzFramework
 {

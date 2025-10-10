@@ -9,13 +9,10 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 
 #include <QVector>
 #include <qnamespace.h>
-
-#endif
 
 class QWindow;
 class QPlatformWindow;

@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-#endif
 
 namespace AtomToolsFramework
 {

@@ -8,13 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
+
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
 // warning C4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4800 4251, "-Wunknown-warning-option")
 #include <QDialog>
 AZ_POP_DISABLE_WARNING
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -24,7 +25,6 @@ AZ_POP_DISABLE_WARNING
 #include <Source/Editor/TexturePreviewWidget.h>
 #include <Source/Editor/ResolutionSettingWidget.h>
 #include <Source/Editor/MipmapSettingWidget.h>
-#endif
 
 namespace Ui
 {

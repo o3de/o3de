@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#endif
 
 namespace O3DE::ProjectManager
 {

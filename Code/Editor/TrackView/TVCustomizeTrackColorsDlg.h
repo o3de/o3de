@@ -12,11 +12,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QColor>
 #include <QDialog>
 #include <QScopedPointer>
-#endif
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
