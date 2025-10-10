@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QColor>
@@ -15,7 +14,7 @@
 #include <QRect>
 #include <QSlider>
 #include <QStyle>
-#endif
+
 class QSettings;
 class QStyleOptionSlider;
 

@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -23,7 +22,6 @@
 
 #include <QFrame>
 #include <QIcon>
-#endif
 
 class QVBoxLayout;
 

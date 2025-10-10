@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QAction>
@@ -16,7 +15,6 @@
 #include <QStyledItemDelegate>
 #include <QTabBar>
 #include <QTabWidget>
-#endif
 
 class QFrame;
 class QSettings;

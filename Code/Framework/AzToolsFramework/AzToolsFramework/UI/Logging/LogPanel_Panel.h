@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -28,7 +27,6 @@ AZ_POP_DISABLE_WARNING
 #include <QAbstractTableModel>
 
 #include <memory>
-#endif
 
 class QTableView;
 class QLabel;

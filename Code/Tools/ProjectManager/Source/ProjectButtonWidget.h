@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
 #include <AzCore/std/functional.h>
@@ -17,7 +16,6 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QLayout>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 QT_FORWARD_DECLARE_CLASS(QAction)

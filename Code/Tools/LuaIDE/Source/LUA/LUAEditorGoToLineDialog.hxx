@@ -8,15 +8,13 @@
 
 #ifndef LUAEDITOR_GOTOLINE_H
 #define LUAEDITOR_GOTOLINE_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QDialog>
-#endif
 
-#pragma once
 
 namespace Ui
 {

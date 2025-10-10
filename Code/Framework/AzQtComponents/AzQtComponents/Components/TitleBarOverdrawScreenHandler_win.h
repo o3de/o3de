@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 
 #include <QObject>
-#endif
 
 class QWindow;
 class QScreen;

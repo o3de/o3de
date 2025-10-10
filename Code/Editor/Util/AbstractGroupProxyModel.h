@@ -8,13 +8,8 @@
 #ifndef ABSTRACTGROUPPROXYMODEL_H
 #define ABSTRACTGROUPPROXYMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractProxyModel>
-#endif
-
-#if !defined(Q_MOC_RUN)
 #include <QPixmap>
-#endif
 
 class AbstractGroupProxyModel
     : public QAbstractProxyModel

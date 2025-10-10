@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QEvent>
 #include <QGraphicsWidget>
 #include <QObject>
@@ -19,7 +18,6 @@
 
 #include <GraphCanvas/Components/MimeDataHandlerBus.h>
 #include <GraphCanvas/Styling/StyleHelper.h>
-#endif
 
 class QGraphicsPixmapItem;
 class QGraphicsLinearLayout;

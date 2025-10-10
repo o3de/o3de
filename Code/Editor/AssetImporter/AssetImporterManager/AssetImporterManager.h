@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <AssetImporter/UI/SelectDestinationDialog.h>
-#endif
 
 class QStringList;
 class QFile;

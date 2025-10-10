@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <QWidget>
-#endif
 
 class PropertySpriteCtrl : public QWidget
 {

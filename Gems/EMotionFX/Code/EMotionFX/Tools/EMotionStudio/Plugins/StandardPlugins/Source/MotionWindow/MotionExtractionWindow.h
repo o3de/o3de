@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
 #include <MCore/Source/StandardHeaders.h>
+
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)

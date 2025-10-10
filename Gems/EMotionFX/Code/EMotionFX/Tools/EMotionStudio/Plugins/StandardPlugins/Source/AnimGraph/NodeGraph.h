@@ -8,17 +8,16 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Debug/Timer.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
+
 #include <QColor>
 #include <QFont>
 #include <QPen>
 #include <QTextOption>
 #include <QTimer>
 #include <QTransform>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit);
 QT_FORWARD_DECLARE_CLASS(QPainter);

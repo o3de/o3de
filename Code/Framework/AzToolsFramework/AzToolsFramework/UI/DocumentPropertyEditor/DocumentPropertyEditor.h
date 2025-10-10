@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
@@ -22,8 +21,6 @@
 
 #include <QHBoxLayout>
 #include <QScrollArea>
-
-#endif // Q_MOC_RUN
 
 class QCheckBox;
 

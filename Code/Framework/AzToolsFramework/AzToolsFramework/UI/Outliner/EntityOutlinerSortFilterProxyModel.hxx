@@ -10,12 +10,9 @@
   
  #include <AzToolsFramework/AzToolsFrameworkAPI.h>
  
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <QSortFilterProxyModel>
 #include <AzCore/Memory/SystemAllocator.h>
-#endif
-
 
 namespace AzToolsFramework
 {

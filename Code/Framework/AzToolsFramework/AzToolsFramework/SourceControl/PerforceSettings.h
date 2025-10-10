@@ -10,12 +10,11 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h> // for SouceControlSettingInfo
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QString>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h> // for SouceControlSettingInfo
-#endif
+
 
 class QLineEdit;
 

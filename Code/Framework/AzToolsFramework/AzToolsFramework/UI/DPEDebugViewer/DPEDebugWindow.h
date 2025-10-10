@@ -10,9 +10,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
-#endif // Q_MOC_RUN
 
 namespace Ui
 {

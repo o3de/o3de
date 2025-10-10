@@ -9,11 +9,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
 #include <QAbstractButton>
 #include <QDialog>
-#endif
 
 namespace Ui {
     class CNewLevelDialog;

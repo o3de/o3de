@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
+
 #include <QDialog>
-#endif
 
 
 namespace EMStudio

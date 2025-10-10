@@ -8,15 +8,14 @@
 
 #ifndef LUAEDITOR_LUACOMPLETIONMODEL_H
 #define LUAEDITOR_LUACOMPLETIONMODEL_H
-
-#if !defined(Q_MOC_RUN)
-#include <AzCore/base.h>
-#include <QStringListModel>
-#include <Source/LUA/LUAEditorStyleMessages.h>
-#include <QRegularExpression>
-#endif
-
 #pragma once
+
+#include <AzCore/base.h>
+#include <Source/LUA/LUAEditorStyleMessages.h>
+
+#include <QStringListModel>
+#include <QRegularExpression>
+
 
 namespace LUAEditor
 {

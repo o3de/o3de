@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 
 #include <AzCore/std/containers/vector.h>
@@ -17,7 +16,6 @@
 
 #include <Source/Editor/ObjectEditor.h>
 #include <EMotionFX/Source/Event.h>
-#endif
 
 class QLabel;
 class QMenu;

@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <AzCore/Math/Color.h>
-#endif
 
 namespace AzQtComponents
 {
