@@ -10,7 +10,7 @@
 #include "LUAEditorStyleMessages.h"
 #include "LUAEditorBlockState.h"
 
-#include <Source/LUA/moc_LUAEditorFindResults.cpp>
+
 #include <Source/LUA/ui_LUAEditorFindResults.h>
 
 #include <QRegularExpression>

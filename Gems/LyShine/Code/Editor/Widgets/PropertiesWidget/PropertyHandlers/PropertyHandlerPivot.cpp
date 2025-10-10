@@ -187,4 +187,3 @@ void PropertyHandlerPivot::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerPivot());
 }
 
-#include <moc_PropertyHandlerPivot.cpp>

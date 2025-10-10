@@ -131,4 +131,3 @@ LineEditPage::~LineEditPage()
 {
 }
 
-#include "Gallery/moc_LineEditPage.cpp"

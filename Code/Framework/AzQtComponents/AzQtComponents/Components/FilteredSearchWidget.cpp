@@ -1588,5 +1588,3 @@ namespace AzQtComponents
         return QStyledItemDelegate::sizeHint(option, index);
     }
 } // namespace AzQtComponents
-
-#include "Components/moc_FilteredSearchWidget.cpp"

@@ -1768,5 +1768,4 @@ namespace internal
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_SpinBox.cpp"
 

@@ -1474,6 +1474,5 @@ namespace ScriptCanvasEditor
         }
     }
 
-#include <Editor/View/Widgets/ValidationPanel/moc_GraphValidationDockWidget.cpp>
 
 }

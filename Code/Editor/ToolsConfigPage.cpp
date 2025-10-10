@@ -798,4 +798,3 @@ void CToolsConfigPage::OnScriptCmd()
     m_ui->m_toggleVar->setChecked(false);
 }
 
-#include <moc_ToolsConfigPage.cpp>

@@ -392,4 +392,3 @@ namespace AssetBundler
 
 } // namespace AssetBundler
 
-#include <source/utils/moc_GUIApplicationManager.cpp>

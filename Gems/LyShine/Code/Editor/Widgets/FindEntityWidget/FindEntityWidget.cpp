@@ -261,4 +261,3 @@ void FindEntityWidget::OnCancelClicked()
     emit OnCanceled();
 }
 
-#include <moc_FindEntityWidget.cpp>

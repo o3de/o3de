@@ -664,5 +664,3 @@ void TimelineWidget::SetPlayCallback(const std::function<void()>& callback)
 {
     m_playCallback = callback;
 }
-
-#include <Controls/moc_TimelineCtrl.cpp>

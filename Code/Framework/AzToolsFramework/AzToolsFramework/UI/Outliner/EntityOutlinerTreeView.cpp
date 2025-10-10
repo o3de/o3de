@@ -513,4 +513,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <UI/Outliner/moc_EntityOutlinerTreeView.cpp>

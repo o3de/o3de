@@ -441,4 +441,3 @@ void VectorInput::UpdateTabOrder()
 
 }
 
-#include <Components/Widgets/moc_VectorInput.cpp>

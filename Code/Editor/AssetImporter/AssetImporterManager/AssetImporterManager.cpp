@@ -812,5 +812,3 @@ QString AssetImporterManager::GetFileName(QString path)
 {
     return QFileInfo(path).fileName();
 }
-
-#include <AssetImporter/AssetImporterManager/moc_AssetImporterManager.cpp>

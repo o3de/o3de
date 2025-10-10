@@ -771,5 +771,4 @@ namespace GraphCanvas
         ResetDisplay();
     }
 
-#include <StaticLib/GraphCanvas/Widgets/NodePalette/moc_NodePaletteWidget.cpp>
 }

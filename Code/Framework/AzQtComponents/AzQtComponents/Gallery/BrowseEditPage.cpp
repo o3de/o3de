@@ -111,4 +111,3 @@ BrowseEditPage::~BrowseEditPage()
 {
 }
 
-#include "Gallery/moc_BrowseEditPage.cpp"

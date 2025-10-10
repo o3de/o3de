@@ -3562,4 +3562,3 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
 AZ_DECLARE_MODULE_INITIALIZATION
 
-#include <moc_CryEdit.cpp>

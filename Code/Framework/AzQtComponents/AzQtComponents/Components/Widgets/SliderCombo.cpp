@@ -475,4 +475,3 @@ void SliderDoubleCombo::refreshUi()
 
 }
 
-#include <Components/Widgets/moc_SliderCombo.cpp>
