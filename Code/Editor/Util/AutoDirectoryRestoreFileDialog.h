@@ -10,9 +10,7 @@
 #define CRYINCLUDE_EDITOR_UTIL_AUTODIRECTORYRESTOREFILEDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QFileDialog>
-#endif
 
 class CAutoDirectoryRestoreFileDialog
     : public QFileDialog

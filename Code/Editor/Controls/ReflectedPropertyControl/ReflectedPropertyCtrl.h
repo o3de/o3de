@@ -10,14 +10,12 @@
 #define CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYCTRL_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "Include/EditorCoreAPI.h"
 #include "ReflectedPropertyItem.h"
 #include "ReflectedVar.h"
 #include <QFrame>
-#endif
 
 class QLineEdit;
 class QLabel;

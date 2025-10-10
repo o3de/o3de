@@ -10,14 +10,13 @@
 
 #include "FileWatcherBase.h"
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/thread.h>
+
 #include <QString>
 #include <QObject>
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //! FileWatcher

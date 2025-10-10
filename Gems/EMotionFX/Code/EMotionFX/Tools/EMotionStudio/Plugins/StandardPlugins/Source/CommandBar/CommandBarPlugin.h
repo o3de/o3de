@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/EventHandler.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/ToolBarPlugin.h>
+
 #include <QProgressBar>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QLineEdit)

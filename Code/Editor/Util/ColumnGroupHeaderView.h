@@ -8,10 +8,8 @@
 #ifndef COLUMNGROUPHEADERVIEW_H
 #define COLUMNGROUPHEADERVIEW_H
 
-#if !defined(Q_MOC_RUN)
 #include <QHeaderView>
 #include <QVector>
-#endif
 
 class ColumnGroupProxyModel;
 

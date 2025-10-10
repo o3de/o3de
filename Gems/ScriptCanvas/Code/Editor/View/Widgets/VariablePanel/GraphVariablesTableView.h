@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
 #include <QRegularExpression>
 #include <QString>
@@ -23,7 +22,6 @@
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h>
-#endif
 
 namespace ScriptCanvasEditor
 {

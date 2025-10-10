@@ -8,11 +8,8 @@
 #ifndef COLUMNSORTPROXYMODEL_H
 #define COLUMNSORTPROXYMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractProxyModel>
-
 #include <QVector>
-#endif
 
 class ColumnGroupProxyModel;
 

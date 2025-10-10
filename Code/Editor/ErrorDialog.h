@@ -7,11 +7,9 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 
 #include "Include/EditorCoreAPI.h"
-#endif
 
 namespace Ui 
 {

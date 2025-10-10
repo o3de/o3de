@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QLocalSocket>
-#endif
 
 namespace AtomToolsFramework
 {

@@ -8,17 +8,17 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/string/string.h>
+#include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
+#include <EMotionFX/Source/Recorder.h>
+#include "TimeTrack.h"
 
-#include <QWidget>
 #include <QPen>
 #include <QFont>
-#include <QBrush>
 #include <QPixmap>
-#endif
+#include <QBrush>
 
 
 

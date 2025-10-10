@@ -9,12 +9,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
 #include <QAbstractButton>
 #include <QDialog>
-#include <QVector>
-#endif
 
 #include "LevelRoots.h"
 

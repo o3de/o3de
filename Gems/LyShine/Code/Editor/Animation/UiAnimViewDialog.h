@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewNodes.h"
@@ -19,7 +18,6 @@
 #include "Undo/IUndoManagerListener.h"
 
 #include <QMainWindow>
-#endif
 
 class QSplitter;
 class QComboBox;

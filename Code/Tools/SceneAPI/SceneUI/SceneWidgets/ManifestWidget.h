@@ -8,14 +8,13 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QTabWidget>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 namespace AZ
 {

@@ -9,11 +9,8 @@
 
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
-#endif
 
 namespace AzToolsFramework
 {

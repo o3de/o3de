@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/DockBarButton.h>
 #include <AzQtComponents/Components/InteractiveWindowGeometryChanger.h>
@@ -18,7 +17,6 @@
 #include <QPoint>
 #include <QPointer>
 #include <QTimer>
-#endif
 
 class QMouseEvent;
 class QMenu;

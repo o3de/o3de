@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <QDialog>
-#endif
 
 struct AnimGraphSelectionItem;
 

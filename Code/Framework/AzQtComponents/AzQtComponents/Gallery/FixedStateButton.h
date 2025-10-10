@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QPushButton>
 #include <QStyle>
-#endif
 
 class FixedStateButton
     : public QPushButton

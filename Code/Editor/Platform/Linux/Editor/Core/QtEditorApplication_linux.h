@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Editor/Core/QtEditorApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#endif
 
 using xcb_connection_t = struct xcb_connection_t;
 
