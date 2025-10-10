@@ -8,10 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+
 #include <QObject>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)

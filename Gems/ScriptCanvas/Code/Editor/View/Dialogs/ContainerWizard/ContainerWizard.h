@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QDialog>
@@ -22,7 +21,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <ScriptCanvas/Core/Core.h>
-#endif
 
 namespace Ui
 {

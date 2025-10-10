@@ -11,15 +11,12 @@
 #define CRYINCLUDE_EDITOR_CRYEDIT_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include "CryEditDoc.h"
 #include "ViewPane.h"
 
 #include <QSettings>
-
-#endif
 
 class CCryDocManager;
 class CCryEditDoc;

@@ -13,9 +13,7 @@
 
 #include <Include/EditorCoreAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QToolButton>
-#endif
 
 class QColor;
 class QPaintEvent;

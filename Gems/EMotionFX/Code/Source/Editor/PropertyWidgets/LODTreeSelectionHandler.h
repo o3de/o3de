@@ -9,7 +9,6 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionWidget.h>
@@ -17,7 +16,7 @@
 
 #include <SceneAPIExt/Data/LodNodeSelectionList.h>
 #include <Editor/PropertyWidgets/LODTreeSelectionWidget.h>
-#endif
+
 class QWidget;
 
 namespace EMotionFX

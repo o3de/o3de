@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/TagSelector.h>
+
 #include <QWidget>
-#endif
 
 namespace EMotionFX
 {

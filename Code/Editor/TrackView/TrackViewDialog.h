@@ -12,7 +12,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <IMovieSystem.h>
 
 #include "AnimationContext.h"
@@ -28,7 +27,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QMainWindow>
-#endif
 
 class QComboBox;
 class QLabel;

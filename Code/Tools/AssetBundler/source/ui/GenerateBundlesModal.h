@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 
 #include <QDialog>
 #include <QSharedPointer>
-#endif
 
 namespace Ui
 {

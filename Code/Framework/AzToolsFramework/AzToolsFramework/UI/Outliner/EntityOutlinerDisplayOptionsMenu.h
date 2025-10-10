@@ -9,10 +9,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QMenu>
-
-#endif
 
 class QAction;
 

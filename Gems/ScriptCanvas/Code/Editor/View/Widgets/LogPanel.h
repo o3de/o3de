@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzToolsFramework/UI/Logging/LogPanel_Panel.h>
@@ -21,7 +20,6 @@
 
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
-#endif
 
 #include <QScopedPointer>
 

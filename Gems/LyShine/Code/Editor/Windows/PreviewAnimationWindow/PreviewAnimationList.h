@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityId.h>
+
 #include <QMainWindow>
-#endif
 
 class EditorWindow;
 class QIcon;

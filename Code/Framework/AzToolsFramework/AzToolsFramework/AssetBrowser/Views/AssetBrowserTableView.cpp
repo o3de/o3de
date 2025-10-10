@@ -27,7 +27,6 @@
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QApplication>
 #include <QClipboard>
 #include <QDragMoveEvent>
@@ -35,7 +34,6 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QVBoxLayout>
-#endif
 
 namespace AzToolsFramework
 {

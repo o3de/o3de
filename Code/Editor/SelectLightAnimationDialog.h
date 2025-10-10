@@ -14,9 +14,7 @@
 #define CRYINCLUDE_EDITOR_SELECTLIGHTANIMATIONDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "GenericSelectItemDialog.h"
-#endif
 
 class CSelectLightAnimationDialog
     : public CGenericSelectItemDialog

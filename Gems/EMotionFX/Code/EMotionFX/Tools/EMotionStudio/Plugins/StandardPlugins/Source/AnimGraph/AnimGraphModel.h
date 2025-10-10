@@ -8,19 +8,18 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/hash.h>
+#include <Editor/QtMetaTypes.h>
 #include <EMotionFX/Source/AnimGraphBus.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <EMotionFX/Source/BlendTreeConnection.h>
 #include <MCore/Source/Command.h>
+
 #include <QAbstractItemModel>
 #include <QItemSelectionModel>
-#include <Editor/QtMetaTypes.h>
-#endif
 
 
 namespace EMotionFX

@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AudioControl.h>
 
 #include <QWidget>
@@ -17,7 +16,6 @@
 #include <QColor>
 
 #include <Source/Editor/ui_ConnectionsWidget.h>
-#endif
 
 namespace AudioControls
 {

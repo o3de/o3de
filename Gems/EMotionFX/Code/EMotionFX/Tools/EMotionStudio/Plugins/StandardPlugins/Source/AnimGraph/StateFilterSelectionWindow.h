@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include "../StandardPluginsConfig.h"
+
 #include <QDialog>
 #include <QTableWidget>
 #include <QTableWidgetItem>
-#endif
 
 EMFX_FORWARD_DECLARE(AnimGraphNodeGroup);
 

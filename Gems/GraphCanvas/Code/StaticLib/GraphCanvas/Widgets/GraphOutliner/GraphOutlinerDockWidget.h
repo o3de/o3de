@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAction>
 #include <QTimer>
 #include <QHBoxLayout>
@@ -16,8 +15,8 @@
 #include <QScrollArea>
 #include <QTableView>
 #include <QPushButton>
-#include <qitemselectionmodel.h>
-#include <qlabel.h>
+#include <QItemSelectionModel>
+#include <QLabel>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,7 +29,6 @@
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.h>
-#endif
 
 namespace GraphCanvas
 {

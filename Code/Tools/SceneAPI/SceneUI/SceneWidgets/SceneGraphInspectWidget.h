@@ -8,11 +8,10 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 namespace AzToolsFramework
 {

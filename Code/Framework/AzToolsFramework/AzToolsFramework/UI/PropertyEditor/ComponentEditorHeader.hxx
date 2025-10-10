@@ -9,12 +9,10 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QFrame>
 #include <AzCore/std/string/string.h>
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-#endif
 
 class QHBoxLayout;
 class QLabel;

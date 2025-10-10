@@ -12,9 +12,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
-#endif
 
 class CConsoleSCB;
 

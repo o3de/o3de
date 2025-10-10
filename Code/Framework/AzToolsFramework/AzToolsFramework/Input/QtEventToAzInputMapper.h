@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
@@ -19,13 +18,12 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QEvent>
 #include <QObject>
 #include <QPoint>
-#endif //! defined(Q_MOC_RUN)
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 
 class QWidget;

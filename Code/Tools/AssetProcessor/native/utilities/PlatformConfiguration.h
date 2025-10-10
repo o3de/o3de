@@ -8,7 +8,6 @@
 #ifndef PLATFORMCONFIGURATION_H
 #define PLATFORMCONFIGURATION_H
 
-#if !defined(Q_MOC_RUN)
 #include <QList>
 #include <QString>
 #include <QObject>
@@ -25,7 +24,7 @@
 #include <native/AssetManager/assetScanFolderInfo.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
-#endif
+
 #include "IPathConversion.h"
 
 

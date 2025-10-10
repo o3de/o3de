@@ -8,10 +8,11 @@
 
 #ifndef WATCHES_VIEW_H
 #define WATCHES_VIEW_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Script/ScriptContextDebug.h>
 
 #include <QObject>
 #include <QWidget>
@@ -21,11 +22,8 @@
 
 #include "LUAWatchesDebuggerMessages.h"
 #include "LUALocalsTrackerMessages.h"
-#include <AzCore/Script/ScriptContextDebug.h>
 #include "LUABreakpointTrackerMessages.h"
-#endif
 
-#pragma once
 
 class WatchesFilterModel;
 

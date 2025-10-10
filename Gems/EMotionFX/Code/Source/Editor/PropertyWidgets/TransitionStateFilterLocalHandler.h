@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QWidget>
 #include <QPushButton>
-#endif
 
 
 namespace EMotionFX

@@ -11,12 +11,10 @@
 #define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 
 #include <functional>
 #include <QSharedPointer>
-#endif
 
 // CViewportTitleDlg dialog
 class CLayoutViewPane;

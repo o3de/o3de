@@ -8,9 +8,7 @@
 #ifndef ABSTRACTSORTMODEL_H
 #define ABSTRACTSORTMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
-#endif
 
 class AbstractSortModel
     : public QAbstractTableModel

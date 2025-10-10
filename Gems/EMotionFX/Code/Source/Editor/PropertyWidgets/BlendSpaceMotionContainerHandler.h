@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/Source/BlendSpaceNode.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QComboBox>
 #include <QGridLayout>
 #include <QLabel>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)

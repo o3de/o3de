@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractTableModel>
 #include <QItemSelectionModel>
 #include <QMainWindow>
@@ -21,7 +20,6 @@
 #include <GraphCanvas/Types/Types.h>
 
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-#endif
 
 namespace Ui
 {
