@@ -372,4 +372,3 @@ void WelcomeScreenDialog::previewAreaScrolled()
     m_messageScrollReported = true;
 }
 
-#include <WelcomeScreen/moc_WelcomeScreenDialog.cpp>

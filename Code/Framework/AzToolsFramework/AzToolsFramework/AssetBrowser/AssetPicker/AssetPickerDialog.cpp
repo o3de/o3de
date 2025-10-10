@@ -326,4 +326,3 @@ namespace AzToolsFramework
     } // AssetBrowser
 } // AzToolsFramework
 
-#include <AssetBrowser/AssetPicker/moc_AssetPickerDialog.cpp>

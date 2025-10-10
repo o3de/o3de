@@ -68,5 +68,4 @@ namespace GraphCanvas
         setEnabled(true);
     }
 
-#include <StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/moc_ContextMenuAction.cpp>
 }

@@ -398,4 +398,3 @@ namespace ScriptCanvasEditor
     }   
 }
 
-#include <Editor/View/Widgets/DataTypePalette/moc_DataTypePaletteModel.cpp>

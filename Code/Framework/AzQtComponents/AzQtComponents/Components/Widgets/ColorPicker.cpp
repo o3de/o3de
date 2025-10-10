@@ -1540,4 +1540,3 @@ void ColorPicker::hideEvent(QHideEvent* event)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_ColorPicker.cpp"

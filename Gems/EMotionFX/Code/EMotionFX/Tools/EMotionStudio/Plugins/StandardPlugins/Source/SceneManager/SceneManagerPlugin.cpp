@@ -322,4 +322,3 @@ namespace EMStudio
     bool SceneManagerPlugin::CommandAdjustActorInstanceCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)       { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceSceneManagerPlugin(); }
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/moc_SceneManagerPlugin.cpp>

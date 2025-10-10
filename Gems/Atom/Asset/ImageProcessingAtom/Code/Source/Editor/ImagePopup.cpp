@@ -42,4 +42,3 @@ namespace ImageProcessingAtomEditor
     {
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_ImagePopup.cpp>

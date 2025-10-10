@@ -205,4 +205,3 @@ void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
        emit AppendUnsavedChangesToTitle(m_hasUnsavedChanges);
     }
 }
-#include <moc_ImporterRootDisplay.cpp>

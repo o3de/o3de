@@ -149,4 +149,3 @@ void CTVNewSequenceDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
-#include <moc_TrackViewNewSequenceDialog.cpp>

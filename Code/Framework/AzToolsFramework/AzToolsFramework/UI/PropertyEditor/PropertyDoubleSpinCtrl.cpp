@@ -521,4 +521,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyDoubleSpinCtrl.cpp"

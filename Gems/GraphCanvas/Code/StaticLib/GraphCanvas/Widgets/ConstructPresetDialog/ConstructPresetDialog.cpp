@@ -511,5 +511,4 @@ namespace GraphCanvas
         AssetEditorPresetNotificationBus::Handler::BusConnect(m_editorId);
     }
 
-#include <StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/moc_ConstructPresetDialog.cpp>
 }

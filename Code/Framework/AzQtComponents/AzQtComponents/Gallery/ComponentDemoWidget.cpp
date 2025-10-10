@@ -182,4 +182,3 @@ void ComponentDemoWidget::createEditMenuPlaceholders()
     redo->setShortcut(QKeySequence::Redo);
 }
 
-#include "Gallery/moc_ComponentDemoWidget.cpp"

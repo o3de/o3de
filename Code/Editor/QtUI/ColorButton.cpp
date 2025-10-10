@@ -56,4 +56,3 @@ void ColorButton::OnClick()
     }
 }
 
-#include <QtUI/moc_ColorButton.cpp>
