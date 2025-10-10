@@ -478,5 +478,4 @@ namespace GraphCanvas
         ActiveGraphChanged(newDockWidget);
     }
     
-#include <StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/moc_GraphCanvasEditorCentralWidget.cpp>
 }

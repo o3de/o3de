@@ -102,5 +102,4 @@ namespace OpenParticleSystemEditor
         update();
     }
 
-#include <moc_GradientWidget.cpp>
 } // namespace OpenParticleSystemEditor

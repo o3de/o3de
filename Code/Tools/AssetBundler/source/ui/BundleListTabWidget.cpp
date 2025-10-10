@@ -160,4 +160,3 @@ namespace AssetBundler
     }
 }
 
-#include <source/ui/moc_BundleListTabWidget.cpp>

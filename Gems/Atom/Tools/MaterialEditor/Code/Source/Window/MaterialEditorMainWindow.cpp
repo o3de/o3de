@@ -102,4 +102,3 @@ namespace MaterialEditor
     }
 } // namespace MaterialEditor
 
-#include <Window/moc_MaterialEditorMainWindow.cpp>

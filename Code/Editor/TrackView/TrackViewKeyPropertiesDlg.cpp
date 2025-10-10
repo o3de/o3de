@@ -466,5 +466,3 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
         }
     }
 }
-
-#include <TrackView/moc_TrackViewKeyPropertiesDlg.cpp>

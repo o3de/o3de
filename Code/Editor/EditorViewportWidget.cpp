@@ -2239,4 +2239,3 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
     return AZStd::nullopt;
 }
 
-#include <moc_EditorViewportWidget.cpp>

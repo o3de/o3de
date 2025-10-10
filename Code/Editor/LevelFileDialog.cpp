@@ -533,4 +533,3 @@ void CLevelFileDialog::LoadLastUsedLevelPath()
     ui->nameLineEdit->setText(lastLoadedFileName);
 }
 
-#include <moc_LevelFileDialog.cpp>

@@ -237,5 +237,4 @@ namespace GraphCanvas
         }
     }
 
-#include <Source/Components/NodePropertyDisplays/moc_StringNodePropertyDisplay.cpp>
 }

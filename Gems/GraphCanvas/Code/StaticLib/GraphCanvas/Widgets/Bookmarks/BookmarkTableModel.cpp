@@ -540,5 +540,4 @@ namespace GraphCanvas
         SetFilter("");
     }
 
-#include <StaticLib/GraphCanvas/Widgets/Bookmarks/moc_BookmarkTableModel.cpp>
 }

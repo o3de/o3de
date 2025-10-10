@@ -246,5 +246,3 @@ QString SelectDestinationDialog::DestinationDirectory() const
     return QDir::fromNativeSeparators(m_ui->DestinationLineEdit->text());
 }
 
-#include <AssetImporter/UI/moc_SelectDestinationDialog.cpp>
-

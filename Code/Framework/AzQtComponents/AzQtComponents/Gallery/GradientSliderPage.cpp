@@ -53,5 +53,4 @@ slider->updateGradient();
 GradientSliderPage::~GradientSliderPage()
 {
 }
-#include "Gallery/moc_GradientSliderPage.cpp"
 
