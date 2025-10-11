@@ -18,9 +18,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4244 4458, "-Wunknown-warning-option") // 4251: 'QT
 #include <QDockWidget>
 #include <QDebug>
 #include <QDataStream>
-#include <QtWidgets/private/qdockarealayout_p.h>
-#include <QtWidgets/private/qtoolbararealayout_p.h>
-#include <QtWidgets/private/qmainwindowlayout_p.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework

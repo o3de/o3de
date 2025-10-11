@@ -68,11 +68,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QTableView>
 #include <QTextEdit>
 #include <QToolButton>
-#include <QtGui/private/qscreen_p.h>
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 AZ_POP_DISABLE_WARNING
-
-#include <QtWidgets/private/qstylehelper_p.h>
 
 #include <limits>
 #include <QListWidget>

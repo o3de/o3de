@@ -12,6 +12,7 @@
 #include <QActionEvent>
 #include <QHBoxLayout>
 #include <QToolButton>
+#include <QMenu>
 
 namespace AzQtComponents
 {

@@ -12,7 +12,6 @@
 #include <QApplication>
 #include <QScreen>
 #include <QWindow>
-#include <QtWinExtras/QtWin>
 #include <QGlobalStatic>
 #include <QHash>
 #include <QMutex>

@@ -74,7 +74,7 @@ public: // types
 
     struct UiCanvasTabMetadata
     {
-        AZ::EntityId m_canvasEntityId;
+        AZ::EntityId m_canvasEntityId = AZ::EntityId{};
     };
 
 public: // member functions

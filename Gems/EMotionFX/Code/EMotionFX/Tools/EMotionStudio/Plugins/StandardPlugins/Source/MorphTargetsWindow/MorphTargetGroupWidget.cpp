@@ -37,7 +37,7 @@ namespace EMStudio
         // checkbox to enable/disable manual mode for all morph targets
         m_selectAll = new QCheckBox("Select All");
         m_selectAll->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
-        connect(m_selectAll, &QCheckBox::stateChanged, this, &MorphTargetGroupWidget::SetManualModeForAll);
+        connect(m_selectAll, &QCheckBox::checkStateChanged, this, &MorphTargetGroupWidget::SetManualModeForAll);
 
         // button for resetting all morph targets
         QPushButton* resetAll = new QPushButton("Reset All");

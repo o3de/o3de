@@ -193,7 +193,7 @@ namespace AssetProcessor
         SourceUUIDToSourceAssetMap m_sourceUUIDToSourceAssetMap; // map of uuids to SourceAssetReferences for assets that are currently in the processing queue
         SourceAssetToSourceUuidMap m_sourceAssetToSourceUUIDMap; // map of SourceAssetReferences to UUIDs for assets that are currently in the processing queue
 
-        QMutex m_registriesMutex;
+        QRecursiveMutex m_registriesMutex;
         QHash<QString, AzFramework::AssetRegistry> m_registries; // per platform.
         AssetProcessor::PlatformConfiguration* m_platformConfig;
         QStringList m_platforms;

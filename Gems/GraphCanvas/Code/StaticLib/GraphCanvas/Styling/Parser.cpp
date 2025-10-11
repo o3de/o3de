@@ -861,8 +861,7 @@ namespace GraphCanvas
                     else
                     {
                         // Check all available font families (from both the system and explicitly registered with the application)
-                        QFontDatabase fontDatabase;
-                        if (!fontDatabase.families().contains(valueStr))
+                        if (!QFontDatabase::families().contains(valueStr))
                         {
                             qWarning() << "Invalid font-family:" << valueStr;
                         }

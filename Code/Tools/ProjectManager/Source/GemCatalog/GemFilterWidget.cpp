@@ -223,7 +223,7 @@ namespace O3DE::ProjectManager
         m_seeAllLessLabel->setText(m_seeAll ? tr("See less") : tr("See all"));
 
         int showCount = m_seeAll ? elements.size() : m_defaultShowCount;
-        showCount = AZ::GetMin(showCount, elements.size());
+        showCount = AZ::GetMin<int>(showCount, elements.size());
         for (int i = 0; i < showCount; ++i)
         {
             elements[i]->show();

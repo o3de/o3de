@@ -191,7 +191,7 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
         return AZ::Uuid::CreateNull();
     }
 
-    QStringRef extension = filename.midRef(dotIndex);
+    QString extension = filename.mid(dotIndex);
     for (const auto& pair : m_extensionToAssetType)
     {
         QString qExtensions = pair.first.c_str();

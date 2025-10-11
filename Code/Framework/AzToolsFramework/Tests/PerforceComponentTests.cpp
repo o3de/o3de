@@ -376,7 +376,7 @@ namespace UnitTest
 
         {
             QTextStream ts(&writer);
-            ts.setCodec("UTF-8");
+            ts.setEncoding(QStringConverter::Utf8);
             ts << contents;
         }
         return true;

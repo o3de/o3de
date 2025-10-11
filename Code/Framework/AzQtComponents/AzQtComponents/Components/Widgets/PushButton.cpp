@@ -24,9 +24,6 @@
 #include <QToolButton>
 #include <QVariant>
 
-#include <QtWidgets/private/qstyle_p.h>
-#include <QtWidgets/private/qstylehelper_p.h>
-
 namespace AzQtComponents
 {
 
@@ -561,8 +558,7 @@ static QPixmap initializeDownArrowPixmap(const QColor& arrowColor, const QStyleO
     const int rectMax = qMin(rect.height(), rect.width());
     const int size = qMin(arrowMax, rectMax);
 
-    QPixmap cachePixmap;
-    cachePixmap = styleCachePixmap(rect.size());
+    QPixmap cachePixmap(rect.size());
     cachePixmap.fill(Qt::transparent);
     QPainter cachePainter(&cachePixmap);
 

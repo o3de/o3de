@@ -14,7 +14,6 @@
 #include "PluginOptionsBus.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QScreen>
 #include <QSettings>
@@ -178,7 +177,6 @@ namespace EMStudio
         }
         else
         {
-            QDesktopWidget desktopWidget;
             const QRect primaryScreenRect = QApplication::primaryScreen()->availableGeometry();
             const int posX = (primaryScreenRect.width() / 2) - (sizeX / 2);
             const int posY = (primaryScreenRect.height() / 2) - (sizeY / 2);
