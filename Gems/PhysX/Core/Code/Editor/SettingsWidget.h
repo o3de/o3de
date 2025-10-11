@@ -10,10 +10,12 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
-#include <QWidget>
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #endif
+
+#include <QWidget>
 
 namespace PhysX
 {

@@ -9,7 +9,6 @@
 
 #pragma once
 
-
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
@@ -77,7 +76,10 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder(PropertyCheckBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyCheckBoxCtrl* widget) override { widget->UpdateTabOrder(); }
 
-        void ConsumeAttribute(PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        void ConsumeAttribute(PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
+        {
+            ConsumeAttributeCommon(widget, attrib, attrValue, debugName);
+        }
     };
 
     class AZTF_API BoolPropertyCheckBoxHandler

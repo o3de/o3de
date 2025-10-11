@@ -73,61 +73,6 @@ namespace AzToolsFramework
         setTabOrder(GetFirstInTabOrder(), GetLastInTabOrder());
     }
 
-    template<class ValueType>
-    void PropertyComboBoxHandlerCommon<ValueType>::ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
-    {
-        if (attrib == AZ::Edit::Attributes::StringList)
-        {
-            AZStd::vector<AZStd::string> value;
-            if (attrValue->Read<AZStd::vector<AZStd::string> >(value))
-            {
-                GUI->Add(value);
-            }
-            else
-            {
-                (void)debugName;
-                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'StringList' attribute from property '%s' into string combo box. Expected string vector.", debugName);
-            }
-        }
-        else if (attrib == AZ::Edit::Attributes::ComboBoxEditable)
-        {
-            bool value;
-            if (attrValue->Read<bool>(value))
-            {
-                GUI->GetComboBox()->setEditable(value);
-            }
-            else
-            {
-                // emit a warning!
-                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'EditableCombBox' attribute from property '%s' into string combo box", debugName);
-            }
-            return;
-        }
-        else if (attrib == AZ_CRC_CE("EditButtonVisible"))
-        {
-            bool visible;
-            if (attrValue->Read<bool>(visible))
-            {
-                GUI->GetEditButton()->setVisible(visible);
-            }
-        }
-        else if (attrib == AZ_CRC_CE("EditButtonCallback"))
-        {
-            if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<GenericEditResultOutcome<AZStd::string>(AZStd::string)>*>(attrValue->GetAttribute()))
-            {
-                GUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
-            };
-        }
-        else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
-        {
-            AZStd::string toolTip;
-            if (attrValue->Read<AZStd::string>(toolTip))
-            {
-                GUI->GetEditButton()->setToolTip(toolTip.c_str());
-            }
-        }
-    }
-
     QWidget* StringEnumPropertyComboBoxHandler::CreateGUI(QWidget* pParent)
     {
         PropertyStringComboBoxCtrl* newCtrl = aznew PropertyStringComboBoxCtrl(pParent);

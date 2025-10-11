@@ -10,8 +10,8 @@
 #include "PropertyQTConstants.h"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QHBoxLayout>
+#include <QCheckBox>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 
@@ -120,13 +120,6 @@ namespace AzToolsFramework
                 widget->setValue(value);
             }
         }
-    }
-
-    template<class ValueType>
-    void PropertyCheckBoxHandlerCommon<ValueType>::ConsumeAttribute(
-        PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
-    {
-        ConsumeAttributeCommon(widget, attrib, attrValue, debugName);
     }
 
     QWidget* BoolPropertyCheckBoxHandler::CreateGUI(QWidget* parent)

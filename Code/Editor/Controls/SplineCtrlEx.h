@@ -16,7 +16,9 @@
 #include "Controls/WndGridHelper.h"
 #include "IKeyTimeSet.h"
 #include "Undo/IUndoObject.h"
+#include <Util/EditorUtils.h>
 #include <QWidget>
+#include <Range.h>
 #endif
 
 // Custom styles for this control.

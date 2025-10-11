@@ -8,7 +8,7 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QClipBoard>
+#include <QClipboard>
 #include <QHeaderView>
 
 #include <GraphCanvas/Components/SceneBus.h>

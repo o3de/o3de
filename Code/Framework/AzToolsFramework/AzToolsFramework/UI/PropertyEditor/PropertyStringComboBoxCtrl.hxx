@@ -16,6 +16,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include "PropertyEditorAPI.h"
 #include <UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <QWidget>
 #include <QToolButton>
@@ -49,13 +52,70 @@ namespace AzToolsFramework
         void UpdateTabOrder() override;
     };
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4661) // no suitable definition provided for explicit template instantiation request
+#endif
+
     template <class ValueType>
     class PropertyComboBoxHandlerCommon
         : public PropertyHandler<ValueType, PropertyStringComboBoxCtrl>
     {
         AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::ComboBox; }
         void UpdateWidgetInternalTabbing(PropertyStringComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }
-        void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
+        {
+            if (attrib == AZ::Edit::Attributes::StringList)
+            {
+                AZStd::vector<AZStd::string> value;
+                if (attrValue->Read<AZStd::vector<AZStd::string> >(value))
+                {
+                    GUI->Add(value);
+                }
+                else
+                {
+                    (void)debugName;
+                    AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'StringList' attribute from property '%s' into string combo box. Expected string vector.", debugName);
+                }
+            }
+            else if (attrib == AZ::Edit::Attributes::ComboBoxEditable)
+            {
+                bool value;
+                if (attrValue->Read<bool>(value))
+                {
+                    GUI->GetComboBox()->setEditable(value);
+                }
+                else
+                {
+                    // emit a warning!
+                    AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'EditableCombBox' attribute from property '%s' into string combo box", debugName);
+                }
+                return;
+            }
+            else if (attrib == AZ_CRC_CE("EditButtonVisible"))
+            {
+                bool visible;
+                if (attrValue->Read<bool>(visible))
+                {
+                    GUI->GetEditButton()->setVisible(visible);
+                }
+            }
+            else if (attrib == AZ_CRC_CE("EditButtonCallback"))
+            {
+                if (auto* editButtonInvokable = azrtti_cast<AZ::AttributeInvocable<GenericEditResultOutcome<AZStd::string>(AZStd::string)>*>(attrValue->GetAttribute()))
+                {
+                    GUI->SetEditButtonCallBack(editButtonInvokable->GetCallable());
+                };
+            }
+            else if (attrib == AZ_CRC_CE("EditButtonToolTip"))
+            {
+                AZStd::string toolTip;
+                if (attrValue->Read<AZStd::string>(toolTip))
+                {
+                    GUI->GetEditButton()->setToolTip(toolTip.c_str());
+                }
+            }
+        }
     };
 
     class AZTF_API StringEnumPropertyComboBoxHandler
@@ -74,4 +134,8 @@ namespace AzToolsFramework
     };
 
     AZTF_API void RegisterStringComboBoxHandler();
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 };

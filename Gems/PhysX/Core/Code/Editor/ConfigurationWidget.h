@@ -14,6 +14,8 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #endif
 
+#include <QWidget>
+
 namespace AzQtComponents
 {
     class TabWidget;

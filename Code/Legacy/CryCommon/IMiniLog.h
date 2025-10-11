@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <platform.h>
 #include <AzCore/std/function/function_fwd.h>
 namespace AZ::IO
 {

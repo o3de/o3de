@@ -16,6 +16,8 @@
 #include "ProjectSettingsSerialization.h"
 #include "ValidatorBus.h"
 
+#include <AzCore/Math/Guid.h>
+
 #include <QProcess>
 #include <QScopedPointer>
 #include <QWidget>

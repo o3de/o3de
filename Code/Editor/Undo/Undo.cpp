@@ -13,7 +13,6 @@
 
 #include "Settings.h"
 #include "IUndoManagerListener.h"
-#include <list>
 
 #include <QString>
 #include "QtUtilWin.h"
@@ -62,7 +61,7 @@ public:
 
 private:
     //! Undo steps included in this step.
-    std::vector<CUndoStep*> m_undoSteps;
+    AZStd::vector<CUndoStep*> m_undoSteps;
 };
 
 // Helper class for CUndoManager that monitors the Asset Manager and suspends undo recording while the Asset Manager
@@ -446,7 +445,7 @@ void CUndoManager::ClearRedoStack()
     }
     m_bClearRedoStackQueued = false;
 
-    for (std::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
+    for (AZStd::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
     {
         delete *it;
     }
@@ -458,7 +457,7 @@ void CUndoManager::ClearRedoStack()
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::ClearUndoStack()
 {
-    for (std::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+    for (AZStd::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
     {
         delete *it;
     }
@@ -682,15 +681,15 @@ int CUndoManager::GetDatabaseSize()
 {
     int size = 0;
     {
-        for (std::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+        for (CUndoStep* step : m_undoStack)
         {
-            size += (*it)->GetSize();
+            size += step->GetSize();
         }
     }
     {
-        for (std::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
+        for (CUndoStep* step : m_redoStack)
         {
-            size += (*it)->GetSize();
+            size += step->GetSize();
         }
     }
     return size;

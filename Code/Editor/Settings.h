@@ -12,6 +12,8 @@
 #define CRYINCLUDE_EDITOR_SETTINGS_H
 #include "SettingsManager.h"
 
+#include "SandboxAPI.h"
+
 #include <QColor>
 #include <QFont>
 #include <QRect>
