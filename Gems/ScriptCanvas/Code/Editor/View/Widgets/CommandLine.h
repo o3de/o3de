@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <QObject>
+#include <QAbstractTableModel>
 #include <QDialog>
 #include <QLineEdit>
 #include <QObject>

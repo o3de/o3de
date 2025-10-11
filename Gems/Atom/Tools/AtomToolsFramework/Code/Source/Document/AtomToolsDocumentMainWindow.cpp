@@ -799,7 +799,7 @@ namespace AtomToolsFramework
     void AtomToolsDocumentMainWindow::dragMoveEvent(QDragMoveEvent* event)
     {
         // Files dragged into the main window must only be accepted if they are within the client area
-        event->setAccepted(centralWidget() && centralWidget()->geometry().contains(event->pos()));
+        event->setAccepted(centralWidget() && centralWidget()->geometry().contains(event->position().toPoint()));
         Base::dragMoveEvent(event);
     }
 
@@ -811,7 +811,7 @@ namespace AtomToolsFramework
     void AtomToolsDocumentMainWindow::dropEvent(QDropEvent* event)
     {
         // If supported document files are dragged into the main window client area attempt to open them
-        if (centralWidget() && centralWidget()->geometry().contains(event->pos()))
+        if (centralWidget() && centralWidget()->geometry().contains(event->position().toPoint()))
         {
             AZStd::vector<AZStd::string> acceptedPaths;
             for (const AZStd::string& path : GetPathsFromMimeData(event->mimeData()))

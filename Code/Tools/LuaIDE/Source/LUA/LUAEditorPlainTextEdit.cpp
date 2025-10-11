@@ -23,6 +23,8 @@
 #include <QTextDocumentFragment>
 #include <QMimeData>
 #include <QClipboard>
+#include <QStringView>
+#include <QString>
 
 namespace LUAEditor
 {
@@ -63,7 +65,7 @@ namespace LUAEditor
 
     void LUAEditorPlainTextEdit::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        auto& mousePos = event->localPos();
+        auto mousePos = event->position();
 
         QTextBlock blockClicked;
         // any block could be hidden, so have to loop through to be sure
@@ -374,7 +376,7 @@ namespace LUAEditor
                 if (cursor.columnNumber() > 0)
                 {
                     QString text = block.text();
-                    QStringRef line = QStringRef(&text, 0, cursor.columnNumber());
+                    QStringView line = QStringView(text.data(), cursor.columnNumber());
 
                     // Count the number of leading whitespace characters
                     int offset = 0;
@@ -402,7 +404,7 @@ namespace LUAEditor
                     cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
                     int position = cursor.position();
 
-                    QStringRef line = QStringRef(&text, 0, position);
+                    QStringView line = QStringView(text.data(), position);
 
                     int offset = 0;
                     while (offset < line.size() && (line.at(offset) == ' ' || line.at(offset) == '\t')) { ++offset; }
@@ -516,14 +518,14 @@ namespace LUAEditor
 
                     QString text = cursor.block().text();
 
-                    if (text[columnNumber] != '\t' || text.midRef(columnNumber, m_tabSize) != tabString)
+                    if (text[columnNumber] != '\t' || text.mid(columnNumber, m_tabSize) != tabString)
                     {
                         if (columnNumber > 0 && text[columnNumber - 1] == '\t')
                         {
                             --columnNumber;
                             --position;
                         }
-                        else if (columnNumber > 0 && text.midRef(columnNumber - m_tabSize, m_tabSize) == tabString)
+                        else if (columnNumber > 0 && text.mid(columnNumber - m_tabSize, m_tabSize) == tabString)
                         {
                             columnNumber -= tabString.length();
                             position -= tabString.length();

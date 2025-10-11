@@ -31,7 +31,7 @@ public:
         QWidget* parent = nullptr);
 
 protected:
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(QEnterEvent* ev) override;
     void leaveEvent(QEvent* ev) override;
 
 private:

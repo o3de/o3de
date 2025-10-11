@@ -57,7 +57,7 @@ namespace AssetBundler
             }
             else
             {
-                connect(platformCheckBox.data(), &QCheckBox::stateChanged, this, &PlatformSelectionWidget::OnPlatformSelectionChanged);
+                connect(platformCheckBox.data(), &QCheckBox::checkStateChanged, this, &PlatformSelectionWidget::OnPlatformSelectionChanged);
             }
         }
     }

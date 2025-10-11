@@ -27,7 +27,6 @@
 #include <QSize>
 #include <QApplication>
 
-class QDesktopWidget;
 class QTimer;
 
 namespace AzQtComponents

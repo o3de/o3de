@@ -139,7 +139,7 @@ namespace AzToolsFramework
             settings.setValue("projectSourceFilterActive", m_engineFilterActive);
             settings.setValue("folderFilterActive", m_folderFilterActive);
 
-            settings.beginWriteArray("typeFilters", m_typeFilters.size());
+            settings.beginWriteArray("typeFilters", aznumeric_cast<int>(m_typeFilters.size()));
 
             for (auto typeFilter : m_typeFilters)
             {

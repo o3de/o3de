@@ -240,7 +240,7 @@ namespace GraphCanvas
         // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
-            result = AZStd::min(result, sourceString.size());
+            result = AZStd::min<int>(result, sourceString.size());
         }
         return result;
     }

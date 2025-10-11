@@ -9,8 +9,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
-#include <QtGui/private/qhighdpiscaling_p.h>
-
 namespace AzQtComponents
 {
     QPixmap ScalePixmapForScreenDpi(
