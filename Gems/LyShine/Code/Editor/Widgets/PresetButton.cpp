@@ -35,7 +35,7 @@ PresetButton::PresetButton(
     QObject::connect(this, &QAbstractButton::toggled, this, &PresetButton::UpdateIcon);
 }
 
-void PresetButton::enterEvent(QEvent* ev)
+void PresetButton::enterEvent(QEnterEvent* ev)
 {
     m_isHovering = true;
 

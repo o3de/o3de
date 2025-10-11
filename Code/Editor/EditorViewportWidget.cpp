@@ -19,6 +19,7 @@
 #include <QPainter>
 #include <QScopedValueRollback>
 #include <QTimer>
+#include <QWindow>
 
 // AzCore
 #include <AzCore/Component/EntityId.h>
@@ -84,8 +85,6 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
-
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");

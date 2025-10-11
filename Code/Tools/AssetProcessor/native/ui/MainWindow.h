@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#include <QMainWindow>
-#include <QStringList>
-#include <QStringListModel>
+#include "native/assetprocessor.h"
 #include "native/utilities/LogPanel.h"
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -18,7 +16,13 @@
 #include <native/ui/CacheServerData.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
-#include <native/ui/CacheServerData.h>
+
+#include <QElapsedTimer>
+#include <QMainWindow>
+#include <QPointer>
+#include <QStringList>
+#include <QStringListModel>
+#include <ui/BuilderListModel.h>
 
 namespace AzToolsFramework
 {

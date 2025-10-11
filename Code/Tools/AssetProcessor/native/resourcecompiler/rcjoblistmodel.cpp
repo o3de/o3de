@@ -534,7 +534,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    QString testref = input.mid(0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(
@@ -559,7 +559,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    QString testref = input.mid(0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(

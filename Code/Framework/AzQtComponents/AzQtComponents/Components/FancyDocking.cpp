@@ -27,7 +27,6 @@
 #include <QApplication>
 #include <QCursor>
 #include <QDebug>
-#include <QDesktopWidget>
 #include <QDockWidget>
 #include <QEvent>
 #include <QTimer>
@@ -42,7 +41,6 @@
 #include <QStyleOptionToolButton>
 #include <QVBoxLayout>
 #include <QWindow>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 
 static void OptimizedSetParent(QWidget* widget, QWidget* parent)
@@ -1437,7 +1435,7 @@ namespace AzQtComponents
 
         // use QCursor::pos(); in scenarios with multiple screens and different scale factors,
         // it's much more reliable about actually reporting a global position than
-        // using event->globalPos();
+        // using event->globalPosition();
         QPoint globalPos = QCursor::pos();
 
         if (!m_dropZoneState.dragging())
@@ -1476,8 +1474,8 @@ namespace AzQtComponents
                     // Construct a new QMouseEvent with a local mouse position that is correct for
                     // the tab widget. We can't just pass the event being filtered because the mouse
                     // positions are relative to the widget being watched.
-                    const auto tabPos = m_state.tabWidget->mapFromGlobal(event->globalPos());
-                    QMouseEvent tabEvent(event->type(), tabPos, event->button(), event->buttons(), event->modifiers());
+                    const auto tabPos = m_state.tabWidget->mapFromGlobal(event->globalPosition());
+                    QMouseEvent tabEvent(event->type(), tabPos, tabPos, event->button(), event->buttons(), event->modifiers());
                     m_state.tabWidget->mouseMoveEvent(&tabEvent);
                     return true;
                 }

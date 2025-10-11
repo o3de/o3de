@@ -132,7 +132,7 @@ namespace ScriptCanvasEditor
             flags |= Qt::ItemIsUserCheckable;
             if (sourceIndex.model()->hasChildren(sourceIndex))
             {
-                flags |= Qt::ItemIsTristate;
+                flags |= Qt::ItemIsUserTristate;
             }
         }
 

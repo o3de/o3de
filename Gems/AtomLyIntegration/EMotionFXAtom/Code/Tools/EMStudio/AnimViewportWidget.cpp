@@ -348,13 +348,13 @@ namespace EMStudio
     void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
     {
         m_pixelsSinceClick = 0;
-        m_prevMousePoint = event->globalPos();
+        m_prevMousePoint = event->globalPosition().toPoint();
     }
 
     void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        int deltaX = event->globalX() - m_prevMousePoint.x();
-        int deltaY = event->globalY() - m_prevMousePoint.y();
+        int deltaX = event->globalPosition().x() - m_prevMousePoint.x();
+        int deltaY = event->globalPosition().y() - m_prevMousePoint.y();
 
         m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
     }
@@ -432,7 +432,7 @@ namespace EMStudio
 
         if (!menu->isEmpty())
         {
-            menu->popup(event->globalPos());
+            menu->popup(event->globalPosition().toPoint());
         }
     }
 

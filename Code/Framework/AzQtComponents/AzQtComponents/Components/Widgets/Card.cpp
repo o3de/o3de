@@ -15,13 +15,13 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/TitleBarOverdrawHandler.h> // for the QMargins metatype declarations
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QStyle>
 #include <QPoint>
 #include <QSettings>
+#include <QStyleOption>
 
 namespace AzQtComponents
 {

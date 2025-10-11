@@ -25,7 +25,6 @@
 #include <QDir>
 
 class QString;
-class QStringList;
 
 namespace Path
 {

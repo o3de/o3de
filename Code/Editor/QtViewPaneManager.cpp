@@ -21,7 +21,6 @@
 #include <QLayout>
 #include <QApplication>
 #include <QRect>
-#include <QDesktopWidget>
 #include <QMessageBox>
 #include <QRubberBand>
 #include <QCursor>
@@ -786,7 +785,7 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
 
     // If the dock widget is off screen (e.g. second monitor was disconnected),
     // restore its default state
-    if (QApplication::desktop()->screenNumber(newDockWidget) == -1)
+    if (QApplication::screens().indexOf(newDockWidget->screen()))
     {
         const bool forceToDefault = true;
         newDockWidget->RestoreState(forceToDefault);
@@ -1124,8 +1123,8 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // before doing anything else, its height and width won't update until after this has all
         // been processed, so we need to resize the panes based on what the main window
         // height and width WILL be after maximized
-        int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
-        int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
+        int screenWidth = QApplication::primaryScreen()->size().width();
+        int screenHeight = QApplication::primaryScreen()->size().height();
 
         // Add the console view pane first
         m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
@@ -1610,7 +1609,13 @@ QtViewPane* QtViewPaneManager::GetPane(int id)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [id](const QtViewPane& pane) { return id == pane.m_id; });
 
-    return it == m_registeredPanes.end() ? nullptr : it;
+    if (it == m_registeredPanes.end())
+        return nullptr;
+    else
+    {
+        QtViewPane& res = *it;
+        return &res;
+    }
 }
 
 QtViewPane* QtViewPaneManager::GetPane(const QString& name)
@@ -1618,7 +1623,7 @@ QtViewPane* QtViewPaneManager::GetPane(const QString& name)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [name](const QtViewPane& pane) { return name == pane.m_name; });
 
-    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
 
     if (foundPane == nullptr)
     {
@@ -1626,7 +1631,7 @@ QtViewPane* QtViewPaneManager::GetPane(const QString& name)
         it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [name](const QtViewPane& pane) { return name == pane.m_options.saveKeyName; });
 
-        foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+        foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
     }
 
     return foundPane;
@@ -1649,7 +1654,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
             return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
         });
 
-    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
 
     if (foundPane == nullptr)
     {
@@ -1663,7 +1668,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
                 return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
             });
 
-        foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
+        foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : &(*optionsIt));
     }
 
     return foundPane;
@@ -1674,7 +1679,7 @@ QtViewPane* QtViewPaneManager::GetViewportPane(int viewportType)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [viewportType](const QtViewPane& pane) { return viewportType == pane.m_options.viewportType; });
 
-    return it == m_registeredPanes.end() ? nullptr : it;
+    return it == m_registeredPanes.end() ? nullptr : &(*it);
 }
 
 QDockWidget* QtViewPaneManager::GetView(const QString& name)

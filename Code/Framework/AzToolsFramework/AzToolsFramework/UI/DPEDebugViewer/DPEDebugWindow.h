@@ -9,20 +9,13 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 
 #include <QMainWindow>
 
 namespace Ui
 {
     class DPEDebugWindow;
-}
-
-namespace AZ
-{
-    namespace DocumentPropertyEditor
-    {
-        class DocumentAdapter;
-    }
 }
 
 namespace AzToolsFramework
