@@ -13,7 +13,7 @@
 #include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <Source/Editor/SimulatedObjectModel.h>
-#include <QtGui/QFont>
+#include <QFont>
 #include <Editor/QtMetaTypes.h>
 
 namespace EMotionFX

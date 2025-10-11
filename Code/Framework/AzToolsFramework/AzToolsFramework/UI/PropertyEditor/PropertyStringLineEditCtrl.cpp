@@ -10,7 +10,7 @@
 #include <AzQtComponents/Components/StyledLineEdit.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 #include <QFocusEvent>
 AZ_POP_DISABLE_WARNING
 

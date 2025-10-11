@@ -6,7 +6,7 @@
  *
  */
 #include "PropertyEditorAPI.h"
-#include <QtWidgets/QDoubleSpinBox>
+#include <QDoubleSpinBox>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/EditContext.h>

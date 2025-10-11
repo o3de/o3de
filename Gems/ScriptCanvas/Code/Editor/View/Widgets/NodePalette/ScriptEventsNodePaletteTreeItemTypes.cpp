@@ -6,7 +6,7 @@
  *
  */
 
-#include <qmenu.h>
+#include <QMenu>
 #include <QPixmap>
 
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>

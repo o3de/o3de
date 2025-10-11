@@ -7,8 +7,8 @@
  */
 
 #include <QStandardItemModel>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QTreeView>
+#include <QCheckBox>
+#include <QTreeView>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>

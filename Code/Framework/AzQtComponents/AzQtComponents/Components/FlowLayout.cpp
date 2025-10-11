@@ -39,7 +39,7 @@
 ****************************************************************************/
 // Modified from original
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 FlowLayout::FlowLayout(QWidget* parent, int margin, int hSpacing, int vSpacing)

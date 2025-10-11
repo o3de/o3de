@@ -7,15 +7,15 @@
  */
 
 #include <AzCore/PlatformDef.h>
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QDialogButtonBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QTreeWidgetItemIterator::d_ptr': class 'QScopedPointer<QTreeWidgetItemIteratorPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QTreeWidgetItemIterator'
-#include <QtWidgets/QTreeWidget>
-#include <QtWidgets/QVBoxLayout>
+#include <QTreeWidget>
+#include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QSplitter>
+#include <QPushButton>
+#include <QHeaderView>
+#include <QSplitter>
 
 #include "SliceRelationshipWidget.hxx"
 

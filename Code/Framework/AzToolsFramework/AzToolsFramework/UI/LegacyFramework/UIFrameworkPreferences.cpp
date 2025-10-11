@@ -8,9 +8,9 @@
 
 
 #include "UIFramework.hxx"
-#include <qaction.h>
-#include <qheaderview.h>
 
+#include <QAction>
+#include <QHeaderView>
 #include <QMessageBox>
 
 // split out the preferences implementation from the main UIFramework.cpp file

@@ -11,7 +11,7 @@
 #include <QPushButton>
 #include <QAction>
 #include <QtTest>
-#include <qtoolbar.h>
+#include <QToolBar>
 
 #include <Tests/UI/UIFixture.h>
 #include <EMotionFX/Source/AnimGraphManager.h>

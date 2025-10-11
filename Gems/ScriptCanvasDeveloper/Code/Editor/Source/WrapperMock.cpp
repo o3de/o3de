@@ -6,7 +6,7 @@
  *
  */
 
-#include <qmenu.h>
+#include <QMenu>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>

@@ -13,7 +13,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzToolsFramework/UI/PropertyEditor/QtWidgetLimits.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QLocale> 
 
 namespace AzToolsFramework

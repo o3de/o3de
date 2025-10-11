@@ -29,7 +29,7 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QWidget>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 namespace AzToolsFramework
 {

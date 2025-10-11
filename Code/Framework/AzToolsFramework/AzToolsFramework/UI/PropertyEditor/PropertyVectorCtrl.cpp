@@ -9,9 +9,9 @@
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
-#include <QtWidgets/QLabel>
+#include <QLabel>
 #include <AzCore/Math/Transform.h>
 #include <cmath>
 

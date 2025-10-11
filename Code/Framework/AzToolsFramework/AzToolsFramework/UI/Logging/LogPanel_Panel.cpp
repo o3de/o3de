@@ -32,8 +32,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
                                                                     // 4800 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractTextDocumentLayout>
 AZ_POP_DISABLE_WARNING
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QApplication>
+#include <QLabel>
+#include <QApplication>
 
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 

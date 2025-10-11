@@ -6,7 +6,7 @@
  *
  */
 
-#include <qpushbutton.h>
+#include <QPushButton>
 
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>

@@ -11,11 +11,10 @@
 #include "AssetCatalogModel.h"
 
 #include <IEditor.h>
-
-#include <qevent.h>
-#include <qmimedata.h>
-#include <QTimer>
+#include <QEvent>
+#include <QMimeData>
 #include <QRegularExpression>
+#include <QTimer>
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfo.h>

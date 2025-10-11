@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qgraphicswidget.h>
+#include <QGraphicsWidget>
 
 #include <AzCore/Component/Component.h>
 

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qbytearray.h>
+#include <QByteArray>
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/unordered_set.h>

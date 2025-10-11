@@ -12,17 +12,17 @@
 #include "PropertyQTConstants.h"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
-#include <QtGui/QPixmapCache>
-#include <QtGui/QMouseEvent>
-#include <QtCore/QMimeData>
-#include <QtCore/QEvent>
-#include <QtCore/QTimer>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPixmapCache>
+#include <QMouseEvent>
+#include <QMimeData>
+#include <QEvent>
+#include <QTimer>
 #include <QClipboard>
 #include <QListView>
 #include <QTableView>

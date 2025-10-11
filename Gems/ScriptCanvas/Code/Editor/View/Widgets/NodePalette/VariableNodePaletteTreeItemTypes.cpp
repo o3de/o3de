@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <QCoreApplication>
-#include <qmenu.h>
+#include <QMenu>
 
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/SceneBus.h>

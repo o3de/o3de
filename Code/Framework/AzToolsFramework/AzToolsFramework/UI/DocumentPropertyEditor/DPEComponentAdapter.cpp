@@ -13,7 +13,7 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <QtCore/QTimer>
+#include <QTimer>
 
 namespace AZ::DocumentPropertyEditor
 {

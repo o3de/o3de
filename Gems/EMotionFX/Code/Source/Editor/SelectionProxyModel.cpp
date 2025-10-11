@@ -7,7 +7,7 @@
  */
 
 #include <Source/Editor/SelectionProxyModel.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 
 
 namespace EMotionFX

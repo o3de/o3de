@@ -13,7 +13,7 @@
 #include "NewLevelDialog.h"
 
 // Qt
-#include <QtWidgets/QPushButton>
+#include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTimer>

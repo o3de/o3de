@@ -67,7 +67,7 @@
 
 #if defined(EMOTIONFXANIMATION_EDITOR) // EMFX tools / editor includes
 // Qt
-#include <QtGui/QSurfaceFormat>
+#include <QSurfaceFormat>
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>

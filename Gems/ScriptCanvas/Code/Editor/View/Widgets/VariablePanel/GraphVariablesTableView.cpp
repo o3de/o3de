@@ -6,10 +6,10 @@
  *
  */
 
-#include <qaction.h>
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qheaderview.h>
+#include <QAction>
+#include <QApplication>
+#include <QClipBoard>
+#include <QHeaderView>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>

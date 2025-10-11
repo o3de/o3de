@@ -13,18 +13,18 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Sfmt.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QScrollArea>
-#include <QtWidgets/QApplication>
+#include <QMessageBox>
+#include <QMenu>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QApplication>
 #include <QPainter>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
-#include <QtWidgets/QInputDialog>
+#include <QInputDialog>
 AZ_POP_DISABLE_WARNING
-#include <QtCore/QTimer>
-#include <QtCore/QSet>
+#include <QTimer>
+#include <QSet>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzCore/std/sort.h>
 

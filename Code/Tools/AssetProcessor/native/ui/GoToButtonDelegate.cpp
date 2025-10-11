@@ -7,8 +7,9 @@
  */
 
 #include "GoToButtonDelegate.h"
-#include <qpainter.h>
-#include <qevent.h>
+
+#include <QPainter>
+#include <QEvent>
 
 namespace AssetProcessor
 {

@@ -18,8 +18,8 @@
 #include <Viewport/InputController/OpenParticleEditorViewportInputControllerBus.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 
 namespace OpenParticleSystemEditor

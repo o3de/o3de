@@ -6,8 +6,8 @@
  *
  */
 
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/SelectionProxyModel.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSelectionProxyModel.h>
+#include <QSortFilterProxyModel>
 
 
 namespace EMStudio
