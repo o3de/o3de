@@ -36,7 +36,7 @@ namespace AssetProcessor
         QString m_platform;
         QString m_jobDescriptor;
     };
-    uint qHash(const AssetProcessor::QueueElementID& key, uint seed = 0);
+    size_t qHash(const AssetProcessor::QueueElementID& key, uint seed = 0);
 } // namespace AssetProcessor
 
 namespace AZStd {

@@ -16,7 +16,6 @@
 #include <QScreen>
 #include <QWindow>
 #include <QWidget>
-#include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <VersionHelpers.h>
 #include <shellapi.h>

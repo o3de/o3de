@@ -252,7 +252,7 @@ namespace EMStudio
         if (m_valueTypeCombo->isEnabled() && valueType != -1)
         {
             QVariant variantData = m_valueTypeCombo->itemData(valueType);
-            AZ_Assert(variantData != QVariant::Invalid, "Expected valid variant data");
+            AZ_Assert(variantData.isValid(), "Expected valid variant data");
             const AZStd::string typeId = FromQtString(variantData.toString());
             InitDynamicInterface(AZ::TypeId::CreateString(typeId.c_str(), typeId.size()));
         }

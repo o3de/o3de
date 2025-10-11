@@ -15,6 +15,7 @@
 #include <QColor>
 #include <QDialog>
 #include <QScopedPointer>
+
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>

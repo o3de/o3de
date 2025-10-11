@@ -153,7 +153,7 @@ namespace AzToolsFramework
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
-        m_queuedMouseEvent = new QMouseEvent(*event);
+        m_queuedMouseEvent = event->clone();
     }
 
     void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
@@ -474,9 +474,9 @@ namespace AzToolsFramework
             //interpret the mouse event as a button press
             QMouseEvent mousePressedEvent(
                 QEvent::MouseButtonPress,
-                event->localPos(),
-                event->windowPos(),
-                event->screenPos(),
+                event->position(),
+                event->scenePosition(),
+                event->globalPosition(),
                 event->button(),
                 event->buttons(),
                 event->modifiers(),

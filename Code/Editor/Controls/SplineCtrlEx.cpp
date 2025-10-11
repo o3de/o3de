@@ -1315,7 +1315,7 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
         if (m_lastToolTipPos != point)
         {
             m_lastToolTipPos = point;
-            QToolTip::showText(event->globalPos(), tipText);
+            QToolTip::showText(event->globalPosition().toPoint(), tipText);
         }
     }
     else if (m_editMode != TrackingMode)
@@ -1352,7 +1352,7 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
     if (m_editMode == TimeMarkerMode)
     {
         setCursor(Qt::BlankCursor);
-        SetTimeMarker(XOfsToTime(event->x()));
+        SetTimeMarker(XOfsToTime(event->position().x()));
         SendNotifyEvent(SPLN_TIME_CHANGE);
     }
 
@@ -1390,8 +1390,8 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
     case ScrollMode:
     {
         // Set the new scrolled coordinates
-        float ofsx = m_grid.origin.GetX() - (event->x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
-        float ofsy = m_grid.origin.GetY() + (event->y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
+        float ofsx = m_grid.origin.GetX() - (event->position().x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
+        float ofsy = m_grid.origin.GetY() + (event->position().y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
         SetScrollOffset(Vec2(ofsx, ofsy));
         m_cMouseDownPos = event->pos();
     }
@@ -1399,8 +1399,8 @@ void SplineWidget::mouseMoveEvent(QMouseEvent* event)
 
     case ZoomMode:
     {
-        float ofsx = (event->x() - m_cMouseDownPos.x()) * 0.01f;
-        float ofsy = (event->y() - m_cMouseDownPos.y()) * 0.01f;
+        float ofsx = (event->position().x() - m_cMouseDownPos.x()) * 0.01f;
+        float ofsy = (event->position().y() - m_cMouseDownPos.y()) * 0.01f;
 
         AZ::Vector2 z = m_grid.zoom;
         if (ofsx != 0)

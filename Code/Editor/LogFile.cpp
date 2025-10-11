@@ -418,7 +418,7 @@ void CLogFile::AboutSystem()
     CryLog("%s", szBuffer);
 #else
     QLocale locale;
-    CryLog("Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::countryToString(locale.country())));
+    CryLog("Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::territoryToString(locale.territory())));
 #endif
 
 
