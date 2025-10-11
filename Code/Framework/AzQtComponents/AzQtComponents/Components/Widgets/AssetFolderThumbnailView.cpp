@@ -801,7 +801,7 @@ namespace AzQtComponents
                 }
             }
 
-            itemDelegate(index)->paint(painter, option, index);
+            itemDelegateForIndex(index)->paint(painter, option, index);
         }
     }
 
@@ -1055,7 +1055,7 @@ namespace AzQtComponents
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
-        m_queuedMouseEvent = new QMouseEvent(*event);
+        m_queuedMouseEvent = event->clone();
     }
 
     void AssetFolderThumbnailView::mouseMoveEvent(QMouseEvent* event)

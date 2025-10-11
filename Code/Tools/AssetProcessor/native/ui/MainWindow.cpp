@@ -321,7 +321,7 @@ void MainWindow::Activate()
 
     ui->detailsFilterWidget->SetTypeFilterVisible(true);
     connect(ui->detailsFilterWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, m_logSortFilterProxy,
-        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&LogSortFilterProxy::setFilterRegExp));
+        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&LogSortFilterProxy::setFilterRegularExpression));
     connect(ui->detailsFilterWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, m_logSortFilterProxy, &LogSortFilterProxy::onTypeFilterChanged);
 
     // add filters for each logging type
@@ -377,7 +377,7 @@ void MainWindow::Activate()
         m_jobSortFilterProxy, &AssetProcessor::JobSortFilterProxyModel::OnJobStatusFilterChanged);
     connect(ui->jobFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_jobSortFilterProxy,
-        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetProcessor::JobSortFilterProxyModel::setFilterRegExp));
+        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetProcessor::JobSortFilterProxyModel::setFilterRegularExpression));
     {
         QSettings settingsObj(this);
         ui->jobFilteredSearchWidget->readSettings(settingsObj, g_jobFilteredSearchWidgetState);
@@ -623,16 +623,19 @@ void MainWindow::Activate()
     ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
     ui->verboseLoggingCheckbox->setCheckState(verboseLogDump ? Qt::Checked : Qt::Unchecked);
 
-    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
-        [this](int newCheckState)
+    QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::checkStateChanged, this,
+        [this](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(newOption);
             AssetUtilities::SetUserSetting(AssetUtilities::ZeroAnalysisModeOptionName, newOption);
         });
 
-    QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
-        [this](int newCheckState)
+    QObject::connect(
+        ui->debugOutputCheckBox,
+        &QCheckBox::checkStateChanged,
+        this,
+        [this](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
@@ -640,16 +643,19 @@ void MainWindow::Activate()
         });
 
 
-    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
-        [](int newCheckState)
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::checkStateChanged, this,
+        [](Qt::CheckState newCheckState)
         {
             // this is not something that we change while running, so just set it for next time.
             bool newOption = newCheckState == Qt::Checked ? true : false;
             AssetUtilities::SetUserSetting(AssetUtilities::SkipInitialScanOptionName, newOption);
         });
 
-     QObject::connect(ui->verboseLoggingCheckbox, &QCheckBox::stateChanged, this,
-        [](int newCheckState)
+     QObject::connect(
+        ui->verboseLoggingCheckbox,
+        &QCheckBox::checkStateChanged,
+        this,
+        [](Qt::CheckState newCheckState)
         {
             bool newOption = newCheckState == Qt::Checked ? true : false;
             AssetUtilities::SetUserSetting(AssetUtilities::VerboseLoggingOptionName, newOption);
@@ -788,7 +794,7 @@ void MainWindow::SetupAssetServerTab()
         });
 
     QObject::connect(ui->sharedCacheDiscardButton, &QPushButton::clicked, this,
-        [this]()
+        [this](bool)
         {
             this->m_cacheServerData.Reset();
             this->ResetAssetServerView();
@@ -800,7 +806,7 @@ void MainWindow::SetupAssetServerTab()
 
     // setting up the patterns table
     QObject::connect(ui->sharedCacheAddPattern, &QPushButton::clicked, this,
-        [this]()
+        [this](bool)
         {
             AddPatternRow("New Name", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard, "", true);
             this->m_cacheServerData.m_dirty = true;
@@ -825,7 +831,14 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     int row = ui->sharedCacheTable->rowCount();
     ui->sharedCacheTable->insertRow(row);
 
-    auto updateStatus = [this](int)
+    auto updateStatusFromCheck = [this](Qt::CheckState)
+    {
+        this->m_cacheServerData.m_dirty = true;
+        this->m_cacheServerData.m_updateStatus = false;
+        this->CheckAssetServerStates();
+    };
+
+    auto updateStatusFromIndex = [this](int)
     {
         this->m_cacheServerData.m_dirty = true;
         this->m_cacheServerData.m_updateStatus = false;
@@ -842,7 +855,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     // Enabled check mark
     auto* enableChackmark = new QCheckBox();
     enableChackmark->setChecked(enable);
-    QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
+    QObject::connect(enableChackmark, &QCheckBox::checkStateChanged, ui->sharedCacheTable, updateStatusFromCheck);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
     enableChackmark->setToolTip(tr("Temporarily disable the pattern by unchecking this box"));
@@ -854,7 +867,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
 
     // Type combo
     auto* combo = new QComboBox();
-    QObject::connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), ui->sharedCacheTable, updateStatus);
+    QObject::connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), ui->sharedCacheTable, updateStatusFromIndex);
     combo->addItem("Wildcard", QVariant(AssetBuilderPattern::PatternType::Wildcard));
     combo->addItem("Regex", QVariant(AssetBuilderPattern::PatternType::Regex));
     combo->setCurrentIndex(aznumeric_cast<int>(type));

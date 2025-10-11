@@ -38,7 +38,7 @@ namespace UnitTest
             m_dummyWidget = AZStd::make_unique<QWidget>();
             // Give the test window a valid windowHandle. SpinBox code uses this to access the QScreen
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
+            m_dummyWidget->activateWindow();
 
             m_intSpinBox = AZStd::make_unique<AzQtComponents::SpinBox>();
             m_doubleSpinBox = AZStd::make_unique<AzQtComponents::DoubleSpinBox>();
@@ -58,8 +58,6 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
-
             // Regenerate this list in case any of them were deleted during the test
             m_spinBoxes = { m_intSpinBox.get(), m_doubleSpinBox.get(), m_doubleSpinBoxWithLineEdit.get() };
 

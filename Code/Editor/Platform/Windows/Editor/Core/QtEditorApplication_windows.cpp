@@ -15,9 +15,6 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
-#include <QtGui/private/qhighdpiscaling_p.h>
-#include <QtGui/qpa/qplatformnativeinterface.h>
-
 // AzQtComponents
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -36,7 +33,7 @@ namespace Editor
         return new EditorQtApplicationWindows(argc, argv);
     }
 
-    bool EditorQtApplicationWindows::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long* result)
+    bool EditorQtApplicationWindows::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, qintptr* result)
     {
         MSG* msg = (MSG*)message;
 

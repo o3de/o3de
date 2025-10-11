@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
         {
             return QString("%1%2 <a href=\"%3\">Read More...</a>")
                 .arg(
-                    text.leftRef(truncateEnd),
+                    text.left(truncateEnd),
                     // Append closing tag if link text got truncated %2
                     match.isValid() && matchIndex % 2 == 1 ? match.captured() : "",
                     s_overflowLink);

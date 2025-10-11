@@ -369,7 +369,7 @@ namespace AssetProcessor
 
         if (!listener.WasQuitRequested())
         {
-            QtConcurrent::run(&RCJob::ExecuteBuilderCommand, builderParams);
+            const auto handle = QtConcurrent::run(&RCJob::ExecuteBuilderCommand, builderParams);
         }
         else
         {
@@ -920,7 +920,7 @@ namespace AssetProcessor
                             product.m_productSubID));
 
                         // Add the product absolute path to the list of intermediates
-                        intermediateOutputPaths.append(QPair(outputsToCopy.back().second, uuid));
+                        intermediateOutputPaths.append(QPair<QString, AZ::Uuid>(outputsToCopy.back().second, uuid));
                     }
                 }
                 else

@@ -35,7 +35,7 @@ namespace PhysX
             m_checkBox->setContentsMargins(0, 0, 0, 0);
             m_checkBox->setEnabled(!cell.row.m_readOnly);
 
-            connect(m_checkBox, &QCheckBox::stateChanged, this, &Cell::OnCheckboxChanged);
+            connect(m_checkBox, &QCheckBox::checkStateChanged, this, &Cell::OnCheckboxChanged);
 
             QHBoxLayout* layout = new QHBoxLayout();
             layout->setAlignment(Qt::AlignHCenter);
@@ -50,7 +50,7 @@ namespace PhysX
             return m_checkBox->sizeHint();
         }
 
-        void Cell::OnCheckboxChanged(int state)
+        void Cell::OnCheckboxChanged(Qt::CheckState state)
         {
             bool enabled = state == Qt::CheckState::Checked;
             emit OnLayerChanged(m_cell.row.m_groupId, m_cell.column.m_layer, enabled);

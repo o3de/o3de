@@ -47,7 +47,7 @@ namespace AzQtComponents
 
     protected:
         void closeEvent(QCloseEvent* event) override;
-        bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
         bool event(QEvent* event) override;
         void showEvent(QShowEvent* event) override;
         void paintEvent(QPaintEvent*) override;
