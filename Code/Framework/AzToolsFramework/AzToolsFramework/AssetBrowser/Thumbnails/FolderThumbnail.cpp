@@ -45,7 +45,7 @@ namespace AzToolsFramework
         void FolderThumbnail::Load()
         {
             m_state = State::Loading;
-            AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.data()), "Incorrect key type, excpected FolderThumbnailKey");
+            AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.get()), "Incorrect key type, excpected FolderThumbnailKey");
 
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / FolderIconPath;
             m_pixmap.load(absoluteIconPath.c_str());
@@ -68,7 +68,7 @@ namespace AzToolsFramework
 
         bool FolderThumbnailCache::IsSupportedThumbnail(SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const FolderThumbnailKey*>(key.data());
+            return azrtti_istypeof<const FolderThumbnailKey*>(key.get());
         }
 
     } // namespace AssetBrowser
