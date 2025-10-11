@@ -17,7 +17,7 @@
 #include <QSize>
 #include <QStyleOptionToolButton>
 #include <QToolButton>
-#include <QtWidgets/private/qstylehelper_p.h>
+#include <QWindow>
 
 namespace AzQtComponents
 {

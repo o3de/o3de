@@ -101,7 +101,7 @@ namespace AzToolsFramework
     }
 
 
-    void SearchCriteriaButton::enterEvent(QEvent* event)
+    void SearchCriteriaButton::enterEvent(QEnterEvent* event)
     {
         (void)event;
         m_mouseHover = true;
@@ -130,7 +130,7 @@ namespace AzToolsFramework
     void SearchCriteriaButton::SplitTagAndText(const QString& fullText, QString& tagText, QString& criteriaText)
     {
         //  Only the first colon is important, so use indexOf instead of split.
-        int index = fullText.indexOf(tr(":"));
+        int index = aznumeric_cast<int>(fullText.indexOf(tr(":")));
         if (index < 0)
         {
             tagText = QString();

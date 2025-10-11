@@ -140,7 +140,7 @@ namespace O3DE::ProjectManager
             QCheckBox* tagCheckbox = new QCheckBox(tag, this);
             tagCheckbox->setLayoutDirection(Qt::RightToLeft);
             // connect the checked signal to a good slot
-            connect(tagCheckbox, &QCheckBox::stateChanged, this, &FormLineEditTagsWidget::processTagDelete);
+            connect(tagCheckbox, &QCheckBox::checkStateChanged, this, &FormLineEditTagsWidget::processTagDelete);
             layout->addWidget(tagCheckbox);
         }
 

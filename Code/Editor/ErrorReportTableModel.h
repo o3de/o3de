@@ -65,6 +65,6 @@ private:
     QVector<QIcon> m_imageList;
 };
 
-Q_DECLARE_METATYPE(const CErrorRecord*)
+Q_DECLARE_OPAQUE_POINTER(const CErrorRecord*)
 
 #endif

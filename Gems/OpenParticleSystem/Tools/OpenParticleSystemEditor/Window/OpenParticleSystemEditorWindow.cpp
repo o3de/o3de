@@ -85,7 +85,9 @@ namespace OpenParticleSystemEditor
 
         m_menuFile = m_menuBar->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&File"));
 
-        m_menuFile->addAction(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&New..."),
+        m_menuFile->addAction(
+            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&New..."),
+            QKeySequence::New,
             [this]()
             {
                 AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
@@ -115,10 +117,10 @@ namespace OpenParticleSystemEditor
 
                 OpenDocument(fullFilepath);
 
-            }, QKeySequence::New);
+            });
 
         m_menuFile->addAction(
-            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Open..."),
+            QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Open..."), QKeySequence::Open,
             [this]()
             {
                 AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection(azrtti_typeid<OpenParticle::ParticleAsset>());
@@ -134,27 +136,25 @@ namespace OpenParticleSystemEditor
                     OpenDocument(filePath);
                     SetStatusMessage(tr("Particle opened: %1").arg(filePath.c_str()));
                 }
-            },
-            QKeySequence::Open);
+            });
 
         m_menuFile->addSeparator();
 
         m_menuFile->addAction(
-        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save"),
+        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save All"), QKeySequence::Save,
         [this]()
         {
             SaveDocument();
-        },
-        QKeySequence::Save);
+        });
 
 
         m_menuFile->addAction(
         QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save All"),
+        QKeySequence::UnknownKey,
         [this]()
         {
             SaveAllDocuments();
-        },
-        QKeySequence::UnknownKey);
+        });
 
         // Add all View DockWidget panes.
         m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));

@@ -20,10 +20,6 @@
 #include <QPointer>
 #include <QMenu>
 
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/qwinfunctions.h>
-#endif
-
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Uuid.h>
 #include <IEditor.h>

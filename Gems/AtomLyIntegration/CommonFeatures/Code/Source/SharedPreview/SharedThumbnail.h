@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>

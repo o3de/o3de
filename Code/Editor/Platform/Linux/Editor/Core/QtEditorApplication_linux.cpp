@@ -53,7 +53,7 @@ namespace Editor
         AzFramework::XcbEventHandlerBus::Broadcast(&AzFramework::XcbEventHandler::ResetStoredInputStates);
     }
 
-    bool EditorQtApplicationXcb::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long*)
+    bool EditorQtApplicationXcb::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, qintptr*)
     {
         if (GetIEditor()->IsInGameMode())
         {

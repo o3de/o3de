@@ -18,6 +18,7 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
 #include <MCore/Source/CommandGroup.h>
+#include <QModelIndex>
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 QT_FORWARD_DECLARE_CLASS(QItemSelection);

@@ -110,7 +110,7 @@ protected:
 
     void dragMoveEvent(QDragMoveEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
@@ -148,7 +148,7 @@ protected:
 
     void dropEvent(QDropEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
