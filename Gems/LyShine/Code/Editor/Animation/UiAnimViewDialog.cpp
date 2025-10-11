@@ -45,6 +45,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -113,7 +114,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 

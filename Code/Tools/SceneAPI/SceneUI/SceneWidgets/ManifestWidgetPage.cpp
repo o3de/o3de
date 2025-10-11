@@ -577,11 +577,11 @@ namespace AZ
             {
                 QString title(ui->m_saveButton->text());
 
-                if (hasUnsavedChanges && title.back() != "*")
+                if (hasUnsavedChanges && title.back() != '*')
                 {
                     title.push_back("*");
                 }
-                else if (!hasUnsavedChanges && title.back() == "*")
+                else if (!hasUnsavedChanges && title.back() == '*')
                 {
                     title.remove(title.size() - 1, 1);
                 }

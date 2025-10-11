@@ -30,8 +30,6 @@
 #include <QTimer>
 #include <QWindow>
 #include <QTextLayout>
-
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 #include <qcoreevent.h>
 
 namespace AzQtComponents
@@ -134,13 +132,13 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             auto mouseEvent = static_cast<QMouseEvent*>(event);
             if ((mouseEvent->buttons() & (Qt::LeftButton | Qt::MiddleButton)) && m_state == Dragging)
             {
-                const int delta = mouseEvent->x() - m_xPos;
+                const int delta = mouseEvent->position().x() - m_xPos;
                 if (qAbs(delta) <= qAbs(m_config.pixelsPerStep))
                 {
                     break;
                 }
 
-                m_xPos = mouseEvent->x();
+                m_xPos = mouseEvent->position().x();
                 int step = delta > 0 ? 1 : -1;
                 if (mouseEvent->modifiers() & Qt::ShiftModifier)
                 {
@@ -168,7 +166,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
                 {
                     const QPoint hotspot = spinBox->cursor().hotSpot();
                     const QRect screenRect = m_activeScreen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
-                    QPoint screenPos = mouseEvent->screenPos().toPoint();
+                    QPoint screenPos = mouseEvent->globalPosition().toPoint();
                     const int xPos = screenPos.x();
                     int newXPos = xPos;
                     // cursor bounces on the left and right side of the screen
@@ -417,8 +415,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
 
             if(m_state == Dragging) 
             {
-                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPos());
-                m_xPos = mouseEvent->x();
+                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPosition().toPoint());
+                m_xPos = mouseEvent->position().x();
                 spinBox->grabMouse();
             }
             spinBox->setProperty(g_spinBoxDraggingName, m_state == Dragging);
@@ -611,7 +609,7 @@ bool SpinBoxWatcher::filterLineEditEvents(QLineEdit* lineEdit, QEvent* event)
                 if (mouseEvent->button() == Qt::LeftButton && m_mouseFocusedSpinBoxSingleClicked == spinBox)
                 {
                     // fake a single click event to place the mouse button
-                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->localPos(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
+                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->position(), mouseEvent->globalPosition(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
                     QCoreApplication::sendEvent(lineEdit, &fake);
                     m_mouseFocusedSpinBoxSingleClicked = nullptr;
                     return true;

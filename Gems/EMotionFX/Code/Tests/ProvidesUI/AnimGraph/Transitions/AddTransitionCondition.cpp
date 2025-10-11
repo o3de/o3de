@@ -74,7 +74,7 @@ namespace EMotionFX
         QTest::mousePress(static_cast<QWidget*>(m_blendGraphWidget), Qt::LeftButton, Qt::NoModifier, begin);
         {
             // QTest::mouseMove uses QCursor::setPos to generate a MouseMove
-            QMouseEvent moveEvent(QMouseEvent::MouseMove, end, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+            QMouseEvent moveEvent(QMouseEvent::MouseMove, end, end, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
             moveEvent.setTimestamp(QTest::lastMouseTimestamp += QTest::defaultMouseDelay());
             QApplication::instance()->notify(m_blendGraphWidget, &moveEvent);
         }

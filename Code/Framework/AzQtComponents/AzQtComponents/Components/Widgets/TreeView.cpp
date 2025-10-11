@@ -19,8 +19,6 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
-
 namespace AzQtComponents
 {
     constexpr const char* g_branchLinesEnabledProperty = "BranchLinesEnabled";

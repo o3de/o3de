@@ -195,7 +195,7 @@ namespace AZ
             }
 
             QByteArray pixmapBytes;
-            QDataStream stream(&pixmapBytes, QIODevice::WriteOnly);
+            QDataStream stream(&pixmapBytes, QIODeviceBase::WriteOnly);
             stream << pixmap;
             return AZStd::vector<char>(pixmapBytes.begin(), pixmapBytes.end());
         }

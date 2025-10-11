@@ -23,10 +23,6 @@
 #include <QTimer>
 #include <QWindow>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 6, 1) && defined(Q_OS_WIN32)
-#include <QtGui/private/qwindow_p.h>
-#endif
-
 namespace AzQtComponents
 {
     namespace Platform
@@ -151,7 +147,7 @@ namespace AzQtComponents
         QDockWidget::showEvent(event);
     }
 
-    bool StyledDockWidget::nativeEvent(const QByteArray& eventType, void* message, long* result)
+    bool StyledDockWidget::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
     {
         return WindowDecorationWrapper::handleNativeEvent(eventType, message, result, this);
     }
@@ -201,7 +197,7 @@ namespace AzQtComponents
         // cannot be styled using QSS when floating.
         QStylePainter p(this);
         QStyleOptionFrame framOpt;
-        framOpt.init(this);
+        framOpt.initFrom(this);
         p.drawPrimitive(QStyle::PE_FrameDockWidget, framOpt);
     }
 

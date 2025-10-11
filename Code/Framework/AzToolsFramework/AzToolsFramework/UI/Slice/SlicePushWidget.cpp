@@ -570,7 +570,7 @@ namespace AzToolsFramework
             }
             m_checkboxAllChangedItems = new QCheckBox("Changed", this);
             m_checkboxAllChangedItems->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
-            connect(m_checkboxAllChangedItems, &QCheckBox::stateChanged, this, [this](int state)
+            connect(m_checkboxAllChangedItems, &QCheckBox::checkStateChanged, this, [this](int state)
             {
                 Internal::CheckAllItemsBySlicePushType(m_fieldTree, FieldTreeItem::SlicePushType::Changed, Qt::CheckState(state));
             });
@@ -582,7 +582,7 @@ namespace AzToolsFramework
             }
             m_checkboxAllAddedItems = new QCheckBox("Added", this);
             m_checkboxAllAddedItems->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
-            connect(m_checkboxAllAddedItems, &QCheckBox::stateChanged, this, [this](int state)
+            connect(m_checkboxAllAddedItems, &QCheckBox::checkStateChanged, this, [this](int state)
             {
                 Internal::CheckAllItemsBySlicePushType(m_fieldTree, FieldTreeItem::SlicePushType::Added, Qt::CheckState(state));
             });
@@ -594,7 +594,7 @@ namespace AzToolsFramework
             }
             m_checkboxAllRemovedItems = new QCheckBox("Removed", this);
             m_checkboxAllRemovedItems->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
-            connect(m_checkboxAllRemovedItems, &QCheckBox::stateChanged, this, [this](int state)
+            connect(m_checkboxAllRemovedItems, &QCheckBox::checkStateChanged, this, [this](int state)
             {
                 Internal::CheckAllItemsBySlicePushType(m_fieldTree, FieldTreeItem::SlicePushType::Removed, Qt::CheckState(state));
             });

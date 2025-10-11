@@ -8,12 +8,13 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <QSortFilterProxyModel>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <Editor/EditorSettingsAPIBus.h>
+#include <QMap>
 #include <QPersistentModelIndex>
 #include <QPointer>
-
-#include <Editor/EditorSettingsAPIBus.h>
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <QSortFilterProxyModel>
 
 namespace AzToolsFramework
 {

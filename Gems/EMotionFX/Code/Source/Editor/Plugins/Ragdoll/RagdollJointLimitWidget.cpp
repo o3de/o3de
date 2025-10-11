@@ -79,7 +79,7 @@ namespace EMotionFX
         topLayout->addWidget(hasLimitLabel, 0, 1, Qt::AlignLeft);
 
         m_hasLimitCheckbox = new QCheckBox("", this);
-        connect(m_hasLimitCheckbox, &QCheckBox::stateChanged, this, &RagdollJointLimitWidget::OnHasLimitStateChanged);
+        connect(m_hasLimitCheckbox, &QCheckBox::checkStateChanged, this, &RagdollJointLimitWidget::OnHasLimitStateChanged);
         topLayout->addWidget(m_hasLimitCheckbox, 0, 2);
 
         // Joint limit type
@@ -200,7 +200,7 @@ namespace EMotionFX
         return ragdollConfig.FindNodeConfigByName(node->GetNameString());
     }
 
-    void RagdollJointLimitWidget::OnHasLimitStateChanged(int state)
+    void RagdollJointLimitWidget::OnHasLimitStateChanged(Qt::CheckState state)
     {
         if (state == Qt::Checked)
         {
@@ -293,7 +293,7 @@ namespace EMotionFX
     void RagdollJointLimitWidget::ChangeLimitType(int supportedTypeIndex)
     {
         const QByteArray typeString = m_typeComboBox->itemData(supportedTypeIndex).toString().toUtf8();
-        const AZ::TypeId newLimitType = AZ::TypeId::CreateString(typeString.data(), typeString.count());
+        const AZ::TypeId newLimitType = AZ::TypeId::CreateString(typeString.data(), typeString.length());
         ChangeLimitType(newLimitType);
     }
 

@@ -21,7 +21,6 @@ AZ_POP_DISABLE_WARNING
 class QApplication;
 class QStyle;
 class QWidget;
-class QStyleSheetStyle;
 
 namespace AzQtComponents
 {

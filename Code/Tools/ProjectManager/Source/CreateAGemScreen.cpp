@@ -285,7 +285,8 @@ namespace O3DE::ProjectManager
         QStringList platformOptions;
         
         //input the platform list in reverse alphabetical order
-        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        const int numPlafforms = GemInfo::NumPlatforms;
+        for (int i = numPlafforms - 1; i >= 0; i--)
         {
             const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
             if(platform & m_platformSupportMask)

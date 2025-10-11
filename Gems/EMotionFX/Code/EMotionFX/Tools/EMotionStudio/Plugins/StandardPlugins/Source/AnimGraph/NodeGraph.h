@@ -46,7 +46,7 @@ namespace EMStudio
         NodeGraph(const QModelIndex& modelIndex, NodeGraphWidget* graphWidget = nullptr);
         virtual ~NodeGraph();
 
-        const QModelIndex& GetModelIndex() const { return m_currentModelIndex; }
+        const QPersistentModelIndex& GetModelIndex() const { return m_currentModelIndex; }
 
         AZStd::vector<GraphNode*> GetSelectedGraphNodes() const;
         AZStd::vector<EMotionFX::AnimGraphNode*> GetSelectedAnimGraphNodes() const;
