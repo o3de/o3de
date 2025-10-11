@@ -10,6 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
+#include <MCore/Source/MemoryCategoriesCore.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <QWidget>
 #endif
 
@@ -25,7 +27,7 @@ namespace EMStudio
     // forward declarations
     class AnimGraphPlugin;
     class AnimGraphSortFilterProxyModel;
-    class SelectionProxyModel;
+    class AnimGraphSelectionProxyModel;
 
     class NavigateWidget
         : public QWidget
@@ -52,7 +54,7 @@ namespace EMStudio
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         QTreeView* m_treeView;
         AnimGraphSortFilterProxyModel* m_filterProxyModel;
-        SelectionProxyModel* m_selectionProxyModel;
+        AnimGraphSelectionProxyModel* m_selectionProxyModel;
     };
 
 } // namespace EMStudio
