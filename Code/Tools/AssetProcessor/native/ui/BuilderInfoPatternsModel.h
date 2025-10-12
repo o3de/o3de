@@ -8,9 +8,11 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
 #include <AzCore/std/containers/vector.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#endif
 
 namespace AssetProcessor
 {

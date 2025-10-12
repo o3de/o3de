@@ -20,7 +20,6 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/ui/CacheServerData.h>
-#endif
 
 #include <QElapsedTimer>
 #include <QMainWindow>
@@ -28,6 +27,7 @@
 #include <QStringList>
 #include <QStringListModel>
 #include <ui/BuilderListModel.h>
+#endif
 
 namespace AzToolsFramework
 {

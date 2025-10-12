@@ -8,7 +8,9 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/vector.h>
@@ -17,6 +19,7 @@
 #include <GradientSignal/Util.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <QDialog>
+#endif
 
 namespace AzQtComponents
 {
