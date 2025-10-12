@@ -13,7 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#include <QtWidgets/QComboBox>
+#include <QComboBox>
 #include <OpenParticleSystem/Serializer/ParticleSourceData.h>
 #include <ParticleCommonData.h>
 #include <QVBoxLayout>

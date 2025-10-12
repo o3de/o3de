@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QtCore/QItemSelectionModel>
+#include <QItemSelectionModel>
 #include <AzCore/std/containers/vector.h>
 #endif
 

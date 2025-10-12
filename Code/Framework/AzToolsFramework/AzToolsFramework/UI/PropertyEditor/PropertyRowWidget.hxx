@@ -18,14 +18,14 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs t
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLayout>
-#include <QtWidgets/QToolButton>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QFrame>
-#include <QtCore/QPointer>
-#include <QtCore/QElapsedTimer>
+#include <QWidget>
+#include <QLabel>
+#include <QLayout>
+#include <QToolButton>
+#include <QCheckBox>
+#include <QFrame>
+#include <QPointer>
+#include <QElapsedTimer>
 AZ_POP_DISABLE_WARNING
 
 #include "PropertyEditorAPI.h"

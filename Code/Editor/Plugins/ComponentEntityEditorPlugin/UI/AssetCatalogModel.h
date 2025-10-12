@@ -8,7 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QtGui/qstandarditemmodel.h>
+#include <QStandardItemModel>
 #include <QFileIconProvider>
 #include <QThread>
 #include <AzCore/Asset/AssetCommon.h>

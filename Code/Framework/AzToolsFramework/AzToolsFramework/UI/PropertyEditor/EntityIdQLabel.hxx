@@ -16,7 +16,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
 
-#include <QtWidgets/QLabel>
+#include <QLabel>
 #endif
 
 

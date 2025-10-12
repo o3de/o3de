@@ -11,7 +11,7 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include <AzCore/Math/Uuid.h>
 

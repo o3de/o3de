@@ -13,12 +13,12 @@
 #include <Window/ui_EmitterInspector.h>
 #include <Window/ParticleGraphicsScence.h>
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtCore/qcoreapplication.h>
+#include <QCoreApplication>
 #include <QtGui/qwindowdefs.h>
-#include <QtCore/qpoint.h>
-#include <QtCore/qsize.h>
-#include <QtGui/qcursor.h>
-#include <QtGui/qguiapplication.h>
+#include <QPoint>
+#include <QSize>
+#include <QCursor>
+#include <QGuiApplication>
 #include <QGraphicsItem>
 #include <QGraphicsProxyWidget>
 #include <EffectorInspector.h>

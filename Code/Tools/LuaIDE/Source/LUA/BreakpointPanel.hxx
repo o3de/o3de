@@ -13,9 +13,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 
-#include <QtCore/QObject>
-#include <QtWidgets/QTableWidget>
-#include <QtWidgets/QWidget>
+#include <QObject>
+#include <QTableWidget>
+#include <QWidget>
 
 #include "LUABreakpointTrackerMessages.h"
 #endif

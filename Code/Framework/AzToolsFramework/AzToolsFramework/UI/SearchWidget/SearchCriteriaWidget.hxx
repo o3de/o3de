@@ -10,7 +10,7 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
-#include <QtWidgets/QFrame>
+#include <QFrame>
 #include <QRegularExpression>
 
 #include <AzCore/std/string/string.h>

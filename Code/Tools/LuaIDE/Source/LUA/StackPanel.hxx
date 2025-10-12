@@ -13,9 +13,9 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <QtCore/QObject>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTableWidget>
+#include <QObject>
+#include <QWidget>
+#include <QTableWidget>
 
 #include "LUAStackTrackerMessages.h"
 #endif

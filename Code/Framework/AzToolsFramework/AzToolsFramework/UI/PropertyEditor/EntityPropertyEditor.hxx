@@ -40,8 +40,8 @@
 #include <AzQtComponents/Components/O3DEStylesheet.h>
 
 #include <QComboBox>
-#include <QtGui/QIcon>
-#include <QtWidgets/QWidget>
+#include <QIcon>
+#include <QWidget>
 #endif
 
 class QLabel;

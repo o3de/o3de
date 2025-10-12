@@ -11,7 +11,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QtCore/QStringListModel>
+#include <QStringListModel>
 #include <Source/LUA/LUAEditorStyleMessages.h>
 #include <QRegularExpression>
 #endif

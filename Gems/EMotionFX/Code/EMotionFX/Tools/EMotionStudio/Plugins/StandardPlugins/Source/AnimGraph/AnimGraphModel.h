@@ -17,8 +17,8 @@
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <EMotionFX/Source/BlendTreeConnection.h>
 #include <MCore/Source/Command.h>
-#include <QtCore/QAbstractItemModel>
-#include <QtCore/QItemSelectionModel>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <Editor/QtMetaTypes.h>
 #endif
 

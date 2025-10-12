@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
