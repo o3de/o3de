@@ -82,12 +82,16 @@ float4 CalculateUvDxDy(const MeshInfo meshInfo, const uint triangleId, const flo
             vertexUv[index] = LoadUv1(meshInfo, triangleIndices[index]);
         }
     }
-    float2 uv = vertexUv[0] * barycentrics[0] + vertexUv[1] * barycentrics[1] + vertexUv[2] * barycentrics[2];
-    float2 uvDx = vertexUv[0] * (barycentrics[0] + barycentricsDx[0]) + vertexUv[1] * (barycentrics[1] + barycentricsDx[1]) + vertexUv[2] *(barycentrics[2] + barycentricsDx[2]);
-    result.xy = uv - uvDx;
 
-    float2 uvDy = vertexUv[0] * (barycentrics[0] + barycentricsDy[0]) + vertexUv[1] * (barycentrics[1] + barycentricsDy[1]) + vertexUv[2] *(barycentrics[2] + barycentricsDy[2]);
-    result.zw = uv - uvDy;
+    // this is the same as:
+    // uv = sum(vertexUv_i * barycentrics_i)
+    // uvDx = sum(vertexUv_i * (barycentrics_i + barycentricsDx_i))
+    // dx = uv - uvDx
+    float2 uvDx = vertexUv[0] * barycentricsDx[0] + vertexUv[1] * barycentricsDx[1] + vertexUv[2] * barycentricsDx[2];
+    result.xy = -uvDx;
+
+    float2 uvDy = vertexUv[0] * barycentricsDy[0] + vertexUv[1] * barycentricsDy[1] + vertexUv[2] * barycentricsDy[2];
+    result.zw = -uvDy;
 #endif /* MATERIAL_USES_VERTEX_UV */
     return result;
 }
