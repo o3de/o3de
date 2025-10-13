@@ -11,6 +11,18 @@
 #include <Atom/Features/Bindless.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
+bool HasMaterialInfoEntry(int index)
+{
+    uint numStructs;
+    uint stride;
+    SceneSrg::m_fallbackPBRMaterial.GetDimensions(numStructs, stride);
+    if (index < 0 || index >= numStructs)
+    {
+        return false;
+    }
+    return true;
+}
+
 bool GetMaterialInfoEntry(int index, inout MaterialInfo materialInfo)
 {
 #if DEFENSIVE_BINDLESS_ACCESS

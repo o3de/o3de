@@ -15,4 +15,5 @@
 partial ShaderResourceGroup SceneSrg
 {
     StructuredBuffer<MaterialInfo> m_fallbackPBRMaterial;
+    uint m_nullCubeMapIndex;
 }

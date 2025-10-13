@@ -57,6 +57,7 @@ namespace AZ::Render
 
             void UpdateFallbackPBRMaterial();
             void UpdateFallbackPBRMaterialBuffer();
+            void InitNullCubeMap();
 
             // reflection probe
             struct ReflectionProbe
@@ -77,6 +78,8 @@ namespace AZ::Render
             bool m_bufferNeedsUpdate;
 
             RHI::ShaderInputNameIndex m_fallbackPBRMaterialIndex = "m_fallbackPBRMaterial";
+            RHI::ShaderInputNameIndex m_nullCubeMapIndex = "m_nullCubeMapIndex";
+            Data::Instance<RPI::Image> m_nullCubeMapTexture;
             RPI::Scene::PrepareSceneSrgEvent::Handler m_updateSceneSrgHandler;
             ReflectionProbeFeatureProcessorInterface* m_rpfp = nullptr;
         };

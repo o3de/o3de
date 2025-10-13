@@ -16,7 +16,7 @@
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;
 
-void ApplyIbl_DeferredPass(Surface surface, inout LightingData lightingData)
+void ApplyIbl_DeferredPass(Surface surface, inout LightingData lightingData, int reflectionProbeCubeMapIndex, ReflectionProbeData reflectionProbeData)
 {
 #if FORCE_IBL_IN_FORWARD_PASS
     bool useDiffuseIbl = true;
@@ -31,10 +31,6 @@ void ApplyIbl_DeferredPass(Surface surface, inout LightingData lightingData)
     bool useSpecularIbl = (isTransparent || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
 #endif
 
-    // Apply Image Based Lighting (IBL)
-    // TODO(Deferred): Reflection Probes are not supported currently
-    ReflectionProbeData unusedReflectionProbe;
-    unusedReflectionProbe.m_useReflectionProbe = false;
-    TextureCube unusedReflectionProbeCubeMap;
-    ApplyIBL(surface, lightingData, useDiffuseIbl, useSpecularIbl, unusedReflectionProbe, unusedReflectionProbeCubeMap);
+    TextureCube reflectionProbeCubeMap = Bindless::GetTextureCube(reflectionProbeCubeMapIndex);
+    ApplyIBL(surface, lightingData, useDiffuseIbl, useSpecularIbl, reflectionProbeData, reflectionProbeCubeMap);
 }

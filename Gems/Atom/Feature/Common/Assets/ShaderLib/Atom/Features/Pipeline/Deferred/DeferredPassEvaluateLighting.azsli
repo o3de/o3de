@@ -17,7 +17,7 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassDecals.azsli>
 #include <Atom/Features/Pipeline/Deferred/DeferredPassIbl.azsli>
 
-LightingData EvaluateLighting_DeferredPass(Surface surface, float4 screenPosition, float3 viewPositions[MAX_SHADING_VIEWS])
+LightingData EvaluateLighting_DeferredPass(Surface surface, float4 screenPosition, float3 viewPositions[MAX_SHADING_VIEWS], int reflectionProbeCubeMapIndex, ReflectionProbeData reflectionProbeData)
 {
     LightingData lightingData;
     InitializeLightingData(surface, viewPositions, lightingData);
@@ -37,7 +37,7 @@ LightingData EvaluateLighting_DeferredPass(Surface surface, float4 screenPositio
     ApplyDirectLighting_ForwardPass(surface, lightingData, screenPosition, tileIterator);
 
     // Apply Image Based Lighting (IBL) for deferred
-    ApplyIbl_DeferredPass(surface, lightingData);
+    ApplyIbl_DeferredPass(surface, lightingData, reflectionProbeCubeMapIndex, reflectionProbeData);
 
     FinalizeLightingData(surface, lightingData);
     return lightingData;

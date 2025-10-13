@@ -8,6 +8,7 @@
 
 #include <Atom/Feature/Material/FallbackPBRMaterial.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RPI.Public/Image/ImageSystem.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -107,6 +108,24 @@ namespace AZ::Render
             return entry;
         }
 
+        void MaterialManager::InitNullCubeMap()
+        {
+            auto imageSystem = AZ::RPI::ImageSystemInterface::Get();
+            AZ_Assert(imageSystem, "Can't access RPI::ImageSystem.");
+            if (imageSystem)
+            {
+                auto pool = imageSystem->GetSystemAttachmentPool();
+                auto bindFlags = RHI::GetImageBindFlags(RHI::ScopeAttachmentUsage::Shader, RHI::ScopeAttachmentAccess::Read);
+                // create a 8x8 cubemap image with the RGBA values (0, 0, 0, 1) to use a similar behaviour as the robustness2 extension when
+                // reading a null texture.
+                auto nullImageDesc = RHI::ImageDescriptor::CreateCubemap(bindFlags, 8, RHI::Format::R8G8B8A8_UNORM);
+                auto imageViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
+                RHI::ClearValue nullImageClearValue = RHI::ClearValue::CreateVector4Uint(0, 0, 0, 1);
+                m_nullCubeMapTexture = AZ::RPI::AttachmentImage::Create(
+                    *pool.get(), nullImageDesc, AZ_NAME_LITERAL("ReflectionCubeMapNullTexture"), &nullImageClearValue, &imageViewDesc);
+            }
+        }
+
         void MaterialManager::Activate(RPI::Scene* scene)
         {
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
@@ -114,22 +133,25 @@ namespace AZ::Render
                 console->GetCvarValue("r_fallbackPBRMaterialEnabled", m_isEnabled);
             }
 
-            UpdateFallbackPBRMaterialBuffer();
+            InitNullCubeMap();
 
-            if (m_isEnabled == false)
-            {
-                return;
-            }
+            UpdateFallbackPBRMaterialBuffer();
 
             // We need to register the buffer in the SceneSrg even if we are disabled
             m_updateSceneSrgHandler = RPI::Scene::PrepareSceneSrgEvent::Handler(
                 [this](RPI::ShaderResourceGroup* sceneSrg)
                 {
                     sceneSrg->SetBufferView(m_fallbackPBRMaterialIndex, GetFallbackPBRMaterialBuffer()->GetBufferView());
+                    sceneSrg->SetConstant(m_nullCubeMapIndex, m_nullCubeMapTexture->GetImageView()->GetBindlessReadIndex());
                 });
             scene->ConnectEvent(m_updateSceneSrgHandler);
 
             m_rpfp = scene->GetFeatureProcessor<ReflectionProbeFeatureProcessorInterface>();
+
+            if (m_isEnabled == false)
+            {
+                return;
+            }
 
             MeshInfoNotificationBus::Handler::BusConnect(scene->GetId());
         }
