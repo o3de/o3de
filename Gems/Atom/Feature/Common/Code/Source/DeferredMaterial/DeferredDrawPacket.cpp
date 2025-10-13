@@ -172,8 +172,6 @@ namespace AZ
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = m_drawListTag;
             drawRequest.m_pipelineState = m_pipelineState;
-            // TODO: why do i need a stencil ref here?
-            // drawRequest.m_stencilRef = StencilRefs::UseIBLSpecularPass;
             // Note: this doesn't do anything, since the geometry-view doesn't have any stream-buffers
             drawRequest.m_streamIndices = m_geometryView->GetFullStreamBufferIndices();
             drawRequest.m_sortKey = 0;

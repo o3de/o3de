@@ -2,9 +2,7 @@
 
 struct VisibilityBuffer
 {
-    // object-id of the mesh
-    // TODO: with the 'm_isFrontFace' - flag, this can't be -1
-    int m_meshInfoIndex;     
+    int m_meshInfoIndex;      // MeshInfoIndex of the mesh (max 30 bit)
     uint m_triangleId;        // rasterized triangle ID
     bool m_isFrontFace;       // stored in the first bit of the meshInfoIndex
 
@@ -23,8 +21,8 @@ void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout fl
     flagsAndMeshInfoIndex = (((1 << 30) -1) & vbuffer.m_meshInfoIndex);
 
     // highest bit: m_meshInfoIndex is invalid
-    // note: this would have been set already if the meshInfoIndex is negative, but
-    // we make it explicit for clarity
+    // We need to store this explicitly, since we strip the highest 2 bit of the m_meshInfoIndex so we can
+    // fit the VBuffer-Data into 2 float4 - textures
     flagsAndMeshInfoIndex |= (vbuffer.m_meshInfoIndex < 0) << 31;
     
     // second highest bit: triangle is frontfacing
@@ -41,6 +39,9 @@ void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout fl
 
 bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
 {
+    // The visibility buffer has two invalid states: 
+    // - It is initialized with float4("NAN", 0, 0, 0): No mesh is visible at this pixel
+    // - The m_meshInfoIndex is negative: This can happen if the MeshInfo-Buffer and the Draw-Srg are not (yet) fully updated 
     if (isfinite(first.x))
     {
         uint flagsAndMeshInfoIndex = asuint(first.x);
@@ -57,7 +58,7 @@ bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
             // mask out the first two bits
             meshInfoIndex = (((1 << 30) - 1) & flagsAndMeshInfoIndex);
         }
-        return meshInfoIndex >= 0;
+        return !meshInfoIndexInvalid;
     }
     return false;
 }
@@ -102,8 +103,6 @@ bool unpackVisibilityBuffer(float4 first, float4 second, inout VisibilityBuffer 
     // calc the dy value for the third coord
     vbuffer.m_barycentricsDy.z = barycentricsY.z - vbuffer.m_barycentrics.z;
  
-    // inf: all bits of the exponent (bits 22 - 30) are set, but other bits are zero. (-inf: msb is set)
-    // nan: all bits of the exponent are set, and 
-    return isfinite(first.x);
+    return isfinite(first.x) && !meshInfoIndexInvalid;
 }
 

@@ -15,7 +15,7 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
     // Material-Type ID of the current draw-item. 
     int m_materialTypeId;
 
-    // Note: The indended use-case is that a Visibility-(Raster-)pass writes at least the meshInfoIndex of the mesh visible on a 
+    // Note: The intended use-case is that a Visibility-(Raster-)pass writes at least the meshInfoIndex of the mesh visible on a 
     // screenspace-pixel to the VBuffer, and the deferred pass renders one fullscreen-triangle for each material-type and shader option combination,
     // using the meshInfoIndex from the VBuffer to figure out if any given pixel needs to be rendered with the current draw-call, or can be skipped.
     // Since the draw-packet IDs can be different for a mesh for different deferred DrawListTags, we provide the drawPacketIds for all meshes for the 

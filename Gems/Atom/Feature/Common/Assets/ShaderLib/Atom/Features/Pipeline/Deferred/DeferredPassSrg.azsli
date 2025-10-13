@@ -47,6 +47,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
 
+    // The Visibility buffer (as implemented in VisibilityBuffer.azsli) is packed into two float4 textures, 
+    // mostly because the screenspace derivatives of the barycentrics use one entire float4
     Texture2D<float4> m_visibilityBuffer_0;
     Texture2D<float4> m_visibilityBuffer_1;
 }
