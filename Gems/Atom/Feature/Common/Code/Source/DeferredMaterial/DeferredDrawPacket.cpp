@@ -35,17 +35,17 @@ namespace AZ
         }
 
         // ShaderReloadNotificationBus::Handler overrides...
-        void DeferredDrawPacket::OnShaderReinitialized(const RPI::Shader& shader)
+        void DeferredDrawPacket::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
         {
             m_needsRebuild = true;
             m_drawPacketManager->SetNeedsUpdate(true);
         }
-        void DeferredDrawPacket::OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset)
+        void DeferredDrawPacket::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
         {
             m_needsRebuild = true;
             m_drawPacketManager->SetNeedsUpdate(true);
         }
-        void DeferredDrawPacket::OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant)
+        void DeferredDrawPacket::OnShaderVariantReinitialized([[maybe_unused]] const RPI::ShaderVariant& shaderVariant)
         {
             m_needsRebuild = true;
             m_drawPacketManager->SetNeedsUpdate(true);
@@ -97,7 +97,7 @@ namespace AZ
 
             if (!scene->HasOutputForPipelineState(m_drawListTag))
             {
-                auto tagRegistry = RHI::GetDrawListTagRegistry();
+                [[maybe_unused]] auto tagRegistry = RHI::GetDrawListTagRegistry();
                 AZ_Info(
                     "DeferredDrawPacket",
                     "Scene has no output for drawListTag %s, don't create a deferred draw package",

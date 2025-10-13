@@ -38,7 +38,7 @@ namespace AZ::Render
             const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = model->GetLods();
             const auto lodCount = static_cast<uint32_t>(model->GetLodCount());
 
-            for (auto lod = 0; lod < lodCount; lod++)
+            for (auto lod = 0u; lod < lodCount; lod++)
             {
                 const Data::Instance<RPI::ModelLod>& modelLod = modelLods[lod];
                 const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelLodAssets[lod];
@@ -67,11 +67,11 @@ namespace AZ::Render
                 callback)
         {
             auto lodCount = static_cast<uint32_t>(modelData.m_lodData.size());
-            for (auto lod = 0; lod < lodCount; lod++)
+            for (auto lod = 0u; lod < lodCount; lod++)
             {
                 auto& modelLodData = modelData.m_lodData[lod];
                 auto meshCount = static_cast<uint32_t>(modelLodData.m_meshData.size());
-                for (auto meshIndex = 0; meshIndex < meshCount; meshIndex++)
+                for (auto meshIndex = 0u; meshIndex < meshCount; meshIndex++)
                 {
                     auto& mesh = modelLodData.m_meshData[meshIndex];
                     if (!callback(lod, meshIndex, modelData, mesh))
@@ -141,7 +141,7 @@ namespace AZ::Render
         AZStd::vector<RHI::DrawListTag> drawListTags;
 
         tagRegistry->VisitTags(
-            [&](AZ::Name drawListTagName, RHI::DrawListTag tag)
+            [&]([[maybe_unused]] AZ::Name drawListTagName, RHI::DrawListTag tag)
             {
                 if (m_drawPacketManager.HasDrawPacketForDrawList(tag))
                 {
@@ -162,9 +162,9 @@ namespace AZ::Render
                 MeshIterator::ForEachLodMesh(
                     modelData,
                     [&, drawListTag = drawListTag](
-                        const uint32_t lod,
-                        const uint32_t meshIndex,
-                        DeferredMaterialFeatureProcessor::ModelData& modelData,
+                        [[maybe_unused]] const uint32_t lod,
+                        [[maybe_unused]] const uint32_t meshIndex,
+                        [[maybe_unused]] DeferredMaterialFeatureProcessor::ModelData& modelData,
                         DeferredMaterialFeatureProcessor::MeshData& meshData)
                     {
                         auto drawPacket = meshData.m_meshDrawPacket.GetDeferredDrawPacket(drawListTag);
@@ -209,7 +209,10 @@ namespace AZ::Render
 
         MeshIterator::ForEachLodMesh(
             model,
-            [&](const uint32_t lod, const uint32_t meshIndex, const RPI::ModelLodAsset::Mesh& assetMesh, const RPI::ModelLod::Mesh& mesh)
+            [&](const uint32_t lod,
+                const uint32_t meshIndex,
+                [[maybe_unused]] const RPI::ModelLodAsset::Mesh& assetMesh,
+                const RPI::ModelLod::Mesh& mesh)
             {
                 auto& modelLodData = modelData.m_lodData[lod];
 
@@ -258,9 +261,9 @@ namespace AZ::Render
         {
             MeshIterator::ForEachLodMesh(
                 modelData,
-                [&](const uint32_t lod,
-                    const uint32_t meshIndex,
-                    DeferredMaterialFeatureProcessor::ModelData& modelData,
+                [&]([[maybe_unused]] const uint32_t lod,
+                    [[maybe_unused]] const uint32_t meshIndex,
+                    [[maybe_unused]] DeferredMaterialFeatureProcessor::ModelData& modelData,
                     DeferredMaterialFeatureProcessor::MeshData& meshData)
                 {
                     meshData.m_meshDrawPacket.Update(GetParentScene(), &m_drawPacketManager, forceRebuild);
@@ -327,7 +330,7 @@ namespace AZ::Render
     }
 
     void DeferredMaterialFeatureProcessor::OnRenderPipelineChanged(
-        RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        [[maybe_unused]] RPI::RenderPipeline* renderPipeline, [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         // force a rebuild of the draw packets and update the buffers
         m_forceRebuild = true;
