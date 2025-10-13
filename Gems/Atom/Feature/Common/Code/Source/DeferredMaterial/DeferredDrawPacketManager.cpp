@@ -97,7 +97,6 @@ namespace AZ
 #ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
             else
             {
-#ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
                 AZ_Info(
                     "DeferredDrawPacketManager",
                     "Material %s, shader %s: -> Use draw-packet from Material %s (MaterialTypeId %d)",
@@ -105,7 +104,6 @@ namespace AZ
                     shaderItem.GetShaderAsset().GetHint().c_str(),
                     drawPacket->GetInstigatingMaterialAsset().GetHint().c_str(),
                     material->GetMaterialTypeId());
-#endif
             }
 #endif /* DEFERRED_DRAWPACKET_DEBUG_PRINT */
             return drawPacket;
