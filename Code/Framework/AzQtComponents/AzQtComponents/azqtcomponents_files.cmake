@@ -290,7 +290,6 @@ set(FILES
     Utilities/MouseHider.h
     Utilities/PixmapScaleUtilities.cpp
     Utilities/PixmapScaleUtilities.h
-    Utilities/QtHash.h
     Utilities/QtPluginPaths.cpp
     Utilities/QtPluginPaths.h
     Utilities/QtWindowUtilities.cpp

@@ -122,6 +122,13 @@ namespace AzToolsFramework
         }
     }
 
+    template<class ValueType>
+    void PropertyCheckBoxHandlerCommon<ValueType>::ConsumeAttribute(
+        PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    {
+        ConsumeAttributeCommon(widget, attrib, attrValue, debugName);
+    }
+
     QWidget* BoolPropertyCheckBoxHandler::CreateGUI(QWidget* parent)
     {
         return CreateGUICommon(parent);

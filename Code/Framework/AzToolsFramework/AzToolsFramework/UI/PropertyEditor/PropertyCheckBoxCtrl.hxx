@@ -76,10 +76,7 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder(PropertyCheckBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyCheckBoxCtrl* widget) override { widget->UpdateTabOrder(); }
 
-        void ConsumeAttribute(PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
-        {
-            ConsumeAttributeCommon(widget, attrib, attrValue, debugName);
-        }
+        void ConsumeAttribute(PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
     class AZTF_API BoolPropertyCheckBoxHandler
