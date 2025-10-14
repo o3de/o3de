@@ -156,7 +156,7 @@ namespace AZ::Render
         for (auto& drawListTag : drawListTags)
         {
             AZStd::vector<uint32_t> drawPacketIds;
-            drawPacketIds.resize(numEntries, -1);
+            drawPacketIds.resize(numEntries, AZStd::numeric_limits<uint32_t>::max());
             for (auto& [modelId, modelData] : m_modelData)
             {
                 MeshIterator::ForEachLodMesh(
