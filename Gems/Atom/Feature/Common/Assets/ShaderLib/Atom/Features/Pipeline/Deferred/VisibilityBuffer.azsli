@@ -12,21 +12,31 @@ struct VisibilityBuffer
     float3 m_barycentricsDy;
 };
 
+#define MESHINFO_BITS 30
+#define MAX_MESHINFO (1 << MESHINFO_BITS)
+#define MESHINFO_MASK (MAX_MESHINFO - 1)
+#define MESHINFO_INVALID_BIT 31
+#define MESHINFO_INVALID_MASK (1 << MESHINFO_INVALID_BIT)
+#define FRONTFACE_BIT 30
+#define FRONTFACE_MASK (1 << FRONTFACE_BIT)
+
+
+
 // packing and unpacking is mostly for convenience
 void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout float4 second)
 {
-    uint flagsAndMeshInfoIndex;
+    uint flagsAndMeshInfoIndex = 0;
 
-    // mask out the two highest bits, they will be used for flags
-    flagsAndMeshInfoIndex = (((1 << 30) -1) & vbuffer.m_meshInfoIndex);
+    // remove the top n bits from the meshinfo, we need space for flags
+    flagsAndMeshInfoIndex = MESHINFO_MASK & vbuffer.m_meshInfoIndex;
 
-    // highest bit: m_meshInfoIndex is invalid
-    // We need to store this explicitly, since we strip the highest 2 bit of the m_meshInfoIndex so we can
-    // fit the VBuffer-Data into 2 float4 - textures
-    flagsAndMeshInfoIndex |= (vbuffer.m_meshInfoIndex < 0) << 31;
+    // First flag: m_meshInfoIndex is invalid
+    // Note: an invalid meshInfoIndex is usually -1, so this flag would already be set, but we strip the top bits, so we have to re-add it
+    bool meshInfoInvalid = vbuffer.m_meshInfoIndex < 0;
+    flagsAndMeshInfoIndex |= meshInfoInvalid << MESHINFO_INVALID_BIT;
     
-    // second highest bit: triangle is frontfacing
-    flagsAndMeshInfoIndex |= vbuffer.m_isFrontFace << 30;
+    // second flag: triangle is frontfacing
+    flagsAndMeshInfoIndex |= vbuffer.m_isFrontFace << FRONTFACE_BIT;
 
     first.x = asfloat(flagsAndMeshInfoIndex);
     first.y = asfloat(vbuffer.m_triangleId);
@@ -45,18 +55,15 @@ bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
     if (isfinite(first.x))
     {
         uint flagsAndMeshInfoIndex = asuint(first.x);
-        // first bit
-        bool meshInfoIndexInvalid = (1 << 31 & flagsAndMeshInfoIndex) >> 31;
-        // second bit
-        bool isFrontFace = (1 << 30 & flagsAndMeshInfoIndex) >> 30;
+        // first flag
+        bool meshInfoIndexInvalid = (MESHINFO_INVALID_MASK & flagsAndMeshInfoIndex) > 0u;
+        // meshInfoIndex
+        meshInfoIndex = (MESHINFO_MASK & flagsAndMeshInfoIndex);
 
+        // if the meshInfoIndex was invalid, we need to make it negative
         if (meshInfoIndexInvalid)
         {
-            meshInfoIndex = -1;
-        }
-        else {
-            // mask out the first two bits
-            meshInfoIndex = (((1 << 30) - 1) & flagsAndMeshInfoIndex);
+            meshInfoIndex *= -1;
         }
         return !meshInfoIndexInvalid;
     }
@@ -67,19 +74,16 @@ bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
 bool unpackVisibilityBuffer(float4 first, float4 second, inout VisibilityBuffer vbuffer)
 {
     uint flagsAndMeshInfoIndex = asuint(first.x);
-    // first bit
-    bool meshInfoIndexInvalid = (1 << 31 & flagsAndMeshInfoIndex) >> 31;
-    // second bit
-    vbuffer.m_isFrontFace = (1 << 30 & flagsAndMeshInfoIndex) >> 30;
+    // first flag
+    bool meshInfoIndexInvalid = (MESHINFO_INVALID_MASK & flagsAndMeshInfoIndex) > 0u;
+    // second flag
+    vbuffer.m_isFrontFace = (FRONTFACE_MASK & flagsAndMeshInfoIndex) > 0u;
+
+    vbuffer.m_meshInfoIndex = (MESHINFO_MASK & flagsAndMeshInfoIndex);
 
     if (meshInfoIndexInvalid)
     {
-        vbuffer.m_meshInfoIndex = -1;
-    }
-    else 
-    {
-        // mask out the first two bits
-        vbuffer.m_meshInfoIndex = (((1 << 30) - 1) & flagsAndMeshInfoIndex);
+        vbuffer.m_meshInfoIndex *= -1;
     }
   
     vbuffer.m_triangleId = asuint(first.y);
