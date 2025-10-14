@@ -22,9 +22,9 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
     // current DrawListTag
 
     // Id of the current draw-packet. This is a unique id from the combination of the Material-Type-Id and the actual Shader Options
-    int m_drawPacketId;
+    uint m_drawPacketId;
 
     // List of draw-packet - Ids for each mesh with the current drawListTag. Indexed with the MeshInfo - Index.
-    Buffer<int> m_drawPacketIds;
+    Buffer<uint> m_drawPacketIds;
 
 };

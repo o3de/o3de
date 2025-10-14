@@ -22,7 +22,7 @@ namespace AZ
             RPI::Material* material,
             const Name& materialPipelineName,
             const RPI::ShaderCollection::Item& shaderItem,
-            const int32_t drawPacketId)
+        const uint32_t drawPacketId)
             : m_drawPacketManager(drawPacketManager)
             , m_drawPacketId(drawPacketId)
         {

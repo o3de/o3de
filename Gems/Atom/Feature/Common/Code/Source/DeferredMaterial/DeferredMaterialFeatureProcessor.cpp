@@ -128,7 +128,7 @@ namespace AZ::Render
             auto tagRegistry = RHI::GetDrawListTagRegistry();
             auto name = AZStd::string::format("drawPacketIdBuffer_%s", tagRegistry->GetName(drawListTag).GetCStr());
             auto [newIt, inserted] = m_drawPacketIdBuffers.emplace(
-                AZStd::make_pair(drawListTag, RPI::RingBuffer{ name, RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_SINT }));
+                AZStd::make_pair(drawListTag, RPI::RingBuffer{ name, RPI::CommonBufferPoolType::ReadOnly, RHI::Format::R32_UINT }));
             return newIt->second;
         }
         return ringBufferIt->second;
@@ -155,7 +155,7 @@ namespace AZ::Render
         // create one entry per mesh for each DrawListTag
         for (auto& drawListTag : drawListTags)
         {
-            AZStd::vector<int32_t> drawPacketIds;
+            AZStd::vector<uint32_t> drawPacketIds;
             drawPacketIds.resize(numEntries, -1);
             for (auto& [modelId, modelData] : m_modelData)
             {
@@ -174,7 +174,7 @@ namespace AZ::Render
                         }
                         else
                         {
-                            drawPacketIds[meshData.m_meshInfoIndex] = -1;
+                            drawPacketIds[meshData.m_meshInfoIndex] = AZStd::numeric_limits<uint32_t>::max();
                         }
                         return true;
                     });
@@ -224,7 +224,7 @@ namespace AZ::Render
 
                 auto drawPacket = DeferredMeshDrawPacket{ modelLod, meshIndex, customMaterialInfo.m_material };
 
-                modelLodData.m_meshData.emplace_back(MeshData{ meshHandle->GetMeshInfoIndex(lod, meshIndex), drawPacket });
+                modelLodData.m_meshData.emplace_back(MeshData{ meshHandle->GetMeshInfoIndex(lod, meshIndex), AZStd::move(drawPacket) });
                 return true;
             });
     }
@@ -238,10 +238,13 @@ namespace AZ::Render
 
         AZStd::scoped_lock lock(m_updateMutex);
 
-        if (m_modelData.find(modelId) != m_modelData.end())
+        auto modelDataIter = m_modelData.find(modelId);
+
+        if (modelDataIter != m_modelData.end())
         {
-            m_modelData.erase(modelId);
+            m_modelData.erase(modelDataIter);
         }
+
         m_needsUpdate = true;
     }
 

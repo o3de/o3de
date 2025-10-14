@@ -18,7 +18,7 @@ namespace AZ
         class DeferredDrawPacketManager
         {
         public:
-            using DeferredDrawPacketId = size_t;
+        using DeferredDrawPacketId = uint32_t;
 
             static auto CalculateDrawPacketId(const RPI::Material* material, const RPI::ShaderCollection::Item& shaderItem)
                 -> DeferredDrawPacketId;

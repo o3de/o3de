@@ -40,7 +40,7 @@ namespace AZ
                 RPI::Material* material,
                 const Name& materialPipelineName,
                 const RPI::ShaderCollection::Item& shaderItem,
-                const int32_t drawPacketId);
+            const uint32_t drawPacketId);
 
             void CompileDrawSrg(Data::Instance<RPI::Buffer> drawPacketIdBuffer);
 
@@ -116,7 +116,7 @@ namespace AZ
             DeferredDrawPacketManager* m_drawPacketManager;
 
             // unique Id of the draw-packet
-            int32_t m_drawPacketId;
+            uint32_t m_drawPacketId;
 
 #ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
             // Non-valid Reference to the material-Asset that was used to create this DeferredDrawPacket.

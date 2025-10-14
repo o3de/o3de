@@ -20,11 +20,14 @@ namespace AZ
             shaderOptions.SetUnspecifiedToDefaultValues();
             auto requestedShaderVariantId = shaderOptions.GetShaderVariantId();
 
-            DeferredDrawPacketId seed{};
+        size_t seed{};
             AZStd::hash_combine(seed, material->GetMaterialTypeId());
             AZStd::hash_combine(seed, requestedShaderVariantId);
 
-            return seed;
+        // we use only the lower 32 bits, which should be enough
+        DeferredDrawPacketId drawPacketId(static_cast<uint32_t>(seed));
+
+        return drawPacketId;
         }
 
         auto DeferredDrawPacketManager::GetDeferredDrawPacket(DeferredDrawPacketId id) const -> Data::Instance<DeferredDrawPacket>
@@ -78,10 +81,7 @@ namespace AZ
             // the deferred draw-packets don't really support rebuilding, so just create a new one
             if (drawPacket == nullptr || drawPacket->NeedsRebuild())
             {
-                // reuse the drawPacketId if we recreate the drawpacket
-                auto drawPacketId = drawPacket ? drawPacket->GetDrawPacketId() : static_cast<int32_t>(m_deferredDrawPackets.size());
-
-                drawPacket = aznew DeferredDrawPacket{ this, scene, material, materialPipelineName, shaderItem, drawPacketId };
+            drawPacket = aznew DeferredDrawPacket{ this, scene, material, materialPipelineName, shaderItem, uniqueId };
 
                 m_deferredDrawPackets[uniqueId] = drawPacket;
                 m_drawListsWithDrawPackets[drawPacket->GetDrawListTag().GetIndex()] = true;
