@@ -9,51 +9,48 @@
 #pragma once
 #include <DeferredMaterial/DeferredDrawPacket.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    // the DeferredDrawPacketManager holds all DeferredDrawPackets of the scene, and deduplicates
+    // the Drawpackets from the Meshes
+    class DeferredDrawPacketManager
     {
-        // the DeferredDrawPacketManager holds all DeferredDrawPackets of the scene, and deduplicates
-        // the Drawpackets from the Meshes
-        class DeferredDrawPacketManager
-        {
-        public:
+    public:
         using DeferredDrawPacketId = uint32_t;
 
-            static auto CalculateDrawPacketId(const RPI::Material* material, const RPI::ShaderCollection::Item& shaderItem)
-                -> DeferredDrawPacketId;
+        static auto CalculateDrawPacketId(const RPI::Material* material, const RPI::ShaderCollection::Item& shaderItem)
+            -> DeferredDrawPacketId;
 
-            auto GetDeferredDrawPacket(DeferredDrawPacketId id) const -> Data::Instance<DeferredDrawPacket>;
+        auto GetDeferredDrawPacket(DeferredDrawPacketId id) const -> Data::Instance<DeferredDrawPacket>;
 
-            bool HasDeferredDrawPacket(DeferredDrawPacketId id) const;
+        bool HasDeferredDrawPacket(DeferredDrawPacketId id) const;
 
-            auto GetOrCreateDeferredDrawPacket(
-                RPI::Scene* scene, RPI::Material* material, const Name materialPipelineName, const RPI::ShaderCollection::Item& shaderItem)
-                -> Data::Instance<DeferredDrawPacket>;
+        auto GetOrCreateDeferredDrawPacket(
+            RPI::Scene* scene, RPI::Material* material, const Name materialPipelineName, const RPI::ShaderCollection::Item& shaderItem)
+            -> Data::Instance<DeferredDrawPacket>;
 
-            bool HasDrawPacketForDrawList(const RHI::DrawListTag tag) const;
+        bool HasDrawPacketForDrawList(const RHI::DrawListTag tag) const;
 
-            auto GetDrawPackets() -> AZStd::unordered_map<DeferredDrawPacketId, Data::Instance<DeferredDrawPacket>>&
-            {
-                return m_deferredDrawPackets;
-            }
-            void SetNeedsUpdate(const bool needsUpdate)
-            {
-                m_needsUpdate = needsUpdate;
-            }
-            bool GetNeedsUpdate() const
-            {
-                return m_needsUpdate;
-            }
+        auto GetDrawPackets() -> AZStd::unordered_map<DeferredDrawPacketId, Data::Instance<DeferredDrawPacket>>&
+        {
+            return m_deferredDrawPackets;
+        }
+        void SetNeedsUpdate(const bool needsUpdate)
+        {
+            m_needsUpdate = needsUpdate;
+        }
+        bool GetNeedsUpdate() const
+        {
+            return m_needsUpdate;
+        }
 
-            void PruneUnusedDrawPackets();
+        void PruneUnusedDrawPackets();
 
-            Data::Instance<RPI::ShaderResourceGroup> CreatePassSrg(RHI::DrawListTag drawListTag);
+        Data::Instance<RPI::ShaderResourceGroup> CreatePassSrg(RHI::DrawListTag drawListTag);
 
-        private:
-            AZStd::unordered_map<DeferredDrawPacketId, Data::Instance<DeferredDrawPacket>> m_deferredDrawPackets;
-            RHI::DrawListMask m_drawListsWithDrawPackets;
-            bool m_needsUpdate = false;
-        };
-    } // namespace Render
-} // namespace AZ
+    private:
+        AZStd::unordered_map<DeferredDrawPacketId, Data::Instance<DeferredDrawPacket>> m_deferredDrawPackets;
+        RHI::DrawListMask m_drawListsWithDrawPackets;
+        bool m_needsUpdate = false;
+    };
+} // namespace AZ::Render

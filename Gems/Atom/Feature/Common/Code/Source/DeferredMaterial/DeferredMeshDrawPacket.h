@@ -13,36 +13,40 @@
 #include <DeferredMaterial/DeferredDrawPacket.h>
 #include <DeferredMaterial/DeferredDrawPacketManager.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    // the DeferredMeshDrawPacket is not a draw-packet as such, but it holds a reference to the actual
+    // deferred Drawpacket for the Material, since that is generally shared between multiple meshes
+    // We use the reference count to figure out if the DeferredDrawPacket is still needed.
+    class DeferredMeshDrawPacket
     {
-        // the DeferredMeshDrawPacket is not a draw-packet as such, but it holds a reference to the actual
-        // deferred Drawpacket for the Material, since that is generally shared between multiple meshes
-        // We use the reference count to figure out if the DeferredDrawPacket is still needed.
-        class DeferredMeshDrawPacket
-        {
-        public:
-            DeferredMeshDrawPacket() = default;
-            DeferredMeshDrawPacket(
-                Data::Instance<RPI::ModelLod> modelLod, size_t modelLodMeshIndex, Data::Instance<RPI::Material> materialOverride);
+    public:
+        DeferredMeshDrawPacket() = default;
+        DeferredMeshDrawPacket(
+            Data::Instance<RPI::ModelLod> modelLod, size_t modelLodMeshIndex, Data::Instance<RPI::Material> materialOverride);
 
-            AZ_DEFAULT_COPY(DeferredMeshDrawPacket);
-            AZ_DEFAULT_MOVE(DeferredMeshDrawPacket);
+        ~DeferredMeshDrawPacket();
 
-            auto GetDeferredDrawPacket(const RHI::DrawListTag& drawList) -> Data::Instance<DeferredDrawPacket>;
+        // disable copy
+        DeferredMeshDrawPacket(const DeferredMeshDrawPacket&) = delete;
+        DeferredMeshDrawPacket& operator=(const DeferredMeshDrawPacket&) = delete;
 
-            void Update(RPI::Scene* scene, DeferredDrawPacketManager* manager, bool forceRebuild);
+        // allow move
+        DeferredMeshDrawPacket(DeferredMeshDrawPacket&&) = default;
+        DeferredMeshDrawPacket& operator=(DeferredMeshDrawPacket&&) = default;
 
-        private:
-            // a mesh can have a DeferredDrawPacket for multiple DrawListTags
-            AZStd::unordered_map<RHI::DrawListTag, Data::Instance<DeferredDrawPacket>> m_deferredDrawPackets;
-            Data::Instance<RPI::ModelLod> m_modelLod;
-            size_t m_modelLodMeshIndex;
-            Data::Instance<RPI::Material> m_material;
-            // Tracks whether the Material has change since the DrawPacket was last built
-            RPI::Material::ChangeId m_materialChangeId = RPI::Material::DEFAULT_CHANGE_ID;
-        };
+        auto GetDeferredDrawPacket(const RHI::DrawListTag& drawList) -> Data::Instance<DeferredDrawPacket>;
 
-    } // namespace Render
-} // namespace AZ
+        void Update(RPI::Scene* scene, DeferredDrawPacketManager* manager, bool forceRebuild);
+
+    private:
+        // a mesh can have a DeferredDrawPacket for multiple DrawListTags
+        AZStd::unordered_map<RHI::DrawListTag, Data::Instance<DeferredDrawPacket>> m_deferredDrawPackets;
+        Data::Instance<RPI::ModelLod> m_modelLod;
+        size_t m_modelLodMeshIndex;
+        Data::Instance<RPI::Material> m_material;
+        // Tracks whether the Material has change since the DrawPacket was last built
+        RPI::Material::ChangeId m_materialChangeId = RPI::Material::DEFAULT_CHANGE_ID;
+    };
+
+} // namespace AZ::Render

@@ -19,73 +19,80 @@
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    // Forward declaration
+    class DeferredDrawPacketManager;
+    // This is a drawpacket with a single fullscreen draw item for one material-type and it's unique set of shader options
+    class DeferredDrawPacket
+        : public AZStd::intrusive_base
+        , private RPI::ShaderReloadNotificationBus::Handler
     {
-
-        // Forward declaration
-        class DeferredDrawPacketManager;
-        // This is a drawpacket with a single fullscreen draw item for one material-type and it's unique set of shader options
-        class DeferredDrawPacket
-            : public AZStd::intrusive_base
-            , private RPI::ShaderReloadNotificationBus::Handler
-        {
-        public:
-            DeferredDrawPacket() = default;
-            ~DeferredDrawPacket();
-            DeferredDrawPacket(
-                DeferredDrawPacketManager* drawPacketManager,
-                const RPI::Scene* scene,
-                RPI::Material* material,
-                const Name& materialPipelineName,
-                const RPI::ShaderCollection::Item& shaderItem,
+    public:
+        DeferredDrawPacket() = default;
+        ~DeferredDrawPacket();
+        DeferredDrawPacket(
+            DeferredDrawPacketManager* drawPacketManager,
+            const RPI::Scene* scene,
+            RPI::Material* material,
+            const Name& materialPipelineName,
+            const RPI::ShaderCollection::Item& shaderItem,
             const uint32_t drawPacketId);
 
-            void CompileDrawSrg(Data::Instance<RPI::Buffer> drawPacketIdBuffer);
+        void CompileDrawSrg(Data::Instance<RPI::Buffer> drawPacketIdBuffer);
 
-            const RHI::DrawPacket* GetRHIDrawPacket()
-            {
-                return m_drawPacket.get();
-            }
-            const RHI::DrawPacket* GetRHIDrawPacket() const
-            {
-                return m_drawPacket.get();
-            }
-            const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const
-            {
-                return m_rootConstantsLayout;
-            }
+        const RHI::DrawPacket* GetRHIDrawPacket()
+        {
+            return m_drawPacket.get();
+        }
+        const RHI::DrawPacket* GetRHIDrawPacket() const
+        {
+            return m_drawPacket.get();
+        }
+        const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const
+        {
+            return m_rootConstantsLayout;
+        }
 
-            RHI::DrawListTag GetDrawListTag() const
-            {
-                return m_drawListTag;
-            }
+        RHI::DrawListTag GetDrawListTag() const
+        {
+            return m_drawListTag;
+        }
 
-            int32_t GetDrawPacketId() const
-            {
-                return m_drawPacketId;
-            }
+        int32_t GetDrawPacketId() const
+        {
+            return m_drawPacketId;
+        }
 
-            size_t GetUseCount() const
-            {
-                return use_count();
-            }
+        void IncreaseUseCount()
+        {
+            m_useCount++;
+        }
 
-            bool NeedsRebuild() const
-            {
-                return m_needsRebuild;
-            }
+        void DecreaseUseCount()
+        {
+            m_useCount--;
+        }
 
-            bool IsInitialized() const
-            {
-                return m_drawPacket != nullptr;
-            }
+        int32_t GetUseCount() const
+        {
+            return m_useCount;
+        }
 
-            RPI::ShaderVariantId GetShaderVariantId() const
-            {
-                return m_shaderVariantId;
-            }
+        bool NeedsRebuild() const
+        {
+            return m_needsRebuild;
+        }
+
+        bool IsInitialized() const
+        {
+            return m_drawPacket != nullptr;
+        }
+
+        RPI::ShaderVariantId GetShaderVariantId() const
+        {
+            return m_shaderVariantId;
+        }
 
 #ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
             const Data::Asset<RPI::MaterialAsset>& GetInstigatingMaterialAsset() const
@@ -118,6 +125,8 @@ namespace AZ
             // unique Id of the draw-packet
             uint32_t m_drawPacketId;
 
+            int32_t m_useCount = 0;
+
 #ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
             // Non-valid Reference to the material-Asset that was used to create this DeferredDrawPacket.
             // Useful for debugging / logprints, but this should never be used to load the asset
@@ -146,7 +155,6 @@ namespace AZ
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
-        };
+    };
 
-    } // namespace Render
-} // namespace AZ
+} // namespace AZ::Render

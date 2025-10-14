@@ -12,52 +12,48 @@
 #include <DeferredMaterial/DeferredDrawPacket.h>
 #include <DeferredMaterial/DeferredDrawPacketManager.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
-    {
-        DeferredDrawPacket::DeferredDrawPacket(
-            DeferredDrawPacketManager* drawPacketManager,
-            const RPI::Scene* scene,
-            RPI::Material* material,
-            const Name& materialPipelineName,
-            const RPI::ShaderCollection::Item& shaderItem,
+    DeferredDrawPacket::DeferredDrawPacket(
+        DeferredDrawPacketManager* drawPacketManager,
+        const RPI::Scene* scene,
+        RPI::Material* material,
+        const Name& materialPipelineName,
+        const RPI::ShaderCollection::Item& shaderItem,
         const uint32_t drawPacketId)
-            : m_drawPacketManager(drawPacketManager)
-            , m_drawPacketId(drawPacketId)
-        {
-            Init(scene, material, materialPipelineName, shaderItem);
-        }
+        : m_drawPacketManager(drawPacketManager)
+        , m_drawPacketId(drawPacketId)
+        , m_useCount(0)
+    {
+        Init(scene, material, materialPipelineName, shaderItem);
+    }
 
-        DeferredDrawPacket::~DeferredDrawPacket()
-        {
-            AZ::RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
-        }
+    DeferredDrawPacket::~DeferredDrawPacket()
+    {
+        AZ::RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
+    }
 
-        // ShaderReloadNotificationBus::Handler overrides...
-        void DeferredDrawPacket::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
-        {
-            m_needsRebuild = true;
-            m_drawPacketManager->SetNeedsUpdate(true);
-        }
-        void DeferredDrawPacket::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
-        {
-            m_needsRebuild = true;
-            m_drawPacketManager->SetNeedsUpdate(true);
-        }
-        void DeferredDrawPacket::OnShaderVariantReinitialized([[maybe_unused]] const RPI::ShaderVariant& shaderVariant)
-        {
-            m_needsRebuild = true;
-            m_drawPacketManager->SetNeedsUpdate(true);
-        }
+    // ShaderReloadNotificationBus::Handler overrides...
+    void DeferredDrawPacket::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
+    {
+        m_needsRebuild = true;
+        m_drawPacketManager->SetNeedsUpdate(true);
+    }
+    void DeferredDrawPacket::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
+    {
+        m_needsRebuild = true;
+        m_drawPacketManager->SetNeedsUpdate(true);
+    }
+    void DeferredDrawPacket::OnShaderVariantReinitialized([[maybe_unused]] const RPI::ShaderVariant& shaderVariant)
+    {
+        m_needsRebuild = true;
+        m_drawPacketManager->SetNeedsUpdate(true);
+    }
 
-        void DeferredDrawPacket::Init(
-            const RPI::Scene* scene,
-            RPI::Material* material,
-            const Name& materialPipelineName,
-            const RPI::ShaderCollection::Item& shaderItem)
-        {
-            auto materialAsset = material->GetAsset();
+    void DeferredDrawPacket::Init(
+        const RPI::Scene* scene, RPI::Material* material, const Name& materialPipelineName, const RPI::ShaderCollection::Item& shaderItem)
+    {
+        auto materialAsset = material->GetAsset();
 
 #ifdef DEFERRED_DRAWPACKET_DEBUG_PRINT
             m_instigatingMaterialAsset =
@@ -195,7 +191,7 @@ namespace AZ
             drawPacketBuilder.AddDrawItem(drawRequest);
 
             m_drawPacket = drawPacketBuilder.End();
-        }
+    }
 
         void DeferredDrawPacket::CompileDrawSrg(Data::Instance<RPI::Buffer> drawPacketIdBuffer)
         {
@@ -206,5 +202,4 @@ namespace AZ
             m_drawSrg->Compile();
         }
 
-    } // namespace Render
-} // namespace AZ
+} // namespace AZ::Render
