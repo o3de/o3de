@@ -62,10 +62,6 @@ namespace AZ
                         meshData->AddNormal(Vector3{0.4f, 0.5f, 0.6f});
                         meshData->SetOriginalUnitSizeInMeters(10.0f);
                         meshData->SetUnitSizeInMeters(0.5f);
-                        meshData->SetVertexIndexToControlPointIndexMap(0, 10);
-                        meshData->SetVertexIndexToControlPointIndexMap(1, 11);
-                        meshData->SetVertexIndexToControlPointIndexMap(2, 12);
-                        meshData->SetVertexIndexToControlPointIndexMap(3, 13);
                         meshData->AddFace({0, 1, 2}, 1);
                         meshData->AddFace({3, 4, 5}, 2);
                         meshData->AddFace({6, 7, 8}, 3);
@@ -148,9 +144,6 @@ namespace AZ
                         blendShapeData->AddFace({ 0, 1, 2 });
                         blendShapeData->AddFace({ 1, 2, 0 });
                         blendShapeData->AddFace({ 2, 0, 1 });
-                        blendShapeData->SetVertexIndexToControlPointIndexMap(0, 1);
-                        blendShapeData->SetVertexIndexToControlPointIndexMap(1, 2);
-                        blendShapeData->SetVertexIndexToControlPointIndexMap(2, 0);
                         return true;
                     }
                     else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::MaterialData>())
@@ -318,16 +311,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(meshData:GetNormal(1).z, 0.6)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetOriginalUnitSizeInMeters(), 10.0)");
                 ExpectExecute("TestExpectFloatEquals(meshData:GetUnitSizeInMeters(), 0.5)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedControlPointCount(), 4)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(0), 10)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(1), 11)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(2), 12)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetControlPointIndex(3), 13)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedPointIndexForControlPoint(10), 0)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedPointIndexForControlPoint(11), 1)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedPointIndexForControlPoint(12), 2)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedPointIndexForControlPoint(13), 3)");
-                ExpectExecute("TestExpectIntegerEquals(meshData:GetUsedPointIndexForControlPoint(0), -1)");
+                ExpectExecute("TestExpectIntegerEquals(meshData:GetVertexIndexCount(), 9)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetFaceCount(), 3)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetVertexIndex(0, 0), 0)");
                 ExpectExecute("TestExpectIntegerEquals(meshData:GetVertexIndex(0, 1), 1)");
@@ -441,18 +425,12 @@ namespace AZ
                 ExpectExecute("blendShapeData = BlendShapeData()");
                 ExpectExecute("TestExpectTrue(blendShapeData ~= nil)");
                 ExpectExecute("MockGraphData.FillData(blendShapeData)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedControlPointCount(), 3)");
+                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetVertexIndexCount(), 9)");
                 ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetVertexCount(), 3)");
                 ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceCount(), 3)");
                 ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(0, 2), 2)");
                 ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(1, 0), 1)");
                 ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetFaceVertexIndex(2, 1), 0)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(0), 1)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(1), 2)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetControlPointIndex(2), 0)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(0), 2)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(1), 0)");
-                ExpectExecute("TestExpectIntegerEquals(blendShapeData:GetUsedPointIndexForControlPoint(2), 1)");
                 ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).x, 1.0)");
                 ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).y, 2.0)");
                 ExpectExecute("TestExpectFloatEquals(blendShapeData:GetPosition(0).z, 3.0)");

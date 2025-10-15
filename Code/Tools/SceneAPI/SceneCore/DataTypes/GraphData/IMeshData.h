@@ -67,16 +67,7 @@ namespace AZ
                 virtual const Face& GetFaceInfo(unsigned int index) const = 0;
                 virtual unsigned int GetFaceMaterialId(unsigned int index) const = 0;
 
-                //  0 <= vertexIndex < GetVertexCount().
-                virtual int GetControlPointIndex(int vertexIndex) const = 0;
-
-                // Returns number of unique control points used in the mesh.  Here, "used"
-                // means it is actually referenced by some polygon in the mesh.
-                virtual size_t GetUsedControlPointCount() const = 0;
-
-                // If the control point index specified is indeed used by the mesh, returns a unique value
-                // in the range [0,  GetUsedControlPointCount()). Otherwise, returns -1.
-                virtual int GetUsedPointIndexForControlPoint(int controlPointIndex) const = 0;
+                virtual size_t GetVertexIndexCount() const = 0;
 
                 virtual unsigned int GetVertexIndex(int faceIndex, int vertexIndexInFace) const = 0;
                 static const int s_invalidMaterialId = 0;

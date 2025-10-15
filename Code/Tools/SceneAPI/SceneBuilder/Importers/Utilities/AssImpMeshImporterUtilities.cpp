@@ -57,7 +57,6 @@ namespace AZ::SceneAPI::SceneBuilder
                 sceneSystem.SwapVec3ForUpAxis(vertex);
                 sceneSystem.ConvertUnit(vertex);
                 newMesh->AddPosition(vertex);
-                newMesh->SetVertexIndexToControlPointIndexMap(vertIdx + vertOffset, vertIdx + vertOffset);
 
                 if (mesh->HasNormals())
                 {

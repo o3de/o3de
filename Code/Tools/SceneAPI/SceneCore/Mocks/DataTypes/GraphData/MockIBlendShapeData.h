@@ -18,9 +18,7 @@ namespace AZ::SceneAPI::DataTypes
         : public IBlendShapeData
     {
     public:
-        MOCK_CONST_METHOD0(GetUsedControlPointCount, size_t());
-        MOCK_CONST_METHOD1(GetControlPointIndex, int(int));
-        MOCK_CONST_METHOD1(GetUsedPointIndexForControlPoint, int(int));
+        MOCK_CONST_METHOD0(GetVertexIndexCount, size_t());
         MOCK_CONST_METHOD0(GetVertexCount, unsigned int());
         MOCK_CONST_METHOD0(GetFaceCount, unsigned int());
         MOCK_CONST_METHOD1(GetFaceInfo, const Face&(unsigned int index));

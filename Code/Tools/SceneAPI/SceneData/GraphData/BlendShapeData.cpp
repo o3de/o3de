@@ -40,9 +40,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
-                        ->Method("GetUsedControlPointCount", &SceneAPI::DataTypes::IBlendShapeData::GetUsedControlPointCount)
-                        ->Method("GetControlPointIndex", &SceneAPI::DataTypes::IBlendShapeData::GetControlPointIndex)
-                        ->Method("GetUsedPointIndexForControlPoint", &SceneAPI::DataTypes::IBlendShapeData::GetUsedPointIndexForControlPoint)
+                        ->Method("GetVertexIndexCount", &SceneAPI::DataTypes::IBlendShapeData::GetVertexIndexCount)
                         ->Method("GetVertexCount", &SceneAPI::DataTypes::IBlendShapeData::GetVertexCount)
                         ->Method("GetFaceCount", &SceneAPI::DataTypes::IBlendShapeData::GetFaceCount)
                         ->Method("GetFaceInfo", &SceneAPI::DataTypes::IBlendShapeData::GetFaceInfo)
@@ -171,39 +169,9 @@ namespace AZ
                 m_faces.push_back(face);
             }
 
-            void BlendShapeData::SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex)
+            size_t BlendShapeData::GetVertexIndexCount() const
             {
-                m_vertexIndexToControlPointIndexMap[vertexIndex] = controlPointIndex;
-
-                // The above hashmap stores the control point index (value) per vertex (key).
-                // We construct an unordered set and fill in the control point indices in order to get access to the number of unique control points indices.
-                m_controlPointToUsedVertexIndexMap.emplace(controlPointIndex, aznumeric_cast<unsigned int>(m_controlPointToUsedVertexIndexMap.size()));
-            }
-
-            int BlendShapeData::GetControlPointIndex(int vertexIndex) const
-            {
-                auto iter = m_vertexIndexToControlPointIndexMap.find(vertexIndex);
-                AZ_Assert(iter != m_vertexIndexToControlPointIndexMap.end(), "Vertex index %i doesn't exist.", vertexIndex);
-                // Note: AZStd::unordered_map's operator [] doesn't have const version... 
-                return iter->second;
-            }
-
-            size_t BlendShapeData::GetUsedControlPointCount() const
-            {
-                return m_controlPointToUsedVertexIndexMap.size();
-            }
-
-            int BlendShapeData::GetUsedPointIndexForControlPoint(int controlPointIndex) const
-            {
-                auto iter = m_controlPointToUsedVertexIndexMap.find(controlPointIndex);
-                if (iter != m_controlPointToUsedVertexIndexMap.end())
-                {
-                    return iter->second;
-                }
-                else
-                {
-                    return -1; // That control point is not used in this mesh
-                }
+                return m_faces.size() * 3;
             }
 
             unsigned int BlendShapeData::GetVertexCount() const
@@ -239,6 +207,35 @@ namespace AZ
                 AZ_Assert(uvSetIndex < MaxNumUVSets, "uvSet index out of range");
                 AZ_Assert(vertexIndex < m_uvs[uvSetIndex].size(), "uvSet index out of range");
                 return m_uvs[uvSetIndex][vertexIndex];
+            }
+
+            AZStd::vector<AZ::Vector3>& BlendShapeData::GetPositions()
+            {
+                return m_positions;
+            }
+
+            const AZStd::vector<AZ::Vector3>& BlendShapeData::GetPositions() const
+            {
+                return m_positions;
+            }
+
+            AZStd::vector<AZ::Vector3>& BlendShapeData::GetNormals()
+            {
+                return m_normals;
+            }
+
+            const AZStd::vector<AZ::Vector3>& BlendShapeData::GetNormals() const
+            {
+                return m_normals;
+            }
+
+            AZStd::vector<BlendShapeData::Face>& BlendShapeData::GetFaces()
+            {
+                return m_faces;
+            }
+            const AZStd::vector<BlendShapeData::Face>& BlendShapeData::GetFaces() const
+            {
+                return m_faces;
             }
 
             AZStd::vector<Vector4>& BlendShapeData::GetTangents()

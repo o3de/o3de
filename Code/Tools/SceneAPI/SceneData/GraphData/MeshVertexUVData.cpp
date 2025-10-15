@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "MeshVertexUVData.h"
 
 namespace AZ
 {
@@ -89,6 +90,16 @@ namespace AZ
             {
                 output.Write("UVs", m_uvs);
                 output.Write("UVCustomName", m_customName.GetCStr());
+            }
+
+            AZStd::vector<AZ::Vector2>& MeshVertexUVData::GetUVs()
+            {
+                return m_uvs;
+            }
+
+            const AZStd::vector<AZ::Vector2>& MeshVertexUVData::GetUVs() const
+            {
+                return m_uvs;
             }
         } // GraphData
     } // SceneData

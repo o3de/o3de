@@ -151,30 +151,27 @@ namespace AZ
                     return false;
                 }
 
-                bool hasNormals = lhs.HasNormalData();
-                unsigned int vertexCount = lhs.GetVertexCount();
-                for (unsigned int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+                if (lhs.GetPositions() != rhs.GetPositions())
                 {
-                    if (lhs.GetPosition(vertexIndex) != rhs.GetPosition(vertexIndex))
-                    {
-                        return false;
-                    }
+                    return false;
+                }
 
-                    if (hasNormals && (lhs.GetNormal(vertexIndex) != rhs.GetNormal(vertexIndex)))
-                    {
-                        return false;
-                    }
+                bool hasNormals = lhs.HasNormalData();
+
+                if (hasNormals && (lhs.GetNormals() != rhs.GetNormals()))
+                {
+                    return false;
+                }
+
+                if (lhs.GetFaces() != rhs.GetFaces())
+                {
+                    return false;
                 }
 
                 unsigned int faceCount = lhs.GetFaceCount();
                 for (unsigned int faceIndex = 0; faceIndex < faceCount; ++faceIndex)
                 {
                     if (lhs.GetFaceMaterialId(faceIndex) != rhs.GetFaceMaterialId(faceIndex))
-                    {
-                        return false;
-                    }
-
-                    if (lhs.GetFaceInfo(faceIndex) != rhs.GetFaceInfo(faceIndex))
                     {
                         return false;
                     }
@@ -210,7 +207,7 @@ namespace AZ
                         const DataTypes::ISkinWeightData::Link lhsLink = lhs.GetLink(vertexIndex, linkIndex);
                         const DataTypes::ISkinWeightData::Link rhsLink = rhs.GetLink(vertexIndex, linkIndex);
 
-                        if (lhsLink.boneId != rhsLink.boneId || !IsClose(lhsLink.weight, rhsLink.weight, g_sceneUtilityEqualityEpsilon))
+                        if (!lhsLink.IsClose(rhsLink, g_sceneUtilityEqualityEpsilon))
                         {
                             return false;
                         }
@@ -231,39 +228,12 @@ namespace AZ
                 return (lhs.GetWorldTransform() == rhs.GetWorldTransform());
             }
 
-            bool operator==(const DataTypes::Color& lhs, const DataTypes::Color& rhs)
-            {
-                if (!IsClose(lhs.alpha, rhs.alpha, g_sceneUtilityEqualityEpsilon) ||
-                    !IsClose(lhs.blue, rhs.blue, g_sceneUtilityEqualityEpsilon) ||
-                    !IsClose(lhs.green, rhs.green, g_sceneUtilityEqualityEpsilon) ||
-                    !IsClose(lhs.red, rhs.red, g_sceneUtilityEqualityEpsilon))
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            bool operator!=(const DataTypes::Color& lhs, const DataTypes::Color& rhs)
-            {
-                return !(lhs == rhs);
-            }
-
             bool operator==(const SceneData::GraphData::MeshVertexColorData& lhs,
                 const SceneData::GraphData::MeshVertexColorData& rhs)
             {
-                if (lhs.GetCount() != rhs.GetCount())
+                if (lhs.GetColors() != rhs.GetColors())
                 {
                     return false;
-                }
-
-                size_t colorCount = lhs.GetCount();
-                for (size_t colorIndex = 0; colorIndex < colorCount; ++colorIndex)
-                {
-                    if (lhs.GetColor(colorIndex) != rhs.GetColor(colorIndex))
-                    {
-                        return false;
-                    }
                 }
 
                 return true;
@@ -272,17 +242,9 @@ namespace AZ
             bool operator==(const SceneData::GraphData::MeshVertexUVData& lhs,
                 const SceneData::GraphData::MeshVertexUVData& rhs)
             {
-                if (lhs.GetCount() != rhs.GetCount())
+                if (lhs.GetUVs() != rhs.GetUVs())
                 {
                     return false;
-                }
-                size_t uvCount = lhs.GetCount();
-                for (size_t uvIndex = 0; uvIndex < uvCount; ++uvIndex)
-                {
-                    if (lhs.GetUV(uvIndex) != rhs.GetUV(uvIndex))
-                    {
-                        return false;
-                    }
                 }
 
                 return true;
@@ -326,19 +288,9 @@ namespace AZ
             bool operator==(const SceneData::GraphData::AnimationData& lhs,
                 const SceneData::GraphData::AnimationData& rhs)
             {
-                if (lhs.GetKeyFrameCount() != rhs.GetKeyFrameCount())
+                if (lhs.GetKeyFrames() != rhs.GetKeyFrames())
                 {
                     return false;
-                }
-
-                size_t keyFrameCount = lhs.GetKeyFrameCount();
-                
-                for (size_t keyFrameIndex = 0; keyFrameIndex < keyFrameCount; ++keyFrameIndex)
-                {
-                    if (lhs.GetKeyFrame(keyFrameIndex) != rhs.GetKeyFrame(keyFrameIndex))
-                    {
-                        return false;
-                    }
                 }
 
                 return true;

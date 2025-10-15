@@ -45,11 +45,7 @@ namespace AZ
                 SCENE_DATA_API void AddFace(const AZ::SceneAPI::DataTypes::IMeshData::Face& face,
                     unsigned int faceMaterialId = AZ::SceneAPI::DataTypes::IMeshData::s_invalidMaterialId);
 
-                SCENE_DATA_API void SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex);
-                SCENE_DATA_API size_t GetUsedControlPointCount() const override;
-                SCENE_DATA_API int GetControlPointIndex(int vertexIndex) const override;
-                SCENE_DATA_API int GetUsedPointIndexForControlPoint(int controlPointIndex) const override;
-
+                SCENE_DATA_API size_t GetVertexIndexCount() const override;
                 SCENE_DATA_API unsigned int GetVertexCount() const override;
                 SCENE_DATA_API bool HasNormalData() const override;
 
@@ -63,6 +59,13 @@ namespace AZ
                 SCENE_DATA_API unsigned int GetVertexIndex(int faceIndex, int vertexIndexInFace) const override;
 
                 SCENE_DATA_API void GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const override;
+
+                SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetPositions();
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const;
+                SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetNormals();
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const;
+                SCENE_DATA_API AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& GetFaces();
+                SCENE_DATA_API const AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& GetFaces() const;
             protected:
                 AZStd::vector<AZ::Vector3>                              m_positions;
                 AZStd::vector<AZ::Vector3>                              m_normals;
@@ -70,9 +73,6 @@ namespace AZ
                 AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face> m_faceList;
 
                 AZStd::vector<unsigned int>                             m_faceMaterialIds;
-
-                AZStd::unordered_map<int, int>                          m_vertexIndexToControlPointIndexMap;
-                AZStd::unordered_map<int, int>                          m_controlPointToUsedVertexIndexMap;
             };
         }
     }
