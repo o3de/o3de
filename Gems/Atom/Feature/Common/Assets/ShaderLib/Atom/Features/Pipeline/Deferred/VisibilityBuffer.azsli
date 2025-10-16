@@ -50,9 +50,9 @@ void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout fl
 bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
 {
     // The visibility buffer has two invalid states: 
-    // - It is initialized with float4("NAN", 0, 0, 0): No mesh is visible at this pixel
+    // - It is initialized with float4(-0.0, 0.0, 0.0, 0.0): No mesh is visible at this pixel
     // - The m_meshInfoIndex is negative: This can happen if the MeshInfo-Buffer and the Draw-Srg are not (yet) fully updated 
-    if (isfinite(first.x))
+    if (first.x != -0.0f)
     {
         uint flagsAndMeshInfoIndex = asuint(first.x);
         // first flag
@@ -108,6 +108,6 @@ bool unpackVisibilityBuffer(float4 first, float4 second, inout VisibilityBuffer 
     // calc the dy value for the third coord
     vbuffer.m_barycentricsDy.z = barycentricsY.z - vbuffer.m_barycentrics.z;
  
-    return isfinite(first.x) && !meshInfoIndexInvalid;
+    return first.x != -0.0 && !meshInfoIndexInvalid;
 }
 
