@@ -1212,6 +1212,9 @@ namespace DebugDraw
             m_rayTracingFeatureProcessor =
                 AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::RayTracingFeatureProcessorInterface>(element.m_targetEntityId);
 
+            m_meshFeatureProcessor =
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(element.m_targetEntityId);
+
             auto shaderAsset = AZ::RPI::FindShaderAsset("shaders/obbintersection.azshader");
             auto rayTracingShader = AZ::RPI::Shader::FindOrCreate(shaderAsset, AZ::RHI::GetDefaultSupervariantNameWithNoFloat16Fallback());
 
