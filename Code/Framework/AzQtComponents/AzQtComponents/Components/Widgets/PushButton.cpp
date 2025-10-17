@@ -543,16 +543,16 @@ void PushButton::drawSmallIconLabel(const Style* style, const QStyleOptionToolBu
     style->drawControl(QStyle::CE_ToolButtonLabel, &label, painter, widget);
 }
 
-static QRect defaultArrowRect(const QStyleOptionToolButton* buttonOption)
+static QRect defaultArrowRect([[maybe_unused]] const QStyleOptionToolButton* buttonOption)
 {
-    static const QRect rect {0, 0, qRound(QStyleHelper::dpiScaled(14, QStyleHelper::dpi(buttonOption))), qRound(QStyleHelper::dpiScaled(8, QStyleHelper::dpi(buttonOption)))};
+    static const QRect rect {0, 0, 14, 8};
     return rect;
 }
 
-static QPixmap initializeDownArrowPixmap(const QColor& arrowColor, const QStyleOptionToolButton* buttonOption, const QRect& rect, Qt::ArrowType type = Qt::DownArrow)
+static QPixmap initializeDownArrowPixmap(const QColor& arrowColor, [[maybe_unused]] const QStyleOptionToolButton* buttonOption, const QRect& rect, Qt::ArrowType type = Qt::DownArrow)
 {
-    const int arrowWidth = aznumeric_cast<int>(QStyleHelper::dpiScaled(14, QStyleHelper::dpi(buttonOption)));
-    const int arrowHeight = aznumeric_cast<int>(QStyleHelper::dpiScaled(8, QStyleHelper::dpi(buttonOption)));
+    const int arrowWidth = 14;
+    const int arrowHeight = 8;
 
     const int arrowMax = qMin(arrowHeight, arrowWidth);
     const int rectMax = qMin(rect.height(), rect.width());
