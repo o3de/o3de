@@ -129,6 +129,8 @@ namespace NumericalMethods::Optimization
         EXPECT_NEAR(calculatedMinimum, expectedMinimum, 1e-3);
     }
 
+ // use of infinity and NaN with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(OptimizationTest, ValidateStepSize_ValidateStepSize_CorrectResult)
     {
         EXPECT_TRUE(ValidateStepSize(0.5, 0.0, 1.0, 0.1));
@@ -139,6 +141,7 @@ namespace NumericalMethods::Optimization
         EXPECT_FALSE(ValidateStepSize(std::numeric_limits<double>::quiet_NaN(), 2.0, 0.0, 0.1));
         EXPECT_FALSE(ValidateStepSize(std::numeric_limits<double>::infinity(), -1.0, 3.0, 0.2));
     }
+#endif // O3DE_USING_FAST_MATH
 
     TEST(OptimizationTest, LineSearch_SelectStepSizeFromInterval_SatisfiesWolfeConditions)
     {

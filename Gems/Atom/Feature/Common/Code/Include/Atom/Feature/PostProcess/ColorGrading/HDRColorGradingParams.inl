@@ -31,8 +31,8 @@ AZ_GFX_VEC3_PARAM(SplitToneHighlightsColor, m_splitToneHighlightsColor, AZ::Vect
 
 AZ_GFX_FLOAT_PARAM(SmhWeight, m_smhWeight, 0.0)
 AZ_GFX_FLOAT_PARAM(SmhShadowsStart, m_smhShadowsStart, 0.0)
-AZ_GFX_FLOAT_PARAM(SmhShadowsEnd, m_smhShadowsEnd, 0.3)
-AZ_GFX_FLOAT_PARAM(SmhHighlightsStart, m_smhHighlightsStart, 0.55)
+AZ_GFX_FLOAT_PARAM(SmhShadowsEnd, m_smhShadowsEnd, 0.3f)
+AZ_GFX_FLOAT_PARAM(SmhHighlightsStart, m_smhHighlightsStart, 0.55f)
 AZ_GFX_FLOAT_PARAM(SmhHighlightsEnd, m_smhHighlightsEnd, 1.0)
 AZ_GFX_VEC3_PARAM(SmhShadowsColor, m_smhShadowsColor, AZ::Vector3(1.0f, 0.25f, 0.25f))
 AZ_GFX_VEC3_PARAM(SmhMidtonesColor, m_smhMidtonesColor, AZ::Vector3(0.1f, 0.1f, 1.0f))

@@ -48,7 +48,7 @@ namespace AZ
         {
             m_baseConfiguration = baseConfig;
 
-            constexpr float MinFovY = Constants::Pi / 1e4;
+            constexpr float MinFovY = Constants::Pi / 1e4f;
             constexpr float MaxFovY = Constants::Pi - MinFovY;
             if (baseConfig.m_fovRadians < MinFovY)
             {

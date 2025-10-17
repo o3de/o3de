@@ -9,7 +9,7 @@
 // Macros below are of the form:
 // PARAM(NAME, MEMBER_NAME, DEFAULT_VALUE, ...)
 
-AZ_GFX_VEC3_PARAM(FogColor, m_fogColor, Vector3(0.45, 0.45, 0.6) )
+AZ_GFX_VEC3_PARAM(FogColor, m_fogColor, Vector3(0.45f, 0.45f, 0.6f) )
 
 AZ_GFX_FLOAT_PARAM(FogStartDistance, m_fogStartDistance, 1.0f)
 AZ_GFX_FLOAT_PARAM(FogEndDistance, m_fogEndDistance, 5.0f )

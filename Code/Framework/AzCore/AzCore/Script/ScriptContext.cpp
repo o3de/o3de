@@ -1052,6 +1052,8 @@ namespace AZ
         using limits = std::numeric_limits<T>;
         double number = luaL_checknumber(l, index);
 
+        // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
         // Convert math.huge (infinity) to the type-appropriate value.
         if (limits::has_infinity)
         {
@@ -1068,6 +1070,7 @@ namespace AZ
                 AZ_POP_DISABLE_WARNING
             }
         }
+#endif // !defined(O3DE_USING_FAST_MATH)
 
         // Check for decimal to integer conversion
         AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant

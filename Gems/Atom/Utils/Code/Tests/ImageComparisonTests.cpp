@@ -257,7 +257,7 @@ namespace UnitTest
 
         // Result should be:
         // sqrt( (1^2 + 2^2 + 5^2 + 4^2) / (255.0^2) / 4 )
-        EXPECT_FLOAT_EQ(0.01329868624, outcome.GetValue().m_diffScore);
+        EXPECT_FLOAT_EQ(0.01329868624f, outcome.GetValue().m_diffScore);
 
         // Result should be:
         // sqrt( (5^2 + 4^2) / (255.0^2) / 4 )
