@@ -24,7 +24,7 @@ namespace AssetBundler
 
     void AssetBundlerFileTableFilterModel::FilterChanged(const QString& newFilter)
     {
-        setFilterRegExp(newFilter.toLower());
+        setFilterRegularExpression(newFilter.toLower());
         invalidateFilter();
     }
 
@@ -49,7 +49,7 @@ namespace AssetBundler
         QVariant leftTime = sourceModel()->data(left, AssetBundlerAbstractFileTableModel::SortRole);
         QVariant rightTime = sourceModel()->data(right, AssetBundlerAbstractFileTableModel::SortRole);
 
-        if (leftTime.type() != QVariant::DateTime || rightTime.type() != QVariant::DateTime)
+        if (!leftTime.canConvert<QDateTime>() || !rightTime.canConvert<QDateTime>())
         {
             return QSortFilterProxyModel::lessThan(left, right);
         }
