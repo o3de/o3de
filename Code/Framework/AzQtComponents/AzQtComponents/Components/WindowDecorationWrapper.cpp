@@ -562,7 +562,7 @@ namespace AzQtComponents
                         const short global_x = static_cast<short>(LOWORD(msg->lParam));
                         const short global_y = static_cast<short>(HIWORD(msg->lParam));
 
-                        const QPoint globalPos = QHighDpi::fromNativePixels(QPoint(global_x, global_y), widget->window()->windowHandle());
+                        const QPoint globalPos = QPoint(global_x, global_y);
                         const QPoint local = titleBar->mapFromGlobal(globalPos);
                         if (titleBar->draggableRect().contains(local))
                         {
@@ -605,7 +605,7 @@ namespace AzQtComponents
             DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
 
             const QScreen *screen = w->screen();
-            const QRect availableGeometry = QHighDpi::toNativePixels(screen->availableGeometry(), screen);
+            const QRect availableGeometry = screen->availableGeometry();
             auto mmi = reinterpret_cast<MINMAXINFO*>(msg->lParam);
             mmi->ptMaxSize.y = availableGeometry.height();
             mmi->ptMaxSize.x = availableGeometry.width();
