@@ -27,6 +27,16 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-deprecated-enum-enum-conversion)
 
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH -ffast-math)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH -fno-fast-math)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
 set(LY_GCC_BUILD_FOR_GCOV FALSE CACHE BOOL "Flag to enable the build for gcov usage")
 if(LY_GCC_BUILD_FOR_GCOV)
     set(LY_GCC_GCOV_FLAGS "--coverage")
@@ -37,6 +47,7 @@ if(LY_GCC_BUILD_FOR_GPROF)
     set(LY_GCC_GPROF_FLAGS "-pg")
 endif()
 
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE -fno-fast-math)
 
 ly_append_configurations_options(
     DEFINES_PROFILE

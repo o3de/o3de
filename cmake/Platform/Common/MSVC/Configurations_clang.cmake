@@ -29,6 +29,16 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
 
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH /fp:fast)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH /fp:precise)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2
@@ -51,7 +61,6 @@ ly_append_configurations_options(
         -Wno-unknown-argument
 
         
-        /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions
         /MP             # Multicore compilation in Visual Studio
         /nologo         # Suppress Copyright and version number message

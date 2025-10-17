@@ -16,6 +16,10 @@ set(O3DE_EXTRA_C_FLAGS ""       CACHE STRING "Additional C Compiler flags to app
 set(O3DE_EXTRA_CXX_FLAGS ""     CACHE STRING "Additional Cxx Compiler flags to apply globally")
 set(O3DE_EXTRA_LINK_OPTIONS ""  CACHE STRING "Additional link options to apply globally")
 
+# If you turn fast math on, beware, as all floating point operations that result or involve NaN or Inf
+# will be undefined behavior and cannot be detected or dealt with.
+set(USE_FAST_MATH OFF CACHE BOOL "Use fp:precise (MSVC) or -ffast-math (Clang/GCC) to allow aggressive, lossy floating-point optimizations")
+
 ly_set(CMAKE_C_FLAGS "${O3DE_EXTRA_C_FLAGS}")
 ly_set(CMAKE_CXX_FLAGS "${O3DE_EXTRA_CXX_FLAGS}")
 ly_set(LINK_OPTIONS "${O3DE_EXTRA_LINK_OPTIONS}")
