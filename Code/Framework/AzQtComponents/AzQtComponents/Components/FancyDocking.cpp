@@ -2469,9 +2469,8 @@ namespace AzQtComponents
 
             if (fromScreen != toScreen)
             {
-                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
-                placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
-                placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
+                placeholderRect.setWidth(placeholderRect.width());
+                placeholderRect.setHeight(placeholderRect.height());
             }
 
             // Place the floating dock widget
