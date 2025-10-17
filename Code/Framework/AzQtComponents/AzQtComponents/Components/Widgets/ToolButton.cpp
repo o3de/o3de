@@ -232,8 +232,8 @@ bool ToolButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* 
                         : QIcon::Disabled;
 
     const QSize size = config.menuIndicatorIconSize;
-    const int arrowWidth = aznumeric_cast<int>(QStyleHelper::dpiScaled(size.width(), QStyleHelper::dpi(option)));
-    const int arrowHeight = aznumeric_cast<int>(QStyleHelper::dpiScaled(size.height(), QStyleHelper::dpi(option)));
+    const int arrowWidth = size.width();
+    const int arrowHeight = size.height();
 
     const QIcon icon = QIcon(config.menuIndicatorIcon);
     const QSize requestedSize = QSize(arrowWidth, arrowHeight);
@@ -241,7 +241,7 @@ bool ToolButton::drawIndicatorArrowDown(const Style* style, const QStyleOption* 
 
     if (QWindow* window = widget->window()->windowHandle())
     {
-        originalPixmap = icon.pixmap(window, requestedSize);
+        originalPixmap = icon.pixmap(requestedSize, window->devicePixelRatio());
     }
     else
     {
