@@ -43,6 +43,11 @@ namespace PhysX
                 this, &EditorWindow::SaveConfiguration);
         }
 
+        EditorWindow::~EditorWindow()
+        {
+            delete m_ui;
+        }
+
         void EditorWindow::RegisterViewClass()
         {
             AzToolsFramework::ViewPaneOptions options;

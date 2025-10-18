@@ -130,6 +130,7 @@ CTVCustomizeTrackColorsDlg::CTVCustomizeTrackColorsDlg(QWidget* pParent)
 
 CTVCustomizeTrackColorsDlg::~CTVCustomizeTrackColorsDlg()
 {
+    delete m_ui;
 }
 
 void CTVCustomizeTrackColorsDlg::OnInitDialog()

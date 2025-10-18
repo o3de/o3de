@@ -250,13 +250,14 @@ namespace ScriptCanvasEditor
         public:
 
             CommandLine(QWidget* object = nullptr);
+            ~CommandLine() override;
 
             void showEvent(QShowEvent *event) override;
             void onTextChanged(const QString&);
             void onEditKeyReleaseEvent(QKeyEvent*);
             void onListKeyReleaseEvent(QKeyEvent*);
 
-            AZStd::unique_ptr<Ui::CommandLine> ui;
+            Ui::CommandLine* ui;
         };
     }
 }

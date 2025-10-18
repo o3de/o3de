@@ -23,8 +23,8 @@ class HyperlinkPage
 
 public:
     explicit HyperlinkPage(QWidget* parent = nullptr);
-    ~HyperlinkPage() override = default;
+    ~HyperlinkPage() override;
 
 private:
-    QScopedPointer<Ui::HyperlinkPage> ui;
+    Ui::HyperlinkPage* ui;
 };

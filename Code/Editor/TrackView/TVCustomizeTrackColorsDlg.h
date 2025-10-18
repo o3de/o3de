@@ -17,6 +17,10 @@
 #include <QDialog>
 #endif
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
+#include <IXml.h>
+#include <IMovieSystem.h>
 
 namespace Ui
 {
@@ -73,7 +77,7 @@ private:
     QVector<QLabel*> m_aLabels;
     QVector<ColorButton*> m_colorButtons;
 
-    QScopedPointer<Ui::TVCustomizeTrackColorsDialog> m_ui;
+    Ui::TVCustomizeTrackColorsDialog* m_ui;
 
     static AZStd::map<CAnimParamType, QColor> s_trackColors;
     static QColor s_colorForDisabled;

@@ -146,6 +146,7 @@ namespace ScriptCanvasEditor
 
 
             ScriptCanvasNodePaletteToolbar(QWidget* parent);
+            ~ScriptCanvasNodePaletteToolbar() override;
 
         signals:
 
@@ -154,7 +155,7 @@ namespace ScriptCanvasEditor
 
         private:
 
-            AZStd::unique_ptr< Ui::ScriptCanvasNodePaletteToolbar > m_ui;
+            Ui::ScriptCanvasNodePaletteToolbar* m_ui;
         };
 
         class ScriptCanvasNodePaletteConfig

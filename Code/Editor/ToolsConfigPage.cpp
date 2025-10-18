@@ -111,6 +111,11 @@ CIconListDialog::CIconListDialog(QWidget* pParent /* = nullptr */)
     m_ui->m_iconListCtrl->setModel(new IconListModel(this));
 }
 
+CIconListDialog::~CIconListDialog()
+{
+    delete m_ui;
+}
+
 bool CIconListDialog::GetSelectedIconPath(QString& path) const
 {
     if (!m_ui->m_iconListCtrl->currentIndex().isValid())
@@ -489,6 +494,7 @@ CToolsConfigPage::CToolsConfigPage(QWidget* parent)
 
 CToolsConfigPage::~CToolsConfigPage()
 {
+    delete m_ui;
 }
 
 // CToolsConfigPage message handlers

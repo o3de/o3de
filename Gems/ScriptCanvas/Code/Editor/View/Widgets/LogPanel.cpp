@@ -63,6 +63,11 @@ namespace ScriptCanvasEditor
 
         }
 
+        LogPanelWidget::~LogPanelWidget()
+        {
+            delete ui;
+        }
+
         LogTab::LogTab(QWidget* pParent, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, [[maybe_unused]] const AzToolsFramework::LogPanel::TabSettings& in_settings)
             : AzToolsFramework::LogPanel::BaseLogView(pParent)
         {

@@ -92,6 +92,11 @@ namespace GraphCanvas
         }
     }
 
+    AssetEditorToolbar::~AssetEditorToolbar()
+    {
+        delete m_ui;
+    }
+
     void AssetEditorToolbar::AddCustomAction(QToolButton* action)
     {
         m_ui->customizationPanel->setVisible(true);

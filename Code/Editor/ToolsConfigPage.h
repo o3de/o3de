@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TOOLSCONFIGPAGE_H
-#define CRYINCLUDE_EDITOR_TOOLSCONFIGPAGE_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -33,6 +30,7 @@ class CIconListDialog
     Q_OBJECT
 public:
     CIconListDialog(QWidget* pParent = nullptr);
+    ~CIconListDialog() override;
 
     bool GetSelectedIconPath(QString& path) const;
 
@@ -40,7 +38,7 @@ protected:
     void OnInitDialog();
 
 private:
-    QScopedPointer<Ui::IconListDialog> m_ui;
+    Ui::IconListDialog* m_ui;
 };
 
 class ToolsConfigDialog
@@ -105,7 +103,5 @@ private:
     CommandModel* m_commandModel;
     QStringListModel* m_completionModel;
 
-    QScopedPointer<Ui::ToolsConfigPage> m_ui;
+    Ui::ToolsConfigPage* m_ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_TOOLSCONFIGPAGE_H

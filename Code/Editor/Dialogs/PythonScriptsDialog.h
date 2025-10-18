@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Math/Guid.h>
 
 #include <QWidget>
 #include <QScopedPointer>
@@ -45,5 +46,5 @@ protected:
     void ScanFolderForScripts(QString path, AZStd::vector<QString>& scriptFolders) const;
 
 private:
-    QScopedPointer<Ui::CPythonScriptsDialog> ui;
+    Ui::CPythonScriptsDialog* ui;
 };

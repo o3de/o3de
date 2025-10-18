@@ -65,6 +65,11 @@ namespace AZ
 
             }
 
+            HeaderWidget::~HeaderWidget()
+            {
+                delete ui;
+            }
+
             void HeaderWidget::SetManifestObject(const DataTypes::IManifestObject* target)
             {
                 AZ_TraceContext("New target", GetSerializedName(target));

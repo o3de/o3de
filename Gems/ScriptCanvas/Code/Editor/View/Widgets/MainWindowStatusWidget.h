@@ -11,9 +11,7 @@
 #include <QWidget>
 
 #include <AzCore/Memory/SystemAllocator.h>
-
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-
 #include <Editor/View/Widgets/ValidationPanel/GraphValidationDockWidgetBus.h>
 #endif
 
@@ -33,7 +31,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(MainWindowStatusWidget, AZ::SystemAllocator);
         
         MainWindowStatusWidget(QWidget* parent = nullptr);
-        ~MainWindowStatusWidget() = default;
+        ~MainWindowStatusWidget() override;
 
         // GraphValidatorDockWidgetNotificationBus
         void OnResultsChanged(int errorCount, int warningCount) override;
@@ -46,6 +44,6 @@ namespace ScriptCanvasEditor
         void OnWarningButtonPressed();
         
     private:
-        AZStd::unique_ptr<Ui::MainWindowStatusWidget> m_ui;
+        Ui::MainWindowStatusWidget* m_ui;
     };
 }

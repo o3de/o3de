@@ -67,7 +67,9 @@ namespace ScriptCanvasEditor
         public:
 
             LogPanelWidget(QWidget* parent = nullptr);
-            AZStd::unique_ptr<Ui::LogPanel> ui;
+            ~LogPanelWidget() override;
+
+            Ui::LogPanel* ui;
 
         };
 

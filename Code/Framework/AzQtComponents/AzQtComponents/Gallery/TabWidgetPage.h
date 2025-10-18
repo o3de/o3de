@@ -23,7 +23,8 @@ class TabWidgetPage
 
 public:
     explicit TabWidgetPage(QWidget* parent = nullptr);
+    ~TabWidgetPage() override;
 
 private:
-    QScopedPointer<Ui::TabWidgetPage> ui;
+    Ui::TabWidgetPage* ui;
 };

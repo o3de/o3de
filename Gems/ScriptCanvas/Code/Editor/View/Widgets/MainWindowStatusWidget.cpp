@@ -31,6 +31,11 @@ namespace ScriptCanvasEditor
         OnResultsChanged(0, 0);
     }
 
+    MainWindowStatusWidget::~MainWindowStatusWidget()
+    {
+        delete m_ui;
+    }
+
     void MainWindowStatusWidget::OnResultsChanged(int errorCount, int warningCount)
     {
         m_ui->showErrorButton->setText(QString("%1 Errors").arg(errorCount));

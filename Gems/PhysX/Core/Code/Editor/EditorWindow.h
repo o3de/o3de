@@ -44,6 +44,7 @@ namespace PhysX
             static void RegisterViewClass();
 
             explicit EditorWindow(QWidget* parent = nullptr);
+            ~EditorWindow() override;
 
         private:
             static void SaveConfiguration(
@@ -51,7 +52,7 @@ namespace PhysX
                 const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
                 const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
-            QScopedPointer<Ui::EditorWindowClass> m_ui;
+            Ui::EditorWindowClass* m_ui;
         };
     }
 };
