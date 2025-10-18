@@ -88,5 +88,3 @@ namespace AzQtComponents
         float m_defaultV;
     };
 } // namespace AzQtComponents
-
-Q_DECLARE_METATYPE(AzQtComponents::ColorValidator)

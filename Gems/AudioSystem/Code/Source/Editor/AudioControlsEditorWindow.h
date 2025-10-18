@@ -16,6 +16,7 @@
 
 #include <QMainWindow>
 #include <QFileSystemWatcher>
+#endif
 
 namespace Ui
 {
