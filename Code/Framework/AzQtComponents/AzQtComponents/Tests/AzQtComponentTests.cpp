@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Color.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/Palette.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/QtMetaTypes.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <QLocale>
 
