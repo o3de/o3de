@@ -113,7 +113,6 @@ CIconListDialog::CIconListDialog(QWidget* pParent /* = nullptr */)
 
 CIconListDialog::~CIconListDialog()
 {
-    delete m_ui;
 }
 
 bool CIconListDialog::GetSelectedIconPath(QString& path) const

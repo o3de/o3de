@@ -39,7 +39,7 @@ protected:
     void OnInitDialog();
 
 private:
-    Ui::IconListDialog* m_ui;
+    QScopedPointer<Ui::IconListDialog> m_ui;
 };
 
 class ToolsConfigDialog
