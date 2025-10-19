@@ -26,5 +26,5 @@ public:
     ~DragAndDropPage() override;
 
 private:
-    Ui::DragAndDropPage* ui;
+    QScopedPointer<Ui::DragAndDropPage> ui;
 };

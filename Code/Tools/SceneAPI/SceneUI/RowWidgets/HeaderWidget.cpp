@@ -67,7 +67,6 @@ namespace AZ
 
             HeaderWidget::~HeaderWidget()
             {
-                delete ui;
             }
 
             void HeaderWidget::SetManifestObject(const DataTypes::IManifestObject* target)

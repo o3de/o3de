@@ -94,7 +94,6 @@ namespace GraphCanvas
 
     AssetEditorToolbar::~AssetEditorToolbar()
     {
-        delete m_ui;
     }
 
     void AssetEditorToolbar::AddCustomAction(QToolButton* action)

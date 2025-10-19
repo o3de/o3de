@@ -291,7 +291,6 @@ AzQtComponents::TabWidget::applySecondaryStyle(tabWidget, bordered);
 
 TabWidgetPage::~TabWidgetPage()
 {
-    delete ui;
 }
 #include "Gallery/moc_TabWidgetPage.cpp"
 

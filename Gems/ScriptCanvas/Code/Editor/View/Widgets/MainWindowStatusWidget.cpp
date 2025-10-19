@@ -33,7 +33,6 @@ namespace ScriptCanvasEditor
 
     MainWindowStatusWidget::~MainWindowStatusWidget()
     {
-        delete m_ui;
     }
 
     void MainWindowStatusWidget::OnResultsChanged(int errorCount, int warningCount)

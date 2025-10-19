@@ -15,6 +15,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QColor>
 #include <QDialog>
+#include <QScopedPointer>
 #endif
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
@@ -37,7 +38,7 @@ class CTVCustomizeTrackColorsDlg
     friend class CTrackViewDialog;
 public:
     CTVCustomizeTrackColorsDlg(QWidget* pParent = nullptr);
-    virtual ~CTVCustomizeTrackColorsDlg();
+    ~CTVCustomizeTrackColorsDlg() override;
 
     static QColor GetTrackColor(CAnimParamType paramType)
     {
@@ -77,7 +78,7 @@ private:
     QVector<QLabel*> m_aLabels;
     QVector<ColorButton*> m_colorButtons;
 
-    Ui::TVCustomizeTrackColorsDialog* m_ui;
+    QScopedPointer<Ui::TVCustomizeTrackColorsDialog> m_ui;
 
     static AZStd::map<CAnimParamType, QColor> s_trackColors;
     static QColor s_colorForDisabled;

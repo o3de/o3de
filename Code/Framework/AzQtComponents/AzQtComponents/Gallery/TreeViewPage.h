@@ -27,5 +27,5 @@ public:
     ~TreeViewPage() override;
 
 private:
-    Ui::TreeViewPage* ui;
+    QScopedPointer<Ui::TreeViewPage> ui;
 };

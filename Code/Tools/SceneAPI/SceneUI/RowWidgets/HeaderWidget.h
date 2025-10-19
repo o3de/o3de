@@ -10,6 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QScopedPointer>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #endif
@@ -63,7 +65,7 @@ namespace AZ
                 virtual void UpdateUIForManifestObject(const DataTypes::IManifestObject* target);
 
                 AZStd::string m_objectName;
-                Ui::HeaderWidget* ui;
+                QScopedPointer<Ui::HeaderWidget> ui;
                 Containers::SceneManifest* m_sceneManifest; // Reference only, does not point to a local instance.
                 const DataTypes::IManifestObject* m_target; // Reference only, does not point to a local instance.
             };

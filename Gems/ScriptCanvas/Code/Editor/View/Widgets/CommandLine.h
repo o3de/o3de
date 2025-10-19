@@ -12,9 +12,10 @@
 #include <QObject>
 #include <QDialog>
 #include <QLineEdit>
-#include <QTableView>
+#include <QObject>
+#include <QScopedPointer>
 #include <QSortFilterProxyModel>
-#include <QAbstractTableModel>
+#include <QTableView>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -257,7 +258,7 @@ namespace ScriptCanvasEditor
             void onEditKeyReleaseEvent(QKeyEvent*);
             void onListKeyReleaseEvent(QKeyEvent*);
 
-            Ui::CommandLine* ui;
+            QScopedPointer<Ui::CommandLine> ui;
         };
     }
 }

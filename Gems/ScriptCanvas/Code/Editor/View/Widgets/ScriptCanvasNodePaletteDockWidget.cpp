@@ -633,7 +633,6 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasNodePaletteToolbar::~ScriptCanvasNodePaletteToolbar()
         {
-            delete m_ui;
         }
 
         //////////////////////////////////

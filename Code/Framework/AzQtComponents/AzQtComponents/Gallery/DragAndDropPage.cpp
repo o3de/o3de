@@ -47,7 +47,6 @@ view->viewport()->setAcceptDrops(true);
 
 DragAndDropPage::~DragAndDropPage()
 {
-    delete ui;
 }
 
 #include <Gallery/moc_DragAndDropPage.cpp>

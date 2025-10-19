@@ -12,6 +12,7 @@
 #include <AzCore/Math/Guid.h>
 
 #include <QWidget>
+#include <QString>
 #include <QScopedPointer>
 #endif
 
@@ -25,7 +26,7 @@ class CPythonScriptsDialog
     Q_OBJECT
 public:
     explicit CPythonScriptsDialog(QWidget* parent = nullptr);
-    ~CPythonScriptsDialog();
+    ~CPythonScriptsDialog() override;
 
     static const GUID& GetClassID()
     {
@@ -46,5 +47,5 @@ protected:
     void ScanFolderForScripts(QString path, AZStd::vector<QString>& scriptFolders) const;
 
 private:
-    Ui::CPythonScriptsDialog* ui;
+    QScopedPointer<Ui::CPythonScriptsDialog> ui;
 };

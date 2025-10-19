@@ -590,7 +590,6 @@ namespace ScriptCanvasEditor
 
         CommandLine::~CommandLine()
         {
-            delete ui;
         }
 
         void CommandLine::onTextChanged(const QString& text)

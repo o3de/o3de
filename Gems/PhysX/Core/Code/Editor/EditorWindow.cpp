@@ -45,7 +45,6 @@ namespace PhysX
 
         EditorWindow::~EditorWindow()
         {
-            delete m_ui;
         }
 
         void EditorWindow::RegisterViewClass()

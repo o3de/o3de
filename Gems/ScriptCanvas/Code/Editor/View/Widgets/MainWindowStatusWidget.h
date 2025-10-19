@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QScopedPointer>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
@@ -44,6 +45,6 @@ namespace ScriptCanvasEditor
         void OnWarningButtonPressed();
         
     private:
-        Ui::MainWindowStatusWidget* m_ui;
+        QScopedPointer<Ui::MainWindowStatusWidget> m_ui;
     };
 }

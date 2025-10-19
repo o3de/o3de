@@ -52,7 +52,6 @@ slider->updateGradient();
 
 GradientSliderPage::~GradientSliderPage()
 {
-    delete ui;
 }
 #include "Gallery/moc_GradientSliderPage.cpp"
 

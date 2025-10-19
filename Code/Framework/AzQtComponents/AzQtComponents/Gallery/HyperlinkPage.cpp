@@ -52,7 +52,6 @@ label->setText("&lt;a href=\"#\"&gt;This is a hyperlink.&lt;/a&gt;");
 
 HyperlinkPage::~HyperlinkPage()
 {
-    delete ui;
 }
 #include <Gallery/moc_HyperlinkPage.cpp>
 

@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QStringListModel>
+#include <QScopedPointer>
 #endif
 
 namespace Ui
@@ -103,5 +104,5 @@ private:
     CommandModel* m_commandModel;
     QStringListModel* m_completionModel;
 
-    Ui::ToolsConfigPage* m_ui;
+    QScopedPointer<Ui::ToolsConfigPage> m_ui;
 };

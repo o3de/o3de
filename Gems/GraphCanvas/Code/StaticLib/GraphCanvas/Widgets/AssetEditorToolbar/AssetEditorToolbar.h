@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QScopedPointer>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
@@ -99,6 +100,6 @@ namespace GraphCanvas
 
         bool m_viewDisabled = false;
     
-        Ui::AssetEditorToolbar* m_ui;
+        QScopedPointer<Ui::AssetEditorToolbar> m_ui;
     };
 }

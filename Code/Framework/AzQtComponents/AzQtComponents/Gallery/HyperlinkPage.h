@@ -26,5 +26,5 @@ public:
     ~HyperlinkPage() override;
 
 private:
-    Ui::HyperlinkPage* ui;
+    QScopedPointer<Ui::HyperlinkPage> ui;
 };

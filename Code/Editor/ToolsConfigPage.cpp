@@ -494,7 +494,6 @@ CToolsConfigPage::CToolsConfigPage(QWidget* parent)
 
 CToolsConfigPage::~CToolsConfigPage()
 {
-    delete m_ui;
 }
 
 // CToolsConfigPage message handlers

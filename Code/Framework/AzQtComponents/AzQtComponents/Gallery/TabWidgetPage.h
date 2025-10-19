@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QScopedPointer>
 #endif
 
 namespace Ui
@@ -26,5 +27,5 @@ public:
     ~TabWidgetPage() override;
 
 private:
-    Ui::TabWidgetPage* ui;
+    QScopedPointer<Ui::TabWidgetPage> ui;
 };

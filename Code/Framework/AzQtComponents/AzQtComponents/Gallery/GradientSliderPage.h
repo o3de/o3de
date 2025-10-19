@@ -25,5 +25,5 @@ public:
     ~GradientSliderPage() override;
 
 private:
-    Ui::GradientSliderPage* ui;
+    QScopedPointer<Ui::GradientSliderPage> ui;
 };
