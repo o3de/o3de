@@ -15,7 +15,6 @@
 // https://64.github.io/tonemapping/#extended-reinhard-luminance-tone-map
 float3 TonemapReinhard(const float3 inputColor)
 {
-    // return inputColor / (1.0f + inputColor);
     // Rec. 709 luminance weights
     const float3 luminanceWeights = float3(0.2126f, 0.7152f, 0.0722f);
     
