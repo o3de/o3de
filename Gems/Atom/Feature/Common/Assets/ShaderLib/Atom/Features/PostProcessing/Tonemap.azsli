@@ -50,9 +50,12 @@ float3 TonemapFilmic(const float3 inputColor)
     return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7) + 0.06);
 }
 
-// AGX tone mapping implementation
+// AGX tone mapping implementation with CDL (Color Decision List) support
 // Reference: https://github.com/sobotka/AgX
-float3 TonemapAgx(const float3 inputColor)
+// Adapted for O3DE's ACEScg -> Linear sRGB pipeline
+
+// Internal AGX function that applies the core transform and CDL parameters
+float3 TonemapAgxInternal(const float3 inputColor, const float3 slope, const float3 offset, const float3 power, const float saturation)
 {
     // AGX Inset Matrix (input transform) - converted to column major
     const float3x3 agxInsetMatrix = float3x3(
@@ -72,6 +75,7 @@ float3 TonemapAgx(const float3 inputColor)
     const float agxMinEv = -12.47393f;
     const float agxMaxEv = 4.026069f;
     
+    // 1. AGX Transform
     // Input transform (inset)
     float3 color = mul(agxInsetMatrix, inputColor);
     
@@ -95,6 +99,15 @@ float3 TonemapAgx(const float3 inputColor)
             + 0.1191f   * color
             - 0.00232f;
     
+    // 2. AGX Look (CDL operations)
+    color = pow(color * slope + offset, power);
+    
+    // Apply saturation using luminance weights (Rec. 709)
+    const float3 luminanceWeights = float3(0.2126f, 0.7152f, 0.0722f);
+    float luma = dot(color, luminanceWeights);
+    color = luma + saturation * (color - luma);
+    
+    // 3. AGX EOTF
     // Inverse input transform (outset)
     color = mul(agxOutsetMatrix, color);
     
@@ -103,6 +116,24 @@ float3 TonemapAgx(const float3 inputColor)
     color = pow(max(color, 0.0f), 2.2f);
     
     return color;
+}
+
+// Base AGX tonemapping
+float3 TonemapAgx(const float3 inputColor)
+{
+    return TonemapAgxInternal(inputColor, float3(1.0f, 1.0f, 1.0f), float3(0.0f, 0.0f, 0.0f), float3(1.0f, 1.0f, 1.0f), 1.0f);
+}
+
+// AGX Golden - warmer, more cinematic look
+float3 TonemapAgxGolden(const float3 inputColor)
+{
+    return TonemapAgxInternal(inputColor, float3(1.0f, 0.9f, 0.5f), float3(0.0f, 0.0f, 0.0f), float3(0.8f, 0.8f, 0.8f), 1.3f);
+}
+
+// AGX Punchy - higher contrast, more saturated
+float3 TonemapAgxPunchy(const float3 inputColor)
+{
+    return TonemapAgxInternal(inputColor, float3(1.0f, 1.0f, 1.0f), float3(0.0f, 0.0f, 0.0f), float3(1.35f, 1.35f, 1.35f), 1.4f);
 }
 
 float3 ApplyManualExposure(float3 color, float exposure)

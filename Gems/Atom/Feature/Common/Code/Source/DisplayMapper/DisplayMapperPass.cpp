@@ -85,7 +85,9 @@ namespace AZ
                     if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||
-                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx)
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxGolden ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxPunchy)
                     {
                         // When using Reinhard tonemapper, a gamma of 2.2 for the transfer function is used for LDR display,
                         // and PQ is used for HDR.
@@ -451,6 +453,12 @@ namespace AZ
                 case DisplayMapperOperationType::Agx:
                     type = ToneMapperType::Agx;
                     break;
+                case DisplayMapperOperationType::AgxGolden:
+                    type = ToneMapperType::AgxGolden;
+                    break;
+                case DisplayMapperOperationType::AgxPunchy:
+                    type = ToneMapperType::AgxPunchy;
+                    break;
                 default:
                     AZ_Assert(false, "Invalid tonemapper type %d", m_displayMapperConfigurationDescriptor.m_operationType);
                     break;
@@ -569,7 +577,9 @@ namespace AZ
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Filmic ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||
-                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx;
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxGolden ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxPunchy;
         }
     }   // namespace Render
 }   // namespace AZ

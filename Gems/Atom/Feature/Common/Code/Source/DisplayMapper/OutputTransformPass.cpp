@@ -154,7 +154,9 @@ namespace AZ
                                                                  AZ::Name("ToneMapperType::AcesFitted"),
                                                                  AZ::Name("ToneMapperType::AcesFilmic"),
                                                                  AZ::Name("ToneMapperType::Filmic"),
-                                                                 AZ::Name("ToneMapperType::Agx") };
+                                                                 AZ::Name("ToneMapperType::Agx"),
+                                                                 AZ::Name("ToneMapperType::AgxGolden"),
+                                                                 AZ::Name("ToneMapperType::AgxPunchy") };
             AZStd::vector<AZ::Name> transferFunctionVariationTypes = {
                 AZ::Name("TransferFunctionType::None"),
                 AZ::Name("TransferFunctionType::Gamma22"),
@@ -207,6 +209,12 @@ namespace AZ
                 break;
             case ToneMapperType::Agx:
                 shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::Agx"));
+                break;
+            case ToneMapperType::AgxGolden:
+                shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::AgxGolden"));
+                break;
+            case ToneMapperType::AgxPunchy:
+                shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::AgxPunchy"));
                 break;
             default:
                 shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::None"));
