@@ -10,11 +10,31 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-// Simple reinhard tone mapping algorithm based on below paper.
-// http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+// Extended Reinhard tone mapping algorithm with white point
+// Luminance-based implementation that preserves hue while providing better highlight control
+// https://64.github.io/tonemapping/#extended-reinhard-luminance-tone-map
 float3 TonemapReinhard(const float3 inputColor)
 {
-    return inputColor / (1.0 + inputColor);
+    // return inputColor / (1.0f + inputColor);
+    // Rec. 709 luminance weights
+    const float3 luminanceWeights = float3(0.2126f, 0.7152f, 0.0722f);
+    
+    // White point luminance - chosen for good balance in most scenes
+    // Higher values compress highlights less, lower values compress more
+    // This is something we could expose as a parameter in the future
+    const float maxWhiteLuminance = 4.0f;
+    
+    // Calculate input luminance and ensure it's positive
+    float inputLuminance = max(dot(inputColor, luminanceWeights), 1e-10f);
+    
+    // Apply extended Reinhard tonemapping to luminance
+    // Formula: L_out = L_in * (1 + L_in / (maxWhite^2)) / (1 + L_in)
+    float numerator = inputLuminance * (1.0f + (inputLuminance / (maxWhiteLuminance * maxWhiteLuminance)));
+    float outputLuminance = numerator / (1.0f + inputLuminance);
+    
+    // Preserve chromaticity by scaling the original color
+    // This maintains hue relationships while applying the tone curve
+    return inputColor * (outputLuminance / inputLuminance);
 }
 
 // Originally written by Stephen Hill (@self_shadow)
