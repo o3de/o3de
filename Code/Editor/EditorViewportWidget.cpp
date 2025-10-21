@@ -2166,7 +2166,7 @@ void EditorViewportWidget::StartFullscreenPreview()
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
     setFixedSize(screenGeometry.size());
     move(QPoint(screenGeometry.x(), screenGeometry.y()));
-    showMaximized();
+    showFullScreen();
 
     // This must be done after unparenting this widget above
     MainWindow::instance()->hide();
