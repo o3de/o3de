@@ -154,6 +154,7 @@ namespace AZ
             Agx,
             AgxGolden,
             AgxPunchy,
+            AgxWarm,
             PbrNeutral
         );
 
@@ -180,6 +181,7 @@ namespace AZ
             Agx,
             AgxGolden,
             AgxPunchy,
+            AgxWarm,
             PbrNeutral
         };
 

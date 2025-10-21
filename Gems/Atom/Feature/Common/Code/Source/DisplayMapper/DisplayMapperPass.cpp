@@ -88,6 +88,7 @@ namespace AZ
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxGolden ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxPunchy ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxWarm ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::PbrNeutral)
                     {
                         // When using Reinhard tonemapper, a gamma of 2.2 for the transfer function is used for LDR display,
@@ -460,6 +461,9 @@ namespace AZ
                 case DisplayMapperOperationType::AgxPunchy:
                     type = ToneMapperType::AgxPunchy;
                     break;
+                case DisplayMapperOperationType::AgxWarm:
+                    type = ToneMapperType::AgxWarm;
+                    break;
                 case DisplayMapperOperationType::PbrNeutral:
                     type = ToneMapperType::PbrNeutral;
                     break;
@@ -584,6 +588,7 @@ namespace AZ
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxGolden ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxPunchy ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AgxWarm ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::PbrNeutral;
         }
     }   // namespace Render

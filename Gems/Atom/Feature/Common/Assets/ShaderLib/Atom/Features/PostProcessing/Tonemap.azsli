@@ -22,7 +22,7 @@ float3 TonemapReinhard(const float3 inputColor)
     // White point luminance - chosen for good balance in most scenes
     // Higher values compress highlights less, lower values compress more
     // This is something we could expose as a parameter in the future
-    const float maxWhiteLuminance = 4.0f;
+    const float maxWhiteLuminance = 6.0f;
     
     // Calculate input luminance and ensure it's positive
     float inputLuminance = max(dot(inputColor, luminanceWeights), 1e-10f);
@@ -71,20 +71,20 @@ float3 TonemapFilmic(const float3 inputColor)
 }
 
 // AGX tone mapping implementation with CDL (Color Decision List) support
-// Reference: https://github.com/sobotka/AgX
+// Reference: https://github.com/sobotka/AgX and https://github.com/google/filament
 // Adapted for O3DE's ACEScg -> Linear sRGB pipeline
 
 // Internal AGX function that applies the core transform and CDL parameters
 float3 TonemapAgxInternal(const float3 inputColor, const float3 slope, const float3 offset, const float3 power, const float saturation)
 {
-    // AGX Inset Matrix (input transform) - converted to column major
+    // AGX Inset Matrix (input transform) - column major
     const float3x3 agxInsetMatrix = float3x3(
         0.856627153315983f, 0.0951212405381588f, 0.0482516061458583f,
         0.137318972929847f, 0.761241990602591f, 0.101439036467562f,
         0.11189821299995f, 0.0767994186031903f, 0.811302368396859f
     );
     
-    // AGX Outset Matrix (output transform) - converted to column major and inverted
+    // AGX Outset Matrix (output transform) - column major
     const float3x3 agxOutsetMatrix = float3x3(
         1.1271005818144368f, -0.11060664309660323f, -0.016493938717834573f,
         -0.1413297634984383f, 1.157823702216272f, -0.016493938717834257f,
@@ -95,36 +95,40 @@ float3 TonemapAgxInternal(const float3 inputColor, const float3 slope, const flo
     const float agxMinEv = -12.47393f;
     const float agxMaxEv = 4.026069f;
     
+    // Ensure no negative values
+    float3 color = max(inputColor, 0.0f);
+    
     // 1. AGX Transform
     // Input transform (inset)
-    float3 color = mul(agxInsetMatrix, inputColor);
+    color = mul(agxInsetMatrix, color);
     
     // Avoid 0 or negative numbers for log2
     color = max(color, 1e-10f);
     
     // Log2 space encoding
-    color = clamp(log2(color), agxMinEv, agxMaxEv);
+    color = log2(color);
     color = (color - agxMinEv) / (agxMaxEv - agxMinEv);
     color = clamp(color, 0.0f, 1.0f);
     
-    // Apply sigmoid function approximation (6th order polynomial)
-    // Mean error^2: 3.6705141e-06
+    // Apply sigmoid function approximation (7th order polynomial from Filament)
     float3 x2 = color * color;
     float3 x4 = x2 * x2;
-    color = + 15.5f     * x4 * x2
-            - 40.14f    * x4 * color
-            + 31.96f    * x4
-            - 6.868f    * x2 * color
-            + 0.4298f   * x2
-            + 0.1191f   * color
-            - 0.00232f;
+    float3 x6 = x4 * x2;
+    color = - 17.86f    * x6 * color
+            + 78.01f    * x6
+            - 126.7f    * x4 * color
+            + 92.06f    * x4
+            - 28.72f    * x2 * color
+            + 4.361f    * x2
+            - 0.1718f   * color
+            + 0.002857f;
     
     // 2. AGX Look (CDL operations)
-    color = pow(color * slope + offset, power);
-    
-    // Apply saturation using luminance weights (Rec. 709)
     const float3 luminanceWeights = float3(0.2126f, 0.7152f, 0.0722f);
     float luma = dot(color, luminanceWeights);
+    
+    // ASC CDL
+    color = pow(color * slope + offset, power);
     color = luma + saturation * (color - luma);
     
     // 3. AGX EOTF
@@ -154,6 +158,12 @@ float3 TonemapAgxGolden(const float3 inputColor)
 float3 TonemapAgxPunchy(const float3 inputColor)
 {
     return TonemapAgxInternal(inputColor, float3(1.0f, 1.0f, 1.0f), float3(0.0f, 0.0f, 0.0f), float3(1.35f, 1.35f, 1.35f), 1.4f);
+}
+
+// AGX Warm - subtle warm cinematic look (less extreme than Golden)
+float3 TonemapAgxWarm(const float3 inputColor)
+{
+    return TonemapAgxInternal(inputColor, float3(1.0f, 0.95f, 0.85f), float3(0.0f, 0.0f, 0.0f), float3(0.95f, 0.95f, 0.95f), 1.1f);
 }
 
 // Khronos PBR Neutral Tone Mapping
