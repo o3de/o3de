@@ -437,7 +437,7 @@ namespace AZ
             [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, nullptr);
             VK_RESULT_ASSERT(vkResult);
-        
+
             AZ_Assert(surfaceFormatCount > 0, "Surface support no format.");
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
 
@@ -489,7 +489,7 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
-            vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+            VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr);
             VK_RESULT_ASSERT(vkResult);
             // VK_PRESENT_MODE_FIFO_KHR has to be supported.
