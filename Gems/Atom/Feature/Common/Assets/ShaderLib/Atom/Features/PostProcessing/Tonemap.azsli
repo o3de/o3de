@@ -136,6 +136,32 @@ float3 TonemapAgxPunchy(const float3 inputColor)
     return TonemapAgxInternal(inputColor, float3(1.0f, 1.0f, 1.0f), float3(0.0f, 0.0f, 0.0f), float3(1.35f, 1.35f, 1.35f), 1.4f);
 }
 
+// Khronos PBR Neutral Tone Mapping
+// Input color is non-negative and resides in the Linear Rec. 709 color space.
+// Output color is also Linear Rec. 709, but in the [0, 1] range.
+float3 TonemapPbrNeutral(const float3 inputColor)
+{
+    const float startCompression = 0.8f - 0.04f;
+    const float desaturation = 0.15f;
+    
+    float3 color = inputColor;
+    
+    float x = min(color.r, min(color.g, color.b));
+    float offset = x < 0.08f ? x - 6.25f * x * x : 0.04f;
+    color -= offset;
+    
+    float peak = max(color.r, max(color.g, color.b));
+    if (peak < startCompression) 
+        return color;
+    
+    const float d = 1.0f - startCompression;
+    float newPeak = 1.0f - d * d / (peak + d - startCompression);
+    color *= newPeak / peak;
+    
+    float g = 1.0f - 1.0f / (desaturation * (peak - newPeak) + 1.0f);
+    return lerp(color, newPeak * float3(1.0f, 1.0f, 1.0f), g);
+}
+
 float3 ApplyManualExposure(float3 color, float exposure)
 {
     // Apply Manual exposure

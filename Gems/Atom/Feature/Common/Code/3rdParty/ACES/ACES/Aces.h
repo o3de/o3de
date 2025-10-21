@@ -153,7 +153,8 @@ namespace AZ
             Filmic,
             Agx,
             AgxGolden,
-            AgxPunchy
+            AgxPunchy,
+            PbrNeutral
         );
 
         enum class ShaperPresetType
@@ -178,7 +179,8 @@ namespace AZ
             Filmic,
             Agx,
             AgxGolden,
-            AgxPunchy
+            AgxPunchy,
+            PbrNeutral
         };
 
         enum class TransferFunctionType
