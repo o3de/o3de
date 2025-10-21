@@ -50,6 +50,41 @@ float3 TonemapFilmic(const float3 inputColor)
     return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7) + 0.06);
 }
 
+// AGX tone mapping implementation
+// Reference: https://github.com/sobotka/AgX
+float3 TonemapAgx(const float3 inputColor)
+{
+    // AGX constants
+    const float3x3 agxMat = float3x3(
+        0.842479062253094f, 0.0423282422610123f, 0.0423756549057051f,
+        0.0784335999999992f, 0.878468636469772f, 0.0784336f,
+        0.0792237451477643f, 0.0792237451477643f, 0.879142973793104f
+    );
+    
+    const float3x3 agxMatInv = float3x3(
+        1.19687900512017f, -0.0528968517574562f, -0.0529716355144438f,
+        -0.0980208811401368f, 1.15190312990417f, -0.0980434501171241f,
+        -0.0990297440797205f, -0.0990297440797205f, 1.15107367264116f
+    );
+    
+    // Apply AgX input transform matrix
+    float3 color = mul(agxMat, inputColor);
+    
+    // Apply the power function
+    color = pow(max(color, 0.0), 2.4f);
+    
+    // Apply the sigmoid curve
+    color = (color * color + color) / (color * color + 2.0f * color + 1.0f);
+    
+    // Apply inverse power function
+    color = pow(color, 1.0f / 2.4f);
+    
+    // Apply AgX output transform matrix
+    color = mul(agxMatInv, color);
+    
+    return max(color, 0.0f);
+}
+
 float3 ApplyManualExposure(float3 color, float exposure)
 {
     // Apply Manual exposure

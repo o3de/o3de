@@ -84,7 +84,8 @@ namespace AZ
                 {
                     if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
-                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic)
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx)
                     {
                         // When using Reinhard tonemapper, a gamma of 2.2 for the transfer function is used for LDR display,
                         // and PQ is used for HDR.
@@ -447,6 +448,9 @@ namespace AZ
                 case DisplayMapperOperationType::Filmic:
                     type = ToneMapperType::Filmic;
                     break;
+                case DisplayMapperOperationType::Agx:
+                    type = ToneMapperType::Agx;
+                    break;
                 default:
                     AZ_Assert(false, "Invalid tonemapper type %d", m_displayMapperConfigurationDescriptor.m_operationType);
                     break;
@@ -564,7 +568,8 @@ namespace AZ
             return m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Filmic ||
-                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic;
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx;
         }
     }   // namespace Render
 }   // namespace AZ

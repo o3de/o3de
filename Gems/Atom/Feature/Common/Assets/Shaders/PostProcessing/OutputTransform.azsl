@@ -42,7 +42,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 }
 
 // Option shader variable to select tone mapper feature.
-option enum class ToneMapperType {None, Reinhard, AcesFitted, AcesFilmic, Filmic} o_tonemapperType = ToneMapperType::None;
+option enum class ToneMapperType {None, Reinhard, AcesFitted, AcesFilmic, Filmic, Agx} o_tonemapperType = ToneMapperType::None;
 // Option shader variable to select transfer function.
 option enum class TransferFunctionType {None, Gamma22, PerceptualQuantizer} o_transferFunctionType = TransferFunctionType::None;
 // Option to enable color grading
@@ -86,6 +86,9 @@ PSOutput MainPS(VSOutput IN)
             break;
         case ToneMapperType::Filmic:
             color = TonemapFilmic(AcesCg_To_LinearSrgb(color));
+            break;
+        case ToneMapperType::Agx:
+            color = TonemapAgx(AcesCg_To_LinearSrgb(color));
             break;
         default:
             break;

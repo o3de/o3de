@@ -149,7 +149,8 @@ namespace AZ
             Reinhard,
             AcesFitted,
             AcesFilmic,
-            Filmic
+            Filmic,
+            Agx
         );
 
         enum class ShaperPresetType
@@ -171,7 +172,8 @@ namespace AZ
             Reinhard,
             AcesFitted,
             AcesFilmic,
-            Filmic
+            Filmic,
+            Agx
         };
 
         enum class TransferFunctionType
