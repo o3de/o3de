@@ -69,11 +69,8 @@ float3 TonemapFilmic(const float3 inputColor)
     return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7) + 0.06);
 }
 
-// AGX tone mapping implementation with CDL (Color Decision List) support
+// AGX tone mapping implementation
 // Reference: https://github.com/sobotka/AgX and https://github.com/google/filament
-// Adapted for O3DE's ACEScg -> Linear sRGB pipeline
-
-// Internal AGX function that applies the core transform and CDL parameters
 float3 TonemapAgxInternal(const float3 inputColor, const float3 slope, const float3 offset, const float3 power, const float saturation)
 {
     // AGX Inset Matrix (input transform) - column major
