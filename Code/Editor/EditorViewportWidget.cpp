@@ -2163,7 +2163,6 @@ void EditorViewportWidget::StartFullscreenPreview()
     // Also set style to frameless and disable resizing by user
     setParent(nullptr);
     setWindowFlag(Qt::FramelessWindowHint, true);
-    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
     setFixedSize(screenGeometry.size());
     move(QPoint(screenGeometry.x(), screenGeometry.y()));
     showFullScreen();
@@ -2179,7 +2178,6 @@ void EditorViewportWidget::StopFullscreenPreview()
 
     // Unset frameless window flags
     setWindowFlag(Qt::FramelessWindowHint, false);
-    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, false);
 
     // Unset fixed size (note that 50x50 is the minimum set in the constructor)
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);

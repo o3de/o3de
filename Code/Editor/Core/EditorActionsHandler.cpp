@@ -900,12 +900,12 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+G");
     }
 
-    // Play Game (Maximized)
+    // Play Game (Fullscreen)
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.playMaximized";
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.playFullscreen";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Play Game (Maximized)";
-        actionProperties.m_description = "Activate the game input mode (maximized).";
+        actionProperties.m_name = "Play Game (Fullscreen)";
+        actionProperties.m_description = "Activate the game input mode (fullscreen).";
         actionProperties.m_category = "Game";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -1848,7 +1848,7 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::GameMenuIdentifier, EditorIdentifiers::PlayGameMenuIdentifier, 100);
         {
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::PlayGameMenuIdentifier, "o3de.action.game.play", 100);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::PlayGameMenuIdentifier, "o3de.action.game.playMaximized", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::PlayGameMenuIdentifier, "o3de.action.game.playFullscreen", 200);
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.simulate", 200);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 300);
