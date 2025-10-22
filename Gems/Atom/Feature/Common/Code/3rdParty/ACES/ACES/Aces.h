@@ -148,6 +148,7 @@ namespace AZ
             Passthrough,
             GammaSRGB,
             Reinhard,
+            ReinhardExtended,
             AcesFitted,
             AcesFilmic,
             Filmic,
@@ -175,6 +176,7 @@ namespace AZ
         {
             None = 0,
             Reinhard,
+            ReinhardExtended,
             AcesFitted,
             AcesFilmic,
             Filmic,

@@ -83,6 +83,7 @@ namespace AZ
                 if (m_outputTransformPass)
                 {
                     if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
+                        m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::ReinhardExtended ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||
                         m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Agx ||
@@ -443,6 +444,9 @@ namespace AZ
                 case DisplayMapperOperationType::Reinhard:
                     type = ToneMapperType::Reinhard;
                     break;
+                case DisplayMapperOperationType::ReinhardExtended:
+                    type = ToneMapperType::ReinhardExtended;
+                    break;
                 case DisplayMapperOperationType::AcesFitted:
                     type = ToneMapperType::AcesFitted;
                     break;
@@ -582,6 +586,7 @@ namespace AZ
         bool DisplayMapperPass::UsesOutputTransformPass() const
         {
             return m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard ||
+                m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::ReinhardExtended ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFitted ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Filmic ||
                 m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::AcesFilmic ||

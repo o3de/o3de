@@ -151,6 +151,7 @@ namespace AZ
 
             AZStd::vector<AZ::Name> toneMapperVariationTypes = { AZ::Name("ToneMapperType::None"),
                                                                  AZ::Name("ToneMapperType::Reinhard"),
+                                                                 AZ::Name("ToneMapperType::ReinhardExtended"),
                                                                  AZ::Name("ToneMapperType::AcesFitted"),
                                                                  AZ::Name("ToneMapperType::AcesFilmic"),
                                                                  AZ::Name("ToneMapperType::Filmic"),
@@ -199,6 +200,9 @@ namespace AZ
             {
             case ToneMapperType::Reinhard:
                 shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::Reinhard"));
+                break;
+            case ToneMapperType::ReinhardExtended:
+                shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::ReinhardExtended"));
                 break;
             case ToneMapperType::AcesFitted:
                 shaderOption.SetValue(m_toneMapperShaderVariantOptionName, AZ::Name("ToneMapperType::AcesFitted"));
