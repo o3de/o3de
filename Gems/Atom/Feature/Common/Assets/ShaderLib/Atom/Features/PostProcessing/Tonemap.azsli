@@ -165,6 +165,7 @@ float3 TonemapAgxWarm(const float3 inputColor)
 // Khronos PBR Neutral Tone Mapping
 // Input color is non-negative and resides in the Linear Rec. 709 color space.
 // Output color is also Linear Rec. 709, but in the [0, 1] range.
+// https://github.com/KhronosGroup/ToneMapping
 float3 TonemapPbrNeutral(const float3 inputColor)
 {
     const float startCompression = 0.8f - 0.04f;
