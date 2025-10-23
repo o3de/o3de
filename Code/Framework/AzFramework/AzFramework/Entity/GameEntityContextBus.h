@@ -104,11 +104,27 @@ namespace AzFramework
          */
         virtual void ActivateGameEntity(const AZ::EntityId& /*id*/) = 0;
         
+        // Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
+        /**
+         * Activates an entity, and all of its Descendants that are owned by the entity context.
+         * @param rootEntityId The ID of the root entity to begin activation from.
+         * @param updateRoot Whether or not to update the root's local active. False means treat it like a child.
+         */
+        virtual void ActivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot) = 0;
+        
         /**
          * Deactivates the game entity.
          * @param id The ID of the entity to deactivate.
          */
         virtual void DeactivateGameEntity(const AZ::EntityId& /*id*/) = 0;
+        
+        // Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
+        /**
+         * Activates an entity, and all of its Descendants that are owned by the entity context.
+         * @param rootEntityId The ID of the root entity to begin deactivation from.
+         * @param updateRoot Whether or not to update the root's local active. False means treat it like a child.
+         */
+        virtual void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot) = 0;
 
         /**
          * Loads game entities from a stream.

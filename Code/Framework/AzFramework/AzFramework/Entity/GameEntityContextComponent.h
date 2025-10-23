@@ -9,6 +9,7 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -30,6 +31,7 @@ namespace AzFramework
         : public AZ::Component
         , public EntityContext
         , private GameEntityContextRequestBus::Handler
+        , public AZ::TransformNotificationBus::MultiHandler
     {
     public:
 
@@ -56,7 +58,9 @@ namespace AzFramework
         void DestroyGameEntity(const AZ::EntityId&) override;
         void DestroyGameEntityAndDescendants(const AZ::EntityId&) override;
         void ActivateGameEntity(const AZ::EntityId&) override;
+        void ActivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
         void DeactivateGameEntity(const AZ::EntityId&) override;
+        void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
         bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds) override;
         AZStd::string GetEntityName(const AZ::EntityId& id) override;
         //////////////////////////////////////////////////////////////////////////
@@ -72,6 +76,32 @@ namespace AzFramework
         void OnContextEntitiesAdded(const EntityList& entities) override;
         void OnContextReset() override;
         bool ValidateEntitiesAreValidForContext(const EntityList& entities) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // TransformNotificationBus
+        void OnParentChanged(AZ::EntityId oldParentId, AZ::EntityId newParentId) override;
+        //////////////////////////////////////////////////////////////////////////
+
+
+        //////////////////////////////////////////////////////////////////////////
+        // Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
+
+        void AddEntityToParentChildTree(AZ::Entity* entity);
+        void RemoveEntityFromParentChildTree(AZ::Entity* entity);
+        void RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId);
+        void UpdateParentChildMaps(AZ::EntityId child, AZ::EntityId oldParent, AZ::EntityId newParent);
+        void RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild, AZ::EntityId newParent);
+
+        /// Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        /// \param entityId The root entity ID to gather the tree from.
+        /// \return Returns a vector of Entity and Descendants in order from top to bottom.
+        AZStd::vector<AZ::EntityId> GetEntityTreeFromRootEntity(const AZ::EntityId& entityId);
+
+        //! Local stored hierarchy tree to enable hierarchy handling without the TransformBus (which is only functional while active.)
+        //! Tree is updated at 
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>> childrenByParentTree; // Parent -> [Children..]
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId, AZStd::hash<AZ::EntityId>> parentOf; // Child -> Parent
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::ReflectContext* context);

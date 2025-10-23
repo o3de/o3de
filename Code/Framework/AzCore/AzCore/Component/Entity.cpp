@@ -160,6 +160,7 @@ namespace AZ
     {
         AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
+        m_localActive = m_startActive;
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -657,6 +658,55 @@ namespace AZ
         m_state = state;
         m_stateEvent.Signal(oldState, m_state);
     }
+
+    //! Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
+    //  ====================================================================================
+
+    bool Entity::SetLocalActive(bool active)
+    {
+        if(m_localActive == active) { return false; }
+        
+        m_localActive = active;
+
+        return EvaluateEffectiveActiveState();
+    }
+    
+    bool Entity::SetParentActive(bool active)
+    {
+        if(m_parentActive == active) { return false; }
+
+        m_parentActive = active;
+
+        return EvaluateEffectiveActiveState();
+    }
+
+    bool Entity::EvaluateEffectiveActiveState()
+    {
+        bool isEffective = IsEffectivelyActive();
+
+        // Avoid re-entry during transitions
+        if (m_state == State::Constructed || m_state == State::Initializing ||
+            m_state == State::Activating || m_state == State::Deactivating)
+        {
+            return false;
+        }
+
+        if(isEffective && m_state == State::Init)
+        {
+            Activate();
+            return true;
+        }
+        else if (!isEffective && m_state == State::Active)
+        {
+            Deactivate();
+            return true;
+        }
+
+        return false;
+    }
+
+    //  End Expanded Entity State Handling =================================================
+
 
     void Entity::SetEntitySpawnTicketId(u32 entitySpawnTicketId)
     {
