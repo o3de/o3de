@@ -101,7 +101,6 @@ set(FILES
     Components/WindowDecorationWrapper.h
     Components/ExtendedLabel.cpp
     Components/ExtendedLabel.h
-    Components/RepolishMinimizer.h
     Components/FlowLayout.h
     Components/FlowLayout.cpp
     Components/resources.qrc

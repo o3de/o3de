@@ -15,7 +15,6 @@
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzQtComponents/Components/FancyDockingGhostWidget.h>
 #include <AzQtComponents/Components/FancyDockingDropZoneWidget.h>
-#include <AzQtComponents/Components/RepolishMinimizer.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -45,7 +44,6 @@
 
 static void OptimizedSetParent(QWidget* widget, QWidget* parent)
 {
-    AzQtComponents::RepolishMinimizer minimizer; // Blocks useless polish requests caused by setParent()
     widget->setParent(parent);
 }
 
