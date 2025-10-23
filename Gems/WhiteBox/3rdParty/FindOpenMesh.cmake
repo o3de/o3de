@@ -23,21 +23,46 @@ function(GetOpenMesh)
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
     include(FetchContent)
 
-    set(OPENMESH_GIT_REPO "https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git")
-    set(OPENMESH_GIT_TAG "OpenMesh-11.0")
-    set(OPENMESH_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/openmesh-o3de-11.0.patch")
+    set(OPENMESH_GIT_REPO "https://github.com/o3de/openmesh.git")
+    set(OPENMESH_GIT_TAG "8078b5bd01b568e61c6b8dd84af8673e7d9e6cae")
 
+    # Note that the upstream branch is o3de_openmesh_changes and is only the change of the submodule URL from the original
+    # and is the following diff in full:
+    #     diff --git a/.gitmodules b/.gitmodules
+    #     index 6681eef9..18700afb 100644
+    #     --- a/.gitmodules
+    #     +++ b/.gitmodules
+    #     @@ -1,3 +1,3 @@
+    #     [submodule "cmake-library"]
+    #             path = cmake-library
+    #     -       url = ../../cmake/cmake-library
+    #     +       url = ../openmesh-cmake-library
+
+    # this is because we need to mirror openmesh due to firewall issues in some regions, specifically, port 9000
+    # is blocked by some university and corporate firewalls, and the original gitlab server uses that port.
+    # However, the original source requires a submodule located at a path relative to the original repo at
+    # ../../cmake/cmake-library, ie the actual repository name is "cmake/cmake-library"
+    # github does not support using slashes in the name of a repository.  So we have to mirror it at "openmesh-cmake-library"
+    # and update the url in the .gitmodules file to point to the new location.
+
+    # Note that our actual usage of OpenMesh in O3DE is only inside one specific editor shared library (.so, .dll).
+    # It is not used or exposed in any other way.  Because it is not used in runtime game engine code, and it is not
+    # exposed via any public API, it is not necessary to include its library or header files in the installer version
+    # of O3DE.  (Shared Libraries always package all the code they use inside themselves).
+    # As such, we add EXCLUDE_FROM_ALL to prevent it from trying to copy its outputs into the install layout.  If
+    # we needed files from it, we would have still used EXCLUDE_FROM_ALL since its install locations would be incorrect
+    # for O3De (we build multiple different flavors into different folders).
     FetchContent_Declare(
             OpenMesh
             GIT_REPOSITORY ${OPENMESH_GIT_REPO}
             GIT_TAG ${OPENMESH_GIT_TAG}
-            PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${OPENMESH_GIT_PATCH}
-            GIT_SHALLOW TRUE
+            GIT_SHALLOW
+            EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
 
     # please always be really clear about what third parties your gem uses.
-    message(STATUS "WhiteBox Gem uses ${OPENMESH_GIT_TAG} (BSD-3-Clause) ${OPENMESH_GIT_REPO}")
-    message(STATUS "      With patch: ${OPENMESH_GIT_PATCH}")
+    message(STATUS "WhiteBox Gem uses OpenMesh 11.0 (BSD-3-Clause) ${OPENMESH_GIT_REPO}")
+    message(STATUS "    - This is a mirror of: https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
 
@@ -52,7 +77,6 @@ function(GetOpenMesh)
 
     # The rest of these are all specific settings that come from OpenMesh's CMakeLists.txt files.
     set(OPENMESH_BUILD_SHARED OFF)
-    set(OPENMESH_DISABLE_INSTALL ON)
     set(OPENMESH_DOCS OFF)
     set(OPENMESH_BUILD_UNIT_TESTS OFF)
     set(DISABLE_QMAKE_BUILD ON)
@@ -113,7 +137,6 @@ function(GetOpenMesh)
     # To make it simple, we just have a premade FindOpenMesh.cmake for the installer specifically
     # that we put in a folder (cmake/3rdParty) that is already part of the search path for find_package calls in installers.
     ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/FindOpenMesh.cmake DESTINATION cmake/3rdParty)
-    ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/openmesh-o3de-11.0.patch DESTINATION cmake/3rdParty)
     
     # signal that find_package(OpenMesh) has succeeded.
     # we have to set it on the PARENT_SCOPE since we're in a function 
