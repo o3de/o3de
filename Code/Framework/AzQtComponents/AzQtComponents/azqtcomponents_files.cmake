@@ -261,6 +261,7 @@ set(FILES
     Components/Widgets/ColorPicker/ColorGrid.h
     Components/Widgets/ColorPicker/ColorValidator.cpp
     Components/Widgets/ColorPicker/ColorValidator.h
+    Components/Widgets/ColorPicker/QtMetaTypes.h
     Components/Widgets/ColorPicker/PaletteView.cpp
     Components/Widgets/ColorPicker/PaletteView.h
     Components/Widgets/ColorPicker/PaletteViewConfig.ini

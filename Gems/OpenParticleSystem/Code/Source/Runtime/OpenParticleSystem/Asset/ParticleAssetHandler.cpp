@@ -6,8 +6,8 @@
  *
  */
 
-#include <OpenParticleSystem/Asset/ParticleAsset.h>
-#include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
+#include "ParticleAsset.h"
+#include "ParticleAssetHandler.h"
 
 namespace OpenParticle
 {

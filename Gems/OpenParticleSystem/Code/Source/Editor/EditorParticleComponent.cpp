@@ -6,10 +6,10 @@
  *
  */
 
-#include "OpenParticleSystem/EditorParticleComponent.h"
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include "EditorParticleComponent.h"
 #include <OpenParticleSystem/ParticleFeatureProcessorInterface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace OpenParticle
 {
@@ -57,6 +57,13 @@ namespace OpenParticle
                 ->Attribute(AZ::Script::Attributes::Module, "render")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
 
+            behaviorContext->EBus<EditorParticleRequestBus>("ParticleRequestBus")
+                ->Attribute(AZ::Script::Attributes::Module, "OpenParticleSystem")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Event("SetMaterialDiffuseMap", &EditorParticleRequestBus::Events::SetMaterialDiffuseMap)
+                    ->Attribute(AZ::Script::Attributes::ToolTip,  "Set new diffuse map for current particle system")
+                ;
+
             behaviorContext->Class<EditorParticleComponent>()->RequestBus("ParticleRequestBus");
         }
     }
@@ -67,12 +74,25 @@ namespace OpenParticle
         const AZ::EntityComponentIdPair entityComponentIdPair{ entityId, GetId() };
         BaseClass::Activate();
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
+        EditorParticleRequestBus::Handler::BusConnect(entityId);
     }
 
     void EditorParticleComponent::Deactivate()
     {
+        const AZ::EntityId entityId = GetEntityId();
+        EditorParticleRequestBus::Handler::BusDisconnect(entityId);
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         BaseClass::Deactivate();
+    }
+
+    void EditorParticleComponent::SetParticleAsset(AZ::Data::Asset<ParticleAsset> particleAsset, bool inParticleEditor)
+    {
+        m_controller.SetParticleAsset(particleAsset, inParticleEditor);
+    }
+
+    void EditorParticleComponent::SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath)
+    {
+        m_controller.SetMaterialDiffuseMap(emitterIndex, mapPath);
     }
 
     AZ::u32 EditorParticleComponent::OnConfigurationChanged()

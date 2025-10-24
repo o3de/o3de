@@ -6,14 +6,14 @@
  *
  */
 
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
-#include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Document/ParticleDocument.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 
 namespace OpenParticleSystemEditor
 {

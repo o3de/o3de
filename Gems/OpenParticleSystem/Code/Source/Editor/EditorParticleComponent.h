@@ -8,10 +8,12 @@
  
 #pragma once
 
+#include <OpenParticleSystem/ParticleComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
-#include <OpenParticleSystem/ParticleComponent.h>
 #include <OpenParticleSystem/ParticleComponentConfig.h>
+
+#include <Editor/EditorParticleRequestBus.h>
 
 namespace OpenParticle
 {
@@ -19,6 +21,7 @@ namespace OpenParticle
         : public AzToolsFramework::Components::
               EditorComponentAdapter<ParticleComponentController, ParticleComponent, ParticleComponentConfig>
         , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
+        , private EditorParticleRequestBus::Handler
     {
     public:
         using BaseClass =
@@ -39,6 +42,9 @@ namespace OpenParticle
 
         void Activate() override;
         void Deactivate() override;
+
+        void SetParticleAsset(AZ::Data::Asset<ParticleAsset> particleAsset, bool inParticleEditor) override;
+        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath) override;
 
     protected:
         AZ::u32 OnConfigurationChanged() override;

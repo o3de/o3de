@@ -628,6 +628,14 @@ namespace ScriptCanvasEditor
         }
 
         //////////////////////////////////
+        // ScriptCanvasNodePaletteToolbar
+        //////////////////////////////////
+
+        ScriptCanvasNodePaletteToolbar::~ScriptCanvasNodePaletteToolbar()
+        {
+        }
+
+        //////////////////////////////////
         // ScriptCanvasNodePaletteConfig
         //////////////////////////////////
 

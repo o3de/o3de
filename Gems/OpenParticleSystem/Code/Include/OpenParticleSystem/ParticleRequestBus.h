@@ -8,33 +8,31 @@
  
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/EBus.h>
-#include <OpenParticleSystem/Asset/ParticleAsset.h>
+#include <AzCore/Component/ComponentBus.h>
 
 namespace OpenParticle
 {
     class ParticleRequest
-        : public AZ::EBusTraits
+        : public AZ::ComponentBus
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        using BusIdType = AZ::EntityId;
-
+        //! Triggers the particle system to start playing.
         virtual void Play() = 0;
+
+        //! Pauses the particle system simulation.
         virtual void Pause() = 0;
+
+        //! Stops the particle system simulation.
         virtual void Stop() = 0;
+
+        //! Sets the visibility state of the particle system.
+        //! @param visible  If true, the particle system will be rendered. If false, it will remain hidden until visibility is restored.
         virtual void SetVisibility(bool visible) = 0;
+
+        //! Retrieves the current visibility state of the particle system.
+        //! \return true if the particle system is visible; false otherwise.
         virtual bool GetVisibility() const = 0;
-
-        virtual void SetParticleAsset(AZ::Data::Asset<ParticleAsset> particleAsset, bool inParticleEditor) = 0;
-        virtual void SetParticleAssetByPath(AZStd::string path) = 0;
-        virtual AZStd::string GetParticleAssetPath() const = 0;
-
-        virtual void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath) = 0;
     };
 
     using ParticleRequestBus = AZ::EBus<ParticleRequest>;
-} // namespace OpenParticle
+}

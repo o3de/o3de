@@ -16,9 +16,9 @@
 #include <QMainWindow>
 #include <QLabel>
 
-#include <OpenParticleSystemEditorWindowRequests.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 #include <Document/ParticleDocument.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+#include <OpenParticleSystemEditorWindowRequests.h>
 #endif
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/FancyDocking.h>

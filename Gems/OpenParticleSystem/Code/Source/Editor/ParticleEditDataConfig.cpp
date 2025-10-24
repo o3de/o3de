@@ -6,11 +6,11 @@
  *
  */
 
-#include "OpenParticleSystem/ParticleEditDataConfig.h"
+#include "core/math/Constants.h"
+#include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <OpenParticleSystem/Asset/ParticleAsset.h>
-#include "core/math/Constants.h"
+#include <OpenParticleSystem/ParticleEditDataConfig.h>
 
 namespace OpenParticle
 {

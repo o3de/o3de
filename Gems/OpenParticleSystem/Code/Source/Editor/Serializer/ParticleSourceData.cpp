@@ -6,17 +6,17 @@
  *
  */
 
+#include <OpenParticleSystem/ParticleConfig.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Editor/Serializer/ParticleSystemSerializer.h>
 #include <Editor/DistributionCacheInterface.h>
-#include <OpenParticleSystem/ParticleConfig.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceDataSerializer.h>
+#include <Editor/Serializer/ParticleSystemSerializer.h>
+#include <Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceDataSerializer.h>
 #include <numeric>
 
 namespace OpenParticle

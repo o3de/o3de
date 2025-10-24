@@ -202,7 +202,6 @@ namespace AZ
                             context.m_sourceSceneSystem.ConvertUnit(vertex);
 
                             blendShapeData->AddPosition(vertex);
-                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx + vertexOffset, vertIdx + vertexOffset);
 
                             // Add normals
                             if (aiAnimMesh->HasNormals())

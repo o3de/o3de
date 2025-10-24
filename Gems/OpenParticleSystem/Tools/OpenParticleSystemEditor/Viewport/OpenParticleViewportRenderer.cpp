@@ -50,13 +50,15 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
 
-#include <OpenParticleViewportRenderer.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzFramework/Font/FontInterface.h>
+#include <Editor/EditorParticleRequestBus.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <OpenParticleSystem/ParticleRequestBus.h>
+#include <AzFramework/Font/FontInterface.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <OpenParticleSystem/ParticleComponent.h>
+#include <OpenParticleSystem/ParticleRequestBus.h>
+#include <OpenParticleViewportRenderer.h>
 #include <OpenParticleViewportWidgetRequestsBus.h>
+#include <Editor/EditorParticleComponent.h>
 
 namespace OpenParticleSystemEditor
 {
@@ -259,7 +261,7 @@ namespace OpenParticleSystemEditor
         AzFramework::EntityContextRequestBus::EventResult(
             m_particleEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ParticleEntity");
         m_particleEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
-        [[maybe_unused]] auto particleComponent = m_particleEntity->CreateComponent(azrtti_typeid<OpenParticle::ParticleComponent>());
+        [[maybe_unused]] auto particleComponent = m_particleEntity->CreateComponent(azrtti_typeid<OpenParticle::EditorParticleComponent>());
         AZ_Assert(particleComponent, "particle component create failed");
         m_particleEntity->Init();
         m_particleEntity->Activate();
@@ -319,7 +321,7 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleViewportRenderer::OnDocumentOpened(AZ::Data::Asset<OpenParticle::ParticleAsset> particleAsset, [[maybe_unused]] AZStd::string particleAssetPath)
     {
-        OpenParticle::ParticleRequestBus::Event(m_particleEntity->GetId(), &OpenParticle::ParticleRequest::SetParticleAsset, particleAsset, true);
+        OpenParticle::EditorParticleRequestBus::Event(m_particleEntity->GetId(), &OpenParticle::EditorParticleRequest::SetParticleAsset, particleAsset, true);
     }
 
     void OpenParticleViewportRenderer::OnDocumentInvisible()

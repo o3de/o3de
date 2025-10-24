@@ -13,6 +13,7 @@
 #include <Atom/Utils/StableDynamicArray.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector4.h>
+
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 
 namespace OpenParticle

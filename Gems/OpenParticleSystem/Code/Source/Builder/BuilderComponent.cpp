@@ -7,17 +7,17 @@
  */
 
 #include "BuilderComponent.h"
+#include "ParticleBuilder.h"
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "ParticleBuilder.h"
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
-#include <OpenParticleSystem/ParticleConfig.h>
-#include <OpenParticleSystem/ParticleEditDataConfig.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Runtime/OpenParticleSystem/ParticleConfig.h>
+#include <Runtime/OpenParticleSystem/ParticleEditDataConfig.h>
+#include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticle
 {

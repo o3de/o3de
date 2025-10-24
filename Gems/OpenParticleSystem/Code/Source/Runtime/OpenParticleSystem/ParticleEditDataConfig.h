@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 
 namespace OpenParticle
 {

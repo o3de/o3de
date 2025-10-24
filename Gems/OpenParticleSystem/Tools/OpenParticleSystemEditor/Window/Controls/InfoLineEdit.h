@@ -14,7 +14,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
-#include <OpenParticleSystem/Serializer/DataConvertor.h>
+#include <Serializer/DataConvertor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 #endif
 

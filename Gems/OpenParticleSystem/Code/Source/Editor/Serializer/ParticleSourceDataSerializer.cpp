@@ -11,7 +11,7 @@
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/StackedString.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceDataSerializer.h>
+#include <Serializer/ParticleSourceDataSerializer.h>
 
 #include <OpenParticleSystem/ParticleEditDataConfig.h>
 

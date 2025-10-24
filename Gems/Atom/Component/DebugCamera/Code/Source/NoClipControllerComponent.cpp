@@ -129,7 +129,7 @@ namespace AZ
         bool NoClipControllerComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
             static const auto KeyCount = static_cast<uint32_t>(CameraKeys::Count);
-            static const float PixelToDegree = 1.0 / 360.0f;
+            static const float PixelToDegree = 1.0f / 360.0f;
 
             static const AzFramework::InputChannelId CameraInputMap[KeyCount] =
             {

@@ -8,21 +8,21 @@
 
 #pragma once
 
+#include <OpenParticleSystem/ParticleEditorRequestBus.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Base.h>
-#include <OpenParticleViewportNotificationBus.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <InputController/OpenParticleEditorViewportInputController.h>
-#include <Document/ParticleDocumentBus.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <Document/ParticleDocumentBus.h>
+#include <InputController/OpenParticleEditorViewportInputController.h>
+#include <OpenParticleViewportNotificationBus.h>
 #include <PerformanceMonitorComponent.h>
-#include <OpenParticleSystem/ParticleEditorRequestBus.h>
 namespace AZ
 {
     namespace Render

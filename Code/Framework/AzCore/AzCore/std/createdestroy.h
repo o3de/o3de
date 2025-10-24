@@ -277,6 +277,7 @@ namespace AZStd::Internal
     {
         if constexpr (is_fast_copy_v<BidirectionalIterator1, BidirectionalIterator2>)
         {
+            AZ_Assert((&*result <= &*first) || (&*result > &*last), "AZStd::copy_backward memory overlaps use AZStd::copy!");
             // Specialized copy for contiguous iterators which are trivially copyable
             size_t numElements = last - first;
             if (numElements > 0)
@@ -299,7 +300,6 @@ namespace AZStd::Internal
                 {
                     static_assert(sizeof(iter_value_t<BidirectionalIterator1>) == sizeof(iter_value_t<BidirectionalIterator2>), "Size of value types must match for a trivial copy");
                     result -= numElements;
-                    AZ_Assert(((&*result + numElements) <= &*first) || ((&*result + numElements) > (&*first + numElements)), "AZStd::copy_backward memory overlaps use AZStd::copy!");
                     ::memmove(&*result, &*first, numElements * sizeof(iter_value_t<BidirectionalIterator1>));
                 }
 #endif

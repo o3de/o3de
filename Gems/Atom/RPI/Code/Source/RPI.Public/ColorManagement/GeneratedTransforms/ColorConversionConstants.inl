@@ -23,8 +23,8 @@ namespace AZ
         static const AZ::Matrix3x3 XYZToACEScgMatrix =
             Matrix3x3::CreateFromRows(
                 Vector3(1.6410233797f, -0.3248032942f, -0.2364246952f),
-                Vector3(-0.6636628587f, 1.6153315917f, 0.0167563477),
-                Vector3(0.0117218943f, -0.0082844420f, 0.9883948585));
+                Vector3(-0.6636628587f, 1.6153315917f, 0.0167563477f),
+                Vector3(0.0117218943f, -0.0082844420f, 0.9883948585f));
 
         // ACEScg-to-XYZ conversion matrix
         static const AZ::Matrix3x3 ACEScgToXYZMatrix =

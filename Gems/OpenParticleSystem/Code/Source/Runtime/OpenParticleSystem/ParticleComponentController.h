@@ -5,24 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
 
-#include <AzFramework/Components/ComponentAdapter.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
-
-#include <OpenParticleSystem/ParticleComponentConfig.h>
-#include <OpenParticleSystem/ParticleFeatureProcessorInterface.h>
 #include <OpenParticleSystem/ParticleRequestBus.h>
+#include <OpenParticleSystem/ParticleFeatureProcessorInterface.h>
+
+#include <Runtime/OpenParticleSystem/ParticleComponentConfig.h>
 
 namespace OpenParticle
 {
-    constexpr char ParticleComponentTypeId[] = "{250342FE-9592-4194-BBE9-FBF5CF8FD9E8}";
-
     class ParticleComponentController final
         : private AZ::TransformNotificationBus::Handler
         , private ParticleRequestBus::Handler
@@ -41,7 +37,7 @@ namespace OpenParticle
         ParticleComponentController() = default;
         explicit ParticleComponentController(const ParticleComponentConfig& config);
 
-        ~ParticleComponentController() = default;
+        ~ParticleComponentController() override = default;
 
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
@@ -59,11 +55,11 @@ namespace OpenParticle
         void SetVisibility(bool visible) override;
         bool GetVisibility() const override;
 
-        void SetParticleAsset(AZ::Data::Asset<ParticleAsset> particleAsset, bool inParticleEditor) override;
-        void SetParticleAssetByPath(AZStd::string path) override;
-        AZStd::string GetParticleAssetPath() const override;
+        void SetParticleAsset(AZ::Data::Asset<ParticleAsset> particleAsset, bool inParticleEditor);
+        void SetParticleAssetByPath(AZStd::string path);
+        AZStd::string GetParticleAssetPath() const;
 
-        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath) override;
+        void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath);
         void OnNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 
         void Register();
@@ -84,19 +80,4 @@ namespace OpenParticle
         ParticleFeatureProcessorInterface::ParticleHandle m_particleHandle;
         bool m_isVisible = true;
     };
-
-    class ParticleComponent final
-        : public AzFramework::Components::ComponentAdapter<ParticleComponentController
-        , ParticleComponentConfig>
-    {
-    public:
-        using BaseClass = AzFramework::Components::ComponentAdapter<ParticleComponentController, ParticleComponentConfig>;
-        AZ_COMPONENT(ParticleComponent, ParticleComponentTypeId, BaseClass);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        ParticleComponent() = default;
-        explicit ParticleComponent(const ParticleComponentConfig& config);
-        ~ParticleComponent() = default;
-    };
-} // namespace OpenParticle
+}

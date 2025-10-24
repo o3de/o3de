@@ -418,6 +418,9 @@ namespace UnitTest
         }
     }
 
+    
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST_F(NvClothSystemCloth, Cloth_UpdateInvalidParticles_SimParticlesAreNotUpdated)
     {
         const auto previousParticles = m_cloth->GetParticles();
@@ -508,6 +511,8 @@ namespace UnitTest
             ExpectEq(initialParticles[i], nvClothPreviousParticles[static_cast<uint32_t>(i)]);
         }
     }
+
+#endif // !defined(O3DE_USING_FAST_MATH)
 
     TEST_F(NvClothSystemCloth, Cloth_CollisionAffectsStaticParticles_StaticParticlesAreModifiedDuringUpdate)
     {

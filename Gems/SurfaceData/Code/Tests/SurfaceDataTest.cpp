@@ -425,23 +425,23 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestGetQuadListRayIntersection)
         // they can easily validate whether or not IntersectRayQuad will produce the same results.
 
         // ray passes IntersectSegmentTriangle but fails IntersectRayQuad
-        {{AZ::Vector3(499.553, 688.946, 48.788), AZ::Vector3(483.758, 698.655, 48.788), AZ::Vector3(498.463, 687.181, 48.916), AZ::Vector3(482.701, 696.942, 48.916)},
-            AZ::Vector3(485.600, 695.200, 49.501), AZ::Vector3(-0.000f, -0.000f, -1.000f), 18.494f, true, AZ::Vector3(485.600, 695.200, 48.913), AZ::Vector3(0.033, 0.053, 0.998)},
+        {{AZ::Vector3(499.553f, 688.946f, 48.788f), AZ::Vector3(483.758f, 698.655f, 48.788f), AZ::Vector3(498.463f, 687.181f, 48.916f), AZ::Vector3(482.701f, 696.942f, 48.916f)},
+            AZ::Vector3(485.600f, 695.200f, 49.501f), AZ::Vector3(-0.000f, -0.000f, -1.000f), 18.494f, true, AZ::Vector3(485.600f, 695.200f, 48.913f), AZ::Vector3(0.033f, 0.053f, 0.998f)},
 
         // ray fails IntersectSegmentTriangle but passes IntersectRayQuad
         // IntersectRayQuad hits with the following position / normal:  AZ::Vector3(480.000, 688.800, 49.295), AZ::Vector3(0.020, 0.032, 0.999)
-        {{AZ::Vector3(495.245, 681.984, 49.218), AZ::Vector3(479.450, 691.692, 49.218), AZ::Vector3(494.205, 680.282, 49.292), AZ::Vector3(478.356, 689.902, 49.292)},
-            AZ::Vector3(480.000, 688.800, 49.501), AZ::Vector3(-0.000, -0.000, -1.000), 18.494f, false, AZ::Vector3(0.0f,  0.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 0.0f)},
+        {{AZ::Vector3(495.245f, 681.984f, 49.218f), AZ::Vector3(479.450f, 691.692f, 49.218f), AZ::Vector3(494.205f, 680.282f, 49.292f), AZ::Vector3(478.356f, 689.902f, 49.292f)},
+            AZ::Vector3(480.000f, 688.800f, 49.501f), AZ::Vector3(-0.000f, -0.000f, -1.000f), 18.494f, false, AZ::Vector3(0.0f,  0.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 0.0f)},
 
         // ray passes IntersectSegmentTriangle and IntersectRayQuad, but hits at different positions
         // IntersectRayQuad hits with the following position / normal:  AZ::Vector3(498.400, 700.000, 48.073), AZ::Vector3(0.046, 0.085, 0.995)
-        {{AZ::Vector3(504.909, 698.078, 47.913), AZ::Vector3(488.641, 706.971, 47.913), AZ::Vector3(503.867, 696.206, 48.121), AZ::Vector3(487.733, 705.341, 48.121)},
-            AZ::Vector3(498.400, 700.000, 49.501), AZ::Vector3(-0.000f, -0.000f, -1.000f), 53.584f, true, AZ::Vector3(498.400, 700.000, 48.062), AZ::Vector3(0.048, 0.084, 0.995)},
+        {{AZ::Vector3(504.909f, 698.078f, 47.913f), AZ::Vector3(488.641f, 706.971f, 47.913f), AZ::Vector3(503.867f, 696.206f, 48.121f), AZ::Vector3(487.733f, 705.341f, 48.121f)},
+            AZ::Vector3(498.400f, 700.000f, 49.501f), AZ::Vector3(-0.000f, -0.000f, -1.000f), 53.584f, true, AZ::Vector3(498.400f, 700.000f, 48.062f), AZ::Vector3(0.048f, 0.084f, 0.995f)},
 
         // ray passes IntersectSegmentTriangle and IntersectRayQuad, but hits at different normals
-        // IntersectRayQuad hits with the following position / normal:  AZ::Vector3(492.800, 703.200, 48.059), AZ::Vector3(0.046, 0.085, 0.995) 
-        {{AZ::Vector3(504.909, 698.078, 47.913), AZ::Vector3(488.641, 706.971, 47.913), AZ::Vector3(503.867, 696.206, 48.121), AZ::Vector3(487.733, 705.341, 48.121)},
-            AZ::Vector3(492.800, 703.200, 49.501), AZ::Vector3(-0.000f, -0.000f, -1.000f), 18.494f, true, AZ::Vector3(492.800, 703.200, 48.059), AZ::Vector3(0.053, 0.097, 0.994)},
+        // IntersectRayQuad hits with the following position / normal:  AZ::Vector3(492.800, 703.200, 48.059), AZ::Vector3(0.046, 0.085, 0.995)
+        {{AZ::Vector3(504.909f, 698.078f, 47.913f), AZ::Vector3(488.641f, 706.971f, 47.913f), AZ::Vector3(503.867f, 696.206f, 48.121f), AZ::Vector3(487.733f, 705.341f, 48.121f)},
+            AZ::Vector3(492.800f, 703.200f, 49.501f), AZ::Vector3(-0.000f, -0.000f, -1.000f), 18.494f, true, AZ::Vector3(492.800f, 703.200f, 48.059f), AZ::Vector3(0.053f, 0.097f, 0.994f)},
 
     };
 

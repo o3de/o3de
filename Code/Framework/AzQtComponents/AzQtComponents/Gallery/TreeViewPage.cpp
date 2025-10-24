@@ -289,4 +289,8 @@ AzQtComponents::TreeView::setBranchLinesEnabled(treeView, true);
     ui->exampleText->setHtml(exampleText);
 }
 
+TreeViewPage::~TreeViewPage()
+{
+}
 #include <Gallery/moc_TreeViewPage.cpp>
+

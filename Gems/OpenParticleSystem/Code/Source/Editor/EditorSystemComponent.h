@@ -14,7 +14,7 @@
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <Document/ParticleDocument.h>
 #include <Editor/ParticleBrowserInteractions.h>
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 
 namespace OpenParticle
 {

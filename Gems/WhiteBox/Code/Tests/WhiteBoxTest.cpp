@@ -694,7 +694,7 @@ namespace UnitTest
 
         const auto faceMidpoint = Api::FaceMidpoint(*m_whiteBox, Api::FaceHandle{0});
 
-        EXPECT_THAT(faceMidpoint, IsClose(AZ::Vector3(0.1666f, -0.1666, 0.5f)));
+        EXPECT_THAT(faceMidpoint, IsClose(AZ::Vector3(0.1666f, -0.1666f, 0.5f)));
     }
 
     TEST_F(WhiteBoxTestFixture, MeshFacesReturned)

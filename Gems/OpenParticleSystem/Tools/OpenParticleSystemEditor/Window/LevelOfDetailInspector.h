@@ -11,7 +11,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/ParticleSourceData.h>
 #include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
 #endif

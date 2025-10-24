@@ -10,7 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 #include <Window/Controls/GradientWidget.h>
 #include <AzCore/Math/Color.h>
 #endif

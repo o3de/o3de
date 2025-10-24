@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/Component/Component.h>
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 
 namespace OpenParticle
 {

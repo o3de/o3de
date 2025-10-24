@@ -48,6 +48,7 @@ namespace ProjectSettingsTool
         BaseSettings base;
         AndroidSettings android;
         IosSettings ios;
+        WindowsSettings windows;
     };
 
     // Main window for Project Settings tool

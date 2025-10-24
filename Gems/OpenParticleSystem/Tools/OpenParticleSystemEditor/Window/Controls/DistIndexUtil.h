@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
-#include <OpenParticleSystem/Serializer/ParticleBase.h>
+#include <Serializer/ParticleBase.h>
 
 namespace OpenParticleSystemEditor
 {

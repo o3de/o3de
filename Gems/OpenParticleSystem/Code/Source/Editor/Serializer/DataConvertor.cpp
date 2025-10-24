@@ -6,8 +6,8 @@
  *
  */
 
-#include "OpenParticleSystem/Serializer/DataConvertor.h"
-#include <OpenParticleSystem/Serializer/ParticleSourceData.h>
+#include <Serializer/DataConvertor.h>
+#include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticle
 {

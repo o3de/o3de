@@ -130,7 +130,7 @@ namespace UnitTest
         const AZ::Quaternion quaternion = GetParam();
         const AZ::Transform transform = AZ::Transform::CreateFromQuaternion(quaternion);
         EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3::CreateZero()));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(transform.TransformPoint(vector), IsClose(quaternion.TransformVector(vector)));
     }
 
@@ -140,7 +140,7 @@ namespace UnitTest
         const AZ::Vector3 translation(-2.6f, 1.7f, 0.8f);
         const AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(quaternion, translation);
         EXPECT_THAT(transform.GetTranslation(), IsClose(translation));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(transform.TransformPoint(vector), IsClose(quaternion.TransformVector(vector) + translation));
     }
 
@@ -149,7 +149,7 @@ namespace UnitTest
         const AZ::Quaternion quaternion = GetParam();
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         transform.SetRotation(quaternion);
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(transform.TransformPoint(vector), IsClose(quaternion.TransformVector(vector)));
     }
 

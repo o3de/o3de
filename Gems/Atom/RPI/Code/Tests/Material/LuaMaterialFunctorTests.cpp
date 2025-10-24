@@ -995,7 +995,7 @@ namespace UnitTest
         EXPECT_EQ(RHI::CullMode::None, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_cullMode);
         EXPECT_EQ(1, shaderCollection[0].GetRenderStatesOverlay()->m_blendState.m_targets[1].m_enable);
         EXPECT_EQ(-1, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBias);
-        EXPECT_FLOAT_EQ(0.2, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
+        EXPECT_FLOAT_EQ(0.2f, shaderCollection[0].GetRenderStatesOverlay()->m_rasterState.m_depthBiasClamp);
         EXPECT_EQ(0xF0, shaderCollection[0].GetRenderStatesOverlay()->m_depthStencilState.m_stencil.m_writeMask);
 
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{false});

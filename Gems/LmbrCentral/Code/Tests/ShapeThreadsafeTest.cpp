@@ -33,9 +33,9 @@ namespace UnitTest
 
         // Comparing floats needs a tolerance based on whether we are using NEON or not
         #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
-        constexpr float compareTolerance = 1.0e-4;
+        constexpr float compareTolerance = 1.0e-4f;
         #else
-        constexpr float compareTolerance = 1.0e-6;
+        constexpr float compareTolerance = 1.0e-6f;
         #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
 
 

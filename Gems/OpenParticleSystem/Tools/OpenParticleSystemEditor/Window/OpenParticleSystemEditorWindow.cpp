@@ -10,6 +10,7 @@
 #include "AzCore/Utils/Utils.h"
 
 #include <OpenParticleSystemEditorWindow.h>
+#include <Editor/EditorParticleSystemComponentRequestBus.h>
 
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -31,8 +32,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
-
-#include <OpenParticleSystem/EditorParticleSystemComponentRequestBus.h>
 
 #define MAX_EMITTER_WIDGET_NUM 10
 

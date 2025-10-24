@@ -6,9 +6,10 @@
  *
  */
 
+#include "ParticleConfig.h"
+
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <OpenParticleSystem/ParticleConfig.h>
 
 namespace OpenParticle
 {

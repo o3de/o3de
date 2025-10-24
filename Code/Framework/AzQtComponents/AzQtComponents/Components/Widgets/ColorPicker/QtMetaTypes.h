@@ -5,13 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
 #pragma once
 
-#include <AzCore/std/any.h>
-#include <AzCore/std/string/string_view.h>
+#include <AzCore/Math/Color.h>
+#include <QMetaType>
 
-namespace OpenParticle
-{
-    AZStd::string_view RemoveNameSpace(const AZStd::string_view& value);
-} // namespace OpenParticle
+Q_DECLARE_METATYPE(AZ::Color)
