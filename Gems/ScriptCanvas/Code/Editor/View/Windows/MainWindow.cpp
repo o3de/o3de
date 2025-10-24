@@ -695,7 +695,7 @@ namespace ScriptCanvasEditor
         connect(&m_autoSaveTimer, &QTimer::timeout, this, &MainWindow::OnAutoSave);
         UpdateMenuState(false);
 
-        connect(this, &QMainWindow::close, this, [this]() { AddSystemTickAction(SystemTickActionFlag::CloseWindow); });
+//        connect(this, &QMainWindow::close, this, [this]() { AddSystemTickAction(SystemTickActionFlag::CloseWindow); });
 
     }
 
@@ -4196,8 +4196,6 @@ namespace ScriptCanvasEditor
             if (m_hasQueuedClose)
             {
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
-                AddSystemTickAction(SystemTickActionFlag::CloseWindow);
-
                 qobject_cast<QWidget*>(parent())->close();
             }
         }
