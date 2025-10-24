@@ -666,6 +666,9 @@ namespace AZ
     {
         if(m_localActive == active) { return false; }
         
+        if(active) { AZ_Printf("Entity", "Setting local active to true for: %s", GetName().c_str()); }
+        else { AZ_Printf("Entity", "Setting local active to false for: %s", GetName().c_str()); }
+
         m_localActive = active;
 
         return EvaluateEffectiveActiveState();
@@ -674,6 +677,9 @@ namespace AZ
     bool Entity::SetParentActive(bool active)
     {
         if(m_parentActive == active) { return false; }
+        
+        if(active) { AZ_Printf("Entity", "Setting parent active to true for: %s", GetName().c_str()); }
+        else { AZ_Printf("Entity", "Setting parent active to false for: %s", GetName().c_str()); }
 
         m_parentActive = active;
 
@@ -683,21 +689,27 @@ namespace AZ
     bool Entity::EvaluateEffectiveActiveState()
     {
         bool isEffective = IsEffectivelyActive();
+        
+        if(isEffective) { AZ_Printf("Entity", "%s evaluating active state, active", GetName().c_str()); }
+        else { AZ_Printf("Entity", "%s evaluating active state, inactive", GetName().c_str()); }
 
         // Avoid re-entry during transitions
         if (m_state == State::Constructed || m_state == State::Initializing ||
             m_state == State::Activating || m_state == State::Deactivating)
         {
+            AZ_Warning("Entity", false, "%s evaluating active state, between states. Exiting out.", GetName().c_str());
             return false;
         }
 
         if(isEffective && m_state == State::Init)
         {
+            AZ_Printf("Entity", "%s Evaluate Activating", GetName().c_str());
             Activate();
             return true;
         }
         else if (!isEffective && m_state == State::Active)
         {
+            AZ_Printf("Entity", "%s Evaluate Deactivating", GetName().c_str());
             Deactivate();
             return true;
         }

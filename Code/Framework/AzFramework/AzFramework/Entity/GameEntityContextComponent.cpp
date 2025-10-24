@@ -415,14 +415,26 @@ namespace AzFramework
         }
 
         AZStd::vector<AZ::EntityId> tree = GetEntityTreeFromRootEntity(rootEntityId);
-        if(tree.empty()) { return; }
+        if(tree.empty()) 
+        {
+            AZ_Printf("EntityContext", "Activate and descendants: tree is empty, cancelling out.");
+            return; 
+        }
 
         AZStd::unordered_set<AZ::EntityId> ignoreList;
 
         // Loop through the vector and activate top to bottom.
         for (const auto& entityId : tree)
         {
-            if(ignoreList.contains(entityId)) { continue; }
+            if(ignoreList.contains(entityId)) 
+            {
+                AZ::Entity* e = FindEntity(entityId);
+                if (!e) { continue; }
+                
+                AZ_Printf("EntityContext", "Activate and descendants: %s on ignore list, skipping.", e->GetName().c_str());
+
+                continue; 
+            }
 
             AZ::Entity* e = FindEntity(entityId);
             if (!e) { continue; }
@@ -451,7 +463,11 @@ namespace AzFramework
                 }
                 
                 // One way or another, if the root doesn't change there's no reason to change the children.
-                if(!changed) { return; }
+                if(!changed) 
+                {
+                    AZ_Printf("EntityContext", "Activate and descendants: Root didn't change. Cancelling out.");
+                    return; 
+                }
             }
             else
             {
@@ -461,6 +477,7 @@ namespace AzFramework
 
             if(!changed)
             {   
+                AZ_Printf("EntityContext", "Activate and descendants: %s didn't change state, adding to ignore.", e->GetName().c_str());
                 //If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
                 //If that's the case, it's already processed it's children.
                 AZStd::vector<AZ::EntityId> branch = GetEntityTreeFromRootEntity(entityId);
@@ -504,6 +521,8 @@ namespace AzFramework
         for (size_t i = tree.size(); i-- > 0; )
         {
             AZ::EntityId entityId = tree[i];
+            if(entityId == rootEntityId) { continue; }
+            
             AZ::Entity* e = FindEntity(entityId);
             
             if(!e) { continue; }
