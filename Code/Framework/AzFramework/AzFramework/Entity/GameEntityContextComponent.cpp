@@ -21,6 +21,52 @@
 namespace AzFramework
 {
     //=========================================================================
+    // Hierarchy Handling Utilities
+    //  - EraseValue
+    //  - EnsureChildList
+    //  - FindEntity
+    //=========================================================================
+    template<class T>
+    static bool EraseValue(AZStd::vector<T>& vec, const T& value)
+    {
+        // 1) "Remove": move all elements != value to the front.
+        auto it = AZStd::remove(vec.begin(), vec.end(), value);
+
+        // After this:
+        // - [vec.begin(), it)   contains the elements you KEEP, compacted
+        // - [it, vec.end())     contains now-meaningless "garbage" (old values)
+
+        // 2) If anything was actually "removed", trim the vector's size.
+        if (it != vec.end())
+        {
+            vec.erase(it, vec.end()); // physically shorten the vector
+            return true;              // we did remove at least one element
+        }
+        return false;                 // nothing matched 'value'
+    }
+
+    static AZStd::vector<AZ::EntityId>& EnsureChildList(AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>>& map, const AZ::EntityId& key)
+    {
+        // Finding Parent ID in parentChildTree.
+        auto it = map.find(key);
+        if (it == map.end())
+        {
+            //If it doesn't exist, add it with a blank vector as its value pair.
+            it = map.emplace(key, AZStd::vector<AZ::EntityId>{}).first;
+        }
+        //One way or another, return the children vector.
+        return it->second;
+    }
+
+    AZ::Entity* FindEntity(AZ::EntityId id)
+    {
+        AZ::Entity* e = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(
+            e, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+        return e;
+    }
+
+    //=========================================================================
     // Reflect
     //=========================================================================
     void GameEntityContextComponent::Reflect(AZ::ReflectContext* context)
@@ -362,21 +408,13 @@ namespace AzFramework
         }
 
         AZ::Entity* rootEntity = FindEntity(rootEntityId);
-        
-        // Update root.
-        bool rootResult = true;
-        if(updateRoot) { rootResult = rootEntity -> SetLocalActive(true); }
-        else { rootResult = rootEntity->SetParentActive(true); }
-
-        // If changing the root didn't change any states, break out.
-        if(!rootResult)
+        if (!rootEntity)
         {
-            AZ_Warning("EntityContext", false, "Entity %llu already effectively active.", rootEntityId);
+            AZ_Warning("EntityContext", false, "Root entity %llu not found.", rootEntityId);
             return;
         }
 
         AZStd::vector<AZ::EntityId> tree = GetEntityTreeFromRootEntity(rootEntityId);
-
         if(tree.empty()) { return; }
 
         AZStd::unordered_set<AZ::EntityId> ignoreList;
@@ -384,25 +422,49 @@ namespace AzFramework
         // Loop through the vector and activate top to bottom.
         for (const auto& entityId : tree)
         {
-            // If there's no reason to drive updates to this entity, skip.
             if(ignoreList.contains(entityId)) { continue; }
 
-            if(entityId != rootEntityId)
+            AZ::Entity* e = FindEntity(entityId);
+            if (!e) { continue; }
+
+            bool changed = false;
+            if (entityId == rootEntityId)
             {
-                AZ::Entity* e = FindEntity(entityId);
-                
-                if(!e) { continue; }
-
-                // If the state of this entity didn't change, neither did it's children.
-                bool result = e->SetParentActive(true);
-
-                // Therefore, add them to the skip list.
-                if(!result)
+                // Either we set root true because we want it true, or: because we want to factor that this is a parent change, we base it on rootsParentEff.
+                if(updateRoot)
                 {
-                    //Add entire branch to ignore list.
-                    AZStd::vector<AZ::EntityId> ignoreBranch = GetEntityTreeFromRootEntity(rootEntityId);
-                    ignoreList.insert_range(ignoreBranch);
+                    changed = e->SetLocalActive(true);
                 }
+                else
+                {
+                    // Determine root’s incoming parent effective from its *actual* parent (if any)
+                    bool rootsParentEff = true;
+                    if (auto pit = parentOf.find(rootEntityId); pit != parentOf.end() && pit->second.IsValid())
+                    {
+                        if (AZ::Entity* p = FindEntity(pit->second))
+                        {
+                            rootsParentEff = p->IsEffectivelyActive();
+                        }
+                    }
+
+                    changed = e->SetParentActive(rootsParentEff);
+                }
+                
+                // One way or another, if the root doesn't change there's no reason to change the children.
+                if(!changed) { return; }
+            }
+            else
+            {
+                // Now that we evaluated the root, and it changed, we can start stepping through children to say the root did infact change to true.
+                changed = e->SetParentActive(true);
+            }
+
+            if(!changed)
+            {   
+                //If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
+                //If that's the case, it's already processed it's children.
+                AZStd::vector<AZ::EntityId> branch = GetEntityTreeFromRootEntity(entityId);
+                ignoreList.insert_range(branch);
             }
         }
     }
@@ -428,33 +490,30 @@ namespace AzFramework
         }
         
         AZ::Entity* rootEntity = FindEntity(rootEntityId);
+        if (!rootEntity)
+        {
+            AZ_Warning("EntityContext", false, "Root entity %llu not found.", rootEntityId);
+            return;
+        }
 
         AZStd::vector<AZ::EntityId> tree = GetEntityTreeFromRootEntity(rootEntityId);
 
         if(tree.empty()) { return; }
         
         // Loop through the vector and disable bottom to top.
-        for (size_t i = tree.size() - 1; i >= 0; i--)
+        for (size_t i = tree.size(); i-- > 0; )
         {
             AZ::EntityId entityId = tree[i];
+            AZ::Entity* e = FindEntity(entityId);
+            
+            if(!e) { continue; }
 
-            if(entityId == rootEntityId)
-            {
-                AZ::Entity* e = FindEntity(entityId);
-
-                if(updateRoot) { rootEntity -> SetLocalActive(false); }
-                else { rootEntity->SetParentActive(false); }
-            }
-            else
-            {
-                AZ::Entity* e = FindEntity(entityId);
-                
-                if(!e) { continue; }
-
-                // Because we're going bottom to top, there's no need to check if the state has changed.
-                e->SetParentActive(false);
-            }
+            // Because we're going bottom to top, there's no need to check if the state has changed.
+            e->SetParentActive(false);
         }
+        
+        if(updateRoot) { rootEntity -> SetLocalActive(false); }
+        else { rootEntity->SetParentActive(false); }
     }
 
     //=========================================================================
@@ -622,58 +681,12 @@ namespace AzFramework
         return out;
     }
 
-    //=========================================================================
-    // Hierarchy Handling Utilities
-    //  - EraseValue
-    //  - EnsureChildList
-    //  - FindEntity
-    //=========================================================================
-    template<class T>
-    static bool EraseValue(AZStd::vector<T>& vec, const T& value)
-    {
-        // 1) "Remove": move all elements != value to the front.
-        auto it = AZStd::remove(vec.begin(), vec.end(), value);
-
-        // After this:
-        // - [vec.begin(), it)   contains the elements you KEEP, compacted
-        // - [it, vec.end())     contains now-meaningless "garbage" (old values)
-
-        // 2) If anything was actually "removed", trim the vector's size.
-        if (it != vec.end())
-        {
-            vec.erase(it, vec.end()); // physically shorten the vector
-            return true;              // we did remove at least one element
-        }
-        return false;                 // nothing matched 'value'
-    }
-
-    static AZStd::vector<AZ::EntityId>& EnsureChildList(AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>>& map, const AZ::EntityId& key)
-    {
-        // Finding Parent ID in parentChildTree.
-        auto it = map.find(key);
-        if (it == map.end())
-        {
-            //If it doesn't exist, add it with a blank vector as its value pair.
-            it = map.emplace(key, AZStd::vector<AZ::EntityId>{}).first;
-        }
-        //One way or another, return the children vector.
-        return it->second;
-    }
-
-    AZ::Entity* FindEntity(AZ::EntityId id)
-    {
-        AZ::Entity* e = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            e, &AZ::ComponentApplicationBus::Events::FindEntity, id);
-        return e;
-    }
-
-    void GameEntityContextComponent::RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild, AZ::EntityId newParent)
+    void GameEntityContextComponent::RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild)
     {
         bool incomingParentEffective = true;
-        if (newParent.IsValid())
+        if (auto it = parentOf.find(movedChild); it != parentOf.end() && it->second.IsValid())
         {
-            if (AZ::Entity* p = FindEntity(newParent))
+            if (AZ::Entity* p = FindEntity(it->second))
             {
                 incomingParentEffective = p->IsEffectivelyActive();
             }
@@ -702,7 +715,7 @@ namespace AzFramework
 
         UpdateParentChildMaps(entityId, oldParentId, newParentId);
 
-        RecomputeEffectiveActivationForEntity(entityId, newParentId);
+        RecomputeEffectiveActivationForEntity(entityId);
     }
 
     //=========================================================================

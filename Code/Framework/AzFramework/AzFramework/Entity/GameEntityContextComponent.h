@@ -91,7 +91,7 @@ namespace AzFramework
         void RemoveEntityFromParentChildTree(AZ::Entity* entity);
         void RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId);
         void UpdateParentChildMaps(AZ::EntityId child, AZ::EntityId oldParent, AZ::EntityId newParent);
-        void RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild, AZ::EntityId newParent);
+        void RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild);
 
         /// Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
         /// \param entityId The root entity ID to gather the tree from.
