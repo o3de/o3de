@@ -730,7 +730,7 @@ namespace AZ
                 // This will not allocate or bind memory.
                 ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
                 VkImage vkImage = VK_NULL_HANDLE;
-                VkResult vkResult =
+                [[maybe_unused]] VkResult vkResult =
                     GetContext().CreateImage(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkImage);
                 VK_RESULT_ASSERT(vkResult);
 
@@ -758,10 +758,9 @@ namespace AZ
                 // This will not allocate or bind memory.
                 BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
                 VkBuffer vkBuffer = VK_NULL_HANDLE;
-                VkResult vkResult =
+                [[maybe_unused]] VkResult vkResult =
                     GetContext().CreateBuffer(GetNativeDevice(), createInfo.GetCreateInfo(), VkSystemAllocator::Get(), &vkBuffer);
                 VK_RESULT_ASSERT(vkResult);
-
 
                 VkMemoryRequirements memoryRequirements = {};
                 GetContext().GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);

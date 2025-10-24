@@ -489,7 +489,7 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
-            VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+            [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr);
             VK_RESULT_ASSERT(vkResult);
             // VK_PRESENT_MODE_FIFO_KHR has to be supported.
@@ -521,7 +521,7 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceCapabilitiesKHR(
+            [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceCapabilities);
             VK_RESULT_ASSERT(vkResult);
 

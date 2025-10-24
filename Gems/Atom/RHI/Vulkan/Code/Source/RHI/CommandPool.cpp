@@ -123,7 +123,8 @@ namespace AZ
             }
             m_freeCommandLists.insert(m_freeCommandLists.end(), AZStd::make_move_iterator(m_commandLists.begin()), AZStd::make_move_iterator(m_commandLists.end()));
             m_commandLists.clear();
-            VK_RESULT_ASSERT(device.GetContext().ResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0));
+            [[maybe_unused]] VkResult vkResult = device.GetContext().ResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0);
+            VK_RESULT_ASSERT(vkResult);
         }
     }
 }

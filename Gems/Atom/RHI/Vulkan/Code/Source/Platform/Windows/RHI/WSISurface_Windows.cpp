@@ -30,7 +30,7 @@ namespace AZ
                 instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
             VK_RESULT_ASSERT(vkResult);
 
-            return ConvertResult(result);
+            return ConvertResult(vkResult);
         }
     }
 }

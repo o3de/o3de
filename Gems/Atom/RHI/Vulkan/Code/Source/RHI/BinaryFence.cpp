@@ -97,13 +97,15 @@ namespace AZ
                 m_signalEvent->Wait(m_waitDependencies);
             }
             auto& device = static_cast<Device&>(GetDevice());
-            VK_RESULT_ASSERT(device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX));
+            [[maybe_unused]] VkResult vkResult = device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX);
+            VK_RESULT_ASSERT(vkResult);
         }
 
         void BinaryFence::ResetInternal()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            VK_RESULT_ASSERT(device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence));
+            [[maybe_unused]] VkResult vkResult = device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence);
+            VK_RESULT_ASSERT(vkResult);
             m_inSignalledState = false;
         }
 
