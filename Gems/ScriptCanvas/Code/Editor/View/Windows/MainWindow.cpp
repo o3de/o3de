@@ -695,8 +695,6 @@ namespace ScriptCanvasEditor
         connect(&m_autoSaveTimer, &QTimer::timeout, this, &MainWindow::OnAutoSave);
         UpdateMenuState(false);
 
-//        connect(this, &QMainWindow::close, this, [this]() { AddSystemTickAction(SystemTickActionFlag::CloseWindow); });
-
     }
 
     MainWindow::~MainWindow()
