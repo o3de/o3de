@@ -8,4 +8,6 @@
 
 set(FILES
     ScriptCanvasApplication.rc
+    ScriptCanvasApplication_Traits_Platform.h
+    ScriptCanvasApplication_Traits_Windows.h
 )
