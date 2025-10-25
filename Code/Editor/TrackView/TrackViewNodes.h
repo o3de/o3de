@@ -217,8 +217,7 @@ private:
 };
 
 
-typedef CTrackViewNode* CTrackViewNodePtr;
-Q_DECLARE_METATYPE(CTrackViewNodePtr);
-QDataStream& operator<<(QDataStream& out, const CTrackViewNodePtr& obj);
-QDataStream& operator>>(QDataStream& in, CTrackViewNodePtr& obj);
+Q_DECLARE_METATYPE(CTrackViewNode*);
+QDataStream& operator<<(QDataStream& out, const CTrackViewNode*& obj);
+QDataStream& operator>>(QDataStream& in, CTrackViewNode*& obj);
 
