@@ -2699,7 +2699,7 @@ namespace AzToolsFramework
             bool isUniversal = !isEditorOnly;
 
             allEditorOnly  = allEditorOnly  && isEditorOnly;
-			someEditorOnly = someEditorOnly || isEditorOnly;
+            someEditorOnly = someEditorOnly || isEditorOnly;
             allUniversal   = allUniversal   && isUniversal;
             someUniversal  = someUniversal  || isUniversal;
         }
