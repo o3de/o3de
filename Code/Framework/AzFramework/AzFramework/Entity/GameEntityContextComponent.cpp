@@ -475,7 +475,7 @@ namespace AzFramework
                 }
                 else
                 {
-                    // Determine root’s incoming parent effective from its *actual* parent (if any)
+                    // Determine roots incoming parent effective from its *actual* parent (if any)
                     bool rootsParentEff = true;
                     if (auto pit = parentOf.find(rootEntityId); pit != parentOf.end() && pit->second.IsValid())
                     {
@@ -674,7 +674,7 @@ namespace AzFramework
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect(entityId);
         }
 
-        // Find parent quickly from reverse map. If unknown, we’re done.
+        // Find parent quickly from reverse map. If unknown, we're done.
         auto pIt = parentOf.find(entityId);
         if (pIt != parentOf.end())
         {
