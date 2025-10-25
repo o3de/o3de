@@ -126,7 +126,7 @@ namespace AzQtComponents
 
         // Register our TabContainerType stream operators so that they will be used
         // when reading/writing from/to data streams
-        qRegisterMetaTypeStreamOperators<FancyDocking::TabContainerType>("FancyDocking::TabContainerType");
+        qRegisterMetaType<FancyDocking::TabContainerType>("FancyDocking::TabContainerType");
         mainWindow->installEventFilter(this);
         mainWindow->SetFancyDockingOwner(this);
         setAutoFillBackground(false);
