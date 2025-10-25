@@ -135,16 +135,24 @@ namespace AzToolsFramework
         qDebug() << "dumpDockWidgets END";
     }
 
+    // Mimic enum found in qtbase\src\widgets\widgets\qdockarealayout_p.h
+    enum DockAreaLayoutInfo
+    { // sentinel values used to validate state data
+        SequenceMarker = 0xfc,
+        TabMarker = 0xfa,
+        WidgetMarker = 0xfb
+    };
+
     static bool processQDockAreaLayoutInfo(QDataStream &stream, QStringList &dockNames)
     {
         uchar marker;
         stream >> marker;
-        if (marker != QDockAreaLayoutInfo::TabMarker && marker != QDockAreaLayoutInfo::SequenceMarker)
+        if (marker != DockAreaLayoutInfo::TabMarker && marker != DockAreaLayoutInfo::SequenceMarker)
         {
             return false;
         }
 
-        const bool tabbed = marker == QDockAreaLayoutInfo::TabMarker;
+        const bool tabbed = marker == DockAreaLayoutInfo::TabMarker;
 
         int index = -1;
         if (tabbed)
@@ -160,7 +168,7 @@ namespace AzToolsFramework
         {
             uchar nextMarker;
             stream >> nextMarker;
-            if (nextMarker == QDockAreaLayoutInfo::WidgetMarker)
+            if (nextMarker == DockAreaLayoutInfo::WidgetMarker)
             {
                 QString name;
                 uchar flags;
@@ -171,7 +179,7 @@ namespace AzToolsFramework
                 int dummy;
                 stream >> dummy >> dummy >> dummy >> dummy;
             }
-            else if (nextMarker == QDockAreaLayoutInfo::SequenceMarker)
+            else if (nextMarker == DockAreaLayoutInfo::SequenceMarker)
             {
                 qDebug() << "DockWidgetUtils::processSavedState SequenceMarker";
                 int dummy;
@@ -186,6 +194,26 @@ namespace AzToolsFramework
         return true;
     }
 
+    // Mimic enum in qtbase\src\widgets\widgets\qmainwindowlayout_p.h
+    enum VersionMarkers
+    { // sentinel values used to validate state data
+        VersionMarker = 0xff
+    };
+
+    // Mimic enum in qtbase\src\widgets\widgets\qdockarealayout_p.h
+    enum DockAreaLayout
+    {
+        DockWidgetStateMarker = 0xfd,
+        FloatingDockWidgetTabMarker = 0xf9
+    };
+
+    // Mimic enum in qtbase\src\widgets\widgets\qtoolbararealayout_p.h
+    enum ToolBarAreaLayout
+    { // sentinel values used to validate state data
+        ToolBarStateMarker = 0xfe,
+        ToolBarStateMarkerEx = 0xfc
+    };
+
     bool DockWidgetUtils::processSavedState(const QByteArray &data, QStringList &dockNames)
     {
         if (data.isEmpty())
@@ -195,12 +223,12 @@ namespace AzToolsFramework
 
         qDebug() << "DockWidgetUtils::processSavedState";
         QByteArray sd = data;
-        QDataStream stream(&sd, QIODevice::ReadOnly);
+        QDataStream stream(&sd, QIODeviceBase::ReadOnly);
         int m, v;
 
         stream >> m >> v;
 
-        if (stream.status() != QDataStream::Ok || m != QMainWindowLayout::VersionMarker || v != 0)
+        if (stream.status() != QDataStream::Ok || m != VersionMarkers::VersionMarker || v != 0)
         {
             return false;
         }
@@ -212,7 +240,7 @@ namespace AzToolsFramework
 
             switch (marker)
             {
-            case QDockAreaLayout::DockWidgetStateMarker:
+            case DockAreaLayout::DockWidgetStateMarker:
             {
                 qDebug() << "DockWidgetUtils::processSavedState DockWidgetStateMarker";
                 int cnt;
@@ -247,7 +275,7 @@ namespace AzToolsFramework
                 }
                 break;
             }
-            case QDockAreaLayout::FloatingDockWidgetTabMarker:
+            case DockAreaLayout::FloatingDockWidgetTabMarker:
             {
                 qDebug() << "DockWidgetUtils::processSavedState FloatingDockWidgetTabMarker";
                 QRect geometry;
@@ -258,8 +286,8 @@ namespace AzToolsFramework
                 }
                 break;
             }
-            case QToolBarAreaLayout::ToolBarStateMarker:
-            case QToolBarAreaLayout::ToolBarStateMarkerEx:
+            case ToolBarAreaLayout::ToolBarStateMarker:
+            case ToolBarAreaLayout::ToolBarStateMarkerEx:
             {
                 qDebug() << "DockWidgetUtils::processSavedState ToolbarMarker";
                 int dummyInt;
@@ -281,7 +309,7 @@ namespace AzToolsFramework
                         QString dummyString;
                         uchar dummyUChar;
                         stream >> dummyString >> dummyUChar >> dummyInt >> dummyInt >> dummyInt;
-                        if (marker == QToolBarAreaLayout::ToolBarStateMarkerEx)
+                        if (marker == ToolBarAreaLayout::ToolBarStateMarkerEx)
                         {
                             stream >> dummyInt;
                         }
