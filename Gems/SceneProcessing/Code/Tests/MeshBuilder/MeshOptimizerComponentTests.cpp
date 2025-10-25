@@ -92,12 +92,10 @@ namespace SceneProcessing
 
             auto mesh = AZStd::make_unique<AZ::SceneData::GraphData::MeshData>();
 
-            int i = 0;
             for (const AZ::Vector3& position : planeVertexPositions)
             {
                 mesh->AddPosition(position);
                 mesh->AddNormal(AZ::Vector3::CreateAxisY());
-                ++i;
             }
 
             mesh->AddFace({0, 1, 2}, 0);
