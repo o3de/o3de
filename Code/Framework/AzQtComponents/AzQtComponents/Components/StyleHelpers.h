@@ -46,13 +46,13 @@ namespace AzQtComponents
                     return;
                 }
 
-                if (auto styleSheet = StyleManager::styleSheetStyle(widget))
+                if (QStyle* styleSheet = StyleManager::styleSheetStyle(widget))
                 {
                     // For the widget and each of its children, QStyleSheetStyle::repolish clears
                     // the existing render rules, polishes the widget and sends it a StyleChange
                     // event. This ensure that both render rules which depend on properties, and
                     // properties that are set in style sheets via qproperty- are correctly updated.
-                    styleSheet->repolish(widget);
+                    styleSheet->polish(widget);
                 }
             });
         }
