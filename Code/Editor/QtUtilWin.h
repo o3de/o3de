@@ -27,15 +27,6 @@
 namespace QtUtil
 {
 
-#ifdef Q_OS_WIN
-    inline HWND getNativeHandle(QWidget* widget)
-    {
-        QWindow* window = widget->windowHandle();
-        QPlatformNativeInterface* nativeInterface = QGuiApplication::platformNativeInterface();
-        return static_cast<HWND>(nativeInterface->nativeResourceForWindow(QByteArrayLiteral("handle"), window));
-    }
-#endif // Q_OS_WIN
-
     //! a helper class which captures the HWND of a given widget for the duration of its life cycle.
     //! used mainly to set the parent of popup dialogs like file dialogs which are still MFC classes.
     class QtMFCScopedHWNDCapture
