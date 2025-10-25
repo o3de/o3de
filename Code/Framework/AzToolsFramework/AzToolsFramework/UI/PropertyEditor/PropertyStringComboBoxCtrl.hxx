@@ -59,6 +59,8 @@ namespace AzToolsFramework
         void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
+    AZ_PUSH_DISABLE_WARNING(4661, "-Wunknown-warning-option")
+
     class AZTF_API StringEnumPropertyComboBoxHandler
         : QObject
         , public PropertyComboBoxHandlerCommon < AZStd::string >
@@ -73,6 +75,8 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyStringComboBoxCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
         QWidget* CreateGUI(QWidget* pParent) override;
     };
+
+    AZ_POP_DISABLE_WARNING
 
     AZTF_API void RegisterStringComboBoxHandler();
 };
