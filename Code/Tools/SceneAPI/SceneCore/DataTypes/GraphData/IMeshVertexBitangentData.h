@@ -36,5 +36,6 @@ namespace AZ::SceneAPI::DataTypes
         virtual size_t GetBitangentSetIndex() const = 0;
         virtual TangentGenerationMethod GetGenerationMethod() const = 0;
         virtual void SetGenerationMethod(TangentGenerationMethod method) = 0;
+        virtual const AZStd::vector<AZ::Vector3>& GetBitangents() const = 0;
     };
 }  // AZ::SceneAPI::DataTypes

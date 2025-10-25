@@ -54,6 +54,9 @@ namespace AZ
                 virtual const AZ::Vector3& GetNormal(unsigned int index) const = 0;
 
                 virtual unsigned int GetFaceVertexIndex(unsigned int face, unsigned int vertexIndex) const = 0;
+                virtual const AZStd::vector<AZ::Vector3>& GetPositions() const = 0;
+                virtual const AZStd::vector<AZ::Vector3>& GetNormals() const = 0;
+                virtual const AZStd::vector<Face>& GetFaces() const = 0;
             };
         }  //namespace DataTypes
     }  //namespace SceneAPI

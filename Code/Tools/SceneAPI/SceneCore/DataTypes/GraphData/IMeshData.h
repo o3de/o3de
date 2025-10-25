@@ -69,7 +69,7 @@ namespace AZ
 
                 virtual size_t GetVertexIndexCount() const = 0;
 
-                virtual unsigned int GetVertexIndex(int faceIndex, int vertexIndexInFace) const = 0;
+                virtual unsigned int GetFaceVertexIndex(int faceIndex, int vertexIndexInFace) const = 0;
                 static const int s_invalidMaterialId = 0;
 
                 // Set the unit size of the mesh, from the point of the source SDK
@@ -80,6 +80,9 @@ namespace AZ
                 void SetOriginalUnitSizeInMeters(float size) { m_originalUnitSizeInMeters = size; }
                 float GetOriginalUnitSizeInMeters() const { return m_originalUnitSizeInMeters; }
 
+                virtual const AZStd::vector<AZ::Vector3>& GetPositions() const = 0;
+                virtual const AZStd::vector<AZ::Vector3>& GetNormals() const = 0;
+                virtual const AZStd::vector<Face>& GetFaces() const = 0;
             private:
                 float m_unitSizeInMeters = 1.f;
                 float m_originalUnitSizeInMeters = 1.f;

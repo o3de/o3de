@@ -62,14 +62,12 @@ namespace AZ::SceneGenerationComponents
             AZStd::unique_ptr<AZ::SceneAPI::DataTypes::ISkinWeightData>
         > OptimizeMesh(
             const MeshDataType* meshData,
-            const SceneAPI::DataTypes::IMeshData* baseMesh,
             const AZStd::vector<AZStd::reference_wrapper<const AZ::SceneAPI::DataTypes::IMeshVertexUVData>>& uvs,
             const AZStd::vector<AZStd::reference_wrapper<const AZ::SceneAPI::DataTypes::IMeshVertexTangentData>>& tangents,
             const AZStd::vector<AZStd::reference_wrapper<const AZ::SceneAPI::DataTypes::IMeshVertexBitangentData>>& bitangents,
             const AZStd::vector<AZStd::reference_wrapper<const AZ::SceneAPI::DataTypes::IMeshVertexColorData>>& vertexColors,
             const AZStd::vector<AZStd::reference_wrapper<const AZ::SceneAPI::DataTypes::ISkinWeightData>>& skinWeights,
-            const AZ::SceneAPI::DataTypes::IMeshGroup& meshGroup,
-            bool hasBlendShapes);
+            const AZ::SceneAPI::DataTypes::IMeshGroup& meshGroup);
 
         static void AddFace(AZ::SceneData::GraphData::BlendShapeData* blendShape, unsigned int index1, unsigned int index2, unsigned int index3, unsigned int faceMaterialId);
         static void AddFace(AZ::SceneData::GraphData::MeshData* mesh, unsigned int index1, unsigned int index2, unsigned int index3, unsigned int faceMaterialId);

@@ -56,16 +56,16 @@ namespace AZ
                 SCENE_DATA_API const AZ::SceneAPI::DataTypes::IMeshData::Face& GetFaceInfo(unsigned int index) const override;
                 SCENE_DATA_API unsigned int GetFaceMaterialId(unsigned int index) const override;
 
-                SCENE_DATA_API unsigned int GetVertexIndex(int faceIndex, int vertexIndexInFace) const override;
+                SCENE_DATA_API unsigned int GetFaceVertexIndex(int faceIndex, int vertexIndexInFace) const override;
 
                 SCENE_DATA_API void GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const override;
 
                 SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetPositions();
-                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const;
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const override;
                 SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetNormals();
-                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const;
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const override;
                 SCENE_DATA_API AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& GetFaces();
-                SCENE_DATA_API const AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& GetFaces() const;
+                SCENE_DATA_API const AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& GetFaces() const override;
             protected:
                 AZStd::vector<AZ::Vector3>                              m_positions;
                 AZStd::vector<AZ::Vector3>                              m_normals;

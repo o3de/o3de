@@ -45,6 +45,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 3rdParty::Qt::Widgets
                 3rdParty::mikkelsen
+                3rdParty::meshoptimizer
                 AZ::AzCore
                 AZ::SceneCore
                 AZ::SceneData

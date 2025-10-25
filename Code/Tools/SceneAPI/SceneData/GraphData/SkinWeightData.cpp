@@ -91,13 +91,13 @@ namespace AZ
                 output.Write("VertexLinks", m_vertexLinks);
             }
 
-            AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& SkinWeightData::GetLinks()
+            AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>& SkinWeightData::GetLinks(size_t vertexIndex)
             {
-                return m_vertexLinks;
+                return m_vertexLinks[vertexIndex];
             }
-            const AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& SkinWeightData::GetLinks() const
+            const AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>& SkinWeightData::GetLinks(size_t vertexIndex) const
             {
-                return m_vertexLinks;
+                return m_vertexLinks[vertexIndex];
             }
         } // GraphData
     } // SceneData

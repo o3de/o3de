@@ -45,7 +45,7 @@ namespace AZ
                     unsigned int(unsigned int index));
                 MOCK_CONST_METHOD0(GetVertexIndexCount,
                     size_t());
-                MOCK_CONST_METHOD2(GetVertexIndex,
+                MOCK_CONST_METHOD2(GetFaceVertexIndex,
                     unsigned int(int faceIndex, int vertexIndexInFace));
             };
         }  // namespace DataTypes

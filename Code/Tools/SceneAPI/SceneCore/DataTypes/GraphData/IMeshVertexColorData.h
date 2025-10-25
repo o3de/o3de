@@ -101,6 +101,7 @@ namespace AZ
 
                 virtual size_t GetCount() const = 0;
                 virtual const Color& GetColor(size_t index) const = 0;
+                virtual const AZStd::vector<AZ::SceneAPI::DataTypes::Color>& GetColors() const = 0;
             };
         }  // DataTypes
     }  // SceneAPI

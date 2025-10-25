@@ -27,6 +27,9 @@
 #include <AzCore/std/typetraits/add_pointer.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/utils.h>
+#include <AzCore/std/numeric.h>
+#include <AzCore/std/sort.h>
+#include <AzCore/Math/Color.h>
 
 #include <SceneAPI/SceneCore/Components/GenerationComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
@@ -61,22 +64,9 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
 #include <SceneAPI/SceneData/GraphData/SkinWeightData.h>
-
-#include <Generation/Components/MeshOptimizer/MeshBuilder.h>
-#include <Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.h>
-#include <Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.h>
+#include <meshoptimizer.h>
 
 namespace AZ { class ReflectContext; }
-
-namespace AZ::MeshBuilder
-{
-    using MeshBuilderVertexAttributeLayerColor = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::Color>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator)
-
-    using MeshBuilderVertexAttributeLayerSkinInfluence = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::ISkinWeightData::Link>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator)
-
-} // namespace AZ::MeshBuilder
 
 namespace AZ::SceneGenerationComponents
 {
@@ -105,103 +95,67 @@ namespace AZ::SceneGenerationComponents
     namespace Containers = AZ::SceneAPI::Containers;
     namespace Views = Containers::Views;
 
-    // @brief A class to map from a mesh's vertex index to it's welded vertex index
-    //
-    // When the mesh optimizer runs, it welds nearby vertices (if there are no blendshapes). This class provides a
-    // constant time lookup to map from an unwelded vertex index to the welded one.
-    // The welding works by rounding the vertex's position to the given position tolerance, then uses that rounded
-    // Vector3 as a key into a unordered_map.
-    template <class MeshDataType>
-    class Vector3Map
+    static void OptimizeSkinningInfluences(AZStd::vector<ISkinWeightData::Link>& influences, float tolerance, size_t maxWeights)
     {
-    public:
-        Vector3Map(const MeshDataType* meshData, bool hasBlendShapes, float positionTolerance)
-            : m_meshData(meshData)
-            , m_hasBlendShapes(hasBlendShapes)
-            , m_positionTolerance(positionTolerance)
-            , m_positionToleranceReciprocal(1.0f / positionTolerance)
+        const auto influenceLess = [](const ISkinWeightData::Link& left, const ISkinWeightData::Link& right)
         {
-        }
+            return left.weight < right.weight;
+        };
 
-        AZ::u32 operator[](const AZ::u32 vertexIndex)
-        {
-            if (m_hasBlendShapes)
+        // Move all the items greater than the tolerance to the end of the array
+        auto removePoint = AZStd::remove_if(
+            begin(influences),
+            end(influences),
+            [tolerance](const ISkinWeightData::Link& influence)
             {
-                // Don't attempt to weld similar vertices if there's blendshapes
-                // Welding the vertices here based on position could cause the vertices of a base shape to be welded,
-                // and the vertices of the blendshape to not be welded, resulting in a vertex count mismatch between
-                // the two
-                return vertexIndex;
-            }
-
-            const auto& [iter, didInsert] = m_map.try_emplace(GetPositionForIndex(vertexIndex), m_currentOriginalVertexIndex);
-            if (didInsert)
-            {
-                ++m_currentOriginalVertexIndex;
-            }
-            return iter->second;
-        }
-
-        [[nodiscard]] AZ::u32 at(const AZ::u32 vertexIndex) const
+                return influence.weight < tolerance;
+            });
+        if (removePoint == begin(influences))
         {
-            if (m_hasBlendShapes)
-            {
-                // Don't attempt to weld similar vertices if there's blendshapes
-                // Welding the vertices here based on position could cause the vertices of a base shape to be welded,
-                // and the vertices of the blendshape to not be welded, resulting in a vertex count mismatch between
-                // the two
-                return vertexIndex;
-            }
-
-            auto iter = m_map.find(GetPositionForIndex(vertexIndex));
-            AZSTD_CONTAINER_ASSERT(iter != m_map.end(), "Element with key is not present");
-            return iter->second;
+            // If this would remove all influences, keep the biggest one
+            auto [_, maxElement] = AZStd::minmax_element(begin(influences), end(influences), influenceLess);
+            AZStd::swap(removePoint, maxElement);
+            ++removePoint;
         }
+        // remove all weights below the tolerance
+        influences.erase(removePoint, end(influences));
 
-        [[nodiscard]] size_t size() const
+        // reduce number of weights when needed
+        while (influences.size() > maxWeights)
         {
-            if (m_hasBlendShapes)
+            // remove this smallest weight
+            const auto [minInfluence, _] = AZStd::minmax_element(begin(influences), end(influences), influenceLess);
+            influences.erase(minInfluence);
+        }
+
+        // calculate the total weight
+        const float totalWeight = AZStd::accumulate(
+            begin(influences),
+            end(influences),
+            0.0f,
+            [](float total, const ISkinWeightData::Link& influence)
             {
-                // Since blend shapes are present, the vertex welding is disabled, and the map will always be empty.
-                // Use the underlying mesh's vertex count instead.
-                return m_meshData->GetVertexCount();
-            }
-            return m_map.size();
-        }
+                return total + influence.weight;
+            });
 
-        void reserve(size_t count)
+        // normalize
+        for (ISkinWeightData::Link& influence : influences)
         {
-            if (m_hasBlendShapes)
+            influence.weight /= totalWeight;
+        }
+    }
+
+    // sort influences on weights, from big to small
+    static void SortInfluencesByWeight(AZStd::vector<ISkinWeightData::Link>& influences)
+    {
+        AZStd::sort(
+            begin(influences),
+            end(influences),
+            [](const auto& lhs, const auto& rhs)
             {
-                // Since blend shapes are present, the vertex welding is disabled, and the map will always be empty.
-                return;
-            }
-            m_map.reserve(count);
-        }
-
-    private:
-
-        AZ::Vector3 GetPositionForIndex(const AZ::u32 vertexIndex) const
-        {
-            // Round the vertex position so that a float comparison can be made with entires in the map
-            // pos = floor( x * 10 + 0.5) * 0.1
-            return AZ::Vector3(
-                AZ::Simd::Vec3::Floor(
-                    (m_meshData->GetPosition(vertexIndex) * m_positionToleranceReciprocal + AZ::Vector3(0.5f)).GetSimdValue()
-                )
-            ) * m_positionTolerance;
-        }
-
-        AZStd::unordered_map<AZ::Vector3, AZ::u32> m_map;
-        const MeshDataType* m_meshData;
-        bool m_hasBlendShapes;
-        float m_positionTolerance;
-        float m_positionToleranceReciprocal;
-        AZ::u32 m_currentOriginalVertexIndex = 0;
-    };
-
-    template<class MeshDataType>
-    Vector3Map(const MeshDataType*) -> Vector3Map<const MeshDataType>;
+                return lhs.weight > rhs.weight;
+            });
+    }
 
     MeshOptimizerComponent::MeshOptimizerComponent()
     {
@@ -215,25 +169,6 @@ namespace AZ::SceneGenerationComponents
         {
             serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(12); // Fix vertex welding
         }
-    }
-
-    static AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> ExtractSkinningInfo(
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*>& skinningInfluencesLayers,
-        const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup,
-        AZ::u32 maxWeightsPerVertex,
-        float weightThreshold)
-    {
-        AZ::MeshBuilder::MeshBuilderSkinningInfo skinningInfo(1);
-
-        AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences;
-        for (const auto& skinLayer : skinningInfluencesLayers)
-        {
-            const ISkinWeightData::Link& link = skinLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr);
-            influences.push_back({ aznumeric_caster(link.boneId), link.weight });
-        }
-
-        skinningInfo.Optimize(influences, maxWeightsPerVertex, weightThreshold);
-        return influences;
     }
 
     // Recurse through the SceneAPI's iterator types, extracting the real underlying iterator.
@@ -301,8 +236,21 @@ namespace AZ::SceneGenerationComponents
         return false;
     }
 
+    static void* MeshoptimizerAllocate(size_t size)
+    {
+        return azmalloc(size);
+    }
+
+    static void MeshoptimizerFree(void* ptr)
+    {
+        azfree(ptr);
+    }
+
     ProcessingResult MeshOptimizerComponent::OptimizeMeshes(GenerateSimplificationEventContext& context) const
     {
+        // Set up meshoptimizer allocation routine
+        meshopt_setAllocator(MeshoptimizerAllocate, MeshoptimizerFree);
+
         // Iterate over all graph content and filter out all meshes.
         SceneGraph& graph = context.GetScene().GetGraph();
 
@@ -402,7 +350,7 @@ namespace AZ::SceneGenerationComponents
 
                 const bool hasBlendShapes = HasAnyBlendShapeChild(graph, nodeIndex);
 
-                auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup, hasBlendShapes);
+                auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup);
 
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Optimized mesh '%s': Original: %zu vertices -> optimized: %zu vertices, %0.02f%% of the original (hasBlendShapes=%s)",
                     graph.GetNodeName(nodeIndex).GetName(),
@@ -465,7 +413,7 @@ namespace AZ::SceneGenerationComponents
                 for (const NodeIndex& blendShapeNodeIndex : nodeIndexes(Containers::MakeDerivedFilterView<IBlendShapeData>(childNodes(nodeIndex))))
                 {
                     const IBlendShapeData* blendShapeNode = static_cast<IBlendShapeData*>(graph.GetNodeContent(blendShapeNodeIndex).get());
-                    auto [optimizedBlendShape, _1, _2, _3 , _4, _5] = OptimizeMesh(blendShapeNode, mesh, {}, {}, {}, {}, {}, meshGroup, hasBlendShapes);
+                    auto [optimizedBlendShape, _1, _2, _3 , _4, _5] = OptimizeMesh(blendShapeNode, {}, {}, {}, {}, {}, meshGroup);
 
                     const AZStd::string optimizedName {graph.GetNodeName(blendShapeNodeIndex).GetName(), graph.GetNodeName(blendShapeNodeIndex).GetNameLength()};
                     const NodeIndex optimizedNodeIndex = graph.AddChild(optimizedMeshNodeIndex, optimizedName.c_str(), AZStd::move(optimizedBlendShape));
@@ -527,40 +475,32 @@ namespace AZ::SceneGenerationComponents
         return layers;
     };
 
-    template<class SkinWeightDataView>
-    static const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> MakeSkinInfluenceLayers(
-        AZ::MeshBuilder::MeshBuilder& meshBuilder,
-        const SkinWeightDataView& skinWeights,
-        size_t vertexCount)
+    static void GetIndices(const IBlendShapeData* blendShape, AZStd::vector<AZ::u32>& indices, [[maybe_unused]] AZStd::vector<AZ::u32>& materialIds)
     {
-        if (skinWeights.empty())
+        // Add the index data
+        for (AZ::u32 faceIndex = 0; faceIndex < blendShape->GetFaceCount(); ++faceIndex)
         {
-            return {};
-        }
-
-        size_t maxInfluenceCount = 0;
-
-        AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> outLayers;
-
-        // Do a pass over the skin influences, and determine the max influence count for any one vertex,
-        // which will be the number of influence layers we add
-        for (const auto& skinData : skinWeights)
-        {
-            for (size_t controlPointIndex = 0; controlPointIndex < skinData.get().GetVertexCount(); ++controlPointIndex)
+            for (AZ::u32 faceVertex = 0; faceVertex < 3; ++faceVertex)
             {
-                const size_t linkCount = skinData.get().GetLinkCount(controlPointIndex);
-                maxInfluenceCount = AZStd::max(maxInfluenceCount, linkCount);
+                indices[faceIndex * 3 + faceVertex] = blendShape->GetFaceVertexIndex(faceIndex, faceVertex);
             }
         }
-
-        // Create the influence layers
-        for (size_t i = 0; i < maxInfluenceCount; ++i)
-        {
-            outLayers.push_back(meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence>(vertexCount));
-        }
-
-        return outLayers;
     }
+
+    static void GetIndices(const IMeshData* mesh, AZStd::vector<AZ::u32>& indices, AZStd::vector<AZ::u32>& materialIds)
+    {
+        // Add the index data
+        for (AZ::u32 faceIndex = 0; faceIndex < mesh->GetFaceCount(); ++faceIndex)
+        {
+            for (AZ::u32 faceVertex = 0; faceVertex < 3; ++faceVertex)
+            {
+                indices[faceIndex * 3 + faceVertex] = mesh->GetFaceVertexIndex(faceIndex, faceVertex);
+                materialIds[faceIndex * 3 + faceVertex] = mesh->GetFaceMaterialId(faceIndex);
+
+            }
+        }
+    }
+
 
     template<class MeshDataType>
     AZStd::tuple<
@@ -572,143 +512,37 @@ namespace AZ::SceneGenerationComponents
         AZStd::unique_ptr<AZ::SceneAPI::DataTypes::ISkinWeightData>
     > MeshOptimizerComponent::OptimizeMesh(
         const MeshDataType* meshData,
-        const IMeshData* baseMesh,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexUVData>>& uvs,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexTangentData>>& tangents,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexBitangentData>>& bitangents,
         const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexColorData>>& vertexColors,
         const AZStd::vector<AZStd::reference_wrapper<const ISkinWeightData>>& skinWeights,
-        const AZ::SceneAPI::DataTypes::IMeshGroup& meshGroup,
-        bool hasBlendShapes)
+        const AZ::SceneAPI::DataTypes::IMeshGroup& meshGroup)
     {
         const size_t vertexCount = meshData->GetVertexCount();
+        const size_t faceCount = meshData->GetFaceCount();
+        const size_t indexCount = meshData->GetVertexIndexCount();
 
-        AZ::MeshBuilder::MeshBuilder meshBuilder(vertexCount, AZStd::numeric_limits<size_t>::max(), AZStd::numeric_limits<size_t>::max(), /*optimizeDuplicates=*/ !hasBlendShapes);
+        AZ_Error(AZ::SceneAPI::Utilities::LogWindow,
+            indexCount == faceCount * 3,
+            "Face count doesn't match index Count!");
 
-        // Make the layers to hold the vertex data
-        auto* controlPointLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerUInt32>(vertexCount);
-        auto* posLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
-        auto* normalsLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
-
-        const auto makeLayersForData = [&meshBuilder, vertexCount](const auto& dataView)
-        {
-            using InputDataType = typename AZStd::remove_cvref_t<decltype(*dataView.begin())>::type;
-
-            // Determine the layer data type to use in the mesh builder based on the type of scene graph node
-            // IMeshVertexUVData -> MeshBuilderVertexAttributeLayerVector2
-            // IMeshVertexTangentData -> MeshBuilderVertexAttributeLayerVector4
-            // IMeshVertexBitangentData -> MeshBuilderVertexAttributeLayerVector3
-            // IMeshVertexColorData -> MeshBuilderVertexAttributeLayerColor
-            struct ViewTypeToLayerType
-            {
-                static constexpr auto type(const IMeshVertexUVData*) -> MeshBuilder::MeshBuilderVertexAttributeLayerVector2;
-                static constexpr auto type(const IMeshVertexTangentData*) -> MeshBuilder::MeshBuilderVertexAttributeLayerVector4;
-                static constexpr auto type(const IMeshVertexBitangentData*) -> MeshBuilder::MeshBuilderVertexAttributeLayerVector3;
-                static constexpr auto type(const IMeshVertexColorData*) -> MeshBuilder::MeshBuilderVertexAttributeLayerColor;
-            };
-            using ResultingLayerType = decltype(ViewTypeToLayerType::type(AZStd::add_pointer_t<InputDataType>{}));
-
-            // the views provided by SceneAPI do not have a size() method, so compute it
-            const size_t layerCount = AZStd::distance(dataView.begin(), dataView.end());
-            AZStd::vector<ResultingLayerType*> layers(layerCount);
-            AZStd::generate(layers.begin(), layers.end(), [&meshBuilder = meshBuilder, vertexCount = vertexCount]
-            {
-                return meshBuilder.AddLayer<ResultingLayerType>(vertexCount);
-            });
-            return layers;
-        };
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerVector2*> uvLayers = makeLayersForData(uvs);
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerVector4*> tangentLayers = makeLayersForData(tangents);
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerVector3*> bitangentLayers = makeLayersForData(bitangents);
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerColor*> vertexColorLayers = makeLayersForData(vertexColors);
-        const AZStd::vector<MeshBuilder::MeshBuilderVertexAttributeLayerSkinInfluence*> skinningInfluencesLayers =
-            MakeSkinInfluenceLayers(meshBuilder, skinWeights, vertexCount);
-
-        constexpr float positionTolerance = 0.0001f;
-        Vector3Map positionMap(meshData, hasBlendShapes, positionTolerance);
-        positionMap.reserve(vertexCount);
-
-        // Add the vertex data to all the layers
-        const AZ::u32 faceCount = meshData->GetFaceCount();
-        for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
-        {
-            meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
-            for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
-            {
-                const AZ::u32 controlPointVertexIndex = positionMap[vertexIndex];
-
-                controlPointLayer->SetCurrentVertexValue(controlPointVertexIndex);
-
-                posLayer->SetCurrentVertexValue(meshData->GetPosition(vertexIndex));
-                normalsLayer->SetCurrentVertexValue(meshData->GetNormal(vertexIndex));
-
-                AZ_PUSH_DISABLE_WARNING(, "-Wrange-loop-analysis") // remove when we upgrade from clang 6.0
-                for (const auto& [uvData, uvLayer] : Containers::Views::MakePairView(uvs, uvLayers))
-                {
-                    uvLayer->SetCurrentVertexValue(uvData.get().GetUV(vertexIndex));
-                }
-                for (const auto& [tangentData, tangentLayer] : Containers::Views::MakePairView(tangents, tangentLayers))
-                {
-                    tangentLayer->SetCurrentVertexValue(tangentData.get().GetTangent(vertexIndex));
-                }
-                for (const auto& [bitangentData, bitangentLayer] : Containers::Views::MakePairView(bitangents, bitangentLayers))
-                {
-                    bitangentLayer->SetCurrentVertexValue(bitangentData.get().GetBitangent(vertexIndex));
-                }
-                for (const auto& [vertexColorData, vertexColorLayer] : Containers::Views::MakePairView(vertexColors, vertexColorLayers))
-                {
-                    vertexColorLayer->SetCurrentVertexValue(vertexColorData.get().GetColor(vertexIndex));
-                }
-
-                // Initialize skin weights to 0, 0.0
-                for (auto& skinInfluenceLayer : skinningInfluencesLayers)
-                {
-                    skinInfluenceLayer->SetCurrentVertexValue(ISkinWeightData::Link{ 0, 0.0f });
-                }
-
-#if defined(AZ_ENABLE_TRACING)
-                bool influencesFoundForThisVertex = false;
-#endif
-                // Set any real weights, if they exist
-                for (const auto& skinWeightData : skinWeights)
-                {
-                    const size_t linkCount = skinWeightData.get().GetLinkCount(vertexIndex);
-                    AZ_Assert(
-                        linkCount <= skinningInfluencesLayers.size(),
-                        "MeshOptimizer - The previously calculated maximum influence count is less than the current link count.");
-
-                    // Check that either the current skinWeightData doesn't have any influences for this vertex,
-                    // or that none of the ones which came before it had any influences for this vertex.
-                    AZ_Assert(
-                        linkCount == 0 || influencesFoundForThisVertex == false,
-                        "Two different skinWeightData instances in skinWeights apply to the same vertex. "
-                        "The mesh optimizer assumes there will only ever be one skinWeightData that impacts a given vertex.");
-#if defined(AZ_ENABLE_TRACING)
-                    // Mark that at least one influence has been found for this vertex
-                    influencesFoundForThisVertex |= linkCount > 0;
-#endif
-
-                    for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
-                    {
-                        const ISkinWeightData::Link& link = skinWeightData.get().GetLink(vertexIndex, linkIndex);
-                        skinningInfluencesLayers[linkIndex]->SetCurrentVertexValue(link);
-                    }
-                }
-                AZ_POP_DISABLE_WARNING
-
-                meshBuilder.AddPolygonVertex(controlPointVertexIndex);
-            }
-
-            meshBuilder.EndPolygon();
-        }
+        AZStd::vector<AZ::u32> indices(indexCount);
+        AZStd::vector<AZ::u32> materialIds(indexCount);
+        GetIndices(meshData, indices, materialIds);
 
         const auto* skinRule = meshGroup.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
         const AZ::u32 maxWeightsPerVertex = skinRule ? skinRule->GetMaxWeightsPerVertex() : 4;
         const float weightThreshold = skinRule ? skinRule->GetWeightThreshold() : 0.001f;
 
-        meshBuilder.GenerateSubMeshVertexOrders();
-
-        const size_t optimizedVertexCount = meshBuilder.CalcNumVertices();
+        AZStd::vector<AZ::u32> vertexRemap(vertexCount);
+        const size_t optimizedVertexCount = meshopt_generateVertexRemap(
+            vertexRemap.data(),
+            indices.data(),
+            indexCount,
+            reinterpret_cast<const float*>(meshData->GetPositions().data()),
+            vertexCount,
+            sizeof(AZ::Vector3));
 
         // Create the resulting nodes
         struct ResultingType
@@ -721,17 +555,74 @@ namespace AZ::SceneGenerationComponents
 
         auto optimizedMesh = AZStd::make_unique<decltype(ResultingType::type(meshData))>();
         optimizedMesh->CloneAttributesFrom(meshData);
+        optimizedMesh->GetPositions().resize_no_construct(optimizedVertexCount);
+        optimizedMesh->GetNormals().resize_no_construct(optimizedVertexCount);
+        AZStd::vector<AZ::u32> optimizedMaterialIds(indexCount);
+        AZStd::vector<AZ::u32> optimizedIndices(indexCount);
 
-        AZStd::vector<AZStd::unique_ptr<MeshVertexUVData>> optimizedUVs = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexUVData>(uvLayers);
-        AZStd::vector<AZStd::unique_ptr<MeshVertexTangentData>> optimizedTangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexTangentData>(tangentLayers);
-        AZStd::vector<AZStd::unique_ptr<MeshVertexBitangentData>> optimizedBitangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexBitangentData>(bitangentLayers);
-        AZStd::vector<AZStd::unique_ptr<MeshVertexColorData>> optimizedVertexColors = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexColorData>(vertexColorLayers);
+        // First remap
+        meshopt_remapVertexBuffer(optimizedMesh->GetPositions().data(), meshData->GetPositions().data(),
+            vertexCount, sizeof(AZ::Vector3), vertexRemap.data());
+        meshopt_remapVertexBuffer(optimizedMesh->GetNormals().data(), meshData->GetNormals().data(),
+            vertexCount, sizeof(AZ::Vector3), vertexRemap.data());
+        meshopt_remapIndexBuffer(optimizedIndices.data(), indices.data(), indexCount, vertexRemap.data());
+        meshopt_remapIndexBuffer(optimizedMaterialIds.data(), materialIds.data(), indexCount, vertexRemap.data());
+
+        // additional optimizations that rearranges index order, needs to recalculate material Ids.
+        AZStd::unordered_map<IMeshData::Face, AZ::u32> faceMaterialIdMap;
+        for (size_t faceIndex = 0; faceIndex < faceCount; faceIndex++)
+        {
+            IMeshData::Face faceKey = {{
+                optimizedIndices[faceIndex*3],
+                optimizedIndices[faceIndex*3+1],
+                optimizedIndices[faceIndex*3+2]
+            }};
+            faceMaterialIdMap[faceKey] = optimizedMaterialIds[faceIndex*3];
+        }
+
+        meshopt_optimizeVertexCache(optimizedIndices.data(), optimizedIndices.data(), indexCount, optimizedVertexCount);
+        meshopt_optimizeOverdraw(optimizedIndices.data(), optimizedIndices.data(), indexCount,
+            reinterpret_cast<const float*>(optimizedMesh->GetPositions().data()), optimizedVertexCount, sizeof(AZ::Vector3), 1.05f);
+
+        for (size_t faceIndex = 0; faceIndex < faceCount; faceIndex++)
+        {
+            IMeshData::Face faceKey = {{
+                optimizedIndices[faceIndex*3],
+                optimizedIndices[faceIndex*3+1],
+                optimizedIndices[faceIndex*3+2]
+            }};
+
+            AZ_Assert(faceMaterialIdMap.contains(faceKey), "Cannot find material Id for face %zu!", faceIndex);
+            optimizedMaterialIds[faceIndex*3] =
+            optimizedMaterialIds[faceIndex*3+1] =
+            optimizedMaterialIds[faceIndex*3+2] = faceMaterialIdMap[faceKey];
+        }
+
+        // Vertex fetch cache optimization
+        AZStd::vector<AZ::u32> fetchCacheRemap(optimizedVertexCount);
+        size_t fetchCacheOptimizedVertexCount =
+            meshopt_optimizeVertexFetchRemap(fetchCacheRemap.data(), optimizedIndices.data(), indexCount, optimizedVertexCount);
+        meshopt_remapVertexBuffer(optimizedMesh->GetPositions().data(), optimizedMesh->GetPositions().data(),
+            optimizedVertexCount, sizeof(AZ::Vector3), fetchCacheRemap.data());
+        meshopt_remapVertexBuffer(optimizedMesh->GetNormals().data(), optimizedMesh->GetNormals().data(),
+            optimizedVertexCount, sizeof(AZ::Vector3), fetchCacheRemap.data());
+        meshopt_remapIndexBuffer(indices.data(), optimizedIndices.data(), indexCount, fetchCacheRemap.data());
+        meshopt_remapIndexBuffer(materialIds.data(), optimizedMaterialIds.data(), indexCount, fetchCacheRemap.data());
+        optimizedMesh->GetPositions().resize_no_construct(fetchCacheOptimizedVertexCount);
+        optimizedMesh->GetNormals().resize_no_construct(fetchCacheOptimizedVertexCount);
+        optimizedIndices = AZStd::move(indices);
+        optimizedMaterialIds = AZStd::move(materialIds);
+
+        AZStd::vector<AZStd::unique_ptr<MeshVertexUVData>> optimizedUVs = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexUVData>(uvs);
+        AZStd::vector<AZStd::unique_ptr<MeshVertexTangentData>> optimizedTangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexTangentData>(tangents);
+        AZStd::vector<AZStd::unique_ptr<MeshVertexBitangentData>> optimizedBitangents = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexBitangentData>(bitangents);
+        AZStd::vector<AZStd::unique_ptr<MeshVertexColorData>> optimizedVertexColors = makeSceneGraphNodesForMeshBuilderLayers<MeshVertexColorData>(vertexColors);
         AZStd::unique_ptr<SkinWeightData> optimizedSkinWeights = nullptr;
 
-        if (!skinningInfluencesLayers.empty())
+        if (!skinWeights.empty())
         {
             optimizedSkinWeights = AZStd::make_unique<SkinWeightData>();
-            optimizedSkinWeights->ResizeContainerSpace(optimizedVertexCount);
+            optimizedSkinWeights->ResizeContainerSpace(fetchCacheOptimizedVertexCount);
         }
 
         // Copy node attributes
@@ -748,62 +639,97 @@ namespace AZ::SceneGenerationComponents
             Views::MakePairView(vertexColors, optimizedVertexColors),
         });
 
-        unsigned int indexOffset = 0;
-        for (size_t subMeshIndex = 0; subMeshIndex < meshBuilder.GetNumSubMeshes(); ++subMeshIndex)
+        for (size_t faceIndex = 0; faceIndex < faceCount; ++faceIndex)
         {
-            const AZ::MeshBuilder::MeshBuilderSubMesh* subMesh = meshBuilder.GetSubMesh(subMeshIndex);
-            for (size_t subMeshVertexIndex = 0; subMeshVertexIndex < subMesh->GetNumVertices(); ++subMeshVertexIndex)
+            AZ::u32 index0 = optimizedIndices[faceIndex*3];
+            AZ::u32 index1 = optimizedIndices[faceIndex*3+1];
+            AZ::u32 index2 = optimizedIndices[faceIndex*3+2];
+
+            AZ::u32 optimizedMaterialId = optimizedMaterialIds[faceIndex*3];
+            AZ_Assert((optimizedMaterialId == optimizedMaterialIds[faceIndex*3+1] &&
+                       optimizedMaterialId == optimizedMaterialIds[faceIndex*3+2]),
+                "Triangle material Ids doesn't match!");
+
+            AddFace(optimizedMesh.get(), index0, index1, index2, optimizedMaterialId);
+        }
+
+        // C++ 20 only
+        auto twoLayerRemap = [vertexCount, optimizedVertexCount, fetchCacheOptimizedVertexCount, &vertexRemap, &fetchCacheRemap]
+            <typename T>(AZStd::vector<T>& target, const AZStd::vector<T>& source)
+        {
+            target.resize_no_construct(optimizedVertexCount);
+            meshopt_remapVertexBuffer(target.data(), source.data(), vertexCount, sizeof(T), vertexRemap.data());
+            meshopt_remapVertexBuffer(target.data(), target.data(), optimizedVertexCount, sizeof(T), fetchCacheRemap.data());
+            target.resize_no_construct(fetchCacheOptimizedVertexCount);
+        };
+
+        for (auto [uvNode, optimizedUVNode] : Containers::Views::MakePairView(uvs, optimizedUVs))
+        {
+            twoLayerRemap(optimizedUVNode->GetUVs(), uvNode.get().GetUVs());
+        }
+        for (auto [tangentNode, optimizedTangentNode] : Containers::Views::MakePairView(tangents, optimizedTangents))
+        {
+            twoLayerRemap(optimizedTangentNode->GetTangents(), tangentNode.get().GetTangents());
+        }
+        for (auto [bitangentNode, optimizedBitangentNode] : Containers::Views::MakePairView(bitangents, optimizedBitangents))
+        {
+            twoLayerRemap(optimizedBitangentNode->GetBitangents(), bitangentNode.get().GetBitangents());
+        }
+        for (auto [vertexColorNode, optimizedVertexColorNode] : Containers::Views::MakePairView(vertexColors, optimizedVertexColors))
+        {
+            twoLayerRemap(optimizedVertexColorNode->GetColors(), vertexColorNode.get().GetColors());
+        }
+
+        if (optimizedSkinWeights)
+        {
+            AZStd::vector<size_t> skinWeightIndices(vertexCount);
+            for (size_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
-                const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(subMeshVertexIndex);
-                optimizedMesh->AddPosition(posLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                optimizedMesh->AddNormal(normalsLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
+                skinWeightIndices[vertexIndex]  = vertexIndex; //std::itoa
+            }
+            meshopt_remapVertexBuffer(skinWeightIndices.data(), skinWeightIndices.data(), vertexCount, sizeof(size_t), vertexRemap.data());
+            meshopt_remapVertexBuffer(skinWeightIndices.data(), skinWeightIndices.data(), optimizedVertexCount, sizeof(size_t), fetchCacheRemap.data());
+            skinWeightIndices.resize_no_construct(fetchCacheOptimizedVertexCount);
 
-                int modelVertexIndex = optimizedMesh->GetVertexCount() - 1;
+#if defined(AZ_ENABLE_TRACING)
+            bool influencesFoundForThisVertex = false;
+#endif
+            for (size_t vertexIndex = 0; vertexIndex < fetchCacheOptimizedVertexCount; vertexIndex++)
+            {
+                const size_t originalVertexIndex = skinWeightIndices[vertexIndex];
+                // Set any real weights, if they exist
+                for (const auto& skinWeightData : skinWeights)
+                {
+                    const size_t linkCount = skinWeightData.get().GetLinkCount(originalVertexIndex);
+                    AZ_Assert(
+                        linkCount <= maxWeightsPerVertex,
+                        "MeshOptimizer - The configured maximum influence count is less than the current link count.");
 
-                for (auto [uvLayer, optimizedUVNode] : Containers::Views::MakePairView(uvLayers, optimizedUVs))
-                {
-                    optimizedUVNode->AppendUV(uvLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                }
-                for (auto [tangentLayer, optimizedTangentNode] : Containers::Views::MakePairView(tangentLayers, optimizedTangents))
-                {
-                    optimizedTangentNode->AppendTangent(tangentLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                }
-                for (auto [bitangentLayer, optimizedBitangentNode] : Containers::Views::MakePairView(bitangentLayers, optimizedBitangents))
-                {
-                    optimizedBitangentNode->AppendBitangent(bitangentLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                }
-                for (auto [vertexColorLayer, optimizedVertexColorNode] : Containers::Views::MakePairView(vertexColorLayers, optimizedVertexColors))
-                {
-                    optimizedVertexColorNode->AppendColor(vertexColorLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                }
+                    // Check that either the current skinWeightData doesn't have any influences for this vertex,
+                    // or that none of the ones which came before it had any influences for this vertex.
+                    AZ_Assert(
+                        linkCount == 0 || influencesFoundForThisVertex == false,
+                        "Two different skinWeightData instances in skinWeights apply to the same vertex. "
+                        "The mesh optimizer assumes there will only ever be one skinWeightData that impacts a given vertex.");
+#if defined(AZ_ENABLE_TRACING)
+                    // Mark that at least one influence has been found for this vertex
+                    influencesFoundForThisVertex |= linkCount > 0;
+#endif
 
-                if (optimizedSkinWeights)
-                {
-                    AZStd::vector<AZ::MeshBuilder::MeshBuilderSkinningInfo::Influence> influences =
-                        ExtractSkinningInfo(skinningInfluencesLayers, vertexLookup, maxWeightsPerVertex, weightThreshold);
-
-                    for (const auto& influence : influences)
+                    for (size_t linkIndex = 0; linkIndex < linkCount; ++linkIndex)
                     {
-                        const int boneId =
-                            optimizedSkinWeights->GetBoneId(skinWeights[0].get().GetBoneName(aznumeric_caster(influence.mNodeNr)));
-                        optimizedSkinWeights->AppendLink(aznumeric_caster(modelVertexIndex), { boneId, influence.mWeight });
+                        ISkinWeightData::Link link = skinWeightData.get().GetLink(originalVertexIndex, linkIndex);
+                        link.boneId = optimizedSkinWeights->GetBoneId(skinWeights[0].get().GetBoneName(link.boneId));
+                        optimizedSkinWeights->AppendLink(vertexIndex, link);
                     }
                 }
+                if (optimizedSkinWeights->GetLinks(vertexIndex).size() > 0)
+                {
+                    // optimize the weights and sort them from big to small weight
+                    OptimizeSkinningInfluences(optimizedSkinWeights->GetLinks(vertexIndex), weightThreshold, maxWeightsPerVertex);
+                    SortInfluencesByWeight(optimizedSkinWeights->GetLinks(vertexIndex));
+                }
             }
-            AZStd::unordered_set<size_t> usedIndexes;
-            for (size_t polygonIndex = 0; polygonIndex < subMesh->GetNumPolygons(); ++polygonIndex)
-            {
-                AddFace(
-                    optimizedMesh.get(),
-                    aznumeric_caster(indexOffset + subMesh->GetIndex(polygonIndex * 3 + 0)),
-                    aznumeric_caster(indexOffset + subMesh->GetIndex(polygonIndex * 3 + 1)),
-                    aznumeric_caster(indexOffset + subMesh->GetIndex(polygonIndex * 3 + 2)),
-                    aznumeric_caster(subMesh->GetMaterialIndex())
-                );
-                const auto& faceInfo = optimizedMesh->GetFaceInfo(optimizedMesh->GetFaceCount() - 1);
-                AZStd::copy(AZStd::begin(faceInfo.vertexIndex), AZStd::end(faceInfo.vertexIndex), AZStd::inserter(usedIndexes, usedIndexes.begin()));
-            }
-            indexOffset += static_cast<unsigned int>(usedIndexes.size());
         }
 
         return AZStd::make_tuple(

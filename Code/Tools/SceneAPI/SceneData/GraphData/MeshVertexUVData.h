@@ -48,7 +48,7 @@ namespace AZ
                 SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
 
                 SCENE_DATA_API AZStd::vector<AZ::Vector2>& GetUVs();
-                SCENE_DATA_API const AZStd::vector<AZ::Vector2>& GetUVs() const;
+                SCENE_DATA_API const AZStd::vector<AZ::Vector2>& GetUVs() const override;
             protected:
                 AZStd::vector<AZ::Vector2> m_uvs;
                 AZ::Name m_customName;

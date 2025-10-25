@@ -42,7 +42,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
     void GetPosition(const SMikkTSpaceContext* context, float posOut[], const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
-        const AZ::u32 vertexIndex = customData->m_meshData->GetVertexIndex(face, vert);
+        const AZ::u32 vertexIndex = customData->m_meshData->GetFaceVertexIndex(face, vert);
         const AZ::Vector3& pos = customData->m_meshData->GetPosition(vertexIndex);
         posOut[0] = pos.GetX();
         posOut[1] = pos.GetY();
@@ -52,7 +52,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
     void GetNormal(const SMikkTSpaceContext* context, float normOut[], const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
-        const AZ::u32 vertexIndex = customData->m_meshData->GetVertexIndex(face, vert);
+        const AZ::u32 vertexIndex = customData->m_meshData->GetFaceVertexIndex(face, vert);
         const AZ::Vector3 normal = customData->m_meshData->GetNormal(vertexIndex).GetNormalizedSafe();
         normOut[0] = normal.GetX();
         normOut[1] = normal.GetY();
@@ -62,7 +62,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
     void GetTexCoord(const SMikkTSpaceContext* context, float texOut[], const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
-        const AZ::u32 vertexIndex = customData->m_meshData->GetVertexIndex(face, vert);
+        const AZ::u32 vertexIndex = customData->m_meshData->GetFaceVertexIndex(face, vert);
         const AZ::Vector2& uv = customData->m_uvData->GetUV(vertexIndex);
         texOut[0] = uv.GetX();
         texOut[1] = uv.GetY();
@@ -76,7 +76,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
     void SetTSpaceBasic(const SMikkTSpaceContext* context, const float tangent[], const float signValue, const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
-        const AZ::u32 vertexIndex = customData->m_meshData->GetVertexIndex(face, vert);
+        const AZ::u32 vertexIndex = customData->m_meshData->GetFaceVertexIndex(face, vert);
         AZ::Vector3 tangentVec3(tangent[0], tangent[1], tangent[2]);
         tangentVec3.NormalizeSafe();
         AZ::Vector3 normal = customData->m_meshData->GetNormal(vertexIndex);
@@ -97,7 +97,7 @@ namespace AZ::TangentGeneration::Mesh::MikkT
     void SetTSpace(const SMikkTSpaceContext* context, const float tangent[], const float bitangent[], const float magS, const float magT, const tbool isOrientationPreserving, const int face, const int vert)
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
-        const AZ::u32 vertexIndex = customData->m_meshData->GetVertexIndex(face, vert);
+        const AZ::u32 vertexIndex = customData->m_meshData->GetFaceVertexIndex(face, vert);
         const float flipSign = isOrientationPreserving ? 1.0f : -1.0f;
         const AZ::Vector4 tangentVec(tangent[0]*magS, tangent[1]*magS, tangent[2]*magS, flipSign);
         const AZ::Vector3 bitangentVec(bitangent[0]*magT, bitangent[1]*magT, bitangent[2]*magT);

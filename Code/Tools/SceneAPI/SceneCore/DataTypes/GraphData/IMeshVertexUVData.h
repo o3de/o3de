@@ -38,6 +38,7 @@ namespace AZ
 
                 virtual size_t GetCount() const = 0;
                 virtual const AZ::Vector2& GetUV(size_t index) const = 0;
+                virtual const AZStd::vector<AZ::Vector2>& GetUVs() const = 0;
             };
         }  // DataTypes
     }  // SceneAPI

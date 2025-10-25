@@ -44,7 +44,7 @@ namespace AZ::SceneData::GraphData
         SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
 
         SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetBitangents();
-        SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetBitangents() const;
+        SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetBitangents() const override;
     protected:
         AZStd::vector<AZ::Vector3> m_bitangents;
         AZ::SceneAPI::DataTypes::TangentGenerationMethod m_generationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene;

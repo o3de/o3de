@@ -45,6 +45,7 @@ namespace AZ
                 virtual const Link& GetLink(size_t vertexIndex, size_t linkIndex) const = 0;
                 virtual size_t GetBoneCount() const = 0;
                 virtual const AZStd::string& GetBoneName(int boneId) const = 0;
+                virtual const AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>& GetLinks(size_t vertexIndex) const = 0;
             };
         }  // DataTypes
     }  // SceneAPI

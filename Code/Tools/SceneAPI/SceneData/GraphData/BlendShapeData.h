@@ -59,11 +59,11 @@ namespace AZ
                 SCENE_DATA_API const Vector2& GetUV(unsigned int vertexIndex, unsigned int uvSetIndex) const;
 
                 SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetPositions();
-                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const;
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const override;
                 SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetNormals();
-                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const;
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const override;
                 SCENE_DATA_API AZStd::vector<Face>& GetFaces();
-                SCENE_DATA_API const AZStd::vector<Face>& GetFaces() const;
+                SCENE_DATA_API const AZStd::vector<Face>& GetFaces() const override;
                 SCENE_DATA_API AZStd::vector<Vector4>& GetTangents();
                 SCENE_DATA_API const AZStd::vector<Vector4>& GetTangents() const;
                 SCENE_DATA_API AZStd::vector<Vector3>& GetBitangents();

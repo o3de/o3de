@@ -43,8 +43,8 @@ namespace AZ
 
                 SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
 
-                SCENE_DATA_API AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& GetLinks();
-                SCENE_DATA_API const AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& GetLinks() const;
+                SCENE_DATA_API AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>& GetLinks(size_t vertexIndex);
+                SCENE_DATA_API const AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>& GetLinks(size_t vertexIndex) const override;
             protected:
                 AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>> m_vertexLinks;
                 AZStd::unordered_map<AZStd::string, int> m_boneNameIdMap;

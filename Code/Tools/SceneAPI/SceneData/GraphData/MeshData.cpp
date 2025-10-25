@@ -51,7 +51,7 @@ namespace AZ
                         ->Method("GetFaceCount", &MeshData::GetFaceCount)
                         ->Method("GetFaceInfo", &MeshData::GetFaceInfo)
                         ->Method("GetFaceMaterialId", &MeshData::GetFaceMaterialId)
-                        ->Method("GetVertexIndex", &MeshData::GetVertexIndex);
+                        ->Method("GetFaceVertexIndex", &MeshData::GetFaceVertexIndex);
 
                     behaviorContext->Class<SceneAPI::DataTypes::IMeshData::Face>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -176,7 +176,7 @@ namespace AZ
                 return m_faceMaterialIds[index];
             }
 
-            unsigned int MeshData::GetVertexIndex(int faceIndex, int vertexIndexInFace) const
+            unsigned int MeshData::GetFaceVertexIndex(int faceIndex, int vertexIndexInFace) const
             {
                 AZ_Assert(faceIndex < m_faceList.size(), "GetFaceInfo index not in range");
                 AZ_Assert(vertexIndexInFace < 3, "vertexIndexInFace index not in range");

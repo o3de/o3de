@@ -26,15 +26,6 @@ set(FILES
     Source/Generation/Components/UVsGenerator/UVsPreExportComponent.cpp
     Source/Generation/Components/UVsGenerator/UVsGenerators/SphereMappingUVsGenerator.h
     Source/Generation/Components/UVsGenerator/UVsGenerators/SphereMappingUVsGenerator.cpp
-    Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp
-    Source/Generation/Components/MeshOptimizer/MeshBuilder.h
-    Source/Generation/Components/MeshOptimizer/MeshBuilderInvalidIndex.h
-    Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.cpp
-    Source/Generation/Components/MeshOptimizer/MeshBuilderSkinningInfo.h
-    Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.cpp
-    Source/Generation/Components/MeshOptimizer/MeshBuilderSubMesh.h
-    Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.cpp
-    Source/Generation/Components/MeshOptimizer/MeshBuilderVertexAttributeLayers.h
     Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.cpp
     Source/Generation/Components/MeshOptimizer/MeshOptimizerComponent.h
     Source/Config/SettingsObjects/SoftNameSetting.h

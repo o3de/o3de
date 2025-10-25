@@ -47,5 +47,6 @@ namespace AZ::SceneAPI::DataTypes
         virtual size_t GetTangentSetIndex() const = 0;
         virtual TangentGenerationMethod GetGenerationMethod() const = 0;
         virtual void SetGenerationMethod(TangentGenerationMethod method) = 0;
+        virtual const AZStd::vector<AZ::Vector4>& GetTangents() const = 0;
     };
 }  // AZ::SceneAPI::DataTypes
