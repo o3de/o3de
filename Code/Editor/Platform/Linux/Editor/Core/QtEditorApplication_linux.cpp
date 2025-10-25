@@ -8,6 +8,8 @@
 
 #include "QtEditorApplication_linux.h"
 
+#include <qguiapplication_platform.h>
+
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbConnectionManager.h>
@@ -30,13 +32,13 @@ namespace Editor
 
     xcb_connection_t* EditorQtApplicationXcb::GetXcbConnectionFromQt()
     {
-        QPlatformNativeInterface* native = platformNativeInterface();
-        AZ_Warning("EditorQtApplicationXcb", native, "Unable to retrieve the native platform interface");
-        if (!native)
+        QNativeInterface::QX11Application* x11App = QGuiApplication::nativeInterface<QNativeInterface::QX11Application>();
+        AZ_Warning("EditorQtApplicationXcb", x11App, "Unable to retrieve the native platform interface");
+        if (!x11App)
         {
             return nullptr;
         }
-        return reinterpret_cast<xcb_connection_t*>(native->nativeResourceForIntegration(QByteArray("connection")));
+        return x11App->connection();
     }
 
     void EditorQtApplicationXcb::OnStartPlayInEditor()
