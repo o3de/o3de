@@ -32,7 +32,7 @@ ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac-arm64          
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac-arm64     TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH bc322f9e28d519ab5959a638b38ee3b773fefb868802823fad2396ab4f7bcbc8)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1w-rev1-mac-arm64                     TARGETS OpenSSL                     PACKAGE_HASH 3367bdf98e73cf2413eb495853972aa4ccd29c2ef58392fa7b7fa99001b1e2e0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                      TARGETS OpenEXR                     PACKAGE_HASH 4a093f5ca03836631dc66166b8f493925d0445467219efcbca3a5a0ee2ccbf4b)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev8-mac-arm64                          TARGETS Qt                          PACKAGE_HASH d0f97579ea2822c73f0b316a26c68ceb5332763e691d7e78d6b02fe3104b1d31)
+ly_associate_package(PACKAGE_NAME qt-6.10.2-rev1-mac-arm64                          TARGETS Qt                          PACKAGE_HASH a678dcb0701a4a9bcdd17ee5b3019d28aafb2273a8752699a442ae0c99bddad0)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-mac-arm64                         TARGETS PNG                         PACKAGE_HASH 515252226a6958c459f53d8598d80ec4f90df33d2f1637104fd1a636f4962f07)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac-arm64                TARGETS libsamplerate               PACKAGE_HASH 1a4954bd2e24b04da6c121e36fde1884e1e3f9492f580cf347637d0bea4b65e0)
 ly_associate_package(PACKAGE_NAME zlib-1.3.1-rev2-mac-arm64                         TARGETS zlib                        PACKAGE_HASH 52e62890329d3e003226fca88df30701cdd862a5f137eb5f75dff504377c13b3)

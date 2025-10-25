@@ -415,12 +415,11 @@ namespace Editor
 
     QTranslator* EditorQtApplication::CreateAndInitializeTranslator(const QString& filename, const QString& directory)
     {
-        // #QT6_TODO
-        // Q_ASSERT(QFile::exists(directory + "/" + filename));
+        Q_ASSERT(QFile::exists(directory + "/" + filename));
 
         QTranslator* translator = new QTranslator();
         [[maybe_unused]] const bool result = translator->load(filename, directory);
-        //assert(result);
+        assert(result);
         installTranslator(translator);
         return translator;
     }
