@@ -49,7 +49,7 @@ CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CUiAnimViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -143,7 +143,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CUiAnimViewNode* pNode = v.value<CUiAnimViewNodePtr>();
+                CUiAnimViewNode* pNode = v.value<CUiAnimViewNode*>();
                 if (pNode && pNode->GetNodeType() == eUiAVNT_AnimNode)
                 {
                     nodes << (CUiAnimViewAnimNode*)pNode;
@@ -156,13 +156,13 @@ private:
     CUiAnimViewNodesCtrl*   m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CUiAnimViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CUiAnimViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CUiAnimViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CUiAnimViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -237,8 +237,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
+    qRegisterMetaType<CUiAnimViewNode*>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();

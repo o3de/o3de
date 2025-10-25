@@ -58,7 +58,7 @@ CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CTrackViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -265,7 +265,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CTrackViewNode* pNode = v.value<CTrackViewNodePtr>();
+                CTrackViewNode* pNode = v.value<CTrackViewNode*>();
                 if (pNode && pNode->GetNodeType() == eTVNT_AnimNode)
                 {
                     nodes << (CTrackViewAnimNode*)pNode;
@@ -278,13 +278,13 @@ private:
     CTrackViewNodesCtrl*    m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CTrackViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CTrackViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CTrackViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CTrackViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -359,8 +359,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CTrackViewNodePtr>("CTrackViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CTrackViewNodePtr>("CTrackViewNodePtr");
+    qRegisterMetaType<CTrackViewNode*>("CTrackViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();
