@@ -8,7 +8,6 @@
 
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
-#include "core/jobsystem/JobSystem.h"
 #include "particle/core/ParticleSystem.h"
 
 namespace SimuCore::ParticleCore {
@@ -124,12 +123,6 @@ namespace SimuCore::ParticleCore {
     void ParticleSystem::SetConfig(AZ::u32 data)
     {
         config = data;
-        SimuCore::JobSystem& jobsystem = SimuCore::JobSystem::GetInstance();
-        if (dataPool.Data<Config>(config)->parallel) {
-            jobsystem.Initialize();
-        } else {
-            jobsystem.Initialize(1);
-        }
     }
 
     AZStd::vector<RenderType> ParticleSystem::GetRenderTypes() const

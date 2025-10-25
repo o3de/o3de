@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    SimuCore/core/include/core/jobsystem/JobSystem.h
-    SimuCore/core/include/core/jobsystem/SpinLock.h
     SimuCore/core/include/core/math/Constants.h
     SimuCore/core/include/core/math/Math.h
     SimuCore/core/include/core/math/MatrixX.h
@@ -18,7 +16,6 @@ set(FILES
     SimuCore/core/include/core/math/RandomStream.h
     SimuCore/core/include/core/math/Transform.h
     SimuCore/core/include/core/math/VectorX.h
-    SimuCore/core/src/jobsystem/JobSystem.cpp
     SimuCore/core/src/math/Noise.cpp
     SimuCore/core/src/math/Random.cpp
     SimuCore/core/src/math/RandomStream.cpp
