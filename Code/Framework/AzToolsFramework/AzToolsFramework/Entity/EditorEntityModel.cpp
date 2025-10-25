@@ -1105,7 +1105,7 @@ namespace AzToolsFramework
 
             EditorEntityRuntimeActivationChangeNotificationBus::Broadcast(
                 &EditorEntityRuntimeActivationChangeNotificationBus::Events::OnEntityRuntimeActivationChanged,
-                m_entityId, m_entity->IsRuntimeActiveByDefault());
+                m_entityId, m_entity->GetStartActive());
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
             break;
@@ -1129,7 +1129,7 @@ namespace AzToolsFramework
                     &EditorEntityRuntimeActivationChangeNotificationBus::Events::OnEntityRuntimeActivationChanged,
                     m_entityId, isActive);
 
-                entity->SetRuntimeActiveByDefault(isActive);
+                entity->SetStartActive(isActive);
             }
         }
 

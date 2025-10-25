@@ -125,6 +125,13 @@ namespace AzFramework
          * @param updateRoot Whether or not to update the root's local active. False means treat it like a child.
          */
         virtual void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot) = 0;
+        
+        /**
+         * Reparents the game entity without TransformBus. (For Deactivated SetParent.)
+         * @param targetEntityId The target Entity to reparent.
+         * @param parentEntityId The new parent.
+         */
+        virtual void SetGameEntityParent(const AZ::EntityId& /*targetEntityId*/, const AZ::EntityId& /*parentEntityId*/) = 0;
 
         /**
          * Loads game entities from a stream.

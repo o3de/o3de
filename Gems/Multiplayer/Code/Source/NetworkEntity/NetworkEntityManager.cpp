@@ -497,6 +497,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
+                //To Depreciate 2025/10/24 ??, replaced by m_startActive and Expanded Entity State Handling.
                 clone->SetRuntimeActiveByDefault(false);
             }
 
@@ -585,6 +586,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
+                //To Depreciate 2025/10/24??, replaced by m_startActive and Expanded Entity State Handling.
                 clone->SetRuntimeActiveByDefault(false);
             }
 

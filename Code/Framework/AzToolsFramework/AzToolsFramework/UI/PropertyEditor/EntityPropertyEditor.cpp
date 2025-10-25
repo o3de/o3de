@@ -2635,7 +2635,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
             if (entity)
             {
-                const bool entityIsInitiallyActive = entity->IsRuntimeActiveByDefault();
+                const bool entityIsInitiallyActive = entity->GetStartActive();
                 allActive = allActive && entityIsInitiallyActive;
                 anyActive = anyActive || entityIsInitiallyActive;
             }
@@ -2650,7 +2650,7 @@ namespace AzToolsFramework
         {
             if (anyActive)
             {
-                // SOME selected entitiers are active
+                // SOME selected entities are active
                 m_gui->m_activeOnStartCheckbox->setCheckState(Qt::PartiallyChecked);
 
             }
@@ -4008,7 +4008,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
             if (entity)
             {
-                entity->SetRuntimeActiveByDefault(startsActive);
+                entity->SetStartActive(startsActive);
                 ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, entityId);
                 AZ::EntitySystemBus::Broadcast(&AZ::EntitySystemBus::Events::OnEntityStartStatusChanged, entityId);
 

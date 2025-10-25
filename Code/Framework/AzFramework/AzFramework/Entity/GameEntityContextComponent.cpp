@@ -211,9 +211,9 @@ namespace AzFramework
         auto entity = aznew AZ::Entity(name);
 
         // Caller will want to configure entity before it's activated.
-        entity->SetRuntimeActiveByDefault(false);
+        entity->SetStartActive(false);
 
-        AddEntity(entity);
+        AddGameEntity(entity);
 
         return entity;
     }
@@ -284,13 +284,38 @@ namespace AzFramework
             }
         }
 
+        // Preprocess active state hierarchy.
+        // Parenting happened in Init(), this should mean Tree is updated with proper parent -> child relationships.
+        // Assuming entity order is top to bottom. We should capture the state from one to the next.
+        for (AZ::Entity* entity : entities)
+        {
+            if (!entity) continue;
+            AZ::EntityId id = entity->GetId();
+
+            //Get parent if valid.
+            AZ::EntityId parent = AZ::EntityId();
+            if (auto it = parentOf.find(id); it != parentOf.end())
+            { 
+                parent = it->second; 
+            }
+
+            bool pEff = true;
+            if(parent.IsValid())
+            {
+                AZ::Entity* pEnt = FindEntity(parent);
+                if (pEnt) { pEff = pEnt->IsEffectivelyActive(); }
+            }
+
+            entity->SetParentActiveNoEval(pEff);
+        }
+
         for (AZ::Entity* entity : entities)
         {
             if (entity->GetState() == AZ::Entity::State::Init)
             {
-                if (entity->IsRuntimeActiveByDefault())
+                // Will Activate or not, based on Effective State. Will only return true when Set Active, as it can't deactivate from State::Init (already deactivated)
+                if (entity->EvaluateEffectiveActiveState())
                 {
-                    entity->Activate();
                 #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
                     PumpSystemEventsIfNeeded();
                 #endif // (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
@@ -368,7 +393,8 @@ namespace AzFramework
                 else
                 {
                     // Don't activate the entity, it will be destroyed.
-                    currentEntity->SetRuntimeActiveByDefault(false);
+
+                    currentEntity->SetStartActive(false);
                 }
             }
         }
@@ -459,11 +485,19 @@ namespace AzFramework
                         }
                     }
 
+                    if(!e->GetLocalActive())
+                    {
+                        AZ_Printf("EntityContext", "Activate and descendants: Root will not activate, breaking out to deactivate instead.");
+                        DeactivateGameEntityAndDescendants(rootEntityId, false);
+                        return;
+                    }
+
+
                     changed = e->SetParentActive(rootsParentEff);
                 }
                 
                 // One way or another, if the root doesn't change there's no reason to change the children.
-                if(!changed) 
+                if(!changed)
                 {
                     AZ_Printf("EntityContext", "Activate and descendants: Root didn't change. Cancelling out.");
                     return; 
@@ -521,18 +555,39 @@ namespace AzFramework
         for (size_t i = tree.size(); i-- > 0; )
         {
             AZ::EntityId entityId = tree[i];
-            if(entityId == rootEntityId) { continue; }
-            
-            AZ::Entity* e = FindEntity(entityId);
-            
-            if(!e) { continue; }
+            if(entityId == rootEntityId) 
+            {
+                if(updateRoot) { rootEntity -> SetLocalActive(false); }
+                else { rootEntity->SetParentActive(false); }  
+            }
+            else
+            {
+                AZ::Entity* e = FindEntity(entityId);
+                
+                if(!e) { continue; }
 
-            // Because we're going bottom to top, there's no need to check if the state has changed.
-            e->SetParentActive(false);
+                // Because we're going bottom to top, there's no need to check if the state has changed.
+                e->SetParentActive(false);
+            }
         }
-        
-        if(updateRoot) { rootEntity -> SetLocalActive(false); }
-        else { rootEntity->SetParentActive(false); }
+    }
+
+    //=========================================================================
+    // EntityContextEventBus::LoadFromStream
+    //=========================================================================
+    //Incomplete, needs TransformComponent updates.
+    void GameEntityContextComponent::SetGameEntityParent(const AZ::EntityId& targetEntityId, const AZ::EntityId& parentEntityId)
+    {
+        if(!targetEntityId.IsValid()) { return; }
+
+        AZ::Entity* e = FindEntity(targetEntityId);
+
+        if(!e) { return; }
+
+        if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
+        {
+            tc->SetParent(parentEntityId);
+        }
     }
 
     //=========================================================================
@@ -567,6 +622,7 @@ namespace AzFramework
     void GameEntityContextComponent::AddEntityToParentChildTree(AZ::Entity* entity)
     {
         if(!entity) { return; }
+        AZ_Printf("EntityContext", "Adding Entity To ParentChild Tree.");
         
         //Get Parent
         AZ::EntityId parentId; // default = null root
@@ -611,6 +667,7 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId)
     {
+        AZ_Printf("EntityContext", "Removing Entity From ParentChild Tree.");
         // Disconnect from TransformNotificationBus for this entity.
         if (AZ::TransformNotificationBus::MultiHandler::BusIsConnectedId(entityId))
         {
@@ -732,8 +789,16 @@ namespace AzFramework
     {
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
+        AZ_Printf("EntityContext", "OnParentChanged.");
         UpdateParentChildMaps(entityId, oldParentId, newParentId);
 
+        AZ::Entity* e = FindEntity(entityId);
+
+        if(e->GetState() == AZ::Entity::State::Initializing)
+        {
+            AZ_Warning("EntityContext", false, "%s OnParentChanged, in Initializing (from first Transform->Parent). Skipping Recompute.", e->GetName().c_str());
+            return;
+        }
         RecomputeEffectiveActivationForEntity(entityId);
     }
 

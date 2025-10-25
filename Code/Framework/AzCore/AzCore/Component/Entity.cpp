@@ -89,7 +89,7 @@ namespace AZ
         , m_name{ name.empty() ? AZStd::to_string(static_cast<u64>(m_id)) : AZStd::move(name) }
         , m_state(State::Constructed)
         , m_isDependencyReady(false)
-        , m_isRuntimeActiveByDefault(true)
+        , m_isRuntimeActiveByDefault(true) //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
     {
     }
 
@@ -161,6 +161,9 @@ namespace AZ
         AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
         m_localActive = m_startActive;
+        
+        if(m_localActive) { AZ_Printf("Entity", "%s Initializing, start active set Active", GetName().c_str()); }
+        else { AZ_Printf("Entity", "%s Initializing, start active set Inactive", GetName().c_str()); }
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -210,6 +213,8 @@ namespace AZ
         }
 
         SetState(State::Active);
+
+        AZ_Printf("Entity", "%s Activated now.", GetName().c_str());
 
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
@@ -268,11 +273,13 @@ namespace AZ
         m_isDependencyReady = false;
     }
 
+    //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
     void Entity::SetRuntimeActiveByDefault(bool activeByDefault)
     {
         m_isRuntimeActiveByDefault = activeByDefault;
     }
 
+    //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
     bool Entity::IsRuntimeActiveByDefault() const
     {
         return m_isRuntimeActiveByDefault;
@@ -664,8 +671,6 @@ namespace AZ
 
     bool Entity::SetLocalActive(bool active)
     {
-        if(m_localActive == active) { return false; }
-        
         if(active) { AZ_Printf("Entity", "Setting local active to true for: %s", GetName().c_str()); }
         else { AZ_Printf("Entity", "Setting local active to false for: %s", GetName().c_str()); }
 
@@ -676,8 +681,6 @@ namespace AZ
     
     bool Entity::SetParentActive(bool active)
     {
-        if(m_parentActive == active) { return false; }
-        
         if(active) { AZ_Printf("Entity", "Setting parent active to true for: %s", GetName().c_str()); }
         else { AZ_Printf("Entity", "Setting parent active to false for: %s", GetName().c_str()); }
 
@@ -693,8 +696,14 @@ namespace AZ
         if(isEffective) { AZ_Printf("Entity", "%s evaluating active state, active", GetName().c_str()); }
         else { AZ_Printf("Entity", "%s evaluating active state, inactive", GetName().c_str()); }
 
+        if(m_state == State::Initializing)
+        {
+            AZ_Warning("Entity", false, "%s evaluating active state, in Initializing. This comes from SetParent on TransformComponent Init(). Exiting Out.", GetName().c_str());
+            return false;
+        }
+
         // Avoid re-entry during transitions
-        if (m_state == State::Constructed || m_state == State::Initializing ||
+        if (m_state == State::Constructed ||
             m_state == State::Activating || m_state == State::Deactivating)
         {
             AZ_Warning("Entity", false, "%s evaluating active state, between states. Exiting out.", GetName().c_str());
@@ -850,7 +859,8 @@ namespace AZ
                 ->Field("Name", &Entity::m_name)
                 ->Field("Components", &Entity::m_components) // Component serialization can result in IsDependencyReady getting modified, so serialize Components first.
                 ->Field("IsDependencyReady", &Entity::m_isDependencyReady)
-                ->Field("IsRuntimeActive", &Entity::m_isRuntimeActiveByDefault)
+                ->Field("IsRuntimeActive", &Entity::m_isRuntimeActiveByDefault) //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
+                ->Field("StartRuntimeActive", &Entity::m_startActive)
                 ;
 
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AZ::Component*>>();
@@ -877,7 +887,8 @@ namespace AZ
                     DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isDependencyReady, "IsDependencyReady", "")->
                         Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "StartActive", "")->
+                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "DepreciatedStartActive", "")-> //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
+                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_startActive, "StartActive", "")->
                     DataElement("String", &Entity::m_name, "Name", "Unique name of the entity")->
                         Attribute(Edit::Attributes::ChangeNotify, &Entity::OnNameChanged)->
                     DataElement("Components", &Entity::m_components, "Components", "");

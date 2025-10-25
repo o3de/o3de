@@ -61,6 +61,7 @@ namespace AzFramework
         void ActivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
         void DeactivateGameEntity(const AZ::EntityId&) override;
         void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
+        void SetGameEntityParent(const AZ::EntityId& /*targetEntityId*/, const AZ::EntityId& /*parentEntityId*/) override;
         bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds) override;
         AZStd::string GetEntityName(const AZ::EntityId& id) override;
         //////////////////////////////////////////////////////////////////////////

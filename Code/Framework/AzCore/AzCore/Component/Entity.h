@@ -146,6 +146,7 @@ namespace AZ
         //! After set, Entity evaluates its new effective active state and changes accordingly.
         //! @return Whether a state change happened.
         bool SetLocalActive(bool active);
+        void SetLocalActiveNoEval(bool active) { m_localActive = active; }
 
         //! Gets the "Local Active" boolean to identify the desired activation/deactivation state of this Entity.
         bool GetParentActive() const { return m_parentActive; }
@@ -153,6 +154,7 @@ namespace AZ
         //! After set, Entity evaluates its new effective active state and changes accordingly.
         //! @return Whether a state change happened.
         bool SetParentActive(bool active);
+        void SetParentActiveNoEval(bool active) { m_parentActive = active; }
 
         //! The method that evaluates the current Entity Effective State and changes it's activation if changed.
         //! @return Whether a state change happened.
@@ -375,9 +377,11 @@ namespace AZ
         //! Mark the entity to be activated by default. This is observed automatically by EntityContext,
         //! and should be observed by any other custom systems that create and manage entities.
         //! @param activeByDefault whether the entity should be active by default after creation.
+        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         void SetRuntimeActiveByDefault(bool activeByDefault);
 
         //! @return true if the entity is marked to activate by default upon creation.
+        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         bool IsRuntimeActiveByDefault() const;
 
         //! Reflects the entity into a variety of contexts (script, serialize, edit, and so on).
@@ -466,7 +470,9 @@ namespace AZ
         //! Furthermore, if more than 4 flags are needed, please consider using a more space-efficient container,
         //! such as AZStd::bit_set<>. With just a couple flags, AZStd::bit_set's word-size of 32-bits will actually waste space.
         bool m_isDependencyReady;           ///< Indicates the component dependencies have been evaluated and sorting was completed successfully.
-        bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation.
+
+        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
+        bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation. 
     };
 
     template<class ComponentType, typename... Args>

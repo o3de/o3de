@@ -157,7 +157,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
 
         auto exportEntity = AZStd::make_unique<AZ::Entity>(sourceEntity->GetId(), sourceEntity->GetName().c_str());
-        exportEntity->SetRuntimeActiveByDefault(sourceEntity->IsRuntimeActiveByDefault());
+        exportEntity->SetStartActive(sourceEntity->GetStartActive());
 
         AddEntityIdIfEditorOnly(sourceEntity);
 
