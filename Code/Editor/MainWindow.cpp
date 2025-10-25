@@ -345,22 +345,6 @@ void MainWindow::SystemTick()
     }
 }
 
-#ifdef Q_OS_WIN
-HWND MainWindow::GetNativeHandle()
-{
-    // if the parent widget is set, it's a window decoration wrapper
-    // we use that instead, to ensure we're in lock step the code in CryEdit.cpp when it calls
-    // InitGameSystem
-    if (parentWidget() != nullptr)
-    {
-        assert(qobject_cast<AzQtComponents::WindowDecorationWrapper*>(parentWidget()));
-        return QtUtil::getNativeHandle(parentWidget());
-    }
-
-    return QtUtil::getNativeHandle(this);
-}
-#endif // #ifdef Q_OS_WIN
-
 void MainWindow::OnOpenAssetImporterManager(const QStringList& dragAndDropFileList)
 {
     m_assetImporterManager->Exec(dragAndDropFileList);
