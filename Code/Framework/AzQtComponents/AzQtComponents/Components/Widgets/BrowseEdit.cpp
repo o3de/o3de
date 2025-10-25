@@ -42,7 +42,6 @@ namespace AzQtComponents
         : QFrame(parent)
         , m_data(new BrowseEdit::InternalData)
     {
-        AzQtComponents::Style::addClass(this, "AzQtComponentsBrowseEdit");
         setObjectName("browse-edit");
         setToolTipDuration(1000 * 10);
         setAttribute(Qt::WA_Hover, true);
@@ -73,6 +72,8 @@ namespace AzQtComponents
         boxLayout->addWidget(m_data->m_attachedButton);
         connect(m_data->m_attachedButton, &QPushButton::clicked, this, &BrowseEdit::attachedButtonTriggered);
         setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
+
+        AzQtComponents::Style::addClass(this, "AzQtComponentsBrowseEdit");
     }
 
     BrowseEdit::~BrowseEdit()
