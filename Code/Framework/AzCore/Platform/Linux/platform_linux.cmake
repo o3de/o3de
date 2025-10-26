@@ -20,3 +20,4 @@ set(LY_BUILD_DEPENDENCIES
         pthread
         ${CMAKE_DL_LIBS}
 )
+set(PAL_TRAIT_MIMALLOC_SUPPORTED TRUE)

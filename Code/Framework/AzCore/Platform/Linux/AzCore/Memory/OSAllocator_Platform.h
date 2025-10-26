@@ -7,4 +7,4 @@
  */
 #pragma once
 
-#include <../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h>
+#include <../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h>

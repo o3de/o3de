@@ -23,3 +23,5 @@ set(LY_BUILD_DEPENDENCIES
     PRIVATE
         ${__azcore_dependencies}
 )
+
+set(PAL_TRAIT_MIMALLOC_SUPPORTED TRUE)

@@ -120,7 +120,7 @@ namespace AZ
         return AllocateAddress{ newPtr, allocatedSize };
     }
 
-    auto OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
+    auto OSAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const -> size_type
     {
         return ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
     }

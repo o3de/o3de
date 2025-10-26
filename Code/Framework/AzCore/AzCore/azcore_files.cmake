@@ -433,14 +433,12 @@ set(FILES
     Memory/AllocatorWrapper.h
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
-    Memory/dlmalloc.inl
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h

@@ -6,11 +6,15 @@
 #
 #
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+
 # TODO: would like to be able to build from this path, however, the whole setup is done at the workspace's root
 #       we also dont want to drop cmake output files everywhere.
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+include(${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     set(LY_PIX_ENABLED OFF CACHE BOOL "Enables PIX profiler integration.")
@@ -18,6 +22,10 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
         message(STATUS "PIX found, enabling as profiler")
         set(AZ_CORE_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
     endif()
+endif()
+
+if(PAL_TRAIT_MIMALLOC_SUPPORTED)
+    set(AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES 3rdParty::mimalloc)
 endif()
 
 # By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
@@ -85,6 +93,7 @@ ly_add_target(
             3rdParty::ZLIB
             3rdParty::zstd
             3rdParty::cityhash
+            ${AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES}
 )
 
 ly_add_source_properties(

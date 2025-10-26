@@ -7,4 +7,4 @@
  */
 #pragma once
 
-#include <../Common/Apple/AzCore/Memory/OSAllocator_Apple.h>
+#include <../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h>

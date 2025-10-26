@@ -18,3 +18,5 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
             /IGNORE:4217        # Ignore AzCore static including buses from AzCore shared (circular)
     )
 endif()
+
+set(PAL_TRAIT_MIMALLOC_SUPPORTED TRUE)

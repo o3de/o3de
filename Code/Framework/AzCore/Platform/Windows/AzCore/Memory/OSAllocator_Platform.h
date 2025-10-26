@@ -7,4 +7,4 @@
  */
 #pragma once
 
-#include <../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h>
+#include <../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h>

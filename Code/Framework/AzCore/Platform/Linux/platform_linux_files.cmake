@@ -45,7 +45,7 @@ set(FILES
     AzCore/IO/SystemFile_Linux.cpp
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
-    ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
+    ../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Linux.cpp
     AzCore/Math/Internal/MathTypes_Linux.h
