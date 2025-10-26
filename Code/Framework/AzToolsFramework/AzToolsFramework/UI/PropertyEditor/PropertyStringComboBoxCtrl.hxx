@@ -28,7 +28,6 @@ namespace AzToolsFramework
     class AZTF_API PropertyStringComboBoxCtrl
         : public GenericComboBoxCtrl<AZStd::string>
     {
-        Q_OBJECT
         using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
 
         friend class StringEnumPropertyComboBoxHandler;
@@ -65,9 +64,6 @@ namespace AzToolsFramework
         : QObject
         , public PropertyComboBoxHandlerCommon < AZStd::string >
     {
-        // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
-        Q_OBJECT
-
     public:
         AZ_CLASS_ALLOCATOR(StringEnumPropertyComboBoxHandler, AZ::SystemAllocator);
 

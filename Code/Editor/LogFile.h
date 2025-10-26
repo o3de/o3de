@@ -12,9 +12,13 @@
 
 #pragma once
 
+#include "SandboxAPI.h"
 #include "ILog.h"
+
 #include <IConsole.h>
 #include <stdarg.h>
+
+#include <QString>
 
 #define MAX_LOGBUFFER_SIZE 16384
 

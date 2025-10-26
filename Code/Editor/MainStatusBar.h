@@ -15,6 +15,8 @@
 #include <QWidget>
 #include <QIcon>
 
+#include "IEditor.h"
+
 class MainStatusBar;
 class QLabel;
 class QString;
