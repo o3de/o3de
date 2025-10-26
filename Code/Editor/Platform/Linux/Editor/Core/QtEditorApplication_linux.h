@@ -19,7 +19,6 @@ namespace Editor
         : public EditorQtApplication
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
-        Q_OBJECT
     public:
         EditorQtApplicationXcb(int& argc, char** argv)
             : EditorQtApplication(argc, argv)

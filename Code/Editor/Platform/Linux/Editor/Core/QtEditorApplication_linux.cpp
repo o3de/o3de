@@ -15,7 +15,6 @@
 #include <AzFramework/XcbConnectionManager.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <qpa/qplatformnativeinterface.h>
 #include <AzFramework/XcbEventHandler.h>
 #endif
 

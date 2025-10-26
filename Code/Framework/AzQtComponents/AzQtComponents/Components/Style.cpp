@@ -1101,8 +1101,6 @@ namespace AzQtComponents
 
             case QStyle::PM_ToolBarExtensionExtent:
             {
-                const QPoint wPos = widget->pos();
-                const QPoint gPos = widget->mapToGlobal(wPos);
                 int retval{ 12 };
                 return retval;
             }
