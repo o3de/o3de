@@ -606,7 +606,7 @@ TEST_F(RCcontrollerUnitTests, TestRCController_StartRCJobWithCriticalLocking_Blo
     QFile lockFileTest(fileInUsePath);
 #if defined(AZ_PLATFORM_WINDOWS)
     // on windows, its enough to just open the file:
-    const bool res = lockFileTest.open(QFile::ReadOnly);
+    [[maybe_unused]] const bool res = lockFileTest.open(QFile::ReadOnly);
     AZ_Assert(res, "Failed to open %s", qPrintable(fileInUsePath));
 #elif defined(AZ_PLATFORM_LINUX)
     int handleOfLock = open(fileInUsePath.toUtf8().constData(), O_RDONLY | O_EXCL | O_NONBLOCK);

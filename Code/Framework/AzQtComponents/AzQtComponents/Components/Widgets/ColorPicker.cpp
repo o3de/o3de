@@ -391,7 +391,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     Style::addClass(m_alphaSlider, "AlphaGradient");
     m_alphaSlider->setColorFunction([this](qreal position) {
         auto color = ToQColor(m_currentColorController->color());
-        color.setAlphaF(position);
+        color.setAlphaF(aznumeric_cast<float>(position));
         return color;
     });
     m_alphaSlider->setToolTipFunction([this](qreal position) {

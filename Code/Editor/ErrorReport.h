@@ -14,9 +14,15 @@
 #define CRYINCLUDE_EDITOR_ERRORREPORT_H
 #pragma once
 
+#include "ErrorRecorder.h"
 #include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
-#include "ErrorRecorder.h"
+#include "ISystem.h"
+
+#include <QString>
+
+// forward declarations.
+class CParticleItem;
 
 /*! Single error entry in error report.
  */

@@ -643,7 +643,7 @@ namespace GraphCanvas
             QFile resource(QString::fromUtf8(json.c_str()));
             if (resource.exists())
             {
-                const bool res = resource.open(QIODevice::ReadOnly);
+                [[maybe_unused]] const bool res = resource.open(QIODevice::ReadOnly);
                 AZ_Assert(res, "Failed to open resource file");
                 document.Parse(resource.readAll().data());
             }

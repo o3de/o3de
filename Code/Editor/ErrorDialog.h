@@ -7,9 +7,15 @@
  */
 
 #pragma once
-#include <QDialog>
 
 #include "Include/EditorCoreAPI.h"
+
+#include <AzCore/std/containers/list.h>
+
+#include <QDialog>
+#include <QScopedPointer>
+#include <QSet>
+#include <QString>
 
 namespace Ui 
 {
