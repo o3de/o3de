@@ -12,9 +12,10 @@
 
 #pragma once
 
+#include <AzCore/Math/Guid.h>
+
 #include <QDialog>
 #include <QScopedPointer>
-
 
 class CSettingsManager;
 

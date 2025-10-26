@@ -11,10 +11,15 @@
 #define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #pragma once
 
+#include "SandboxAPI.h"
+
 #include <AzCore/Component/Component.h>
 
 #include <functional>
+
 #include <QSharedPointer>
+#include <QString>
+#include <QWidget>
 
 // CViewportTitleDlg dialog
 class CLayoutViewPane;
@@ -22,6 +27,7 @@ class CPopupMenuItem;
 
 class QAbstractButton;
 class QMenu;
+class QEvent;
 
 struct ICVar;
 

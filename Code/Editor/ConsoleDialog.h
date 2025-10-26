@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "IEditor.h"
+
 #include <QDialog>
 
 class CConsoleSCB;
