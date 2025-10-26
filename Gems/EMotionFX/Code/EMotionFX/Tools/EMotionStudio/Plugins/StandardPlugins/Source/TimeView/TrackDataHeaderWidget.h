@@ -19,7 +19,7 @@
 #include <QFont>
 #include <QPixmap>
 #include <QBrush>
-
+#include <QWidget>
 
 
 namespace EMStudio

@@ -9,12 +9,14 @@
 
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include "PropertyEditorAPI.h"
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+
 #include <QWidget>
-#include "PropertyEditorAPI.h"
+
 class QCheckBox;
 
 namespace AzToolsFramework
@@ -54,7 +56,6 @@ namespace AzToolsFramework
     class AZTF_API CheckBoxHandlerCommon
         : public QObject
     {
-        Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(CheckBoxHandlerCommon, AZ::SystemAllocator);
         QWidget* CreateGUICommon(QWidget* parent);
@@ -80,8 +81,6 @@ namespace AzToolsFramework
     class AZTF_API BoolPropertyCheckBoxHandler
         : public PropertyCheckBoxHandlerCommon<bool>
     {
-        // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
-        Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(BoolPropertyCheckBoxHandler, AZ::SystemAllocator);
 
@@ -102,7 +101,6 @@ namespace AzToolsFramework
         : public CheckBoxHandlerCommon
         , public GenericPropertyHandler<PropertyCheckBoxCtrl>
     {
-        Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(CheckBoxGenericHandler, AZ::SystemAllocator);
 
