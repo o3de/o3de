@@ -18,6 +18,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class '.
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
 
+class QLabel;
+
 namespace AzToolsFramework
 {
     class AspectRatioAwarePixmapWidget;

@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzCore/Math/Color.h>
+
 #include <QAbstractItemView>
 #include <QColor>
 #include <QRect>
