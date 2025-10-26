@@ -179,13 +179,14 @@ set_property(SOURCE
     APPEND PROPERTY
         COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
 )
+
 ly_add_translations(
-    TARGETS Editor
-    PREFIX Translations
+    TARGET EditorCore
     FILES
         Translations/editor_en-us.ts 
         Translations/assetbrowser_en-us.ts 
 )
+
 ly_add_dependencies(Editor AssetProcessor)
 
 if(LY_DEFAULT_PROJECT_PATH)
@@ -200,7 +201,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME EditorCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Legacy
-        AUTOMOC
         FILES_CMAKE
             editor_core_test_files.cmake
         INCLUDE_DIRECTORIES

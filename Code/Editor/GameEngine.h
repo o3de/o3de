@@ -10,18 +10,20 @@
 // Description : The game engine for editor
 #pragma once
 
-#include <AzCore/Outcome/Outcome.h>
+#include "IEditor.h"
+#include "ISystem.h"
 #include "LogFile.h"
+#include "SandboxAPI.h"
 #include "Util/ModalWindowDismisser.h"
-
-class CStartupLogoDialog;
-struct IInitializeUIInfo;
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Vector3.h>
-
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Outcome/Outcome.h>
+
+class CStartupLogoDialog;
+struct IInitializeUIInfo;
 
 class ThreadedOnErrorHandler : public QObject
 {
