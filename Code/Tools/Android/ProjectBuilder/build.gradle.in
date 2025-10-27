@@ -10,43 +10,46 @@ apply plugin: "com.android.${TARGET_TYPE}"
 android {
     ${PROJECT_NAMESPACE_OPTION}
 ${SIGNING_CONFIGS}
-    compileSdkVersion sdkVer
-    buildToolsVersion buildToolsVer
-    ndkVersion ndkPlatformVer
+    compileSdkVersion = sdkVer
+    buildToolsVersion = buildToolsVer
+    ndkVersion =  ndkPlatformVer
     lintOptions {
-        abortOnError false
-        checkReleaseBuilds false
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 
     defaultConfig {
-        minSdkVersion minSdkVer
-        targetSdkVersion sdkVer
+        minSdkVersion = minSdkVer
+        targetSdkVersion = sdkVer
+        aaptOptions {    // don't filter out files that start with underscore, as some assets do that.
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!.scc:!CVS:!thumbs.db:!picasa.ini:!~'
+        }
 ${NATIVE_CMAKE_SECTION_DEFAULT_CONFIG}
     }
 
     buildTypes {
         debug {
-            debuggable true
+            debuggable = true
 ${NATIVE_CMAKE_SECTION_DEBUG_CONFIG}
             ${SIGNING_DEBUG_CONFIG}
         }
         profile {
             getIsDefault().set(true)
-            debuggable true
+            debuggable = true
 ${NATIVE_CMAKE_SECTION_PROFILE_CONFIG}
             ${SIGNING_PROFILE_CONFIG}
         }
         release {
-            debuggable false
-            minifyEnabled false
+            debuggable = false
+            minifyEnabled = false
 ${NATIVE_CMAKE_SECTION_RELEASE_CONFIG}
             ${SIGNING_RELEASE_CONFIG}
         }
     }
 
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
     }
 
 ${NATIVE_CMAKE_SECTION_ANDROID}
@@ -70,7 +73,7 @@ ${OVERRIDE_JAVA_SOURCESET}
     //   there is a bug causing the app to softlock when attempting to open the PAK. 
     // See https://github.com/o3de/o3de/issues/17625
     aaptOptions {
-        noCompress 'pak'
+        noCompress =  'pak'
     }
 }
 
