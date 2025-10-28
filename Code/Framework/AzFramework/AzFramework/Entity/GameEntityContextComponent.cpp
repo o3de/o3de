@@ -103,6 +103,7 @@ namespace AzFramework
                 ->Event("DeactivateGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DeactivateGameEntityAndDescendants)
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
                 ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
+                ->Event("SetGameEntityParent", &GameEntityContextRequestBus::Events::SetGameEntityParent)
                 ;
 
             behaviorContext->EBus<GameEntityContextEventBus>("GameEntityContextEventBus")
@@ -313,9 +314,10 @@ namespace AzFramework
         {
             if (entity->GetState() == AZ::Entity::State::Init)
             {
-                // Will Activate or not, based on Effective State. Will only return true when Set Active, as it can't deactivate from State::Init (already deactivated)
-                if (entity->EvaluateEffectiveActiveState())
+                // Check for active state. if so, process Activation.
+                if (entity->IsEffectivelyActive())
                 {
+                    entity->EvaluateEffectiveActiveState();
                 #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
                     PumpSystemEventsIfNeeded();
                 #endif // (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
@@ -468,32 +470,15 @@ namespace AzFramework
             bool changed = false;
             if (entityId == rootEntityId)
             {
-                // Either we set root true because we want it true, or: because we want to factor that this is a parent change, we base it on rootsParentEff.
+                // Either we set root true because we want it true, or because other systems have evaluated, we set the root's aprent state to true.
+                // This enables reparenting + activation ordering that's out of order.
                 if(updateRoot)
                 {
                     changed = e->SetLocalActive(true);
                 }
                 else
                 {
-                    // Determine roots incoming parent effective from its *actual* parent (if any)
-                    bool rootsParentEff = true;
-                    if (auto pit = parentOf.find(rootEntityId); pit != parentOf.end() && pit->second.IsValid())
-                    {
-                        if (AZ::Entity* p = FindEntity(pit->second))
-                        {
-                            rootsParentEff = p->IsEffectivelyActive();
-                        }
-                    }
-
-                    if(!e->GetLocalActive())
-                    {
-                        AZ_Printf("EntityContext", "Activate and descendants: Root will not activate, breaking out to deactivate instead.");
-                        DeactivateGameEntityAndDescendants(rootEntityId, false);
-                        return;
-                    }
-
-
-                    changed = e->SetParentActive(rootsParentEff);
+                    changed = e->SetParentActive(true);
                 }
                 
                 // One way or another, if the root doesn't change there's no reason to change the children.
@@ -581,12 +566,97 @@ namespace AzFramework
         if(!targetEntityId.IsValid()) { return; }
 
         AZ::Entity* e = FindEntity(targetEntityId);
+        AZ::Entity* parentE;
 
         if(!e) { return; }
 
-        if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
+        //Determine which arrangement of active states is going on.
+        AZ::u32 fromTo = 0; //0 active > Active, 1 Inactive -> Active, 2 Active -> Inactive, 3 Inactive -> Inactive
+
+        if(parentEntityId.IsValid())
         {
-            tc->SetParent(parentEntityId);
+            parentE = FindEntity(parentEntityId);
+
+            if(!parentE) { return; }
+
+            bool childActive = e->IsEffectivelyActive();
+            bool parentActive = parentE->IsEffectivelyActive();
+
+            if(childActive && parentActive)
+            {
+                fromTo = 0;
+            }
+            else if(!childActive && parentActive)
+            {
+                fromTo = 1;
+            }
+            else if(childActive && !parentActive)
+            {
+                fromTo = 2;
+            }
+            else
+            {
+                fromTo = 3;
+            }
+
+            // Orchestrate reparenting manually between parent and child.
+            if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
+            {
+                auto* ptc = parentE->FindComponent<AzFramework::TransformComponent>();
+
+                if(!ptc) { return; }
+
+                switch (fromTo)
+                {
+                    case 0:
+                        tc->SetParent(parentEntityId);
+                        break;
+                    
+                    case 1:
+                        ActivateGameEntityAndDescendants(targetEntityId, false);
+                        tc->SetParent(parentEntityId);
+                        break;
+                    
+                    case 2:
+                        tc->SetInactiveParent(parentEntityId);
+                        DeactivateGameEntityAndDescendants(targetEntityId, false);
+                        break;
+                    
+                    case 3:
+                        tc->SetInactiveParent(parentEntityId);
+                        break;
+                }
+            }
+        }
+        else
+        {
+            bool childActive = e->IsEffectivelyActive();
+
+            if(childActive)
+            {
+                fromTo = 0;
+            }
+            else
+            {
+                fromTo = 1;
+            }
+
+            
+            // Orchestrate reparenting manually between child and none.
+            if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
+            {
+                switch (fromTo)
+                {
+                    case 0:
+                        tc->SetParent(parentEntityId);
+                        break;
+                    
+                    case 1:
+                        ActivateGameEntityAndDescendants(targetEntityId, false);
+                        tc->SetParent(parentEntityId);
+                        break;
+                }
+            }
         }
     }
 
@@ -792,14 +862,14 @@ namespace AzFramework
         AZ_Printf("EntityContext", "OnParentChanged.");
         UpdateParentChildMaps(entityId, oldParentId, newParentId);
 
-        AZ::Entity* e = FindEntity(entityId);
+        // AZ::Entity* e = FindEntity(entityId);
 
-        if(e->GetState() == AZ::Entity::State::Initializing)
-        {
-            AZ_Warning("EntityContext", false, "%s OnParentChanged, in Initializing (from first Transform->Parent). Skipping Recompute.", e->GetName().c_str());
-            return;
-        }
-        RecomputeEffectiveActivationForEntity(entityId);
+        // if(e->GetState() == AZ::Entity::State::Initializing)
+        // {
+        //     AZ_Warning("EntityContext", false, "%s OnParentChanged, in Initializing (from first Transform->Parent). Skipping Recompute.", e->GetName().c_str());
+        //     return;
+        // }
+        // RecomputeEffectiveActivationForEntity(entityId);
     }
 
     //=========================================================================

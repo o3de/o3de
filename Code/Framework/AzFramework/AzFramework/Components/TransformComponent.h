@@ -75,6 +75,10 @@ namespace AzFramework
         //! This will use worldTM as a localTM and move the transform relative to the parent.
         void SetParentRelative(AZ::EntityId id) override;
 
+        // EntityBus
+        //! Called when the parent entity activates.
+        void SetInactiveParent(AZ::EntityId parentEntityId);
+        void SetInactiveParentRelative(AZ::EntityId parentEntityId);
     protected:
 
         // Component
@@ -156,6 +160,7 @@ namespace AzFramework
         // Actual Implementation Functions
         // They are protected so we can gate them when network-controlled
         void SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM);
+        void SetInactiveParentImpl(AZ::EntityId parentId, bool isKeepWorldTM);
         void SetLocalTMImpl(const AZ::Transform& tm);
         void SetWorldTMImpl(const AZ::Transform& tm);
         void OnTransformChangedImpl(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM);
