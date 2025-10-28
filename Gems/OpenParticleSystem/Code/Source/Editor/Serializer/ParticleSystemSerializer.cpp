@@ -697,12 +697,12 @@ namespace OpenParticle
         auto modelAssetType = azrtti_typeid<AZ::Data::Asset<AZ::RPI::ModelAsset>>();
         resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "material", &mat, nullptr, materialAssetType, context));
 
-        if (!info->m_model)
+        if (info->m_model.GetId().IsValid())
         {
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "model", &info->m_model, nullptr, modelAssetType, context));
         }
 
-        if (!info->m_skeletonModel)
+        if (info->m_skeletonModel.GetId().IsValid())
         {
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "skeleton model", &info->m_skeletonModel, nullptr, modelAssetType, context));
         }
