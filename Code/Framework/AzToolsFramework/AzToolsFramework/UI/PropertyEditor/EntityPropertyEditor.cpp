@@ -4000,7 +4000,7 @@ namespace AzToolsFramework
     {
         ScopedUndoBatch undo("Change Start Active State");
 
-        bool startsActive = (index == Qt::Checked);
+        const bool startsActive = (index == Qt::Checked);
         // This notification will trigger the update of the actual combo box, so no need to call that explicitly
         for (AZ::EntityId entityId : m_selectedEntityIds)
         {

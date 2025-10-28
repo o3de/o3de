@@ -1299,7 +1299,7 @@ p, li { white-space: pre-wrap; }
               </palette>
              </property>
              <property name="toolTip">
-              <string>If unchecked, the entity will not be active when loaded into the scene.</string>
+              <string>If unchecked, the entity and its descendants, including components, will not be activated when loaded into the scene. Awaiting an ActivateEntityAndDescendants call.</string>
              </property>
              <property name="styleSheet">
               <string notr="true">background-color:rgb(51, 51, 51)</string>
