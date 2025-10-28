@@ -85,11 +85,14 @@ namespace GraphCanvas
         : m_parentStyledEntity(parentStyledEntity)
         , m_element(element)
         , m_saveData(subStyle)
+        , m_rootGraphicsItem(nullptr)
     {
     }
 
     void StylingComponent::Activate()
     {
+        SceneMemberUIRequestBus::EventResult(m_rootGraphicsItem, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
+
         m_selectedSelector = Styling::Selector::Get(Styling::States::Selected);
         m_disabledSelector = Styling::Selector::Get(Styling::States::Disabled);
         m_hoveredSelector = Styling::Selector::Get(Styling::States::Hovered);
@@ -145,10 +148,7 @@ namespace GraphCanvas
             selectors.emplace_back(mapPair.second);
         }
 
-        QGraphicsItem* root = nullptr;
-        SceneMemberUIRequestBus::EventResult(root, GetEntityId(), &SceneMemberUIRequests::GetRootGraphicsItem);
-
-        if (!root)
+        if (!m_rootGraphicsItem)
         {
             return selectors;
         }
@@ -166,7 +166,7 @@ namespace GraphCanvas
             selectors.emplace_back(m_selectedSelector);
         }
 
-        if (!root->isEnabled())
+        if (!m_rootGraphicsItem->isEnabled())
         {
             selectors.emplace_back(m_disabledSelector);
         }

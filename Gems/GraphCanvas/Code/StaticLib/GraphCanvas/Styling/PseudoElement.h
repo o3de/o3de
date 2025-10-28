@@ -79,6 +79,8 @@ namespace GraphCanvas
             AZStd::string m_virtualChild;
             Selector m_virtualChildSelector;
 
+            mutable SelectorVector m_selectors;
+
             AZStd::unordered_map<AZ::Crc32, Styling::Selector> m_dynamicSelectors;
         };
 

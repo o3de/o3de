@@ -53,6 +53,9 @@ namespace GraphCanvas
 
             m_parentSelector = Selector::Get(realElement);
             m_virtualChildSelector = Selector::Get(virtualChildElement);
+
+            StyledEntityRequestBus::EventResult(m_selectors, m_real, &StyledEntityRequests::GetStyleSelectors);
+
         }
 
         AZ::EntityId VirtualChildElement::GetStyleParent() const
@@ -62,19 +65,17 @@ namespace GraphCanvas
 
         SelectorVector VirtualChildElement::GetStyleSelectors() const
         {
-            SelectorVector selectors;
-            StyledEntityRequestBus::EventResult(selectors, m_real, &StyledEntityRequests::GetStyleSelectors);
-            AZStd::replace(selectors.begin(), selectors.end(), m_parentSelector, m_virtualChildSelector);
+            AZStd::replace(m_selectors.begin(), m_selectors.end(), m_parentSelector, m_virtualChildSelector);
 
             // Reserve space for all of these selectors added in this function
-            selectors.reserve(selectors.size() + m_dynamicSelectors.size());
+            m_selectors.reserve(m_selectors.size() + m_dynamicSelectors.size());
 
             for (const auto& mapPair : m_dynamicSelectors)
             {
-                selectors.emplace_back(mapPair.second);
+                m_selectors.emplace_back(mapPair.second);
             }
 
-            return selectors;
+            return m_selectors;
         }
 
         void VirtualChildElement::AddSelectorState(const char* selectorState)

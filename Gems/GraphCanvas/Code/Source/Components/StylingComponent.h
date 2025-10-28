@@ -110,6 +110,8 @@ namespace GraphCanvas
 
     private:
 
+        QGraphicsItem* m_rootGraphicsItem;
+
         const AZ::EntityId m_parentStyledEntity;
 
         AZStd::string m_element;
