@@ -374,12 +374,14 @@ namespace AZ
         //! only a code is returned, there is no detailed error message.
         DependencySortResult EvaluateDependencies();
 
+        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
         //! Mark the entity to be activated by default. This is observed automatically by EntityContext,
         //! and should be observed by any other custom systems that create and manage entities.
         //! @param activeByDefault whether the entity should be active by default after creation.
         //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         void SetRuntimeActiveByDefault(bool activeByDefault);
 
+        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
         //! @return true if the entity is marked to activate by default upon creation.
         //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         bool IsRuntimeActiveByDefault() const;
@@ -471,7 +473,8 @@ namespace AZ
         //! such as AZStd::bit_set<>. With just a couple flags, AZStd::bit_set's word-size of 32-bits will actually waste space.
         bool m_isDependencyReady;           ///< Indicates the component dependencies have been evaluated and sorting was completed successfully.
 
-        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
+        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
+        //! @deprecated, replaced by m_startActive and m_localActive and methods.
         bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation. 
     };
 

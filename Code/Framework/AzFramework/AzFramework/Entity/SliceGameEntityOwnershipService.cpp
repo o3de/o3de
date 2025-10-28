@@ -159,8 +159,7 @@ namespace AzFramework
 
         if (entity)
         {
-            //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
-            entity->SetRuntimeActiveByDefault(false);
+            entity->SetStartActive(false);
         }
     }
 

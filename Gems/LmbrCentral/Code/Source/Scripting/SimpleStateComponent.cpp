@@ -147,8 +147,7 @@ namespace LmbrCentral
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity && entity->GetState() <= AZ::Entity::State::Init)
         {
-            //To Depreciate 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
-            entity->SetRuntimeActiveByDefault(false);
+            entity->SetStartActive(false);
         }
     }
 

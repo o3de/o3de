@@ -497,8 +497,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
-                //To Depreciate 2025/10/24 ??, replaced by m_startActive and Expanded Entity State Handling.
-                clone->SetRuntimeActiveByDefault(false);
+                clone->SetStartActive(false);
             }
 
             AzFramework::GameEntityContextRequestBus::Broadcast(
@@ -586,8 +585,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
-                //To Depreciate 2025/10/24??, replaced by m_startActive and Expanded Entity State Handling.
-                clone->SetRuntimeActiveByDefault(false);
+                clone->SetStartActive(false);
             }
 
             AzFramework::GameEntityContextRequestBus::Broadcast(&AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
