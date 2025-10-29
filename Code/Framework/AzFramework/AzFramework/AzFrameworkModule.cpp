@@ -14,7 +14,6 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
-#include <AzFramework/Components/TransformComponentSystemComponent.h>
 #include <AzFramework/Device/DeviceAttributesSystemComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
@@ -58,7 +57,6 @@ namespace AzFramework
             AzFramework::SceneSystemComponent::CreateDescriptor(),
             AzFramework::StreamingInstall::StreamingInstallSystemComponent::CreateDescriptor(),
             AzFramework::AzFrameworkConfigurationSystemComponent::CreateDescriptor(),
-            AzFramework::TransformComponentSystemComponent::CreateDescriptor(),
             AzFramework::QualitySystemComponent::CreateDescriptor(),
             AzFramework::DeviceAttributesSystemComponent::CreateDescriptor(),
 
@@ -75,7 +73,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::OctreeSystemComponent>(),
             azrtti_typeid<AzFramework::QualitySystemComponent>(),
             azrtti_typeid<AzFramework::DeviceAttributesSystemComponent>(),
-            azrtti_typeid<AzFramework::TransformComponentSystemComponent>(),
         };
     }
 }

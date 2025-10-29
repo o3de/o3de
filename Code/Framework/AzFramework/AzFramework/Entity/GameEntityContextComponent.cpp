@@ -14,7 +14,6 @@
 #include <AzCore/Component/EntityActiveSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
-#include <AzFramework/Components/TransformComponentSystemComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
@@ -265,8 +264,7 @@ namespace AzFramework
         // Assure the Parent index is aquired by now.
         if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
         {
-            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
-            AZ_Printf("GameEntityContext", "parentActiveTypeIndex is set to %u", parentActiveTypeIndex);
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::RegisterEntityActiveType, PARENT_ACTIVE_TYPE_NAME);
         }
 
     #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)

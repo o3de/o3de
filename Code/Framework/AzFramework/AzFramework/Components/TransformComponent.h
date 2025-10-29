@@ -29,6 +29,8 @@ namespace AzFramework
 
     /// @deprecated Use AZ::TransformConfig
     using TransformComponentConfiguration = AZ::TransformConfig;
+    
+    static constexpr AZ::Crc32 PARENT_ACTIVE_TYPE_NAME = AZ_CRC_CE("Parent");
 
     //! Fundamental component that describes the entity in 3D space.
     class AZF_API TransformComponent
