@@ -43,7 +43,7 @@ namespace AZ
         size_t RegisterEntityActiveType(AZ::Crc32 typeNameId) override;
 
     private:
-        AZStd::vector<AZ::Crc32> activeTypeNameToIndex = { ENTITY_ACTIVE_TYPE_NAME };
+        AZStd::vector<AZ::Crc32> m_activeTypeNameToIndex = { ENTITY_ACTIVE_TYPE_NAME };
         static constexpr size_t kMaxStateFlags = 32;
     };
 } // namespace AZ

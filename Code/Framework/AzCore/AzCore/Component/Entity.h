@@ -150,9 +150,18 @@ namespace AZ
         bool SetActive(bool active, bool evaluate = true);
 
         //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
-        //! @param entitySpawnTicketId the ticket id used to spawn the entity.
+        //! @param index the ticket id used to spawn the entity.
         //! @return Whether a state change happened.
         bool GetActiveByTypeIndex(size_t index) const noexcept;
+        //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
+        //! @param typeId the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool GetActiveByTypeId(Crc32 typeId) const noexcept;
+        //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
+        //! @param typeName the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool GetActiveByTypeName(AZStd::string typeName) const noexcept;
+        
         //! Sets the active state of a type to record the desired active state held by this entity.
         //! After set, Entity evaluates its new effective active state and changes accordingly.
         //! @param index the ticket id used to spawn the entity.
@@ -160,6 +169,20 @@ namespace AZ
         //! @param evaluate the ticket id used to spawn the entity.
         //! @return Whether a state change happened.
         bool SetActiveByTypeIndex(size_t index, bool active, bool evaluate = true);
+        //! Sets the active state of a type to record the desired active state held by this entity.
+        //! After set, Entity evaluates its new effective active state and changes accordingly.
+        //! @param typeId the ticket id used to spawn the entity.
+        //! @param active the ticket id used to spawn the entity.
+        //! @param evaluate the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool SetActiveByTypeId(Crc32 typeId, bool active, bool evaluate = true);
+        //! Sets the active state of a type to record the desired active state held by this entity.
+        //! After set, Entity evaluates its new effective active state and changes accordingly.
+        //! @param typeName the ticket id used to spawn the entity.
+        //! @param active the ticket id used to spawn the entity.
+        //! @param evaluate the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool SetActiveByTypeName(AZStd::string typeName, bool active, bool evaluate = true);
 
         //! The method that evaluates the current Entity Effective State and changes it's activation if changed.
         //! @return Whether a state change happened.
