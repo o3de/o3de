@@ -133,28 +133,33 @@ namespace AZ
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
 
-        //! Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
-
         //! Gets the "Start Active" boolean which determines if this entity should start Activated or not.
+        //! @return Whether a state change happened.
         bool GetStartActive() const { return m_startActive; }
-        //! Sets the "Start Active" boolean to enable activation/deactivation on first instantiation.
+        //! Sets the "Start Active" boolean to enable activation/deactivation on first instantiation, this modifies "entity" state type.
+        //! @param active the ticket id used to spawn the entity.
         void SetStartActive(bool active) { m_startActive = active; }
-
-        //! Gets the "Local Active" boolean to identify the desired activation/deactivation state of this Entity.
-        bool GetLocalActive() const { return m_localActive; }
-        //! Sets the "Local Active" boolean to record the desired active state held by this entity.
-        //! After set, Entity evaluates its new effective active state and changes accordingly.
+        
+        //! Gets the "entity" active state which determines if the entity itself is set to be inactive. Without any other active types factored.
         //! @return Whether a state change happened.
-        bool SetLocalActive(bool active);
-        void SetLocalActiveNoEval(bool active) { m_localActive = active; }
-
-        //! Gets the "Local Active" boolean to identify the desired activation/deactivation state of this Entity.
-        bool GetParentActive() const { return m_parentActive; }
-        //! Sets the "Local Active" boolean to record the desired active state held by this entity.
-        //! After set, Entity evaluates its new effective active state and changes accordingly.
+        bool GetActive() const { return GetActiveByTypeIndex(0); }
+        //! Sets the "entity" active state type to determine whether the local state of the entity drives ore preserves a state change.
+        //! @param active the ticket id used to spawn the entity.
+        //! @param evaluate the ticket id used to spawn the entity.
         //! @return Whether a state change happened.
-        bool SetParentActive(bool active);
-        void SetParentActiveNoEval(bool active) { m_parentActive = active; }
+        bool SetActive(bool active, bool evaluate = true);
+
+        //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
+        //! @param entitySpawnTicketId the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool GetActiveByTypeIndex(size_t index) const noexcept;
+        //! Sets the active state of a type to record the desired active state held by this entity.
+        //! After set, Entity evaluates its new effective active state and changes accordingly.
+        //! @param index the ticket id used to spawn the entity.
+        //! @param active the ticket id used to spawn the entity.
+        //! @param evaluate the ticket id used to spawn the entity.
+        //! @return Whether a state change happened.
+        bool SetActiveByTypeIndex(size_t index, bool active, bool evaluate = true);
 
         //! The method that evaluates the current Entity Effective State and changes it's activation if changed.
         //! @return Whether a state change happened.
@@ -162,7 +167,8 @@ namespace AZ
 
         //! Returns the current functional active state of the Entity. This is the combination of parent state and local state.
         //! If all active, then active, otherwise inactive (deactivate).
-        bool IsEffectivelyActive() { return (m_localActive && m_parentActive); }
+        //! @return Whether a state change happened.
+        bool IsEffectivelyActive() { return m_activeStateByType == kAllStatesOn; }
 
 
         //! Gets the ticket id used to spawn the entity.
@@ -459,12 +465,21 @@ namespace AZ
         //! The state of the entity.
         State m_state;
 
-        //! Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
-        //! Based on shared state of local and "parent" state, we determine what the absolute desired state of this entity is.
-        //! Hierarchy handling processed by EntityContext in AzFramework
+        //! Expanded Entity State Handling to Introduce an Active by State Type mask for up to 32 possible activeTypes registered by the
+        //! system on startup. Based on state of "entity" type is default at 0 and any other type is an index of the int mask, we determine
+        //! what the absolute desired state (Effective State) of this entity is.
+
         bool m_startActive = true;
-        bool m_localActive = true;
-        bool m_parentActive = true;
+        static constexpr size_t kMaxStateFlags = 32;
+        static constexpr uint32_t kAllOn32 = 0xFFFFFFFFu;
+        static constexpr uint32_t kAllStatesOn =
+                                    (kMaxStateFlags == 0)  ? 0u :
+                                    (kMaxStateFlags >= 32) ? kAllOn32 :
+                                    (kAllOn32 >> (32 - kMaxStateFlags));
+
+        //! The current int carrying the masked state of all Active States by Type, each held on a defined index.
+        //! Starts all active to assure unused type indexes start active.
+        uint32_t m_activeStateByType = kAllStatesOn;
 
         //! Foundational entity properties/flags.
         //! To keep AZ::Entity lightweight, one should resist the urge the add flags here unless they're extremely

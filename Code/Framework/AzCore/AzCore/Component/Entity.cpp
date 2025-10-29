@@ -160,10 +160,9 @@ namespace AZ
     {
         AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
-        m_localActive = m_startActive;
-        
-        if(m_localActive) { AZ_Printf("Entity", "%s Initializing, start active set Active", GetName().c_str()); }
-        else { AZ_Printf("Entity", "%s Initializing, start active set Inactive", GetName().c_str()); }
+
+        //Update Active state mask.
+        SetActive(m_startActive, false);
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -213,8 +212,6 @@ namespace AZ
         }
 
         SetState(State::Active);
-
-        AZ_Printf("Entity", "%s Activated now.", GetName().c_str());
 
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
@@ -668,58 +665,65 @@ namespace AZ
         m_stateEvent.Signal(oldState, m_state);
     }
 
-#pragma region Hierarchical Entity Activation
+#pragma region Entity Activation State Handling
 
-    bool Entity::SetLocalActive(bool active)
+    bool Entity::SetActive(bool active, bool evaluate)
     {
-        if(active) { AZ_Printf("Entity", "Setting local active to true for: %s", GetName().c_str()); }
-        else { AZ_Printf("Entity", "Setting local active to false for: %s", GetName().c_str()); }
-
-        m_localActive = active;
-
-        return EvaluateEffectiveActiveState();
+        return SetActiveByTypeIndex(0, active, evaluate);
     }
-    
-    bool Entity::SetParentActive(bool active)
+
+    bool Entity::SetActiveByTypeIndex(size_t index, bool active, bool evaluate)
     {
-        if(active) { AZ_Printf("Entity", "Setting parent active to true for: %s", GetName().c_str()); }
-        else { AZ_Printf("Entity", "Setting parent active to false for: %s", GetName().c_str()); }
+        if (index >= kMaxStateFlags)
+        {
+            AZ_Warning("Entity", false, "SetActiveByTypeIndex index of %u exceeding state flag limit.", index);
+            return false;
+        }
 
-        m_parentActive = active;
+        const uint32_t bit = (1u << static_cast<uint32_t>(index));
 
-        return EvaluateEffectiveActiveState();
+        if (active)
+            m_activeStateByType |= bit;
+        else
+            m_activeStateByType &= ~bit;
+
+        if (evaluate)
+        {
+            return EvaluateEffectiveActiveState();
+        }
+
+        return true; // Might be better as false, no eval usually means force state.
+    }
+
+    bool Entity::GetActiveByTypeIndex(size_t index) const noexcept
+    {
+        if (index >= kMaxStateFlags)
+        {
+            return true;
+        }
+
+        const uint32_t bit = (1u << static_cast<uint32_t>(index));
+        return (m_activeStateByType & bit) != 0;
     }
 
     bool Entity::EvaluateEffectiveActiveState()
     {
         bool isEffective = IsEffectivelyActive();
-        
-        if(isEffective) { AZ_Printf("Entity", "%s evaluating active state, active", GetName().c_str()); }
-        else { AZ_Printf("Entity", "%s evaluating active state, inactive", GetName().c_str()); }
 
-        if(m_state == State::Initializing)
+        // Avoid evaluation during irregular states.
+        if (m_state != State::Init && m_state != State::Active)
         {
-            AZ_Warning("Entity", false, "%s evaluating active state, in Initializing. This comes from SetParent on TransformComponent Init(). Exiting Out.", GetName().c_str());
+            AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", GetName().c_str());
             return false;
         }
 
-        // Avoid re-entry during transitions
-        if (m_state == State::Constructed ||
-            m_state == State::Activating || m_state == State::Deactivating)
+        if (isEffective && m_state == State::Init)
         {
-            AZ_Warning("Entity", false, "%s evaluating active state, between states. Exiting out.", GetName().c_str());
-            return false;
-        }
-
-        if(isEffective && m_state == State::Init)
-        {
-            AZ_Printf("Entity", "%s Evaluate Activating", GetName().c_str());
             Activate();
             return true;
         }
         else if (!isEffective && m_state == State::Active)
         {
-            AZ_Printf("Entity", "%s Evaluate Deactivating", GetName().c_str());
             Deactivate();
             return true;
         }
@@ -728,7 +732,6 @@ namespace AZ
     }
 
 #pragma endregion
-
 
     void Entity::SetEntitySpawnTicketId(u32 entitySpawnTicketId)
     {
