@@ -669,8 +669,6 @@ namespace AzFramework
         m_parentTM = ptc;
 
         AZ::Transform pTM = m_parentTM->GetWorldTM();
-        AZ::Vector3 pos = pTM.GetTranslation();
-        AZ_Printf("TransformComp", "Inactive Praent World TM: x %f, y %f, z %f", pos.GetX(), pos.GetY(), pos.GetZ());
 
         ComputeLocalTM();
 

@@ -84,25 +84,42 @@ namespace AzFramework
         void OnParentChanged(AZ::EntityId oldParentId, AZ::EntityId newParentId) override;
         //////////////////////////////////////////////////////////////////////////
 
-
         //////////////////////////////////////////////////////////////////////////
         // Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
 
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
         void AddEntityToParentChildTree(AZ::Entity* entity);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
         void RemoveEntityFromParentChildTree(AZ::Entity* entity);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
         void RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
+        //! \param entityId The root entity ID to gather the tree from.
         void UpdateParentChildMaps(AZ::EntityId child, AZ::EntityId oldParent, AZ::EntityId newParent);
-        void RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
+        void RecomputeEffectiveActivationForEntity(AZ::Entity* movedChildEntity);
 
-        /// Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
-        /// \param entityId The root entity ID to gather the tree from.
-        /// \return Returns a vector of Entity and Descendants in order from top to bottom.
-        AZStd::vector<AZ::EntityId> GetEntityTreeFromRootEntity(const AZ::EntityId& entityId);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
+        //! \param entityId The root entity ID to gather the tree from.
+        void GetEntityTreeFromRootEntity(const AZ::EntityId& entityId, AZStd::vector<AZ::EntityId>& out);
+        //! Utility method that parses the 'childrenByParentTree' in order to return a hierarchichal list of entities from top to bottom.
+        //! \param entityId The root entity ID to gather the tree from.
+        //! \param entityId The root entity ID to gather the tree from.
+        //! \param entityId The root entity ID to gather the tree from.
+        void PruneDescendantsFromTreeInPlace(const AZ::EntityId& root, AZStd::vector<AZ::EntityId>& list, size_t fromIndex) const;
 
         //! Local stored hierarchy tree to enable hierarchy handling without the TransformBus (which is only functional while active.)
-        //! Tree is updated at 
+        //! Tree is updated at
         AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>> childrenByParentTree; // Parent -> [Children..]
         AZStd::unordered_map<AZ::EntityId, AZ::EntityId, AZStd::hash<AZ::EntityId>> parentOf; // Child -> Parent
+
+        size_t parentActiveTypeIndex = std::numeric_limits<size_t>::max();
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::ReflectContext* context);

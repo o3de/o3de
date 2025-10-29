@@ -149,6 +149,8 @@ set(FILES
     Components/EditorEntityEvents.h
     Components/TransformComponent.cpp
     Components/TransformComponent.h
+    Components/TransformComponentSystemComponent.cpp
+    Components/TransformComponentSystemComponent.h
     Components/CameraBus.h
     Components/ConsoleBus.cpp
     Components/ConsoleBus.h

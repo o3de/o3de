@@ -11,8 +11,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/EntityActiveSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Components/TransformComponentSystemComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
@@ -260,6 +262,13 @@ namespace AzFramework
     {
         EntityContext::OnContextEntitiesAdded(entities);
 
+        // Assure the Parent index is aquired by now.
+        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+        {
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
+            AZ_Printf("GameEntityContext", "parentActiveTypeIndex is set to %u", parentActiveTypeIndex);
+        }
+
     #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
         auto timeOfLastEventPump = AZStd::chrono::steady_clock::now();
         auto PumpSystemEventsIfNeeded = [&timeOfLastEventPump]()
@@ -307,7 +316,7 @@ namespace AzFramework
                 if (pEnt) { pEff = pEnt->IsEffectivelyActive(); }
             }
 
-            entity->SetParentActiveNoEval(pEff);
+            entity->SetActiveByTypeIndex(parentActiveTypeIndex, pEff, false);
         }
 
         for (AZ::Entity* entity : entities)
@@ -395,7 +404,6 @@ namespace AzFramework
                 else
                 {
                     // Don't activate the entity, it will be destroyed.
-
                     currentEntity->SetStartActive(false);
                 }
             }
@@ -420,7 +428,30 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::ActivateGameEntity(const AZ::EntityId& entityId)
     {
-        ActivateEntity(entityId);
+        // Verify that this context has the right to perform operations on the entity
+        bool validEntity = IsOwnedByThisContext(entityId);
+        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
+
+        if (validEntity)
+        {
+            // Look up the entity and activate it.
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                // Safety Check: Is the entity initialized?
+                if (entity->GetState() == AZ::Entity::State::Constructed)
+                {
+                    AZ_Warning("GameEntityContext", false, "Entity with id %llu was not initialized before activation requested.", entityId);
+                    entity->Init();
+                }
+
+                if (entity->GetState() == AZ::Entity::State::Init)
+                {
+                    entity->SetActive(true);
+                }
+            }
+        }
     }
 
     //=========================================================================
@@ -442,43 +473,35 @@ namespace AzFramework
             return;
         }
 
-        AZStd::vector<AZ::EntityId> tree = GetEntityTreeFromRootEntity(rootEntityId);
+        AZStd::vector<AZ::EntityId> tree;
+        tree.reserve(64);
+        GetEntityTreeFromRootEntity(rootEntityId, tree);
+
         if(tree.empty()) 
         {
             AZ_Printf("EntityContext", "Activate and descendants: tree is empty, cancelling out.");
             return; 
         }
 
-        AZStd::unordered_set<AZ::EntityId> ignoreList;
-
         // Loop through the vector and activate top to bottom.
-        for (const auto& entityId : tree)
+        for (size_t i = 0; i < tree.size(); ++i)
         {
-            if(ignoreList.contains(entityId)) 
-            {
-                AZ::Entity* e = FindEntity(entityId);
-                if (!e) { continue; }
-                
-                AZ_Printf("EntityContext", "Activate and descendants: %s on ignore list, skipping.", e->GetName().c_str());
-
-                continue; 
-            }
-
-            AZ::Entity* e = FindEntity(entityId);
+            const AZ::EntityId id = tree[i];
+            AZ::Entity* e = FindEntity(tree[i]);
             if (!e) { continue; }
 
             bool changed = false;
-            if (entityId == rootEntityId)
+            if (id == rootEntityId)
             {
                 // Either we set root true because we want it true, or because other systems have evaluated, we set the root's aprent state to true.
                 // This enables reparenting + activation ordering that's out of order.
                 if(updateRoot)
                 {
-                    changed = e->SetLocalActive(true);
+                    changed = e->SetActive(true);
                 }
                 else
                 {
-                    changed = e->SetParentActive(true);
+                    changed = e->SetActiveByTypeIndex(parentActiveTypeIndex, true);
                 }
                 
                 // One way or another, if the root doesn't change there's no reason to change the children.
@@ -491,7 +514,7 @@ namespace AzFramework
             else
             {
                 // Now that we evaluated the root, and it changed, we can start stepping through children to say the root did infact change to true.
-                changed = e->SetParentActive(true);
+                changed = e->SetActiveByTypeIndex(parentActiveTypeIndex, true);
             }
 
             if(!changed)
@@ -499,8 +522,7 @@ namespace AzFramework
                 AZ_Printf("EntityContext", "Activate and descendants: %s didn't change state, adding to ignore.", e->GetName().c_str());
                 //If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
                 //If that's the case, it's already processed it's children.
-                AZStd::vector<AZ::EntityId> branch = GetEntityTreeFromRootEntity(entityId);
-                ignoreList.insert_range(branch);
+                PruneDescendantsFromTreeInPlace(id, tree, i);
             }
         }
     }
@@ -510,7 +532,35 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::DeactivateGameEntity(const AZ::EntityId& entityId)
     {
-        DeactivateEntity(entityId);
+        // Verify that this context has the right to perform operations on the entity
+        bool validEntity = IsOwnedByThisContext(entityId);
+        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
+
+        if (validEntity)
+        {
+            // Then look up the entity and deactivate it.
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                switch (entity->GetState())
+                {
+                case AZ::Entity::State::Activating:
+                    // Queue deactivate to trigger next frame
+                    AZ::TickBus::QueueFunction(&AZ::Entity::SetActive, entity, false, true);
+                    break;
+
+                case AZ::Entity::State::Active:
+                    // Deactivate immediately
+                    entity->SetActive(false);
+                    break;
+
+                default:
+                    // Don't do anything, it's not even active.
+                    break;
+                }
+            }
+        }
     }
 
     //=========================================================================
@@ -532,7 +582,9 @@ namespace AzFramework
             return;
         }
 
-        AZStd::vector<AZ::EntityId> tree = GetEntityTreeFromRootEntity(rootEntityId);
+        AZStd::vector<AZ::EntityId> tree;
+        tree.reserve(64);
+        GetEntityTreeFromRootEntity(rootEntityId, tree);
 
         if(tree.empty()) { return; }
         
@@ -542,8 +594,8 @@ namespace AzFramework
             AZ::EntityId entityId = tree[i];
             if(entityId == rootEntityId) 
             {
-                if(updateRoot) { rootEntity -> SetLocalActive(false); }
-                else { rootEntity->SetParentActive(false); }  
+                if(updateRoot) { rootEntity -> SetActive(false); }
+                else { rootEntity->SetActiveByTypeIndex(parentActiveTypeIndex, false); }  
             }
             else
             {
@@ -552,13 +604,13 @@ namespace AzFramework
                 if(!e) { continue; }
 
                 // Because we're going bottom to top, there's no need to check if the state has changed.
-                e->SetParentActive(false);
+                e->SetActiveByTypeIndex(parentActiveTypeIndex, false);
             }
         }
     }
 
     //=========================================================================
-    // EntityContextEventBus::LoadFromStream
+    // EntityContextEventBus::SetGameEntityParent
     //=========================================================================
     //Incomplete, needs TransformComponent updates.
     void GameEntityContextComponent::SetGameEntityParent(const AZ::EntityId& targetEntityId, const AZ::EntityId& parentEntityId)
@@ -692,7 +744,6 @@ namespace AzFramework
     void GameEntityContextComponent::AddEntityToParentChildTree(AZ::Entity* entity)
     {
         if(!entity) { return; }
-        AZ_Printf("EntityContext", "Adding Entity To ParentChild Tree.");
         
         //Get Parent
         AZ::EntityId parentId; // default = null root
@@ -737,7 +788,6 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId)
     {
-        AZ_Printf("EntityContext", "Removing Entity From ParentChild Tree.");
         // Disconnect from TransformNotificationBus for this entity.
         if (AZ::TransformNotificationBus::MultiHandler::BusIsConnectedId(entityId))
         {
@@ -796,39 +846,79 @@ namespace AzFramework
     //=========================================================================
     // GetEntityTreeFromRootEntity
     //=========================================================================
-    AZStd::vector<AZ::EntityId> GameEntityContextComponent::GetEntityTreeFromRootEntity(const AZ::EntityId& rootEntityId)
+    void GameEntityContextComponent::GetEntityTreeFromRootEntity(const AZ::EntityId& rootEntityId, AZStd::vector<AZ::EntityId>& out)
     {
-        AZStd::vector<AZ::EntityId> out;
-        out.reserve(64);
+        const size_t start = out.size();   // allow “append” semantics
+        out.push_back(rootEntityId);
 
-        //Start queue off with the root.
-        AZStd::queue<AZ::EntityId> q;
-        q.push(rootEntityId);
-
-        while (!q.empty())
+        for (size_t i = start; i < out.size(); ++i)
         {
-            AZ::EntityId cur = q.front();
-            q.pop();
-
-            out.push_back(cur);
-
-            // Check if cur is a Parent in the tree.
-            auto it = childrenByParentTree.find(cur);
-            if (it != childrenByParentTree.end())
+            const AZ::EntityId cur = out[i];
+            if (auto it = childrenByParentTree.find(cur); it != childrenByParentTree.end())
             {
-                //If parent in tree, add the children vector to the queue.
-                for (const AZ::EntityId& child : it->second)
+                const auto& kids = it->second;
+                out.insert(out.end(), kids.begin(), kids.end());
+            }
+        }
+    }
+    
+    //=========================================================================
+    // PruneDescendantsFromTreeInPlace
+    //=========================================================================
+    // Remove every descendant of `root` from `list`, but only in the range (fromIndex, end].
+    // Keeps order of the remaining items and shrinks the vector in-place.
+    void GameEntityContextComponent::PruneDescendantsFromTreeInPlace(
+        const AZ::EntityId& root,
+        AZStd::vector<AZ::EntityId>& list,
+        size_t fromIndex) const
+    {
+        // 1) Collect the subtree (excluding the root) using your adjacency map.
+        AZStd::unordered_set<AZ::EntityId> toRemove;
+        toRemove.reserve(64);
+
+        AZStd::vector<AZ::EntityId> stack;
+        // seed with root's children
+        if (auto it = childrenByParentTree.find(root); it != childrenByParentTree.end())
+        {
+            const auto& kids = it->second;
+            stack.insert(stack.end(), kids.begin(), kids.end());
+        }
+
+        while (!stack.empty())
+        {
+            AZ::EntityId cur = stack.back();
+            stack.pop_back();
+
+            if (toRemove.insert(cur).second) // newly inserted
+            {
+                if (auto it = childrenByParentTree.find(cur); it != childrenByParentTree.end())
                 {
-                    q.push(child);
+                    const auto& kids = it->second;
+                    stack.insert(stack.end(), kids.begin(), kids.end());
                 }
             }
         }
 
-        return out;
+        // 2) Stable in-place filter: copy-compact anything not in 'toRemove'
+        size_t write = fromIndex + 1;                       // we never touch elements <= fromIndex
+        for (size_t read = fromIndex + 1; read < list.size(); ++read)
+        {
+            if (toRemove.find(list[read]) == toRemove.end())
+            {
+                list[write++] = list[read];
+            }
+        }
+        list.resize(write);
     }
-
-    void GameEntityContextComponent::RecomputeEffectiveActivationForEntity(AZ::EntityId movedChild)
+    
+    //=========================================================================
+    // RecomputeEffectiveActivationForEntity
+    //=========================================================================
+    void GameEntityContextComponent::RecomputeEffectiveActivationForEntity(AZ::Entity* movedChildEntity)
     {
+        AZ::EntityId movedChild = movedChildEntity->GetId();
+        bool childEffective = movedChildEntity->IsEffectivelyActive();
+
         bool incomingParentEffective = true;
         if (auto it = parentOf.find(movedChild); it != parentOf.end() && it->second.IsValid())
         {
@@ -838,13 +928,13 @@ namespace AzFramework
             }
         }
 
-        if (incomingParentEffective)
+        if (incomingParentEffective && !childEffective)
         {
             // Parent is effectively active => propagate ON with parent-first order.
             // Skip change local state in order to preserve that this is simply reacting to parent state.
             ActivateGameEntityAndDescendants(movedChild, false);
         }
-        else
+        else if (!incomingParentEffective && childEffective)
         {
             // Parent is effectively inactive => force subtree OFF (children-first)
             // Skip change local state in order to preserve that this is simply reacting to parent state.
@@ -859,17 +949,16 @@ namespace AzFramework
     {
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
-        AZ_Printf("EntityContext", "OnParentChanged.");
         UpdateParentChildMaps(entityId, oldParentId, newParentId);
 
-        // AZ::Entity* e = FindEntity(entityId);
+        AZ::Entity* e = FindEntity(entityId);
 
-        // if(e->GetState() == AZ::Entity::State::Initializing)
-        // {
-        //     AZ_Warning("EntityContext", false, "%s OnParentChanged, in Initializing (from first Transform->Parent). Skipping Recompute.", e->GetName().c_str());
-        //     return;
-        // }
-        // RecomputeEffectiveActivationForEntity(entityId);
+        //Filter for startup parenting. No need to recompute.
+        AZ::Entity::State state = e->GetState();
+        if( state == AZ::Entity::State::Init || state == AZ::Entity::State::Active )
+        {
+            RecomputeEffectiveActivationForEntity(e);
+        }
     }
 
     //=========================================================================
