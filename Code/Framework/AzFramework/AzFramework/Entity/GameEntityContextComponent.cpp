@@ -758,7 +758,7 @@ namespace AzFramework
         //Returns a ref to the parent->vector<AZ::EntityId>
         auto& siblings = EnsureChildList(childrenByParentTree, parentId);
 
-        //Check for duplicates. Then adds child to vector.
+        // Check for duplicates. Then adds child to vector.
         if (AZStd::find(siblings.begin(), siblings.end(), id) == siblings.end())
         {
             siblings.push_back(id);
