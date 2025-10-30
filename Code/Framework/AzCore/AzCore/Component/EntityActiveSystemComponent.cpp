@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Component/EntityActiveSystemComponent.h>
-#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {
@@ -37,7 +36,7 @@ namespace AZ
     void EntityActiveSystemComponent::Deactivate()
     {
         EntityActiveSystemRequestBus::Handler::BusDisconnect();
-        m_activeTypeNameToIndex.clear();
+        activeTypeNameToIndex.clear();
     }
 
     size_t EntityActiveSystemComponent::GetActiveTypeIndexByName(AZStd::string typeName) const noexcept
@@ -47,9 +46,9 @@ namespace AZ
 
     size_t EntityActiveSystemComponent::GetActiveTypeIndexById(AZ::Crc32 typeNameId) const noexcept
     {
-        for (size_t i = 0; i < m_activeTypeNameToIndex.size(); i++)
+        for (size_t i = 0; i < activeTypeNameToIndex.size(); i++)
         {
-            if (m_activeTypeNameToIndex[i] == typeNameId)
+            if (activeTypeNameToIndex[i] == typeNameId)
             {
                 return i;
             }
@@ -65,22 +64,14 @@ namespace AZ
 
     size_t EntityActiveSystemComponent::RegisterEntityActiveType(AZ::Crc32 typeNameId)
     {
-        if (m_activeTypeNameToIndex.size() >= kMaxStateFlags)
+        if (activeTypeNameToIndex.size() >= kMaxStateFlags)
         {
             return kInvalidIndex;
         }
 
-        // If already Registered just provide the index.
-        auto foundindex = AZStd::find(m_activeTypeNameToIndex.begin(), m_activeTypeNameToIndex.end(), typeNameId);
-        if (foundindex != m_activeTypeNameToIndex.end())
-        {
-            return static_cast<size_t>(foundindex - m_activeTypeNameToIndex.begin());
-        }
+        activeTypeNameToIndex.push_back(typeNameId);
 
-        // Otherwise, Register New
-        const size_t newIndex = m_activeTypeNameToIndex.size();
-        m_activeTypeNameToIndex.push_back(typeNameId);
-        return newIndex;
+        return GetActiveTypeIndexById(typeNameId);
     }
 
 } // namespace AZ

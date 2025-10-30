@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/EntityActiveSystemBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Component/EntitySerializer.h>
@@ -696,20 +695,6 @@ namespace AZ
         return true; // Might be better as false, no eval usually means force state.
     }
 
-    bool Entity::SetActiveByTypeId(Crc32 typeId, bool active, bool evaluate)
-    {
-        size_t i;
-        EntityActiveSystemRequestBus::BroadcastResult(i, &EntityActiveSystemRequests::GetActiveTypeIndexById, typeId);
-        return SetActiveByTypeIndex(i, active, evaluate);
-    }
-    
-    bool Entity::SetActiveByTypeName(AZStd::string typeName, bool active, bool evaluate)
-    {
-        size_t i;
-        EntityActiveSystemRequestBus::BroadcastResult(i, &EntityActiveSystemRequests::GetActiveTypeIndexByName, typeName);
-        return SetActiveByTypeIndex(i, active, evaluate);
-    }
-
     bool Entity::GetActiveByTypeIndex(size_t index) const noexcept
     {
         if (index >= kMaxStateFlags)
@@ -719,20 +704,6 @@ namespace AZ
 
         const uint32_t bit = (1u << static_cast<uint32_t>(index));
         return (m_activeStateByType & bit) != 0;
-    }
-    
-    bool Entity::GetActiveByTypeId(Crc32 typeId) const noexcept
-    {
-        size_t i;
-        EntityActiveSystemRequestBus::BroadcastResult(i, &EntityActiveSystemRequests::GetActiveTypeIndexById, typeId);
-        return GetActiveByTypeIndex(i);
-    }
-    
-    bool Entity::GetActiveByTypeName(AZStd::string typeName) const noexcept
-    {
-        size_t i;
-        EntityActiveSystemRequestBus::BroadcastResult(i, &EntityActiveSystemRequests::GetActiveTypeIndexByName, typeName);
-        return GetActiveByTypeIndex(i);
     }
 
     bool Entity::EvaluateEffectiveActiveState()
