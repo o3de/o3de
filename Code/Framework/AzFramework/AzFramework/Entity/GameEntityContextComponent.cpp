@@ -846,7 +846,7 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::GetEntityTreeFromRootEntity(const AZ::EntityId& rootEntityId, AZStd::vector<AZ::EntityId>& out)
     {
-        const size_t start = out.size();   // allow “append” semantics
+        const size_t start = out.size();   // allow append semantics
         out.push_back(rootEntityId);
 
         for (size_t i = start; i < out.size(); ++i)
