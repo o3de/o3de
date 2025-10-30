@@ -518,8 +518,8 @@ namespace AzFramework
             if(!changed)
             {   
                 AZ_Printf("EntityContext", "Activate and descendants: %s didn't change state, adding to ignore.", e->GetName().c_str());
-                //If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
-                //If that's the case, it's already processed it's children.
+                // If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
+                // If that's the case, it's already processed it's children.
                 PruneDescendantsFromTreeInPlace(id, tree, i);
             }
         }
