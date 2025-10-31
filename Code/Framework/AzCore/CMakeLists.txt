@@ -7,7 +7,6 @@
 #
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 
 # TODO: would like to be able to build from this path, however, the whole setup is done at the workspace's root
 #       we also dont want to drop cmake output files everywhere.
