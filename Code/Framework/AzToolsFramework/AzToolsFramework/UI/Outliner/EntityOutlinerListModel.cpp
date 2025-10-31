@@ -491,7 +491,7 @@ namespace AzToolsFramework
                             QRegExp rx("[_a-zA-Z0-9-\\s]+");
                             if (!rx.exactMatch(newName.c_str()))
                             {
-                                QMessageBox::information(AzToolsFramework::GetActiveWindow(), "Title", "Special characters are not allowed. Previous name remains.", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+                                QMessageBox::information(AzToolsFramework::GetActiveWindow(), "Unsupported Character in Name", "Special characters are not allowed. The change will not take effect.", QMessageBox::Ok);
                                 newName = oldName;
                             }
 
