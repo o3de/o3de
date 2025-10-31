@@ -45,12 +45,11 @@
     #error AZCORE_SYSTEM_ALLOCATOR is an invalid value, it needs to be either AZCORE_SYSTEM_ALLOCATOR_HPHA or AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #endif
 
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
 #include <AzCore/Memory/HphaAllocator.h>
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #include <AzCore/std/parallel/atomic.h>
 #endif
-
 
 namespace AZ
 {
@@ -91,7 +90,9 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
         m_subAllocator = AZStd::make_unique<HphaSchema>();
+#endif
         return true;
     }
 
@@ -234,4 +235,10 @@ namespace AZ
         #endif
     }
 
+    void SystemAllocator::GarbageCollect()
+    {
+        #if (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+            m_subAllocator->GarbageCollect();
+        #endif
+    }
 } // namespace AZ
