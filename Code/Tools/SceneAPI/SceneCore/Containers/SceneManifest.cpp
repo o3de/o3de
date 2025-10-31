@@ -30,21 +30,36 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
+namespace AZ::SceneAPI::DataTypes
+{
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(IManifestObject, "IManifestObject", "{3B839407-1884-4FF4-ABEA-CA9D347E83F7}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IManifestObject)
+    // Implement IManifestObject reflection in a cpp file
+    void IManifestObject::Reflect(AZ::ReflectContext* context)
+    {
+        if(AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IManifestObject>()
+                ->Version(0);
+        }
+    }
+}
+
 namespace AZ
 {
     namespace SceneAPI
     {
         namespace Containers
         {
-            
+
 
             const char ErrorWindowName[] = "SceneManifest";
 
-            AZ_CLASS_ALLOCATOR_IMPL(SceneManifest, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SceneManifest, AZ::SystemAllocator)
             SceneManifest::~SceneManifest()
             {
             }
-            
+
             void SceneManifest::Clear()
             {
                 m_storageLookup.clear();
@@ -64,8 +79,8 @@ namespace AZ
                 m_storageLookup[value.get()] = index;
                 m_values.push_back(AZStd::move(value));
 
-                AZ_Assert(m_values.size() == m_storageLookup.size(), 
-                    "SceneManifest values and storage-lookup tables have gone out of lockstep (%i vs %i)", 
+                AZ_Assert(m_values.size() == m_storageLookup.size(),
+                    "SceneManifest values and storage-lookup tables have gone out of lockstep (%i vs %i)",
                     m_values.size(), m_storageLookup.size());
                 return true;
             }
@@ -106,6 +121,13 @@ namespace AZ
                 if (absoluteFilePath.empty())
                 {
                     AZ_Error(ErrorWindowName, false, "Unable to load Scene Manifest: no file path was provided.");
+                    return false;
+                }
+
+                // Utils::ReadFile fails if the file doesn't exist.
+                // Check if it exists first, it's not an error if there is no scene manifest.
+                if (!AZ::IO::SystemFile::Exists(absoluteFilePath.c_str()))
+                {
                     return false;
                 }
 
@@ -210,7 +232,7 @@ namespace AZ
                             auto outcome = self.SaveToJsonDocument();
                             if (outcome.IsSuccess())
                             {
-                                // write the manifest to a UTF-8 string buffer and move return the string 
+                                // write the manifest to a UTF-8 string buffer and move return the string
                                 rapidjson::StringBuffer sb;
                                 rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
                                 rapidjson::Document& document = outcome.GetValue();
@@ -239,12 +261,12 @@ namespace AZ
                     // The old format stored AZStd::pair<AZStd::string, AZStd::shared_ptr<IManifestObjets>>. All this
                     //      data is still used, but needs to be move to the new location. The shared ptr needs to be
                     //      moved into the new container, while the name needs to be moved to the group name.
-                    
+
                     SerializeContext::DataElementNode& pairNode = node.GetSubElement(i);
                     // This is the original content of the shared ptr. Using the shared pointer directly caused
                     //      registration issues so it's extracting the data the shared ptr was storing instead.
                     SerializeContext::DataElementNode& elementNode = pairNode.GetSubElement(1).GetSubElement(0);
-                    
+
                     SerializeContext::DataElementNode& nameNode = pairNode.GetSubElement(0);
                     AZStd::string name;
                     if (nameNode.GetData(name))
@@ -269,11 +291,11 @@ namespace AZ
                 for (SerializeContext::DataElementNode& value : values)
                 {
                     value.SetName("element");
-                    
+
                     // Put in a blank shared ptr to be filled with a value stored from "values".
                     int valueIndex = vectorNode.AddElement<ValueStorageType>(context, "element");
                     SerializeContext::DataElementNode& pointerNode = vectorNode.GetSubElement(valueIndex);
-                    
+
                     // Type doesn't matter as it will be overwritten by the stored value.
                     pointerNode.AddElement<int>(context, "element");
                     pointerNode.GetSubElement(0) = value;

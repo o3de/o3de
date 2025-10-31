@@ -21,6 +21,7 @@
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <MCore/Source/LogManager.h>
 
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/Utils.h>
 
 namespace CommandSystem
@@ -71,6 +72,8 @@ namespace CommandSystem
 
     void MetaData::GeneratePhonemeMetaData(EMotionFX::Actor* actor, AZStd::string& outMetaDataString)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope; // ensures that %f uses '.' as decimal separator
+
         const size_t numLODLevels = actor->GetNumLODLevels();
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {

@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SpawnerAreaNode::TITLE = QObject::tr("Vegetation Layer Spawner");
+    const char* SpawnerAreaNode::TITLE = "Vegetation Layer Spawner";
 
     SpawnerAreaNode::SpawnerAreaNode(GraphModel::GraphPtr graph)
         : BaseAreaNode(graph)

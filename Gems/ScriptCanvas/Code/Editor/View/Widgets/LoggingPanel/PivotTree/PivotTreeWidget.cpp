@@ -287,7 +287,7 @@ namespace ScriptCanvasEditor
     void PivotTreeSortProxyModel::SetFilter(const QString& filter)
     {
         m_filter = filter;
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         invalidateFilter();
     }
@@ -406,15 +406,14 @@ namespace ScriptCanvasEditor
             sourceIndex = proxyModel->mapToSource(modelIndex);
         }
 
-        PivotTreeItem* pivotTreeItem = static_cast<PivotTreeItem*>(sourceIndex.internalPointer());
-
-        if (pivotTreeItem)
+        if (PivotTreeItem* pivotTreeItem = static_cast<PivotTreeItem*>(sourceIndex.internalPointer()))
         {
-            PivotTreeGraphItem* graphItem = azrtti_cast<PivotTreeGraphItem*>(pivotTreeItem);
-
-            if (graphItem)
+            if (PivotTreeGraphItem* graphItem = azrtti_cast<PivotTreeGraphItem*>(pivotTreeItem))
             {
-                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, graphItem->GetAssetId());
+                GeneralRequestBus::Broadcast
+                    ( &GeneralRequests::OpenScriptCanvasAssetId
+                    , SourceHandle(nullptr, graphItem->GetAssetId().m_guid)
+                    , Tracker::ScriptCanvasFileState::UNMODIFIED);
             }
         }
     }

@@ -61,29 +61,29 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class AnyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     { };
 
     // Fixture for tests with 1 type
     template<typename TestStruct>
     class AnySizedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             TestStruct::Reset();
         }
     };
     using AnySizedTestTypes = ::testing::Types<Small0, Large0, Align0>;
-    TYPED_TEST_CASE(AnySizedTest, AnySizedTestTypes);
+    TYPED_TEST_SUITE(AnySizedTest, AnySizedTestTypes);
 
     // Fixture for tests with 2 types (for converting between types)
     template <typename StructPair>
     class AnyConversionTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using LHS = typename StructPair::first_type;
@@ -91,7 +91,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             LHS::Reset();
             RHS::Reset();
@@ -108,7 +108,7 @@ namespace UnitTest
         AZStd::pair<Align0, Small0>, // Align -> Small
         AZStd::pair<Align0, Large0>  // Align -> Large
     >;
-    TYPED_TEST_CASE(AnyConversionTest, AnyConversionTestTypes);
+    TYPED_TEST_SUITE(AnyConversionTest, AnyConversionTestTypes);
 
     //////////////////////////////////////////////////////////////////////////
     // Tests for constructors

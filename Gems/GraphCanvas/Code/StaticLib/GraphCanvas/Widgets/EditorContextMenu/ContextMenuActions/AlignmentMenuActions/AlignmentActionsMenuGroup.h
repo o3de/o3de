@@ -15,7 +15,7 @@ namespace GraphCanvas
     class AlignmentActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(AlignmentActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AlignmentActionsMenuGroup, AZ::SystemAllocator);
         
         AlignmentActionsMenuGroup();
         ~AlignmentActionsMenuGroup() = default;

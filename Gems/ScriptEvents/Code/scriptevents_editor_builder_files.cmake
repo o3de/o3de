@@ -11,5 +11,4 @@ set(FILES
     Builder/ScriptEventsBuilderComponent.h
     Builder/ScriptEventsBuilderWorker.cpp
     Builder/ScriptEventsBuilderWorker.h
-    Builder/BuilderSystemComponent.h
 )

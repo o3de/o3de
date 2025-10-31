@@ -870,8 +870,7 @@ void SliderDouble::setCurveMidpoint(double midpoint)
 
 QString SliderDouble::hoverValueText(int sliderValue) const
 {
-    // maybe format this, max number of digits?
-    QString valueText = locale().toString(calculateRealSliderValue(sliderValue), 'f', m_decimals);
+    QString valueText = toString(calculateRealSliderValue(sliderValue), m_decimals, locale(), false, true);
     return QStringLiteral("%1").arg(valueText);
 }
 

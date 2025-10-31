@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace EditorUtilsTest
 {
@@ -39,7 +40,7 @@ namespace EditorUtilsTest
 
 
     class TestWarningAbsorber
-        : public testing::Test
+        : public ::UnitTest::LeakDetectionFixture
     {
     };
 
@@ -60,7 +61,7 @@ namespace EditorUtilsTest
         WarningDetector detector;
         EditorUtils::AzWarningAbsorber absorber("ignore this");
 
-        AZ_Warning(nullptr, false, "This warning should occur and not be absorbed by the absorber since the window name is nullptr");
+        AZ_Warning(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "This warning should occur and not be absorbed by the absorber since the window name is nullptr");
         ASSERT_TRUE(detector.m_gotWarning);
     }
 }

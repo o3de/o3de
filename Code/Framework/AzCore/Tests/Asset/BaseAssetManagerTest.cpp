@@ -30,9 +30,6 @@
 
 namespace UnitTest
 {
-    using namespace AZ;
-    using namespace AZ::Data;
-
     /**
     * Find the current status of the reload
     */
@@ -46,11 +43,6 @@ namespace UnitTest
             return reloadInfo->second.GetStatus();
         }
         return AZ::Data::AssetData::AssetStatus::NotLoaded;
-    }
-
-    size_t TestAssetManager::GetRemainingJobs() const
-    {
-        return m_activeJobs.size();
     }
 
     const AZ::Data::AssetManager::OwnedAssetContainerMap& TestAssetManager::GetAssetContainers() const
@@ -79,6 +71,9 @@ namespace UnitTest
         m_jobManager = aznew AZ::JobManager(jobDesc);
         m_jobContext = aznew AZ::JobContext(*m_jobManager);
         AZ::JobContext::SetGlobalContext(m_jobContext);
+
+        m_taskExecutor = aznew TaskExecutor();
+        TaskExecutor::SetInstance(m_taskExecutor);
 
         m_prevFileIO = IO::FileIOBase::GetInstance();
         IO::FileIOBase::SetInstance(&m_fileIO);
@@ -110,6 +105,9 @@ namespace UnitTest
 
         IO::FileIOBase::SetInstance(m_prevFileIO);
 
+        TaskExecutor::SetInstance(nullptr);
+        delete m_taskExecutor;
+
         AZ::JobContext::SetGlobalContext(nullptr);
         delete m_jobContext;
         delete m_jobManager;
@@ -131,14 +129,14 @@ namespace UnitTest
 
     void BaseAssetManagerTest::WriteAssetToDisk(const AZStd::string& assetName, [[maybe_unused]] const AZStd::string& assetIdGuid)
     {
-        AZStd::string assetFileName = GetTestFolderPath() + assetName;
+        AZ::IO::Path assetFileName = GetTestFolderPath() / assetName;
 
         AssetWithCustomData asset;
 
-        EXPECT_TRUE(AZ::Utils::SaveObjectToFile(assetFileName, AZ::DataStream::ST_XML, &asset, m_serializeContext));
+        EXPECT_TRUE(AZ::Utils::SaveObjectToFile(assetFileName.Native(), AZ::DataStream::ST_XML, &asset, m_serializeContext));
 
         // Keep track of every asset written so that we can remove it on teardown
-        m_assetsWritten.emplace_back(AZStd::move(assetFileName));
+        m_assetsWritten.emplace_back(AZStd::move(assetFileName).Native());
     }
 
     void BaseAssetManagerTest::DeleteAssetFromDisk(const AZStd::string& assetName)
@@ -152,11 +150,11 @@ namespace UnitTest
 
     void BaseAssetManagerTest::BlockUntilAssetJobsAreComplete()
     {
-        auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
         while (AssetManager::Instance().HasActiveJobsOrStreamerRequests())
         {
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 break;
             }
@@ -325,16 +323,16 @@ namespace UnitTest
         if (itr == m_virtualFiles.end())
         {
             // Path didn't work as-is, does it have the test folder prefixed? If so try removing it
-            if (AZ::StringFunc::StartsWith(path, GetTestFolderPath()))
+            AZ::IO::Path testFolderPath = GetTestFolderPath();
+            if (AZ::IO::PathView(path).IsRelativeTo(testFolderPath))
             {
-                AZStd::string_view pathWithoutFolder = path;
+                AZ::IO::Path pathWithoutFolder = AZ::IO::PathView(path).LexicallyProximate(testFolderPath).String();
 
-                pathWithoutFolder = AZ::StringFunc::LStrip(pathWithoutFolder, GetTestFolderPath().c_str());
                 itr = m_virtualFiles.find(pathWithoutFolder);
             }
             else // Path isn't prefixed, so try adding it
             {
-                itr = m_virtualFiles.find(GetTestFolderPath().append(path));
+                itr = m_virtualFiles.find(GetTestFolderPath() / path);
             }
         }
 
@@ -345,7 +343,7 @@ namespace UnitTest
 
         // Currently no test expects a file not to exist so we assert to make it easy to quickly find where something went wrong
         // If we ever need to test for a non-existent file this assert should just be conditionally disabled for that specific test
-        AZ_Assert(false, "Failed to find virtual file %*.s", path.size(), path.data())
+        AZ_Assert(false, "Failed to find virtual file %.*s", AZ_STRING_ARG(path))
 
         return nullptr;
     }
@@ -404,11 +402,11 @@ namespace UnitTest
 
     void DisklessAssetManagerBase::WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string&)
     {
-        AZStd::string assetFileName = GetTestFolderPath() + assetName;
+        AZ::IO::Path assetFileName = GetTestFolderPath() / assetName;
 
         AssetWithCustomData asset;
 
-        EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile(assetFileName, &asset, m_serializeContext));
+        EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile(assetFileName.Native(), &asset, m_serializeContext));
     }
 
     void DisklessAssetManagerBase::DeleteAssetFromDisk(const AZStd::string&)

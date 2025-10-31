@@ -11,7 +11,10 @@
         {
             "Enable" : false
         }
-    },
+    }, 
+    
+    "AddBuildArguments"
+        : { "dxc" : ["-fspv-target-env=vulkan1.2"] },
 
     "ProgramSettings":
     {
@@ -32,8 +35,9 @@
     [
         {
             "Name": "",
-            "PlusArguments": "",
-            "MinusArguments": "--strip-unused-srgs"
+            "RemoveBuildArguments": {
+                "azslc": ["--strip-unused-srgs"]
+            }
         }
     ]  
 }

@@ -12,7 +12,7 @@
 #include <qitemdelegate.h>
 #include <qobject.h>
 #include <qsortfilterproxymodel.h>
-#include <qregexp.h>
+#include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
@@ -70,7 +70,7 @@ namespace GraphCanvas
             CD_Count
         };
     
-        AZ_CLASS_ALLOCATOR(BookmarkTableSourceModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkTableSourceModel, AZ::SystemAllocator);
 
         BookmarkTableSourceModel();
         ~BookmarkTableSourceModel();
@@ -120,7 +120,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(BookmarkTableSortProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkTableSortProxyModel, AZ::SystemAllocator);
 
         BookmarkTableSortProxyModel(BookmarkTableSourceModel* sourceModel);
         ~BookmarkTableSortProxyModel() override = default;
@@ -133,6 +133,6 @@ namespace GraphCanvas
     private:
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

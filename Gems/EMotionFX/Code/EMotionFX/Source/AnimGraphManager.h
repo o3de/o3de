@@ -10,7 +10,7 @@
 
 #include "EMotionFXConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 #include "AnimGraphObject.h"
 #include <MCore/Source/MultiThreadManager.h>
@@ -31,7 +31,7 @@ namespace EMotionFX
      *
      */
     class EMFX_API AnimGraphManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

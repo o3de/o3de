@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
@@ -18,11 +19,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
      *   and correct relative transforms.
      * - Validates that no editor entities are referenced by non-editor entities.
      */
-    class WorldEditorOnlyEntityHandler
+    class AZTF_API WorldEditorOnlyEntityHandler
         : public EditorOnlyEntityHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(WorldEditorOnlyEntityHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WorldEditorOnlyEntityHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::WorldEditorOnlyEntityHandler, "{55587AE2-B583-48E4-9634-6BFACF6CBF04}", EditorOnlyEntityHandler);
 
         bool IsEntityUniquelyForThisHandler(AZ::Entity* entity) const override;

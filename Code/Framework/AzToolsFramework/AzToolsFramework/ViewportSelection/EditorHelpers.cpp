@@ -9,7 +9,8 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
-#include <AzCore/Math/VectorConversions.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -52,42 +53,59 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "Use a lock icon when the cursor is over entities that cannot be interacted with");
 
+AZ_CVAR(float, ed_iconMinScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum scale for icons in the distance");
+AZ_CVAR(float, ed_iconMaxScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum scale for icons near the camera");
+AZ_CVAR(float, ed_iconCloseDist, 3.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance at which icons are at maximum scale");
+AZ_CVAR(float, ed_iconFarDist, 40.f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance at which icons are at minimum scale");
+
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorHelpers, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorHelpers, AZ::SystemAllocator)
 
-    static const int s_iconSize = 36; // icon display size (in pixels)
-    static const float s_iconMinScale = 0.1f; // minimum scale for icons in the distance
-    static const float s_iconMaxScale = 1.0f; // maximum scale for icons near the camera
-    static const float s_iconCloseDist = 3.f; // distance at which icons are at maximum scale
-    static const float s_iconFarDist = 40.f; // distance at which icons are at minimum scale
+    static const int IconSize = 36; // icon display size (in pixels)
 
     // helper function to wrap EBus call to check if helpers are being displayed
-    // note: the ['?'] icon in the top right of the editor
-    static bool HelpersVisible()
+    static bool HelpersVisible(const AzFramework::ViewportId viewportId)
     {
         bool helpersVisible = false;
-        EditorRequestBus::BroadcastResult(helpersVisible, &EditorRequests::DisplayHelpersVisible);
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            helpersVisible, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
         return helpersVisible;
     }
 
-    // calculate the icon scale based on how far away it is (distanceSq) from a given point
-    // note: this is mostly likely distance from the camera
-    static float GetIconScale(const float distSq)
+    // helper function to wrap EBus call to check if icons are being displayed
+    static bool IconsVisible(const AzFramework::ViewportId viewportId)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        bool iconsVisible = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            iconsVisible, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::IconsVisible);
+        return iconsVisible;
+    }
 
-        return s_iconMinScale +
-            (s_iconMaxScale - s_iconMinScale) *
-            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, sqrtf(distSq) - s_iconCloseDist) / s_iconFarDist, 0.0f, 1.0f));
+    // helper function to wrap EBus call to check if helpers should only be drawn for selected entities
+    static bool OnlyShowHelpersForSelectedEntities(const AzFramework::ViewportId viewportId)
+    {
+        bool onlyShowHelpersForSelectedEntities = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            onlyShowHelpersForSelectedEntities, viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::OnlyShowHelpersForSelectedEntities);
+        return onlyShowHelpersForSelectedEntities;
+    }
+
+    float GetIconScale(const float distance)
+    {
+        return ed_iconMinScale +
+            (ed_iconMaxScale - ed_iconMinScale) *
+            (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, distance - ed_iconCloseDist) / (ed_iconFarDist - ed_iconCloseDist), 0.0f, 1.0f));
+    }
+
+    float GetIconSize(const float distance)
+    {
+        return GetIconScale(distance) * IconSize;
     }
 
     static void DisplayComponents(
         const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
             entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport, viewportInfo, debugDisplay);
 
@@ -102,10 +120,10 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityTransformedLocalBounds)
         {
-            AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
-
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
             if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entity); localAabb.IsValid())
             {
+                const AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
                 const AZ::Aabb worldAabb = localAabb.GetTransformedAabb(worldFromLocal);
                 debugDisplay.SetColor(AZ::Colors::Turquoise);
                 debugDisplay.DrawWireBox(worldAabb.GetMin(), worldAabb.GetMax());
@@ -114,6 +132,7 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityWorldBounds)
         {
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
             if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entity); worldAabb.IsValid())
             {
                 debugDisplay.SetColor(AZ::Colors::Magenta);
@@ -148,7 +167,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
@@ -171,12 +190,17 @@ namespace AzToolsFramework
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
 
-        const bool helpersVisible = HelpersVisible();
+        const bool iconsVisible = IconsVisible(viewportId);
+
+        const AZ::Matrix3x4 cameraView = AzFramework::CameraView(cameraState);
+        const AZ::Matrix4x4 cameraProjection = AzFramework::CameraProjection(cameraState);
 
         // selecting new entities
         AZ::EntityId entityIdUnderCursor;
-        float closestDistance = std::numeric_limits<float>::max();
-        for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+        float closestDistance = AZStd::numeric_limits<float>::max();
+        for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+             entityCacheIndex < visibleEntityCount;
+             ++entityCacheIndex)
         {
             const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
@@ -185,8 +209,7 @@ namespace AzToolsFramework
                 continue;
             }
 
-            // 2d screen space selection - did we click an icon
-            if (helpersVisible)
+            if (iconsVisible)
             {
                 // some components choose to hide their icons (e.g. meshes)
                 // we also do not want to test against icons that may not be showing as they're inside a 'closed' entity container
@@ -197,33 +220,34 @@ namespace AzToolsFramework
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
                     // selecting based on 2d icon - should only do it when visible and not selected
-                    const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(entityPosition, cameraState);
+                    const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(entityPosition, cameraView, cameraProjection);
+                    const AzFramework::ScreenPoint screenPosition =
+                        AzFramework::ScreenPointFromNdc(AZ::Vector2(ndcPoint), cameraState.m_viewportSize);
 
-                    const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
-                    const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);
+                    const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
+                    const auto iconRange = GetIconSize(distanceFromCamera) * 0.5f;
                     const auto screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
 
+                    // 2d screen space selection - did we click an icon
                     if (screenCoords.m_x >= screenPosition.m_x - iconRange && screenCoords.m_x <= screenPosition.m_x + iconRange &&
-                        screenCoords.m_y >= screenPosition.m_y - iconRange && screenCoords.m_y <= screenPosition.m_y + iconRange)
+                        screenCoords.m_y >= screenPosition.m_y - iconRange && screenCoords.m_y <= screenPosition.m_y + iconRange &&
+                        ndcPoint.GetZ() < closestDistance)
                     {
+                        // use ndc z value for distance here which is in 0-1 range so will most likely 'win' when it comes to the
+                        // distance check (this is what we want as the cursor should always favor icons if they are hovered)
+                        closestDistance = ndcPoint.GetZ();
                         entityIdUnderCursor = entityId;
-                        break;
                     }
                 }
             }
 
-            using AzFramework::ViewportInfo;
-            // check if components provide an aabb
-            if (const AZ::Aabb aabb = CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId }); aabb.IsValid())
+            float closestBoundDifference;
+            if (PickEntity(entityId, mouseInteraction.m_mouseInteraction, closestBoundDifference, viewportId))
             {
-                // coarse grain check
-                if (AabbIntersectMouseRay(mouseInteraction.m_mouseInteraction, aabb))
+                if (closestBoundDifference < closestDistance)
                 {
-                    // if success, pick against specific component
-                    if (PickEntity(entityId, mouseInteraction.m_mouseInteraction, closestDistance, viewportId))
-                    {
-                        entityIdUnderCursor = entityId;
-                    }
+                    closestDistance = closestBoundDifference;
+                    entityIdUnderCursor = entityId;
                 }
             }
         }
@@ -231,13 +255,6 @@ namespace AzToolsFramework
         // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
-            if (ed_useCursorLockIconInFocusMode)
-            {
-                ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
-                    ViewportInteraction::CursorStyleOverride::Forbidden);
-            }
-
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
@@ -276,66 +293,119 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        if (HelpersVisible())
+        const bool iconsVisible = IconsVisible(viewportInfo.m_viewportId);
+        const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
+        const bool onlyDrawSelectedEntities = OnlyShowHelpersForSelectedEntities(viewportInfo.m_viewportId);
+
+        if (helpersVisible || onlyDrawSelectedEntities)
         {
-            for (size_t entityCacheIndex = 0; entityCacheIndex < m_entityDataCache->VisibleEntityDataCount(); ++entityCacheIndex)
+            for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+                 entityCacheIndex < visibleEntityCount;
+                 ++entityCacheIndex)
             {
-                const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-
-                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
+                if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
                 {
-                    continue;
-                }
-
-                // notify components to display
-                DisplayComponents(entityId, viewportInfo, debugDisplay);
-
-                if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
-                    (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
-                {
-                    continue;
-                }
-
-                int iconTextureId = 0;
-                EditorEntityIconComponentRequestBus::EventResult(
-                    iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
-
-                const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
-                const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
-
-                const float iconScale = GetIconScale(distSqFromCamera);
-                const float iconSize = s_iconSize * iconScale;
-
-                using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
-                const AZ::Color iconHighlight = [this, entityCacheIndex]()
-                {
-                    if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
+                    if (onlyDrawSelectedEntities && m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex))
                     {
-                        return AZ::Color(AZ::u8(100), AZ::u8(100), AZ::u8(100), AZ::u8(255));
+                        // notify components to display
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
                     }
-
-                    if (m_entityDataCache->GetVisibleEntityAccent(entityCacheIndex) == ComponentEntityAccentType::Hover)
+                    else if (!onlyDrawSelectedEntities)
                     {
-                        return AZ::Color(AZ::u8(255), AZ::u8(120), AZ::u8(0), AZ::u8(204));
+                        DisplayComponents(entityId, viewportInfo, debugDisplay);
                     }
-
-                    return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
-                }();
-
-                EditorViewportIconDisplay::Get()->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
-                                                             EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
-                                                             AZ::Vector2{ iconSize, iconSize } });
+                }
             }
+        }
+
+        if (iconsVisible)
+        {
+            auto editorViewportIconDisplay = EditorViewportIconDisplay::Get();
+            if (!editorViewportIconDisplay)
+            {
+                return;
+            }
+
+            for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
+                 entityCacheIndex < visibleEntityCount;
+                 ++entityCacheIndex)
+            {
+                if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityCacheIndex))
+                {
+                    if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
+                        (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
+                    {
+                        continue;
+                    }
+
+                    const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
+                    const AZ::Vector3 entityCameraVector = entityPosition - cameraState.m_position;
+
+                    if (const float directionFromCamera = entityCameraVector.Dot(cameraState.m_forward); directionFromCamera < 0.0f)
+                    {
+                        continue;
+                    }
+
+                    const float distanceFromCamera = entityCameraVector.GetLength();
+                    if (distanceFromCamera < cameraState.m_nearClip)
+                    {
+                        continue;
+                    }
+
+                    using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
+                    const AZ::Color iconHighlight = [this, entityCacheIndex]()
+                    {
+                        if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
+                        {
+                            return AZ::Color(AZ::u8(100), AZ::u8(100), AZ::u8(100), AZ::u8(255));
+                        }
+
+                        if (m_entityDataCache->GetVisibleEntityAccent(entityCacheIndex) == ComponentEntityAccentType::Hover)
+                        {
+                            return AZ::Color(AZ::u8(255), AZ::u8(120), AZ::u8(0), AZ::u8(204));
+                        }
+
+                        return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
+                    }();
+
+                    int iconTextureId = 0;
+                    EditorEntityIconComponentRequestBus::EventResult(
+                        iconTextureId, entityId, &EditorEntityIconComponentRequestBus::Events::GetEntityIconTextureId);
+
+                    editorViewportIconDisplay->AddIcon(EditorViewportIconDisplayInterface::DrawParameters{
+                        viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
+                        EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace, AZ::Vector2(GetIconSize(distanceFromCamera)) });
+                }
+            }
+
+            editorViewportIconDisplay->DrawIcons();
         }
     }
 
     bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
     {
-        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+        if (auto entityCacheIndex = m_entityDataCache->GetVisibleEntityIndexFromId(entityId); entityCacheIndex.has_value())
+        {
+            return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex.value());
+        }
+
+        return false;
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(size_t entityCacheIndex) const
+    {
+        return m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex);
     }
 
     bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
     {
+        if (auto entityCacheIndex = m_entityDataCache->GetVisibleEntityIndexFromId(entityId); entityCacheIndex.has_value())
+        {
+            return m_entityDataCache->IsVisibleEntityInFocusSubTree(entityCacheIndex.value());
+        }
+
         return m_focusModeInterface->IsInFocusSubTree(entityId);
     }
 

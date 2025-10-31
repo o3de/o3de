@@ -19,8 +19,8 @@
                 "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
                 "Name": "Albedo",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "ASTC_6x6",
-                "MaxTextureSize": 2048,
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 512,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -32,7 +32,7 @@
                 "Name": "Albedo",
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "ASTC_6x6",
-                "MaxTextureSize": 2048,
+                "MaxTextureSize": 512,
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {

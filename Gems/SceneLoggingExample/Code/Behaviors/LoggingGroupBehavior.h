@@ -36,5 +36,12 @@ namespace SceneLoggingExample
         AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, 
             ManifestAction action, RequestingApplication requester) override;
         void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
+        void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "LoggingGroupBehavior";
+        }
+
+    private:
+        static constexpr int s_loggingPreferredTabOrder{ 10 };
     };
 } // namespace SceneLoggingExample

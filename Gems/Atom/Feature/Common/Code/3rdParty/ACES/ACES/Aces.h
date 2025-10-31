@@ -1,3 +1,4 @@
+
 // ACES code derived from the nVidia HDR Display Demo Project
 // (https://developer.nvidia.com/high-dynamic-range-display-development)
 // -----------------------------------------------------------------------------
@@ -87,10 +88,12 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ
 {
@@ -139,15 +142,22 @@ namespace AZ
             float m_scale = 1.0f;
         };
 
-        enum class DisplayMapperOperationType : uint32_t
-        {
-            Aces = 0,
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(DisplayMapperOperationType, uint32_t,
+            Aces,
             AcesLut,
             Passthrough,
             GammaSRGB,
             Reinhard,
-            Invalid
-        };
+            ReinhardExtended,
+            AcesFitted,
+            AcesFilmic,
+            Filmic,
+            Agx,
+            AgxGolden,
+            AgxPunchy,
+            AgxWarm,
+            PbrNeutral
+        );
 
         enum class ShaperPresetType
         {
@@ -165,7 +175,16 @@ namespace AZ
         enum class ToneMapperType
         {
             None = 0,
-            Reinhard
+            Reinhard,
+            ReinhardExtended,
+            AcesFitted,
+            AcesFilmic,
+            Filmic,
+            Agx,
+            AgxGolden,
+            AgxPunchy,
+            AgxWarm,
+            PbrNeutral
         };
 
         enum class TransferFunctionType
@@ -175,10 +194,10 @@ namespace AZ
             PerceptualQuantizer = 2
         };
 
-        SegmentedSplineParamsC9 GetAcesODTParameters(OutputDeviceTransformType odtType);
-        ShaperParams GetLog2ShaperParameters(float minStops, float maxStops);
-        ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType);
-        Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type);
+        ATOM_FEATURE_COMMON_API SegmentedSplineParamsC9 GetAcesODTParameters(OutputDeviceTransformType odtType);
+        ATOM_FEATURE_COMMON_API ShaperParams GetLog2ShaperParameters(float minStops, float maxStops);
+        ATOM_FEATURE_COMMON_API ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType);
+        ATOM_FEATURE_COMMON_API Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type);
 
     }   // namespace Render
 

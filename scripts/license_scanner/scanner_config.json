@@ -3,7 +3,8 @@
         ".git",
         ".venv",
         "build",
-        "license_scanner"
+        "license_scanner",
+        "AutomatedTesting"
     ],
     "license_patterns": [
         "LICENSE*",

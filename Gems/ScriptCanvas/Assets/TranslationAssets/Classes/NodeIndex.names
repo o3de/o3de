@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Equal",
-                    "context": "NodeIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -41,7 +40,6 @@
                 },
                 {
                     "base": "ToString",
-                    "context": "NodeIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke To String"
@@ -64,7 +62,6 @@
                 },
                 {
                     "base": "IsValid",
-                    "context": "NodeIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid"
@@ -87,7 +84,6 @@
                 },
                 {
                     "base": "Distance",
-                    "context": "NodeIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Distance"
@@ -118,7 +114,6 @@
                 },
                 {
                     "base": "AsNumber",
-                    "context": "NodeIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke As Number"

@@ -26,6 +26,6 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Enable or disable placing vegetation if the entity intersects a shape";
         static constexpr const char* const s_icon = "Editor/Icons/Components/VegetationFilter.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/VegetationFilter.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/vegetation-filters/vegetation-shape-intersection-filter/";
     };
 }

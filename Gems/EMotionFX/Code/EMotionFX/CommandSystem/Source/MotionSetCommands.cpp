@@ -22,12 +22,11 @@
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator)
 
     // Custom motion set motion loading.
     EMotionFX::Motion* CommandSystemMotionSetCallback::LoadMotion(EMotionFX::MotionSet::MotionEntry* entry)
@@ -140,7 +139,8 @@ namespace CommandSystem
         {
             AZStd::string filename;
             parameters.GetValue("fileName", this, filename);
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
             motionSet->SetFilename(filename.c_str());
         }
 
@@ -886,7 +886,8 @@ namespace CommandSystem
         {
             m_relocateFilenameFunction(filename);
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // Get the old log levels.
         MCore::LogCallback::ELogLevel oldLogLevels = MCore::GetLogManager().GetLogLevels();
@@ -1243,5 +1244,46 @@ namespace CommandSystem
         }
 
         return motionId;
+    }
+
+    void CreateDefaultMotionSet(bool forceCreate, MCore::CommandGroup* commandGroup)
+    {
+        if (!forceCreate)
+        {
+            // Only add the default motion set in case there is no other present.
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
+            {
+                EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
+                if (!motionSet->GetParentSet() && !motionSet->GetIsOwnedByRuntime())
+                {
+                    return;
+                }
+            }
+        }
+
+        const bool oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+
+        const AZStd::string command = AZStd::string::format("CreateMotionSet -name \"%s\"", s_defaultMotionSetName);
+
+        if (!commandGroup)
+        {
+            AZStd::string result;
+            if (!GetCommandManager()->ExecuteCommand(command, result))
+            {
+                AZ_Error("EMotionFX", false, result.c_str());
+            }
+        }
+        else
+        {
+            commandGroup->AddCommandString(command);
+        }
+
+        if (EMotionFX::MotionSet* defaultMotionSet = EMotionFX::GetMotionManager().FindMotionSetByName(s_defaultMotionSetName))
+        {
+            // Unset the dirty flag as an empty default motion set should not ask users to save when closing.
+            defaultMotionSet->SetDirtyFlag(false);
+            GetCommandManager()->SetWorkspaceDirtyFlag(oldWorkspaceDirtyFlag);
+        }
     }
 } // namespace CommandSystem

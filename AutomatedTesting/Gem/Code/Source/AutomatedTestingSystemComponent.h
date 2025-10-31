@@ -11,6 +11,11 @@
 
 #include <AutomatedTesting/AutomatedTestingBus.h>
 
+namespace AzFramework
+{
+    struct PlayerConnectionConfig;
+}
+
 namespace AutomatedTesting
 {
     class AutomatedTestingSystemComponent

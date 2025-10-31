@@ -12,7 +12,6 @@
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 
 #include <AzCore/Math/Vector3.h>
-#include <ScriptCanvas/Libraries/Math/Math.h>
 #include <ScriptCanvas/Data/Data.h>
 
 using namespace ScriptCanvasTests;

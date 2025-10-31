@@ -7,7 +7,7 @@
         "Stencil" : { "Enable" : false }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",

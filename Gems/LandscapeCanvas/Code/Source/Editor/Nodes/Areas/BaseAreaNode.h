@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class BaseAreaNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseAreaNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseAreaNode, AZ::SystemAllocator);
         AZ_RTTI(BaseAreaNode, "{16CC0816-6A5F-4244-B66A-2D34B6D4E508}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -32,7 +32,7 @@ namespace LandscapeCanvas
 
         const char* GetSubTitle() const override
         {
-            return LandscapeCanvas::VEGETATION_AREA_TITLE.toUtf8().constData();
+            return LandscapeCanvas::VEGETATION_AREA_TITLE;
         }
 
         GraphModel::NodeType GetNodeType() const override

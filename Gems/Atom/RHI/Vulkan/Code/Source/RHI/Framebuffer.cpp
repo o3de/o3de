@@ -6,11 +6,13 @@
  *
  */
 #include <AzCore/std/hash.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/ImageView.h>
 #include <RHI/RenderPass.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ
 {
@@ -56,6 +58,9 @@ namespace AZ
                 m_attachments[index] = imageView;
             }
 
+            // Set the FrameBuffer size from the first attachment
+            SetSizeFromAttachment();
+
             // In case an imageView is stale, native framebuffer will be createted by OnResourceInvalidate() soon later.
             if (!attachmentIsStale)
             {
@@ -77,9 +82,47 @@ namespace AZ
             return m_renderPass.get();
         }
 
+        RHI::Size GetImageViewSize(RHI::ConstPtr<ImageView> view)
+        {
+            auto imageSize = view->GetImage().GetDescriptor().m_size;
+            RHI::Size viewSize;
+            viewSize.m_width = imageSize.m_width >> view->GetDescriptor().m_mipSliceMin;
+            viewSize.m_height = imageSize.m_height >> view->GetDescriptor().m_mipSliceMin;
+            viewSize.m_depth = imageSize.m_depth;
+            return viewSize;
+        }
+
+        void Framebuffer::SetSizeFromAttachment()
+        {
+            if (!m_attachments.empty())
+            {
+                m_size = GetImageViewSize(m_attachments.front());
+            }
+        }
+
         const RHI::Size& Framebuffer::GetSize() const
         {
-            return m_attachments.front()->GetImage().GetDescriptor().m_size;
+            return m_size;
+        }
+
+        const AZStd::vector<RHI::ConstPtr<ImageView>>& Framebuffer::GetImageViews() const
+        {
+            return m_attachments;
+        }
+
+        AZStd::optional<uint32_t> Framebuffer::FindImageViewIndex(RHI::ImageScopeAttachment& scopeAttachment) const
+        {
+            auto deviceIndex = m_attachments.front()->GetDevice().GetDeviceIndex();
+            const ImageView* imageView =
+                static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(deviceIndex).get());
+            for (uint32_t i = 0; i < m_attachments.size(); ++i)
+            {
+                if (imageView == m_attachments[i])
+                {
+                    return i;
+                }
+            }
+            return AZStd::optional<uint32_t>();
         }
 
         void Framebuffer::SetNameInternal(const AZStd::string_view& name)
@@ -94,7 +137,7 @@ namespace AZ
         {
             for (const RHI::ConstPtr<ImageView>& imageView : m_attachments)
             {
-                const RHI::Image& image = imageView->GetImage();
+                const RHI::DeviceImage& image = imageView->GetImage();
                 RHI::ResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
             }
             Invalidate();
@@ -126,9 +169,18 @@ namespace AZ
             AZ_Assert(!m_attachments.empty(), "Attachment image view is empty.");
 
             AZStd::vector<VkImageView> imageViews(m_attachments.size(), VK_NULL_HANDLE);
+            uint32_t maxLayers = 1;
             for (size_t index = 0; index < imageViews.size(); ++index)
             {
                 imageViews[index] = m_attachments[index]->GetNativeImageView();
+                if (m_attachments[index]->GetDescriptor().m_isArray)
+                {
+                    maxLayers = AZStd::max(
+                        maxLayers,
+                        static_cast<uint32_t>(
+                            m_attachments[index]->GetImageSubresourceRange().m_arraySliceMax -
+                            m_attachments[index]->GetImageSubresourceRange().m_arraySliceMin + 1));
+                }
             }
 
             VkFramebufferCreateInfo createInfo{};
@@ -137,23 +189,23 @@ namespace AZ
             createInfo.renderPass = m_renderPass->GetNativeRenderPass();
             createInfo.attachmentCount = static_cast<uint32_t>(imageViews.size());
             createInfo.pAttachments = imageViews.data();
-            createInfo.width = GetSize().m_width;
-            createInfo.height = GetSize().m_height;
-            createInfo.layers = 1;
-            
+            createInfo.width = m_size.m_width;
+            createInfo.height = m_size.m_height;
+            createInfo.layers = maxLayers;
+
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreateFramebuffer(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFramebuffer);
+            const VkResult result = device.GetContext().CreateFramebuffer(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeFramebuffer);
 
             return ConvertResult(result);
         }
 
         bool Framebuffer::AreResourcesReady() const
         {
-            const RHI::Size& size = GetSize();
             for (size_t index = 0; index < m_attachments.size(); ++index)
             {
                 const RHI::ConstPtr<ImageView>& imageView = m_attachments[index];
-                if (imageView->IsStale() || imageView->GetImage().GetDescriptor().m_size != size)
+                if (imageView->IsStale() || GetImageViewSize(imageView) != m_size)
                 {
                     return false;
                 }
@@ -166,7 +218,7 @@ namespace AZ
             if (m_nativeFramebuffer != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyFramebuffer(device.GetNativeDevice(), m_nativeFramebuffer, nullptr);
+                device.GetContext().DestroyFramebuffer(device.GetNativeDevice(), m_nativeFramebuffer, VkSystemAllocator::Get());
                 m_nativeFramebuffer = VK_NULL_HANDLE;
             }
         }

@@ -1,0 +1,7 @@
+{
+    "materialType": "Types/ParticleRibbon.materialtype",
+    "materialTypeVersion": 1,
+    "propertyValues": {
+        "general.DiffuseMap": "@gemroot:OpenParticleSystem@/Assets/Textures/OpenParticle/DefaultSpriteBaseColor.png"
+    }
+}

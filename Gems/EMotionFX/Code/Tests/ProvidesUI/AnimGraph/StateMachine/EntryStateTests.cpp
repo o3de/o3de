@@ -10,10 +10,10 @@
 
 #include <QAction>
 #include <QtTest/QtTest>
-#include <qtoolbar.h>
+#include <QToolBar>
 #include <QWidget>
 #include <QComboBox>
-#include <qrect.h>
+#include <QRect>
 
 #include <Tests/UI/AnimGraphUIFixture.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>

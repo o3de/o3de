@@ -18,7 +18,7 @@ namespace SaveData
     {
     public:
         AZ_RTTI(SaveDataModule, "{4FD9776B-0C36-476F-A7C4-161404BCCCF3}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(SaveDataModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SaveDataModule, AZ::SystemAllocator);
 
         SaveDataModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace SaveData
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), SaveData::SaveDataModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_SaveData, SaveData::SaveDataModule)
+#endif

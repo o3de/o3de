@@ -11,6 +11,8 @@
 #include "Messages/Request.h"
 #include "Messages/Notify.h"
 
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
+
 using namespace AzFramework;
 
 namespace ScriptCanvas
@@ -19,26 +21,30 @@ namespace ScriptCanvas
     {
         ClientTransceiver::ClientTransceiver()
         {
-            AzFramework::TargetManagerClient::Bus::Handler::BusConnect(); 
-            TmMsgBus::Handler::BusConnect(k_serviceNotificationsMsgSlotId);
             ClientRequestsBus::Handler::BusConnect();
             ClientUIRequestBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
-            DiscoverNetworkTargets();
-            
-            for (auto& idAndInfo : m_networkTargets)
-            {
-                if (idAndInfo.second.GetStatusFlags() & AzFramework::TF_SELF)
+            m_remoteToolsEndpointJoinedHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this]([[maybe_unused]] AzFramework::RemoteToolsEndpointInfo info)
                 {
-                    m_selfTarget = idAndInfo.second;
-                    SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Self found!");
-                }
+                    OnRemoteToolsEndpointListChanged();
+                });
+
+            m_remoteToolsEndpointLeftHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this]([[maybe_unused]] AzFramework::RemoteToolsEndpointInfo info)
+                {
+                    OnRemoteToolsEndpointListChanged();
+                });
+
+            if (auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get())
+            {
+                remoteToolsInterface->RegisterRemoteToolsEndpointJoinedHandler(
+                    AzFramework::ScriptCanvasToolsKey, m_remoteToolsEndpointJoinedHandler);
+                remoteToolsInterface->RegisterRemoteToolsEndpointLeftHandler(AzFramework::ScriptCanvasToolsKey, m_remoteToolsEndpointLeftHandler);
             }
 
-            if (!m_selfTarget.GetDisplayName())
-            { 
-                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Self NOT found!");
-            }
+            OnRemoteToolsEndpointListChanged();
 
             m_addCache.m_logExecution = true;
             m_removeCache.m_logExecution = false;
@@ -46,16 +52,19 @@ namespace ScriptCanvas
 
         ClientTransceiver::~ClientTransceiver()
         {
+            AZ::SystemTickBus::Handler::BusDisconnect();
             ClientUIRequestBus::Handler::BusDisconnect();
             ClientRequestsBus::Handler::BusDisconnect();
-            TmMsgBus::Handler::BusDisconnect(k_serviceNotificationsMsgSlotId);
-            AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
         }
 
         void ClientTransceiver::AddBreakpoint(const Breakpoint& breakpoint)
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending AddBreakpoint Request %s", breakpoint.ToString().data());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::AddBreakpointRequest(breakpoint));
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending AddBreakpoint Request %s", breakpoint.ToString().data());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::AddBreakpointRequest(breakpoint));
+            }
         }
 
         void ClientTransceiver::AddVariableChangeBreakpoint(const VariableChangeBreakpoint&)
@@ -65,10 +74,47 @@ namespace ScriptCanvas
 
         void ClientTransceiver::Break()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending Break Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::BreakRequest());
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending Break Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::BreakRequest());
+            }
         }
-        
+
+        void ClientTransceiver::OnRemoteToolsEndpointListChanged()
+        {
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (!target.IsValid())
+            {
+                ConnectToFirstTargetIfNotConnected();
+            }
+        }
+
+        void ClientTransceiver::ConnectToFirstTargetIfNotConnected()
+        {
+            auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+            if (!remoteToolsInterface)
+                return;
+
+            if (remoteToolsInterface->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey).IsValid())
+                return; // If we are already connected to a target, we don't do anything
+
+            AzFramework::RemoteToolsEndpointContainer targets;
+            remoteToolsInterface->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
+            for (const auto& [_, info] : targets)
+            {
+                if (!info.IsSelf() && info.IsOnline())
+                {
+                    SetNetworkTarget(info);
+                    return;
+                }
+            }
+
+            // No valid target found
+            SetNetworkTarget(AzFramework::RemoteToolsEndpointInfo());
+        }
+
         void ClientTransceiver::BreakpointAdded(const Breakpoint& breakpoint)
         {
             Lock lock(m_mutex);
@@ -85,6 +131,7 @@ namespace ScriptCanvas
                 ServiceNotificationsBus::Broadcast(&ServiceNotifications::BreakPointAdded, breakpoint);
             }
         }
+
         void ClientTransceiver::ClearMessages()
         {
             Lock guard(m_msgMutex);
@@ -93,89 +140,78 @@ namespace ScriptCanvas
 
         void ClientTransceiver::Continue()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending Continue Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::ContinueRequest());
-        }
-
-        void ClientTransceiver::DesiredTargetConnected(bool connected)
-        {
-            if (connected)
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
             {
-                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("DesiredTarget connected!, sending connect request to %s", m_currentTarget.GetDisplayName());
-                AzFramework::TargetManager::Bus::BroadcastResult(m_currentTarget, &AzFramework::TargetManager::GetDesiredTarget);
-            }
-            else
-            {
-                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("DesiredTarget NOT connected!");
-                m_currentTarget = AzFramework::TargetInfo();
-            }
-
-            ClientUINotificationBus::Broadcast(&ClientUINotifications::OnCurrentTargetChanged);
-            
-            // If we are connected to our self, we want to use a different mechanism for now.
-            // Will unify this in a second pass so this handles all the indirection.
-            if (m_currentTarget.IsValid())
-            {
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::ConnectRequest(m_connectionState));
-            }
-        }
-
-        void ClientTransceiver::DesiredTargetChanged([[maybe_unused]] AZ::u32 newId, [[maybe_unused]] AZ::u32 oldId)
-        {
-            if (HasValidConnection())
-            {
-                DisconnectFromTarget();
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending Continue Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::ContinueRequest());
             }
         }
         
-        AzFramework::TargetContainer ClientTransceiver::EnumerateAvailableNetworkTargets()
+        AzFramework::RemoteToolsEndpointContainer ClientTransceiver::EnumerateAvailableNetworkTargets() const
         {
-            return m_networkTargets;
-        }
+            AzFramework::RemoteToolsEndpointContainer targets;
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            {
+                remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
+            }
 
-        void ClientTransceiver::DiscoverNetworkTargets()
-        {
-            AzFramework::TargetContainer targets;
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::EnumTargetInfos, targets);
+            AzFramework::RemoteToolsEndpointContainer connectableTargets;
 
-            AzFramework::TargetContainer connectableTargets;
-            
             for (auto& idAndInfo : targets)
             {
                 const auto& targetInfo = idAndInfo.second;
-                auto isConnectable = IsTargetConnectable(targetInfo);
-                if (isConnectable.IsSuccess())
+                if (targetInfo.IsValid() && targetInfo.IsOnline())
                 {
                     connectableTargets[idAndInfo.first] = idAndInfo.second;
                     SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Debugger TRX can connect to %s", targetInfo.GetDisplayName());
                 }
                 else
                 {
-                    SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Debugger TRX can't connect to %s because: %s", targetInfo.GetDisplayName(), isConnectable.GetError().c_str());
+                    SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT(
+                        "Debugger TRX can't connect to %s because: %s", targetInfo.GetDisplayName(), isConnectable.GetError().c_str());
                 }
             }
 
-            {
-                Lock lock(m_mutex);
-                m_networkTargets = connectableTargets;
-            }
+            return connectableTargets;
         }
 
-        AzFramework::TargetInfo ClientTransceiver::GetNetworkTarget()
+        void ClientTransceiver::SetNetworkTarget(AzFramework::RemoteToolsEndpointInfo target)
         {
-            AzFramework::TargetInfo targetInfo;
-            AzFramework::TargetManager::Bus::BroadcastResult(targetInfo, &AzFramework::TargetManager::GetDesiredTarget);
+            AzFramework::RemoteToolsEndpointInfo previousTarget = GetNetworkTarget();
+            if (previousTarget.IsValid())
+            {
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(previousTarget, Message::DisconnectRequest());
+            }
+
+            ClearMessages();
+            if (target.IsValid())
+            {
+                RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, target.GetPersistentId());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::ConnectRequest(m_connectionState));
+            }
+
+            ClientUINotificationBus::Broadcast(&ClientUINotifications::OnCurrentTargetChanged);
+        }
+
+        AzFramework::RemoteToolsEndpointInfo ClientTransceiver::GetNetworkTarget() const
+        {
+            AzFramework::RemoteToolsEndpointInfo targetInfo;
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            {
+                targetInfo = remoteTools->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
+            }
+
             if (!targetInfo.GetPersistentId())
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Debugger TRX The user has not chosen a target to connect to.\n");
-                return AzFramework::TargetInfo();
+                return AzFramework::RemoteToolsEndpointInfo();
             }
 
-            auto isConnectable = IsTargetConnectable(targetInfo);
-            if (!isConnectable.IsSuccess())
+            if (!targetInfo.IsValid() || !targetInfo.IsOnline())
             {
-                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Debugger TRX has no target because: %s", isConnectable.GetError().c_str());
-                return AzFramework::TargetInfo();
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("The target is currently not in a state that would allow debugging code (offline or not debuggable)");
+                return AzFramework::RemoteToolsEndpointInfo();
             }
 
             return targetInfo;
@@ -183,20 +219,32 @@ namespace ScriptCanvas
         
         void ClientTransceiver::GetAvailableScriptTargets()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetAvailableScriptTargets Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::GetAvailableScriptTargets());
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetAvailableScriptTargets Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::GetAvailableScriptTargets());
+            }
         }
         
         void ClientTransceiver::GetActiveEntities()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetActiveEntities Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::GetActiveEntitiesRequest());
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetActiveEntities Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::GetActiveEntitiesRequest());
+            }
         }
 
         void ClientTransceiver::GetActiveGraphs()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetActiveGraphs Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::GetActiveGraphsRequest());
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending GetActiveGraphs Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::GetActiveGraphsRequest());
+            }
         }
         
         void ClientTransceiver::GetVariableValue()
@@ -204,22 +252,7 @@ namespace ScriptCanvas
 
         }
 
-        bool ClientTransceiver::HasValidConnection() const
-        {
-            return m_currentTarget.IsValid();
-        }
-
-        bool ClientTransceiver::IsConnected(const AzFramework::TargetInfo& targetInfo) const
-        {
-            return m_currentTarget.IsIdentityEqualTo(targetInfo);
-        }
-
-        bool ClientTransceiver::IsConnectedToSelf() const
-        {
-            return IsConnected(m_selfTarget) || !m_currentTarget.IsValid();
-        }
-
-        void ClientTransceiver::OnReceivedMsg(AzFramework::TmMsgPtr msg)
+        void ClientTransceiver::OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg)
         {
             {
                 Lock lock(m_msgMutex);
@@ -238,7 +271,7 @@ namespace ScriptCanvas
         
         void ClientTransceiver::ProcessMessages()
         {
-            AzFramework::TmMsgQueue messages;
+            AzFramework::RemoteToolsMessageQueue messages;
             
             while (true)
             {
@@ -255,7 +288,7 @@ namespace ScriptCanvas
                 
                 while (!messages.empty())
                 {
-                    AzFramework::TmMsgPtr msg = *messages.begin();
+                    AzFramework::RemoteToolsMessagePointer msg = *messages.begin();
                     messages.pop_front();
 
                     if (auto request = azrtti_cast<Message::Notification*>(msg.get()))
@@ -264,16 +297,6 @@ namespace ScriptCanvas
                     }
                 }
             }
-        }
-
-        void ClientTransceiver::DisconnectFromTarget()
-        {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::DisconnectRequest());
-        }
-
-        void ClientTransceiver::CleanupConnection()
-        {
-            ClearMessages();
         }
 
         void ClientTransceiver::RemoveBreakpoint(const Breakpoint&)
@@ -293,42 +316,11 @@ namespace ScriptCanvas
 
         void ClientTransceiver::StepOver()
         {
-            SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending StepOver Request %s", m_currentTarget.GetDisplayName());
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::StepOverRequest());
-        }
-
-        void ClientTransceiver::TargetJoinedNetwork(AzFramework::TargetInfo info)
-        {
-            auto isConnectable = IsTargetConnectable(info);
-            if (isConnectable.IsSuccess())
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
             {
-                m_networkTargets.emplace(info.GetNetworkId(), info);
-                ServiceNotificationsBus::Broadcast(&ServiceNotifications::BecameUnavailable, Target(info));
-            }
-        }
-
-        void ClientTransceiver::TargetLeftNetwork(AzFramework::TargetInfo info)
-        {
-            bool eventNeeded = false;
-
-            if (info.GetNetworkId() == m_currentTarget.GetNetworkId())
-            {
-                CleanupConnection();
-                eventNeeded = true;
-            }
-            else
-            {
-                auto iter = m_networkTargets.find(info.GetNetworkId());
-                if (iter != m_networkTargets.end())
-                {
-                    m_networkTargets.erase(iter);
-                    eventNeeded = true;
-                }
-            }
-
-            if (eventNeeded)
-            {
-                ServiceNotificationsBus::Broadcast(&ServiceNotifications::BecameUnavailable, Target(info));
+                SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX Sending StepOver Request %s", target.GetDisplayName());
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::StepOverRequest());
             }
         }
 
@@ -368,7 +360,7 @@ namespace ScriptCanvas
 
         void ClientTransceiver::Visit(Message::Connected& notification)
         {
-            if (notification.m_target.m_info.IsIdentityEqualTo(m_currentTarget))
+            if (notification.m_target.m_info.IsIdentityEqualTo(GetNetworkTarget()))
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Neat. we're connected");
                 ServiceNotificationsBus::Broadcast(&ServiceNotifications::Connected, notification.m_target);
@@ -383,22 +375,14 @@ namespace ScriptCanvas
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Disconnect Notification Received");
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::Disconnected);
-
-            CleanupConnection();
-
-            if (m_resetDesiredTarget)
-            {
-                m_resetDesiredTarget = false;
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTargetInfo, m_previousDesiredInfo);
-                m_currentTarget = AzFramework::TargetInfo();
-            }
+            ClearMessages();
         }
 
         void ClientTransceiver::Visit([[maybe_unused]] Message::Continued& notification)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received continue notification!");
             Target connectedTarget;
-            connectedTarget.m_info = m_currentTarget;
+            connectedTarget.m_info = GetNetworkTarget();
 
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::Continued, connectedTarget);
         }
@@ -435,32 +419,36 @@ namespace ScriptCanvas
 
         void ClientTransceiver::OnSystemTick()
         {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::AddTargetsRequest(m_addCache));
-            m_connectionState.Merge(m_addCache);
-            m_addCache.Clear();
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (!remoteTools)
+                return;
 
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::RemoveTargetsRequest(m_removeCache));
-            m_connectionState.Remove(m_removeCache);
-            m_removeCache.Clear();
-
-            AZ::SystemTickBus::Handler::BusDisconnect();
-        }
-
-        void ClientTransceiver::StartEditorSession()
-        {
-            if (!m_currentTarget.IsValid())
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
             {
-                m_resetDesiredTarget = true;
-                AzFramework::TargetManager::Bus::BroadcastResult(m_previousDesiredInfo, &AzFramework::TargetManager::GetDesiredTarget);
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTargetInfo, m_selfTarget);
+                if (!m_addCache.m_entities.empty())
+                {
+                    remoteTools->SendRemoteToolsMessage(target, Message::AddTargetsRequest(m_addCache));
+                    m_connectionState.Merge(m_addCache);
+                    m_addCache.Clear();
+                }
+
+                if (!m_removeCache.m_entities.empty())
+                {
+                    remoteTools->SendRemoteToolsMessage(target, Message::RemoveTargetsRequest(m_removeCache));
+                    m_connectionState.Remove(m_removeCache);
+                    m_removeCache.Clear();
+                }
             }
-        }
 
-        void ClientTransceiver::StopEditorSession()
-        {
-            if (m_resetDesiredTarget)
+            const AzFramework::ReceivedRemoteToolsMessages* messages = remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+            if (messages)
             {
-                DisconnectFromTarget();
+                for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                {
+                    OnReceivedMsg(msg);
+                }
+                remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
             }
         }
 
@@ -470,15 +458,20 @@ namespace ScriptCanvas
             m_connectionState.Clear();
             m_connectionState.Merge(initialTargets);
 
-            if (m_currentTarget.IsValid())
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
             {
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::StartLoggingRequest(initialTargets));
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::StartLoggingRequest(initialTargets));
             }
         }
 
         void ClientTransceiver::StopLogging()
         {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_currentTarget, Message::StopLoggingRequest());
+            AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
+            if (target.IsValid())
+            {
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::StopLoggingRequest());
+            }
 
             m_connectionState.m_logExecution = false;
             m_connectionState.Clear();
@@ -497,11 +490,6 @@ namespace ScriptCanvas
             {
                 removeCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveEntityLoggingTarget(const AZ::EntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
@@ -517,33 +505,18 @@ namespace ScriptCanvas
             {
                 addCacheIter->second.erase(graphIdentifier);
             }
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::AddGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.insert(assetId);
             m_removeCache.m_graphs.erase(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
 
         void ClientTransceiver::RemoveGraphLoggingTarget(const AZ::Data::AssetId& assetId)
         {
             m_addCache.m_graphs.erase(assetId);
             m_removeCache.m_graphs.insert(assetId);
-
-            if (!AZ::SystemTickBus::Handler::BusIsConnected())
-            {
-                AZ::SystemTickBus::Handler::BusConnect();
-            }
         }
     }
 }

@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetOnPresimulateEvent",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Pre Simulate Event"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetOnPostsimulateEvent",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Post Simulate Event"
@@ -57,7 +55,6 @@
                 },
                 {
                     "base": "GetSceneHandle",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scene Handle"
@@ -94,7 +91,6 @@
                 },
                 {
                     "base": "GetScene",
-                    "context": "PhysicsSystemInterface",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Scene"

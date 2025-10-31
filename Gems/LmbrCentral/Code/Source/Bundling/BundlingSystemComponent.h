@@ -52,7 +52,7 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("BundlingService", 0xc9a43659));
+            provided.push_back(AZ_CRC_CE("BundlingService"));
         }
 
         // AZ::Component

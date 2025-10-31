@@ -9,10 +9,11 @@
 #include <MultiplayerToolsSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/MultiplayerStatSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
@@ -22,10 +23,10 @@ namespace Multiplayer
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
                 MultiplayerSystemComponent::CreateDescriptor(),
+                MultiplayerStatSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
-                NetworkSpawnableHolderComponent::CreateDescriptor(),
+                SimplePlayerSpawnerComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
                 MultiplayerToolsSystemComponent::CreateDescriptor(),
 #endif
@@ -37,8 +38,8 @@ namespace Multiplayer
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<MultiplayerSystemComponent>(),
+            azrtti_typeid<MultiplayerStatSystemComponent>(),
 #ifdef MULTIPLAYER_EDITOR
             azrtti_typeid<MultiplayerToolsSystemComponent>(),
 #endif
@@ -47,5 +48,21 @@ namespace Multiplayer
 } // namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
+#if defined(AZ_MONOLITHIC_BUILD)
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Client), Multiplayer::MultiplayerModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule)
+    #endif
+#if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Server), Multiplayer::MultiplayerModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule)
+    #endif
+#endif
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Multiplayer::MultiplayerModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule)
+#endif
 #endif

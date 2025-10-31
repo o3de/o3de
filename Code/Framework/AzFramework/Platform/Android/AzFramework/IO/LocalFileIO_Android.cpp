@@ -41,10 +41,11 @@ namespace AZ
     {
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
-            char resolvedSourcePath[AZ::IO::MaxPathLength];
-            char resolvedDestPath[AZ::IO::MaxPathLength];
-            ResolvePath(sourceFilePath, resolvedSourcePath, AZ::IO::MaxPathLength);
-            ResolvePath(destinationFilePath, resolvedDestPath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedSourcePath;
+            ResolvePath(resolvedSourcePath, sourceFilePath);
+
+            FixedMaxPath resolvedDestPath;
+            ResolvePath(resolvedDestPath, destinationFilePath);
 
             if (AZ::Android::Utils::IsApkPath(sourceFilePath) || AZ::Android::Utils::IsApkPath(destinationFilePath))
             {
@@ -55,13 +56,13 @@ namespace AZ
             //        on files on internal storage - this includes "emulated" SDCARD storage
             //        that actually resides on internal, and thus we can't depend on modtimes.
             {
-                std::ifstream  sourceFile(resolvedSourcePath, std::ios::binary);
+                std::ifstream sourceFile(resolvedSourcePath.c_str(), std::ios::binary);
                 if (sourceFile.fail())
                 {
                     return ResultCode::Error;
                 }
 
-                std::ofstream  destFile(resolvedDestPath, std::ios::binary);
+                std::ofstream destFile(resolvedDestPath.c_str(), std::ios::binary);
                 if (destFile.fail())
                 {
                     return ResultCode::Error;
@@ -76,29 +77,22 @@ namespace AZ
         {
             ANDROID_IO_PROFILE_SECTION_ARGS("FindFiles:%s", filePath);
 
-            char resolvedPath[AZ::IO::MaxPathLength];
-            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
+            resolvedPath = resolvedPath.LexicallyNormal();
 
-            AZStd::string pathWithoutSlash = RemoveTrailingSlash(resolvedPath);
-            bool isInAPK = AZ::Android::Utils::IsApkPath(pathWithoutSlash.c_str());
+            bool isInAPK = AZ::Android::Utils::IsApkPath(resolvedPath.c_str());
 
-            AZ::IO::FixedMaxPath tempBuffer;
             if (isInAPK)
             {
-                AZ::IO::FixedMaxPath strippedPath = AZ::Android::Utils::StripApkPrefix(pathWithoutSlash.c_str());
+                AZ::IO::FixedMaxPath strippedPath = AZ::Android::Utils::StripApkPrefix(resolvedPath.c_str());
 
-                AZ::Android::APKFileHandler::ParseDirectory(strippedPath.c_str(), [&](const char* name)
+                AZ::Android::APKFileHandler::ParseDirectory(strippedPath.c_str(), [&](AZStd::string_view filenameView)
                     {
-                        AZStd::string_view filenameView = name;
                         // Skip over the current and parent directory paths
-                        if (filenameView != "." && filenameView != ".." && NameMatchesFilter(name, filter))
+                        if (filenameView != "." && filenameView != ".." && AZStd::wildcard_match(filter, filenameView))
                         {
-                            AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
-                            foundFilePath += name;
-                            // if aliased, de-alias!
-                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
-
-                            if (!callback(tempBuffer.c_str()))
+                            if (!callback((resolvedPath / filenameView).c_str()))
                             {
                                 return false;
                             }
@@ -108,7 +102,7 @@ namespace AZ
             }
             else
             {
-                DIR* dir = opendir(pathWithoutSlash.c_str());
+                DIR* dir = opendir(resolvedPath.c_str());
 
                 if (dir != nullptr)
                 {
@@ -121,14 +115,9 @@ namespace AZ
                     {
                         AZStd::string_view filenameView = entry->d_name;
                         // Skip over the current and parent directory paths
-                        if (filenameView != "." && filenameView != ".." && NameMatchesFilter(entry->d_name, filter))
+                        if (filenameView != "." && filenameView != ".." && AZStd::wildcard_match(filter, filenameView))
                         {
-                            AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
-                            foundFilePath += entry->d_name;
-                            // if aliased, de-alias!
-                            ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
-
-                            if (!callback(tempBuffer.c_str()))
+                            if (!callback((resolvedPath / filenameView).c_str()))
                             {
                                 break;
                             }
@@ -155,43 +144,34 @@ namespace AZ
 
         Result LocalFileIO::CreatePath(const char* filePath)
         {
-            char resolvedPath[AZ::IO::MaxPathLength];
-            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
 
-            if (AZ::Android::Utils::IsApkPath(resolvedPath))
+            if (AZ::Android::Utils::IsApkPath(resolvedPath.c_str()))
             {
                 return ResultCode::Error; //you can't write to the APK
             }
 
             // create all paths up to that directory.
             // its not an error if the path exists.
-            if ((Exists(resolvedPath)) && (!IsDirectory(resolvedPath)))
+            if (Exists(resolvedPath.c_str()) && !IsDirectory(resolvedPath.c_str()))
             {
                 return ResultCode::Error; // that path exists, but is not a directory.
             }
 
             // make directories from bottom to top.
-            AZStd::string pathBuffer;
-            size_t pathLength = strlen(resolvedPath);
-            pathBuffer.reserve(pathLength);
-            for (size_t pathPos = 0; pathPos < pathLength; ++pathPos)
+            FixedMaxPath directoryPath = resolvedPath.RootPath();
+            for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
-                if ((resolvedPath[pathPos] == '\\') || (resolvedPath[pathPos] == '/'))
+                directoryPath /= pathSegment;
+                mkdir(directoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                if (!IsDirectory(directoryPath.c_str()))
                 {
-                    if (pathPos > 0)
-                    {
-                        mkdir(pathBuffer.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                        if (!IsDirectory(pathBuffer.c_str()))
-                        {
-                            return ResultCode::Error;
-                        }
-                    }
+                    return ResultCode::Error;
                 }
-                pathBuffer.push_back(resolvedPath[pathPos]);
             }
 
-            mkdir(pathBuffer.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            return IsDirectory(resolvedPath) ? ResultCode::Success : ResultCode::Error;
+            return IsDirectory(resolvedPath.c_str()) ? ResultCode::Success : ResultCode::Error;
         }
     } // namespace IO
 }//namespace AZ

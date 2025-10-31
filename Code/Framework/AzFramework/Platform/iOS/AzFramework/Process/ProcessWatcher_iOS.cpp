@@ -6,9 +6,9 @@
  *
  */
 
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
-
 
 namespace AzFramework
 {
@@ -82,5 +82,24 @@ namespace AzFramework
     void ProcessWatcher::TerminateProcess([[maybe_unused]] AZ::u32 exitCode)
     {
 
+    }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        struct CommandLineParametersVisitor
+        {
+            AZStd::string operator()(const AZStd::string& commandLine) const
+            {
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                return commandLineResult;
+            }
+        };
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
     }
 } //namespace AzFramework

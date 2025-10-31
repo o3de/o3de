@@ -8,18 +8,21 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Data class for holding button settings.
-    class Button
+    class AZTF_API Button
     {
     public:
         enum class State
         {
             Selected,
-            Deselected
+            Deselected,
+            Disabled
         };
 
         Button(AZStd::string icon, ButtonId buttonId);

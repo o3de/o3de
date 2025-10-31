@@ -16,6 +16,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Debug/Budget.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -23,10 +24,9 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
@@ -34,6 +34,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
 
+AZ_DEFINE_BUDGET(CrySystem);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -115,8 +116,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
-#include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
 
@@ -132,9 +131,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include "RemoteConsole/RemoteConsole.h"
 
-#include <PNoise3.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
@@ -170,16 +167,9 @@ namespace
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
-CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
+CSystem::CSystem()
 {
     CrySystemRequestBus::Handler::BusConnect();
-
-    if (!pSharedEnvironment)
-    {
-        CryFatalError("No shared environment instance provided. "
-            "Cross-module sharing of EBuses and allocators "
-            "is not possible.");
-    }
 
     m_systemGlobalState = ESYSTEM_GLOBAL_STATE_UNKNOWN;
     m_iHeight = 0;
@@ -206,7 +196,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
-    m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
     m_sysNoUpdate = NULL;
@@ -221,7 +210,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pUserCallback = NULL;
     m_sys_firstlaunch = NULL;
 
-    //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
 
     m_bInitializedSuccessfully = false;
@@ -241,20 +229,7 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_bNoUpdate = false;
     m_iApplicationInstance = -1;
 
-
     m_pXMLUtils = new CXmlUtils(this);
-
-    if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        m_initedOSAllocator = true;
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    }
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        m_initedSysAllocator = true;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::Debug::Trace::Instance().Init();
-    }
 
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
@@ -265,6 +240,8 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 #endif
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
+
+    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -283,17 +260,6 @@ CSystem::~CSystem()
     SAFE_DELETE(m_pSystemEventDispatcher);
 
     AZCoreLogSink::Disconnect();
-    if (m_initedSysAllocator)
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (m_initedOSAllocator)
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
-
-    AZ::Environment::Detach();
 
     m_env.pSystem = 0;
     gEnv = 0;
@@ -322,6 +288,30 @@ void CSystem::SetDevMode(bool bEnable)
 void CSystem::ShutDown()
 {
     CryLogAlways("System Shutdown");
+
+    // Disconnect any networking connections at the beginning of shutting down.
+    // This needs to happen before unloading the level because the network connection might queue
+    // references to entities and assets that could prevent cleanup from happening during the level unload.
+    if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+    {
+        console->PerformCommand("disconnect");
+    }
+
+    // On shutdown, we need to start by unloading the level spawnable and processing the spawnable queue
+    // to clean up any remaining references. Otherwise, we'll get lots of errors on shutdown due to assets still
+    // being in use as various subsystems get shut down. By the time the spawnable system shuts down, it will try
+    // to clean up the assets, but the asset handlers for those assets will also be deregistered and destroyed by then,
+    // causing even more errors.
+    // By unloading the level before shutting down any subsystems, we can avoid the cascade of errors.
+    ILevelSystem* levelSystem = GetILevelSystem();
+    if (levelSystem)
+    {
+        levelSystem->UnloadLevel();
+        if (auto spawnableInterface = AzFramework::RootSpawnableInterface::Get(); spawnableInterface)
+        {
+            spawnableInterface->ProcessSpawnableQueueUntilEmpty();
+        }
+    }
 
     // don't broadcast OnCrySystemShutdown unless
     // we'd previously broadcast OnCrySystemInitialized
@@ -373,14 +363,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Release();
-        gEnv->pLyShine = nullptr;
-    }
-
-    SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
@@ -411,7 +393,7 @@ void CSystem::ShutDown()
 
     // Audio System Shutdown!
     // Shut down audio as late as possible but before the streaming system and console get released!
-    Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
+    Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::Release);
 
     // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
@@ -419,7 +401,7 @@ void CSystem::ShutDown()
     // Log must be last thing released.
     if (m_env.pLog)
     {
-        m_env.pLog->FlushAndClose();
+        m_env.pLog->Flush();
     }
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
@@ -447,13 +429,7 @@ void CSystem::Quit()
         m_pUserCallback->OnQuit();
     }
 
-    gEnv->pLog->FlushAndClose();
-
-    // Latest possible place to flush any pending messages to disk before the forceful termination.
-    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
-    {
-        logger->Flush();
-    }
+    gEnv->pLog->Flush();
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
@@ -525,7 +501,7 @@ void CSystem::SleepIfNeeded()
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(CrySystem);
         Sleep(sleepMS);
     }
 
@@ -564,7 +540,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_pUserCallback)
@@ -640,7 +616,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         }
         if (pVSync == NULL && gEnv && gEnv->pConsole)
         {
-            pVSync = gEnv->pConsole->GetCVar("r_Vsync");
+            pVSync = gEnv->pConsole->GetCVar("vsync_interval");
         }
 
         if (pSysMaxFPS && pVSync)
@@ -760,7 +736,10 @@ bool CSystem::UpdateLoadtime()
 
 void CSystem::UpdateAudioSystems()
 {
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::ExternalUpdate);
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        audioSystem->ExternalUpdate();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -790,7 +769,11 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 //////////////////////////////////////////////////////////////////////////
 void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
 {
-    if (m_env.pMovieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
+    if (!m_movieSystem)
+    {
+        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
+    }
+    if (m_movieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
     {
         float fMovieFrameTime = fFrameTime;
 
@@ -801,11 +784,11 @@ void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, c
 
         if (bPreUpdate)
         {
-            m_env.pMovieSystem->PreUpdate(fMovieFrameTime);
+            m_movieSystem->PreUpdate(fMovieFrameTime);
         }
         else
         {
-            m_env.pMovieSystem->PostUpdate(fMovieFrameTime);
+            m_movieSystem->PostUpdate(fMovieFrameTime);
         }
     }
 }
@@ -959,7 +942,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
-        AZ::Debug::Trace::Break();
+        AZ::Debug::Trace::Instance().Break();
     }
 }
 
@@ -1050,7 +1033,7 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
+    // execute command line arguments e.g. +g_gametype ASSAULT +LoadLevel "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
     assert(pCmdLine);
@@ -1090,13 +1073,6 @@ ESystemConfigPlatform CSystem::GetConfigPlatform() const
     return m_ConfigPlatform;
 }
 
-//////////////////////////////////////////////////////////////////////////
-CPNoise3* CSystem::GetNoiseGen()
-{
-    static CPNoise3 m_pNoiseGen;
-    return &m_pNoiseGen;
-}
-
 //////////////////////////////////////////////////////////////////////
 void CSystem::OnLanguageCVarChanged(ICVar* language)
 {
@@ -1119,11 +1095,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
 
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::SetLanguage, lang);
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::ReloadData);
-
-            if (gEnv->pCryFont)
-            {
-                gEnv->pCryFont->OnLanguageChanged();
-            }
         }
     }
 }
@@ -1287,10 +1258,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-#if !defined(NDEBUG)
-    bool bRemoved =
-#endif
-        stl::find_and_erase(m_windowMessageHandlers, pHandler);
+    [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");
@@ -1381,7 +1349,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_ENTERMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::IncrementVisibleCounter);
         return true;
     }
     case WM_CAPTURECHANGED:
@@ -1399,7 +1366,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_EXITMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::DecrementVisibleCounter);
         return (uMsg != WM_CAPTURECHANGED);
     }
     case WM_SYSKEYUP:

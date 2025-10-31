@@ -1,0 +1,21 @@
+{
+    "materialType": "Types/ParticleMesh.materialtype",
+    "materialTypeVersion": 4,
+    "propertyValues": {
+        "baseColor.color": [
+            0.9190356135368347,
+            0.9190356135368347,
+            0.9542076587677002,
+            1.0
+        ],
+        "baseColor.factor": 0.8999999761581421,
+        "baseColor.textureBlendMode": "LinearLight",
+        "baseColor.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/checker_basecolor.tif",
+        "general.enableShadows": false,
+        "general.forwardPassIBLSpecular": true,
+        "metallic.factor": 0.10000000149011612,
+        "roughness.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/default_roughness.tif",
+        "roughness.upperBound": 0.5,
+        "specularF0.factor": 1.0
+    }
+}

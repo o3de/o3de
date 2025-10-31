@@ -10,7 +10,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <ScriptCanvas/Libraries/Operators/Operator.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <Include/ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.generated.h>
 
@@ -20,26 +19,6 @@ namespace ScriptCanvas
     {
         namespace Operators
         {
-            inline namespace OperatorEvaluator
-            {
-                template <typename ResultType, typename OperatorFunctor>
-                static void Evaluate(OperatorFunctor&& operatorFunctor, const OperatorBase::OperatorOperands& operands, Datum& result)
-                {
-                    // At this point we know that the operands have been checked and we have at least 2.
-                    // So we can just convert it to the value directly.
-                    OperatorBase::OperatorOperands::const_iterator operandIter = operands.begin();
-
-                    ResultType resultType = (*(*operandIter)->GetAs<ResultType>());
-
-                    for (++operandIter; operandIter != operands.end(); ++operandIter)
-                    {
-                        resultType = AZStd::invoke(operatorFunctor, resultType, (*(*operandIter)));
-                    }
-
-                    result.Set<ResultType>(resultType);
-                }
-            }
-
             //! Base class for arithmetic operation nodes
             class OperatorArithmetic : public Node
             {
@@ -63,8 +42,8 @@ namespace ScriptCanvas
 
                 OperatorArithmetic() = default;
 
-                AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC("AddnewValueExtension", 0xea20301c); }
-                AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC("ArithmeticGroup", 0x4271e41f); }
+                AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC_CE("AddnewValueExtension"); }
+                AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC_CE("ArithmeticGroup"); }
                 AZStd::string GetArithmeticDisplayGroup() const { return "ArithmeticGroup"; }
 
                 virtual AZStd::string_view OperatorFunction() const { return ""; }
@@ -75,11 +54,13 @@ namespace ScriptCanvas
                         Data::Type::Vector2(),
                         Data::Type::Vector3(),
                         Data::Type::Vector4(),
+                        Data::Type::VectorN(),
                         Data::Type::Color(),
                         Data::Type::Quaternion(),
                         Data::Type::Transform(),
                         Data::Type::Matrix3x3(),
-                        Data::Type::Matrix4x4()
+                        Data::Type::Matrix4x4(),
+                        Data::Type::MatrixMxN()
                     };
                 }
 
@@ -142,6 +123,27 @@ namespace ScriptCanvas
                 {
                 }
             };
+
+            inline namespace OperatorEvaluator
+            {
+                template<typename ResultType, typename OperatorFunctor>
+                static void Evaluate(
+                    OperatorFunctor&& operatorFunctor, const OperatorArithmetic::ArithmeticOperands& operands, Datum& result)
+                {
+                    // At this point we know that the operands have been checked and we have at least 2.
+                    // So we can just convert it to the value directly.
+                    OperatorArithmetic::ArithmeticOperands::const_iterator operandIter = operands.begin();
+
+                    ResultType resultType = (*(*operandIter)->GetAs<ResultType>());
+
+                    for (++operandIter; operandIter != operands.end(); ++operandIter)
+                    {
+                        resultType = AZStd::invoke(operatorFunctor, resultType, (*(*operandIter)));
+                    }
+
+                    result.Set<ResultType>(resultType);
+                }
+            } // namespace OperatorEvaluator
         }
     }
 }

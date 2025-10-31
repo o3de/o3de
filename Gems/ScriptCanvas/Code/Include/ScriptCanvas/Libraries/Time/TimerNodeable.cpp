@@ -17,7 +17,7 @@ namespace ScriptCanvas
             void TimerNodeable::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint time)
             {
                 AZ_PROFILE_FUNCTION(ScriptCanvas);
-                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE
                 double milliseconds = time.GetMilliseconds() - m_start.GetMilliseconds();
                 double seconds = time.GetSeconds() - m_start.GetSeconds();
                 CallOnTick(milliseconds, seconds);

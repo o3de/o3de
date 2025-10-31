@@ -18,7 +18,7 @@ namespace ExpressionEvaluation
     {
     public:
         AZ_RTTI(ExpressionEvaluationModule, "{3183322D-3AE1-4B8B-86D7-870DA60DC175}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ExpressionEvaluationModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpressionEvaluationModule, AZ::SystemAllocator);
 
         ExpressionEvaluationModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace ExpressionEvaluation
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ExpressionEvaluation::ExpressionEvaluationModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ExpressionEvaluation, ExpressionEvaluation::ExpressionEvaluationModule)
+#endif

@@ -145,6 +145,7 @@ namespace ScriptEvents
         {
             return AZ::Crc32(GetNameProperty().GetId().ToString<AZStd::string>().c_str());
         }
+
         //! Validates that the asset data being stored is valid and supported.
         AZ::Outcome<bool, AZStd::string> Validate() const;
         void PreSave();

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 namespace AZ
@@ -19,7 +20,7 @@ namespace AZ
         //! Each slot has a unique ID, a name, and a default material. Each mesh in model will reference a single ModelMaterialSlot.
         //! Other classes like MeshFeatureProcessor and MaterialComponent can override the material associated with individual slots
         //! to alter the default appearance of the mesh.
-        struct ModelMaterialSlot
+        struct ATOM_RPI_REFLECT_API ModelMaterialSlot
         {
             AZ_TYPE_INFO(ModelMaterialSlot, "{0E88A62A-D83D-4C1B-8DE7-CE972B8124B5}");
                 
@@ -28,7 +29,7 @@ namespace AZ
             // Note that StableId is uint32_t for legacy reasons: we used to use AssetId::m_subId as the material slot ID. But actually the original MaterialUid
             // is 64 bit so we might want to switch this to be uint64_t at some point.
             using StableId = uint32_t;
-            static const StableId InvalidStableId;
+            static constexpr StableId InvalidStableId{ AZStd::numeric_limits<ModelMaterialSlot::StableId>::max() };
 
             //! This ID must have a consistent value when the asset is reprocessed by the asset pipeline, and must be unique within the ModelLodAsset.
             //! In practice, this set using the MaterialUid from SceneAPI. See ModelAssetBuilderComponent::CreateMesh.

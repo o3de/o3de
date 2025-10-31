@@ -16,12 +16,16 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
-#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 
 #include <Common/AssetManagerTestFixture.h>
 #include <Common/RHI/Stubs.h>
 #include <Common/RHI/Factory.h>
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
+
+namespace AZ
+{
+    class ScriptSystemComponent;
+}
 
 namespace UnitTest
 {
@@ -32,14 +36,14 @@ namespace UnitTest
         static const uint32_t s_heapSizeMB = 64;
 
     public:
+        RPITestFixture();
+        ~RPITestFixture();
 
     protected:
         virtual void Reflect(AZ::ReflectContext* context);
 
         void SetUp() override;
         void TearDown() override;
-
-        AZ::RHI::Device* GetDevice();
 
         //! Performs processing that would normally be done by the frame scheduler, 
         //! which has to happen in order to recompile the same SRG instance multiple times.
@@ -57,8 +61,12 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
 
         // Required for json serializer
-        AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+
+        // Required for Lua
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_scriptSystemComponentDescriptor;
+
+        AZStd::unique_ptr<AZ::Entity> m_systemEntity;
 
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_localFileIO;

@@ -111,7 +111,7 @@ bool UiDraggableComponent::HandleEnterPressed(bool& shouldStayActive)
     if (handled)
     {
         AZ::Vector2 point(0.0f, 0.0f);
-        EBUS_EVENT_ID_RESULT(point, GetEntityId(), UiTransformBus, GetViewportSpacePivot);
+        UiTransformBus::EventResult(point, GetEntityId(), &UiTransformBus::Events::GetViewportSpacePivot);
 
         // if we are not yet in the dragging state do some tests to see if we should be
         if (!m_isDragging)
@@ -125,7 +125,7 @@ bool UiDraggableComponent::HandleEnterPressed(bool& shouldStayActive)
             m_isDragging = true;
             m_dragState = DragState::Normal;
 
-            EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+            UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
 
             m_hoverDropTarget.SetInvalid();
 
@@ -133,7 +133,7 @@ bool UiDraggableComponent::HandleEnterPressed(bool& shouldStayActive)
             AZ::EntityId closestDropTarget = FindClosestNavigableDropTarget();
             if (closestDropTarget.IsValid())
             {
-                EBUS_EVENT_ID_RESULT(point, closestDropTarget, UiTransformBus, GetViewportPosition);
+                UiTransformBus::EventResult(point, closestDropTarget, &UiTransformBus::Events::GetViewportPosition);
             }
 
             DoDrag(point, true);
@@ -176,7 +176,7 @@ bool UiDraggableComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
             auto isValidDropTarget = [](AZ::EntityId entityId)
                 {
                     bool isEnabled = false;
-                    EBUS_EVENT_ID_RESULT(isEnabled, entityId, UiElementBus, IsEnabled);
+                    UiElementBus::EventResult(isEnabled, entityId, &UiElementBus::Events::IsEnabled);
 
                     if (isEnabled && UiDropTargetBus::FindFirstHandler(entityId))
                     {
@@ -198,7 +198,7 @@ bool UiDraggableComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         if (newElement.IsValid())
         {
             AZ::Vector2 point(0.0f, 0.0f);
-            EBUS_EVENT_ID_RESULT(point, newElement, UiTransformBus, GetViewportSpacePivot);
+            UiTransformBus::EventResult(point, newElement, &UiTransformBus::Events::GetViewportSpacePivot);
             DoDrag(point, true);
         }
 
@@ -232,7 +232,7 @@ void UiDraggableComponent::InputPositionUpdate(AZ::Vector2 point)
                     m_isDragging = true;
                     m_dragState = DragState::Normal;
 
-                    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+                    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
 
                     m_hoverDropTarget.SetInvalid();
                 }
@@ -254,7 +254,7 @@ bool UiDraggableComponent::DoesSupportDragHandOff(AZ::Vector2 startPoint)
     // i.e. if there is a child interactable element such as a button or checkbox and the user
     // drags it, then the drag can get handed off to the parent draggable element
     bool isPointInRect = false;
-    EBUS_EVENT_ID_RESULT(isPointInRect, GetEntityId(), UiTransformBus, IsPointInRect, startPoint);
+    UiTransformBus::EventResult(isPointInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, startPoint);
     return isPointInRect;
 }
 
@@ -275,12 +275,13 @@ bool UiDraggableComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
             m_pressedPoint = startPoint;
 
             // tell the canvas that this is now the active interactable
-            EBUS_EVENT_ID(currentActiveInteractable, UiInteractableActiveNotificationBus, ActiveChanged, GetEntityId(), false);
+            UiInteractableActiveNotificationBus::Event(
+                currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
 
             // start the drag
             m_isDragging = true;
             m_dragState = DragState::Normal;
-            EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, currentPoint);
+            UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, currentPoint);
             m_hoverDropTarget.SetInvalid();
 
             // Send the OnDrag and any OnDropHoverStart immediately so that it doesn't require another frame to
@@ -301,7 +302,7 @@ void UiDraggableComponent::LostActiveStatus()
     UiInteractableComponent::LostActiveStatus();
 
     AZ::Vector2 viewportPoint;
-    EBUS_EVENT_ID_RESULT(viewportPoint, GetEntityId(), UiTransformBus, GetViewportSpacePivot);
+    UiTransformBus::EventResult(viewportPoint, GetEntityId(), &UiTransformBus::Events::GetViewportSpacePivot);
 
     EndDragOperation(viewportPoint, true);
 
@@ -331,7 +332,7 @@ void UiDraggableComponent::SetAsProxy(AZ::EntityId originalDraggableId, AZ::Vect
 {
     // find the originalDraggable by Id
     AZ::Entity* originalDraggable = nullptr;
-    EBUS_EVENT_RESULT(originalDraggable, AZ::ComponentApplicationBus, FindEntity, originalDraggableId);
+    AZ::ComponentApplicationBus::BroadcastResult(originalDraggable, &AZ::ComponentApplicationBus::Events::FindEntity, originalDraggableId);
     if (!originalDraggable)
     {
         AZ_Warning("UI", false, "SetAsProxy: Cannot find original draggable");
@@ -356,13 +357,13 @@ void UiDraggableComponent::SetAsProxy(AZ::EntityId originalDraggableId, AZ::Vect
 
     // tell the proxy draggable's canvas that this is now the active interactable
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, ForceActiveInteractable, GetEntityId(), m_isActive, m_pressedPoint);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::ForceActiveInteractable, GetEntityId(), m_isActive, m_pressedPoint);
 
     // start the drag on the proxy
     m_isDragging = true;
     m_dragState = DragState::Normal;
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragStart, point);
+    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragStart, point);
     m_hoverDropTarget.SetInvalid();
 
     // Send the OnDrag and any OnDropHoverStart immediately so that it doesn't require another frame to
@@ -380,7 +381,7 @@ void UiDraggableComponent::SetAsProxy(AZ::EntityId originalDraggableId, AZ::Vect
 void UiDraggableComponent::ProxyDragEnd(AZ::Vector2 point)
 {
     AZ::Entity* originalDraggable = nullptr;
-    EBUS_EVENT_RESULT(originalDraggable, AZ::ComponentApplicationBus, FindEntity, m_isProxyFor);
+    AZ::ComponentApplicationBus::BroadcastResult(originalDraggable, &AZ::ComponentApplicationBus::Events::FindEntity, m_isProxyFor);
     if (!originalDraggable)
     {
         AZ_Warning("UI", false, "ProxyDragEnd: Cannot find original draggable");
@@ -526,7 +527,7 @@ void UiDraggableComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDraggable.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDraggable.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Drag States")
@@ -576,7 +577,7 @@ AZ::EntityId UiDraggableComponent::GetDropTargetUnderDraggable(AZ::Vector2 point
     AZ::EntityId result;
 
     AZ::EntityId canvasEntity;
-    EBUS_EVENT_ID_RESULT(canvasEntity, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntity, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
     // We will ignore this element and all its children in the search
     AZ::EntityId ignoreElement = GetEntityId();
@@ -645,7 +646,7 @@ void UiDraggableComponent::DoDrag(AZ::Vector2 viewportPoint, bool ignoreInteract
     }
 
     // Send the OnDrag notification
-    EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDrag, viewportPoint);
+    UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDrag, viewportPoint);
 
     AZ::EntityId dropEntity = GetDropTargetUnderDraggable(viewportPoint, ignoreInteractables);
 
@@ -653,7 +654,7 @@ void UiDraggableComponent::DoDrag(AZ::Vector2 viewportPoint, bool ignoreInteract
     if (m_hoverDropTarget.IsValid() && m_hoverDropTarget != dropEntity)
     {
         // end the drop hover
-        EBUS_EVENT_ID(m_hoverDropTarget, UiDropTargetBus, HandleDropHoverEnd, GetEntityId());
+        UiDropTargetBus::Event(m_hoverDropTarget, &UiDropTargetBus::Events::HandleDropHoverEnd, GetEntityId());
         m_hoverDropTarget.SetInvalid();
     }
 
@@ -661,7 +662,7 @@ void UiDraggableComponent::DoDrag(AZ::Vector2 viewportPoint, bool ignoreInteract
     if (!m_hoverDropTarget.IsValid() && dropEntity.IsValid())
     {
         // start a drop hover
-        EBUS_EVENT_ID(dropEntity, UiDropTargetBus, HandleDropHoverStart, GetEntityId());
+        UiDropTargetBus::Event(dropEntity, &UiDropTargetBus::Events::HandleDropHoverStart, GetEntityId());
         m_hoverDropTarget = dropEntity;
     }
 }
@@ -674,7 +675,7 @@ void UiDraggableComponent::EndDragOperation(AZ::Vector2 viewportPoint, bool igno
         // If we were hovering over a drop target then forget it, we will recompute what we are over now
         if (m_hoverDropTarget.IsValid())
         {
-            EBUS_EVENT_ID(m_hoverDropTarget, UiDropTargetBus, HandleDropHoverEnd, GetEntityId());
+            UiDropTargetBus::Event(m_hoverDropTarget, &UiDropTargetBus::Events::HandleDropHoverEnd, GetEntityId());
             m_hoverDropTarget.SetInvalid();
         }
 
@@ -682,12 +683,12 @@ void UiDraggableComponent::EndDragOperation(AZ::Vector2 viewportPoint, bool igno
         AZ::EntityId dropEntity = GetDropTargetUnderDraggable(viewportPoint, ignoreInteractables);
 
         // send a drag end notification
-        EBUS_QUEUE_EVENT_ID(GetEntityId(), UiDraggableNotificationBus, OnDragEnd, viewportPoint);
+        UiDraggableNotificationBus::QueueEvent(GetEntityId(), &UiDraggableNotificationBus::Events::OnDragEnd, viewportPoint);
 
         // If there was a drop target under the cursor then send it a message to handle this draggable being dropped on it
         if (dropEntity.IsValid())
         {
-            EBUS_EVENT_ID(dropEntity, UiDropTargetBus, HandleDrop, GetEntityId());
+            UiDropTargetBus::Event(dropEntity, &UiDropTargetBus::Events::HandleDrop, GetEntityId());
         }
 
         m_isDragging = false;
@@ -699,10 +700,10 @@ void UiDraggableComponent::EndDragOperation(AZ::Vector2 viewportPoint, bool igno
 void UiDraggableComponent::FindNavigableDropTargetElements(AZ::EntityId ignoreElement, LyShine::EntityArray& result)
 {
     AZ::EntityId canvasEntity;
-    EBUS_EVENT_ID_RESULT(canvasEntity, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntity, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
     LyShine::EntityArray elements;
-    EBUS_EVENT_ID_RESULT(elements, canvasEntity, UiCanvasBus, GetChildElements);
+    UiCanvasBus::EventResult(elements, canvasEntity, &UiCanvasBus::Events::GetChildElements);
 
     AZStd::list<AZ::Entity*> elementList(elements.begin(), elements.end());
     while (!elementList.empty())
@@ -717,7 +718,7 @@ void UiDraggableComponent::FindNavigableDropTargetElements(AZ::EntityId ignoreEl
 
         // Check if the element is enabled
         bool isEnabled = false;
-        EBUS_EVENT_ID_RESULT(isEnabled, entity->GetId(), UiElementBus, IsEnabled);
+        UiElementBus::EventResult(isEnabled, entity->GetId(), &UiElementBus::Events::IsEnabled);
         if (!isEnabled)
         {
             continue;
@@ -730,7 +731,7 @@ void UiDraggableComponent::FindNavigableDropTargetElements(AZ::EntityId ignoreEl
         }
 
         UiNavigationInterface::NavigationMode navigationMode = UiNavigationInterface::NavigationMode::None;
-        EBUS_EVENT_ID_RESULT(navigationMode, entity->GetId(), UiNavigationBus, GetNavigationMode);
+        UiNavigationBus::EventResult(navigationMode, entity->GetId(), &UiNavigationBus::Events::GetNavigationMode);
         bool isNavigable = (navigationMode != UiNavigationInterface::NavigationMode::None);
 
         if (isDropTarget && isNavigable)
@@ -740,7 +741,7 @@ void UiDraggableComponent::FindNavigableDropTargetElements(AZ::EntityId ignoreEl
         else
         {
             LyShine::EntityArray childElements;
-            EBUS_EVENT_ID_RESULT(childElements, entity->GetId(), UiElementBus, GetChildElements);
+            UiElementBus::EventResult(childElements, entity->GetId(), &UiElementBus::Events::GetChildElements);
             elementList.insert(elementList.end(), childElements.begin(), childElements.end());
         }
     }
@@ -750,7 +751,7 @@ void UiDraggableComponent::FindNavigableDropTargetElements(AZ::EntityId ignoreEl
 AZ::EntityId UiDraggableComponent::FindClosestNavigableDropTarget()
 {
     UiTransformInterface::RectPoints srcPoints;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, srcPoints);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, srcPoints);
     AZ::Vector2 srcCenter = srcPoints.GetCenter();
 
     LyShine::EntityArray dropTargets;
@@ -761,7 +762,7 @@ AZ::EntityId UiDraggableComponent::FindClosestNavigableDropTarget()
     for (auto dropTarget : dropTargets)
     {
         UiTransformInterface::RectPoints destPoints;
-        EBUS_EVENT_ID(dropTarget->GetId(), UiTransformBus, GetViewportSpacePoints, destPoints);
+        UiTransformBus::Event(dropTarget->GetId(), &UiTransformBus::Events::GetViewportSpacePoints, destPoints);
 
         AZ::Vector2 destCenter = destPoints.GetCenter();
 
@@ -788,7 +789,7 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableOnAllCanvases(
     AZ::EntityId result;
 
     UiCanvasManagerInterface::CanvasEntityList canvases;
-    EBUS_EVENT_RESULT(canvases, UiCanvasManagerBus, GetLoadedCanvases);
+    UiCanvasManagerBus::BroadcastResult(canvases, &UiCanvasManagerBus::Events::GetLoadedCanvases);
 
     // reverse iterate over the loaded canvases so that the front most canvas gets first chance to
     // handle the event
@@ -810,11 +811,11 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableOnCanvas(AZ::Enti
 
     // recursively check the children of the canvas (in reverse order since children are in front of parent)
     int numChildren = 0;
-    EBUS_EVENT_ID_RESULT(numChildren, canvasEntityId, UiCanvasBus, GetNumChildElements);
+    UiCanvasBus::EventResult(numChildren, canvasEntityId, &UiCanvasBus::Events::GetNumChildElements);
     for (int i = numChildren - 1; !result.IsValid() && i >= 0; i--)
     {
         AZ::EntityId child;
-        EBUS_EVENT_ID_RESULT(child, canvasEntityId, UiCanvasBus, GetChildElementEntityId, i);
+        UiCanvasBus::EventResult(child, canvasEntityId, &UiCanvasBus::Events::GetChildElementEntityId, i);
 
         if (child != ignoreElement)
         {
@@ -832,7 +833,7 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableUnderCursor(AZ::E
     AZ::EntityId result;
 
     bool isEnabled = false;
-    EBUS_EVENT_ID_RESULT(isEnabled, element, UiElementBus, IsEnabled);
+    UiElementBus::EventResult(isEnabled, element, &UiElementBus::Events::IsEnabled);
     if (!isEnabled)
     {
         // Nothing to do
@@ -843,15 +844,15 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableUnderCursor(AZ::E
     {
         // if this element is masking children at this point then don't check the children
         bool isMasked = false;
-        EBUS_EVENT_ID_RESULT(isMasked, element, UiInteractionMaskBus, IsPointMasked, point);
+        UiInteractionMaskBus::EventResult(isMasked, element, &UiInteractionMaskBus::Events::IsPointMasked, point);
         if (!isMasked)
         {
             int numChildren = 0;
-            EBUS_EVENT_ID_RESULT(numChildren, element, UiElementBus, GetNumChildElements);
+            UiElementBus::EventResult(numChildren, element, &UiElementBus::Events::GetNumChildElements);
             for (int i = numChildren - 1; !result.IsValid() && i >= 0; i--)
             {
                 AZ::EntityId child;
-                EBUS_EVENT_ID_RESULT(child, element, UiElementBus, GetChildEntityId, i);
+                UiElementBus::EventResult(child, element, &UiElementBus::Events::GetChildEntityId, i);
 
                 if (child != ignoreElement)
                 {
@@ -866,7 +867,7 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableUnderCursor(AZ::E
     {
         // if the point is in this element's rect
         bool isInRect = false;
-        EBUS_EVENT_ID_RESULT(isInRect, element, UiTransformBus, IsPointInRect, point);
+        UiTransformBus::EventResult(isInRect, element, &UiTransformBus::Events::IsPointInRect, point);
         if (isInRect)
         {
             // If this element has a drop target component
@@ -880,17 +881,17 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableUnderCursor(AZ::E
             {
                 // check if this interactable component is in a state where it can handle an event at the given point
                 bool canHandle = false;
-                EBUS_EVENT_ID_RESULT(canHandle, element, UiInteractableBus, CanHandleEvent, point);
+                UiInteractableBus::EventResult(canHandle, element, &UiInteractableBus::Events::CanHandleEvent, point);
                 if (canHandle)
                 {
                     // in this case the interaction is blocked unless this interactable has a parent that is
                     // a drop target
                     AZ::EntityId parent;
-                    EBUS_EVENT_ID_RESULT(parent, element, UiElementBus, GetParentEntityId);
+                    UiElementBus::EventResult(parent, element, &UiElementBus::Events::GetParentEntityId);
                     while (parent.IsValid())
                     {
                         bool isInParentRect = false;
-                        EBUS_EVENT_ID_RESULT(isInParentRect, parent, UiTransformBus, IsPointInRect, point);
+                        UiTransformBus::EventResult(isInParentRect, parent, &UiTransformBus::Events::IsPointInRect, point);
                         if (isInParentRect && UiDropTargetBus::FindFirstHandler(parent))
                         {
                             // We found a parent drop target and the cursor is in its rect,
@@ -898,7 +899,7 @@ AZ::EntityId UiDraggableComponent::FindDropTargetOrInteractableUnderCursor(AZ::E
                             result = parent;
                             break;
                         }
-                        EBUS_EVENT_ID_RESULT(parent, parent, UiElementBus, GetParentEntityId);
+                        UiElementBus::EventResult(parent, parent, &UiElementBus::Events::GetParentEntityId);
                     }
 
                     if (!result.IsValid())

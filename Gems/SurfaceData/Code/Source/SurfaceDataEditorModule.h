@@ -17,7 +17,7 @@ namespace SurfaceData
     {
     public:
         AZ_RTTI(SurfaceDataEditorModule, "{B80F2321-B79A-4161-B586-3E508655DFAF}", SurfaceDataModule);
-        AZ_CLASS_ALLOCATOR(SurfaceDataEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceDataEditorModule, AZ::SystemAllocator);
 
         SurfaceDataEditorModule();
 

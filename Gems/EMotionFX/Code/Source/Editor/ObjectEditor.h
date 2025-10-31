@@ -38,6 +38,11 @@ namespace EMotionFX
         void AddInstance(void* object, const AZ::TypeId& objectTypeId, void* aggregateInstance = nullptr, void* compareInstance = nullptr);
         void ClearInstances(bool invalidateImmediately);
 
+        //! Filter Reflected Properties
+        void SetFilterString(QString filterString);
+        //! Returns true if any Node in the Reflected Property Editor is displayed
+        bool HasDisplayedNodes() const;
+
         void* GetObject() { return m_object; }
 
     public slots:

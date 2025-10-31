@@ -17,8 +17,7 @@
 // forward declarations.
 class CParticleItem;
 
-#include "BaseLibraryItem.h"
-#include "Objects/BaseObject.h"
+#include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
 #include "ErrorRecorder.h"
 
@@ -55,29 +54,13 @@ public:
     QString assetScope;
     int count;
     //! Object that caused this error.
-    _smart_ptr<CBaseObject> pObject;
-    //! Library Item that caused this error.
-    _smart_ptr<CBaseLibraryItem> pItem;
     int flags;
 
-    CErrorRecord(CBaseObject* object, ESeverity _severity, const QString& _error, int _flags = 0, int _count = 0,
-        CBaseLibraryItem* item = 0, EValidatorModule _module = VALIDATOR_MODULE_EDITOR)
-        : severity(_severity)
-        , module(_module)
-        , pObject(object)
-        , pItem(item)
-        , flags(_flags)
-        , count(_count)
-        , error(_error)
-    {
-    }
 
     CErrorRecord()
     {
         severity = ESEVERITY_WARNING;
         module = VALIDATOR_MODULE_EDITOR;
-        pObject = 0;
-        pItem = 0;
         flags = 0;
         count = 0;
     }
@@ -114,10 +97,6 @@ public:
     //! Display dialog with all errors.
     void Display();
 
-    //! Assign current Object to which new reported warnings are assigned.
-    void SetCurrentValidatorObject(CBaseObject* pObject);
-    //! Assign current Item to which new reported warnings are assigned.
-    void SetCurrentValidatorItem(CBaseLibraryItem* pItem);
     //! Assign current filename.
     void SetCurrentFile(const QString& file);
 
@@ -126,8 +105,6 @@ private:
     std::vector<CErrorRecord> m_errors;
     bool m_bImmediateMode;
     bool m_bShowErrors;
-    _smart_ptr<CBaseObject> m_pObject;
-    _smart_ptr<CBaseLibraryItem> m_pItem;
     CParticleItem* m_pParticle;
     QString m_currentFilename;
 };

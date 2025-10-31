@@ -38,6 +38,7 @@ namespace EMotionFX
             m_actorInstance->Destroy();
             m_actorInstance = nullptr;
         }
+        m_actorAsset.Reset();
 
         GetEMotionFX().GetActorManager()->UnregisterAllActors();
         SystemComponentFixture::TearDown();

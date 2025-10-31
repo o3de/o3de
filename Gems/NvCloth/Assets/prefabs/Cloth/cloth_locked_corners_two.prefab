@@ -83,7 +83,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 16927361351552746000,
                     "Configuration": {
-                        "Mesh Node": "pPlane1_1",
+                        "Mesh Node": "pPlane1",
                         "Mass": 10.0,
                         "Stiffness Frequency": 1.0,
                         "Damping": [
@@ -101,6 +101,7 @@
                             0.0,
                             0.0
                         ],
+                        "Use Custom Wind Velocity": false,
                         "Air Drag Coefficient": 0.5,
                         "Air Lift Coefficient": 0.800000011920929,
                         "Tether Constraint Stiffness": 0.10000000149011612,
@@ -129,46 +130,7 @@
                                 }
                             ]
                         }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialSlotStableId": 902256226
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{A56F28DD-6082-50B6-9B44-9EF3E03E95BB}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_two.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{23C6817F-0B79-5CAD-B861-9E6F5E55927D}",
-                                    "subId": 902256226
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_two_lambert1_3614897150141879906.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 902256226
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{23C6817F-0B79-5CAD-B861-9E6F5E55927D}",
-                                        "subId": 902256226
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/environment/cloth_locked_corners_two_lambert1_3614897150141879906.azmaterial"
-                                }
-                            }
-                        ]
-                    ]
+                    }
                 },
                 "Component_[2410073307760782444]": {
                     "$type": "EditorPendingCompositionComponent",

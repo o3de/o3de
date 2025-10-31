@@ -14,7 +14,7 @@
 
 namespace LandscapeCanvas
 {
-    static const char* EditorLandscapeCanvasComponentTypeId = "{A3E4EBB8-DAC1-4D59-A9CD-64D6DA2F79F7}";
+    inline constexpr AZ::TypeId EditorLandscapeCanvasComponentTypeId{ "{A3E4EBB8-DAC1-4D59-A9CD-64D6DA2F79F7}" };
 
     class EditorLandscapeCanvasComponent
         : public AzToolsFramework::Components::EditorComponentBase

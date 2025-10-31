@@ -6,12 +6,11 @@
  *
  */
 
-#ifndef AZFRAMEWORK_SIMPLEASSET_H
-#define AZFRAMEWORK_SIMPLEASSET_H
+ #pragma once
 
 #include <AzCore/base.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
-#pragma once
 
 /*!
  * Asset references are simply game-folder relative paths.
@@ -56,7 +55,7 @@ namespace AzFramework
      * - Handles storage of the game-relative asset path.
      * - Handles reflection of reference type for use in serialization/editing.
      */
-    class SimpleAssetReferenceBase
+    class AZF_API SimpleAssetReferenceBase
     {
     public:
 
@@ -64,7 +63,7 @@ namespace AzFramework
 
         virtual ~SimpleAssetReferenceBase() { }
 
-        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator);
         AZ_RTTI(SimpleAssetReferenceBase, "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}");
 
         const AZStd::string& GetAssetPath() const { return m_assetPath; }
@@ -85,7 +84,7 @@ namespace AzFramework
                 AZStd::char_traits<char>,
                 AZStd::static_buffer_allocator<128, AZStd::alignment_of<char>::value> >;
 
-    inline const AZ::Uuid SimpleAssetReferenceTypeId = { "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
+    inline constexpr AZ::Uuid SimpleAssetReferenceTypeId{ "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
 
     /*!
      * Templated asset reference type.
@@ -98,8 +97,8 @@ namespace AzFramework
         : public SimpleAssetReferenceBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator, 0);
-        AZ_RTTI((SimpleAssetReference<AssetType>, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator);
+        AZ_RTTI((SimpleAssetReference, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
 
         static void Register(AZ::SerializeContext& context)
         {
@@ -161,13 +160,13 @@ namespace AzFramework
      * Retrieves the name of an asset by asset type (which is actually a name Crc).
      * This information is stored in the environment, so it's accessible from any module.
      */
-    const char* SimpleAssetTypeGetName(const AZ::Data::AssetType& assetType);
+    AZF_API const char* SimpleAssetTypeGetName(const AZ::Data::AssetType& assetType);
 
     /*!
      * Retrieves the file filter for an asset type.
      * This information is stored in the environment, so it's accessible from any module.
      */
-    const char* SimpleAssetTypeGetFileFilter(const AZ::Data::AssetType& assetType);
+    AZF_API const char* SimpleAssetTypeGetFileFilter(const AZ::Data::AssetType& assetType);
 
 } // namespace AzFramework
 
@@ -191,7 +190,6 @@ namespace AZ
     };
 
     //! This is being declared so that azrtti_typeid<AzFramework::SimpleAssetReference>() will work
-    AZ_TYPE_INFO_INTERNAL_VARIATION_GENERIC(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId)
+    AZ_TYPE_INFO_TEMPLATE(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId, AZ_TYPE_INFO_CLASS);
 }
 
-#endif // AZFRAMEWORK_SIMPLEASSET_H

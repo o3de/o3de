@@ -81,12 +81,12 @@ namespace CustomAssetExample
 
     void ExampleBuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ExampleBuilderPluginService", 0x1380f480));
+        provided.push_back(AZ_CRC_CE("ExampleBuilderPluginService"));
     }
 
     void ExampleBuilderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ExampleBuilderPluginService", 0x1380f480));
+        incompatible.push_back(AZ_CRC_CE("ExampleBuilderPluginService"));
     }
 
     void ExampleBuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

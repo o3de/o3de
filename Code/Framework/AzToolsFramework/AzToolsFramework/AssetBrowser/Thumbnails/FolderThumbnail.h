@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <QObject>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -19,14 +20,14 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! FolderAssetBrowserEntry thumbnail key
-        class FolderThumbnailKey
+        class AZTF_API FolderThumbnailKey
             : public ThumbnailKey
         {
             Q_OBJECT
         public:
             AZ_RTTI(FolderThumbnailKey, "{47B5423B-1324-46AD-BBA9-791D5C4116B5}", ThumbnailKey);
 
-            FolderThumbnailKey(const char* folderPath, bool isGem);
+            FolderThumbnailKey(const char* folderPath);
             const AZStd::string& GetFolderPath() const;
             bool IsGem() const;
             bool Equals(const ThumbnailKey* other) const override;
@@ -34,22 +35,20 @@ namespace AzToolsFramework
         protected:
             //! Absolute folder path
             AZStd::string m_folderPath;
-            //! is folder a gem
-            bool m_isGem;
         };
 
-        class FolderThumbnail
+        class AZTF_API FolderThumbnail
             : public Thumbnail
         {
             Q_OBJECT
         public:
             FolderThumbnail(SharedThumbnailKey key);
-            void LoadThread() override;
+            void Load() override;
         };
 
 
         //! FolderAssetBrowserEntry thumbnails
-        class FolderThumbnailCache
+        class AZTF_API FolderThumbnailCache
             : public ThumbnailCache<FolderThumbnail>
         {
         public:

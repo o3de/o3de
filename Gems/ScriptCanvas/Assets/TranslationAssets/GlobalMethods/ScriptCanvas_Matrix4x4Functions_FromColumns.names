@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix4x4Functions_FromColumns",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Columns",
+                "category": "Math/Matrix4x4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix4x4Functions_FromColumns",
+                    "details": {
+                        "name": "From Columns",
+                        "tooltip": "Returns a rotation matrix based on angle around Z axis"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Column 1"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Column 2"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Column 3"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Column 4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

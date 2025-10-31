@@ -19,14 +19,14 @@ namespace UnitTest
         : public AZ::RHI::Scope
     {
     public:
-        AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
     private:
         //////////////////////////////////////////////////////////////////////////
         // RHI::Scope
         void InitInternal() override;
         void ActivateInternal() override;
-        void CompileInternal(AZ::RHI::Device& device) override;
+        void CompileInternal() override;
         void DeactivateInternal() override;
         void ShutdownInternal() override;
 

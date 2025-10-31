@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace Physics
 
 namespace AzPhysics
 {
-    struct StaticRigidBodyConfiguration : public SimulatedBodyConfiguration
+    struct AZF_API StaticRigidBodyConfiguration : public SimulatedBodyConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(StaticRigidBodyConfiguration, "{E68A14C0-21DC-4FC7-9AD0-04BB9D972004}", SimulatedBodyConfiguration);

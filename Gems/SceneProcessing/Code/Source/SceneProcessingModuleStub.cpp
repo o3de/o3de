@@ -28,5 +28,9 @@ namespace AZ
     } // namespace SceneProcessing
 } // namespace AZ
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::SceneProcessing::SceneProcessingModuleStub)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_SceneProcessing, AZ::SceneProcessing::SceneProcessingModuleStub)
+#endif
 #endif

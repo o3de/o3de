@@ -1,0 +1,59 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "walk1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{B161FB42-0EC0-51DA-BB0E-F04B73C0DE0C}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 11.533333778381348,
+                                                "endTime": 12.533333778381348
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 35.20000076293945,
+                                                "endTime": 37.53333282470703
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 76.33333587646484,
+                                                "endTime": 93.66667175292969
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

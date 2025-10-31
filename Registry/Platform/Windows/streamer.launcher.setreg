@@ -1,0 +1,48 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "UseAllHardware": false,
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        {
+                            "Drive":
+                            {
+                                "$type": "AZ::IO::WindowsStorageDriveConfig",
+                                // The maximum number of file handles that are cached. Only a small number are needed when running from 
+                                // archives, but it's recommended that a larger number are kept open when reading from loose files.
+                                "MaxFileHandles": 32,
+                                // The maximum number of files to keep meta data, such as the file size, to cache. Only a small number are 
+                                // needed when running from archives, but it's recommended that a larger number are kept open when reading 
+                                // from loose files.
+                                "MaxMetaDataCache": 32,
+                                // The number of additional slots that will be reported as available. This makes sure that there are always
+                                // a few requests pending to avoid starvation. An over-commit that is too large can negatively impact the 
+                                // scheduler's ability to re-order requests for optimal read order. A negative value will under-commit and
+                                // will avoid saturating the IO controller which can be needed if the drive is used by other applications.
+                                "Overcommit": 8,
+                                // Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other 
+                                // applications while in use by AZ::IO::Streamer.
+                                "EnableFileSharing": false,
+                                // Use unbuffered reads for the fastest possible read speeds by bypassing the Windows file cache. This 
+                                // results in a faster read the first time a file is read, but subsequent reads will possibly be slower as
+                                // those could have been serviced from the faster OS cache. During development or for games that reread 
+                                // files frequently it's recommended to set this option to false, but generally it's best to be turned on.
+                                "EnableUnbufferedReads": true,
+                                // If true, only information that's explicitly requested or issues are reported. If false, status information
+                                // such as when drives are created and destroyed is reported as well.
+                                "MinimalReporting": false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

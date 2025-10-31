@@ -15,7 +15,10 @@
                         "ClearValue": {
                             "Type": "DepthStencil"
                         },
-                        "LoadActionStencil": "Clear"
+                        "LoadAction": "None",
+                        "LoadActionStencil": "Clear",
+                        "StoreAction": "None",
+                        "StoreActionStencil": "DontCare"
                     }
                 },
                 {

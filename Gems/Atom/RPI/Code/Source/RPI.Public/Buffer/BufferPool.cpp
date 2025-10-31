@@ -24,14 +24,14 @@ namespace AZ
         Data::Instance<BufferPool> BufferPool::FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset)
         {
             return Data::InstanceDatabase<BufferPool>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(resourcePoolAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(resourcePoolAsset),
                 resourcePoolAsset);
         }
 
-        Data::Instance<BufferPool> BufferPool::CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        Data::Instance<BufferPool> BufferPool::CreateInternal(ResourcePoolAsset& poolAsset)
         {
             Data::Instance<BufferPool> bufferPool = aznew BufferPool();
-            RHI::ResultCode resultCode = bufferPool->Init(device, poolAsset);
+            RHI::ResultCode resultCode = bufferPool->Init(poolAsset);
             if (resultCode == RHI::ResultCode::Success)
             {
                 return bufferPool;
@@ -40,9 +40,9 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode BufferPool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode BufferPool::Init(ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::BufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+            RHI::Ptr<RHI::BufferPool> bufferPool = aznew RHI::BufferPool;
             if (!bufferPool)
             {
                 AZ_Error("RPI::BufferPool", false, "Failed to create RHI::BufferPool");
@@ -56,10 +56,10 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::ResultCode resultCode = bufferPool->Init(device, *desc);
+            bufferPool->SetName(AZ::Name{ poolAsset.GetPoolName() });
+            RHI::ResultCode resultCode = bufferPool->Init(*desc);
             if (resultCode == RHI::ResultCode::Success)
             {
-                bufferPool->SetName(AZ::Name{ poolAsset.GetPoolName() });
                 m_pool = bufferPool;
             }
 

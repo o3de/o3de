@@ -39,12 +39,43 @@ class QLabel;
 class QHBoxLayout;
 class QIcon;
 class QBoxLayout;
+class QSpacerItem;
 
 namespace AzQtComponents
 {
     class Style;
     class FilteredSearchItemDelegate;
     class SearchTypeSelectorFilterModel;
+
+    class AZ_QT_COMPONENTS_API SelectionCountButton : public QFrame
+    {
+        Q_OBJECT
+
+    public:
+        explicit SelectionCountButton(QWidget* parent = nullptr);
+
+        void SetSelectionCount(const int count);
+
+    protected:
+        QHBoxLayout* m_frameLayout;
+        QLabel* m_tagLabel;
+    };
+
+    class AZ_QT_COMPONENTS_API FilterTextButton : public QFrame
+    {
+        Q_OBJECT
+
+    public:
+        explicit FilterTextButton(const QString& text, QWidget* parent = nullptr, const QString& extraIconFileName = QString());
+
+        void SetText(const QString& text);
+    protected:
+        QHBoxLayout* m_frameLayout;
+        QLabel* m_tagLabel;
+
+    signals:
+        void RequestClose();
+    };
 
     class AZ_QT_COMPONENTS_API FilterCriteriaButton
         : public QFrame
@@ -174,6 +205,8 @@ namespace AzQtComponents
 
         void showEvent(QShowEvent* e) override;
 
+        bool eventFilter(QObject* obj, QEvent* event) override;
+
         void RepopulateDataModel(const SearchTypeFilterList& unfilteredData);
         void maximizeGeometryToFitScreen();
 
@@ -240,6 +273,7 @@ namespace AzQtComponents
         explicit FilteredSearchWidget(QWidget* parent = nullptr, bool willUseOwnSelector = false);
         ~FilteredSearchWidget() override;
 
+        void SetUseFavorites(bool useFavorites);
         void SetTypeFilterVisible(bool visible);
         void SetTypeFilters(const SearchTypeFilterList& typeFilters);
         void AddTypeFilter(const SearchTypeFilter& typeFilter);
@@ -253,11 +287,15 @@ namespace AzQtComponents
         void SetTextFilterVisible(bool visible);
         void SetTextFilter(const QString& textFilter);
         void ClearTextFilter();
+        void AddFavoritesButtonPressed();
+        bool IsAnyFilterActive();
 
         void AddWidgetToSearchWidget(QWidget* w);
         void SetFilteredParentVisible(bool visible);
         void setEnabledFiltersVisible(bool visible);
 
+        int GetTypeFilterCount();
+        void GetTypeFilterDetails(const int index, QString& categoryKeyOut, QString& displayNameOut, bool& enabledOut);
         void SetFilterState(const QString& category, const QString& displayName, bool enabled);
         void SetFilterInputInterval(AZStd::chrono::milliseconds milliseconds);
 
@@ -277,13 +315,24 @@ namespace AzQtComponents
         static QString GetBackgroundColor();
         static QString GetSeparatorColor();
 
+        void SetFilteredParentViewState();
+
         QToolButton* assetTypeSelectorButton() const;
+
+        void SetSelectionCount(int selectionCount);
+
+        //! ALlows the owning widget to replace the drop down button container with its own container.
+        void UseAlternativeButtonContainer(QFrame* container);
+
     signals:
         void TextFilterChanged(const QString& activeTextFilter);
         void TypeFilterChanged(const SearchTypeFilterList& activeTypeFilters);
 
         void placeholderTextChanged(const QString& placeholderText);
         void textFilterFillsWidthChanged(bool fillsWidth);
+
+        void addFavoriteEntriesPressed();
+        void addFavoriteSearchPressed();
 
     public slots:
         virtual void ClearTypeFilter();
@@ -303,6 +352,10 @@ namespace AzQtComponents
         const SearchTypeFilterList& typeFilters() const;
 
         virtual FilterCriteriaButton* createCriteriaButton(const SearchTypeFilter& filter, int filterIndex);
+
+        void CreateTextFilterButton();
+        void createAddFavoriteSearchButton();
+        void RepositionFixedButtons();
 
         virtual void SetupPaintDelegates();
     private slots:
@@ -325,9 +378,16 @@ namespace AzQtComponents
         AZ_POP_DISABLE_WARNING
             bool m_textFilterFillsWidth;
         bool m_displayEnabledFilters;
-
+        FilterTextButton* m_filterTextButton = nullptr;
+        SelectionCountButton* m_selectionCountButton = nullptr;
+        QToolButton* m_addFavoritesButton = nullptr;
+        QHBoxLayout* m_favoritesLayout = nullptr;
+        QSpacerItem* m_endSpacer = nullptr;
     private:
         int FindFilterIndex(const QString& category, const QString& displayName) const;
+        void SetupContainerLayout();
+
+        bool m_usingFavoritesSystem = false;
 
         QTimer m_inputTimer;
         QMenu* m_filterMenu;
@@ -340,6 +400,11 @@ namespace AzQtComponents
         static bool unpolish(Style* style, QWidget* widget, const Config& config);
 
         FilteredSearchItemDelegate* m_delegate = nullptr;
+
+        QFrame* m_buttonContainer = nullptr;
+        QFrame* m_containerLayout = nullptr;
+
+        int m_selectionCount = 0;
     };
 
     class FilteredSearchItemDelegate : public QStyledItemDelegate

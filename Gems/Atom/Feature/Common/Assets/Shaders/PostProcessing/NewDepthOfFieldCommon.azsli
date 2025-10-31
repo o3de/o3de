@@ -7,7 +7,7 @@
  */
 
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #define COC_EPSILON 0.0001
 

@@ -26,6 +26,9 @@ namespace AZ
                     ->Field("m_power", &SubsurfaceTransmissionParameterFunctor::m_power)
                     ->Field("m_distortion", &SubsurfaceTransmissionParameterFunctor::m_distortion)
                     ->Field("m_attenuation", &SubsurfaceTransmissionParameterFunctor::m_attenuation)
+                    ->Field("m_shrinkFactor", &SubsurfaceTransmissionParameterFunctor::m_shrinkFactor)
+                    ->Field("m_transmissionNdLBias", &SubsurfaceTransmissionParameterFunctor::m_transmissionNdLBias)
+                    ->Field("m_distanceAttenuation", &SubsurfaceTransmissionParameterFunctor::m_distanceAttenuation)
                     ->Field("m_tintColor", &SubsurfaceTransmissionParameterFunctor::m_tintColor)
                     ->Field("m_thickness", &SubsurfaceTransmissionParameterFunctor::m_thickness)
                     ->Field("m_enabled", &SubsurfaceTransmissionParameterFunctor::m_enabled)
@@ -38,7 +41,7 @@ namespace AZ
             }
         }
 
-        void SubsurfaceTransmissionParameterFunctor::Process(RuntimeContext& context)
+        void SubsurfaceTransmissionParameterFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             // Build & preprocess all parameters used by subsurface scattering feature
 
@@ -50,6 +53,9 @@ namespace AZ
             auto power = context.GetMaterialPropertyValue<float>(m_power);
             auto distortion = context.GetMaterialPropertyValue<float>(m_distortion);
             auto attenuation = context.GetMaterialPropertyValue<float>(m_attenuation);
+            auto shrinkFactor = context.GetMaterialPropertyValue<float>(m_shrinkFactor);
+            auto transmissionNdLBias = context.GetMaterialPropertyValue<float>(m_transmissionNdLBias);
+            auto distanceAttenuation = context.GetMaterialPropertyValue<float>(m_distanceAttenuation);
             auto tintColor = context.GetMaterialPropertyValue<Color>(m_tintColor);
             auto thickness = context.GetMaterialPropertyValue<float>(m_thickness);
             auto scatterDistanceColor = context.GetMaterialPropertyValue<Color>(m_scatterDistanceColor);
@@ -67,7 +73,9 @@ namespace AZ
             }
             else
             {
-                transmissionParams.Set(scatterDistance);
+                transmissionParams.SetX(shrinkFactor);
+                transmissionParams.SetY(transmissionNdLBias);
+                transmissionParams.SetZ(distanceAttenuation);
                 transmissionParams.SetW(scale);
             }
 
@@ -75,9 +83,44 @@ namespace AZ
             transmissionTintThickness.Set(tintColor.GetAsVector3());
             transmissionTintThickness.SetW(thickness);
 
-            context.GetShaderResourceGroup()->SetConstant(m_scatterDistance, scatterDistance);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionParams, transmissionParams);
-            context.GetShaderResourceGroup()->SetConstant(m_transmissionTintThickness, transmissionTintThickness);
+            context.GetMaterialShaderParameter()->SetParameter(m_scatterDistance, scatterDistance);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionParams, transmissionParams);
+            context.GetMaterialShaderParameter()->SetParameter(m_transmissionTintThickness, transmissionTintThickness);
+        }
+
+        bool SubsurfaceTransmissionParameterFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
+        {
+            bool valid = true;
+            if (m_scatterDistance.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_scatterDistance.GetName().GetCStr());
+                valid &= false;
+            }
+
+            if (m_transmissionParams.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_transmissionParams.GetName().GetCStr());
+                valid &= false;
+            }
+
+            if (m_transmissionTintThickness.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "SubsurfaceTransmissionParameterFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_transmissionTintThickness.GetName().GetCStr());
+                valid &= false;
+            }
+            return valid;
         }
 
     } // namespace Render

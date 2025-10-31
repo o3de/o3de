@@ -10,11 +10,14 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <QString>
+
+class QRegularExpression;
 
 using namespace AzToolsFramework::AssetBrowser;
 
@@ -23,10 +26,10 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         //! Used in combination with Asset Browser Picker to configure selection settings and store selection results
-        class AssetSelectionModel
+        class AZTF_API AssetSelectionModel
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator)
 
             AssetSelectionModel();
             ~AssetSelectionModel() = default;
@@ -44,6 +47,10 @@ namespace AzToolsFramework
             void SetSelectedAssetIds(const AZStd::vector<AZ::Data::AssetId>& selectedAssetIds);
             void SetSelectedAssetId(const AZ::Data::AssetId& selectedAssetId);
 
+            const AZStd::vector<AZStd::string>& GetSelectedFilePaths() const;
+            void SetSelectedFilePaths(const AZStd::vector<AZStd::string>& selectedFilePaths);
+            void SetSelectedFilePath(const AZStd::string& selectedFilePath);
+
             void SetDefaultDirectory(AZStd::string_view defaultDirectory);
             AZStd::string_view GetDefaultDirectory() const;
             
@@ -56,10 +63,13 @@ namespace AzToolsFramework
 
             QString GetTitle() const;
 
-            static AssetSelectionModel AssetTypeSelection(const AZ::Data::AssetType& assetType, bool multiselect = false);
-            static AssetSelectionModel AssetTypeSelection(const char* assetTypeName, bool multiselect = false);
-            static AssetSelectionModel AssetTypesSelection(const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect = false);
-            static AssetSelectionModel AssetGroupSelection(const char* group, bool multiselect = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const AZ::Data::AssetType& assetType, bool multiselect = false, bool supportSelectingSources = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const char* assetTypeName, bool multiselect = false, bool supportSelectingSources = false);
+            static AssetSelectionModel AssetTypeSelection(
+                const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect = false, bool supportSelectingSources = false);
+            static AssetSelectionModel SourceAssetTypeSelection(const QRegularExpression& pattern, bool multiselect = false);
             static AssetSelectionModel EverythingSelection(bool multiselect = false);
 
         private:
@@ -68,8 +78,12 @@ namespace AzToolsFramework
             // some entries like folder should always be displayed, but not always selectable, thus 2 separate filters
             FilterConstType m_selectionFilter;
             FilterConstType m_displayFilter;
-            
+
+            //! Selection can be based on asset ids (for products), or file paths (for sources)
+            //! These are mututally exclusive
             AZStd::vector<AZ::Data::AssetId> m_selectedAssetIds;
+            AZStd::vector<AZStd::string> m_selectedFilePaths;
+
             AZStd::vector<const AssetBrowserEntry*> m_results;
             AZStd::string m_defaultDirectory;
 

@@ -35,21 +35,21 @@ namespace AZ
         {
         public:
             DescriptorTable() = default;
-            DescriptorTable(DescriptorHandle handle, uint16_t count);
+            DescriptorTable(DescriptorHandle handle, uint32_t count);
 
             DescriptorHandle operator [] (uint32_t i) const;
 
             DescriptorHandle GetOffset() const;
             D3D12_DESCRIPTOR_HEAP_TYPE GetType() const;
             D3D12_DESCRIPTOR_HEAP_FLAGS GetFlags() const;
-            uint16_t GetSize() const;
+            uint32_t GetSize() const;
 
             bool IsNull() const;
             bool IsValid() const;
 
         private:
             DescriptorHandle m_offset;
-            uint16_t m_size = 0;
+            uint32_t m_size = 0;
         };
     }
 }

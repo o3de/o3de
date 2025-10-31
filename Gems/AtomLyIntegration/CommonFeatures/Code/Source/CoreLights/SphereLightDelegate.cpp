@@ -15,7 +15,7 @@ namespace AZ::Render
 {
     SphereLightDelegate::SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
         : LightDelegateBase<PointLightFeatureProcessorInterface>(entityId, isVisible)
-        , m_shapeBus(shapeBus)
+        , m_sphereShapeBus(shapeBus)
     {
         InitBase(entityId);
     }
@@ -44,7 +44,7 @@ namespace AZ::Render
 
     float SphereLightDelegate::GetRadius() const
     {
-        return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
+        return m_sphereShapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
     void SphereLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
@@ -116,4 +116,34 @@ namespace AZ::Render
         }
     }
 
+    void SphereLightDelegate::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetUseCachedShadows(GetLightHandle(),
+                cachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange);
+        }
+    }
+
+    void SphereLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+        }
+    }
+
+    void SphereLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+        }
+    }
+
+    Aabb SphereLightDelegate::GetLocalVisualizationBounds() const
+    {
+        const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+        return Aabb::CreateCenterRadius(translationOffset, GetConfig()->m_attenuationRadius);
+    }
 } // namespace AZ::Render

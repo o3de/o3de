@@ -33,10 +33,7 @@ namespace ScriptCanvas
 
             protected:
 
-                void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;
                 bool IsValidArithmeticSlot(const SlotId& slotId) const override;
-
-                void OnResetDatumToDefaultValue(ModifiableDatumView& datum) override;
             };
         }
     }

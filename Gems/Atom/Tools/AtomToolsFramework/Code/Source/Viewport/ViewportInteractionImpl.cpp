@@ -32,7 +32,7 @@ namespace AtomToolsFramework
     {
         // build camera state from atom camera transforms
         AzFramework::CameraState cameraState =
-            AzFramework::CreateDefaultCamera(m_viewPtr->GetCameraTransform(), AzFramework::Vector2FromScreenSize(m_screenSizeFn()));
+            AzFramework::CreateDefaultCamera(m_viewPtr->GetCameraTransform(), m_screenSizeFn());
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, m_viewPtr->GetViewToClipMatrix());
         return cameraState;
     }

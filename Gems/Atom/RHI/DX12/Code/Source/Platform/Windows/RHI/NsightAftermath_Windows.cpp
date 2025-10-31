@@ -53,14 +53,14 @@ namespace Aftermath
 #endif
     }
 
-    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const AZStd::string& markerData, [[maybe_unused]] bool isAftermathInitialized)
+    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const char* markerData, [[maybe_unused]] bool isAftermathInitialized)
     {
 #if defined(USE_NSIGHT_AFTERMATH)
         if (isAftermathInitialized)
         {
             GFSDK_Aftermath_Result result = GFSDK_Aftermath_SetEventMarker(
-                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData.c_str()),
-                static_cast<unsigned int>(markerData.size()) + 1);
+                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData),
+                static_cast<unsigned int>(strlen(markerData) + 1));
             AssertOnError(result);
         }
 #endif
@@ -73,7 +73,7 @@ namespace Aftermath
         // Create an Nsight Aftermath context handle for setting Aftermath event markers in this command list.
         GFSDK_Aftermath_Result result = GFSDK_Aftermath_DX12_CreateContextHandle(commandList, &aftermathCntHndl);
         AssertOnError(result);
-        static_cast<GpuCrashTracker*>(crashTracker)->AddContext(aftermathCntHndl);
+        static_cast<AZ::DX12::GpuCrashTracker*>(crashTracker)->AddContext(aftermathCntHndl);
         return static_cast<void*>(aftermathCntHndl);
 #else
         return nullptr;
@@ -83,7 +83,8 @@ namespace Aftermath
     void OutputLastScopeExecutingOnGPU([[maybe_unused]] void* crashTracker)
     {
 #if defined(USE_NSIGHT_AFTERMATH)
-        AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles = static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
+        AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles =
+            static_cast<AZ::DX12::GpuCrashTracker*>(crashTracker)->GetContextHandles();
         GFSDK_Aftermath_ContextData* outContextData = new GFSDK_Aftermath_ContextData[cntxtHandles.size()];
         GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(static_cast<uint32_t>(cntxtHandles.size()), cntxtHandles.data(), outContextData);
         AssertOnError(result);

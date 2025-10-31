@@ -19,7 +19,11 @@ namespace AZ
     class Entity;
 }
 
+#if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 
 namespace AzFramework
 {
@@ -92,7 +96,12 @@ namespace AzFramework
         virtual void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) = 0;
         virtual void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) = 0;
 
-        bool m_shouldAssertForLegacySlicesUsage = false;
+        /**
+         * Called when an entity is in the process of being destroyed
+         *
+         * \param entityId The entity Id of the entity being destroyed.
+         */
+        virtual void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) = 0;
 
     protected:
         OnEntitiesAddedCallback m_entitiesAddedCallback;

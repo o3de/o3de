@@ -49,10 +49,14 @@ namespace UnitTest
             AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, AZ::Vector2());
-        MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
+        MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, float());
+        MOCK_METHOD1(SetTerrainHeightQueryResolution, void(float));
+        MOCK_CONST_METHOD0(GetTerrainSurfaceDataQueryResolution, float());
+        MOCK_METHOD1(SetTerrainSurfaceDataQueryResolution, void(float));
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
-        MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
+        MOCK_CONST_METHOD0(GetTerrainHeightBounds, AzFramework::Terrain::FloatRange());
+        MOCK_METHOD1(SetTerrainHeightBounds, void(const AzFramework::Terrain::FloatRange&));
+        MOCK_CONST_METHOD1(TerrainAreaExistsInBounds, bool(const AZ::Aabb&));
         MOCK_CONST_METHOD3(GetHeight, float(const AZ::Vector3&, Sampler, bool*));
         MOCK_CONST_METHOD3(GetHeightFromVector2, float(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
@@ -76,5 +80,46 @@ namespace UnitTest
             GetSurfacePointFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
         MOCK_CONST_METHOD5(
             GetSurfacePointFromFloats, void(float, float, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
+        MOCK_CONST_METHOD4(
+            QueryList, void(const AZStd::span<const AZ::Vector3>&, TerrainDataMask, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD4(
+            QueryListOfVector2, void(const AZStd::span<const AZ::Vector2>&, TerrainDataMask, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD3(
+            GetNumSamplesFromRegion, AZStd::pair<size_t, size_t>(const AZ::Aabb&, const AZ::Vector2&, Sampler));
+        MOCK_CONST_METHOD4(
+            QueryRegion,
+            void(
+                const AzFramework::Terrain::TerrainQueryRegion&,
+                TerrainDataMask,
+                AzFramework::Terrain::SurfacePointRegionFillCallback,
+                Sampler));
+        MOCK_CONST_METHOD0(
+            GetTerrainRaycastEntityContextId, AzFramework::EntityContextId());
+        MOCK_CONST_METHOD1(
+            GetClosestIntersection, AzFramework::RenderGeometry::RayResult(const AzFramework::RenderGeometry::RayRequest&));
+        MOCK_CONST_METHOD5(
+            QueryListAsync,
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
+                const AZStd::span<const AZ::Vector3>&,
+                TerrainDataMask,
+                AzFramework::Terrain::SurfacePointListFillCallback,
+                Sampler,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
+        MOCK_CONST_METHOD5(
+            QueryListOfVector2Async,
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
+                const AZStd::span<const AZ::Vector2>&,
+                TerrainDataMask,
+                AzFramework::Terrain::SurfacePointListFillCallback,
+                Sampler,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
+        MOCK_CONST_METHOD5(
+            QueryRegionAsync,
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
+                const AzFramework::Terrain::TerrainQueryRegion&,
+                TerrainDataMask,
+                AzFramework::Terrain::SurfacePointRegionFillCallback,
+                Sampler,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
     };
 } // namespace UnitTest

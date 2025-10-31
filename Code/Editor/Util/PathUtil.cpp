@@ -307,7 +307,11 @@ namespace Path
         bool relPathFound = false;
         AZStd::string relativePath;
         AZStd::string fullAssetPath(fullPath.toUtf8().data());
-        EBUS_EVENT_RESULT(relPathFound, AzToolsFramework::AssetSystemRequestBus, GetRelativeProductPathFromFullSourceOrProductPath, fullAssetPath, relativePath);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            relPathFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetRelativeProductPathFromFullSourceOrProductPath,
+            fullAssetPath,
+            relativePath);
 
         if (relPathFound)
         {

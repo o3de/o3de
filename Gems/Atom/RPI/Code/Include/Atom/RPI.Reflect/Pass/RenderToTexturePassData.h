@@ -7,32 +7,23 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        struct RenderToTexturePassData
+        struct ATOM_RPI_REFLECT_API RenderToTexturePassData
             : public PassData
         {
             AZ_RTTI(RenderToTexturePassData, "{A2DEDE8A-C203-4BEA-896F-7F29A58F6978}", PassData);
-            AZ_CLASS_ALLOCATOR(RenderToTexturePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderToTexturePassData, SystemAllocator);
 
             RenderToTexturePassData() = default;
             virtual ~RenderToTexturePassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<RenderToTexturePassData, PassData>()
-                        ->Version(0)
-                        ->Field("OutputWidth", &RenderToTexturePassData::m_width)
-                        ->Field("OutputHeight", &RenderToTexturePassData::m_height)
-                        ->Field("OutputFormat", &RenderToTexturePassData::m_format);
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             uint32_t m_width = 256;
             uint32_t m_height = 256;

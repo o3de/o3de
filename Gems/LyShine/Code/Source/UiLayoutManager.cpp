@@ -41,15 +41,15 @@ void UiLayoutManager::MarkToRecomputeLayoutsAffectedByLayoutCellChange(AZ::Entit
 {
     AZ::EntityId topParent;
     AZ::EntityId parent;
-    EBUS_EVENT_ID_RESULT(parent, entityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parent, entityId, &UiElementBus::Events::GetParentEntityId);
     while (parent.IsValid())
     {
         bool usesLayoutCells = false;
-        EBUS_EVENT_ID_RESULT(usesLayoutCells, parent, UiLayoutBus, IsUsingLayoutCellsToCalculateLayout);
+        UiLayoutBus::EventResult(usesLayoutCells, parent, &UiLayoutBus::Events::IsUsingLayoutCellsToCalculateLayout);
         if (usesLayoutCells && isDefaultLayoutCell)
         {
             bool ignoreDefaultLayoutCells = true;
-            EBUS_EVENT_ID_RESULT(ignoreDefaultLayoutCells, parent, UiLayoutBus, GetIgnoreDefaultLayoutCells);
+            UiLayoutBus::EventResult(ignoreDefaultLayoutCells, parent, &UiLayoutBus::Events::GetIgnoreDefaultLayoutCells);
             usesLayoutCells = !ignoreDefaultLayoutCells;
         }
 
@@ -57,7 +57,7 @@ void UiLayoutManager::MarkToRecomputeLayoutsAffectedByLayoutCellChange(AZ::Entit
         {
             topParent = parent;
             parent.SetInvalid();
-            EBUS_EVENT_ID_RESULT(parent, topParent, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(parent, topParent, &UiElementBus::Events::GetParentEntityId);
         }
         else
         {
@@ -98,18 +98,18 @@ void UiLayoutManager::ComputeLayoutForElementAndDescendants(AZ::EntityId entityI
         };
 
     LyShine::EntityArray layoutChildren;
-    EBUS_EVENT_ID(entityId, UiElementBus, FindDescendantElements, FindLayoutChildren, layoutChildren);
+    UiElementBus::Event(entityId, &UiElementBus::Events::FindDescendantElements, FindLayoutChildren, layoutChildren);
 
-    EBUS_EVENT_ID(entityId, UiLayoutControllerBus, ApplyLayoutWidth);
+    UiLayoutControllerBus::Event(entityId, &UiLayoutControllerBus::Events::ApplyLayoutWidth);
     for (auto layoutChild : layoutChildren)
     {
-        EBUS_EVENT_ID(layoutChild->GetId(), UiLayoutControllerBus, ApplyLayoutWidth);
+        UiLayoutControllerBus::Event(layoutChild->GetId(), &UiLayoutControllerBus::Events::ApplyLayoutWidth);
     }
 
-    EBUS_EVENT_ID(entityId, UiLayoutControllerBus, ApplyLayoutHeight);
+    UiLayoutControllerBus::Event(entityId, &UiLayoutControllerBus::Events::ApplyLayoutHeight);
     for (auto layoutChild : layoutChildren)
     {
-        EBUS_EVENT_ID(layoutChild->GetId(), UiLayoutControllerBus, ApplyLayoutHeight);
+        UiLayoutControllerBus::Event(layoutChild->GetId(), &UiLayoutControllerBus::Events::ApplyLayoutHeight);
     }
 }
 
@@ -136,8 +136,13 @@ void UiLayoutManager::AddToRecomputeLayoutList(AZ::EntityId entityId)
 
         // Remove element's children from the list
         LyShine::EntityArray descendants;
-        EBUS_EVENT_ID(entityId, UiElementBus, FindDescendantElements,
-            []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+        UiElementBus::Event(
+            entityId,
+            &UiElementBus::Events::FindDescendantElements,
+            []([[maybe_unused]] const AZ::Entity* entity)
+            {
+                return true;
+            },
             descendants);
 
         m_elementsToRecomputeLayout.remove_if(
@@ -163,7 +168,7 @@ void UiLayoutManager::AddToRecomputeLayoutList(AZ::EntityId entityId)
 bool UiLayoutManager::IsParentOfElement(AZ::EntityId checkParentEntity, AZ::EntityId checkChildEntity)
 {
     AZ::EntityId parent;
-    EBUS_EVENT_ID_RESULT(parent, checkChildEntity, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parent, checkChildEntity, &UiElementBus::Events::GetParentEntityId);
     while (parent.IsValid())
     {
         if (parent == checkParentEntity)
@@ -173,7 +178,7 @@ bool UiLayoutManager::IsParentOfElement(AZ::EntityId checkParentEntity, AZ::Enti
 
         AZ::EntityId newParent = parent;
         parent.SetInvalid();
-        EBUS_EVENT_ID_RESULT(parent, newParent, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parent, newParent, &UiElementBus::Events::GetParentEntityId);
     }
 
     return false;

@@ -9,10 +9,8 @@
 
 #include <AzCore/Name/Name.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        using ScopeId = AZ::Name;
-    }
+    using ScopeId = AZ::Name;
+    using ScopeGroupId = AZ::Name;
 }

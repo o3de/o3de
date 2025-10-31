@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -133,7 +134,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseMac, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseMac, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -204,12 +205,6 @@ namespace AzFramework
         SystemCursorState  m_systemCursorState;                 //!< Current system cursor state
         bool               m_hasFocus;                          //!< Does application have focus?
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::Implementation* InputDeviceMouse::Implementation::Create(InputDeviceMouse& inputDevice)
-    {
-        return aznew InputDeviceMouseMac(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseMac::InputDeviceMouseMac(InputDeviceMouse& inputDevice)
@@ -659,5 +654,23 @@ namespace AzFramework
         // Destroy the event tap
         CFRelease(m_disabledSystemCursorEventTap);
         m_disabledSystemCursorEventTap = nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacDeviceMouseImplFactory
+        : public InputDeviceMouse::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceMouseMac>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
+    {
+        m_deviceMouseImplFactory = AZStd::make_unique<MacDeviceMouseImplFactory>();
+        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 } // namespace AzFramework

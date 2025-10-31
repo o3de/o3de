@@ -31,16 +31,6 @@
 
 namespace SimulatedObjectSetupTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
     // Import real implementations
     namespace EMotionFX
     {
@@ -53,24 +43,14 @@ namespace SimulatedObjectSetupTests
 
 #include <Tests/Prefabs/LeftArmSkeleton.h>
 
-#include <EMotionFX/Source/SimulatedObjectSetup.cpp>
+#include <EMotionFX/Source/SimulatedObjectSetup_Interface.inl>
+#include <EMotionFX/Source/SimulatedObjectSetup_Impl.inl>
 
     using namespace EMotionFX;
 
     class SimulatedObjectSetupTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<ActorAllocator>::Create();
-        }
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<ActorAllocator>::Destroy();
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     TEST_F(SimulatedObjectSetupTestsFixture, TestSimulatedObjectSetup_AddSimulatedObject)
@@ -181,7 +161,7 @@ namespace SimulatedObjectSetupTests
         EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, AddSimulatedJointAndChildrenFixture,
         testing::ValuesIn(std::vector<AddSimulatedJointAndChildrenParams>
         {
             {PrefabLeftArmSkeleton::leftShoulderIndex, 13}, // leftShoulder is a root joint
@@ -300,7 +280,7 @@ namespace SimulatedObjectSetupTests
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, GetSimulatedRootJointFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, GetSimulatedRootJointFixture,
         ::testing::Combine(
             ::testing::Values(
                 PrefabLeftArmSkeleton::leftShoulderIndex,

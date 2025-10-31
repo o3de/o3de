@@ -20,7 +20,7 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilder, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilder, AZ::SystemAllocator)
 
     MeshBuilder::MeshBuilder(size_t numOrgVerts, bool optimizeDuplicates)
         : MeshBuilder(numOrgVerts, s_defaultMaxBonesPerSubMesh, s_defaultMaxSubMeshVertices, optimizeDuplicates)

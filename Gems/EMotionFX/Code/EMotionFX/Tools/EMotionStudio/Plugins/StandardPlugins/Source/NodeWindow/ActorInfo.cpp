@@ -17,7 +17,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorInfo, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorInfo, EMStudio::UIAllocator)
 
     ActorInfo::ActorInfo(const EMotionFX::ActorInstance* actorInstance)
     {

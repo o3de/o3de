@@ -91,7 +91,7 @@ namespace ScriptCanvas
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasVariableService", 0x819c8460));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasVariableService"));
         }
         
         void RegisterCopiedVariableRemapping(const VariableId& originalValue, const VariableId& remappedId);

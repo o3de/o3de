@@ -57,9 +57,11 @@ namespace AzToolsFramework
             : Thumbnail(key)
         {}
 
-        void ProductThumbnail::LoadThread() 
+        void ProductThumbnail::Load() 
         {
-            auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.data());
+            m_state = State::Loading;
+
+            auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.get());
             AZ_Assert(productKey, "Incorrect key type, excpected ProductThumbnailKey");
 
             QString iconPath;
@@ -75,7 +77,9 @@ namespace AzToolsFramework
                     bool foundIt = false;
                     AZStd::string watchFolder;
                     AZ::Data::AssetInfo assetInfo;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, iconPath.toUtf8().constData(), assetInfo, watchFolder);
+                    AssetSystemRequestBus::BroadcastResult(
+                        foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, iconPath.toUtf8().constData(), assetInfo,
+                        watchFolder);
 
                     if (foundIt)
                     {
@@ -94,6 +98,7 @@ namespace AzToolsFramework
 
             m_pixmap.load(iconPath);
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -111,7 +116,7 @@ namespace AzToolsFramework
 
         bool ProductThumbnailCache::IsSupportedThumbnail(Thumbnailer::SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const ProductThumbnailKey*>(key.data());
+            return azrtti_istypeof<const ProductThumbnailKey*>(key.get());
         }
 
     } // namespace AssetBrowser

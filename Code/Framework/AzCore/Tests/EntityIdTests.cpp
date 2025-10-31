@@ -9,7 +9,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 class EntityIdTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
 {
 };
 

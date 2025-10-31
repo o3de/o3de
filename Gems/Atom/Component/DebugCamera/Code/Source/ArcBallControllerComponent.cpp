@@ -88,7 +88,7 @@ namespace AZ
             AzFramework::WindowRequestBus::EventResult(
                 windowSize,
                 windowHandle,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                &AzFramework::WindowRequestBus::Events::GetRenderResolution);
 
             m_windowWidth = windowSize.m_width;
             m_windowHeight = windowSize.m_height;
@@ -134,7 +134,7 @@ namespace AZ
 
         bool ArcBallControllerComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
-            static const float PixelToDegree = 1.0 / 360.0f;
+            static const float PixelToDegree = 1.0f / 360.0f;
 
             uint32_t handledChannels = ArcBallControllerChannel_None;
 

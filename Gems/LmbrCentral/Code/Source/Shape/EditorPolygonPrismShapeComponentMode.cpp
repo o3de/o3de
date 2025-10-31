@@ -13,10 +13,17 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator)
+
+    void EditorPolygonPrismShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorPolygonPrismShapeComponentMode>(context);
+    }
 
     /// Util to calculate central position of prism (to draw the height manipulator)
     static AZ::Vector3 CalculateHeightManipulatorPosition(const AZ::PolygonPrism& polygonPrism)
@@ -27,7 +34,7 @@ namespace LmbrCentral
         AzToolsFramework::MidpointCalculator midpointCalculator;
         for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
         {
-            midpointCalculator.AddPosition(AZ::Vector2ToVector3(vertex, height));
+            midpointCalculator.AddPosition(AZ::Vector3(vertex, height));
         }
 
         return midpointCalculator.CalculateMidpoint();
@@ -37,6 +44,7 @@ namespace LmbrCentral
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale){OnNonUniformScaleChanged(scale);})
+        , m_vertexSelection(entityComponentIdPair)
     {
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
@@ -81,6 +89,16 @@ namespace LmbrCentral
         return m_vertexSelection.HandleMouse(mouseInteraction);
     }
 
+    AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
+    {
+        return "Polygon Prism Shape Edit Mode";
+    }
+
+    AZ::Uuid EditorPolygonPrismShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorPolygonPrismShapeComponentMode>();
+    }
+
     void EditorPolygonPrismShapeComponentMode::CreateManipulators()
     {
         using namespace AzToolsFramework;
@@ -96,9 +114,9 @@ namespace LmbrCentral
         }
 
         m_vertexSelection.Create(
-            GetEntityComponentIdPair(), g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), GetMainManipulatorManagerId(),
             AZStd::make_unique<LineSegmentHoverSelection<AZ::Vector2>>(
-                GetEntityComponentIdPair(), g_mainManipulatorManagerId),
+                GetEntityComponentIdPair(), GetMainManipulatorManagerId()),
             TranslationManipulators::Dimensions::Two,
             ConfigureTranslationManipulatorAppearance2d);
 
@@ -114,7 +132,7 @@ namespace LmbrCentral
         // initialize height manipulator
         m_heightManipulator = LinearManipulator::MakeShared(m_currentTransform);
         m_heightManipulator->AddEntityComponentIdPair(GetEntityComponentIdPair());
-        m_heightManipulator->SetSpace(AzToolsFramework::TransformUniformScale(m_currentTransform));
+        m_heightManipulator->SetSpace(m_currentTransform);
         m_heightManipulator->SetNonUniformScale(m_currentNonUniformScale);
         m_heightManipulator->SetLocalTransform(
             AZ::Transform::CreateTranslation(CalculateHeightManipulatorPosition(*polygonPrism)));
@@ -133,17 +151,19 @@ namespace LmbrCentral
         m_heightManipulator->SetViews(AZStd::move(views));
 
         // height manipulator callbacks
-        m_heightManipulator->InstallMouseMoveCallback([this, polygonPrism](
-            const LinearManipulator::Action& action)
-        {
-            polygonPrism->SetHeight(AZ::GetMax<float>(action.LocalPosition().GetZ(), 0.0f));
-            m_heightManipulator->SetLocalTransform(
-                AZ::Transform::CreateTranslation(Vector2ToVector3(Vector3ToVector2(
-                    action.LocalPosition()), AZ::GetMax<float>(0.0f, action.LocalPosition().GetZ()))));
-            m_heightManipulator->SetBoundsDirty();
-        });
+        m_heightManipulator->InstallMouseMoveCallback(
+            [this, polygonPrism](const LinearManipulator::Action& action)
+            {
+                polygonPrism->SetHeight(AZ::GetMax<float>(action.LocalPosition().GetZ(), 0.0f));
 
-        m_heightManipulator->Register(g_mainManipulatorManagerId);
+                m_heightManipulator->SetLocalTransform(AZ::Transform::CreateTranslation(AZ::Vector3(
+                    action.LocalPosition().GetX(), 
+                    action.LocalPosition().GetY(), 
+                    AZ::GetMax<float>(0.0f, action.LocalPosition().GetZ()))));
+                m_heightManipulator->SetBoundsDirty();
+            });
+
+        m_heightManipulator->Register(GetMainManipulatorManagerId());
     }
 
     void EditorPolygonPrismShapeComponentMode::DestroyManipulators()
@@ -218,7 +238,7 @@ namespace LmbrCentral
             polygonPrism, GetEntityId(), &PolygonPrismShapeComponentRequests::GetPolygonPrism);
 
         m_vertexSelection.CreateTranslationManipulator(
-            GetEntityComponentIdPair(), AzToolsFramework::g_mainManipulatorManagerId,
+            GetEntityComponentIdPair(), AzToolsFramework::GetMainManipulatorManagerId(),
             polygonPrism->m_vertexContainer.GetVertices()[index], index);
     }
 

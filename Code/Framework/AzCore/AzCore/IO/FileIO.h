@@ -31,7 +31,11 @@ namespace AZ
         /// return true if name of file matches glob filter.
         /// glob filters are MS-DOS (or windows) findNextFile style filters
         /// like "*.bat" or "blah??.pak" or "test*.exe" and such.
-        bool NameMatchesFilter(const char* name, const char* filter);
+        AZCORE_API bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
+
+        //! Converts the operating-specific values returned by AZ::IO::FileIO API
+        //! to independent units representing the milliseconds since 1/1/1970 0:00 UTC
+        AZCORE_API AZ::u64 FileTimeToMSecsSincePosixEpoch(AZ::u64 fileTime);
 
         using HandleType = AZ::u32;
         static const HandleType InvalidHandle = 0;
@@ -43,38 +47,8 @@ namespace AZ
             SeekFromEnd
         };
 
-        SeekType GetSeekTypeFromFSeekMode(int mode);
-        int GetFSeekModeFromSeekType(SeekType type);
-
-        enum class OpenMode : AZ::u32
-        {
-            Invalid = 0,
-            ModeRead = (1 << 0),
-            ModeWrite = (1 << 1),
-            ModeAppend = (1 << 2),
-            ModeBinary = (1 << 3),
-            ModeText = (1 << 4),
-            ModeUpdate = (1 << 5),
-            ModeCreatePath = (1 << 6),
-        };
-
-        inline bool AnyFlag(OpenMode a)
-        {
-            return a != OpenMode::Invalid;
-        }
-
-        AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenMode)
-
-        OpenMode GetOpenModeFromStringMode(const char* mode);
-
-        const char* GetStringModeFromOpenMode(OpenMode mode);
-
-        // when reading, we ignore text mode requests, becuase text mode will not be supported from reading from
-        // odd devices such as pack files, remote reads, and within compressed volumes anyway.  This makes it behave the same as
-        // pak mode as it behaves loose.  In practice, developers should avoid depending on text mode for reading, specifically depending
-        // on the platform-specific concept of removing '\r' characters from a text stream.
-        // having the OS swallow characters without letting us know also messes up things like lookahead cache, optizing functions like FGetS and so on.
-        void UpdateOpenModeForReading(OpenMode& mode);
+        AZCORE_API SeekType GetSeekTypeFromFSeekMode(int mode);
+        AZCORE_API int GetFSeekModeFromSeekType(SeekType type);
 
         enum class ResultCode : AZ::u32
         {
@@ -85,7 +59,7 @@ namespace AZ
         };
 
         // a function which returns a result code and supports operator bool explicitly
-        class Result
+        class AZCORE_API Result
         {
         public:
             Result(ResultCode resultCode)
@@ -112,7 +86,7 @@ namespace AZ
         };
 
         /// The base class for file IO stack classes
-        class FileIOBase
+        class AZCORE_API FileIOBase
         {
         public:
             virtual ~FileIOBase()
@@ -268,11 +242,11 @@ namespace AZ
          * Stream implementation for reading/writing to/from a FileIO handle.
          * This may be used alongside ObjectStream, or in async asset tasks.
          */
-        class FileIOStream
+        class AZCORE_API FileIOStream
             : public GenericStream
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator);
             FileIOStream();
             FileIOStream(HandleType fileHandle, AZ::IO::OpenMode mode, bool ownsHandle);
             FileIOStream(const char* path, AZ::IO::OpenMode mode, bool errorOnFailure = false);
@@ -294,6 +268,8 @@ namespace AZ
             SizeType    Write(SizeType bytes, const void* iBuffer) override;
             SizeType    GetCurPos() const override;
             SizeType    GetLength() const override;
+
+            virtual void Flush();
 
         private:
             HandleType m_handle;    ///< Open file handle.

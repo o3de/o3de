@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
-#define PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
+#pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/vector.h>
@@ -30,13 +31,15 @@ namespace AzToolsFramework
      * is built.
      * Once data
      */
-    class InstanceDataNode
+    class AZTF_API InstanceDataNode
     {
         friend class InstanceDataHierarchy;
+        template<typename WrappedType>
+        friend class RpePropertyHandlerWrapper;
 
     public:
         typedef AZStd::list<InstanceDataNode>   NodeContainer;
-        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator)
 
         /// Field address structure, which is a string of the 64-bit addresses of each ancestor along the hierarchy.
         using Identifier = AZ::u64;
@@ -84,6 +87,7 @@ namespace AzToolsFramework
         /// Check if have more than one instance for this node.
         bool    IsMultiInstance() const             { return m_instances.size() > 1; }
         size_t  GetNumInstances() const             { return m_instances.size(); }
+        bool    HasInstances() const                { return !m_instances.empty(); }
         void*   GetInstance(size_t idx) const;
         void**  GetInstanceAddress(size_t idx) const;
         void*   FirstInstance() const { return GetInstance(0); }
@@ -263,13 +267,16 @@ namespace AzToolsFramework
      *  3) Call GetRootNode() to retrieve the resulting root node. If the
      *     return value is NULL, no intersecting hierarchy was found (root types differ).
      */
-    class InstanceDataHierarchy
+    class AZTF_API InstanceDataHierarchy
         : public InstanceDataNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator)
 
         InstanceDataHierarchy();
+        virtual ~InstanceDataHierarchy() = default;
+
+        AZ_DISABLE_COPY_MOVE(InstanceDataHierarchy);
 
         enum Flags
         {
@@ -447,6 +454,3 @@ namespace AzToolsFramework
         AZ::u8                                                  m_buildFlags = 0;           ///< Flags to customize behavior during Build.
     };
 } // namespace AZ
-
-#endif  // PROPERTY_EDITOR_INSTANCE_DATA_HIERARCHY_H
-#pragma once

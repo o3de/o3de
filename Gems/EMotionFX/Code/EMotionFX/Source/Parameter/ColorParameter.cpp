@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColorParameter, AnimGraphAllocator, 0)
-
+    AZ_CLASS_ALLOCATOR_IMPL(ColorParameter, AnimGraphAllocator);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ColorParameter, BaseType);
 
     void ColorParameter::Reflect(AZ::ReflectContext* context)
     {
@@ -57,7 +57,7 @@ namespace EMotionFX
 
     MCore::Attribute* ColorParameter::ConstructDefaultValueAsAttribute() const
     {
-        return MCore::AttributeColor::Create(MCore::RGBAColor(m_defaultValue.GetR(), m_defaultValue.GetG(), m_defaultValue.GetB(), m_defaultValue.GetA()));
+        return MCore::AttributeColor::Create(m_defaultValue);
     }
 
     uint32 ColorParameter::GetType() const

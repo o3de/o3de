@@ -1,0 +1,53 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileTransparentParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Input/Outputs...
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MobileTransparentPass",
+                    "TemplateName": "MobileTransparentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

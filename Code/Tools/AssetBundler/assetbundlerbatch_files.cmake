@@ -11,4 +11,5 @@ set(FILES
     source/utils/utils.cpp
     source/utils/applicationManager.h
     source/utils/applicationManager.cpp
+    source/utils/AssetBundlerBatchBuildTarget.cpp
 )

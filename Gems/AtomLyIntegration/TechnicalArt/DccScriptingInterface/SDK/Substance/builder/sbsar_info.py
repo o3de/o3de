@@ -51,7 +51,7 @@ _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'DCCsi.SDK.substance.builder.sbsar_info'
 
 import azpy
@@ -75,7 +75,7 @@ _TOOL_TAG = 'sdk.substance.builder.sbsar_info'
 _TYPE_TAG = 'module'
 
 _MODULENAME = __name__
-if _MODULENAME is '__main__':
+if _MODULENAME == '__main__':
     _MODULENAME = _TOOL_TAG
 # -------------------------------------------------------------------------
 
@@ -87,11 +87,11 @@ from collections import OrderedDict
 _SYNTH_ENV_DICT = OrderedDict()
 _SYNTH_ENV_DICT = azpy.synthetic_env.stash_env(_SYNTH_ENV_DICT)
 # grab a specific path from the base_env
-_PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH]
-_O3DE_PROJECT_PATH = _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT_PATH]
+_PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_PATH_DCCSIG]
+_PATH_O3DE_PROJECT = _SYNTH_ENV_DICT[ENVAR_PATH_O3DE_PROJECT]
 
 # build some reuseable path parts
-_PATH_MOCK_ASSETS = Path(_O3DE_PROJECT_PATH, 'Assets').norm()
+_PATH_MOCK_ASSETS = Path(_PATH_O3DE_PROJECT, 'Assets').norm()
 _PATH_MOCK_SUBLIB = Path(_PATH_MOCK_ASSETS, 'SubstanceSource').norm()
 
 _PATH_MOCK_SBS = Path(_PATH_MOCK_SUBLIB, 'sbs').norm()

@@ -15,42 +15,39 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void FactoryRegistrationFinalizerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        void FactoryRegistrationFinalizerSystemComponent::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<FactoryRegistrationFinalizerSystemComponent, AZ::Component>()
-                    ->Version(0);
-            }
+            serializeContext->Class<FactoryRegistrationFinalizerSystemComponent, AZ::Component>()
+                ->Version(0);
         }
+    }
 
-        void FactoryRegistrationFinalizerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(RHI::Factory::GetComponentService());
-        }
+    void FactoryRegistrationFinalizerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(RHI::Factory::GetComponentService());
+    }
 
-        void FactoryRegistrationFinalizerSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-        {
-            dependent.push_back(RHI::Factory::GetPlatformService());
-        }
+    void FactoryRegistrationFinalizerSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(RHI::Factory::GetPlatformService());
+    }
 
-        void FactoryRegistrationFinalizerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-        {
-            incompatible.push_back(RHI::Factory::GetComponentService());
-        }
+    void FactoryRegistrationFinalizerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(RHI::Factory::GetComponentService());
+    }
 
-        void FactoryRegistrationFinalizerSystemComponent::Activate()
-        {
-            // This is the only job of this system component.
-            FactoryManagerBus::Broadcast(&FactoryManagerRequest::FactoryRegistrationFinalize);
-        }
+    void FactoryRegistrationFinalizerSystemComponent::Activate()
+    {
+        // This is the only job of this system component.
+        FactoryManagerBus::Broadcast(&FactoryManagerRequest::FactoryRegistrationFinalize);
+    }
 
-        void FactoryRegistrationFinalizerSystemComponent::Deactivate()
-        {
-        }
-    } // namespace RHI
-} // namespace AZ
+    void FactoryRegistrationFinalizerSystemComponent::Deactivate()
+    {
+    }
+}

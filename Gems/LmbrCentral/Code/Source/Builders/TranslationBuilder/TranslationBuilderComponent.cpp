@@ -40,7 +40,8 @@ namespace TranslationBuilder
         // (optimization) this builder does not emit source dependencies:
         builderDescriptor.m_flags |= AssetBuilderSDK::AssetBuilderDesc::BF_EmitsNoDependencies;
 
-        EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, RegisterBuilderInformation, builderDescriptor);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(
+            &AssetBuilderSDK::AssetBuilderBus::Events::RegisterBuilderInformation, builderDescriptor);
     }
 
     void BuilderPluginComponent::Deactivate()

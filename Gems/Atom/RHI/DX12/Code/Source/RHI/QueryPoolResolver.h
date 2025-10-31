@@ -9,7 +9,7 @@
 
 #include <RHI/ResourcePoolResolver.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <RHI/Fence.h>
+#include <Atom/RHI/Fence.h>
 
 namespace AZ
 {
@@ -28,7 +28,7 @@ namespace AZ
             using Base = ResourcePoolResolver;
         public:
             AZ_RTTI(QueryPoolResolver, "{90CD6495-0758-4ED2-8B95-D5C5DE80CEBC}", Base);
-            AZ_CLASS_ALLOCATOR(QueryPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPoolResolver, AZ::SystemAllocator);
 
             /// Request for a resolving part of the QueryPool into a buffer.
             struct ResolveRequest
@@ -40,7 +40,7 @@ namespace AZ
                 D3D12_QUERY_TYPE m_queryType = D3D12_QUERY_TYPE_OCCLUSION;
             };
 
-            QueryPoolResolver(Device& device, QueryPool& queryPool);
+            QueryPoolResolver(int deviceIndex, QueryPool& queryPool);
             virtual ~QueryPoolResolver() = default;
 
             /*  Queues a request for resolving a QueryPool. This will be processed during the resolve phase.
@@ -61,10 +61,10 @@ namespace AZ
             void Deactivate() override;
 
             QueryPool& m_queryPool; ///< Query pool that is being resolved.
-            Device& m_device;
+            int m_deviceIndex;
             AZStd::vector<ResolveRequest> m_resolveRequests; /// List of requests to be resolved.
 
-            RHI::Ptr<FenceImpl> m_resolveFence; ///< Fence used for checking if a request has finished.
+            RHI::Ptr<RHI::Fence> m_resolveFence; ///< Fence used for checking if a request has finished.
         };
     }
 }

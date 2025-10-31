@@ -90,7 +90,7 @@ namespace AZ
             using Base = RHI::Object;
 
         public:
-            AZ_CLASS_ALLOCATOR(CommandListAllocator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandListAllocator, AZ::SystemAllocator);
 
             struct Descriptor
             {

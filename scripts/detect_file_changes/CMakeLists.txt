@@ -6,6 +6,10 @@
 #
 #
 
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
+
 ly_add_pytest(
     NAME test_detect_file_changes
     PATH ${CMAKE_CURRENT_LIST_DIR}

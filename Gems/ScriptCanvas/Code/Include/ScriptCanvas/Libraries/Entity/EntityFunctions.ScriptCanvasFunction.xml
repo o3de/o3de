@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Entity/EntityFunctions.h"
+        Namespace="ScriptCanvas::EntityFunctions"
+        Category="Entity/Entity">
+
+        <Function Name="GetEntityRight">
+            <Parameter Name="EntityId" Description="The entity to apply right transform."/>
+            <Parameter Name="Scale" Description="The scale of right transform."/>
+        </Function>
+
+        <Function Name="GetEntityForward">
+            <Parameter Name="EntityId" Description="The entity to apply forward transform."/>
+            <Parameter Name="Scale" Description="The scale of forward transform."/>
+        </Function>
+
+        <Function Name="GetEntityUp">
+            <Parameter Name="EntityId" Description="The entity to apply up transform."/>
+            <Parameter Name="Scale" Description="The scale of up transform."/>
+        </Function>
+
+        <Function Name="Rotate">
+            <Parameter Name="EntityId" Description="The entity to apply rotation."/>
+            <Parameter Name="Euler Angles" Description="Euler angles, Pitch/Yaw/Roll."/>
+        </Function>
+
+        <Function Name="IsActive">
+            <Parameter Name="EntityId" Description="The entity to check."/>
+        </Function>
+
+        <Function Name="IsValid">
+            <Parameter Name="EntityId" Description="The entity to check."/>
+        </Function>
+
+        <Function Name="ToString">
+            <Parameter Name="EntityId" Description="The entity to get id string."/>
+        </Function>
+    </Library>
+</ScriptCanvas>

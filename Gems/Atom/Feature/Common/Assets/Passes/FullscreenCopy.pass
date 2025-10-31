@@ -13,7 +13,10 @@
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
                         "MipSliceMin": "0",
-                        "MipSliceMax": "0"
+                        "MipSliceMax": "0",
+                        "AspectFlags": [
+                            "Color"
+                        ]
                     }
                 },
                 {

@@ -14,6 +14,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -26,11 +27,31 @@ namespace WhiteBox
     static const char* const RestoreEdgeUndoRedoDesc = "Restore an edge to split two connected polygons";
     static const char* const RestoreVertexUndoRedoDesc = "Restore a vertex to split two connected edges";
 
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator)
 
     void EdgeRestoreMode::Refresh()
     {
         // noop
+    }
+
+    void EdgeRestoreMode::RegisterActionUpdaters()
+    {
+    }
+
+    void EdgeRestoreMode::RegisterActions()
+    {
+    }
+
+    void EdgeRestoreMode::BindActionsToModes(const AZStd::string& modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+    }
+
+    void EdgeRestoreMode::BindActionsToMenus()
+    {
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EdgeRestoreMode::PopulateActions(
@@ -143,10 +164,10 @@ namespace WhiteBox
 
         // draw all 'user' and 'mesh' edges
         DrawEdges(
-            debugDisplay, cl_whiteBoxEdgeUserColor, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user,
+            debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user,
             interactiveEdgeHandles);
         DrawEdges(
-            debugDisplay, cl_whiteBoxEdgeMeshColor, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_mesh,
+            debugDisplay, ed_whiteBoxEdgeUnselected, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_mesh,
             interactiveEdgeHandles);
 
         WhiteBoxMesh* whiteBox = nullptr;
@@ -167,7 +188,7 @@ namespace WhiteBox
                 continue;
             }
 
-            debugDisplay.SetColor(cl_whiteBoxEdgeHoveredColor);
+            debugDisplay.SetColor(ed_whiteBoxOutlineHover);
             const auto edgeGeom = Api::EdgeVertexPositions(*whiteBox, edgeHandleRestore);
             debugDisplay.DrawLine(edgeGeom[0], edgeGeom[1]);
         }
@@ -175,7 +196,7 @@ namespace WhiteBox
         // draw the hovered highlighted edge
         if (!interactiveEdgeHandles.empty() && m_edgeIntersection.has_value())
         {
-            debugDisplay.SetColor(cl_whiteBoxSelectedModifierColor);
+            debugDisplay.SetColor(ed_whiteBoxOutlineSelection);
             debugDisplay.DrawLine(
                 m_edgeIntersection->m_closestEdgeWithHandle.m_bound.m_start,
                 m_edgeIntersection->m_closestEdgeWithHandle.m_bound.m_end);
@@ -192,15 +213,15 @@ namespace WhiteBox
         {
             if (hoveredVertexHandle == vertex.m_handle)
             {
-                debugDisplay.SetColor(cl_whiteBoxVertexSelectedModifierColor);
+                debugDisplay.SetColor(ed_whiteBoxVertexSelection);
             }
             else if (Api::VertexIsHidden(*whiteBox, vertex.m_handle))
             {
-                debugDisplay.SetColor(cl_whiteBoxVertexHiddenRestoreColor);
+                debugDisplay.SetColor(ed_whiteBoxVertexHiddenColor);
             }
             else
             {
-                debugDisplay.SetColor(cl_whiteBoxVertexRestoreColor);
+                debugDisplay.SetColor(ed_whiteBoxVertexRestoredColor);
             }
 
             // calculate the radius of the manipulator based

@@ -1,0 +1,60 @@
+#pragma once
+
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+// the SimplePointLight class is defined by the Material, but usually points to Atom/Features/Light/PBR/SimplePointLight.azsli
+
+#ifndef SimplePointLightUtil
+#error "SimplePointLightUtil needs to be defined"
+#endif // SimplePointLightUtil
+
+void ApplySimplePointLight(int lightIndex, Surface surface, inout LightingData lightingData)
+{
+    SimplePointLight srgLight = ViewSrg::m_simplePointLights[lightIndex];
+
+    if (!IsSameLightChannel(srgLight.m_lightingChannelMask, surface.lightingChannels))
+    {
+        return;
+    }
+    
+    SimplePointLightUtil light = SimplePointLightUtil::Init(srgLight, surface);
+
+    if (light.GetFalloff() >= 1.0f)
+    {
+        return;
+    }
+
+    // Simple Point lights don't get shadows
+    real litRatio = 1.0f; 
+
+    light.Apply(srgLight, surface, litRatio, lightingData);
+}
+
+
+void ApplySimplePointLights(Surface surface, inout LightingData lightingData, inout LightCullingTileIterator tileIterator)
+{
+#if ENABLE_LIGHT_CULLING
+    tileIterator.LoadAdvance();    
+    while( !tileIterator.IsDone() ) 
+    { 
+        uint currLightIndex = tileIterator.GetValue(); 
+        tileIterator.LoadAdvance();
+        ApplySimplePointLight(currLightIndex, surface, lightingData);
+    }
+#else
+
+    // For perf we cap light count. If it was not set by the pipeline it will use the value specified below
+    // This is only applicable if ENABLE_LIGHT_CULLING is disabled (i.e no gpu culling)
+    #ifndef ENABLE_SIMPLE_POINTLIGHTS_CAP
+        #define ENABLE_SIMPLE_POINTLIGHTS_CAP 20 
+    #endif
+
+    // Since there's no GPU culling for simple point lights, we rely on culling done by CPU
+    // Only apply visible point lights
+    for(uint lightIndex = 0; (lightIndex < ENABLE_SIMPLE_POINTLIGHTS_CAP && lightIndex < ViewSrg::m_visibleSimplePointLightCount); lightIndex++)
+    {
+        ApplySimplePointLight(ViewSrg::m_visibleSimplePointLightIndices[lightIndex], surface, lightingData);
+    }
+#endif
+}
+

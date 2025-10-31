@@ -19,12 +19,16 @@ def find_nodes_matching_entity_component(component_name, entity_id):
     :param entity_id: The entity ID to search for the given component node on
     :return List of matching nodes
     """
+    component_type_id = hydra.get_component_type_id(component_name)
     component = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', entity_id,
-                                             hydra.get_component_type_id(component_name))
+                                             component_type_id)
+
     if component.IsSuccess():
         component_id = component.GetValue()
         component_node = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'GetAllNodesMatchingEntityComponent',
                                                                    component_id)
         if component_node:
             print(f"{component_name} node found on entity {entity_id.ToString()}")
+        else:
+            print(f"Failed to find {component_name} node on entity {entity_id.ToString()}")
         return component_node

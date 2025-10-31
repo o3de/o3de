@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Goegap",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",

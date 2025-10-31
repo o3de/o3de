@@ -11,6 +11,7 @@
 
 // AzCore
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 
@@ -28,12 +29,12 @@ void CEditorPreferencesPage_AWS::Reflect(AZ::SerializeContext& serialize)
     if (editContext)
     {
         editContext->Class<UsageOptions>("Options", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, "Allow O3DE to send information about your use of AWS Core Gem to AWS",
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, "Allow <a href=\"https://aws.amazon.com/privacy/\">O3DE</a> to send information about your use of AWS Core Gem to AWS",
             "");
 
         editContext->Class<CEditorPreferencesPage_AWS>("AWS Preferences", "AWS Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_AWS::m_usageOptions, "AWS Data Collection and Use", "AWS Data Collection and Use");
     }
 }
@@ -82,7 +83,7 @@ void CEditorPreferencesPage_AWS::SaveSettingsRegistryFile()
 
             // Resolve path to editor_aws_preferences.setreg
             AZStd::string editorPreferencesFilePath =
-                AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+                AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryConstants::RegistryFolder, EditorAWSPreferencesFileName);
             AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath{};
             fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), resolvedPath.size());
 
@@ -101,7 +102,7 @@ void CEditorPreferencesPage_AWS::SaveSettingsRegistryFile()
                 return;
             }
 
-            bool saved{};
+            [[maybe_unused]] bool saved = false;
             constexpr auto configurationMode =
                 AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
             if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPath.data(), configurationMode))
@@ -124,7 +125,7 @@ void CEditorPreferencesPage_AWS::InitializeSettings()
 
     // Resolve path to editor_aws_preferences.setreg
     AZStd::string editorAWSPreferencesFilePath =
-        AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+        AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryConstants::RegistryFolder, EditorAWSPreferencesFileName);
     AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
     if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
     {

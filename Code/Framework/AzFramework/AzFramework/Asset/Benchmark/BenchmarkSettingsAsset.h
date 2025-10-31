@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -51,12 +52,12 @@ namespace AzFramework
     //!        Dependent Asset Buffer Size:    1 MB
     //!        Dependency Depth:               2
     //!        Assets Per Dependency:          5
-    class BenchmarkSettingsAsset
+    class AZF_API BenchmarkSettingsAsset
         : public AZ::Data::AssetData
     {
     public:
         AZ_RTTI(BenchmarkSettingsAsset, "{D570D0DD-CE8D-4DF3-BC3E-77DB92D72626}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(BenchmarkSettingsAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BenchmarkSettingsAsset, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         uint64_t m_primaryAssetByteSize = 1024;

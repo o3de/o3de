@@ -1,17 +1,11 @@
 <RCC>
     <qresource prefix="/Icons">
-        <file alias="Browse.png">../../../../Assets/Editor/Icons/PropertyEditor/Browse.png</file>
         <file alias="Browse_On.png">../../../../Assets/Editor/Icons/PropertyEditor/Browse_on.png</file>
         <file alias="DeleteRule.png">../../../../Assets/Editor/Icons/PropertyEditor/remove.png</file>
         <file alias="DeleteGroup.png">../../../../Assets/Editor/Icons/PropertyEditor/remove.png</file>
         <file alias="Error.png">../../../../Assets/Editor/Icons/PropertyEditor/error_icon.png</file>
         <file alias="RefreshGroup.png">../../../../Assets/Editor/Icons/PropertyEditor/reset_icon.png</file>
-        <file alias="MeshSelectorBrowse.png">../../../../Assets/Editor/Icons/AssetImporter/mesh.png</file>
-        <file alias="MeshSelectorBrowse_On.png">../../../../Assets/Editor/Icons/AssetImporter/mesh_on.png</file>
         <file alias="MeshTreeIcon.png">../../../../Assets/Editor/Icons/AssetImporter/mesh_on.png</file>
         <file alias="GroupTreeIcon.png">../../../../Assets/Editor/Icons/AssetImporter/group_icon.png</file>
-        <file alias="CheckMark_Checked.png">../../../../Assets/Editor/Icons/checkmark_checked.png</file>
-        <file alias="CheckMark_Hover.png">../../../../Assets/Editor/Icons/checkmark_checked_hover.png</file>
-        <file alias="CheckMark_Unchecked_Hover.png">../../../../Assets/Editor/Icons/checkmark_unchecked_hover.png</file>
     </qresource>
 </RCC>

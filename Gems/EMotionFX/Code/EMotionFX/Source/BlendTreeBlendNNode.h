@@ -12,7 +12,11 @@
 #include "AnimGraphNode.h"
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace EMotionFX
 {
@@ -116,7 +120,6 @@ namespace EMotionFX
 
         void FindBlendNodes(AnimGraphInstance* animGraphInstance, AnimGraphNode** outNodeA, AnimGraphNode** outNodeB, uint32* outIndexA, uint32* outIndexB, float* outWeight) const;
 
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static void Reflect(AZ::ReflectContext* context);
         void SetSyncMode(ESyncMode syncMode);
         void SetEventMode(EEventMode eventMode);

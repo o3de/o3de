@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,9 +31,9 @@ namespace GraphCanvas
     public:
         friend class NodePaletteSortFilterProxyModel;
 
-        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator);
 
-        NodePaletteAutoCompleteModel();
+        NodePaletteAutoCompleteModel(QObject* parent = nullptr);
         ~NodePaletteAutoCompleteModel() = default;
 
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -57,11 +58,12 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator);
 
         NodePaletteSortFilterProxyModel(QObject* parent);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+        bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
 
         void PopulateUnfilteredModel();
 
@@ -78,7 +80,7 @@ namespace GraphCanvas
         void OnModelElementAboutToBeRemoved(const GraphCanvasTreeItem* treeItem);
 
     private:
-
+        int CalculateSortingScore(const QModelIndex& source) const;
         void ProcessItemForUnfilteredModel(const GraphCanvasTreeItem* currentItem, bool signalAdd = false);
 
         QCompleter m_unfilteredCompleter;
@@ -91,6 +93,6 @@ namespace GraphCanvas
         AZStd::unordered_set<const GraphCanvas::GraphCanvasTreeItem*> m_sourceSlotFilter;
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

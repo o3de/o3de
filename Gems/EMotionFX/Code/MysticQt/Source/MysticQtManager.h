@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MYSTICQT_MANAGER_H
-#define __MYSTICQT_MANAGER_H
+#pragma once
 
 // include required files
 #if !defined(Q_MOC_RUN)
@@ -91,5 +90,3 @@ namespace MysticQt
     MCORE_INLINE const AZStd::string&       GetAppDir()                     { return gMysticQtManager->GetAppDir(); }
     MCORE_INLINE const AZStd::string&       GetDataDir()                    { return gMysticQtManager->GetDataDir(); }
 }   // namespace MysticQt
-
-#endif

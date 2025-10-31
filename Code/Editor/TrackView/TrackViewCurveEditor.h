@@ -6,18 +6,16 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWCURVEEDITOR_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWCURVEEDITOR_H
 #pragma once
 
-
+#include "Controls/TimelineCtrl.h"
 #include "TrackViewDopeSheetBase.h"
 #include "TrackViewSplineCtrl.h"
-#include "Controls/TimelineCtrl.h"
 #include "TrackViewTimeline.h"
 
 #include <QWidget>
+
+#include <AzCore/std/functional.h>
 
 namespace Ui
 {
@@ -124,5 +122,3 @@ public:
 private:
     CTrackViewCurveEditor* m_widget;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWCURVEEDITOR_H

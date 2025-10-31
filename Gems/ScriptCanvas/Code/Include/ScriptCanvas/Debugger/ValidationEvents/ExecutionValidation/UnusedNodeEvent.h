@@ -30,7 +30,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(UnusedNodeEvent, "{EC6933F8-0D50-49A7-BCA2-BB4B4534AA8C}", HighlightEntityEffect, GreyOutNodeEffect, ValidationEvent, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(UnusedNodeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnusedNodeEvent, AZ::SystemAllocator);
         
         UnusedNodeEvent(const AZ::EntityId& nodeId)
             : ValidationEvent(ValidationSeverity::Warning)
@@ -46,7 +46,7 @@ namespace ScriptCanvas
         
         AZ::Crc32 GetIdCrc() const override
         {
-            return AZ_CRC(ExecutionValidationIds::UnusedNodeId);
+            return AZ_CRC_CE(ExecutionValidationIds::UnusedNodeId);
         }
         
         const AZ::EntityId& GetNodeId() const

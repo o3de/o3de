@@ -10,7 +10,8 @@
 
 #include <numeric>
 #include <AzCore/base.h>
-#include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AZ
 {
@@ -20,38 +21,39 @@ namespace AZ
         //! RequestPath uses lazy evaluation so the relative path is
         //! not resolved to an absolute path until the path is requested
         //! or a check is done for validity.
-        class RequestPath
+        class AZCORE_API RequestPath
         {
         public:
             RequestPath() = default;
-            RequestPath(const RequestPath& rhs);
-            RequestPath(RequestPath&& rhs);
+            RequestPath(const RequestPath& rhs) = default;
+            RequestPath(RequestPath&& rhs) = default;
+            // Allow path views to be cast to a request path.
+            RequestPath(AZ::IO::PathView path);
 
-            RequestPath& operator=(const RequestPath& rhs);
-            RequestPath& operator=(RequestPath&& rhs);
+            RequestPath& operator=(const RequestPath& rhs) = default;
+            RequestPath& operator=(RequestPath&& rhs) = default;
+            RequestPath& operator=(AZ::IO::PathView path);
 
             bool operator==(const RequestPath& rhs) const;
             bool operator!=(const RequestPath& rhs) const;
 
-            void InitFromRelativePath(AZStd::string path);
-            void InitFromAbsolutePath(AZStd::string path);
-
             bool IsValid() const;
             void Clear();
 
-            const char* GetAbsolutePath() const;
-            const char* GetRelativePath() const;
+            const char* GetAbsolutePathCStr() const;
+            const char* GetRelativePathCStr() const;
+            PathView GetAbsolutePath() const;
+            PathView GetRelativePath() const;
             size_t GetHash() const;
 
         private:
-            constexpr static const size_t s_invalidPathHash = std::numeric_limits<size_t>::max();
-            constexpr static const size_t s_emptyPathHash = std::numeric_limits<size_t>::min();
-
+            constexpr static const size_t InvalidPathHash = std::numeric_limits<size_t>::max();
+            
             void ResolvePath() const;
-            size_t FindAliasOffset(const AZStd::string& path) const;
+            size_t FindAliasOffset(AZStd::string_view path) const;
 
-            mutable AZStd::string m_path;
-            mutable size_t m_absolutePathHash = s_emptyPathHash;
+            mutable FixedMaxPath m_path;
+            mutable size_t m_absolutePathHash = InvalidPathHash;
             mutable size_t m_relativePathOffset = 0;
         };
     } // namespace IO

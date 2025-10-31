@@ -42,7 +42,6 @@
         <file>file browser.png</file>
     </qresource>
     <qresource prefix="/general">
-        <file alias="hex_profiler_icon">profile_icon.png</file>
         <file alias="hex_lua_icon">hex_lua.png</file>
         <file alias="breakpoints">breakpoints.png</file>
         <file alias="callstack">callstack.png</file>
@@ -80,35 +79,7 @@
         <file alias="debugger_disconnected">bug--minus.png</file>
         <file alias="debugger_connected">bug--plus.png</file>
     </qresource>    
-    <qresource prefix="/driller">
-        <file alias="active_color_swatch">active_color_swatch.png</file>
-        <file alias="export_button_disabled">export_button_disabled.png</file>
-        <file alias="export_button_enabled">export_button_enabled.png</file>
-        <file alias="drill_down_disabled">drill_down_disabled.png</file>
-        <file alias="drill_down_enabled">drill_down_enabled.png</file>
-        <file alias="inactive_color_swatch">inactive_color_swatch.png</file>
-        <file alias="settings_icon">settings_icon.png</file>
-    </qresource>
     <qresource prefix="/styles">
         <file>style_dark.qss</file>
-    </qresource>
-    <qresource prefix="/">
-        <file>StyleSheetImages/arrow_up_V2.png</file>
-        <file>StyleSheetImages/arrow_down_V2.png</file>
-        <file>StyleSheetImages/arrow_left_V2.png</file>
-        <file>StyleSheetImages/arrow_right_V2.png</file>
-        <file>StyleSheetImages/checkbox_checked.png</file>
-        <file>StyleSheetImages/checkbox_checked_disabled.png</file>
-        <file>StyleSheetImages/checkbox_unchecked.png</file>
-        <file>StyleSheetImages/checkbox_unchecked_disabled.png</file>
-        <file>StyleSheetImages/dropdown_arrow.png</file>
-        <file>StyleSheetImages/radiobutton_checked.png</file>
-        <file>StyleSheetImages/radiobutton_checked_disabled.png</file>
-        <file>StyleSheetImages/radiobutton_unchecked.png</file>
-        <file>StyleSheetImages/radiobutton_unchecked_disabled.png</file>
-        <file>StyleSheetImages/spinbox_down.png</file>
-        <file>StyleSheetImages/spinbox_up.png</file>
-        <file>StyleSheetImages/treeview_arrow_down.png</file>
-        <file>StyleSheetImages/treeview_arrow_right.png</file>
     </qresource>
 </RCC>

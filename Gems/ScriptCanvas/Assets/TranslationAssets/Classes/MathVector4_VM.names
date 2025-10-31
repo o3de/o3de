@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "SetW",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetW"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "SetX",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetX"
@@ -86,7 +84,6 @@
                 },
                 {
                     "base": "IsNormalized",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsNormalized"
@@ -124,7 +121,6 @@
                 },
                 {
                     "base": "LengthSquared",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LengthSquared"
@@ -156,7 +152,6 @@
                 },
                 {
                     "base": "MultiplyByNumber",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByNumber"
@@ -194,7 +189,6 @@
                 },
                 {
                     "base": "Negate",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Negate"
@@ -226,7 +220,6 @@
                 },
                 {
                     "base": "Dot",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dot"
@@ -264,7 +257,6 @@
                 },
                 {
                     "base": "FromValues",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromValues"
@@ -314,7 +306,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -346,7 +337,6 @@
                 },
                 {
                     "base": "Length",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Length"
@@ -378,7 +368,6 @@
                 },
                 {
                     "base": "MultiplyByVector",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector"
@@ -416,7 +405,6 @@
                 },
                 {
                     "base": "DirectionTo",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DirectionTo"
@@ -460,7 +448,6 @@
                 },
                 {
                     "base": "DivideByVector",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByVector"
@@ -498,7 +485,6 @@
                 },
                 {
                     "base": "LengthReciprocal",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LengthReciprocal"
@@ -530,7 +516,6 @@
                 },
                 {
                     "base": "SetZ",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetZ"
@@ -568,7 +553,6 @@
                 },
                 {
                     "base": "Normalize",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Normalize"
@@ -600,7 +584,6 @@
                 },
                 {
                     "base": "DivideByNumber",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByNumber"
@@ -638,7 +621,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -682,7 +664,6 @@
                 },
                 {
                     "base": "IsZero",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsZero"
@@ -720,7 +701,6 @@
                 },
                 {
                     "base": "Add",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add"
@@ -758,7 +738,6 @@
                 },
                 {
                     "base": "GetElement",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetElement"
@@ -796,7 +775,6 @@
                 },
                 {
                     "base": "Reciprocal",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reciprocal"
@@ -828,7 +806,6 @@
                 },
                 {
                     "base": "Subtract",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Subtract"
@@ -866,7 +843,6 @@
                 },
                 {
                     "base": "Absolute",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Absolute"
@@ -898,7 +874,6 @@
                 },
                 {
                     "base": "SetY",
-                    "context": "MathVector4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetY"

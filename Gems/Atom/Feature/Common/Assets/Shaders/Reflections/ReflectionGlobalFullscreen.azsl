@@ -26,8 +26,8 @@
 //   This is necessary to clear the pixel since the probes additively write their specular values
 //   in the following passes.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
@@ -56,7 +56,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "ReflectionCommon.azsli"
 
 // Vertex Shader
@@ -75,13 +74,24 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     float4 encodedNormal = PassSrg::m_normal.Load(IN.m_position.xy, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
-    bool multiScatterCompensationEnabled = (encodedNormal.a > 0.0f);
-    
+    bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
+    if (!enableIBL)
+    {
+        PSOutput OUT;
+        OUT.m_color = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        return OUT;
+    }
+
+    bool multiScatterCompensationEnabled = DecodeUnorm2BitFlag2(encodedNormal.a);
     float4 albedo = PassSrg::m_albedo.Load(IN.m_position.xy, sampleIndex);
     float specularOcclusion = albedo.a;
 
     // reconstruct world space position from the depth at this location in screenspace
-    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // sample blend weight at this location
     float blendWeight = PassSrg::m_blendWeight.Load(IN.m_position.xy, sampleIndex).r;

@@ -34,7 +34,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BloomBlurPass, "{02E41C48-5CC7-4277-B66E-009E4D6D32BA}", ParentPass);
-            AZ_CLASS_ALLOCATOR(BloomBlurPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomBlurPass, SystemAllocator);
             virtual ~BloomBlurPass() = default;
 
             //! Creates a BloomBlurPass
@@ -97,7 +97,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BloomBlurChildPass, "{85D3FE9B-D347-40D6-B666-B4DF855F5B80}", RenderPass);
-            AZ_CLASS_ALLOCATOR(BloomBlurChildPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomBlurChildPass, SystemAllocator);
             virtual ~BloomBlurChildPass() = default;
 
             //! Creates a BloomBlurChildPass

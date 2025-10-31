@@ -195,9 +195,8 @@ namespace SliceBuilder
 
         bool requiresUpgrade = m_sliceHasLegacyDataPatches;
         bool sliceWritable = AZ::IO::SystemFile::IsWritable(fullPath.c_str());
-        bool createDynamicSlice = sourcePrefab->IsDynamic();
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AzToolsFramework::Fingerprinting::TypeFingerprint sourceSliceTypeFingerprint = CalculateFingerprintForSlice(*sourcePrefab, *m_typeFingerprinter, *context);
 
@@ -241,21 +240,20 @@ namespace SliceBuilder
 
             if (!m_settingsWarning.empty())
             {
-                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC("JobParam_SettingsFileWarning", 0xae8d98ac)), AZStd::string("Requires Re-save")));
+                jobDescriptor.m_jobParameters.insert(
+                    AZStd::make_pair(AZ_CRC_CE("JobParam_SettingsFileWarning"), m_settingsWarning)
+                    );
             }
 
             if (requiresUpgrade)
             {
-                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC("JobParam_UpgradeSlice", 0x4be52dd5)), AZStd::string("Requires Re-save")));
+                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC_CE("JobParam_UpgradeSlice")), AZStd::string("Requires Re-save")));
 
                 // Source file changes are Platform Agnostic. Avoid extra work by only scheduling it once.
                 requiresUpgrade = false;
             }
 
-            if (createDynamicSlice)
-            {
-                jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC("JobParam_MakeDynamicSlice", 0xa89310ab)), AZStd::string("Create Dynamic Slice")));
-            }
+            jobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC_CE("JobParam_MakeDynamicSlice")), AZStd::string("Create Dynamic Slice")));
 
             response.m_createJobOutputs.push_back(jobDescriptor);
 
@@ -263,7 +261,7 @@ namespace SliceBuilder
 
             copyJobDescriptor.m_critical = true;
             copyJobDescriptor.m_priority = 2;
-            copyJobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC("JobParam_CopyJob", 0x428e33c6)), AZStd::string("Copy Slice")));
+            copyJobDescriptor.m_jobParameters.insert(AZStd::make_pair(AZ::u32(AZ_CRC_CE("JobParam_CopyJob")), AZStd::string("Copy Slice")));
 
             response.m_createJobOutputs.push_back(copyJobDescriptor);
         }
@@ -282,10 +280,12 @@ namespace SliceBuilder
         }
 
         // Emit a settings file warning if required. We wait until now so the warnings will be clearly visible in the AP GUI.
-        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC("JobParam_SettingsFileWarning", 0xae8d98ac)) != request.m_jobDescription.m_jobParameters.end())
+        const auto& settingsWarning = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("JobParam_SettingsFileWarning"));
+        
+        if (settingsWarning != request.m_jobDescription.m_jobParameters.end())
         {
             // .../dev/SliceBuilderSettings.json must exist and must be readable.
-            AZ_Warning(s_sliceBuilder, false, m_settingsWarning.c_str());
+            AZ_Warning(s_sliceBuilder, false, settingsWarning->second.c_str());
         }
 
         AZStd::string fullPath;
@@ -329,7 +329,7 @@ namespace SliceBuilder
             platformTags.insert(AZ::Crc32(platformTagString.c_str(), platformTagString.size(), true));
         }
 
-        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC("JobParam_CopyJob", 0x428e33c6)) != request.m_jobDescription.m_jobParameters.end())
+        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("JobParam_CopyJob")) != request.m_jobDescription.m_jobParameters.end())
         {
             AZ::Data::Asset<AZ::SliceAsset> exportSliceAsset;
 
@@ -345,7 +345,7 @@ namespace SliceBuilder
         }
 
         // Dynamic Slice Creation
-        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC("JobParam_MakeDynamicSlice", 0xa89310ab)) != request.m_jobDescription.m_jobParameters.end())
+        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("JobParam_MakeDynamicSlice")) != request.m_jobDescription.m_jobParameters.end())
         {
             AZ::Data::Asset<AZ::SliceAsset> exportSliceAsset;
 
@@ -378,7 +378,7 @@ namespace SliceBuilder
         }
 
         // Slice Upgrades
-        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC("JobParam_UpgradeSlice", 0x4be52dd5)) != request.m_jobDescription.m_jobParameters.end())
+        if (request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("JobParam_UpgradeSlice")) != request.m_jobDescription.m_jobParameters.end())
         {
             AZ_TracePrintf(s_sliceBuilder, "Slice Upgrade: Starting Upgrade Process");
             // Check to see if the conditions for the builder to operate are met
@@ -414,7 +414,7 @@ namespace SliceBuilder
             {
                 AZ_TracePrintf(s_sliceBuilder, "Slice Upgrade: Instantiating Slice");
 
-                AZ::SerializeContext* context;
+                AZ::SerializeContext* context = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
                 AZ::Data::Asset<AZ::SliceAsset> sourceAsset;
@@ -534,7 +534,7 @@ namespace SliceBuilder
     {
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         sourceAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
@@ -560,7 +560,7 @@ namespace SliceBuilder
     bool SliceBuilderWorker::GetCompiledSliceAsset(AZStd::shared_ptr<AZ::Data::AssetDataStream> stream, const char* fullPath,
         const AZ::PlatformTagSet& platformTags, AZ::Data::Asset<AZ::SliceAsset>& outSliceAsset)
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);

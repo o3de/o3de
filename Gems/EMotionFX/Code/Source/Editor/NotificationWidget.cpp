@@ -22,7 +22,7 @@ namespace EMotionFX
         QFrame* headerFrame = new QFrame(this);
         headerFrame->setObjectName("HeaderFrame");
         headerFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-        headerFrame->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
+        headerFrame->setFrameStyle(0x0 | QFrame::StyledPanel | QFrame::Plain);
         headerFrame->setStyleSheet("background-color: rgb(60, 60, 60);");
 
         // Icon widget

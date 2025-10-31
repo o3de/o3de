@@ -31,7 +31,7 @@ class Tests:
         "Component removed from entity successfully",
         "Failed to remove component from entity"
     )
-    level_saved_and_exported = (
+    saved_and_exported = (
         "Level saved and exported successfully",
         "Failed to save/export level"
     )
@@ -39,7 +39,7 @@ class Tests:
 
 def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -52,8 +52,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         - A new entity can be created
         - Entity hierarchy can be adjusted
         - Components can be added/removed/updated
-        - Level can be saved
-        - Level can be exported
+        - Level can be saved/exported
 
         Note:
         - This test file must be called from the O3DE Editor command terminal
@@ -69,8 +68,9 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         import azlmbr.bus as bus
         import azlmbr.editor as editor
         import azlmbr.entity as entity
+        import azlmbr.legacy.general as general
         import azlmbr.math as math
-        import azlmbr.paths
+        import azlmbr.paths as paths
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
@@ -84,8 +84,14 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
             return None
 
         # 1) Create a new level
-        level = "tmp_level"
+        lvl_name = "tmp_level"
         editor_window = pyside_utils.get_editor_main_window()
+
+        # The action manager doesn't register the menus until the next system tick, so need to wait
+        # until the menu bar has been populated
+        general.idle_enable(True)
+        await pyside_utils.wait_for_condition(lambda: len(editor_window.menuBar().actions()) > 1)
+
         new_level_action = pyside_utils.get_action_for_menu_path(editor_window, "File", "New Level")
         pyside_utils.trigger_action_async(new_level_action)
         active_modal_widget = await pyside_utils.wait_for_modal_widget()
@@ -95,23 +101,24 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
                 Report.info("New Level dialog opened")
             grp_box = new_level_dlg.findChild(QtWidgets.QGroupBox, "STATIC_GROUP1")
             level_name = grp_box.findChild(QtWidgets.QLineEdit, "LEVEL")
-            level_name.setText(level)
+            level_name.setText(lvl_name)
             button_box = new_level_dlg.findChild(QtWidgets.QDialogButtonBox, "buttonBox")
             button_box.button(QtWidgets.QDialogButtonBox.Ok).click()
 
         # Verify new level was created successfully
         level_create_success = await pyside_utils.wait_for_condition(lambda: editor.EditorToolsApplicationRequestBus(
-            bus.Broadcast, "GetCurrentLevelName") == level, 5.0)
+            bus.Broadcast, "GetCurrentLevelName") == lvl_name, 5.0)
         Report.critical_result(Tests.level_created, level_create_success)
 
         # 2) Delete existing entities, and create and manipulate new entities via Entity Inspector
         search_filter = azlmbr.entity.SearchFilter()
         all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-        entity_outliner_widget = editor_window.findChild(QtWidgets.QWidget, "OutlinerWidgetUI")
+        entity_outliner_widget = editor_window.findChild(QtWidgets.QWidget, "EntityOutlinerWidgetUI")
         outliner_object_list = entity_outliner_widget.findChild(QtWidgets.QWidget, "m_objectList_Contents")
         outliner_tree = outliner_object_list.findChild(QtWidgets.QWidget, "m_objectTree")
-        await pyside_utils.trigger_context_menu_entry(outliner_tree, "Create entity")
+        outliner_viewport = outliner_tree.findChild(QtWidgets.QWidget, "qt_scrollarea_viewport")
+        await pyside_utils.trigger_context_menu_entry(outliner_viewport, "Create entity")
 
         # Find the new entity
         parent_entity_id = find_entity_by_name("Entity1")
@@ -153,14 +160,16 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         save_level_action = pyside_utils.get_action_for_menu_path(editor_window, "File", "Save")
         pyside_utils.trigger_action_async(save_level_action)
 
-        # 5) Export the level
-        export_action = pyside_utils.get_action_for_menu_path(editor_window, "Game", "Export to Engine")
-        pyside_utils.trigger_action_async(export_action)
-        level_pak_file = os.path.join(
-            "AutomatedTesting", "Levels", level, "level.pak"
-        )
-        export_success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_pak_file), 5.0)
-        Report.result(Tests.level_saved_and_exported, export_success)
+        # 5) Verify the save/export of the level
+        level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
+
+        # In normal conditions this should be a few milliseconds but if AP is busy processing other files, or whatever
+        # it might take longer.  Make it a really long timer, like 30 minutes, so that if this does die, its 99.99%
+        # because it is broken, not because it is slow.  In normal tests, this should run instantly anyway and stops waiting
+        # as soon as its condition is met.
+        success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_prefab_path), 60.0 * 30.0)
+
+        Report.result(Tests.saved_and_exported, success)
 
     run_test()
 

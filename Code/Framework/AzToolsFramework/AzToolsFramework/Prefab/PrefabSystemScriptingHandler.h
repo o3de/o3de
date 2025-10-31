@@ -7,13 +7,15 @@
  */
 
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <Prefab/PrefabSystemScriptingBus.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabSystemScriptingHandler
+        class AZTF_API PrefabSystemScriptingHandler
             : PrefabSystemScriptingBus::Handler
         {
         public:
@@ -30,6 +32,8 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemScriptingBus implementation
             TemplateId CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) override;
+            TemplateId CreatePrefabTemplateWithCustomEntityAliases(
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entities, const AZStd::string& filePath) override;
             //////////////////////////////////////////////////////////////////////////
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

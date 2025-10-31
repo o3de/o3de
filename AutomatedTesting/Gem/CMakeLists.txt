@@ -6,6 +6,10 @@
 #
 #
 
+o3de_gem_setup("AutomatedTesting")
+
+ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+
 add_subdirectory(Code)
+
 add_subdirectory(PythonTests)
-add_subdirectory(PythonCoverage)

@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
@@ -19,7 +21,7 @@ namespace AzToolsFramework
     namespace Components
     {
         //! A System Component to manage UI overrides for Editor Entities
-        class EditorEntityUiSystemComponent final
+        class AZTF_API EditorEntityUiSystemComponent final
             : public AZ::Component
             , public EditorEntityUiInterface
         {

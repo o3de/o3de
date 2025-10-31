@@ -17,7 +17,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(PerformanceTimer, "{696597CC-BA91-4A7B-9ED3-32BEA69ED728}");
-            AZ_CLASS_ALLOCATOR(PerformanceTimer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceTimer, AZ::SystemAllocator);
 
             PerformanceTimer();
 

@@ -110,32 +110,37 @@ QToolButton#closeButton:hover {
 
 AzQtComponents--TabWidget QToolButton#closeButton
 {
-    qproperty-icon: url(:/stylesheet/img/UI20/titlebar-close.svg);
+    qproperty-icon: url(:/Application/titlebar-close.svg);
 }
 
 AzQtComponents--DockBarButton.close
 {
-    titlebar-close-icon: url(:/stylesheet/img/UI20/titlebar-close.svg);
+    titlebar-close-icon: url(:/Application/titlebar-close.svg);
 }
 
 AzQtComponents--TabWidget QToolButton#maximizeButton
 {
-    qproperty-icon: url(:/stylesheet/img/UI20/titlebar-maximize.svg);
+    qproperty-icon: url(:/Application/titlebar-maximize.svg);
 }
 
 AzQtComponents--DockBarButton.maximize
 {
-    titlebar-maximize-icon: url(:/stylesheet/img/UI20/titlebar-maximize.svg);
+    titlebar-maximize-icon: url(:/Application/titlebar-maximize.svg);
+}
+
+AzQtComponents--DockBarButton.restore
+{
+    titlebar-maximize-icon: url(:/Application/titlebar-restore.svg);
 }
 
 AzQtComponents--TabWidget QToolButton#minimizeButton
 {
-    qproperty-icon: url(:/stylesheet/img/UI20/titlebar-minimize.svg);
+    qproperty-icon: url(:/Application/titlebar-minimize.svg);
 }
 
 AzQtComponents--DockBarButton.minimize
 {
-    titlebar-minimize-icon: url(:/stylesheet/img/UI20/titlebar-minimize.svg);
+    titlebar-minimize-icon: url(:/Application/titlebar-minimize.svg);
 }
 
 AzQtComponents--DockBarButton:disabled

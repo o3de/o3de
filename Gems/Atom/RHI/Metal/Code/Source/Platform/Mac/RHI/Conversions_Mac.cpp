@@ -200,11 +200,6 @@ namespace AZ
                 return true;
             }
         
-            MTLBlitOption GetBlitOption(RHI::Format format)
-            {
-                return MTLBlitOptionNone;
-            }
-        
             MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode)
             {
                 switch (addressMode)

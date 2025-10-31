@@ -12,12 +12,12 @@
 
 namespace AZ::IO
 {
-    class WindowsStorageDriveConfig final :
+    class AZCORE_API WindowsStorageDriveConfig final :
         public IStreamerStackConfig
     {
     public:
         AZ_RTTI(AZ::IO::WindowsStorageDriveConfig, "{E9D8256B-EE40-4F60-8B1D-D88200CD1F10}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(WindowsStorageDriveConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WindowsStorageDriveConfig, SystemAllocator);
 
         ~WindowsStorageDriveConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(

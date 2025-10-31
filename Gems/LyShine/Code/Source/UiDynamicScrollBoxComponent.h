@@ -106,20 +106,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiDynamicScrollBoxService", 0x11112f1a));
-        provided.push_back(AZ_CRC("UiDynamicContentService", 0xc5af0b83));
+        provided.push_back(AZ_CRC_CE("UiDynamicScrollBoxService"));
+        provided.push_back(AZ_CRC_CE("UiDynamicContentService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiDynamicContentService", 0xc5af0b83));
+        incompatible.push_back(AZ_CRC_CE("UiDynamicContentService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
-        required.push_back(AZ_CRC("UiScrollBoxService", 0xfdafc904));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
+        required.push_back(AZ_CRC_CE("UiScrollBoxService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

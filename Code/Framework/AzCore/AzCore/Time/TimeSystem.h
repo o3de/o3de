@@ -16,7 +16,7 @@ namespace AZ
     class ReflectContext;
 
     //! Implementation of the ITime system interface.
-    class TimeSystem
+    class AZCORE_API TimeSystem
         : public ITimeRequestBus::Handler
     {
     public:
@@ -33,11 +33,14 @@ namespace AZ
         TimeUs GetElapsedTimeUs() const override;
         TimeMs GetRealElapsedTimeMs() const override;
         TimeUs GetRealElapsedTimeUs() const override;
+        void SetElapsedTimeMsDebug(TimeMs time) override;
+        void SetElapsedTimeUsDebug(TimeUs time) override;
         TimeUs GetSimulationTickDeltaTimeUs() const override;
         TimeUs GetRealTickDeltaTimeUs() const override;
         TimeUs GetLastSimulationTickTime() const override;
         void SetSimulationTickDeltaOverride(TimeMs timeMs) override;
-        TimeMs GetSimulationTickDeltaOverride() const override;
+        void SetSimulationTickDeltaOverride(TimeUs timeUs) override;
+        TimeUs GetSimulationTickDeltaOverride() const override;
         void SetSimulationTickScale(float scale) override;
         float GetSimulationTickScale() const override;
         void SetSimulationTickRate(int rate) override;
@@ -63,6 +66,14 @@ namespace AZ
         //! Accumulates the delta time of GetElapsedTimeMs/TimeUs() calls.
         //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
         mutable TimeUs m_accumulatedTimeUs = AZ::Time::ZeroTimeUs;
+
+        //! Used to calculate the delta time between calls to GetRealElapsedTimeMs/TimeUs().
+        //! Mutable to allow GetRealElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_realLastInvokedTimeUs = AZ::Time::ZeroTimeUs;
+
+        //! Accumulates the delta time of GetRealElapsedTimeMs/TimeUs() calls.
+        //! Mutable to allow GetRealElapsedTimeMs/TimeUs() to be a const functions.
+        mutable TimeUs m_realAccumulatedTimeUs = AZ::Time::ZeroTimeUs;
 
         //! The current game tick delta time.
         //! Can be affected by time system cvars.

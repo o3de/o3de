@@ -18,6 +18,8 @@ namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
     static const char* O3DEProductName = "O3DE";
+    static const char* manualReportToken = "manual";
+    static const char* manualReportUrl = "https://manual";
 
     using CrashHandlerAnnotations = std::map<std::string, std::string>;
     using CrashHandlerArguments = std::vector<std::string>;

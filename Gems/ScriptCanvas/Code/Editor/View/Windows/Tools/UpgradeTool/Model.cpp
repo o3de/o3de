@@ -8,11 +8,10 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <CryCommon/CrySystemBus.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <IConsole.h>
 #include <ISystem.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 namespace ModifierCpp
 {
@@ -37,7 +36,7 @@ namespace ScriptCanvasEditor
                     m_keepEditorActive = m_edKeepEditorActive->GetIVal();
                     m_edKeepEditorActive->Set(1);
                 }
-            }            
+            }
         }
 
         EditorKeepAlive::~EditorKeepAlive()
@@ -51,6 +50,11 @@ namespace ScriptCanvasEditor
         Model::Model()
         {
             ModelRequestsBus::Handler::BusConnect();
+        }
+
+        Model::~Model()
+        {
+            ModelRequestsBus::Handler::BusDisconnect();
         }
 
         void Model::CacheSettings()
@@ -101,7 +105,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            if (modification.modifySingleAsset.m_assetId.IsValid())
+            if (!modification.modifySingleAsset.RelativePath().empty())
             {
                 const auto& results = m_scanner->GetResult();
                 auto iter = AZStd::find_if
@@ -109,7 +113,7 @@ namespace ScriptCanvasEditor
                     , results.m_unfiltered.end()
                     , [&modification](const auto& candidate)
                     {
-                        return candidate.info.m_assetId == modification.modifySingleAsset.m_assetId;
+                        return candidate.AnyEquals(modification.modifySingleAsset);
                     });
 
                 if (iter == results.m_unfiltered.end())
@@ -120,7 +124,7 @@ namespace ScriptCanvasEditor
 
 
                 m_state = State::ModifySingle;
-                m_modifier = AZStd::make_unique<Modifier>(modification, WorkingAssets{ *iter }, [this]() { OnModificationComplete(); });
+                m_modifier = AZStd::make_unique<Modifier>(modification, AZStd::vector<SourceHandle>{ *iter }, [this]() { OnModificationComplete(); });
             }
             else
             {
@@ -131,7 +135,7 @@ namespace ScriptCanvasEditor
 
             m_modResults = {};
             m_log.Activate();
-            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();            
+            m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
         }
 
         void Model::OnModificationComplete()
@@ -145,6 +149,7 @@ namespace ScriptCanvasEditor
             }
 
             Idle();
+            RestoreSettings();
         }
 
         void Model::OnScanComplete()
@@ -161,6 +166,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
+            CacheSettings();
             m_state = State::Scanning;
             m_log.Activate();
             m_keepEditorAlive = AZStd::make_unique<EditorKeepAlive>();
@@ -171,5 +177,5 @@ namespace ScriptCanvasEditor
         {
             m_settingsCache.reset();
         }
-    }
-}
+    } // namespace VersionExplorer
+} // namespace ScriptCanvasEditor

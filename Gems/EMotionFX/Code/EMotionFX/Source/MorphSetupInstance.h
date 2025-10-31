@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/containers/vector.h>
 
 
@@ -25,7 +25,7 @@ namespace EMotionFX
      * weight values per morph target, while still the real morph targets are being shared between all actor instances.
      */
     class EMFX_API MorphSetupInstance
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 

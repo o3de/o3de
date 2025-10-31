@@ -8,6 +8,7 @@
 
 
 #include <ImageLoader/ImageLoaders.h>
+#include <Processing/ImageFlags.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 //  warning C4251: class QT_Type needs to have dll-interface to be used by clients of class 'QT_Type'
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -19,65 +20,63 @@ namespace ImageProcessingAtom
     IImageObject* LoadImageFromFile(const AZStd::string& filename)
     {
         QFileInfo fileInfo(filename.c_str());
-        QString ext = fileInfo.suffix();
+        auto suffix = fileInfo.suffix().toUtf8(); // need to cache the utf8 object so its data can be referenced below
+        const char* ext = suffix.data();
 
         if (!fileInfo.exists())
         {
             return nullptr;
         }
 
-        if (TIFFLoader::IsExtensionSupported(ext.toUtf8()))
+        IImageObject* loadedImage = nullptr;
+
+        if (TIFFLoader::IsExtensionSupported(ext))
         {
-            return TIFFLoader::LoadImageFromTIFF(filename);
+            loadedImage = TIFFLoader::LoadImageFromTIFF(filename);
         }
-        else if (DdsLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (DdsLoader::IsExtensionSupported(ext))
         {
-            return DdsLoader::LoadImageFromFile(filename);
+            loadedImage = DdsLoader::LoadImageFromFile(filename);
         }
-        else if (QtImageLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (TgaLoader::IsExtensionSupported(ext))
         {
-            return QtImageLoader::LoadImageFromFile(filename);
+            loadedImage = TgaLoader::LoadImageFromFile(filename);
         }
-        else if (ExrLoader::IsExtensionSupported(ext.toUtf8()))
+        else if (QtImageLoader::IsExtensionSupported(ext))
         {
-            return ExrLoader::LoadImageFromFile(filename);
+            loadedImage = QtImageLoader::LoadImageFromFile(filename);
+        }
+        else if (ExrLoader::IsExtensionSupported(ext))
+        {
+            loadedImage = ExrLoader::LoadImageFromFile(filename);
+        }
+        else
+        {
+            AZ_Warning("ImageProcessing", false, "No proper image loader to load file: %s", filename.c_str());
         }
 
-        AZ_Warning("ImageProcessing", false, "No proper image loader to load file: %s", filename.c_str());
-        return nullptr;
+        if (loadedImage)
+        {
+            if (IsHDRFormat(loadedImage->GetPixelFormat()))
+            {
+                loadedImage->AddImageFlags(EIF_HDR);
+            }
+            return loadedImage;
+        }
+        else
+        {
+            AZ_Warning("ImageProcessing", false, "Failed to load image file: %s", filename.c_str());
+            return nullptr;
+        }
     }
 
     bool IsExtensionSupported(const char* extension)
     {
-        if (TIFFLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (DdsLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (QtImageLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-        else if (ExrLoader::IsExtensionSupported(extension))
-        {
-            return true;
-        }
-
-        return false;
+        return TIFFLoader::IsExtensionSupported(extension)
+            || DdsLoader::IsExtensionSupported(extension)
+            || TgaLoader::IsExtensionSupported(extension)
+            || QtImageLoader::IsExtensionSupported(extension)
+            || ExrLoader::IsExtensionSupported(extension);
     }
 
-    const AZStd::string LoadEmbeddedSettingFromFile(const AZStd::string& filename)
-    {
-        QFileInfo fileInfo(filename.c_str());
-        QString ext = fileInfo.suffix();
-
-        if (TIFFLoader::IsExtensionSupported(ext.toUtf8()))
-        {
-            return TIFFLoader::LoadSettingFromTIFF(filename);
-        }
-        return "";
-    }
 }// namespace ImageProcessingAtom

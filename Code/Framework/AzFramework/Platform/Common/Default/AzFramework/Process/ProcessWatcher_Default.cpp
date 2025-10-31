@@ -83,4 +83,9 @@ namespace AzFramework
     {
 
     }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        return AZStd::string{};
+    }
 } //namespace AzFramework

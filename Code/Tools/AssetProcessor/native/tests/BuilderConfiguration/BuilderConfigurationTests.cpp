@@ -6,13 +6,17 @@
  *
  */
 
-#include "native/utilities/BuilderConfigurationManager.h"
-#include <native/unittests/UnitTestRunner.h>
+#include <native/utilities/BuilderConfigurationManager.h>
+#include <native/unittests/UnitTestUtils.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
+
+#include <QTemporaryDir>
 
 
 class BuilderConfigurationTests
-    : public ::UnitTest::ScopedAllocatorSetupFixture
+    : public ::UnitTest::LeakDetectionFixture
 {
 public:
     BuilderConfigurationTests()
@@ -105,9 +109,9 @@ TEST_F(BuilderConfigurationTests, TestBuilderConfig_JobEntry_Success)
     ASSERT_EQ(testDescriptor.m_priority, 3);
     ASSERT_EQ(testDescriptor.m_checkExclusiveLock, true);
     ASSERT_EQ(testDescriptor.m_additionalFingerprintInfo, "finger");
-    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("something", 0x09da31fb)], "true");
-    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("somethingelse", 0x237edebb)], "7");
-    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC("otherthing", 0x6f2d0a4a)), testDescriptor.m_jobParameters.end());
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC_CE("something")], "true");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC_CE("somethingelse")], "7");
+    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC_CE("otherthing")), testDescriptor.m_jobParameters.end());
 }
 
 TEST_F(BuilderConfigurationTests, TestBuilderConfig_SecondJobEntry_Success)
@@ -124,9 +128,9 @@ TEST_F(BuilderConfigurationTests, TestBuilderConfig_SecondJobEntry_Success)
     ASSERT_EQ(testDescriptor.m_priority, 9);
     ASSERT_EQ(testDescriptor.m_checkExclusiveLock, true);
     ASSERT_EQ(testDescriptor.m_additionalFingerprintInfo, "fingerprint1");
-    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("something", 0x09da31fb)], "false");
-    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC("somethingelse", 0x237edebb)], "6");
-    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC("otheing", 0xba35d565)), testDescriptor.m_jobParameters.end());
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC_CE("something")], "false");
+    ASSERT_EQ(testDescriptor.m_jobParameters[AZ_CRC_CE("somethingelse")], "6");
+    ASSERT_NE(testDescriptor.m_jobParameters.find(AZ_CRC_CE("otheing")), testDescriptor.m_jobParameters.end());
 }
 
 TEST_F(BuilderConfigurationTests, TestBuilderConfig_BuilderEntry_Success)

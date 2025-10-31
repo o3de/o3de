@@ -50,7 +50,8 @@ namespace UnitTest
 
         void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
         {
-
+            // This should fail given we should be in a disconnecting state
+            EXPECT_FALSE(connection->Disconnect(reason, endpoint));
         }
     };
 
@@ -96,13 +97,12 @@ namespace UnitTest
     };
 
     class UdpTransportTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
@@ -117,7 +117,6 @@ namespace UnitTest
             m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
@@ -266,7 +265,7 @@ namespace UnitTest
         for (;;)
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            m_networkingSystemComponent->OnSystemTick();
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
             bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1)
                              && (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
@@ -302,7 +301,7 @@ namespace UnitTest
         for (;;)
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            m_networkingSystemComponent->OnSystemTick();
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
             bool canTerminate = testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == NumTestClients;
             for (uint32_t i = 0; i < NumTestClients; ++i)

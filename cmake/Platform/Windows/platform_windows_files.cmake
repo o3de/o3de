@@ -9,6 +9,7 @@
 set(FILES
     ../Common/Configurations_common.cmake
     ../Common/MSVC/Configurations_msvc.cmake
+    ../Common/MSVC/Configurations_clang.cmake
     ../Common/MSVC/CodeAnalysis.ruleset
     ../Common/MSVC/Directory.Build.props
     ../Common/MSVC/TestProject.props
@@ -18,6 +19,7 @@ set(FILES
     ../Common/PackagingPostBuild_common.cmake
     ../Common/PackagingPreBuild_common.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake
+    ../Common/Toolchain_scriptonly_common.cmake
     Configurations_windows.cmake
     LYTestWrappers_windows.cmake
     LYWrappers_windows.cmake
@@ -28,6 +30,7 @@ set(FILES
     PackagingCodeSign_windows.cmake
     PackagingPostBuild_windows.cmake
     PackagingPreBuild_windows.cmake
+    Toolchain_scriptonly_windows.cmake
     Packaging/Bootstrapper.wxs
     Packaging/BootstrapperTheme.wxl.in
     Packaging/BootstrapperTheme.xml.in

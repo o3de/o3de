@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Render/IntersectorInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -16,7 +17,7 @@ namespace AzFramework
     {
         //! System component for calculating render geometry intersections against game entities.
         //! Contains an implementation of AzFramework::IntersectorInterface.
-        class GameIntersectorComponent
+        class AZF_API GameIntersectorComponent
             : public AZ::Component
         {
         public:
@@ -32,7 +33,7 @@ namespace AzFramework
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+                dependent.push_back(AZ_CRC_CE("GameEntityContextService"));
             }
 
         private:

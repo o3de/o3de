@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/function/function_fwd.h>
 
 namespace AZ
 {
@@ -20,7 +21,7 @@ namespace AZ
     /**
      * Descriptor used when converting editor components to runtime components (slice processing, play-in-editor, etc).
      */
-    struct ExportedComponent
+    struct AZCORE_API ExportedComponent
     {
         AZ_TYPE_INFO(ExportedComponent, "{F8A00B8B-6981-4508-B939-731563849B97}");
 

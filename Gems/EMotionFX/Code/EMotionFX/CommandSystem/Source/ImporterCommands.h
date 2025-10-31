@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_IMPORTERCOMMANDS_H
-#define __EMFX_IMPORTERCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -35,6 +34,3 @@ public:
     MCORE_DEFINECOMMAND_END
 
 } // namespace CommandSystem
-
-
-#endif

@@ -127,12 +127,14 @@ namespace AZ
     template<typename TYPE>
     TYPE PackedVector3<TYPE>::GetElement(size_t index) const
     {
+        AZ_MATH_ASSERT(index < 3, "access beyond bounds of PackedVector3");
         return reinterpret_cast<const TYPE*>(this)[index];
     }
 
     template<typename TYPE>
     void PackedVector3<TYPE>::SetElement(size_t index, TYPE val)
     {
+        AZ_MATH_ASSERT(index < 3, "access beyond bounds of PackedVector3");
         reinterpret_cast<TYPE*>(this)[index] = val;
     }
 

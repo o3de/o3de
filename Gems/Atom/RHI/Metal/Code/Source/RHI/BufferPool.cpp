@@ -16,8 +16,8 @@
 
 namespace Platform
 {
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response);
-    void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase);
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response);
+    void UnMapBufferInternal(AZ::RHI::DeviceBuffer& bufferBase);
 }
 
 namespace AZ
@@ -45,7 +45,7 @@ namespace AZ
             Device& device = static_cast<Device&>(deviceBase);
             
             RHI::HeapMemoryUsage* heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
-            uint32_t bufferPageSize = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            uint32_t bufferPageSize = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes);
             
             // The descriptor provides an explicit buffer page size override.
             if (const Metal::BufferPoolDescriptor* descriptor = azrtti_cast<const Metal::BufferPoolDescriptor*>(&descriptorBase))
@@ -82,7 +82,8 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(
+            RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor, bool usedForCrossDevice)
         {
             BufferMemoryView memoryView = m_allocator.Allocate(bufferDescriptor.m_byteCount);
             if (memoryView.IsValid())
@@ -99,7 +100,13 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(RHI::DeviceBuffer& bufferBase, RHI::DeviceBuffer& originalDeviceBuffer)
+        {
+            AZ_Assert(false, "Not implemented");
+            return RHI::ResultCode::Fail;
+        }
+
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
 
@@ -113,7 +120,7 @@ namespace AZ
             buffer.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase)
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
             
@@ -128,7 +135,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
         
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& request, RHI::DeviceBufferMapResponse& response)
         {
             Buffer& buffer = *static_cast<Buffer*>(request.m_buffer);            
             MTLStorageMode mtlStorageMode = buffer.GetMemoryView().GetStorageMode();
@@ -172,7 +179,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
+        void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase)
         {
             //MTLStorageModeShared - We need to do nothing here as the memory is shared
             //MTLStorageModePrivate - Do nothing because the Resolver will take care of this via a staging buffer
@@ -180,10 +187,18 @@ namespace AZ
             Platform::UnMapBufferInternal(bufferBase);
         }
         
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;
+        }
+
+        void BufferPool::ComputeFragmentation() const
+        {
+            float fragmentation = m_allocator.ComputeFragmentation();
+
+            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
+            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
         }
     }
 }

@@ -22,17 +22,13 @@ class Tests():
 critical_shape_check = ("Default shape has more than 0 sides", "default shape has 0 sides")
 
 def C29279329_WhiteBox_SetDefaultShape():
-    import os
-    import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
 
-    import azlmbr.whitebox.api as api
     import azlmbr.bus as bus
-    import azlmbr.legacy.general as general
-    
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    import WhiteBoxInit as init
+
     from editor_python_test_tools.utils import Report
-    
-    from editor_python_test_tools.utils import TestHelper as helper
+
 
     def check_shape_result(success_fail_tuple, condition):
         result = Report.result(success_fail_tuple, condition)
@@ -53,8 +49,7 @@ def C29279329_WhiteBox_SetDefaultShape():
     }
 
     # open level
-    helper.init_idle()
-    general.open_level("EmptyLevel")
+    hydra.open_base_level()
 
     # create white box entity and attach component
     white_box_entity = init.create_white_box_entity()
@@ -94,10 +89,6 @@ def C29279329_WhiteBox_SetDefaultShape():
     check_shape_result(
         Tests.default_shape_sphere,
         white_box_handle.MeshFaceCount() == expected_results.get(shape_types.SPHERE))
-
-    # close editor
-    helper.close_editor()
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

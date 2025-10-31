@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/limits.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
 
 namespace AZ
 {
@@ -24,46 +25,35 @@ namespace AzToolsFramework::Prefab
     class Instance;
 }
 
+namespace AzToolsFramework::Prefab::PrefabConversionUtils
+{
+    class PrefabProcessorContext;
+}
+
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
     static constexpr uint32_t InvalidEntityIndex = AZStd::numeric_limits<uint32_t>::max();
 
-    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom);
-    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
+    AZTF_API bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom);
+    AZTF_API bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
-    AZ::Entity* CreateEntityAlias(
+    AZTF_API AZ::Entity* CreateEntityAlias(
         AZStd::string sourcePrefabName,
         AzToolsFramework::Prefab::Instance& source,
         AZStd::string targetPrefabName,
         AzToolsFramework::Prefab::Instance& target,
+        AzToolsFramework::Prefab::Instance& parentInstance,
         AZ::EntityId entityId,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
+        const AZ::Crc32& tag,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AZStd::string sourcePrefabName,
-        AzToolsFramework::Prefab::Instance& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
-    AZ::Entity* CreateEntityAlias(
-        AzFramework::Spawnable& source,
-        AzFramework::Spawnable& target,
-        AZ::EntityId entityId,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
-        AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
-        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
+    
+        AZTF_API uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable);
 
-    uint32_t FindEntityIndex(AZ::EntityId entity, const AzFramework::Spawnable& spawnable);
-
-    void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable);
+        AZTF_API void SortEntitiesByTransformHierarchy(AzFramework::Spawnable& spawnable);
 
     template <typename EntityPtr>
-    void SortEntitiesByTransformHierarchy(AZStd::vector<EntityPtr>& entities);
+    AZTF_API void SortEntitiesByTransformHierarchy(AZStd::vector<EntityPtr>& entities);
 
 } // namespace AzToolsFramework::Prefab::SpawnableUtils

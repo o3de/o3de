@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformDef.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -19,7 +20,6 @@
 #include <EMotionFX/Source/ActorInstance.h>
 
 #include <MathConversion.h>
-#include <IRenderAuxGeom.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -53,6 +53,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->ElementAttribute(AZ::Edit::Attributes::Step, 0.01f)
                             ->ElementAttribute(AZ::Edit::Attributes::Suffix, " m")
+                            ->ElementAttribute(AZ::Edit::Attributes::Min, 0.00f)
                         ->DataElement(0, &SimpleLODComponent::Configuration::m_enableLodSampling,
                             "Enable LOD anim graph sampling", "AnimGraph sample rate will adjust based on LOD level.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -61,7 +62,8 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Visibility, &SimpleLODComponent::Configuration::GetEnableLodSampling)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->ElementAttribute(AZ::Edit::Attributes::Step, 1.0f);
+                            ->ElementAttribute(AZ::Edit::Attributes::Step, 1.0f)
+                            ->ElementAttribute(AZ::Edit::Attributes::Min, 0.0f);
                 }
             }
         }
@@ -89,7 +91,7 @@ namespace EMotionFX
                 constexpr AZStd::array defaultSampleRate {140.0f, 60.0f, 45.0f, 25.0f, 15.0f, 10.0f};
                 m_lodSampleRates.resize(numLODs, 10.0f);
 
-                // Do not copy more than what fits in defaultSampleRates or numLODs. 
+                // Do not copy more than what fits in defaultSampleRates or numLODs.
                 size_t copyCount = std::min(defaultSampleRate.size(), numLODs);
                 AZStd::copy(begin(defaultSampleRate), begin(defaultSampleRate) + copyCount, begin(m_lodSampleRates));
             }
@@ -143,6 +145,13 @@ namespace EMotionFX
 
         void SimpleLODComponent::Activate()
         {
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
 
@@ -159,6 +168,13 @@ namespace EMotionFX
 
         void SimpleLODComponent::Deactivate()
         {
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             AZ::TickBus::Handler::BusDisconnect();
             ActorComponentNotificationBus::Handler::BusDisconnect();
 
@@ -222,6 +238,11 @@ namespace EMotionFX
 
                 AZ::RPI::ViewportContextPtr defaultViewportContext =
                     viewportContextManager->GetViewportContextByName(viewportContextManager->GetDefaultViewportContextName());
+                if (!defaultViewportContext)
+                {
+                    return;
+                }
+
                 const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
                 const size_t requestedLod = GetLodByDistance(configuration.m_lodDistances, distance);
                 actorInstance->SetLODLevel(requestedLod);
@@ -231,6 +252,10 @@ namespace EMotionFX
                     const float animGraphSampleRate = configuration.m_lodSampleRates[requestedLod];
                     const float updateRateInSeconds = animGraphSampleRate > 0.0f ? 1.0f / animGraphSampleRate : 0.0f;
                     actorInstance->SetMotionSamplingRate(updateRateInSeconds);
+                }
+                else if (actorInstance->GetMotionSamplingRate() != 0)
+                {
+                    actorInstance->SetMotionSamplingRate(0);
                 }
 
                 // Disable the automatic mesh LOD level adjustment based on screen space in case a simple LOD component is present.

@@ -30,6 +30,7 @@ namespace AZ
                     ->Field("FallbackConnections", &PassTemplate::m_fallbackConnections)
                     ->Field("PassRequests", &PassTemplate::m_passRequests)
                     ->Field("PassData", &PassTemplate::m_passData)
+                    ->Field("DefaultShaderAttachmentStage", &PassTemplate::m_defaultShaderAttachmentStage)
                     ;
             }
         }
@@ -44,20 +45,6 @@ namespace AZ
                 }
             }
             return nullptr;
-        }
-
-        bool PassTemplate::AttachmentFitsSlot(const RHI::UnifiedAttachmentDescriptor& attachmentDesc, Name slotName) const
-        {
-            // Check input slots
-            for (const PassSlot& slot : m_slots)
-            {
-                if (slotName == slot.m_name)
-                {
-                    return (slot.AcceptsFormat(attachmentDesc) &&
-                            slot.AcceptsDimension(attachmentDesc));
-                }
-            }
-            return false;
         }
 
         void PassTemplate::AddSlot(PassSlot passSlot)

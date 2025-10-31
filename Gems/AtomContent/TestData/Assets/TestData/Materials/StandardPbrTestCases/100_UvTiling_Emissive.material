@@ -1,0 +1,16 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "UvTilingBase.material",
+    "propertyValues": {
+        "baseColor.color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "emissive.enable": true,
+        "emissive.intensity": 2.0,
+        "emissive.textureMap": "../../Objects/cube/cube_diff.tif"
+    }
+}

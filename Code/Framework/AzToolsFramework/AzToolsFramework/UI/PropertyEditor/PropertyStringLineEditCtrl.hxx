@@ -6,15 +6,15 @@
  *
  */
 
-#ifndef PROPERTY_STRINGLINEEDIT_CTRL
-#define PROPERTY_STRINGLINEEDIT_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include "PropertyEditorAPI.h"
 #endif
 
@@ -23,16 +23,20 @@ class QPushButton;
 
 namespace AzToolsFramework
 {
-    class PropertyStringLineEditCtrl
+    class AZTF_API PropertyStringLineEditCtrl
         : public QWidget
     {
         friend class StringPropertyLineEditHandler;
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringLineEditCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringLineEditCtrl, AZ::SystemAllocator);
 
         PropertyStringLineEditCtrl(QWidget* pParent = NULL);
         virtual ~PropertyStringLineEditCtrl();
+
+        //! This helper method is used to replicate a user input of editing the value
+        //! will call setValue on the QLineEdit but will also emit the editingFinished signal
+        void UpdateValue(const QString& newValue);
 
         AZStd::string value() const;
         QLineEdit* GetLineEdit() const;
@@ -41,33 +45,26 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
-    signals:
-        void valueChanged(AZStd::string& newValue);
-
     public slots:
         virtual void setValue(AZStd::string& val);
         void setMaxLen(int maxLen);
 
-    protected slots:
-        void onChildLineEditValueChange(const QString& value);
-
     protected:
-        virtual void ConnectWidgets();
         virtual void focusInEvent(QFocusEvent* e);
 
         QLineEdit* m_pLineEdit;
     };
 
-    class StringPropertyLineEditHandler
+    class AZTF_API StringPropertyLineEditHandler
         : QObject
         , public PropertyHandler<AZStd::string, PropertyStringLineEditCtrl>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(StringPropertyLineEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StringPropertyLineEditHandler, AZ::SystemAllocator);
 
-        virtual AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("LineEdit", 0x3f15f4ba); }
+        virtual AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::LineEdit; }
         virtual bool IsDefaultHandler() const override { return true; }
         virtual QWidget* GetFirstInTabOrder(PropertyStringLineEditCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         virtual QWidget* GetLastInTabOrder(PropertyStringLineEditCtrl* widget) override { return widget->GetLastInTabOrder(); }
@@ -81,5 +78,3 @@ namespace AzToolsFramework
 
     void RegisterStringLineEditHandler();
 };
-
-#endif

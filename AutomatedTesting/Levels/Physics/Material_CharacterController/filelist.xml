@@ -1,6 +1,0 @@
-<download name="C15556261_PhysXMaterials_CharacterControllerMaterialAssignement" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39348" md5="efadead6bd7589ae3742eecc345fe2b6"/>
- </files>
-</download>

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnailBus.h>
@@ -19,12 +21,12 @@ namespace AzToolsFramework
 
     namespace Thumbnailer
     {
-        class SourceControlThumbnailKey
+        class AZTF_API SourceControlThumbnailKey
             : public ThumbnailKey
         {
             Q_OBJECT
         public:
-            AZ_RTTI(SourceControlFileInfo, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
+            AZ_RTTI(SourceControlThumbnailKey, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
 
             explicit SourceControlThumbnailKey(const char* fileName);
 
@@ -40,12 +42,12 @@ namespace AzToolsFramework
             //! how often should sc thumbnails auto update
             const AZStd::chrono::minutes m_updateInterval;
             //! time since this sc thumbnail updated
-            AZStd::chrono::system_clock::time_point m_nextUpdate;
+            AZStd::chrono::steady_clock::time_point m_nextUpdate;
         };
 
         //! SourceControlThumbnail currently replicates the source control functionality within Material Browser
         //! Additionally source control status is refreshed whenever an operation is performed through context menu
-        class SourceControlThumbnail
+        class AZTF_API SourceControlThumbnail
             : public Thumbnail
             , public SourceControlThumbnailRequestBus::Handler
         {
@@ -92,8 +94,8 @@ namespace AzToolsFramework
             public:
                 bool operator()(const SharedThumbnailKey& val1, const SharedThumbnailKey& val2) const
                 {
-                    auto sourceThumbnailKey1 = azrtti_cast<const SourceControlThumbnailKey*>(val1.data());
-                    auto sourceThumbnailKey2 = azrtti_cast<const SourceControlThumbnailKey*>(val2.data());
+                    auto sourceThumbnailKey1 = azrtti_cast<const SourceControlThumbnailKey*>(val1.get());
+                    auto sourceThumbnailKey2 = azrtti_cast<const SourceControlThumbnailKey*>(val2.get());
                     if (!sourceThumbnailKey1 || !sourceThumbnailKey2)
                     {
                         return false;
@@ -104,7 +106,7 @@ namespace AzToolsFramework
         }
 
         //! Stores products' thumbnails
-        class SourceControlThumbnailCache
+        class AZTF_API SourceControlThumbnailCache
             : public ThumbnailCache<SourceControlThumbnail>
         {
         public:

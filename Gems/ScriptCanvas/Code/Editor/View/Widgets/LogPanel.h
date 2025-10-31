@@ -23,6 +23,8 @@
 #include <ScriptCanvas/Bus/GraphBus.h>
 #endif
 
+#include <QScopedPointer>
+
 namespace AzQtComponents
 {
     class TabWidget;
@@ -67,7 +69,9 @@ namespace ScriptCanvasEditor
         public:
 
             LogPanelWidget(QWidget* parent = nullptr);
-            AZStd::unique_ptr<Ui::LogPanel> ui;
+            ~LogPanelWidget() override;
+
+            QScopedPointer<Ui::LogPanel> ui;
 
         };
 
@@ -77,7 +81,7 @@ namespace ScriptCanvasEditor
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator);
             LogTab(QWidget* pParent, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AzToolsFramework::LogPanel::TabSettings& in_settings);
             ~LogTab() override;
 
@@ -89,7 +93,6 @@ namespace ScriptCanvasEditor
             AZStd::atomic_bool m_alreadyQueuedDrainMessage;  // we also only drain the queue at the end so that we do bulk inserts instead of one at a time.
 
             void CommitAddedLines();
-            bool m_alreadyQueuedCommit = false;
 
         private Q_SLOTS:
             void    DrainMessages();

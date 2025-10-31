@@ -14,10 +14,10 @@ namespace AzFramework
     namespace ViewportConstants
     {
         /// Default Handle size for QuadBillboard Manipulator View.
-        extern const float DefaultManipulatorHandleSize;
+        constexpr const float DefaultManipulatorHandleSize = 0.06f;;
 
         /// Default linear manipulator axis length.
-        extern const float DefaultLinearManipulatorAxisLength;
+        constexpr const float DefaultLinearManipulatorAxisLength = 2.0f;;
 
     } // namespace ViewportConstants
 } // namespace AzFramework

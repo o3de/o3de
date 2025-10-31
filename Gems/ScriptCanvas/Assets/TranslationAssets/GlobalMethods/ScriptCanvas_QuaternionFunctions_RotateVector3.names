@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_QuaternionFunctions_RotateVector3",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Rotate Vector3",
+                "category": "Math/Quaternion"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_QuaternionFunctions_RotateVector3",
+                    "details": {
+                        "name": "Rotate Vector3",
+                        "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

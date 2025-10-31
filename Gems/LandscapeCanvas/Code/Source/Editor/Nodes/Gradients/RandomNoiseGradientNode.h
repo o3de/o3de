@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class RandomNoiseGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(RandomNoiseGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RandomNoiseGradientNode, AZ::SystemAllocator);
         AZ_RTTI(RandomNoiseGradientNode, "{DE6B5261-81AE-46DB-9DC3-35573C866909}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,9 +33,9 @@ namespace LandscapeCanvas
         RandomNoiseGradientNode() = default;
         explicit RandomNoiseGradientNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_GENERATOR_TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_GENERATOR_TITLE; }
 
         const BaseNodeType GetBaseNodeType() const override { return BaseNode::GradientGenerator; }
     };

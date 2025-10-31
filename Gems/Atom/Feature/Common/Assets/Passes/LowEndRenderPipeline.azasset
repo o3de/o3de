@@ -5,7 +5,9 @@
     "ClassData": {
         "Name": "LowEndPipeline",
         "MainViewTag": "MainCamera",
+        "MaterialPipelineTag": "LowEndPipeline",
         "RootPassTemplate": "LowEndPipelineTemplate",
+        "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
                 "samples": 1

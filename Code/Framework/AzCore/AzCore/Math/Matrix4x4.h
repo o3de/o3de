@@ -27,7 +27,7 @@ namespace AZ
     //!
     //! When multiplying with a Vector3, it assumes the w-component of the Vector3 is 1.0.
     //! Use the Multiply3x3 functions to multiply by the upper 3x3 submatrix only, e.g. for transforming normals.
-    class Matrix4x4
+    class AZCORE_API Matrix4x4
     {
     public:
 
@@ -42,8 +42,8 @@ namespace AZ
 
         //! Default constructor does not initialize the matrix.
         Matrix4x4() = default;
+        Matrix4x4(const Matrix4x4& rhs) = default;
 
-        Matrix4x4(const Matrix4x4& rhs);
         Matrix4x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2, Simd::Vec4::FloatArgType row3);
 
         static Matrix4x4 CreateIdentity();
@@ -199,6 +199,12 @@ namespace AZ
 
         //! Operator for negating all matrix's elements
         [[nodiscard]] Matrix4x4 operator-() const;
+
+        //! Access the row vector.
+        //! @{
+        [[nodiscard]] Vector4& operator[](const size_t row);
+        [[nodiscard]] const Vector4& operator[](const size_t row) const;
+        //! @}
 
         //! Post-multiplies the matrix by a vector.
         //! Assumes that the w-component of the Vector3 is 1.0.

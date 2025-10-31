@@ -1,0 +1,494 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "Graph",
+    "ClassData": {
+        "m_nodes": [
+            {
+                "Key": 1,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inApplySpecularAA"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inCastShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDoubleSided"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableAreaLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableDirectionalLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableIBL"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnablePunctualLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inUseForwardPassIBLSpecular"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inBaseColor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inMetallic"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inPositionOffset"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inRoughness"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSpecularF0Factor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{B352A2E4-D6A6-4178-9406-57716051024F}"
+                }
+            },
+            {
+                "Key": 2,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState",
+                                    "Value": {
+                                        "m_anisotropyMax": 16,
+                                        "m_filterMin": "Linear",
+                                        "m_filterMag": "Linear",
+                                        "m_filterMip": "Linear"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{AC3219AA-A747-5C09-BA1A-29A76BF8C1DE}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "materials/presets/macbeth/15_red_srgb.tif.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 3,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inIndex"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "unsigned int",
+                                    "Value": 0
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}"
+                }
+            }
+        ],
+        "m_connections": [
+            {
+                "m_sourceEndpoint": [
+                    2,
+                    {
+                        "m_name": "outColor"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    1,
+                    {
+                        "m_name": "inBaseColor"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    3,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    2,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            }
+        ],
+        "m_uiMetadata": {
+            "m_sceneMetadata": {
+                "ComponentData": {
+                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                        "$type": "SceneComponentSaveData",
+                        "ViewParams": {
+                            "AnchorX": 33.0,
+                            "AnchorY": -55.0
+                        }
+                    }
+                }
+            },
+            "m_nodeMetadata": [
+                {
+                    "Key": 1,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    600.0,
+                                    60.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{032D58E6-23DF-4705-AC9E-AE6DEBB616E8}"
+                            },
+                            "{FC18625B-1E97-415D-9832-B222DE054680}": {
+                                "$type": "GraphCanvasSelectionData",
+                                "selected": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 2,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    300.0,
+                                    60.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{5418D006-957D-4FF9-A1D0-0842A7DA171A}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 3,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    0.0,
+                                    60.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{F05B1381-CDF5-43F7-A055-E31403A2671E}"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

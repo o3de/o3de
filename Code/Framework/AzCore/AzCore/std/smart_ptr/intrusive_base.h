@@ -19,4 +19,5 @@ namespace AZStd
      */
     using intrusive_base = intrusive_refcount<atomic_uint>;
 
+    extern template class AZCORE_API intrusive_refcount<atomic_uint>;
 } // namespace AZStd

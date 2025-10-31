@@ -73,7 +73,7 @@ namespace AZ
             bool m_isEnabled = true;
 
             // Run-time Properties
-            Vec2 m_movement = ZERO;
+            Vec3 m_movement = ZERO;
             Vec2 m_rotation = ZERO;
 
             Vec2 m_leftDownPosition = ZERO;

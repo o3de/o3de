@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_AABBFunctions_SurfaceArea",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Surface Area",
+                "category": "Math/AABB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_AABBFunctions_SurfaceArea",
+                    "details": {
+                        "name": "Surface Area",
+                        "tooltip": "Returns the sum of the surface area of all six faces of Source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

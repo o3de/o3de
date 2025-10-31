@@ -21,7 +21,7 @@ namespace PythonAssetBuilder
     {
     public:
         AZ_RTTI(PythonAssetBuilderModule, "{35C9457E-54C2-474C-AEBE-5A70CC1D435D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PythonAssetBuilderModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonAssetBuilderModule, AZ::SystemAllocator);
 
         PythonAssetBuilderModule()
             : AZ::Module()
@@ -34,14 +34,13 @@ namespace PythonAssetBuilder
         // Add required SystemComponents to the SystemEntity.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
-                azrtti_typeid<PythonAssetBuilderSystemComponent>(),
-            };
+            return AZ::ComponentTypeList{};
         }
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(PythonAssetBuilder_0a5fda05323649009444bb7c3ee2b9c4, PythonAssetBuilder::PythonAssetBuilderModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), PythonAssetBuilder::PythonAssetBuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_PythonAssetBuilder_Editor, PythonAssetBuilder::PythonAssetBuilderModule)
+#endif

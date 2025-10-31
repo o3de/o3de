@@ -135,15 +135,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#if defined(AZ_MONOLITHIC_BUILD)
-    #define DLL_EXPORT
-    #define DLL_IMPORT
-#else // AZ_MONOLITHIC_BUILD
-    #define DLL_EXPORT AZ_DLL_EXPORT
-    #define DLL_IMPORT AZ_DLL_IMPORT
-#endif // AZ_MONOLITHIC_BUILD
-
-
 //////////////////////////////////////////////////////////////////////////
 // Define BIT macro for use in enums and bit masks.
 #define BIT(x) (1 << (x))
@@ -237,12 +228,6 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 
 // Assert dialog box macros
 #include "CryAssert.h"
-
-// Replace standard assert calls by our custom one
-// Works only ifdef USE_CRY_ASSERT && _DEBUG && WIN32
-#ifndef assert
-#define assert CRY_ASSERT
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
@@ -342,7 +327,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
 
 #ifdef __GNUC__

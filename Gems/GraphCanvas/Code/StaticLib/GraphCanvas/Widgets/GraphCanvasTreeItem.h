@@ -10,7 +10,7 @@
 #include <AzCore/PlatformDef.h>
 // qvariant.h(457) : error C2220 : warning treated as error - no 'object' file generated
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#include <qabstractitemmodel.h>
+#include <QAbstractItemModel>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -39,7 +39,7 @@ namespace GraphCanvas
         friend struct Comparator;
         friend class GraphCanvasTreeModel;
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasTreeItem, AZ::SystemAllocator);
         AZ_RTTI(GraphCanvasTreeItem, "{BB2B829D-64B5-4D33-9390-85056AA0F3AA}");
 
         virtual ~GraphCanvasTreeItem();

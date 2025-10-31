@@ -25,7 +25,7 @@ namespace AzFramework
         if (classElement.GetVersion() == 1)
         {
             // Old asset path field is gone.
-            const int assetRootIndex = classElement.FindElement(AZ_CRC("AssetRoot", 0x3195232d));
+            const int assetRootIndex = classElement.FindElement(AZ_CRC_CE("AssetRoot"));
             if (assetRootIndex >= 0)
             {
                 classElement.RemoveElement(assetRootIndex);
@@ -53,7 +53,6 @@ namespace AzFramework
                     "Asset Catalog", "Maintains a catalog of assets")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }

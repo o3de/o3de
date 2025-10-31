@@ -1,0 +1,276 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the EvaluateSurface function in this file without making it the final EvaluateSurface
+// used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
+//
+#ifndef EvaluateSurface
+#define EvaluateSurface EvaluateSurface_EnhancedPBR
+#endif
+
+#include "../StandardPBR/StandardPBR_SurfaceEval.azsli"
+#include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
+
+Surface EvaluateSurface_EnhancedPBR(
+    const MaterialParameters params,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    float2 detailUvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives,
+    float4 vertexColor,
+    uint lightingChannels)
+{
+    Surface surface;
+    surface.position = positionWS;
+    surface.lightingChannels = lightingChannels;
+
+    // ------- Detail Layer Setup -------
+    
+    const float2 detailUv = detailUvs[params.m_detail_allMapsUvIndex];
+
+    // When the detail maps and the detail blend mask are on the same UV, they both use the transformed detail UVs because they are 'attached' to each other
+    const float2 detailBlendMaskUv = (params.m_detail_blendMask_uvIndex ==params.m_detail_allMapsUvIndex) ?
+        detailUvs[params.m_detail_blendMask_uvIndex] : 
+        uvs[params.m_detail_blendMask_uvIndex];        
+
+    const real detailLayerBlendFactor = GetDetailLayerBlendFactor(
+        GetMaterialTexture(params.m_detail_blendMask_texture),
+        GetMaterialTextureSampler(),
+        detailBlendMaskUv,
+        o_detail_blendMask_useTexture,
+        real(params.m_detail_blendFactor),
+        uvDxDy,
+        customDerivatives);
+
+    // ------- Normal -------
+    
+    surface.vertexNormal = real3(normalWS);
+    float2 normalUv = uvs[params.m_normalMapUvIndex];
+    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
+    real detailLayerNormalFactor = real(params.m_detail_normal_factor) * detailLayerBlendFactor;
+    float3 normal = GetDetailedNormalInputWS(
+        isFrontFace, normalWS,
+        tangents[params.m_normalMapUvIndex],      bitangents[params.m_normalMapUvIndex],      GetMaterialTexture(params.m_normalMap),             GetMaterialTextureSampler(), normalUv, params.m_normalFactor,  params.m_flipNormalX,         params.m_flipNormalY,         uvMatrix,                         o_normal_useTexture,
+        tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], GetMaterialTexture(params.m_detail_normal_texture), GetMaterialTextureSampler(), detailUv, detailLayerNormalFactor,      params.m_detail_normal_flipX, params.m_detail_normal_flipY, real3x3(params.m_detailUvMatrix), o_detail_normal_useTexture,
+        uvDxDy, customDerivatives);
+
+    surface.normal = real3(normal);
+
+    // ------- Base Color -------
+
+    real detailLayerBaseColorFactor = real(params.m_detail_baseColor_factor) * detailLayerBlendFactor;
+    float2 baseColorUv = uvs[params.m_baseColorMapUvIndex];
+
+    real3 baseColor = GetDetailedBaseColorInput(
+        GetMaterialTexture(params.m_baseColorMap),             GetMaterialTextureSampler(), baseColorUv, o_baseColor_useTexture,        real3(params.m_baseColor.rgb),  real(params.m_baseColorFactor), o_baseColorTextureBlendMode,
+        GetMaterialTexture(params.m_detail_baseColor_texture), GetMaterialTextureSampler(), detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor, uvDxDy, customDerivatives);
+    baseColor = BlendVertexColor(baseColor, real3(vertexColor.rgb), real(params.m_vertexColorFactor));
+    
+    // ------- Parallax Clipping -------
+
+    if(o_parallax_highlightClipping && isDisplacementClipped)
+    {
+        ApplyParallaxClippingHighlight(baseColor);
+    }
+
+    // ------- Alpha & Clip -------
+
+    // TODO: this often invokes a separate sample of the base color texture which is wasteful
+    surface.alpha = GetAlphaAndClip(params, uvs, uvDxDy, customDerivatives);
+
+    // ------- Metallic -------
+
+    real metallic = 0;
+    if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
+    {
+        float2 metallicUv = uvs[params.m_metallicMapUvIndex];
+        metallic = GetMetallicInput(GetMaterialTexture(params.m_metallicMap), GetMaterialTextureSampler(), metallicUv, real(params.m_metallicFactor), o_metallic_useTexture, uvDxDy, customDerivatives);
+    }
+
+    // ------- Specular -------
+
+    float2 specularUv = uvs[params.m_specularF0MapUvIndex];
+    real specularF0Factor = GetSpecularInput(GetMaterialTexture(params.m_specularF0Map), GetMaterialTextureSampler(), specularUv, real(params.m_specularF0Factor), o_specularF0_useTexture, uvDxDy, customDerivatives);
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    // ------- Roughness -------
+
+    float2 roughnessUv = uvs[params.m_roughnessMapUvIndex];
+    surface.roughnessLinear = GetRoughnessInput(GetMaterialTexture(params.m_roughnessMap), GetMaterialTextureSampler(), roughnessUv, real(params.m_roughnessFactor),
+                                        real(params.m_roughnessLowerBound), real(params.m_roughnessUpperBound), o_roughness_useTexture, uvDxDy, customDerivatives);
+    surface.CalculateRoughnessA();
+
+    // ------- Subsurface -------
+
+    float2 subsurfaceUv = uvs[params.m_subsurfaceScatteringInfluenceMapUvIndex];
+    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(GetMaterialTexture(params.m_subsurfaceScatteringInfluenceMap), GetMaterialTextureSampler(), subsurfaceUv, real(params.m_subsurfaceScatteringFactor), uvDxDy, customDerivatives);
+    surface.subsurfaceScatteringQuality = real(params.m_subsurfaceScatteringQuality);
+    surface.scatterDistance = real3(params.m_scatterDistance);
+
+    // ------- Transmission -------
+    
+#if ENABLE_TRANSMISSION
+    float2 transmissionUv = uvs[params.m_transmissionThicknessMapUvIndex];
+    real4 transmissionTintThickness = GeTransmissionInput(GetMaterialTexture(params.m_transmissionThicknessMap), GetMaterialTextureSampler(), transmissionUv, real4(params.m_transmissionTintThickness), uvDxDy, customDerivatives);
+    surface.transmission.tint = transmissionTintThickness.rgb;
+    surface.transmission.thickness = transmissionTintThickness.w;
+    surface.transmission.transmissionParams = real4(params.m_transmissionParams);
+    surface.transmission.scatterDistance = real3(params.m_scatterDistance);
+#endif
+
+    // ------- Anisotropy -------
+
+    if (o_enableAnisotropy)
+    {
+        // Convert the angle from [0..1] = [0 .. 180 degrees] to radians [0 .. PI]
+        const real anisotropyAngle = real(params.m_anisotropicAngle) * PI;
+        const real anisotropyFactor = real(params.m_anisotropicFactor);
+        surface.anisotropy.Init(surface.GetSpecularNormal(), tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
+    }
+
+    // ------- Emissive -------
+
+    float2 emissiveUv = uvs[params.m_emissiveMapUvIndex];
+    surface.emissiveLighting = GetEmissiveInput(GetMaterialTexture(params.m_emissiveMap), GetMaterialTextureSampler(), emissiveUv, real(params.m_emissiveIntensity), real3(params.m_emissiveColor.rgb), real(params.m_emissiveAffectedByAlpha), surface.alpha,  o_emissiveEnabled, o_emissive_useTexture, uvDxDy, customDerivatives);
+
+    // ------- Occlusion -------
+    
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_diffuseOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_diffuseOcclusionMapUvIndex], real(params.m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture, uvDxDy, customDerivatives);
+    surface.specularOcclusion = GetOcclusionInput(GetMaterialTexture(params.m_specularOcclusionMap), GetMaterialTextureSampler(), uvs[params.m_specularOcclusionMapUvIndex], real(params.m_specularOcclusionFactor), o_specularOcclusion_useTexture, uvDxDy, customDerivatives);
+
+    // ------- Clearcoat -------
+    
+#if ENABLE_CLEAR_COAT
+    // Todo: Clean up the double uses of these clear coat flags
+    if(o_clearCoat_feature_enabled)
+    {
+        if(o_clearCoat_enabled)
+        {
+            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+            GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uvs[params.m_clearCoatInfluenceMapUvIndex], real(params.m_clearCoatFactor), o_clearCoat_factor_useTexture,
+                               GetMaterialTexture(params.m_clearCoatRoughnessMap), uvs[params.m_clearCoatRoughnessMapUvIndex], real(params.m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
+                               GetMaterialTexture(params.m_clearCoatNormalMap),    uvs[params.m_clearCoatNormalMapUvIndex], normalWS, o_clearCoat_normal_useTexture, real(params.m_clearCoatNormalStrength),
+                               uvMatrix, tangents[params.m_clearCoatNormalMapUvIndex], bitangents[params.m_clearCoatNormalMapUvIndex],
+                               GetMaterialTextureSampler(), isFrontFace,
+                               surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal, uvDxDy, customDerivatives);
+        }
+        
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
+    }
+#endif
+    
+    // ------- Opacity -------
+
+    surface.opacityAffectsSpecularFactor = real(params.m_opacityAffectsSpecularFactor);
+
+    return surface;
+}
+
+// Helper functions to keep compatible with the previous version
+// because dxc compiler doesn't allow default parameters on functions with overloads
+Surface EvaluateSurface_EnhancedPBR(
+    const MaterialParameters params,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    float2 detailUvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped,
+    float4 uvDxDy,
+    bool customDerivatives,
+    uint lightingChannels)
+{
+    return EvaluateSurface_EnhancedPBR(
+            params,
+            positionWS,
+            normalWS,
+            tangents,
+            bitangents,
+            uvs,
+            detailUvs,
+            isFrontFace,
+            isDisplacementClipped,
+            uvDxDy,
+            customDerivatives,
+            float4(1.0f, 1.0f, 1.0f, 1.0f) /* VertexColor */,
+            lightingChannels);
+}
+
+Surface EvaluateSurface_EnhancedPBR(
+    const MaterialParameters params,
+    float3 positionWS,
+    real3 normalWS,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    float2 uvs[UvSetCount],
+    float2 detailUvs[UvSetCount],
+    bool isFrontFace,
+    bool isDisplacementClipped,
+    uint lightingChannels)
+{
+    return EvaluateSurface_EnhancedPBR(
+        params,
+        positionWS,
+        normalWS,
+        tangents,
+        bitangents,
+        uvs,
+        detailUvs,
+        isFrontFace,
+        isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f) /* uvDxDy */,
+        false /* customDerivatives*/,
+        lightingChannels);
+}
+
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData,  const MaterialParameters params, float4 uvDxDy, bool customDerivatives)
+{
+    return EvaluateSurface_EnhancedPBR(
+        params,
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.detailUvs,
+        geoData.isFrontFace,
+        geoData.isDisplacementClipped,
+        uvDxDy,
+        customDerivatives,
+        GetVertexColor(IN), 
+        GetLightingChannelMask(SV));
+}
+
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
+{
+    return EvaluateSurface_EnhancedPBR(
+        params,
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uvs,
+        geoData.detailUvs,
+        geoData.isFrontFace,
+        geoData.isDisplacementClipped,
+        float4(0.0f, 0.0f, 0.0f, 0.0f),
+        false,
+        GetVertexColor(IN), 
+        GetLightingChannelMask(SV));
+}

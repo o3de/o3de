@@ -1,0 +1,4 @@
+/.maya_data/*
+/.mayaSwatches/*
+*.swatch
+[Uu]ser_env.bat

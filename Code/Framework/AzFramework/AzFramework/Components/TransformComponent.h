@@ -13,6 +13,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/Event.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -30,7 +31,7 @@ namespace AzFramework
     using TransformComponentConfiguration = AZ::TransformConfig;
 
     //! Fundamental component that describes the entity in 3D space.
-    class TransformComponent
+    class AZF_API TransformComponent
         : public AZ::Component
         , public AZ::EntityBus::Handler
         , public AZ::TransformBus::Handler
@@ -44,9 +45,9 @@ namespace AzFramework
 
         using ParentActivationTransformMode = AZ::TransformConfig::ParentActivationTransformMode;
 
-        TransformComponent() = default;
+        TransformComponent();
         TransformComponent(const TransformComponent& copy);
-        ~TransformComponent() override = default;
+        ~TransformComponent() override;
 
         // TransformBus events (publicly accessible)
         void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler& handler) override;
@@ -136,6 +137,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> GetAllDescendants() override;
         AZStd::vector<AZ::EntityId> GetEntityAndAllDescendants() override;
         bool IsStaticTransform() override;
+        AZ::OnParentChangedBehavior GetOnParentChangedBehavior() override;
+        void SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior) override;
 
         //! Methods implementing parent support.
         //! @{
@@ -186,5 +189,7 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
+        /// Behavior for this entity's transform when its parent's transform changes.
+        AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
     };
 }   // namespace AZ

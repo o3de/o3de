@@ -57,7 +57,7 @@ namespace NvCloth
             : public AZ::Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(ClothsPreSimulationJob, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ClothsPreSimulationJob, AZ::ThreadPoolAllocator);
 
             ClothsPreSimulationJob(const Cloths* cloths, float deltaTime,
                 AZ::Job* continuationJob, AZ::JobContext* context = nullptr);
@@ -79,7 +79,7 @@ namespace NvCloth
             : public AZ::Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(Solver::ClothsSimulationJob, AZ::ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(Solver::ClothsSimulationJob, AZ::ThreadPoolAllocator)
 
             ClothsSimulationJob(nv::cloth::Solver* solver, float deltaTime,
                 AZ::Job* continuationJob, AZ::JobContext* context = nullptr);
@@ -101,7 +101,7 @@ namespace NvCloth
             : public AZ::Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(ClothsPostSimulationJob, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ClothsPostSimulationJob, AZ::ThreadPoolAllocator);
 
             ClothsPostSimulationJob(const Cloths* cloths, float deltaTime,
                 AZ::Job* continuationJob, AZ::JobContext* context = nullptr);

@@ -134,6 +134,9 @@ TableViewPage::TableViewPage(QWidget* parent)
     auto logItemDelegate = new AzToolsFramework::Logging::LogTableItemDelegate(ui->logTableView);
     ui->logTableView->setItemDelegate(logItemDelegate);
 
+    // Example of changing the header section background color
+    ui->logTableView->setStyleSheet("QHeaderView::section { background: transparent; }");
+
     ui->qTableView->setModel(logModel);
     ui->qTableView->setAlternatingRowColors(true);
     ui->qTableView->setShowGrid(false);

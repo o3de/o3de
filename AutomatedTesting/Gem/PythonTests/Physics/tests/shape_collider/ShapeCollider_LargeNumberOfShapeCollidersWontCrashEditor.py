@@ -44,6 +44,9 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from consts.physics import PHYSX_SHAPE_COLLIDER
+
+    import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
@@ -61,18 +64,18 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
         # Wait 60 frames more
         general.idle_wait_frames(60)
 
-    helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create 512 entities with PhysX Shape Collider and Sphere Shape components
     entity_failure = False
     for i in range(1, 513):
         # Create Entity
         entity = Entity.create_editor_entity(f"Entity_{i}")
+        entity.add_component("PhysX Static Rigid Body")
 
         # Add components
-        entity.add_component("PhysX Shape Collider")
+        entity.add_component(PHYSX_SHAPE_COLLIDER)
         if i % 3 == 0:
             shape_component_name = "Capsule Shape"
         elif i % 2 == 0:
@@ -83,7 +86,7 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
         entity.add_component(shape_component_name)
 
         # Verify the entity contains the components
-        components_added = entity.has_component("PhysX Shape Collider") and entity.has_component(shape_component_name)
+        components_added = entity.has_component(PHYSX_SHAPE_COLLIDER) and entity.has_component(shape_component_name)
         if not components_added:
             entity_failure = True
             Report.info(f"Entity_{i} failed to add either PhysX Shape Collider or {shape_component_name}")

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/Color.h>
 
 #include "EditorDefs.h"
 
@@ -177,23 +178,6 @@ QString TrimTrailingZeros(QString str)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// This function is supposed to format float in user-friendly way,
-// omitting the exponent notation.
-//
-// Why not using printf? Its formatting rules has following drawbacks:
-//  %g   - will use exponent for small numbers;
-//  %.Nf - doesn't allow to control total amount of significant numbers,
-//         which exposes limited precision during binary-to-decimal fraction
-//         conversion.
-//////////////////////////////////////////////////////////////////////////
-void FormatFloatForUI(QString& str, int significantDigits, double value)
-{
-    str = TrimTrailingZeros(QString::number(value, 'f', significantDigits));
-    return;
-}
-//////////////////////////////////////////////////////////////////////////-
-
-//////////////////////////////////////////////////////////////////////////
 QColor ColorLinearToGamma(ColorF col)
 {
     float r = clamp_tpl(col.r, 0.0f, 1.0f);
@@ -201,9 +185,9 @@ QColor ColorLinearToGamma(ColorF col)
     float b = clamp_tpl(col.b, 0.0f, 1.0f);
     float a = clamp_tpl(col.a, 0.0f, 1.0f);
 
-    r = (float)(r <= 0.0031308 ? (12.92 * r) : (1.055 * pow((double)r, 1.0 / 2.4) - 0.055));
-    g = (float)(g <= 0.0031308 ? (12.92 * g) : (1.055 * pow((double)g, 1.0 / 2.4) - 0.055));
-    b = (float)(b <= 0.0031308 ? (12.92 * b) : (1.055 * pow((double)b, 1.0 / 2.4) - 0.055));
+    r = AZ::Color::ConvertSrgbLinearToGamma(r);
+    g = AZ::Color::ConvertSrgbLinearToGamma(g);
+    b = AZ::Color::ConvertSrgbLinearToGamma(b);
 
     return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f));
 }
@@ -216,9 +200,9 @@ ColorF ColorGammaToLinear(const QColor& col)
     float b = (float)col.blue() / 255.0f;
     float a = (float)col.alpha() / 255.0f;
 
-    return ColorF((float)(r <= 0.04045 ? (r / 12.92) : pow(((double)r + 0.055) / 1.055, 2.4)),
-        (float)(g <= 0.04045 ? (g / 12.92) : pow(((double)g + 0.055) / 1.055, 2.4)),
-        (float)(b <= 0.04045 ? (b / 12.92) : pow(((double)b + 0.055) / 1.055, 2.4)), a);
+    return ColorF(AZ::Color::ConvertSrgbGammaToLinear(r),
+        AZ::Color::ConvertSrgbGammaToLinear(g),
+        AZ::Color::ConvertSrgbGammaToLinear(b), a);
 }
 
 QColor ColorToQColor(uint32 color)

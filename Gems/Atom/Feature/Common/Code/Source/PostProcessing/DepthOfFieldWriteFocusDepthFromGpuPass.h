@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DepthOfFieldWriteFocusDepthFromGpuPass, "{60DF04D2-A9FE-4B21-8050-96AFFC46BB87}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldWriteFocusDepthFromGpuPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldWriteFocusDepthFromGpuPass, SystemAllocator);
 
             /// Creates a DepthOfFieldWriteFocusDepthFromGpuPass
             static RPI::Ptr<DepthOfFieldWriteFocusDepthFromGpuPass> Create(const RPI::PassDescriptor& descriptor);
@@ -43,7 +43,6 @@ namespace AZ
             AZ::Vector2 m_autoFocusScreenPosition{ 0.0f, 0.0f };
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             // Pass overrides

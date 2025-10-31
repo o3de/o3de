@@ -5,8 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <ostream>
+
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Math/Uuid.h>
+
+#include <ostream>
 
 namespace AZ::IO
 {
@@ -24,4 +28,17 @@ namespace AZ::IO
     {
         *os << "path: " << AZ::IO::FixedMaxPath(path.Native(), AZ::IO::PosixPathSeparator).MakePreferred().c_str();
     }
-}
+} // namespace AZ::IO
+
+namespace AZ
+{
+    void PrintTo(const AZ::EntityId entityId, ::std::ostream* os)
+    {
+        *os << entityId.ToString().c_str();
+    }
+
+    void PrintTo(const AZ::Uuid& uuid, ::std::ostream* os)
+    {
+        *os << uuid.ToFixedString().c_str();
+    }
+} // namespace AZ

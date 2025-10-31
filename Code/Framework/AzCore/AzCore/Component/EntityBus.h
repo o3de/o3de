@@ -11,10 +11,8 @@
  * Buses enable entities and components to communicate with each other and with external 
  * systems.
  */
-
-#ifndef AZCORE_ENTITY_BUS_H
-#define AZCORE_ENTITY_BUS_H
-
+#pragma once
+ 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -105,7 +103,7 @@ namespace AZ
                 EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
                 Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                 if (entity)
                 {
                     const AZ::Entity::State entityState = entity->GetState();
@@ -184,8 +182,7 @@ namespace AZ
      * The EBus for notification events dispatched by a specific entity.
      * The events are defined in the AZ::EntityEvents class.
      */
-    typedef AZ::EBus<EntityEvents>  EntityBus;
-}
+    using EntityBus = AZ::EBus<EntityEvents>;
+} // namespace AZ
 
-#endif // AZCORE_ENTITY_BUS_H
-#pragma once
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::EntityEvents);

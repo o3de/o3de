@@ -14,9 +14,9 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(PlaceHolderComponentMode, AZ::SystemAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(AnotherPlaceHolderComponentMode, AZ::SystemAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(OverrideMouseInteractionComponentMode, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(PlaceHolderComponentMode, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(AnotherPlaceHolderComponentMode, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(OverrideMouseInteractionComponentMode, AZ::SystemAllocator)
 
         void PlaceholderEditorComponent::Reflect(AZ::ReflectContext* context)
         {
@@ -197,7 +197,7 @@ namespace AzToolsFramework
 
         AZStd::vector<AzToolsFramework::ActionOverride> PlaceHolderComponentMode::PopulateActionsImpl()
         {
-            const AZ::Crc32 placeHolderComponentModeAction = AZ_CRC_CE("com.o3de.action.placeholder.test");
+            const AZ::Crc32 placeHolderComponentModeAction = AZ_CRC_CE("org.o3de.action.placeholder.test");
 
             return AZStd::vector<AzToolsFramework::ActionOverride>
             {
@@ -216,6 +216,16 @@ namespace AzToolsFramework
             };
         }
 
+        AZStd::string PlaceHolderComponentMode::GetComponentModeName() const
+        {
+            return "PlaceHolder Edit Mode";
+        }
+
+        AZ::Uuid PlaceHolderComponentMode::GetComponentModeType() const
+        {
+            return azrtti_typeid<PlaceHolderComponentMode>();
+        }
+
         void PlaceHolderComponentMode::SetComponentModeActionNotificationBusToNotify(const int busId)
         {
             m_componentModeActionSignalNotificationBusId = busId;
@@ -225,9 +235,29 @@ namespace AzToolsFramework
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
             : EditorBaseComponentMode(entityComponentIdPair, componentType) {}
 
+        AZStd::string AnotherPlaceHolderComponentMode::GetComponentModeName() const
+        {
+            return "AnotherPlaceHolder Edit Mode";
+        }
+
+        AZ::Uuid AnotherPlaceHolderComponentMode::GetComponentModeType() const
+        {
+            return azrtti_typeid<AnotherPlaceHolderComponentMode>();
+        }
+
         OverrideMouseInteractionComponentMode::OverrideMouseInteractionComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
             : EditorBaseComponentMode(entityComponentIdPair, componentType) {}
+
+        AZStd::string OverrideMouseInteractionComponentMode::GetComponentModeName() const
+        {
+            return "OverrideMouseInteraction Edit Mode";
+        }
+
+        AZ::Uuid OverrideMouseInteractionComponentMode::GetComponentModeType() const
+        {
+            return azrtti_typeid<OverrideMouseInteractionComponentMode>();
+        }
 
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

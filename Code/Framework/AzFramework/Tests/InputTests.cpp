@@ -14,6 +14,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -27,8 +28,16 @@ namespace InputUnitTests
     using namespace UnitTest;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class InputTest : public ScopedAllocatorSetupFixture
+    class InputTest : public LeakDetectionFixture
     {
+    public:
+        InputTest() : LeakDetectionFixture()
+        {
+            // Many input tests are only valid if the GamePad device is supported on this platform.
+            auto deviceGamepadImplFactory = AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Get();
+            m_gamepadSupported = (deviceGamepadImplFactory != nullptr) && (deviceGamepadImplFactory->GetMaxSupportedGamepads() > 0);
+        }
+
     protected:
         ////////////////////////////////////////////////////////////////////////////////////////////
         void SetUp() override
@@ -46,6 +55,7 @@ namespace InputUnitTests
         
         ////////////////////////////////////////////////////////////////////////////////////////////
         AZStd::unique_ptr<InputSystemComponent> m_inputSystemComponent;
+        bool m_gamepadSupported;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,12 +88,17 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputContext_ActivateDeactivate_Successfull)
-#else
     TEST_F(InputTest, InputContext_ActivateDeactivate_Successfull)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputContext_ActivateDeactivate_Successfull";
+        #else
+            SUCCEED() << "Skipping test InputContext_ActivateDeactivate_Successfull";
+        #endif
+            return;
+        }
         // Create an input context (they are inactive by default).
         InputContext inputContext("TestInputContext");
 
@@ -148,12 +163,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputContext_AddRemoveInputMapping_Successfull)
-#else
     TEST_F(InputTest, InputContext_AddRemoveInputMapping_Successfull)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputContext_AddRemoveInputMapping_Successfull";
+        #else
+            SUCCEED() << "Skipping test InputContext_AddRemoveInputMapping_Successfull";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -256,12 +277,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputContext_ConsumeProcessedInput_Consumed)
-#else
     TEST_F(InputTest, InputContext_ConsumeProcessedInput_Consumed)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputContext_ConsumeProcessedInput_Consumed";
+        #else
+            SUCCEED() << "Skipping test InputContext_ConsumeProcessedInput_Consumed";
+        #endif
+            return;
+        }
+
         InputContext::InitData initData;
 
         // Create a high priority input context that consumes input processed by any of its mappings.
@@ -340,12 +367,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputContext_FilteredInput_Mapped)
-#else
     TEST_F(InputTest, InputContext_FilteredInput_Mapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputContext_FilteredInput_Mapped";
+        #else
+            SUCCEED() << "Skipping test InputContext_FilteredInput_Mapped";
+        #endif
+            return;
+        }
+
         // Create an input context that initially only listens for keyboard input.
         InputContext::InitData initData;
         initData.autoActivate = true;
@@ -413,12 +446,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingOr_AddRemoveSourceInput_Successful)
-#else
     TEST_F(InputTest, InputMappingOr_AddRemoveSourceInput_Successful)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingOr_AddRemoveSourceInput_Successful";
+        #else
+            SUCCEED() << "Skipping test InputMappingOr_AddRemoveSourceInput_Successful";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -491,12 +530,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingOr_SingleSourceInput_Mapped)
-#else
     TEST_F(InputTest, InputMappingOr_SingleSourceInput_Mapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingOr_SingleSourceInput_Mapped";
+        #else
+            SUCCEED() << "Skipping test InputMappingOr_SingleSourceInput_Mapped";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -558,12 +603,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingOr_MultipleSourceInputs_Mapped)
-#else
     TEST_F(InputTest, InputMappingOr_MultipleSourceInputs_Mapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingOr_MultipleSourceInputs_Mapped";
+        #else
+            SUCCEED() << "Skipping test InputMappingOr_MultipleSourceInputs_Mapped";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -650,12 +701,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingAnd_AddRemoveSourceInput_Successful)
-#else
     TEST_F(InputTest, InputMappingAnd_AddRemoveSourceInput_Successful)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingAnd_AddRemoveSourceInput_Successful";
+        #else
+            SUCCEED() << "Skipping test InputMappingAnd_AddRemoveSourceInput_Successful";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -728,12 +785,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingAnd_SingleSourceInput_Mapped)
-#else
     TEST_F(InputTest, InputMappingAnd_SingleSourceInput_Mapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingAnd_SingleSourceInput_Mapped";
+        #else
+            SUCCEED() << "Skipping test InputMappingAnd_SingleSourceInput_Mapped";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -795,12 +858,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingAnd_MultipleSourceInputs_Mapped)
-#else
     TEST_F(InputTest, InputMappingAnd_MultipleSourceInputs_Mapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingAnd_MultipleSourceInputs_Mapped";
+        #else
+            SUCCEED() << "Skipping test InputMappingAnd_MultipleSourceInputs_Mapped";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -909,12 +978,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingAnd_MultipleSourceInputsWithDifferentValues_ValuesAveraged)
-#else
     TEST_F(InputTest, InputMappingAnd_MultipleSourceInputsWithDifferentValues_ValuesAveraged)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingAnd_MultipleSourceInputsWithDifferentValues_ValuesAveraged";
+        #else
+            SUCCEED() << "Skipping test InputMappingAnd_MultipleSourceInputsWithDifferentValues_ValuesAveraged";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();
@@ -969,12 +1044,18 @@ namespace InputUnitTests
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
-    TEST_F(InputTest, DISABLED_InputMappingAnd_MultipleSourceInputsFromTheSameInputDeviceTypeWithDifferentIndicies_NotMapped)
-#else
     TEST_F(InputTest, InputMappingAnd_MultipleSourceInputsFromTheSameInputDeviceTypeWithDifferentIndicies_NotMapped)
-#endif // AZ_TRAIT_DISABLE_FAILED_INPUT_TESTS
     {
+        if (!m_gamepadSupported)
+        {
+        #if defined(GTEST_SKIP)
+            GTEST_SKIP() << "Skipping test InputMappingAnd_MultipleSourceInputsFromTheSameInputDeviceTypeWithDifferentIndicies_NotMapped";
+        #else
+            SUCCEED() << "Skipping test InputMappingAnd_MultipleSourceInputsFromTheSameInputDeviceTypeWithDifferentIndicies_NotMapped";
+        #endif
+            return;
+        }
+
         // Create an input context and activate it.
         InputContext inputContext("TestInputContext");
         inputContext.Activate();

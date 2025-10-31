@@ -6,12 +6,12 @@
  *
  */
 
+#include "SceneWrapper.h"
+
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
-#include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
-#include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
-#include <assimp/scene.h>
 
 
 namespace AZ
@@ -28,22 +28,15 @@ namespace AZ
 
         void SceneSystem::Set(const SDKScene::SceneWrapperBase* scene)
         {
-            // Get unit conversion factor to meter.
-            if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(scene))
+            m_unitSizeInMeters = scene->GetUnitSizeInMeters();
+            if (auto forcedRootTransform = scene->UseForcedRootTransform())
             {
+                m_adjustTransform.reset(new DataTypes::MatrixType(*forcedRootTransform));
+                m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));
                 return;
             }
 
-            const AssImpSDKWrapper::AssImpSceneWrapper* assImpScene = azrtti_cast<const AssImpSDKWrapper::AssImpSceneWrapper*>(scene);
-
-            // If either meta data piece is not available, the default of 1 will be used.
-            assImpScene->GetAssImpScene()->mMetaData->Get("UnitScaleFactor", m_unitSizeInMeters);
-            assImpScene->GetAssImpScene()->mMetaData->Get("OriginalUnitScaleFactor", m_originalUnitSizeInMeters);
-
-            /* Conversion factor for converting from centimeters to meters */
-            m_unitSizeInMeters = m_unitSizeInMeters * .01f;
-
-            AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> upAxisAndSign = assImpScene->GetUpVectorAndSign();
+            AZStd::pair<SDKScene::SceneWrapperBase::AxisVector, int32_t> upAxisAndSign = scene->GetUpVectorAndSign();
 
             if (upAxisAndSign.second <= 0)
             {
@@ -51,10 +44,10 @@ namespace AZ
                 return;
             }
 
-            AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> frontAxisAndSign = assImpScene->GetFrontVectorAndSign();
+            AZStd::pair<SDKScene::SceneWrapperBase::AxisVector, int32_t> frontAxisAndSign = scene->GetFrontVectorAndSign();
 
-            if (upAxisAndSign.first != AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Z &&
-                upAxisAndSign.first != AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Unknown)
+            if (upAxisAndSign.first != SDKScene::SceneWrapperBase::AxisVector::Z &&
+                upAxisAndSign.first != SDKScene::SceneWrapperBase::AxisVector::Unknown)
             {
                 AZ::Matrix4x4 currentCoordMatrix = AZ::Matrix4x4::CreateIdentity();
                 //(UpVector = +Z, FrontVector = +Y, CoordSystem = -X(RightHanded))
@@ -66,7 +59,7 @@ namespace AZ
 
                 switch (upAxisAndSign.first)
                 {
-                case AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::X: {
+                case SDKScene::SceneWrapperBase::AxisVector::X: {
                     if (frontAxisAndSign.second == 1)
                     {
                         currentCoordMatrix = AZ::Matrix4x4::CreateFromColumns(
@@ -85,7 +78,7 @@ namespace AZ
                     }
                 }
                 break;
-                case AssImpSDKWrapper::AssImpSceneWrapper::AxisVector::Y: {
+                case SDKScene::SceneWrapperBase::AxisVector::Y: {
                     if (frontAxisAndSign.second == 1)
                     {
                         currentCoordMatrix = AZ::Matrix4x4::CreateFromColumns(
@@ -106,7 +99,7 @@ namespace AZ
                 break;
                 }
                 AZ::Matrix4x4 adjustmatrix = targetCoordMatrix * currentCoordMatrix.GetInverseTransform();
-                m_adjustTransform.reset(new DataTypes::MatrixType(AssImpSDKWrapper::AssImpTypeConverter::ToTransform(adjustmatrix)));
+                m_adjustTransform.reset(new DataTypes::MatrixType(SDKScene::SceneTypeConverter::ToTransform(adjustmatrix)));
                 m_adjustTransformInverse.reset(new DataTypes::MatrixType(m_adjustTransform->GetInverseFull()));
             }
         }

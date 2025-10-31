@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_PlaneFunctions_DistanceToPoint",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Distance To Point",
+                "category": "Math/Plane"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_PlaneFunctions_DistanceToPoint",
+                    "details": {
+                        "name": "Distance To Point",
+                        "tooltip": "Returns the closest distance from Source to Point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

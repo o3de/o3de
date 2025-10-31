@@ -22,7 +22,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AZ::Vector2(1024, 768));
+            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AzFramework::ScreenSize(1024, 768));
         }
 
         AzFramework::CameraState m_cameraState;
@@ -42,7 +42,7 @@ namespace UnitTest
 
     class WorldFromViewMatrix
         : public CameraStateFixture
-        , public ::testing::WithParamInterface<AZStd::tuple<AZ::Vector3, AZ::Vector3, AZ::Vector2>>
+        , public ::testing::WithParamInterface<AZStd::tuple<AZ::Vector3, AZ::Vector3, AzFramework::ScreenSize>>
     {
     };
 
@@ -70,7 +70,7 @@ namespace UnitTest
         EXPECT_THAT(m_cameraState.m_side, IsCloseTolerance(AZ::Vector3::CreateAxisX(), 0.01f));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         Translation,
         testing::Combine(
@@ -81,7 +81,7 @@ namespace UnitTest
 
     TEST_P(Rotation, Permutation)
     {
-        int expectedErrors = -1;
+        [[maybe_unused]] int expectedErrors = -1;
         AZ_TEST_START_TRACE_SUPPRESSION;
 
         // Given an orientation derived from the look at points
@@ -120,7 +120,7 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(expectedErrors);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         Rotation,
         testing::Combine(
@@ -142,18 +142,19 @@ namespace UnitTest
         EXPECT_EQ(m_cameraState.m_viewportSize, viewportSize);
         EXPECT_THAT(m_cameraState.m_position, IsCloseTolerance(translation, 0.01f));
         // Translate back into a quaternion to safely compare rotations
-        auto decomposedCameraStateRotation = AZ::Quaternion::CreateFromBasis(m_cameraState.m_side, m_cameraState.m_forward, m_cameraState.m_up);
-        auto rotationDelta = 1.f - decomposedCameraStateRotation.Dot(decomposedCameraStateRotation);
+        auto decomposedCameraStateRotation =
+            AZ::Quaternion::CreateFromBasis(m_cameraState.m_side, m_cameraState.m_forward, m_cameraState.m_up);
+        auto rotationDelta = 1.0f - decomposedCameraStateRotation.Dot(decomposedCameraStateRotation);
         EXPECT_NEAR(rotationDelta, 0.f, 0.01f);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         WorldFromViewMatrix,
         testing::Combine(
             testing::Values(AZ::Vector3{0.f, 0.f, 0.f}, AZ::Vector3{100.f, 0.f, 0.f}, AZ::Vector3{-5.f,10.f,-1.f}),
             testing::Values(AZ::Vector3{0.f, 0.f, 0.f}, AZ::Vector3{90.f, 0.f, 0.f}, AZ::Vector3{-45.f, -45.f, -45.f}),
-            testing::Values(AZ::Vector2{100.f, 100.f})
+            testing::Values(AzFramework::ScreenSize(100, 100))
         )
     );
 
@@ -171,7 +172,7 @@ namespace UnitTest
         EXPECT_NEAR(m_cameraState.m_fovOrZoom, fovY, 0.01f);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         CameraState,
         PerspectiveMatrix,
         testing::Combine(

@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
+#include <RayTracingDebugCommon.azsli>
+
+[shader("raygeneration")]
+void RayGeneration()
+{
+    uint2 pixelCoords = DispatchRaysIndex().xy;
+    uint2 dimensions = DispatchRaysDimensions().xy;
+    float2 coordsNDC = ((float2)pixelCoords / dimensions * 2.f - 1.f) * float2(1.f, -1.f);
+
+    float4 rayTarget = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(coordsNDC, 1.f, 1.f));
+    float3 rayDir = normalize(rayTarget.xyz / rayTarget.w - ViewSrg::m_worldPosition);
+
+    RayDesc ray;
+    ray.Origin = ViewSrg::m_worldPosition;
+    ray.Direction = rayDir;
+    ray.TMin = 0.f;
+    ray.TMax = RayTracingGlobalSrg::m_maxRayLength;
+    PayloadData payload = (PayloadData)0;
+    TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_NONE, 0xFF, 0, 1, 0, ray, payload);
+
+    if (!payload.m_noData)
+    {
+        RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(payload.m_color, 1);
+    }
+    else
+    {
+        float grayscale = (pixelCoords.x / 8 % 2) ^ (pixelCoords.y / 8 % 2) ? 0.75f : 1.f;
+        RayTracingGlobalSrg::m_fallbackColor[pixelCoords] = float4(grayscale, grayscale, grayscale, 1.f);
+    }
+}

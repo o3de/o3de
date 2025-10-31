@@ -21,6 +21,12 @@
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QInputDialog>
+#include <QIcon>
+
+#if defined(EXTERNAL_CRASH_REPORTING)
+#include <ToolsCrashHandler.h>
+#endif
 
 namespace O3DE::ProjectManager
 {
@@ -29,8 +35,12 @@ namespace O3DE::ProjectManager
         TearDown();
     }
 
-    bool Application::Init(bool interactive)
+    bool Application::Init(bool interactive, AZStd::unique_ptr<PythonBindings> pythonBindings)
     {
+#if defined(EXTERNAL_CRASH_REPORTING)
+        CrashHandler::ToolsCrashHandler::InitCrashHandler("o3de", {});
+#endif
+
         constexpr const char* applicationName { "O3DE" };
 
         QApplication::setOrganizationName(applicationName);
@@ -68,47 +78,44 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        AZ_Assert(m_pythonBindings, "Failed to create PythonBindings");
+        // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
+        QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
+
+        // unit tests may provide custom python bindings 
+        m_pythonBindings = pythonBindings ? AZStd::move(pythonBindings) : AZStd::make_unique<PythonBindings>(GetEngineRoot());
+
+
+        // If the first attempt of starting python failed, then attempt to bootstrap python by 
+        // calling the get python script
         if (!m_pythonBindings->PythonStarted())
         {
-            if (!interactive)
+            auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
+            if (getPythonResult.IsSuccess())
             {
-                return false;
+                // If the bootstrap for python was successful, then attempt to start python again
+                m_pythonBindings->StartPython();
             }
+        }
 
-            int result = QMessageBox::warning(nullptr, QObject::tr("Failed to start Python"),
+        if (!m_pythonBindings->PythonStarted())
+        {
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
                 QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                            "but either Python is missing or mis-configured.<br><br>Press 'OK' to "
-                            "run the %1 script automatically, or 'Cancel' "
-                            " if you want to manually resolve the issue by renaming your "
-                            " python/runtime folder and running %1 yourself.")
-                            .arg(GetPythonScriptPath),
-                QMessageBox::Cancel, QMessageBox::Ok);
-            if (result == QMessageBox::Ok)
-            {
-                auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
-                if (!getPythonResult.IsSuccess())
-                {
-                    QMessageBox::critical(
-                        nullptr, QObject::tr("Failed to run %1 script").arg(GetPythonScriptPath),
-                        QObject::tr("The %1 script failed, was canceled, or could not be run.  "
-                                    "Please rename your python/runtime folder and then run "
-                                    "<pre>%1</pre>").arg(GetPythonScriptPath));
-                }
-                else if (!m_pythonBindings->StartPython())
-                {
-                    QMessageBox::critical(
-                        nullptr, QObject::tr("Failed to start Python"),
-                        QObject::tr("Failed to start Python after running %1")
-                                    .arg(GetPythonScriptPath));
-                }
+                            "but was unable to automatically install O3DE's built-in Python."
+                            "You can troubleshoot this issue by trying to manually install O3DE's built-in "
+                            "Python by running the '%1' script.")
+                            .arg(GetPythonScriptPath));
             }
+            return false;
+        }
 
-            if (!m_pythonBindings->PythonStarted())
-            {
-                return false;
-            }
+        m_settings = AZStd::make_unique<Settings>();
+
+        if (!RegisterEngine(interactive))
+        {
+           return false;
         }
 
         const AZ::CommandLine* commandLine = GetCommandLine();
@@ -163,6 +170,50 @@ namespace O3DE::ProjectManager
         }
 
         return m_entity != nullptr;
+    }
+
+    bool Application::RegisterEngine(bool interactive)
+    {
+        auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
+        if (!engineInfoOutcome)
+        {
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr,
+                    QObject::tr("Failed to get engine info"),
+                    QObject::tr("A valid engine.json could not be found or loaded. "
+                                "Please verify a valid engine.json file exists in %1")
+                    .arg(GetEngineRoot()));
+            }
+
+            AZ_Error("Project Manager", false, "Failed to get engine info");
+            return false;
+        }
+
+        EngineInfo engineInfo = engineInfoOutcome.GetValue();
+        if (engineInfo.m_registered)
+        {
+            return true;
+        }
+
+        // We no longer force registration because we no longer require that only one engine can
+        // be registered with each engine name
+        constexpr bool forceRegistration = false;
+        auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
+        if (!registerOutcome)
+        {
+            if (interactive)
+            {
+                ProjectUtils::DisplayDetailedError(QObject::tr("Failed to register engine"), registerOutcome);
+            }
+            
+            AZ_Error("Project Manager", false, "Failed to register engine %s : %s",
+                engineInfo.m_path.toUtf8().constData(), registerOutcome.GetError().first.c_str());
+
+            return false;
+        }
+
+        return true;
     }
 
     void Application::TearDown()

@@ -23,7 +23,7 @@ namespace MCore
     class MCORE_API AttributeString
         : public Attribute
     {
-        AZ_CLASS_ALLOCATOR(AttributeString, AttributeAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AttributeString, AttributeAllocator)
 
         friend class AttributeFactory;
     public:

@@ -22,6 +22,8 @@ set(FILES
     PlatformSettings_common.h
     PlatformSettings_Ios.cpp
     PlatformSettings_Ios.h
+    PlatformSettings_Windows.cpp
+    PlatformSettings_Windows.h
     PlistDictionary.cpp
     PlistDictionary.h
     ProjectSettingsContainer.cpp

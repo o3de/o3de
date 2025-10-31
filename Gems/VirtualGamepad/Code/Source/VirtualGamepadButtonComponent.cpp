@@ -23,19 +23,19 @@ namespace VirtualGamepad
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadButtonComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VirtualGamepadButtonService"));
+        provided.push_back(AZ_CRC_CE("VirtualGamepadButtonService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadButtonComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VirtualGamepadButtonService"));
+        incompatible.push_back(AZ_CRC_CE("VirtualGamepadButtonService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadButtonComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
+        required.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ namespace VirtualGamepad
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiVirtualButton.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiVirtualButton.png")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadButtonComponent::m_assignedInputChannelName,
                         "Input Channel", "The input channel that will be updated when the user interacts with this virtual control")

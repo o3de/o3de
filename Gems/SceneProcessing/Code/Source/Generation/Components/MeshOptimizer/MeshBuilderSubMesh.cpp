@@ -15,7 +15,7 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSubMesh, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSubMesh, AZ::SystemAllocator)
 
     MeshBuilderSubMesh::MeshBuilderSubMesh(size_t materialIndex, MeshBuilder* mesh)
         : m_materialIndex(materialIndex)

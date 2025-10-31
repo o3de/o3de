@@ -29,7 +29,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskFilterConfig, "{5B085DA7-CDC9-47C7-B2DB-BA5DD5AA2FB5}", AZ::ComponentConfig);
         SurfaceMaskFilterConfig();
         static void Reflect(AZ::ReflectContext* context);
@@ -53,7 +53,7 @@ namespace Vegetation
         void AddExclusiveTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskFilterComponentTypeId = "{62AAAD68-DF4F-4551-8F78-2C72CEF79ED6}";
+    inline constexpr AZ::TypeId SurfaceMaskFilterComponentTypeId{ "{62AAAD68-DF4F-4551-8F78-2C72CEF79ED6}" };
 
     /**
     * Accepts the placement of vegetation based on surface tags and/or depth between two surface tags

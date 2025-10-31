@@ -17,13 +17,16 @@
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-
+#include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QEvent>
 #include <QObject>
 #include <QPoint>
 #endif //! defined(Q_MOC_RUN)
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 class QWidget;
 class QKeyEvent;
@@ -32,9 +35,26 @@ class QWheelEvent;
 
 namespace AzToolsFramework
 {
+    enum class CursorInputMode
+    {
+        CursorModeNone,
+        CursorModeCaptured, //!< Sets whether or not the cursor should be constrained to the source widget and invisible.
+                            //!< Internally, this will reset the cursor position after each move event to ensure movement
+                            //!< events don't allow the cursor to escape. This can be used for typical camera controls
+                            //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
+        CursorModeWrapped, //!< Flags whether the cursor is going to wrap around the source widget.
+        CursorModeWrappedX, //!< Flags whether the cursor is going to wrap around the source widget only on the left and right side.
+        CursorModeWrappedY //!< Flags whether the cursor is going to wrap around the source widget only on the top and bottom side.
+    };
+
+    AZTF_API AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(AzFramework::ViewportId viewportId);
+    AZTF_API AzFramework::InputDeviceId GetSyntheticMouseDeviceId(AzFramework::ViewportId viewportId);
+
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
-    class QtEventToAzInputMapper final : public QObject
+    class AZTF_API QtEventToAzInputMapper final
+        : public QObject
+        , public AzFramework::InputChannelNotificationBus::Handler
     {
         Q_OBJECT
 
@@ -54,7 +74,11 @@ namespace AzToolsFramework
         //! Internally, this will reset the cursor position after each move event to ensure movement
         //! events don't allow the cursor to escape. This can be used for typical camera controls
         //! like a dolly or rotation, where mouse movement is important but cursor location is not.
+        //! @deprecated Use #SetCursorMode()
         void SetCursorCaptureEnabled(bool enabled);
+
+        //! Set the cursor mode.
+        void SetCursorMode(AzToolsFramework::CursorInputMode mode);
 
         void SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride);
         void ClearOverrideCursor();
@@ -69,25 +93,30 @@ namespace AzToolsFramework
         //! \param event The underlying Qt event that triggered this change, if applicable.
         void InputChannelUpdated(const AzFramework::InputChannel* channel, QEvent* event);
 
+    protected:
+        // AzFramework::InputChannelNotificationBus overrides ...
+        AZ::s32 GetPriority() const override;
+        void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override;
+
     private:
         // Gets an input channel of the specified type by ID.
         template<class TInputChannel>
         TInputChannel* GetInputChannel(const AzFramework::InputChannelId& id)
         {
-            auto channelIt = m_channels.find(id);
-            if (channelIt != m_channels.end())
+            if (auto channelIt = m_channels.find(id); channelIt != m_channels.end())
             {
                 return static_cast<TInputChannel*>(channelIt->second);
             }
+
             return nullptr;
         }
 
         // Adds channels from the specified channel container to our input channel ID -> input channel lookup table.
         // Used for rapid lookup.
-        template <class TContainer>
-        void AddChannels(const TContainer& container)
+        template<class TContainer>
+        void AddChannels(TContainer& container)
         {
-            for (const auto& channelData : container)
+            for (auto& channelData : container)
             {
                 // Break const as we're taking these input channels from devices we own.
                 m_channels.emplace(channelData.first, const_cast<AzFramework::InputChannel*>(channelData.second));
@@ -107,6 +136,7 @@ namespace AzToolsFramework
         class EditorQtMouseDevice : public AzFramework::InputDeviceMouse
         {
         public:
+            AZ_CLASS_ALLOCATOR(EditorQtMouseDevice, AZ::SystemAllocator)
             EditorQtMouseDevice(AzFramework::InputDeviceId id);
 
             // AzFramework::InputDeviceMouse overrides ...
@@ -135,7 +165,9 @@ namespace AzToolsFramework
         // Handle mouse move events.
         void HandleMouseMoveEvent(const QPoint& globalCursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
-        void HandleKeyEvent(QKeyEvent* keyEvent);
+        void HandleKeyEvent(
+            QKeyEvent* keyEvent,
+            const AZStd::function<void(const AzFramework::InputChannel* channel, QEvent* event)>& notifyUpdateChannelFn);
         // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
 
@@ -149,8 +181,6 @@ namespace AzToolsFramework
         // Populates m_highPriorityKeys.
         void InitializeHighPriorityKeys();
 
-        // The current keyboard modifier state used by our synthetic key input channels.
-        AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
         // A lookup table for Qt key -> AZ input channel.
         AZStd::unordered_map<Qt::Key, AzFramework::InputChannelId> m_keyMappings;
         // A lookup table for Qt mouse button -> AZ input channel.
@@ -161,14 +191,18 @@ namespace AzToolsFramework
         AZStd::unordered_set<Qt::Key> m_highPriorityKeys;
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
+        // The crc32 of the last consumed input event's channel id.
+        AZ::Crc32 m_lastConsumedInputChannelIdCrc32;
         // Where the mouse cursor was at the last cursor event.
         QPoint m_previousGlobalCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
+        // Controls the cursor behavior.
+        AzToolsFramework::CursorInputMode m_cursorMode = AzToolsFramework::CursorInputMode::CursorModeNone;
+        // The viewport id this input mapper is associated with.
+        AzFramework::ViewportId m_viewportId = AzFramework::InvalidViewportId;
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
-        // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
-        bool m_capturingCursor = false;
         // Flags whether the cursor has been overridden.
         bool m_overrideCursor = false;
 

@@ -10,6 +10,8 @@
 
 #include <gtest/gtest.h>
 #include <xcb/xcb.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 
 #include "MockXcbInterface.h"
 
@@ -17,9 +19,11 @@ namespace AzFramework
 {
     // Sets up mock behavior for the xcb library, providing an xcb_connection_t that is returned from a call to xcb_connect
     class XcbBaseTestFixture
-        : public testing::Test
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
+        XcbBaseTestFixture();
+
         void SetUp() override;
 
         template<typename T>
@@ -31,5 +35,6 @@ namespace AzFramework
     protected:
         testing::NiceMock<MockXcbInterface> m_interface;
         xcb_connection_t m_connection{};
+        AZStd::unique_ptr<AzFramework::NativeUISystemComponent> m_nativeUiComponent;
     };
 } // namespace AzFramework

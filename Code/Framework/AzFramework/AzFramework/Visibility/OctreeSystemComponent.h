@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -23,7 +24,7 @@ namespace AzFramework
 
     //! An internal node within the tree.
     //! It contains all objects that are *fully contained* by the node, if an object spans multiple child nodes that object will be stored in the parent.
-    class OctreeNode
+    class AZF_API OctreeNode
         : public VisibilityNode
     {
     public:
@@ -51,7 +52,10 @@ namespace AzFramework
         //! @{
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const;
+        void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const IVisibilityScene::EnumerateCallback& callback) const;
         //! @}
 
         //! Recursively enumerate *all* OctreeNodes that have any entries in them (without any culling).
@@ -88,12 +92,12 @@ namespace AzFramework
 
     //! Implementation of the visibility system interface.
     //! This uses a simple adaptive octree to support partitioning an object set for a specific scene and efficiently running gathers and visibility queries.
-    class OctreeScene
+    class AZF_API OctreeScene
         : public IVisibilityScene
     {
     public:
         AZ_RTTI(OctreeScene, "{A88E4D86-11F1-4E3F-A91A-66DE99502B93}");
-        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(OctreeScene);
 
         explicit OctreeScene(const AZ::Name& sceneName);
@@ -106,7 +110,10 @@ namespace AzFramework
         void RemoveEntry(VisibilityEntry& entry) override;
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Capsule& capsule, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Frustum& frustum, const IVisibilityScene::EnumerateCallback& callback) const override;
+        void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const override;
         void EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const override;
         uint32_t GetEntryCount() const override;
         //! @}
@@ -145,7 +152,7 @@ namespace AzFramework
 
     //! Implementation of the visibility system interface.
     //! This manages creating, destroying, and finding the underlying octrees that are associated with specific scenes
-    class OctreeSystemComponent
+    class AZF_API OctreeSystemComponent
         : public AZ::Component
         , public IVisibilitySystemRequestBus::Handler
     {

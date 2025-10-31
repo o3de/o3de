@@ -11,39 +11,35 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
 #include <QObject>
 #include <QModelIndex>
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         //! SourceAssetBrowserEntry represents source entry.
-        class SourceAssetBrowserEntry
+        class AZTF_API SourceAssetBrowserEntry
             : public AssetBrowserEntry
         {
             friend class RootAssetBrowserEntry;
 
         public:
             AZ_RTTI(SourceAssetBrowserEntry, "{9FD4FF76-4CC3-4E96-953F-5BF63C2E1F1D}", AssetBrowserEntry);
-            AZ_CLASS_ALLOCATOR(SourceAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SourceAssetBrowserEntry, AZ::SystemAllocator);
 
             SourceAssetBrowserEntry() = default;
             ~SourceAssetBrowserEntry() override;
 
             QVariant data(int column) const override;
-            static void Reflect(AZ::ReflectContext* context);
             AssetEntryType GetEntryType() const override;
 
-            const AZStd::string& GetExtension() const;
+            const AZStd::string GetExtension() const;
+            const AZStd::string GetFileName() const;
             AZ::s64 GetFileID() const;
             AZ::s64 GetSourceID() const;
             AZ::s64 GetScanFolderID() const;
@@ -60,7 +56,6 @@ namespace AzToolsFramework
             static const SourceAssetBrowserEntry* GetSourceByUuid(const AZ::Uuid& sourceUuid);
 
         protected:
-            void UpdateChildPaths(AssetBrowserEntry* child) const override;
             void PathsUpdated() override;
 
         private:

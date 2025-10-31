@@ -10,9 +10,9 @@
 
 #include <QDesktopServices>
 
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QPushButton>
+#include <QHBoxLayout>
+#include <QMenu>
+#include <QPushButton>
 
 namespace AzToolsFramework
 {
@@ -45,6 +45,16 @@ namespace AzToolsFramework
     void ComponentEditorHeader::SetIcon(const QIcon& icon)
     {
         AzQtComponents::CardHeader::setIcon(icon);
+    }
+
+    void ComponentEditorHeader::SetIconOverlay(const QIcon& icon)
+    {
+        AzQtComponents::CardHeader::setIconOverlay(icon);
+    }
+
+    void ComponentEditorHeader::SetComponentIconClickable(bool clickable)
+    {
+        AzQtComponents::CardHeader::setIconClickable(clickable);
     }
 
     void ComponentEditorHeader::SetExpandable(bool expandable)
@@ -110,6 +120,11 @@ namespace AzToolsFramework
     void ComponentEditorHeader::SetFilterString(const AZStd::string& str)
     {
         m_currentFilterString = str.c_str();
+    }
+
+    bool ComponentEditorHeader::TitleMatchesFilter() const
+    {
+        return AzQtComponents::CardHeader::m_titleLabel->TextMatchesFilter();
     }
 }
 

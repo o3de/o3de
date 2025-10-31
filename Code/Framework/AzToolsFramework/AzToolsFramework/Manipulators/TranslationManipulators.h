@@ -12,16 +12,34 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/Manipulators/SurfaceManipulator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
+    //! Parameters to configure the appearance of the TranslationManipulators view(s).
+    struct TranslationManipulatorsViewCreateInfo
+    {
+        float linearAxisLength;
+        float linearConeLength;
+        float linearConeRadius;
+        float planarAxisLength;
+        float surfaceRadius;
+        AZ::Color axis1Color;
+        AZ::Color axis2Color;
+        AZ::Color axis3Color;
+        AZ::Color surfaceColor;
+    };
+
     //! TranslationManipulators is an aggregation of 3 linear manipulators, 3 planar manipulators
     //! and one surface manipulator who share the same transform.
-    class TranslationManipulators : public Manipulators
+    class AZTF_API TranslationManipulators : public Manipulators
     {
     public:
         AZ_RTTI(TranslationManipulators, "{D5E49EA2-30E0-42BC-A51D-6A7F87818260}")
-        AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator)
+
+        TranslationManipulators(TranslationManipulators&&) = delete;
+        TranslationManipulators& operator=(TranslationManipulators&&) = delete;
 
         //! How many dimensions does this translation manipulator have.
         enum class Dimensions
@@ -44,6 +62,8 @@ namespace AzToolsFramework
         void InstallSurfaceManipulatorMouseMoveCallback(const SurfaceManipulator::MouseActionCallback& onMouseMoveCallback);
         void InstallSurfaceManipulatorMouseUpCallback(const SurfaceManipulator::MouseActionCallback& onMouseUpCallback);
 
+        void InstallSurfaceManipulatorEntityIdsToIgnoreFn(SurfaceManipulator::EntityIdsToIgnoreFn entityIdsToIgnoreFn);
+
         void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
         void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
         void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;
@@ -52,29 +72,33 @@ namespace AzToolsFramework
 
         void SetAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3 = AZ::Vector3::CreateAxisZ());
 
+        void ConfigureView2d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
+        void ConfigureView3d(const TranslationManipulatorsViewCreateInfo& translationManipulatorViewCreateInfo);
+
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
+        void SetLineBoundWidth(float lineBoundWidth);
+
+    private:
         void ConfigurePlanarView(
+            float planeSize,
+            float linearAxisLength,
+            float linearConeLength,
             const AZ::Color& plane1Color,
             const AZ::Color& plane2Color = AZ::Color(0.0f, 1.0f, 0.0f, 0.5f),
             const AZ::Color& plane3Color = AZ::Color(0.0f, 0.0f, 1.0f, 0.5f));
 
         void ConfigureLinearView(
             float axisLength,
+            float coneLength,
+            float coneRadius,
             const AZ::Color& axis1Color,
             const AZ::Color& axis2Color,
             const AZ::Color& axis3Color = AZ::Color(0.0f, 0.0f, 1.0f, 0.5f));
 
         void ConfigureSurfaceView(float radius, const AZ::Color& color);
 
-        //! Sets the bound width to use for the line/axis of a linear manipulator.
-        void SetLineBoundWidth(float lineBoundWidth);
-
-    private:
-        AZ_DISABLE_COPY_MOVE(TranslationManipulators)
-
         // Manipulators
         void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
-
-        const Dimensions m_dimensions; //!< How many dimensions of freedom does this manipulator have.
 
         AZStd::vector<AZStd::shared_ptr<LinearManipulator>> m_linearManipulators;
         AZStd::vector<AZStd::shared_ptr<PlanarManipulator>> m_planarManipulators;
@@ -127,7 +151,15 @@ namespace AzToolsFramework
     //! Function pointer to configure how a translation manipulator should look and behave (dimensions/axes/views).
     using TranslationManipulatorConfiguratorFn = void (*)(TranslationManipulators*);
 
-    void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators);
-    void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators);
+    AZTF_API void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators);
+    AZTF_API void ConfigureTranslationManipulatorAppearance2d(TranslationManipulators* translationManipulators);
 
+    AZTF_API AZStd::shared_ptr<ManipulatorViewQuad> CreateManipulatorViewQuadForPlanarTranslationManipulator(
+        const AZ::Vector3& axis1,
+        const AZ::Vector3& axis2,
+        const AZ::Color& axis1Color,
+        const AZ::Color& axis2Color,
+        float linearAxisLength,
+        float linearConeLength,
+        float planarAxisLength);
 } // namespace AzToolsFramework

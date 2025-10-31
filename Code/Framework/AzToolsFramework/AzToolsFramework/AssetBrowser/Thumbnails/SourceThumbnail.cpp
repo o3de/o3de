@@ -59,15 +59,18 @@ namespace AzToolsFramework
         {
         }
 
-        void SourceThumbnail::LoadThread()
+        void SourceThumbnail::Load()
         {
-            auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.data());
+            m_state = State::Loading;
+
+            auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.get());
             AZ_Assert(sourceKey, "Incorrect key type, excpected SourceThumbnailKey");
 
             bool foundIt = false;
             AZStd::string watchFolder;
             AZ::Data::AssetInfo assetInfo;
-            AssetSystemRequestBus::BroadcastResult(foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceKey->GetSourceUuid(), assetInfo, watchFolder);
+            AssetSystemRequestBus::BroadcastResult(
+                foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceKey->GetSourceUuid(), assetInfo, watchFolder);
 
             QString iconPathToUse;
             if (foundIt)
@@ -120,6 +123,7 @@ namespace AzToolsFramework
 
             m_pixmap.load(iconPathToUse);
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -137,7 +141,7 @@ namespace AzToolsFramework
 
         bool SourceThumbnailCache::IsSupportedThumbnail(SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const SourceThumbnailKey*>(key.data());
+            return azrtti_istypeof<const SourceThumbnailKey*>(key.get());
         }
 
     } // namespace AssetBrowser

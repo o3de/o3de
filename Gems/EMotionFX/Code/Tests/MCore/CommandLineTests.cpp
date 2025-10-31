@@ -21,7 +21,7 @@ namespace EMotionFX
     >;
 
     class CommandLineFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<CommandLineFixtureParameter>
     {
     };
@@ -101,12 +101,12 @@ namespace EMotionFX
         },
         {
             // utf-8 smiley
-            {u8"-newName \U0001F604"},
+            {reinterpret_cast<const char*>(u8"-newName \U0001F604")},
             {
-                {"newName", u8"\U0001F604"},
+                {"newName", reinterpret_cast<const char*>(u8"\U0001F604")},
             }
         },
     };
 
-    INSTANTIATE_TEST_CASE_P(TestCommandLine, CommandLineFixture, ::testing::ValuesIn(commandLineTestData));
+    INSTANTIATE_TEST_SUITE_P(TestCommandLine, CommandLineFixture, ::testing::ValuesIn(commandLineTestData));
 } // namespace EMotionFX

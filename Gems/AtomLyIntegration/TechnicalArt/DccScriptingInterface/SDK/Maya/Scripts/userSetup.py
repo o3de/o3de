@@ -135,14 +135,14 @@ if _DCCSI_DEV_MODE:
 # -------------------------------------------------------------------------
 # validate access to the DCCsi and it's Lib site-packages
 # bootstrap site-packages by version
-from azpy.constants import PATH_DCCSI_PYTHON_LIB_PATH
+from azpy.constants import PATH_DCCSI_PYTHON_LIB
 
 try:
-    os.path.exists(PATH_DCCSI_PYTHON_LIB_PATH)
-    site.addsitedir(PATH_DCCSI_PYTHON_LIB_PATH)
-    _LOGGER.info('azpy 3rdPary site-packages: is: {0}'.format(PATH_DCCSI_PYTHON_LIB_PATH))
+    os.path.exists(PATH_DCCSI_PYTHON_LIB)
+    site.addsitedir(PATH_DCCSI_PYTHON_LIB)
+    _LOGGER.info('azpy 3rdPary site-packages: is: {0}'.format(PATH_DCCSI_PYTHON_LIB))
 except Exception as e:
-    _LOGGER.error('ERROR: {0}, {1}'.format(e, PATH_DCCSI_PYTHON_LIB_PATH))
+    _LOGGER.error('ERROR: {0}, {1}'.format(e, PATH_DCCSI_PYTHON_LIB))
     raise e
 
 # 3rdparty
@@ -175,15 +175,15 @@ try:
 except Exception as e:
     _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH]))
 
-_O3DE_PROJECT_PATH = None
+_PATH_O3DE_PROJECT = None
 try:
-    _O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
+    _PATH_O3DE_PROJECT = _BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]
 except Exception as e:
-    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]))
+    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]))
 
 # check some env var tags (fail if no, likely means no proper code access)
 _O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
-_O3DE_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
+_O3DE_PATH_DCCSIG = _BASE_ENVVAR_DICT[ENVAR_PATH_DCCSIG]
 _O3DE_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
 _O3DE_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
 # -------------------------------------------------------------------------
@@ -206,7 +206,7 @@ _fix_paths = None
 # -------------------------------------------------------------------------
 # add appropriate common tools paths to the maya environment variables
 def startup():
-    """Early starup execution before mayautils.executeDeferred(). 
+    """Early starup execution before mayautils.executeDeferred().
     Some things like UI and plugins should be defered to avoid failure"""
     _LOGGER.info('startup() fired')
 
@@ -267,21 +267,21 @@ def post_startup():
     # this ensures the fixPaths callback is loaded
     # even when the other global callbacks are disabled
     from set_callbacks import install_fix_paths
-    install_fix_paths()    
+    install_fix_paths()
 
     # set the project workspace
-    #_O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
-    _project_workspace = os.path.join(_O3DE_PROJECT_PATH, TAG_MAYA_WORKSPACE)
+    #_PATH_O3DE_PROJECT = _BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]
+    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, SLUG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
-            maya.cmds.workspace(_O3DE_PROJECT_PATH, openWorkspace=True)
+            maya.cmds.workspace(_PATH_O3DE_PROJECT, openWorkspace=True)
             _LOGGER.info('Loaded workspace file: {0}'.format(_project_workspace))
-            maya.cmds.workspace(_O3DE_PROJECT_PATH, update=True)
+            maya.cmds.workspace(_PATH_O3DE_PROJECT, update=True)
         except Exception as e:
             _LOGGER.error(e)
     else:
-        _LOGGER.warning('Workspace file not found: {1}'.format(_O3DE_PROJECT_PATH))
+        _LOGGER.warning('Workspace file not found: {1}'.format(_PATH_O3DE_PROJECT))
 
     # Set up Lumberyard, maya default setting
     from set_defaults import set_defaults
@@ -292,14 +292,14 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.error(e)
 
     # manage custom menu in a sub-module
     from set_menu import set_main_menu
     set_main_menu()
-    
+
     # To Do: manage custom shelf in a sub-module
 
     _LOGGER.info('post_startup(), COMPLETE')

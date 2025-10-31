@@ -12,14 +12,25 @@
 # each platform include them
 
 # Clear all
-ly_set(CMAKE_C_FLAGS "")
-ly_set(CMAKE_CXX_FLAGS "")
-ly_set(LINK_OPTIONS "")
+set(O3DE_EXTRA_C_FLAGS ""       CACHE STRING "Additional C Compiler flags to apply globally")
+set(O3DE_EXTRA_CXX_FLAGS ""     CACHE STRING "Additional Cxx Compiler flags to apply globally")
+set(O3DE_EXTRA_LINK_OPTIONS ""  CACHE STRING "Additional link options to apply globally")
+
+# If you turn fast math on, beware, as all floating point operations that result or involve NaN or Inf
+# will be undefined behavior and cannot be detected or dealt with.
+set(USE_FAST_MATH OFF CACHE BOOL "Use fp:precise (MSVC) or -ffast-math (Clang/GCC) to allow aggressive, lossy floating-point optimizations")
+
+ly_set(CMAKE_C_FLAGS "${O3DE_EXTRA_C_FLAGS}")
+ly_set(CMAKE_CXX_FLAGS "${O3DE_EXTRA_CXX_FLAGS}")
+ly_set(LINK_OPTIONS "${O3DE_EXTRA_LINK_OPTIONS}")
 foreach(conf ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER ${conf} UCONF)
-    ly_set(CMAKE_C_FLAGS_${UCONF} "")
-    ly_set(CMAKE_CXX_FLAGS_${UCONF} "")
-    ly_set(LINK_OPTIONS_${UCONF} "")
+    set(O3DE_EXTRA_C_FLAGS_${UCONF} ""       CACHE STRING "Additional C Compiler flags to add globally when compiling in ${conf}")
+    set(O3DE_EXTRA_CXX_FLAGS_${UCONF} ""     CACHE STRING "Additional Cxx Compiler flags to add globally when compiling in ${conf}")
+    set(O3DE_EXTRA_LINK_OPTIONS_${UCONF} ""  CACHE STRING "Additional link options to add globally when linking in ${conf}")
+    ly_set(CMAKE_C_FLAGS_${UCONF} "${O3DE_EXTRA_C_FLAGS_${UCONF}}")
+    ly_set(CMAKE_CXX_FLAGS_${UCONF} "${O3DE_EXTRA_CXX_FLAGS_${UCONF}}")
+    ly_set(LINK_OPTIONS_${UCONF} "${O3DE_EXTRA_LINK_OPTIONS_${UCONF}}")
     ly_set(LY_BUILD_CONFIGURATION_TYPE_${UCONF} ${conf})
 endforeach()
 
@@ -30,13 +41,13 @@ ly_append_configurations_options(
         _HAS_EXCEPTIONS=0
     DEFINES_DEBUG
         _DEBUG            # TODO: this should be able to removed since it gets added automatically by some compilation flags
-        AZ_DEBUG_BUILD=1
+        AZ_DEBUG_BUILD
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_DEBUG}"
     DEFINES_PROFILE
         _PROFILE
-        AZ_PROFILE_BUILD=1
+        AZ_PROFILE_BUILD
         NDEBUG
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS
@@ -44,6 +55,7 @@ ly_append_configurations_options(
     DEFINES_RELEASE
         _RELEASE
         RELEASE
+        AZ_RELEASE_BUILD
         NDEBUG
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
@@ -61,4 +73,18 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
         ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
     endif()
+endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE True)
+
+include(CheckPIESupported)
+check_pie_supported()
+
+# Determine if lld is installed to use as a default linker by supported platforms/configurations
+find_program(LLD_LINKER_INSTALLED lld)
+
+if (NOT TARGET ciso646-include)
+    # Temporarily gets around the inclusion of <ciso646> in some 3rd party libraries.
+    add_library(ciso646-include INTERFACE)
+    target_include_directories(ciso646-include INTERFACE ${CMAKE_CURRENT_LIST_DIR}/ciso646-include)
 endif()

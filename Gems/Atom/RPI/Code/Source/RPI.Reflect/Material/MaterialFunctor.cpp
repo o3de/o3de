@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <AzCore/Math/Vector2.h>
@@ -19,159 +20,240 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialFunctor::Reflect(ReflectContext* context)
+
+        void MaterialFunctorShaderParameter::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                serializeContext->Class<MaterialFunctorShaderParameter>()
+                    ->Version(0)
+                    ->Field("name", &MaterialFunctorShaderParameter::m_name)
+                    ->Field("type", &MaterialFunctorShaderParameter::m_typeName)
+                    ->Field("size", &MaterialFunctorShaderParameter::m_typeSize);
+            }
+        }
+
+        void MaterialFunctor::Reflect(ReflectContext* context)
+        {
+            MaterialFunctorShaderParameter::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
                 serializeContext->Class<MaterialFunctor>()
-                    ->Version(2)
+                    ->Version(3) // added functorShaderParameters
                     ->Field("materialPropertyDependencies", &MaterialFunctor::m_materialPropertyDependencies)
-                    ;
+                    ->Field("functorShaderParameters", &MaterialFunctor::m_functorShaderParameters);
             }
         }
 
-        MaterialFunctor::RuntimeContext::RuntimeContext(
-            const AZStd::vector<MaterialPropertyValue>& propertyValues,
-            RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
-            ShaderCollection* shaderCollection,
-            ShaderResourceGroup* shaderResourceGroup,
+        MaterialFunctorAPI::ConfigureShaders::ConfigureShaders(ShaderCollection* localShaderCollection)
+            : m_localShaderCollection(localShaderCollection)
+        {
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback)
+        {
+            for (ShaderCollection::Item& shaderItem : *m_localShaderCollection)
+            {
+                if (!callback(shaderItem))
+                {
+                    return;
+                }
+            }
+        }
+
+        template<typename ValueType>
+        bool MaterialFunctorAPI::ConfigureShaders::SetShaderOptionValueHelper(const Name& name, const ValueType& value)
+        {
+            bool didSetOne = false;
+            bool materialDoesntOwnOption = false;
+
+            ForAllShaderItems([&](ShaderCollection::Item& shaderItem)
+                {
+                    ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
+                    const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
+                    ShaderOptionIndex optionIndex = layout->FindShaderOptionIndex(name);
+
+                    if (!optionIndex.IsValid())
+                    {
+                        return true; // skip this and continue
+                    }
+
+                    if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
+                    {
+                        materialDoesntOwnOption = true;
+                        return false; // break;
+                    }
+
+                    if (shaderOptionGroup->SetValue(optionIndex, value))
+                    {
+                        didSetOne = true;
+                    }
+
+                    return true; // continue
+                });
+
+            if (materialDoesntOwnOption)
+            {
+                AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", name.GetCStr());
+                AZ_Assert(!didSetOne, "The material build pipeline should have ensured that MaterialOwnsShaderOption is consistent across all shaders.");
+            }
+            else if (!didSetOne)
+            {
+                AZ_Error("MaterialFunctor", false, "Shader option '%s' not found.", name.GetCStr());
+            }
+
+            return didSetOne;
+        }
+
+        bool MaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(const Name& optionName, ShaderOptionValue value)
+        {
+            return SetShaderOptionValueHelper(optionName, value);
+        }
+
+        bool MaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(const Name& optionName, const Name& value)
+        {
+            return SetShaderOptionValueHelper(optionName, value);
+        }
+
+        AZStd::size_t MaterialFunctorAPI::ConfigureShaders::GetShaderCount() const
+        {
+            return m_localShaderCollection->size();
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::SetShaderEnabled(AZStd::size_t shaderIndex, bool enabled)
+        {
+            (*m_localShaderCollection)[shaderIndex].SetEnabled(enabled);
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::SetShaderEnabled(const AZ::Name& shaderTag, bool enabled)
+        {
+            (*m_localShaderCollection)[shaderTag].SetEnabled(enabled);
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::SetShaderDrawListTagOverride(AZStd::size_t shaderIndex, const Name& drawListTagName)
+        {
+            (*m_localShaderCollection)[shaderIndex].SetDrawListTagOverride(drawListTagName);
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::SetShaderDrawListTagOverride(const AZ::Name& shaderTag, const Name& drawListTagName)
+        {
+            (*m_localShaderCollection)[shaderTag].SetDrawListTagOverride(drawListTagName);
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::ApplyShaderRenderStateOverlay(AZStd::size_t shaderIndex, const RHI::RenderStates& renderStatesOverlay)
+        {
+            RHI::MergeStateInto(renderStatesOverlay, *((*m_localShaderCollection)[shaderIndex].GetRenderStatesOverlay()));
+        }
+
+        void MaterialFunctorAPI::ConfigureShaders::ApplyShaderRenderStateOverlay(const AZ::Name& shaderTag, const RHI::RenderStates& renderStatesOverlay)
+        {
+            RHI::MergeStateInto(renderStatesOverlay, *((*m_localShaderCollection)[shaderTag].GetRenderStatesOverlay()));
+        }
+
+        MaterialFunctorAPI::RuntimeContext::RuntimeContext(
+            const MaterialPropertyCollection& materialProperties,
             const MaterialPropertyFlags* materialPropertyDependencies,
-            MaterialPropertyPsoHandling psoHandling
+            MaterialPropertyPsoHandling psoHandling,
+            MaterialShaderParameter* shaderParameters,
+            ShaderCollection* generalShaderCollection,
+            MaterialPipelineDataMap* materialPipelineData)
+            : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
+            , MaterialFunctorAPI::ReadMaterialPropertyValues(materialProperties, materialPropertyDependencies)
+            , MaterialFunctorAPI::ConfigureShaders(generalShaderCollection)
+            , m_materialShaderParameter(shaderParameters)
+            , m_materialPipelineData(materialPipelineData)
+        {
+        }
+
+        void MaterialFunctorAPI::RuntimeContext::ForAllShaderItems(AZStd::function<bool(ShaderCollection::Item& shaderItem)> callback)
+        {
+            MaterialFunctorAPI::ConfigureShaders::ForAllShaderItems(callback);
+
+            for (auto& materialPipelinePair : *m_materialPipelineData)
+            {
+                for (ShaderCollection::Item& shaderItem : materialPipelinePair.second.m_shaderCollection)
+                {
+                    if (!callback(shaderItem))
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        MaterialShaderParameter* MaterialFunctorAPI::RuntimeContext::GetMaterialShaderParameter()
+        {
+            return m_materialShaderParameter;
+        }
+
+        bool MaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue(const Name& propertyId, const MaterialPropertyValue& value)
+        {
+            bool somethingWasSet = false;
+
+            for (auto& materialPipelinePair : *m_materialPipelineData)
+            {
+                MaterialPropertyCollection& properties = materialPipelinePair.second.m_materialProperties;
+
+                MaterialPropertyIndex index = properties.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
+                if (!index.IsValid())
+                {
+                    continue;
+                }
+
+                if (properties.SetPropertyValue(index, value))
+                {
+                    somethingWasSet = true;
+                }
+            }
+
+            return somethingWasSet;
+        }
+
+        MaterialFunctorAPI::PipelineRuntimeContext::PipelineRuntimeContext(
+            const MaterialPropertyCollection& internalProperties,
+            const MaterialPropertyFlags* internalMaterialPropertyDependencies,
+            MaterialPropertyPsoHandling psoHandling,
+            ShaderCollection* pipelineShaderCollections
         )
-            : m_materialPropertyValues(propertyValues)
-            , m_materialPropertiesLayout(materialPropertiesLayout)
-            , m_shaderCollection(shaderCollection)
-            , m_shaderResourceGroup(shaderResourceGroup)
-            , m_materialPropertyDependencies(materialPropertyDependencies)
-            , m_psoHandling(psoHandling)
-        {}
-
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value)
+            : MaterialFunctorAPI::CommonRuntimeConfiguration(psoHandling)
+            , MaterialFunctorAPI::ReadMaterialPropertyValues(internalProperties, internalMaterialPropertyDependencies)
+            , MaterialFunctorAPI::ConfigureShaders(pipelineShaderCollections)
         {
-            ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
-            const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
-
-            if (optionIndex.GetIndex() >= layout->GetShaderOptionCount())
-            {
-                AZ_Error("MaterialFunctor", false, "Shader option index %d is out of range.", optionIndex.GetIndex());
-            }
-            else if (shaderItem.MaterialOwnsShaderOption(optionIndex))
-            {
-                return shaderOptionGroup->SetValue(optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader option '%s' is not owned by this material.", layout->GetShaderOption(optionIndex).GetName().GetCStr());
-            }
-
-            return false;
         }
 
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(AZStd::size_t shaderIndex, ShaderOptionIndex optionIndex, ShaderOptionValue value)
-        {
-            if (shaderIndex < (*m_shaderCollection).size())
-            {
-                ShaderCollection::Item& shaderItem = (*m_shaderCollection)[shaderIndex];
-                return SetShaderOptionValue(shaderItem, optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader index %zu is out of range. There are %zu shaders available.", shaderIndex, (*m_shaderCollection).size());
-            }
-
-            return false;
-        }
-
-        bool MaterialFunctor::RuntimeContext::SetShaderOptionValue(const AZ::Name& shaderTag, ShaderOptionIndex optionIndex, ShaderOptionValue value)
-        {
-            if (m_shaderCollection->HasShaderTag(shaderTag))
-            {
-                ShaderCollection::Item& shaderItem = (*m_shaderCollection)[shaderTag];
-                return SetShaderOptionValue(shaderItem, optionIndex, value);
-            }
-            else
-            {
-                AZ_Error("MaterialFunctor", false, "Shader tag '%s' is invalid.", shaderTag.GetCStr());
-            }
-
-            return false;
-        }
-
-        ShaderResourceGroup* MaterialFunctor::RuntimeContext::GetShaderResourceGroup()
-        {
-            return m_shaderResourceGroup;
-        }
-
-        AZStd::size_t MaterialFunctor::RuntimeContext::GetShaderCount() const
-        {
-            return m_shaderCollection->size();
-        }
-
-        void MaterialFunctor::RuntimeContext::SetShaderEnabled(AZStd::size_t shaderIndex, bool enabled)
-        {
-            (*m_shaderCollection)[shaderIndex].SetEnabled(enabled);
-        }
-
-        void MaterialFunctor::RuntimeContext::SetShaderEnabled(const AZ::Name& shaderTag, bool enabled)
-        {
-            (*m_shaderCollection)[shaderTag].SetEnabled(enabled);
-        }
-
-        void MaterialFunctor::RuntimeContext::SetShaderDrawListTagOverride(AZStd::size_t shaderIndex, const Name& drawListTagName)
-        {
-            (*m_shaderCollection)[shaderIndex].SetDrawListTagOverride(drawListTagName);
-        }
-
-        void MaterialFunctor::RuntimeContext::SetShaderDrawListTagOverride(const AZ::Name& shaderTag, const Name& drawListTagName)
-        {
-            (*m_shaderCollection)[shaderTag].SetDrawListTagOverride(drawListTagName);
-        }
-
-        void MaterialFunctor::RuntimeContext::ApplyShaderRenderStateOverlay(AZStd::size_t shaderIndex, const RHI::RenderStates& renderStatesOverlay)
-        {
-            RHI::MergeStateInto(renderStatesOverlay, *((*m_shaderCollection)[shaderIndex].GetRenderStatesOverlay()));
-        }
-
-        void MaterialFunctor::RuntimeContext::ApplyShaderRenderStateOverlay(const AZ::Name& shaderTag, const RHI::RenderStates& renderStatesOverlay)
-        {
-            RHI::MergeStateInto(renderStatesOverlay, *((*m_shaderCollection)[shaderTag].GetRenderStatesOverlay()));
-        }
-
-        MaterialFunctor::EditorContext::EditorContext(
-            const AZStd::vector<MaterialPropertyValue>& propertyValues,
-            RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
+        MaterialFunctorAPI::EditorContext::EditorContext(
+            const MaterialPropertyCollection& materialProperties,
             AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
             AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
             AZStd::unordered_set<Name>& updatedPropertiesOut,
             AZStd::unordered_set<Name>& updatedPropertyGroupsOut,
             const MaterialPropertyFlags* materialPropertyDependencies
         )
-            : m_materialPropertyValues(propertyValues)
-            , m_materialPropertiesLayout(materialPropertiesLayout)
+            : MaterialFunctorAPI::ReadMaterialPropertyValues(materialProperties, materialPropertyDependencies)
             , m_propertyMetadata(propertyMetadata)
             , m_propertyGroupMetadata(propertyGroupMetadata)
             , m_updatedPropertiesOut(updatedPropertiesOut)
             , m_updatedPropertyGroupsOut(updatedPropertyGroupsOut)
-            , m_materialPropertyDependencies(materialPropertyDependencies)
         {}
 
-        const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const Name& propertyName) const
+        const MaterialPropertyDynamicMetadata* MaterialFunctorAPI::EditorContext::GetMaterialPropertyMetadata(const Name& propertyId) const
         {
-            return QueryMaterialPropertyMetadata(propertyName);
+            return QueryMaterialPropertyMetadata(propertyId);
         }
 
-        const MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const
+        const MaterialPropertyDynamicMetadata* MaterialFunctorAPI::EditorContext::GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return GetMaterialPropertyMetadata(name);
         }
         
-        const MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::GetMaterialPropertyGroupMetadata(const Name& propertyName) const
+        const MaterialPropertyGroupDynamicMetadata* MaterialFunctorAPI::EditorContext::GetMaterialPropertyGroupMetadata(const Name& propertyId) const
         {
-            return QueryMaterialPropertyGroupMetadata(propertyName);
+            return QueryMaterialPropertyGroupMetadata(propertyId);
         }
         
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility)
         {
             MaterialPropertyGroupDynamicMetadata* metadata = QueryMaterialPropertyGroupMetadata(propertyGroupName);
             if (!metadata)
@@ -188,9 +270,9 @@ namespace AZ
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyVisibility(const Name& propertyId, MaterialPropertyVisibility visibility)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -199,21 +281,21 @@ namespace AZ
             if (metadata->m_visibility != visibility)
             {
                 metadata->m_visibility = visibility;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyVisibility(const MaterialPropertyIndex& index, MaterialPropertyVisibility visibility)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyVisibility(const MaterialPropertyIndex& index, MaterialPropertyVisibility visibility)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyVisibility(name, visibility);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const Name& propertyName, AZStd::string description)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyDescription(const Name& propertyId, AZStd::string description)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -222,21 +304,21 @@ namespace AZ
             if (metadata->m_description != description)
             {
                 metadata->m_description = description;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyDescription(const MaterialPropertyIndex& index, AZStd::string description)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyDescription(const MaterialPropertyIndex& index, AZStd::string description)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyDescription(name, description);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const Name& propertyName, const MaterialPropertyValue& min)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue(const Name& propertyId, const MaterialPropertyValue& min)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -245,21 +327,21 @@ namespace AZ
             if(metadata->m_propertyRange.m_min != min)
             {
                 metadata->m_propertyRange.m_min = min;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyMinValue(name, min);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue(const Name& propertyId, const MaterialPropertyValue& max)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -268,21 +350,21 @@ namespace AZ
             if (metadata->m_propertyRange.m_max != max)
             {
                 metadata->m_propertyRange.m_max = max;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertyMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertyMaxValue(name, max);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const Name& propertyName, const MaterialPropertyValue& min)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue(const Name& propertyId, const MaterialPropertyValue& min)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -291,21 +373,21 @@ namespace AZ
             if (metadata->m_propertyRange.m_softMin != min)
             {
                 metadata->m_propertyRange.m_softMin = min;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertySoftMinValue(name, min);
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue(const Name& propertyId, const MaterialPropertyValue& max)
         {
-            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyName);
+            MaterialPropertyDynamicMetadata* metadata = QueryMaterialPropertyMetadata(propertyId);
             if (!metadata)
             {
                 return false;
@@ -314,108 +396,83 @@ namespace AZ
             if (metadata->m_propertyRange.m_softMax != max)
             {
                 metadata->m_propertyRange.m_softMax = max;
-                m_updatedPropertiesOut.insert(propertyName);
+                m_updatedPropertiesOut.insert(propertyId);
             }
 
             return true;
         }
 
-        bool MaterialFunctor::EditorContext::SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
+        bool MaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max)
         {
-            const Name& name = m_materialPropertiesLayout->GetPropertyDescriptor(index)->GetName();
+            const Name& name = m_materialProperties.GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetName();
             return SetMaterialPropertySoftMaxValue(name, max);
         }
 
-        MaterialPropertyDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyMetadata(const Name& propertyName) const
+        MaterialPropertyDynamicMetadata* MaterialFunctorAPI::EditorContext::QueryMaterialPropertyMetadata(const Name& propertyId) const
         {
-            auto it = m_propertyMetadata.find(propertyName);
+            auto it = m_propertyMetadata.find(propertyId);
             if (it == m_propertyMetadata.end())
             {
-                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyName.GetCStr());
+                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyId.GetCStr());
                 return nullptr;
             }
 
             return &it->second;
         }
         
-        MaterialPropertyGroupDynamicMetadata* MaterialFunctor::EditorContext::QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const
+        MaterialPropertyGroupDynamicMetadata* MaterialFunctorAPI::EditorContext::QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const
         {
-            auto it = m_propertyGroupMetadata.find(propertyGroupName);
+            auto it = m_propertyGroupMetadata.find(propertyGroupId);
             if (it == m_propertyGroupMetadata.end())
             {
-                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupName.GetCStr());
+                AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupId.GetCStr());
                 return nullptr;
             }
 
             return &it->second;
         }
 
+        MaterialFunctorAPI::ReadMaterialPropertyValues::ReadMaterialPropertyValues(
+            const MaterialPropertyCollection& materialProperties,
+            const MaterialPropertyFlags* materialPropertyDependencies
+        )
+            : m_materialProperties(materialProperties)
+            , m_materialPropertyDependencies(materialPropertyDependencies)
+        { }
+
         template<typename Type>
-        const Type& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
+        const Type& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
         {
             return GetMaterialPropertyValue(index).GetValue<Type>();
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<bool>     (const Name& propertyName) const;
-        template const int32_t&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyName) const;
-        template const uint32_t& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyName) const;
-        template const float&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<float>    (const Name& propertyName) const;
-        template const Vector2&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyName) const;
-        template const Vector3&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyName) const;
-        template const Vector4&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyName) const;
-        template const Color&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Color>    (const Name& propertyName) const;
-        template const Data::Instance<Image>& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyName) const;
+        template AZ_DLL_EXPORT const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const Name& propertyId) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>>(const Name& propertyId) const;
 
         template<typename Type>
-        const Type& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const Type& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            return GetMaterialPropertyValue(propertyName).GetValue<Type>();
+            return GetMaterialPropertyValue(propertyId).GetValue<Type>();
         }
 
         // explicit template instantiation
-        template const bool&     MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<bool>     (const MaterialPropertyIndex& index) const;
-        template const int32_t&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<int32_t>  (const MaterialPropertyIndex& index) const;
-        template const uint32_t& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<uint32_t> (const MaterialPropertyIndex& index) const;
-        template const float&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<float>    (const MaterialPropertyIndex& index) const;
-        template const Vector2&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector2>  (const MaterialPropertyIndex& index) const;
-        template const Vector3&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector3>  (const MaterialPropertyIndex& index) const;
-        template const Vector4&  MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Vector4>  (const MaterialPropertyIndex& index) const;
-        template const Color&    MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
-        template const Data::Instance<Image>& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
-
-        template<typename Type>
-        const Type& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
-        {
-            return GetMaterialPropertyValue(index).GetValue<Type>();
-        }
-
-        // explicit template instantiation
-        template const bool&     MaterialFunctor::EditorContext::GetMaterialPropertyValue<bool>     (const Name& propertyName) const;
-        template const int32_t&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<int32_t>  (const Name& propertyName) const;
-        template const uint32_t& MaterialFunctor::EditorContext::GetMaterialPropertyValue<uint32_t> (const Name& propertyName) const;
-        template const float&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<float>    (const Name& propertyName) const;
-        template const Vector2&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector2>  (const Name& propertyName) const;
-        template const Vector3&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector3>  (const Name& propertyName) const;
-        template const Vector4&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector4>  (const Name& propertyName) const;
-        template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const Name& propertyName) const;
-
-        template<typename Type>
-        const Type& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyName) const
-        {
-            return GetMaterialPropertyValue(propertyName).GetValue<Type>();
-        }
-
-        // explicit template instantiation
-        template const bool&     MaterialFunctor::EditorContext::GetMaterialPropertyValue<bool>     (const MaterialPropertyIndex& index) const;
-        template const int32_t&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<int32_t>  (const MaterialPropertyIndex& index) const;
-        template const uint32_t& MaterialFunctor::EditorContext::GetMaterialPropertyValue<uint32_t> (const MaterialPropertyIndex& index) const;
-        template const float&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<float>    (const MaterialPropertyIndex& index) const;
-        template const Vector2&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector2>  (const MaterialPropertyIndex& index) const;
-        template const Vector3&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector3>  (const MaterialPropertyIndex& index) const;
-        template const Vector4&  MaterialFunctor::EditorContext::GetMaterialPropertyValue<Vector4>  (const MaterialPropertyIndex& index) const;
-        template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
-        template const Data::Instance<Image>& MaterialFunctor::EditorContext::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const bool&     MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<bool>     (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const int32_t&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<int32_t>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const uint32_t& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<uint32_t> (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const float&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<float>    (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector2&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector2>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector3&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector3>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Vector4&  MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Vector4>  (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Color&    MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
+        template AZ_DLL_EXPORT const Data::Instance<Image>& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
 
         void CheckPropertyAccess([[maybe_unused]] const MaterialPropertyIndex& index, [[maybe_unused]] const MaterialPropertyFlags& materialPropertyDependencies, [[maybe_unused]] const MaterialPropertiesLayout& materialPropertiesLayout)
         {
@@ -429,29 +486,21 @@ namespace AZ
 #endif
         }
 
-        const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
+        const MaterialPropertiesLayout* MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertiesLayout() const
         {
-            CheckPropertyAccess(index, *m_materialPropertyDependencies, *m_materialPropertiesLayout);
-
-            return m_materialPropertyValues[index.GetIndex()];
+            return m_materialProperties.GetMaterialPropertiesLayout().get();
         }
 
-        const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const Name& propertyName) const
+        const MaterialPropertyValue& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
         {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
-            return GetMaterialPropertyValue(index);
+            CheckPropertyAccess(index, *m_materialPropertyDependencies, *GetMaterialPropertiesLayout());
+
+            return m_materialProperties.GetPropertyValue(index);
         }
 
-        const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const
+        const MaterialPropertyValue& MaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const Name& propertyId) const
         {
-            CheckPropertyAccess(index, *m_materialPropertyDependencies, *m_materialPropertiesLayout);
-
-            return m_materialPropertyValues[index.GetIndex()];
-        }
-
-        const MaterialPropertyValue& MaterialFunctor::EditorContext::GetMaterialPropertyValue(const Name& propertyName) const
-        {
-            MaterialPropertyIndex index = m_materialPropertiesLayout->FindPropertyIndex(propertyName);
+            MaterialPropertyIndex index = GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
             return GetMaterialPropertyValue(index);
         }
 
@@ -464,5 +513,11 @@ namespace AZ
         {
             return m_materialPropertyDependencies;
         }
+
+        const AZStd::vector<MaterialFunctorShaderParameter>& MaterialFunctor::GetMaterialFunctorShaderParameters() const
+        {
+            return m_functorShaderParameters;
+        }
+
     } // namespace RPI
 } // namespace AZ

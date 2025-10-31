@@ -1,0 +1,101 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 0.0,
+                "localSpace": true,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
+            "OpenParticle::SpriteConfig": {
+                "facing": "VELOCITY",
+                "sortId": 0,
+                "subImage": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::EmitBurstList": {
+                "isProcessBurstList": true,
+                "burstList": [
+                    {
+                        "time": 0.0,
+                        "count": 500,
+                        "minCount": -1
+                    }
+                ]
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 10.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnVelSphere": {
+                "strengthObject": {
+                    "dataValue": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            },
+            "OpenParticle::SpawnSize": {
+                "sizeObject": {
+                    "dataValue": [
+                        0.10000000149011612,
+                        1.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [],
+        "curves": []
+    }
+}

@@ -7,8 +7,10 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
-#include <QtWidgets/QFrame>
+#include <QFrame>
 #include <AzCore/std/string/string.h>
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -26,7 +28,7 @@ namespace AzToolsFramework
      * The widgets are hidden by default and will show once they're configured
      * via the appropriate setter (ex: SetIcon causes the icon widget to appear).
      */
-    class ComponentEditorHeader
+    class AZTF_API ComponentEditorHeader
         : public AzQtComponents::CardHeader
     {
         Q_OBJECT;
@@ -44,6 +46,12 @@ namespace AzToolsFramework
 
         /// Set an icon. Passing a null icon will hide the widget.
         void SetIcon(const QIcon& icon);
+
+        /// Set a secondary icon to be drawn on top of the main icon.
+        void SetIconOverlay(const QIcon& icon);
+
+        // Set whether the component icon is clickable
+        void SetComponentIconClickable(bool clickable);
 
         /// Set whether the header has an expand/contract button.
         /// Note that the header itself will not change size or hide, it
@@ -70,6 +78,7 @@ namespace AzToolsFramework
         void ClearHelpURL();
 
         void SetFilterString(const AZStd::string& str);
+        bool TitleMatchesFilter() const;
     Q_SIGNALS:
         void OnContextMenuClicked(const QPoint& position);
         void OnExpanderChanged(bool expanded);

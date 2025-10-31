@@ -17,20 +17,38 @@ set(FILES
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
     native/tests/AssetProcessorTest.h
-    native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.h
     native/tests/resourcecompiler/RCControllerTest.cpp
     native/tests/resourcecompiler/RCControllerTest.h
     native/tests/resourcecompiler/RCJobTest.cpp
-    native/tests/resourcecompiler/RCJobTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
+    native/tests/assetBuilderSDK/JobProductTests.cpp
     native/tests/assetBuilderSDK/SerializationDependenciesTests.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.h
+    native/tests/assetmanager/JobDependencySubIdTests.cpp
+    native/tests/assetmanager/JobDependencySubIdTests.h
+    native/tests/assetmanager/ModtimeScanningTests.cpp
+    native/tests/assetmanager/ModtimeScanningTests.h
+    native/tests/assetmanager/MockAssetProcessorManager.cpp
+    native/tests/assetmanager/MockAssetProcessorManager.h
+    native/tests/assetmanager/MockFileProcessor.h
+    native/tests/assetmanager/MockFileProcessor.cpp
+    native/tests/assetmanager/TestEventSignal.cpp
+    native/tests/assetmanager/TestEventSignal.h
+    native/tests/assetmanager/AssetManagerTestingBase.cpp
+    native/tests/assetmanager/AssetManagerTestingBase.h
+    native/tests/assetmanager/IntermediateAssetTests.cpp
+    native/tests/assetmanager/IntermediateAssetTests.h
+    native/tests/assetmanager/DelayRelocationTests.cpp
+    native/tests/assetmanager/DelayRelocationTests.h
+    native/tests/assetmanager/SourceDependencyTests.cpp
+    native/tests/assetmanager/SourceDependencyTests.h
+    native/tests/assetmanager/InitialScanSkippingTests.cpp
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.cpp
+    native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h
@@ -48,9 +66,19 @@ set(FILES
     native/tests/InternalBuilders/SettingsRegistryBuilderTests.cpp
     native/tests/MissingDependencyScannerTests.cpp
     native/tests/SourceFileRelocatorTests.cpp
+    native/tests/PathDependencyManagerTests.cpp
     native/tests/AssetProcessorMessagesTests.cpp
+    native/tests/ApplicationManagerTests.cpp
+    native/tests/ApplicationManagerTests.h
+    native/tests/BuilderManagerTests.cpp
+    native/tests/BuilderManagerTests.h
+    native/tests/MockAssetDatabaseRequestsHandler.h
+    native/tests/SourceAssetReferenceTests.cpp
+    native/tests/UuidManagerTests.cpp
+    native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
-    native/unittests/AssetProcessingStateDataUnitTests.h
+    native/unittests/AssetProcessorUnitTests.h
+    native/unittests/AssetProcessorUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.cpp
     native/unittests/AssetProcessorManagerUnitTests.h
     native/unittests/AssetProcessorServerUnitTests.cpp
@@ -58,21 +86,14 @@ set(FILES
     native/unittests/AssetScannerUnitTests.cpp
     native/unittests/AssetScannerUnitTests.h
     native/unittests/ConnectionUnitTests.cpp
-    native/unittests/ConnectionUnitTests.h
     native/unittests/ConnectionManagerUnitTests.cpp
-    native/unittests/ConnectionManagerUnitTests.h
     native/unittests/FileWatcherUnitTests.cpp
-    native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
-    native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/ShaderCompilerUnitTests.cpp
-    native/unittests/ShaderCompilerUnitTests.h
-    native/unittests/UnitTestRunner.cpp
-    native/unittests/UnitTestRunner.h
+    native/unittests/UnitTestUtils.cpp
+    native/unittests/UnitTestUtils.h
     native/unittests/UtilitiesUnitTests.cpp
-    native/unittests/UtilitiesUnitTests.h
     native/unittests/AssetRequestHandlerUnitTests.cpp
     native/unittests/AssetRequestHandlerUnitTests.h
     native/unittests/MockConnectionHandler.h
@@ -82,6 +103,8 @@ set(FILES
     native/utilities/UnitTestShaderCompilerServer.cpp
     native/utilities/UnitTestShaderCompilerServer.h
     native/tests/test_main.cpp
+    native/tests/UnitTestUtilities.h
+    native/tests/UnitTestUtilities.cpp
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

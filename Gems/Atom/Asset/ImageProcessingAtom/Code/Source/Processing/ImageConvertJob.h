@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/PresetSettings.h>
 #include <BuilderSettings/TextureSettings.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <AzCore/Jobs/Job.h>
 
 namespace ImageProcessingAtom
@@ -44,7 +44,7 @@ namespace ImageProcessingAtom
         : public AZ::Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImagePreviewConvertJob, AZ::ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ImagePreviewConvertJob, AZ::ThreadPoolAllocator)
 
         ImagePreviewConvertJob(IImageObjectPtr image, const TextureSettings* textureSetting, const PresetSettings* preset
             , const AZStd::string& platformId, ImageConvertOutput* output, bool autoDelete = true

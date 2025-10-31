@@ -35,10 +35,10 @@ namespace AZ
     public:
         struct MapValuePair
         {
-            MapValuePair()                    
+            MapValuePair()
                 : m_keyProperty(nullptr)
                 , m_valueProperty(nullptr)
-            {                
+            {
             }
 
             void CloneTo(MapValuePair& targetProperty)
@@ -56,19 +56,19 @@ namespace AZ
 
                 delete m_valueProperty;
                 m_valueProperty = nullptr;
-            }            
+            }
 
             AZ::ScriptPropertyGenericClass* m_keyProperty;
             AZ::ScriptProperty*             m_valueProperty;
         };
-        
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMap, SystemAllocator, 0);            
+
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMap, SystemAllocator);
 
         ScriptPropertyGenericClassMap() = default;
         virtual ~ScriptPropertyGenericClassMap() = default;
 
         virtual void UpdateTableValue(const AZ::ScriptPropertyGenericClass* keyProperty, AZ::ScriptDataContext& scriptDataContext, int valueIndex) = 0;
-        virtual void SetTableValue(const AZ::ScriptPropertyGenericClass* keyProperty, const AZ::ScriptProperty* scriptProperty) = 0;            
+        virtual void SetTableValue(const AZ::ScriptPropertyGenericClass* keyProperty, const AZ::ScriptProperty* scriptProperty) = 0;
         virtual AZ::ScriptProperty* FindTableValue(const AZ::ScriptPropertyGenericClass* keyProperty) const = 0;
 
         virtual void SetWatcher(AZ::ScriptPropertyWatcher* scriptPropertyWatcher) = 0;
@@ -84,12 +84,12 @@ namespace AZ
         : public ScriptPropertyGenericClassMap
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMapImpl<T>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMapImpl<T>, SystemAllocator);
 
         ScriptPropertyGenericClassMapImpl()
             : m_scriptPropertyWatcher(nullptr)
             , m_keyTypeId(T::TYPEINFO_Uuid())
-        {                
+        {
         }
 
         ~ScriptPropertyGenericClassMapImpl() override
@@ -107,7 +107,7 @@ namespace AZ
             if (keyProperty->GetDataTypeUuid() == m_keyTypeId)
             {
                 const T* dataSource = keyProperty->Get<T>();
-                    
+
                 auto valueIter = m_pairMapping.find((*dataSource));
 
                 if (valueIter == m_pairMapping.end())
@@ -120,7 +120,7 @@ namespace AZ
                     WatchValueProperty(valuePair.m_valueProperty);
 
                     m_pairMapping.emplace((*dataSource),valuePair);
-                    
+
                 }
                 else
                 {
@@ -151,7 +151,7 @@ namespace AZ
         void SetTableValue(const AZ::ScriptPropertyGenericClass* keyProperty, const AZ::ScriptProperty* scriptProperty) override
         {
             AZ_Assert(keyProperty->GetDataTypeUuid() == m_keyTypeId, "Passing wrong GenericClass Type to ScriptPropertyMap implementation");
-                
+
             if (keyProperty->GetDataTypeUuid() == m_keyTypeId)
             {
                 const T* dataSource = keyProperty->Get<T>();
@@ -180,7 +180,7 @@ namespace AZ
 
                         if (scriptProperty != nullptr && !azrtti_istypeof<AZ::ScriptPropertyNil>(scriptProperty))
                         {
-                            valueIter->second.m_valueProperty = scriptProperty->Clone();                            
+                            valueIter->second.m_valueProperty = scriptProperty->Clone();
 
                             WatchValueProperty(valueIter->second.m_valueProperty);
                         }
@@ -202,7 +202,7 @@ namespace AZ
             if (keyProperty->GetDataTypeUuid() == m_keyTypeId)
             {
                 const T* dataSource = keyProperty->Get<T>();
-                    
+
                 auto valueIter = m_pairMapping.find((*dataSource));
 
                 if (valueIter !=  m_pairMapping.end())
@@ -251,13 +251,13 @@ namespace AZ
                     m_pairMapping.emplace(sourcePair.first, newPair);
                 }
             }
-                
+
             auto mapIter = m_pairMapping.begin();
             while (mapIter != m_pairMapping.end())
-            {                    
+            {
                 if (newKeys.find(mapIter->first) == newKeys.end())
                 {
-                    mapIter->second.Destroy();                    
+                    mapIter->second.Destroy();
                     mapIter = m_pairMapping.erase(mapIter);
                 }
                 else
@@ -269,7 +269,7 @@ namespace AZ
 
         const AZStd::unordered_map<T, MapValuePair>& GetPairMapping() const
         {
-            return m_pairMapping;   
+            return m_pairMapping;
         }
 
         AZStd::unordered_map<T, MapValuePair>& GetPairMapping()
@@ -282,13 +282,13 @@ namespace AZ
             AZ_Error("ScriptPropertyTable", m_scriptPropertyWatcher == nullptr || scriptPropertyWatcher == nullptr, "Trying to add two script property watchers to a Generic Keyed Script Property Map");
             if (m_scriptPropertyWatcher == nullptr || scriptPropertyWatcher == nullptr)
             {
-                m_scriptPropertyWatcher = scriptPropertyWatcher;                
+                m_scriptPropertyWatcher = scriptPropertyWatcher;
 
                 for (auto& mapPair : m_pairMapping)
                 {
                     WatchValueProperty(mapPair.second.m_valueProperty);
                 }
-            }           
+            }
         }
 
     private:
@@ -323,19 +323,19 @@ namespace AZ
         , public ScriptPropertyWatcherBus::Handler
     {
     private:
-        friend class AzFramework::ScriptPropertyMarshaler;        
+        friend class AzFramework::ScriptPropertyMarshaler;
         friend class AzFramework::ScriptPropertyTableMarshalerHelper;
 
     public:
         typedef AZStd::unordered_map<int, ScriptProperty*> ScriptPropertyIndexMap;
-        typedef AZStd::unordered_map<AZ::Crc32, ScriptProperty*> ScriptPropertyKeyedMap;        
+        typedef AZStd::unordered_map<AZ::Crc32, ScriptProperty*> ScriptPropertyKeyedMap;
         typedef AZStd::unordered_map<AZ::Uuid, ScriptPropertyGenericClassMap* > ScriptPropertyGenericMap;
 
-        AZ_CLASS_ALLOCATOR(ScriptPropertyTable, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyTable, SystemAllocator);
         AZ_RTTI(AZ::ScriptPropertyTable, "{0EB069C0-F6C6-4871-9BDB-CC1BBF0B5315}", FunctionalScriptProperty);
-        
+
         // No reflection for this one. Since we would need to reflect pointers.
-        static ScriptProperty* TryCreateProperty(ScriptDataContext& context, int valueIndex, const char* name);        
+        static ScriptProperty* TryCreateProperty(ScriptDataContext& context, int valueIndex, const char* name);
 
         ScriptPropertyTable();
         explicit ScriptPropertyTable(const char* name);
@@ -344,10 +344,10 @@ namespace AZ
         ~ScriptPropertyTable() override;
 
         ScriptProperty* FindTableValue(AZ::ScriptDataContext& scriptDataContext, int keyIndex) const;
-        ScriptProperty* FindTableValue(const AZ::ScriptPropertyGenericClass* scriptProperty) const;        
+        ScriptProperty* FindTableValue(const AZ::ScriptPropertyGenericClass* scriptProperty) const;
         ScriptProperty* FindTableValue(const AZStd::string_view& keyValue) const;
-        ScriptProperty* FindTableValue(int index) const;        
-        
+        ScriptProperty* FindTableValue(int index) const;
+
         // This is the generalized update method that will determine the correct type of key to use.
         void UpdateTableValue(AZ::ScriptDataContext& scriptDataContext, int keyIndex, int valueIndex);
 
@@ -355,7 +355,7 @@ namespace AZ
         void UpdateTableValue(const AZ::ScriptPropertyGenericClass* scriptProperty, AZ::ScriptDataContext& scriptDataContext, int index);
         void UpdateTableValue(const AZStd::string_view& keyValue, AZ::ScriptDataContext& scriptDataContext, int index);
         void UpdateTableValue(int tableIndex, AZ::ScriptDataContext& scriptDataContext, int stackIndex);
-        
+
         void SetTableValue(const AZ::ScriptProperty* keyProperty, const AZ::ScriptProperty* value);
         void SetTableValue(const AZ::ScriptPropertyGenericClass* keyProperty, const AZ::ScriptProperty* value);
         void SetTableValue(const AZStd::string_view& keyValue, const ScriptProperty* value);
@@ -380,8 +380,8 @@ namespace AZ
 
         // TODO: Investigate what is actually needed here.
         const void* GetDataAddress() const override { return nullptr; }
-        const Uuid& GetDataTypeUuid() const override 
-        { 
+        AZ::TypeId GetDataTypeUuid() const override
+        {
             static Uuid k_invalidUuid = Uuid();
             return k_invalidUuid;
         }
@@ -394,23 +394,23 @@ namespace AZ
         // If the Property is going to be re-used(and owned somewhere), MetatableControl should be enabled
         // which will push out a lightweight table, that contains metamethods
         // to simulate the correct output from the object.
-        bool Write(AZ::ScriptContext& context) override;                
+        bool Write(AZ::ScriptContext& context) override;
 
         // Bypasses the metatable indexing, and writes out the actual raw values of the table.
         bool WriteRawTable(AZ::ScriptContext& context);
-        
+
         void EnableInPlaceControls() override;
         void DisableInPlaceControls() override;
 
         AZ::ScriptContext* GetScriptContext() const;
-        
+
         // Doesn't return the actual size, but returns what lua defines as the length of the table.
         // http://www.lua.org/manual/5.2/manual.html#3.4.6
         //
         // tl;dr - Let the length of the table be N, where N is the the largest integer s.t. 1..N, are all keys present in the table.
         int GetLuaTableLength() const;
 
-        
+
         // ScriptPropertyWatcherBus
          void OnObjectModified() override;
 
@@ -451,7 +451,7 @@ namespace AZ
         bool                   m_enableMetatableControl;
         AZ::ScriptContext*     m_scriptContext;
         int                    m_tableCache;
-    
+
         ScriptPropertyIndexMap      m_indexMapping;
         ScriptPropertyKeyedMap      m_keyMapping;
         ScriptPropertyGenericMap    m_genericMapping;

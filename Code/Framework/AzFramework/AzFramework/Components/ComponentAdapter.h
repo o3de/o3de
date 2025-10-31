@@ -9,10 +9,13 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+
+namespace AZ
+{
+    class ReflectContxt;
+}
 
 namespace AzFramework
 {

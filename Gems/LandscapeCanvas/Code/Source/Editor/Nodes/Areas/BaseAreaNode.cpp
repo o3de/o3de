@@ -14,13 +14,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
 #include <GraphModel/Model/Slot.h>
-
-// Vegetation
-#include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
 
 // Landscape Canvas
 #include "BaseAreaNode.h"
@@ -76,21 +74,24 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
-        GraphModel::DataTypePtr areaDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Area);
+        GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
+        GraphModel::DataTypePtr areaDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Area);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             PLACEMENT_BOUNDS_SLOT_ID,
             PLACEMENT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
-            boundsDataType->GetDefaultValue(),
-            PLACEMENT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            PLACEMENT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ boundsDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             OUTBOUND_AREA_SLOT_ID,
             OUTBOUND_AREA_SLOT_LABEL.toUtf8().constData(),
-            areaDataType,
-            OUTBOUND_AREA_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            OUTBOUND_AREA_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ areaDataType }));
     }
 } // namespace LandscapeCanvas

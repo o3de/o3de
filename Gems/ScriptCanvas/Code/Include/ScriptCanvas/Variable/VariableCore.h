@@ -23,7 +23,7 @@ namespace ScriptCanvas
     struct VariableId
     {
         AZ_TYPE_INFO(VariableId, "{CA57A57B-E510-4C09-B952-1F43742166AE}");
-        AZ_CLASS_ALLOCATOR(VariableId, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableId, AZ::SystemAllocator);
 
         VariableId() = default;
 

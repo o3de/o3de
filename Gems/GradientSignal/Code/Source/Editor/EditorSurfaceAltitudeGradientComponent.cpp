@@ -39,7 +39,7 @@ namespace GradientSignal
     void EditorSurfaceAltitudeGradientComponent::OnCompositionChanged()
     {
         UpdateFromShape();
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorSurfaceAltitudeGradientComponent::UpdateFromShape()

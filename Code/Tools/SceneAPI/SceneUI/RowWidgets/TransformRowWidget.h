@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <QPointer>
 #include <QString>
 #include <QLineEdit>
 #include <AzCore/Math/Transform.h>
@@ -57,11 +58,9 @@ namespace AZ
                 void SetScale(const float scale);
 
             private:
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZ::Vector3 m_translation;
                 AZ::Vector3 m_rotation;
                 float m_scale;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
 
             class TransformRowWidget : public QWidget
@@ -71,6 +70,7 @@ namespace AZ
                 AZ_CLASS_ALLOCATOR_DECL;
 
                 explicit TransformRowWidget(QWidget* parent = nullptr);
+                ~TransformRowWidget();
 
                 void SetEnableEdit(bool enableEdit);
 
@@ -87,6 +87,7 @@ namespace AZ
 
                 bool m_expanded = true;
 
+                QPointer<QWidget> m_containerWidget;
                 AzQtComponents::VectorInput* m_translationWidget;
                 AzQtComponents::VectorInput* m_rotationWidget;
                 AzToolsFramework::PropertyDoubleSpinCtrl* m_scaleWidget;

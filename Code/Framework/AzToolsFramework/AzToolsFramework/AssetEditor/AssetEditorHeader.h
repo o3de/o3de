@@ -10,6 +10,7 @@
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QWidget>
 #include <QTimer>
@@ -21,18 +22,17 @@ AZ_POP_DISABLE_WARNING
 
 namespace Ui
 {
-    class AssetEditorHeader
+    class AZTF_API AssetEditorHeader
         : public QFrame
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator);
        
         explicit AssetEditorHeader(QWidget* parent = nullptr);
 
         void setName(const QString& name);
-        void setLocation(const QString& location);
         void setIcon(const QIcon& icon);
     private:
         QFrame* m_backgroundFrame;
@@ -43,6 +43,5 @@ namespace Ui
         QIcon m_icon;
 
         AzQtComponents::ElidingLabel* m_assetName;
-        AzQtComponents::ElidingLabel* m_assetLocation;
     };
 } // namespace Ui

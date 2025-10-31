@@ -27,6 +27,4 @@ set(FILES
     Source/Material/Transform2DFunctorSourceData.h
     Source/Material/UseTextureFunctorSourceData.cpp
     Source/Material/UseTextureFunctorSourceData.h
-    Source/Material/DrawListFunctorSourceData.cpp
-    Source/Material/DrawListFunctorSourceData.h
 )

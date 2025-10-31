@@ -1,0 +1,235 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceRayTracingPassTemplate",
+            "PassClass": "RayTracingPass",
+            "Slots": [
+                {
+                    "Name": "DepthStencilTextureInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "SpecularF0Input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_hitCoords",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "FallbackColor",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_fallbackColor",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "FallbackAlbedo",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "FallbackPosition",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "FallbackNormal",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                },
+                {
+                    "Name": "AlbedoImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "PositionImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "NormalImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "FallbackAlbedo",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "AlbedoImage"
+                    }
+                },
+                {
+                    "LocalSlot": "FallbackPosition",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PositionImage"
+                    }
+                },
+                {
+                    "LocalSlot": "FallbackNormal",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "NormalImage"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RayTracingPassData",
+                "RayGenerationShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracing.shader" },
+                "RayGenerationShaderName": "RayGeneration",
+                "ClosestHitShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHit.shader" },
+                "ClosestHitShaderName": "ClosestHit",
+                "ClosestHitProceduralShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingClosestHitProcedural.shader" },
+                "ClosestHitProceduralShaderName": "ClosestHitProcedural",
+                "MissShaderAsset": { "FilePath": "Shaders/Reflections/ReflectionScreenSpaceRayTracingMiss.shader" },
+                "MissShaderName": "Miss",
+                "MaxPayloadSize": 80,
+                "MaxRecursionDepth": 5,
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
+            }
+        }
+    }
+}

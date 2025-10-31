@@ -50,7 +50,7 @@ namespace ScriptCanvas
         struct Input final
         {
             AZ_TYPE_INFO(Input, "{627448C3-D018-422E-B133-A1169BB44306}");
-            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator, 0); 
+            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator); 
         
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -64,7 +64,7 @@ namespace ScriptCanvas
         struct Output final
         {
             AZ_TYPE_INFO(Output, "{344D66C7-EE5E-45B1-809F-4108DDB65F20}");
-            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator);
 
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -78,7 +78,7 @@ namespace ScriptCanvas
         struct Out final
         {
             AZ_TYPE_INFO(Out, "{6175D897-C06D-48B5-8775-388B232D429D}");
-            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator);
 
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -93,7 +93,7 @@ namespace ScriptCanvas
         struct In final
         {
             AZ_TYPE_INFO(In, "{DFDA32F7-41D2-45BB-8ADF-876679053836}");
-            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator, 0); 
+            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator); 
             
             bool isPure = false;
             AZStd::string displayName;
@@ -112,7 +112,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(SubgraphInterface, "{52B27A11-8294-4A6F-BFCF-6C1582649DB2}");
-            AZ_CLASS_ALLOCATOR(SubgraphInterface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubgraphInterface, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* refectContext);
 
@@ -147,7 +147,7 @@ namespace ScriptCanvas
             size_t GetInCountNotPure() const;
 
             const Inputs* GetInput(const AZStd::string& in) const;
-            
+
             const Out& GetLatentOut(size_t index) const;
 
             size_t GetLatentOutCount() const;
@@ -160,7 +160,7 @@ namespace ScriptCanvas
 
             LexicalScope GetLexicalScope(const In& in) const;
 
-            AZStd::string GetName() const;
+            AZ::Outcome<AZStd::string, AZStd::string> GetName() const;
 
             const NamespacePath& GetNamespacePath() const;
 
@@ -173,9 +173,16 @@ namespace ScriptCanvas
 
             const Outs* GetOuts(const AZStd::string& in) const;           
 
+            // meaningless (and empty) if not an object
+            const AZStd::string& GetParentClassName() const;
+
             bool IsActiveDefaultObject() const;
 
+            bool IsBaseClass() const;
+
             AZ::Outcome<bool> IsBranch(const AZStd::string& in) const;
+
+            bool IsClass() const;
 
             // returns true iff there is at least one latent out
             bool IsLatent() const;
@@ -185,8 +192,6 @@ namespace ScriptCanvas
             bool IsParsedPure() const;
 
             bool IsUserNodeable() const;
-
-            bool IsUserVariable() const;
 
             bool HasAnyFunctionality() const;
 
@@ -214,12 +219,14 @@ namespace ScriptCanvas
 
             void MarkOnGraphStart();
 
+            void MarkRefersToSelfEntityId();
+
             void MarkRequiresConstructionParameters();
 
             void MarkRequiresConstructionParametersForDependencies();
 
             // #sc_user_data_type expose this to users directly, so they can say "I don't just want to make a component with this, I want to drop it right into another graph" 
-            void MarkUserVariable();
+            void MarkClass();
 
             void MergeExecutionCharacteristics(const SubgraphInterface & dependency);
 
@@ -230,16 +237,20 @@ namespace ScriptCanvas
             // Populates the list of out keys
             AZ::Outcome<void, AZStd::string> Parse();
 
+            bool RefersToSelfEntityId() const;
+
             bool RequiresConstructionParameters() const;
 
             bool RequiresConstructionParametersForDependencies() const;
+
+            void MarkBaseClass();
 
             void SetNamespacePath(const NamespacePath& namespacePath);
 
             AZStd::string ToExecutionString() const;
 
         private:
-            bool m_isUserVariable = false;
+            bool m_isClass = false;
 
             bool m_areAllChildrenPure = true;
 
@@ -253,12 +264,17 @@ namespace ScriptCanvas
 
             bool m_requiresConstructionParametersForDependencies = false;
 
+            // #scriptcanvas_component_extension
+            bool m_refersToSelfEntityId = false;
+
             ExecutionCharacteristics m_executionCharacteristics = ExecutionCharacteristics::Pure;
 
             Ins m_ins;
             Outs m_latents;
             AZStd::vector<AZ::Crc32> m_outKeys;
             NamespacePath m_namespacePath;
+            bool m_isBaseClass = true;
+            AZStd::string m_parentClassName;
 
             bool AddOutKey(const AZStd::string& name);
             const Out* FindImmediateOut(const AZStd::string& in, const AZStd::string& out) const;
@@ -291,7 +307,7 @@ namespace ScriptCanvas
         class SubgraphInterfaceSystem
         {
         public:
-            AZ_CLASS_ALLOCATOR(SubgraphInterfaceSystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubgraphInterfaceSystem, AZ::SystemAllocator);
 
             // returns an execution map for the node if it has registered one.
             // if it hasn't, the node must be considered simple, as has no need for one

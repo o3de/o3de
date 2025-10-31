@@ -7,9 +7,10 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/Entity/EditorEntityStartStatus.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -31,4 +32,6 @@ namespace AzToolsFramework
     };
 
     using EditorEntityAPIBus = AZ::EBus<EditorEntityAPIRequests>;
-}
+} // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityAPIRequests);

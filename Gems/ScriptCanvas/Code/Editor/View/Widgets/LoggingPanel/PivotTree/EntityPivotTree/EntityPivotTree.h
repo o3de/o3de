@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
     {
         friend class EntityPivotTreeEntityItem;
     public:
-        AZ_CLASS_ALLOCATOR(EntityPivotTreeGraphItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPivotTreeGraphItem, AZ::SystemAllocator);
         AZ_RTTI(EntityPivotTreeGraphItem, "{CE064D69-D478-4594-A596-5DBE0DE46F6E}", PivotTreeGraphItem);
 
         EntityPivotTreeGraphItem(const ScriptCanvas::GraphIdentifier& graphIdentifier);
@@ -44,7 +44,7 @@ namespace ScriptCanvasEditor
         , public LoggingDataNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityPivotTreeEntityItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPivotTreeEntityItem, AZ::SystemAllocator);
         AZ_RTTI(EntityPivotTreeEntityItem, "{027A8617-4095-46F1-B9AD-49E360C90C73}", PivotTreeEntityItem);
 
         EntityPivotTreeEntityItem(const AZ::NamedEntityId& entityId);
@@ -80,7 +80,7 @@ namespace ScriptCanvasEditor
         , public LoggingDataNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityPivotTreeRoot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPivotTreeRoot, AZ::SystemAllocator);
         AZ_RTTI(EntityPivotTreeRoot, "{93DE206E-CE31-4A59-BEBF-87B26E5A28D2}", PivotTreeRoot);
         
         EntityPivotTreeRoot();

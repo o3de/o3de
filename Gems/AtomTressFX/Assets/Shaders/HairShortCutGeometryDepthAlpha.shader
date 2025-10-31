@@ -17,7 +17,7 @@
         }
     },
 
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : true,
         "BlendSource" : "Zero",
@@ -41,5 +41,6 @@
           "type": "Fragment"
         }
       ]
-    }
+    },
+    "DisabledRHIBackends": ["metal"]
 }

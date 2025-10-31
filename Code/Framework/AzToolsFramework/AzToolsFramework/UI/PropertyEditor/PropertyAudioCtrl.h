@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -33,7 +36,7 @@ namespace AzToolsFramework
     // Audio Control Selector Request Bus
     // For connecting UI proper
     //=============================================================================
-    class AudioControlSelectorRequests
+    class AZTF_API AudioControlSelectorRequests
         : public AZ::EBusTraits
     {
     public:
@@ -53,13 +56,13 @@ namespace AzToolsFramework
     //=============================================================================
     // Audio Control Selector Widget
     //=============================================================================
-    class AudioControlSelectorWidget
+    class AZTF_API AudioControlSelectorWidget
         : public QWidget
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator);
         AudioControlSelectorWidget(QWidget* parent = nullptr);
 
         void SetControlName(const QString& controlName);
@@ -102,18 +105,18 @@ namespace AzToolsFramework
     //=============================================================================
     // Property Handler
     //=============================================================================
-    class AudioControlSelectorWidgetHandler
+    class AZTF_API AudioControlSelectorWidgetHandler
         : QObject
         , public AzToolsFramework::PropertyHandler<CReflectedVarAudioControl, AudioControlSelectorWidget>
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override
         {
-            return AZ_CRC("AudioControl", 0x16e7ca6e);
+            return AZ_CRC_CE("AudioControl");
         }
 
         bool IsDefaultHandler() const override
@@ -128,6 +131,6 @@ namespace AzToolsFramework
     };
 
 
-    void RegisterAudioPropertyHandler();
+    AZTF_API void RegisterAudioPropertyHandler();
 
 } // namespace AzToolsFramework

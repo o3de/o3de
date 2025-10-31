@@ -17,12 +17,14 @@
 
 namespace MCore
 {
+    //! @deprecated Use AZ::Vector3::NormalizeSafeWithLength()
     inline float SafeLength(const AZ::Vector3& rhs)
     {
         const float lenSq = rhs.Dot(rhs);
         return (lenSq > FLT_EPSILON) ? sqrtf(lenSq) : 0.0f;
     }
 
+    //! @deprecated Use AZ::Vector3::GetNormalizedSafe()
     inline AZ::Vector3 SafeNormalize(const AZ::Vector3& rhs)
     {
         AZ::Vector3 result(0.0f);
@@ -43,6 +45,7 @@ namespace MCore
         return AZ::Vector3(vec.GetX() - fac * n.GetX(), vec.GetY() - fac * n.GetY(), vec.GetZ() - fac * n.GetZ());
     }
 
+    //! @deprecated Use AZ::Vector3::Project()
     MCORE_INLINE AZ::Vector3 Projected(const AZ::Vector3& vec, const AZ::Vector3& projectOnto)
     {
         AZ::Vector3 result = projectOnto;
@@ -60,6 +63,7 @@ namespace MCore
                 (MCore::Math::Abs(val.GetX() - val.GetZ()) < MCore::Math::epsilon));
     }
 
+    //! @deprecated Use AZ::Vector3::Lerp()
     template <>
     MCORE_INLINE AZ::Vector3 LinearInterpolate(const AZ::Vector3& source, const AZ::Vector3& target, float timeValue)
     {

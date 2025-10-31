@@ -16,7 +16,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlotTypeContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotTypeContract, AZ::SystemAllocator);
         AZ_RTTI(SlotTypeContract, "{084B4F2A-AB34-4931-9269-E3614FC1CDFA}", Contract);
 
         SlotTypeContract() = default;

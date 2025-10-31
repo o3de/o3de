@@ -8,24 +8,41 @@
 
 #pragma once
 
+#include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
+#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 
+namespace AZ
+{
+    class TaskExecutor;
+    class TaskGraph;
+}
+
+namespace AZ::IO::Requests
+{
+    struct ReadData;
+    struct ReportData;
+}
+
 namespace AZ::IO
 {
-    class StorageDriveWin
+    class AZCORE_API StorageDriveWin
         : public StreamStackEntry
     {
     public:
-        struct ConstructionOptions
+        struct AZCORE_API ConstructionOptions
         {
             ConstructionOptions();
 
@@ -40,7 +57,7 @@ namespace AZ::IO
             //! make adjustments. For the most optimal performance align read buffers to the physicalSectorSize.
             u8 m_enableUnbufferedReads : 1;
             //! Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other applications
-            //! while in use by AZ::IO::Streamer. 
+            //! while in use by AZ::IO::Streamer.
             u8 m_enableSharing : 1;
             //! If true, only information that's explicitly requested or issues are reported. If false, status information
             //! such as when drives are created and destroyed is reported as well.
@@ -75,31 +92,40 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
     protected:
+        using RecentlyUsedFileIndex = RecentlyUsedIndex<u32>;
+        using RecentlyUsedMetaIndex = RecentlyUsedIndex<u32>;
         static const AZStd::chrono::microseconds s_averageSeekTime;
 
-        inline static constexpr size_t InvalidFileCacheIndex = std::numeric_limits<size_t>::max();
-        inline static constexpr size_t InvalidReadSlotIndex = std::numeric_limits<size_t>::max();
-        inline static constexpr size_t InvalidMetaDataCacheIndex = std::numeric_limits<size_t>::max();
+        inline static constexpr u32 InvalidFileCacheIndex = AZStd::numeric_limits<u32>::max();
+        inline static constexpr size_t InvalidReadSlotIndex = AZStd::numeric_limits<size_t>::max();
+        inline static constexpr u32 InvalidMetaDataCacheIndex = AZStd::numeric_limits<u32>::max();
 
         struct FileReadStatus
         {
+            enum class RequestState : u8
+            {
+                NotStarted,
+                SuccessfullyStarted,
+                Error
+            };
             OVERLAPPED m_overlapped{};
-            size_t m_fileHandleIndex{ InvalidFileCacheIndex };
+            u32 m_fileHandleIndex{ InvalidFileCacheIndex };
+            AZStd::atomic<RequestState> m_requestState{ RequestState::NotStarted };
         };
 
-        struct FileReadInformation
+        struct AZCORE_API FileReadInformation
         {
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             FileRequest* m_request{ nullptr };
             void* m_sectorAlignedOutput{ nullptr };    // Internally allocated buffer that is sector aligned.
             size_t m_copyBackOffset{ 0 };
-            
+
             void AllocateAlignedBuffer(size_t size, size_t sectorSize);
             void Clear();
         };
@@ -111,33 +137,37 @@ namespace AZ::IO
             CacheFull
         };
 
-        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const FileRequest::ReadData& data);
-        bool ReadRequest(FileRequest* request);
-        bool ReadRequest(FileRequest* request, size_t readSlot);
+        OpenFileResult OpenFile(HANDLE& fileHandle, u32& cacheSlot, FileRequest* request, const Requests::ReadData& data);
+        bool ReadRequest(FileRequest* request, TaskGraph& tasks);
+        bool ReadRequest(FileRequest* request, size_t readSlot, TaskGraph& tasks);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
         void FileExistsRequest(FileRequest* request);
         void FileMetaDataRetrievalRequest(FileRequest* request);
-        size_t FindInFileHandleCache(const RequestPath& filePath) const;
-        size_t FindAvailableFileHandleCacheIndex() const;
+        u32 FindInFileHandleCache(const RequestPath& filePath) const;
+        u32 FindAvailableFileHandleCacheIndex();
         size_t FindAvailableReadSlot();
-        size_t FindInMetaDataCache(const RequestPath& filePath) const;
-        size_t GetNextMetaDataCacheSlot();
-        bool IsServicedByThisDrive(const char* filePath) const;
+        u32 FindInMetaDataCache(const RequestPath& filePath) const;
+        bool IsServicedByThisDrive(AZ::IO::PathView filePath) const;
 
-        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;
         void EstimateCompletionTimeForRequestChecked(FileRequest* request,
-            AZStd::chrono::system_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const;
+            AZStd::chrono::steady_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const;
         s32 CalculateNumAvailableSlots() const;
 
         void FlushCache(const RequestPath& filePath);
         void FlushEntireCache();
 
         bool FinalizeReads();
-        void FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
-            bool isCanceled, bool encounteredError);
+        void FinalizeSingleRequest(
+            FileReadStatus& status,
+            size_t readSlot,
+            DWORD numBytesTransferred,
+            bool isCanceled,
+            bool encounteredError,
+            TaskGraph& readTasks);
 
-        void Report(const FileRequest::ReportData& data) const;
+        void Report(const Requests::ReportData& data) const;
 
         TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
         TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;
@@ -149,32 +179,35 @@ namespace AZ::IO
         AZ::Statistics::RunningStatistic m_seekPercentageStat;
         AZ::Statistics::RunningStatistic m_directReadsPercentageStat;
 #endif
-        AZStd::chrono::system_clock::time_point m_activeReads_startTime;
+        AZStd::chrono::steady_clock::time_point m_activeReads_startTime;
 
         AZStd::deque<FileRequest*> m_pendingReadRequests;
         AZStd::deque<FileRequest*> m_pendingRequests;
 
         AZStd::vector<FileReadInformation> m_readSlots_readInfo;
-        AZStd::vector<FileReadStatus> m_readSlots_statusInfo;
+        AZStd::unique_ptr<FileReadStatus[]> m_readSlots_statusInfo;
         AZStd::vector<bool> m_readSlots_active;
 
-        AZStd::vector<AZStd::chrono::system_clock::time_point> m_fileCache_lastTimeUsed;
+        RecentlyUsedFileIndex m_fileCache_recentlyUsed;
         AZStd::vector<RequestPath> m_fileCache_paths;
         AZStd::vector<HANDLE> m_fileCache_handles;
         AZStd::vector<u16> m_fileCache_activeReads;
 
+        RecentlyUsedMetaIndex m_metaDataCache_recentlyUsed;
         AZStd::vector<RequestPath> m_metaDataCache_paths;
         AZStd::vector<u64> m_metaDataCache_fileSize;
 
         AZStd::vector<AZStd::string> m_drivePaths;
 
+        AZ::TaskDescriptor m_readTaskDescriptor;
+        AZ::TaskExecutor& m_taskExecutor;
+
         size_t m_activeReads_ByteCount{ 0 };
 
         size_t m_physicalSectorSize{ 0 };
         size_t m_logicalSectorSize{ 0 };
-        size_t m_activeCacheSlot{ InvalidFileCacheIndex };
-        size_t m_metaDataCache_front{ 0 };
         u64 m_activeOffset{ 0 };
+        u32 m_activeCacheSlot{ InvalidFileCacheIndex };
         u32 m_maxFileHandles{ 1 };
         u32 m_ioChannelCount{ 1 };
         s32 m_overCommit{ 0 };

@@ -1,0 +1,87 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MotionBlurTemplate",
+            "PassClass": "MotionBlurPass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputColor",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputVelocity",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputVelocity",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputTileVelocity",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputTileVelocity",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputColor",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "MotionBlur",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "Color",
+                            "ShaderReadWrite"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MotionBlur"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "InputColor",
+                    "Output": "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/MotionBlur.shader"
+                },
+                "FullscreenDispatch": true
+            }
+        }
+    }
+}

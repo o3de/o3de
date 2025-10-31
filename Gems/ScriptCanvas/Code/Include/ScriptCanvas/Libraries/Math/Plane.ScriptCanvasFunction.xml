@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Plane.h"
+        Namespace="ScriptCanvas::PlaneFunctions"
+        Category="Math/Plane">
+        
+        <Function Name="DistanceToPoint">
+            <Parameter Name="Source"/>
+            <Parameter Name="Point"/>
+        </Function>
+        
+        <Function Name="FromCoefficients">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="C"/>
+            <Parameter Name="D"/>
+        </Function>
+        
+        <Function Name="FromNormalAndDistance">
+            <Parameter Name="Normal"/>
+            <Parameter Name="Distance"/>
+        </Function>
+        
+        <Function Name="FromNormalAndPoint">
+            <Parameter Name="Normal"/>
+            <Parameter Name="Point"/>
+        </Function>
+        
+        <Function Name="GetDistance">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetNormal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetPlaneEquationCoefficients">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Project">
+            <Parameter Name="Source"/>
+            <Parameter Name="Point"/>
+        </Function>
+        
+        <Function Name="Transform">
+            <Parameter Name="Source"/>
+            <Parameter Name="Transform"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

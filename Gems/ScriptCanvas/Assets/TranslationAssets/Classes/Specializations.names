@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetPriority",
-                    "context": "Specializations",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Priority"
@@ -49,7 +48,6 @@
                 },
                 {
                     "base": "GetCount",
-                    "context": "Specializations",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Count"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "Contains",
-                    "context": "Specializations",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Contains"
@@ -117,7 +114,6 @@
                 },
                 {
                     "base": "Append",
-                    "context": "Specializations",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Append"
@@ -154,7 +150,6 @@
                 },
                 {
                     "base": "GetSpecialization",
-                    "context": "Specializations",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Specialization"

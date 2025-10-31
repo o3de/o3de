@@ -29,7 +29,7 @@ namespace AzQtComponents
 
     namespace
     {
-        std::string GetLastErrorString()
+        [[maybe_unused]] std::string GetLastErrorString()
         {
             DWORD error = GetLastError();
             if (!error)

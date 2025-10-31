@@ -21,11 +21,9 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <EMotionFX/Source/Material.h>
-#include <EMotionFX/Source/StandardMaterial.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/NodeHierarchyWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
@@ -36,13 +34,6 @@
 
 namespace EMotionFX
 {
-    class LODSkinnedMeshFixture
-        : public ::testing::WithParamInterface <int>
-        , public UIFixture
-    {
-    public:
-    };
-
     class LODSystemMock : public SystemMock
     {
     };
@@ -89,15 +80,11 @@ namespace EMotionFX
         // Modify the actor to have numLODs LOD levels.
         Actor* actor = actorAsset->GetActor();
         Mesh* lodMesh = actor->GetMesh(0, 0);
-        StandardMaterial* dummyMat = StandardMaterial::Create("Dummy Material");
-        actor->AddMaterial(0, dummyMat); // owns the material
-
+        
         for (int i = 1; i < numLODs; ++i)
         {
             actor->InsertLODLevel(i);
             actor->SetMesh(i, 0, lodMesh->Clone());
-            dummyMat->SetAmbient(MCore::RGBAColor{ i * 20.f });
-            actor->AddMaterial(i, dummyMat->Clone());
         }
 
         return AZStd::move(actorAsset);
@@ -109,52 +96,6 @@ namespace EMotionFX
     public:
         QLabel* GetDefaultLabel() { return m_defaultLabel; }
     };
-
-    TEST_P(LODSkinnedMeshFixture, CheckLODLevels)
-    {
-        const int numLODs = GetParam();
-        RecordProperty("test_case_id", "C29202698");
-
-        AZ::Data::Asset<Integration::ActorAsset> actorAsset = CreateLODActor(numLODs);
-        ActorInstance* actorInstance = ActorInstance::Create(actorAsset->GetActor());
-
-        // Change the Editor mode to Character
-        EMStudio::GetMainWindow()->ApplicationModeChanged("Character");
-
-        // Find the NodeWindowPlugin
-        auto nodeWindow = static_cast<EMStudio::NodeWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::NodeWindowPlugin::CLASS_ID));
-        EXPECT_TRUE(nodeWindow) << "NodeWidow plugin not found!";
-
-        // Select the newly created actor instance
-        AZStd::string result;
-        EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(AZStd::string{ "Select -actorInstanceID " } +AZStd::to_string(actorInstance->GetID()), result)) << result.c_str();
-
-        QTreeWidget* treeWidget = nodeWindow->GetDockWidget()->findChild<EMStudio::NodeHierarchyWidget*>("EMFX.NodeWindowPlugin.NodeHierarchyWidget.HierarchyWidget")->GetTreeWidget();
-        EXPECT_TRUE(treeWidget);
-
-        // Select the node containing the mesh
-        const QTreeWidgetItem* actorItem = treeWidget->topLevelItem(0);
-        ASSERT_TRUE(actorItem);
-
-        QTreeWidgetItem* meshNodeItem = actorItem->child(0);
-        ASSERT_TRUE(meshNodeItem);
-        EXPECT_STREQ(meshNodeItem->text(0).toStdString().data(), "rootJoint");
-
-        treeWidget->setCurrentItem(meshNodeItem, 0, QItemSelectionModel::Select);
-
-        // Get the property widget that holds ReflectedPropertyEditor
-        AzToolsFramework::ReflectedPropertyEditor* propertyWidget = nodeWindow->GetDockWidget()->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.NodeWindowPlugin.ReflectedPropertyEditor.PropertyWidget");
-
-        auto* finalRowWidget = static_cast<LODPropertyRowWidget *>(GetNamedPropertyRowWidgetFromReflectedPropertyEditor(propertyWidget, "Meshes by lod"));
-        ASSERT_TRUE(finalRowWidget);
-
-        // The default label holds the number of LODs found.
-        const QString defaultString = finalRowWidget->GetDefaultLabel()->text();
-        const QString testString = QString("%1 elements").arg(numLODs);
-        EXPECT_TRUE(testString == defaultString);
-    }
-
-    INSTANTIATE_TEST_CASE_P(LODSkinnedMeshFixtureTests, LODSkinnedMeshFixture, ::testing::Range<int>(1, 7));
 
     // TODO: Re-enabled the test when we can access viewport context in the SimpleLODComponent.
     TEST_F(LODSkinnedMeshColorFixture, DISABLED_CheckLODDistanceChange)

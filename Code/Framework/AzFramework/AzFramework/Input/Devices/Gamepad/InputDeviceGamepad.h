@@ -15,6 +15,7 @@
 #include <AzFramework/Input/Channels/InputChannelAxis2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigital.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -25,9 +26,9 @@ namespace AzFramework
     //! instance of this generic class will work correctly on any platform supporting game-pad input,
     //! while providing access to the device name and associated channel ids on any platform through
     //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
-    class InputDeviceGamepad : public InputDevice
-                             , public InputHapticFeedbackRequestBus::Handler
-                             , public InputLightBarRequestBus::Handler
+    class AZF_API InputDeviceGamepad : public InputDevice
+                                     , public InputHapticFeedbackRequestBus::Handler
+                                     , public InputLightBarRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,11 +50,6 @@ namespace AzFramework
         //! \param[in] inputDeviceId The input device id to check
         //! \return True if the input device id identifies a gamepad, false otherwise
         static bool IsGamepadDevice(const InputDeviceId& inputDeviceId);
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Get the maximum number of gamepads that are supported on the current platform
-        //! \return The maximum number of gamepads that are supported on the current platform
-        static AZ::u32 GetMaxSupportedGamepads();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad digital button input
@@ -172,7 +168,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceGamepad, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceGamepad, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info
@@ -183,12 +179,24 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceGamepad&);
+        //! The factory class to create a custom implementation for this input device
+        class AZF_API ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the maximum number of gamepads that are supported on the current platform
+            //! \return The maximum number of gamepads that are supported on the current platform
+            virtual AZ::u32 GetMaxSupportedGamepads() const = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -204,7 +212,7 @@ namespace AzFramework
         //! \param[in] inputDeviceId Id of the input device
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
-                                    ImplementationFactory implementationFactory = &Implementation::Create);
+                                    ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying
@@ -278,12 +286,12 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of game-pad input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function
@@ -360,7 +368,7 @@ namespace AzFramework
         protected:
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Platform agnostic representation of a raw game-pad state
-            struct RawGamepadState
+            struct AZF_API RawGamepadState
             {
                 ////////////////////////////////////////////////////////////////////////////////////
                 //! Constructor
@@ -418,10 +426,10 @@ namespace AzFramework
                 AZ::u32 m_digitalButtonStates;     //!< The state of all digital buttons
                 float   m_triggerButtonLState;     //!< The state of the left trigger button
                 float   m_triggerButtonRState;     //!< The state of the right trigger button
-                float   m_thumbStickLeftXState;    //!< The state of the left thumb-stick x-axis
-                float   m_thumbStickLeftYState;    //!< The state of the left thumb-stick y-axis
-                float   m_thumbStickRightXState;   //!< The state of the right thumb-stick x-axis
-                float   m_thumbStickRightYState;   //!< The state of the right thumb-stick y-axis
+                float   m_thumbStickLeftXState;    //!< The state of the left thumb-stick x-axis.  Positive is to the right of the controller
+                float   m_thumbStickLeftYState;    //!< The state of the left thumb-stick y-axis.  Positive is towards the back of the controller
+                float   m_thumbStickRightXState;   //!< The state of the right thumb-stick x-axis. Positive is to the right of the controller
+                float   m_thumbStickRightYState;   //!< The state of the right thumb-stick y-axis. Positive is towards the back of the controller
                 float   m_triggerMaximumValue;     //!< The analog trigger maximum value
                 float   m_triggerDeadZoneValue;    //!< The analog trigger dead zone value
                 float   m_thumbStickMaximumValue;  //!< The thumb-stick maximum radius value

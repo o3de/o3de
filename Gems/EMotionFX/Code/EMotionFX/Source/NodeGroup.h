@@ -10,7 +10,7 @@
 
 // include required files
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 

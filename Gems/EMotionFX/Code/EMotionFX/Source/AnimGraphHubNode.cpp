@@ -21,8 +21,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode::UniqueData, AnimGraphObjectUniqueDataAllocator);
 
     AnimGraphHubNode::AnimGraphHubNode()
         : AnimGraphNode()

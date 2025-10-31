@@ -35,11 +35,11 @@ namespace AZ
         {
             static AZStd::fixed_vector < AZ::Crc32, LodRule::m_maxLods > s_lodVirtualTypeKeys =
             {
-                AZ_CRC("LODMesh1", 0xcbea988c),
-                AZ_CRC("LODMesh2", 0x52e3c936),
-                AZ_CRC("LODMesh3", 0x25e4f9a0),
-                AZ_CRC("LODMesh4", 0xbb806c03),
-                AZ_CRC("LODMesh5", 0xcc875c95)
+                AZ_CRC_CE("LODMesh1"),
+                AZ_CRC_CE("LODMesh2"),
+                AZ_CRC_CE("LODMesh3"),
+                AZ_CRC_CE("LODMesh4"),
+                AZ_CRC_CE("LODMesh5")
             };
 
             void LodRuleBehavior::Activate()
@@ -122,7 +122,7 @@ namespace AZ
                 auto filteredView = Containers::Views::MakeFilterView(keyValueView, Containers::DerivedTypeFilter<DataTypes::IMeshData>());
                 for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                 {
-                    AZStd::set<Crc32> types;
+                    Events::GraphMetaInfo::VirtualTypesSet types;
                     auto keyValueIterator = it.GetBaseIterator();
                     Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
                     EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);
@@ -200,14 +200,14 @@ namespace AZ
 
             void LodRuleBehavior::GetVirtualTypeName(AZStd::string& name, Crc32 type)
             {
-                if (type == AZ_CRC("LODMesh1", 0xcbea988c)) { name = "LODMesh1"; }
-                else if (type == AZ_CRC("LODMesh2", 0x52e3c936)) { name = "LODMesh2"; }
-                else if (type == AZ_CRC("LODMesh3", 0x25e4f9a0)) { name = "LODMesh3"; }
-                else if (type == AZ_CRC("LODMesh4", 0xbb806c03)) { name = "LODMesh4"; }
-                else if (type == AZ_CRC("LODMesh5", 0xcc875c95)) { name = "LODMesh5"; }
+                if (type == AZ_CRC_CE("LODMesh1")) { name = "LODMesh1"; }
+                else if (type == AZ_CRC_CE("LODMesh2")) { name = "LODMesh2"; }
+                else if (type == AZ_CRC_CE("LODMesh3")) { name = "LODMesh3"; }
+                else if (type == AZ_CRC_CE("LODMesh4")) { name = "LODMesh4"; }
+                else if (type == AZ_CRC_CE("LODMesh5")) { name = "LODMesh5"; }
             }
 
-            void LodRuleBehavior::GetAllVirtualTypes(AZStd::set<Crc32>& types)
+            void LodRuleBehavior::GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types)
             {
                 AZStd::copy(s_lodVirtualTypeKeys.begin(), s_lodVirtualTypeKeys.end(), AZStd::inserter(types, types.begin()));
             }

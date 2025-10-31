@@ -5,33 +5,35 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COMPONENT_ASSET_MIME_DATA_CONTAINER_H
-#define COMPONENT_ASSET_MIME_DATA_CONTAINER_H
+#pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 
-#include <QtCore/QString>
+#include <QString>
 
 namespace AZ
 {
     struct ClassDataReflection;
+    class ReflectContext;
 }
 
 class QMimeData;
 
 namespace AzToolsFramework
 {
-    class ComponentAssetMimeData
+    class AZTF_API ComponentAssetMimeData
     {
     public:
         virtual ~ComponentAssetMimeData() { }
 
         AZ_RTTI(ComponentAssetMimeData, "{39C0AF31-9CC2-4E98-0E27-8025D15F4DF5}");
-        AZ_CLASS_ALLOCATOR(ComponentAssetMimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentAssetMimeData, AZ::SystemAllocator);
 
         ComponentAssetMimeData()
         {
@@ -52,13 +54,13 @@ namespace AzToolsFramework
 
     /// A mime container used for an asset and a component type to assign that asset into.
     /// Used for creating new components directly from assets.
-    class ComponentAssetMimeDataContainer
+    class AZTF_API ComponentAssetMimeDataContainer
     {
     public:
         virtual ~ComponentAssetMimeDataContainer() { }
 
         AZ_RTTI(ComponentAssetMimeDataContainer, "{7744B99F-2FE9-49AF-DEB2-1562BDA04238}");
-        AZ_CLASS_ALLOCATOR(ComponentAssetMimeDataContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentAssetMimeDataContainer, AZ::SystemAllocator);
 
         AZStd::vector< ComponentAssetMimeData > m_assets;
 
@@ -76,4 +78,3 @@ namespace AzToolsFramework
     };
 }
 
-#endif // EDITOR_ASSET_ID_CONTAINER_H

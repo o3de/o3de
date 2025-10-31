@@ -1,13 +1,15 @@
-<ObjectStream version="3">
-	<Class name="AZStd::vector" type="{82FC5264-88D0-57CD-9307-FC52E4DAD550}">
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{7B093FA3-A834-5061-9ADD-C6DCA97A4B60}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/texturedicon.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-	</Class>
-</ObjectStream>
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{7B093FA3-A834-5061-9ADD-C6DCA97A4B60}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/texturedicon.azshader"
+        }
+    ]
+}
 

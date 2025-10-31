@@ -27,6 +27,60 @@ class Tests:
     physical_sky_component = (
         "Entity has a Physical Sky component",
         "Entity failed to find Physical Sky component")
+    intensity_mode_set_to_nit = (
+        "Sky Intensity set to Nit",
+        "Sky Intensity could not be set to Nit")
+    intensity_mode_set_to_ev100 = (
+        "Sky Intensity set to Ev100",
+        "Sky Intensity could not be set to Ev100")
+    sky_intensity_set_to_0 = (
+        "Sky Intensity set to 0",
+        "Sky Intensity could not be set to 0")
+    sky_intensity_set_to_4 = (
+        "Sky Intensity set to 4.0",
+        "Sky Intensity could not be set to 4.0")
+    sun_intensity_set_to_0 = (
+        "Sun Intensity set to 1",
+        "Sun Intensity could not be set to 1")
+    sun_intensity_set_to_8 = (
+        "Sun Intensity set to 8.0",
+        "Sun Intensity could not be set to 8.0")
+    turbidity_set_to_5 = (
+        "Turbidity set to 5",
+        "Turbidity could not be set to 5")
+    turbidity_set_to_1 = (
+        "Turbidity set to 1",
+        "Turbidity could not be set to 1")
+    sun_radius_factor_set_to_0 = (
+        "Sun Radius Factor set to 0.0",
+        "Sun Radius Factor could not be set to 0.0")
+    sun_radius_factor_set_to_1 = (
+        "Sun Radius Factor set to 1.0",
+        "Sun Radius Factor could not be set to 1.0")
+    enable_fog_set_to_true = (
+        "Enable Fog set to True",
+        "Enable Fog could not be set to True")
+    enable_fog_set_to_false = (
+        "Enable Fog value set to False",
+        "Enable Fog value could not be set to False")
+    fog_color_set_to_green = (
+        "Fog Color set to 0.0, 255.0, 0.0",
+        "Fog Color could not be set to 0.0, 255.0, 0.0")
+    fog_color_set_to_default = (
+        "Fog Color set to 0.0, 0.0, 0.0",
+        "Fog Color could not be set to 0.0, 0.0, 0.0")
+    fog_top_height_set_to_five_tenths = (
+        "Fog Top Height set to 0.5",
+        "Fog Top Height could not be set to 0.5")
+    fog_top_height_set_to_one_hundredth = (
+        "Fog Top Height set to 0.01",
+        "Fog Top Height could not be set to 0.01")
+    fog_bottom_height_set_to_three_tenths = (
+        "Fog Bottom Height set to 0.3",
+        "Fog Bottom Height could not be set to 0.3")
+    fog_bottom_height_set_to_0 = (
+        "Fog Bottom Height set to 0.0",
+        "Fog Bottom Height could not be set to 0.0")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -68,13 +122,23 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
     2) Add Physical Sky component to Physical Sky entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Physical Sky entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors and asserts.
+    5) Intensity mode set to Nit then back to Ev100.
+    6) Set Sky Intensity value to 0 then back to 4.
+    7) Set Sun Intensity value to 0 then back to 8.
+    8) Set Turbidity value to 5 then back to 1.
+    9) Set Sun Radius Factor from 0.0 back to 1.0.
+    10a) Enable Fog for subsequent tests.
+    11) Change fog color to green, then return to default.
+    12) Set Fog Top Height to 0.5 then back to 0.01.
+    13) Set Fog Bottom Height to 0.3 then back to 0.0.
+    10b) Disable Enable Fog to set back to default.
+    14) Enter/Exit game mode.
+    15) Test IsHidden.
+    16) Test IsVisible.
+    17) Delete Physical Sky entity.
+    18) UNDO deletion.
+    19) REDO deletion.
+    20) Look for errors and asserts.
 
     :return: None
     """
@@ -83,13 +147,14 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, PHYSICAL_SKY_INTENSITY_MODE
+    from azlmbr.math import Math_IsClose, Color
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Physical Sky entity with no components.
@@ -126,33 +191,187 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, physical_sky_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Intensity mode set to Nit then back to Ev100.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Intensity Mode'), PHYSICAL_SKY_INTENSITY_MODE["Nit"])
+        Report.result(
+            Tests.intensity_mode_set_to_nit,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Intensity Mode')) == PHYSICAL_SKY_INTENSITY_MODE["Nit"])
+    
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Intensity Mode'), PHYSICAL_SKY_INTENSITY_MODE["Ev100"])
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.intensity_mode_set_to_ev100,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Intensity Mode')) == PHYSICAL_SKY_INTENSITY_MODE["Ev100"])
+
+        # 6. Set Sky Intensity value to 0 then back to 4.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sky Intensity'), 0.0)
+        Report.result(
+            Tests.sky_intensity_set_to_0,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sky Intensity')) == 0.0)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sky Intensity'), 4.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.sky_intensity_set_to_4,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sky Intensity')) == 4.0)
+
+        # 7. Set Sun Intensity value to 0 then back to 8.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sun Intensity'), 0)
+        Report.result(
+            Tests.sun_intensity_set_to_0,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sun Intensity')) == 0)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sun Intensity'), 8.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.sun_intensity_set_to_8,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sun Intensity')) == 8.0)
+
+        # 8. Set Turbidity value to 5 then back to 1.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Turbidity'), 5)
+        Report.result(
+            Tests.turbidity_set_to_5,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Turbidity')) == 5)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Turbidity'), 1)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.turbidity_set_to_1,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sun Radius Factor')) == 1)
+
+        # 9. Set Sun Radius Factor from 0.0 back to 1.0.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sun Radius Factor'), 0.0)
+        Report.result(
+            Tests.sun_radius_factor_set_to_0,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sun Radius Factor')) == 0.0)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sun Radius Factor'), 1.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.sun_radius_factor_set_to_1,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Sun Radius Factor')) == 1.0)
+
+        # 10a. Enable Fog for subsequent tests.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Enable Fog'), True)
+        Report.result(
+            Tests.enable_fog_set_to_true,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Enable Fog')) is True)
+        general.idle_wait_frames(1)
+
+        # 11. Change fog color to green, then return to default.
+        color_green = Color(0.0, 255.0, 0.0, 255.0)
+        color_default = Color(0.0, 0.0, 0.0, 255.0)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Color'), color_green)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.fog_color_set_to_green,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Fog Color')) == color_green)
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Color'),
+            color_default)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.fog_color_set_to_default,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Fog Color')) == color_default)
+
+        # 12. Set Fog Top Height to 0.5 then back to 0.01.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Top Height'), 0.5)
+        Report.result(
+            Tests.fog_top_height_set_to_five_tenths, Math_IsClose(
+                physical_sky_component.get_component_property_value(
+                    AtomComponentProperties.physical_sky('Fog Top Height')), 0.5))
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Top Height'), 0.01)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.fog_top_height_set_to_one_hundredth, Math_IsClose(
+                physical_sky_component.get_component_property_value(
+                    AtomComponentProperties.physical_sky('Fog Top Height')), 0.01))
+
+        # 13. Set Fog Bottom Height to 0.3 then back to 0.0.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Bottom Height'), 0.3)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.fog_bottom_height_set_to_three_tenths, Math_IsClose(
+                physical_sky_component.get_component_property_value(
+                    AtomComponentProperties.physical_sky('Fog Bottom Height')), 0.3))
+
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Fog Bottom Height'), 0.0)
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.fog_bottom_height_set_to_0,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Fog Bottom Height')) == 0.0)
+
+        # 10b. Disable Enable Fog to set back to default.
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Enable Fog'), False)
+        Report.result(
+            Tests.enable_fog_set_to_true,
+            physical_sky_component.get_component_property_value(
+                AtomComponentProperties.physical_sky('Enable Fog')) is False)
+        general.idle_wait_frames(1)
+
+        # 14. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 15. Test IsHidden.
         physical_sky_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, physical_sky_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 16. Test IsVisible.
         physical_sky_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, physical_sky_entity.is_visible() is True)
 
-        # 8. Delete Physical Sky entity.
+        # 17. Delete Physical Sky entity.
         physical_sky_entity.delete()
         Report.result(Tests.entity_deleted, not physical_sky_entity.exists())
 
-        # 9. UNDO deletion.
+        # 18. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, physical_sky_entity.exists())
 
-        # 10. REDO deletion.
+        # 19. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not physical_sky_entity.exists())
 
-        # 11. Look for errors and asserts.
+        # 20. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

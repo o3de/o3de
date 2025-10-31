@@ -17,7 +17,7 @@ namespace AZ::Render
         : public RPI::ComputePassData
     {
         AZ_RTTI(TaaPassData, "{BCDF5C7D-7A78-4C69-A460-FA6899C3B960}", ComputePassData);
-        AZ_CLASS_ALLOCATOR(TaaPassData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaaPassData, SystemAllocator);
 
         TaaPassData() = default;
         virtual ~TaaPassData() = default;
@@ -43,7 +43,7 @@ namespace AZ::Render
         
     public:
         AZ_RTTI(AZ::Render::TaaPass, "{AB3BD4EA-33D7-477F-82B4-21DDFB517499}", Base);
-        AZ_CLASS_ALLOCATOR(TaaPass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaaPass, SystemAllocator);
         virtual ~TaaPass() = default;
         
         /// Creates a TaaPass
@@ -51,17 +51,23 @@ namespace AZ::Render
         
     private:
 
+        // Due to a limitation in the pass system, a copy of the output must be made immediately after
+        // running TAA to ensure the data doesn't get altered by a downstream pass. This is important because
+        // this frame's output becomes next frame's history buffer. When there is away to mark pass outputs
+        // as read only, we can remove this bool and related code to avoid needing to do the copy.
+        static constexpr bool ShouldCopyHistoryBuffer = true;
+
         TaaPass(const RPI::PassDescriptor& descriptor);
         
         // Scope producer functions...
         void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-        
+
         // Pass behavior overrides...
         void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal() override;
         void BuildInternal() override;
 
-        void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
+        bool UpdateAttachmentImage(uint32_t attachmentIndex);
 
         void SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length);
         void GenerateFilterWeights(AZ::Vector2 jitterOffset);
@@ -70,7 +76,7 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = "m_lastFrameAccumulation";
         RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
-        Data::Instance<RPI::PassAttachment> m_accumulationAttachments[2];
+        AZStd::array<Data::Instance<RPI::PassAttachment>, 2> m_accumulationAttachments;
 
         RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;

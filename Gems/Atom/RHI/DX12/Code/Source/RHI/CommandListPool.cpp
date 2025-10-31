@@ -9,8 +9,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -28,7 +26,7 @@ namespace AZ
 
             RHI::Ptr<ID3D12CommandAllocator> CommandAllocatorFactory::CreateObject()
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator;
                 AssertSuccess(m_descriptor.m_dx12Device->CreateCommandAllocator(
                     ConvertHardwareQueueClass(m_descriptor.m_hardwareQueueClass),
@@ -39,7 +37,7 @@ namespace AZ
 
             void CommandAllocatorFactory::ResetObject(ID3D12CommandAllocator& allocator)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(RHI);
                 allocator.Reset();
             }
 

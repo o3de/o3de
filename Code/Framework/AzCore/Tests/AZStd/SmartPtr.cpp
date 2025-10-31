@@ -27,13 +27,13 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     class SmartPtr
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override;
@@ -307,14 +307,14 @@ namespace UnitTest
 
     void SmartPtr::SetUp()
     {
-        AllocatorsFixture::SetUp();
+        LeakDetectionFixture::SetUp();
         m_sharedPtr = new SharedPtr;
     }
 
     void SmartPtr::TearDown()
     {
         delete m_sharedPtr;
-        AllocatorsFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     TEST_F(SmartPtr, SharedPtrCtorInt)

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Public/GpuQuery/QueryPool.h>
 
@@ -19,12 +20,12 @@ namespace AZ
         class CommandList;
         struct GpuQuerySystemDescriptor;
 
-        class  GpuQuerySystem
+        class ATOM_RPI_PUBLIC_API GpuQuerySystem
             : public GpuQuerySystemInterface
         {
         public:
             AZ_TYPE_INFO(GpuQuerySystem, "{7A314998-AB21-464B-8AFC-525018D2150A}");
-            AZ_CLASS_ALLOCATOR(GpuQuerySystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GpuQuerySystem, AZ::SystemAllocator);
 
             GpuQuerySystem() = default;
 

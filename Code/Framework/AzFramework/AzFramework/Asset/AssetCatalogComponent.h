@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AzFramework
 {
     class AssetCatalog;
 
-    class AssetCatalogComponent
+    class AZF_API AssetCatalogComponent
         : public AZ::Component
     {
     public:
@@ -40,19 +41,19 @@ namespace AzFramework
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScannerCatalogService", 0x74e0c82c));
-            provided.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+            provided.push_back(AZ_CRC_CE("ScannerCatalogService"));
+            provided.push_back(AZ_CRC_CE("AssetCatalogService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ScannerCatalogService", 0x74e0c82c));
-            incompatible.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+            incompatible.push_back(AZ_CRC_CE("ScannerCatalogService"));
+            incompatible.push_back(AZ_CRC_CE("AssetCatalogService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+            required.push_back(AZ_CRC_CE("AssetDatabaseService"));
         }
 
     protected:

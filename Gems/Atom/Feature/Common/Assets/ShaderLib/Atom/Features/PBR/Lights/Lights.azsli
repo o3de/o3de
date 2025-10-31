@@ -5,10 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+/* Each light implements a Util - class similar to this:
+
+// This define construct enables something like inhertiance, since you can implement your own class before including this file, 
+// and still use functions from this class by refering to CapsuleLightUtil_PBR directly.
+// Also see LightUtilTemplate.azsli as a rough guide on the suggested structure of the <LightType>Util - class
+#ifndef CapsuleLightUtil
+#define CapsuleLightUtil CapsuleLightUtil_PBR
+#endif
+*/
+
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
 #include <Atom/Features/PBR/Lights/DiskLight.azsli>
@@ -17,24 +25,3 @@
 #include <Atom/Features/PBR/Lights/QuadLight.azsli>
 #include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 #include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
-
-void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
-{
-    if (o_enableDirectionalLights)
-    {
-        ApplyDirectionalLights(surface, lightingData);
-    }
-    if (o_enablePunctualLights)
-    {
-        ApplySimplePointLights(surface, lightingData);
-        ApplySimpleSpotLights(surface, lightingData);
-    }
-    if (o_enableAreaLights)
-    {
-        ApplyPointLights(surface, lightingData);
-        ApplyDiskLights(surface, lightingData);
-        ApplyCapsuleLights(surface, lightingData);
-        ApplyQuadLights(surface, lightingData);
-        ApplyPolygonLights(surface, lightingData);
-    }
-}

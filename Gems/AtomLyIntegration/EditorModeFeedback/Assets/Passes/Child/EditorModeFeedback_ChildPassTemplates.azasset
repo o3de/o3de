@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "EditorModeDesaturationTemplate",
+                "Path": "Passes/Child/EditorModeDesaturation.pass"
+            },
+            {
+                "Name": "EditorModeTintTemplate",
+                "Path": "Passes/Child/EditorModeTint.pass"
+            },
+            {
+                "Name": "EditorModeBlurParentTemplate",
+                "Path": "Passes/Child/EditorModeBlurParent.pass"
+            },
+            {
+                "Name": "EditorModeBlurTemplate",
+                "Path": "Passes/Child/EditorModeBlur.pass"
+            },
+            {
+                "Name": "EditorModeOutlineTemplate",
+                "Path": "Passes/Child/EditorModeOutline.pass"
+            }
+        ]
+    }
+}

@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class ShapeAreaFalloffGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientNode, AZ::SystemAllocator);
         AZ_RTTI(ShapeAreaFalloffGradientNode, "{8871F483-5087-4776-A4F8-35388B3D9CE0}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,9 +34,9 @@ namespace LandscapeCanvas
         ShapeAreaFalloffGradientNode() = default;
         explicit ShapeAreaFalloffGradientNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_TITLE; }
 
     protected:
         void RegisterSlots() override;

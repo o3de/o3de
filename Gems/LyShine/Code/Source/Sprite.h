@@ -18,6 +18,11 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 
+namespace AZ::RPI
+{
+    class AttachmentImageAsset;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class CSprite
     : public ISprite
@@ -56,7 +61,7 @@ public: // member functions
     void SetCellAlias(int cellIndex, const AZStd::string& cellAlias) override;
     int GetCellIndexFromAlias(const AZStd::string& cellAlias) const override;
     bool IsSpriteSheet() const override;
-
+    AZ::Data::Instance<AZ::RPI::Image> GetImage() override;
     // ~ISprite
 
     // TextureAtlasNotifications
@@ -66,14 +71,12 @@ public: // member functions
 
     // ~TextureAtlasNotifications
 
-    AZ::Data::Instance<AZ::RPI::Image> GetImage();
-
 public: // static member functions
 
     static void Initialize();
     static void Shutdown();
     static CSprite* LoadSprite(const AZStd::string& pathname);
-    static CSprite* CreateSprite(const AZStd::string& renderTargetName);
+    static CSprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset);
     static bool DoesSpriteTextureAssetExist(const AZStd::string& pathname);
 
     //! Replaces baseSprite with newSprite with proper ref-count handling and null-checks.

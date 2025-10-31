@@ -10,11 +10,10 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
-    class ScriptPropertySerializer
+    class AZCORE_API ScriptPropertySerializer
         : public BaseJsonSerializer
     {
     public:

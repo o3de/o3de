@@ -7,10 +7,10 @@
  */
 
 #include <Atom/RHI/FrameGraph.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/Device.h>
 #include <RHI/FrameGraphCompiler.h>
 #include <RHI/Scope.h>
+#include <RHI/RenderPassBuilder.h>
 
 namespace AZ
 {
@@ -22,7 +22,7 @@ namespace AZ
             return aznew FrameGraphCompiler();
         }
         
-        RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+        RHI::ResultCode FrameGraphCompiler::InitInternal()
         {
             return RHI::ResultCode::Success;
         }
@@ -35,6 +35,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileInternal(Metal)");
             RHI::FrameGraph& frameGraph = *request.m_frameGraph;
+            
             if (!RHI::CheckBitsAny(request.m_compileFlags, RHI::FrameSchedulerCompileFlags::DisableAsyncQueues))
             {
                 CompileAsyncQueueFences(frameGraph);
@@ -45,14 +46,13 @@ namespace AZ
     
         void FrameGraphCompiler::CompileAsyncQueueFences(const RHI::FrameGraph& frameGraph)
         {
-            Device& device = static_cast<Device&>(GetDevice());
-
-            AZ_TRACE_METHOD();
-            CommandQueueContext& context = device.GetCommandQueueContext();
+            AZ_PROFILE_FUNCTION(RHI);
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
                 Scope* scope = static_cast<Scope*>(scopeBase);
+                Device& device = static_cast<Device&>(scope->GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
 
                 bool hasCrossQueueConsumer = false;
                 for (uint32_t hardwareQueueClassIdx = 0; hardwareQueueClassIdx < RHI::HardwareQueueClassCount; ++hardwareQueueClassIdx)
@@ -79,3 +79,4 @@ namespace AZ
         }
     }
 }
+                                

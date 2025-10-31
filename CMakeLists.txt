@@ -6,10 +6,19 @@
 #
 #
 
-# Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.20)
+# Cmake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.24)
+
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+    # CMP0135 - controls whether, when unpacking an archive file, it should:
+    # (OLD) set the file timestamps to what they are in the archive (not recommended)
+    # (NEW) set the file timestamps to the time of extraction (recommended)
+    cmake_policy(SET CMP0135 NEW) 
+endif()
 
 include(cmake/LySet.cmake)
+include(cmake/GeneralSettings.cmake)
+include(cmake/FileUtil.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
@@ -17,15 +26,35 @@ if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
-        VERSION ${LY_VERSION_STRING}
+        VERSION ${O3DE_INSTALL_VERSION_STRING}
     )
+endif()
+
+# Output some useful-for-debugging information in case something goes wrong and the user sends a log.
+# this cannot be done until project() is called.
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if (O3DE_SCRIPT_ONLY)
+    message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
+                    "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
+            )
+else()
+    message(STATUS  "Basic Configuration Information:\n" 
+                    "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
+                    "   CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}\n"
+                    "   CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}\n"
+                    "   O3DE_INSTALL_VERSION_STRING: ${O3DE_INSTALL_VERSION_STRING}\n"
+                    "   INSTALLED_ENGINE: ${INSTALLED_ENGINE}"
+            )
 endif()
 
 ################################################################################
 # Initialize
 ################################################################################
-include(cmake/GeneralSettings.cmake)
-include(cmake/FileUtil.cmake)
+message(STATUS "Initializing O3DE CMake system...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+include(CTest)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
@@ -38,32 +67,43 @@ include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
+include(cmake/TestImpactFramework/TestImpactTestTargetConfig.cmake) # LYTestWrappers dependency
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
-include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
 include(cmake/O3DEJson.cmake)
+include(cmake/Subdirectories.cmake)
+include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
-################################################################################
-# Subdirectory processing
-################################################################################
+if (O3DE_SCRIPT_ONLY AND NOT INSTALLED_ENGINE)
+    get_property(engine_root GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER)
+    message(FATAL_ERROR "Script-only projects require pre-built versions of O3DE.\n\
+                        The project being compiled (${PROJECT_NAME}) is a script-only project (see project.json) \
+                        but the engine being used to build it is a compile-from-source engine using c++ code \
+                        (${engine_root}).  Please use a pre-built (installer) O3DE to build script-only projects.")
+endif()
 
-function(add_engine_json_external_subdirectories)
-    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
-    foreach(external_subdir ${external_subdis})
-        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
-        list(APPEND engine_external_subdirs ${real_external_subdir})
-    endforeach()
 
-    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
-endfunction()
+# Gather the list of o3de_manifest external Subdirectories
+# into the O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY
+add_o3de_manifest_json_external_subdirectories()
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)
+message(STATUS "Executing CMake scripts...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
+# Add external subdirectories listed in the engine.json.
+# O3DE_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+# external subdirectories.
+
+add_engine_json_external_subdirectories()
+
 if(NOT INSTALLED_ENGINE)
-    
+
     # Add the rest of the targets
     add_subdirectory(Assets)
     add_subdirectory(Code)
@@ -73,35 +113,26 @@ if(NOT INSTALLED_ENGINE)
     add_subdirectory(Templates)
     add_subdirectory(Tools)
 
-    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
-    # external subdirectories
-    add_engine_json_external_subdirectories()
+    # Invoke add_subdirectory on all external subdirectories
+    # that is in use by the union of projects specified by path in LY_PROJECTS
+    add_subdirectory_on_external_subdirs()
+
 else()
     ly_find_o3de_packages()
+    add_subdirectory_on_external_subdirs()
 endif()
-
-get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
-
-# Loop over the additional external subdirectories and invoke add_subdirectory on them
-foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
-    # This is to deal with potential situations where multiple external directories has the same last directory name
-    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
-    file(REAL_PATH ${external_directory} full_directory_path)
-    string(SHA256 full_directory_hash ${full_directory_path})
-    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-    # when the external subdirectory contains relative paths of significant length
-    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-    # Use the last directory as the suffix path to use for the Binary Directory
-    get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
-endforeach()
 
 ################################################################################
 # Post-processing
 ################################################################################
 # The following steps have to be done after all targets are registered:
+list(POP_BACK CMAKE_MESSAGE_INDENT)
+
+message(STATUS "Finishing up configuration...")
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+# Most of these post processing steps are nearly instantaneous, so no point in displaying a message
+# but if any of them take a time, we can add a message.
 
 # 1. Add any dependencies registered via ly_enable_gems
 ly_enable_gems_delayed()
@@ -121,16 +152,25 @@ ly_delayed_generate_settings_registry()
 ly_delayed_target_link_libraries()
 
 # 5. generate a registry file for unit testing for platforms that support unit testing
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()
 endif()
 
 # 5. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
 #    the dependencies
+#    This step takes a bit of time, so we display a message
+message(STATUS "Computing Runtime Dependencies (files to copy to the target's output directory)...")
 ly_delayed_generate_runtime_dependencies()
 
 # 6. Perform test impact framework post steps once all of the targets have been enumerated
-ly_test_impact_post_step()
+if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED OR O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_test_impact_post_step()
+    endif()
+endif()
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(LY_INSTALL_ENABLED)

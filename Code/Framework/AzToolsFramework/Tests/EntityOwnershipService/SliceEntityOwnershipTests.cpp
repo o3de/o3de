@@ -55,8 +55,6 @@ namespace UnitTest
         AZStd::unique_ptr<AzFramework::SliceEntityOwnershipService> m_sliceEntityOwnershipService;
     };
 
-    using SliceEntityOwnershipDeathTests = SliceEntityOwnershipTests;
-    
     TEST_F(SliceEntityOwnershipTests, AddEntity_InitalizedCorrectly_EntityCreated)
     {
         AZ::Entity* testEntity = aznew AZ::Entity("testEntity");
@@ -287,15 +285,12 @@ namespace UnitTest
 
     TEST_F(SliceEntityOwnershipTests, InstantiateSlice_InvalidAssetId_ReturnBlankInstantiationTicket)
     {
-        AZ::Entity* sliceEntity = aznew AZ::Entity();
-        AZ::SliceComponent* sliceComponent = sliceEntity->CreateComponent<AZ::SliceComponent>();
-        sliceComponent->SetSerializeContext(m_app->GetSerializeContext());
-        sliceComponent->AddEntity(aznew AZ::Entity());
-
         // Set the asset id to null to invalidate it.
+        AZ_TEST_START_TRACE_SUPPRESSION;
         AZ::Data::Asset<AZ::SliceAsset> sliceAssetHolder = AZ::Data::AssetManager::Instance().
-            CreateAsset<AZ::SliceAsset>(AZ::Data::AssetId(AZ::Uuid::CreateNull()));
-        sliceAssetHolder.Get()->SetData(sliceEntity, sliceComponent);
+            CreateAsset<AZ::SliceAsset>(AZ::Data::AssetId{});
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_EQ(nullptr, sliceAssetHolder.Get());
 
         AzFramework::SliceInstantiationTicket sliceInstantiationTicket;
         AzFramework::SliceEntityOwnershipServiceRequestBus::BroadcastResult(sliceInstantiationTicket,
@@ -395,13 +390,13 @@ namespace UnitTest
         EXPECT_FALSE(sliceInstanceAddress.IsValid());
     }
 
-    TEST_F(SliceEntityOwnershipDeathTests, AddEntity_RootSliceAssetAbsent_EntityNotCreated)
+    TEST_F(SliceEntityOwnershipTests, AddEntity_RootSliceAssetAbsent_EntityNotCreated)
     {
         m_sliceEntityOwnershipService->Destroy();
         AZ::Entity testEntity = AZ::Entity("testEntity");
-        EXPECT_DEATH(
-            {
-                m_sliceEntityOwnershipService->AddEntity(&testEntity);
-            }, ".*");
+        AZ_TEST_START_ASSERTTEST;
+        m_sliceEntityOwnershipService->AddEntity(&testEntity);
+        AZ_TEST_STOP_ASSERTTEST(1); // we expect an assert here but we expect NO death or crash, just a clean return.
+
     }
 }

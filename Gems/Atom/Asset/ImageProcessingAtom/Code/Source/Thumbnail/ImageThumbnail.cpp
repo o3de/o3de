@@ -26,7 +26,7 @@ namespace ImageProcessingAtom
         ImageThumbnail::ImageThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
             : Thumbnail(key)
         {
-            auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
+            auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.get());
             if (sourceKey)
             {
                 bool foundIt = false;
@@ -41,7 +41,7 @@ namespace ImageProcessingAtom
                 }
             }
 
-            auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
+            auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.get());
             if (productKey && productKey->GetAssetType() == AZ::RPI::StreamingImageAsset::RTTI_Type())
             {
                 m_assetIds.insert(productKey->GetAssetId());
@@ -57,31 +57,30 @@ namespace ImageProcessingAtom
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
-        void ImageThumbnail::LoadThread()
+        void ImageThumbnail::Load()
         {
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Event(
+            m_state = State::Loading;
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
-                m_key,
-                ImageThumbnailSize);
-            // wait for response from thumbnail renderer
-            m_renderWait.acquire();
+                m_key, ImageThumbnailSize);
         }
 
         void ImageThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
-            m_renderWait.release();
+            m_state = State::Ready;
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
+            if (m_assetIds.contains(assetId) && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();
@@ -111,7 +110,7 @@ namespace ImageProcessingAtom
 
         bool ImageThumbnailCache::IsSupportedThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key) const
         {
-            auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
+            auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.get());
             if (sourceKey)
             {
                 bool foundIt = false;
@@ -129,7 +128,7 @@ namespace ImageProcessingAtom
                 }
             }
 
-            auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
+            auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.get());
             return productKey && productKey->GetAssetType() == AZ::RPI::StreamingImageAsset::RTTI_Type();
         }
     } // namespace Thumbnails

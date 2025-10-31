@@ -10,52 +10,50 @@
 // Description : Header of layer node to control entities properties in the
 //               specific layer.
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_LAYERNODE_H
-#define CRYINCLUDE_CRYMOVIE_LAYERNODE_H
 #pragma once
-
 
 #include "AnimNode.h"
 
-class CLayerNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CLayerNode, AZ::SystemAllocator, 0);
-    AZ_RTTI(CLayerNode, "{C2E65C31-D469-4DE0-8F67-B5B00DE96E52}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //!
-    CLayerNode();
-    CLayerNode(const int id);
-    static void Initialize();
+    class CLayerNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CLayerNode, AZ::SystemAllocator);
+        AZ_RTTI(CLayerNode, "{C2E65C31-D469-4DE0-8F67-B5B00DE96E52}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from CAnimNode
-    virtual void Animate(SAnimContext& ec);
+        //-----------------------------------------------------------------------------
+        //!
+        CLayerNode();
+        CLayerNode(const int id);
+        static void Initialize();
 
-    virtual void CreateDefaultTracks();
+        //-----------------------------------------------------------------------------
+        //! Overrides from CAnimNode
+        void Animate(SAnimContext& ec) override;
 
-    virtual void OnReset();
+        void CreateDefaultTracks() override;
 
-    virtual void Activate(bool bActivate);
+        void OnReset() override;
 
-    virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+        void Activate(bool bActivate) override;
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from IAnimNode
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+        void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        //-----------------------------------------------------------------------------
+        //! Overrides from IAnimNode
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+        static void Reflect(AZ::ReflectContext* context);
 
-private:
-    bool m_bInit;
-    bool m_bPreVisibility;
-};
+    protected:
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-#endif // CRYINCLUDE_CRYMOVIE_LAYERNODE_H
+    private:
+        bool m_bInit;
+        bool m_bPreVisibility;
+    };
+
+} // namespace Maestro

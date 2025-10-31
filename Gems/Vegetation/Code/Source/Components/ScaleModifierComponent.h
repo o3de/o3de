@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScaleModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScaleModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(ScaleModifierConfig, "{1CD41DA9-91CA-4A57-A169-B42FC25FC4C3}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;
@@ -36,7 +36,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid ScaleModifierComponentTypeId = "{A9F4FE60-E652-415A-A8C4-0003D5750E9E}";
+    inline constexpr AZ::TypeId ScaleModifierComponentTypeId{ "{A9F4FE60-E652-415A-A8C4-0003D5750E9E}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets scale

@@ -18,7 +18,7 @@ namespace BarrierInput
     {
     public:
         AZ_RTTI(BarrierInputModule, "{C338BB3B-EA09-4FC8-AD49-840F8A22837F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(BarrierInputModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BarrierInputModule, AZ::SystemAllocator);
 
         BarrierInputModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace BarrierInput
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), BarrierInput::BarrierInputModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_BarrierInput, BarrierInput::BarrierInputModule)
+#endif

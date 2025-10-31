@@ -1,0 +1,138 @@
+{
+    "entries": [
+        {
+            "base": "SplineAddress",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Spline Address"
+            },
+            "methods": [
+                {
+                    "base": "GetSegmentIndexAndFraction",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Segment Index And Fraction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Segment Index And Fraction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Segment Index And Fraction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fraction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsegmentIndex",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Segment Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "segment Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsegmentIndex",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Segment Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "segment Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsegmentFraction",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Segment Fraction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "segment Fraction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsegmentFraction",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Segment Fraction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "segment Fraction"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

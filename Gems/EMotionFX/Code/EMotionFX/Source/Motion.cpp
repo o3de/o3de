@@ -21,13 +21,14 @@
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator)
 
     Motion::Motion(const char* name)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_eventTable = AZStd::make_unique<MotionEventTable>();
@@ -307,7 +308,7 @@ namespace EMotionFX
         sampleSettings.m_retarget = instance->GetRetargetingEnabled();
         sampleSettings.m_sampleTime = instance->GetCurrentTime();
         sampleSettings.m_inputPose = inputPose ? inputPose : sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
-        
+
         m_motionData->SamplePose(sampleSettings, outputPose);
     }
 
@@ -334,5 +335,15 @@ namespace EMotionFX
             delete m_motionData;
         }
         m_motionData = motionData;
+    }
+
+    void Motion::SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data)
+    {
+        m_rootMotionExtractionData = AZStd::move(data);
+    }
+
+    const AZStd::shared_ptr<RootMotionExtractionData>& Motion::GetRootMotionExtractionData() const
+    {
+        return m_rootMotionExtractionData;
     }
 } // namespace EMotionFX

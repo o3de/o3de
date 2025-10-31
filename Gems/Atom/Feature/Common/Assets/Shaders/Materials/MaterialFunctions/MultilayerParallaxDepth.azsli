@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/ParallaxMapping.azsli>
+#include "../MaterialInputs/ParallaxInput.azsli"
+#include <Atom/Features/MatrixUtility.azsli>
+#include "ParallaxShadowUtil.azsli"
+
+ void MultilayerSetPixelDepth(
+     const MaterialParameters params,
+     real3 vertexBlendMask,
+     inout float3 worldPosition,
+     real3 normal,
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
+     inout float2 uvs[UvSetCount],
+     bool isFrontFace,
+     real4x4 objectToWorld,
+     inout float depthNDC,
+     inout float depthCS,
+     out bool isClipped)
+{
+    real3x3 uvMatrix = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixInverse) : CreateIdentity3x3_real();
+
+    real parallaxOverallOffset = real(params.m_displacementMax);
+    real parallaxOverallFactor = real(params.m_displacementMax) - real(params.m_displacementMin);
+    
+    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, real(params.m_parallax_pdo_shadowFactor));
+    
+    s_blendMaskFromVertexStream = vertexBlendMask;
+    
+    // heightmap and heightmap sampler don't matter here: They get passed to the GetDepth() - function of the StandardMultiLayerPBR - material, where they are ignored.
+    GetParallaxInput(
+        params,
+        GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), normal, tangents[params.m_parallaxUvIndex], bitangents[params.m_parallaxUvIndex],
+        parallaxOverallFactor, parallaxOverallOffset, 
+        objectToWorld, uvMatrix, uvMatrixInverse,
+        uvs[params.m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
+}
+
+ void MultilayerSetPixelDepth(
+     const MaterialParameters params,
+     real3 vertexBlendMask,
+     inout float3 positionWS,
+     real3 normal,
+     float3 tangents[UvSetCount],
+     float3 bitangents[UvSetCount],
+     inout float2 uvs[UvSetCount],
+     bool isFrontFace,
+     real4x4 objectToWorld,
+     inout float depthNDC)
+{
+    // Dummy variables to call the above function
+    float depthCS = 1.0;
+    bool isClipped = false;
+
+    MultilayerSetPixelDepth(params, vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
+}

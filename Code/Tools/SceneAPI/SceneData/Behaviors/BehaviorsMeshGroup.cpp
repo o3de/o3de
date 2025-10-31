@@ -30,8 +30,6 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const int MeshGroup::s_meshGroupPreferredTabOrder = 0;
-
             void MeshGroup::Activate()
             {
                 Events::ManifestMetaInfoBus::Handler::BusConnect();
@@ -80,7 +78,7 @@ namespace AZ
                 auto filteredView = Containers::Views::MakeFilterView(keyValueView, Containers::DerivedTypeFilter<DataTypes::IMeshData>());
                 for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                 {
-                    AZStd::set<Crc32> types;
+                    Events::GraphMetaInfo::VirtualTypesSet types;
                     auto keyValueIterator = it.GetBaseIterator();
                     Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
                     EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);

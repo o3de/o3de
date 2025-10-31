@@ -38,6 +38,16 @@ namespace Multiplayer
         return false;
     }
 
+    bool NullReplicationWindow::AddEntity([[maybe_unused]] AZ::Entity* entity)
+    {
+        return false;
+    }
+
+    void NullReplicationWindow::RemoveEntity([[maybe_unused]] AZ::Entity* entity)
+    {
+        ;
+    }
+
     void NullReplicationWindow::UpdateWindow()
     {
         ;
@@ -63,6 +73,25 @@ namespace Multiplayer
         else
         {
             m_connection->SendUnreliablePacket(entityRpcsPacket);
+        }
+    }
+
+    void NullReplicationWindow::SendEntityResets(const NetEntityIdSet& resetIds)
+    {
+        MultiplayerPackets::RequestReplicatorReset entityResetPacket;
+        for (NetEntityId entityId : resetIds)
+        {
+            if (entityResetPacket.GetEntityIds().full())
+            {
+                m_connection->SendUnreliablePacket(entityResetPacket);
+                entityResetPacket.ModifyEntityIds().clear();
+            }
+            entityResetPacket.ModifyEntityIds().push_back(entityId);
+        }
+
+        if (!entityResetPacket.GetEntityIds().empty())
+        {
+            m_connection->SendUnreliablePacket(entityResetPacket);
         }
     }
 

@@ -9,6 +9,7 @@
 #include <AzCore/IO/Streamer/StorageDrive_Windows.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -19,7 +20,7 @@
 
 namespace AZ::IO
 {
-    constexpr AZ::u32 TestMaxFileHandles = 1;
+    constexpr AZ::u32 TestMaxFileHandles = 4;
     constexpr AZ::u32 TestMaxMetaDataEntries = 16;
     constexpr size_t TestPhysicalSectorSize = 4_kib;
     constexpr size_t TestLogicalSectorSize = 512;
@@ -49,7 +50,7 @@ namespace AZ::IO
         }
     };
 
-    INSTANTIATE_TYPED_TEST_CASE_P(
+    INSTANTIATE_TYPED_TEST_SUITE_P(
         Streamer_StorageDriveWindowsConformityTests, StreamStackEntryConformityTests, StorageDriveWindowsTestDescription);
 
 
@@ -103,7 +104,7 @@ namespace AZ::IO
     //
 
     class Streamer_StorageDriveWindowsTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::SetRestoreFileIOBaseRAII
     {
     public:
@@ -123,6 +124,7 @@ namespace AZ::IO
         AZStd::vector<AZStd::unique_ptr<char[]>> m_dummyBuffers;
         StreamerTraceBusDetector m_traceDetector;
         StorageDriveWin::ConstructionOptions m_configurationOptions;
+        TaskExecutor m_taskExecutor;
 
         // Methods...
         Streamer_StorageDriveWindowsTestFixture()
@@ -157,7 +159,8 @@ namespace AZ::IO
 
         void SetUp() override
         {
-            m_dummyRequestPath.InitFromAbsolutePath(m_dummyFilepath);
+            TaskExecutor::SetInstance(&m_taskExecutor);
+            m_dummyRequestPath = RequestPath(AZ::IO::PathView(m_dummyFilepath));
 
             SetupStorageDrive(TestOverCommit);
         }
@@ -171,6 +174,7 @@ namespace AZ::IO
             RemoveDummyFiles();
             m_dummyBuffers.clear();
             m_dummyBuffers.shrink_to_fit();
+            TaskExecutor::SetInstance(nullptr);
         }
 
         // Create a file filled with a single character.
@@ -231,7 +235,7 @@ namespace AZ::IO
         void WaitTillCompleted()
         {
             StreamStackEntry::Status status;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             do
             {
                 m_storageDriveWin->ExecuteRequests();
@@ -240,7 +244,7 @@ namespace AZ::IO
                 status.m_isIdle = true;
                 m_storageDriveWin->UpdateStatus(status);
 
-                if (AZStd::chrono::system_clock::now() - startTime > AZStd::chrono::seconds(5))
+                if (AZStd::chrono::steady_clock::now() - startTime > AZStd::chrono::seconds(5))
                 {
                     FAIL();
                 }
@@ -359,8 +363,7 @@ namespace AZ::IO
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, GetAvailableRequestSlots_QueueAndExecuteRequests_RequestSlotCountAccurate)
     {
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView(m_dummyFilepath) };
         s32 currentRequestSlots = 0;
         constexpr int numRequests = 5;
 
@@ -399,14 +402,13 @@ namespace AZ::IO
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, FileMetaDataRetrievalRequest_InvalidPath_ReturnsFalse)
     {
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath("Invalid");
+        AZ::IO::RequestPath path("Invalid");
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -424,7 +426,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -435,14 +437,13 @@ namespace AZ::IO
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, FileMetaDataRetrievalRequest_FileDoesntExist_ReturnsFalse)
     {
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath + ".disappear");
+        AZ::IO::RequestPath path(AZ::IO::PathView(m_dummyFilepath + ".disappear"));
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFileMetaDataRetrieval(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_FALSE(fileMetaData.m_found);
                 EXPECT_EQ(0, fileMetaData.m_fileSize);
             });
@@ -460,7 +461,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(16_kib, fileMetaData.m_fileSize);
             });
@@ -484,7 +485,7 @@ namespace AZ::IO
 
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileMetaData = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request.GetCommand());
+                auto& fileMetaData = AZStd::get<Requests::FileMetaDataRetrievalData>(request.GetCommand());
                 EXPECT_TRUE(fileMetaData.m_found);
                 EXPECT_EQ(4_kib, fileMetaData.m_fileSize);
             });
@@ -495,14 +496,13 @@ namespace AZ::IO
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, FileExistsRequest_InvalidPath_ReturnsCompletedWithFileNotFound)
     {
-        AZ::IO::RequestPath invalidPath;
-        invalidPath.InitFromAbsolutePath("Invalid");
+        AZ::IO::RequestPath invalidPath("Invalid");
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFileExistsCheck(invalidPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -512,14 +512,13 @@ namespace AZ::IO
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, FileExistsRequest_FileDoesNotExist_ReturnsCompletedWithFileNotFound)
     {
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath + ".disappear");
+        AZ::IO::RequestPath path(AZ::IO::PathView(m_dummyFilepath + ".disappear"));
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFileExistsCheck(path);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_FALSE(fileExistsCheck.m_found);
             });
@@ -535,7 +534,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -551,7 +550,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -573,7 +572,7 @@ namespace AZ::IO
         request->CreateFileExistsCheck(m_dummyRequestPath);
         request->SetCompletionCallback([](const FileRequest& request)
             {
-                auto& fileExistsCheck = AZStd::get<FileRequest::FileExistsCheckData>(request.GetCommand());
+                auto& fileExistsCheck = AZStd::get<Requests::FileExistsCheckData>(request.GetCommand());
                 EXPECT_EQ(AZ::IO::IStreamerTypes::RequestStatus::Completed, request.GetStatus());
                 EXPECT_TRUE(fileExistsCheck.m_found);
             });
@@ -593,8 +592,7 @@ namespace AZ::IO
         CreateDummyFile(fileSize, 0, true);
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath } };
 
         request->CreateRead(nullptr, buffer.get(), fileSize, path, 0, fileSize);
         AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
@@ -603,9 +601,9 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, fileSize);
-            EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
+            EXPECT_EQ(readRequest.m_path.GetAbsolutePath(), AZStd::string_view(m_dummyFilepath));
         };
 
         request->SetCompletionCallback(AZStd::move(callback));
@@ -638,8 +636,7 @@ namespace AZ::IO
         CreateDummyFile(fileSize, unalignedOffset);
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath } };
 
         request->CreateRead(nullptr, buffer, unalignedSize + 4, path, unalignedOffset, unalignedSize);
         AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
@@ -648,10 +645,10 @@ namespace AZ::IO
         AZ_POP_DISABLE_WARNING
         {
             EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-            auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+            auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
             EXPECT_EQ(readRequest.m_size, unalignedSize);
             EXPECT_EQ(readRequest.m_offset, unalignedOffset);
-            EXPECT_STREQ(readRequest.m_path.GetAbsolutePath(), m_dummyFilepath.c_str());
+            EXPECT_EQ(readRequest.m_path.GetAbsolutePath(), AZStd::string_view(m_dummyFilepath));
         };
 
         request->SetCompletionCallback(AZStd::move(callback));
@@ -686,8 +683,7 @@ namespace AZ::IO
         CreateDummyFile(unalignedSize);
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath } };
 
         request->CreateRead(nullptr, buffer, bufferSize, path, 0, unalignedSize);
         auto callback = [](const FileRequest& request)
@@ -723,8 +719,7 @@ namespace AZ::IO
         CreateDummyFile(readSize);
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath } };
 
         request->CreateRead(nullptr, buffer, readSize + 16 - 7, path, 0, readSize);
         auto callback = [](const FileRequest& request)
@@ -755,8 +750,7 @@ namespace AZ::IO
         m_storageDriveWin->SetNext(mock);
 
         AZ::IO::FileRequest* request = m_context->GetNewInternalRequest();
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath + "/Broken/Path.txt");
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath + "/Broken/Path.txt" } };
 
         request->CreateRead(nullptr, buffer, readSize, path, 0, readSize);
         EXPECT_CALL(*mock, QueueRequest(request)).
@@ -781,8 +775,7 @@ namespace AZ::IO
         // Create a file with chunk markers and begin/end markers
         CreateDummyFile(fileSize, chunkSize, true);
 
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
+        AZ::IO::RequestPath path{ AZ::IO::PathView{ m_dummyFilepath } };
 
         for (size_t i = 0; i < numChunks; ++i)
         {
@@ -796,7 +789,7 @@ namespace AZ::IO
             AZ_POP_DISABLE_WARNING
             {
                 EXPECT_EQ(request.GetStatus(), AZ::IO::IStreamerTypes::RequestStatus::Completed);
-                auto& readRequest = AZStd::get<AZ::IO::FileRequest::ReadData>(request.GetCommand());
+                auto& readRequest = AZStd::get<AZ::IO::Requests::ReadData>(request.GetCommand());
                 EXPECT_EQ(readRequest.m_size, chunkSize);
                 EXPECT_EQ(readRequest.m_offset, i * chunkSize);
             };
@@ -843,14 +836,12 @@ namespace AZ::IO
         CreateDummyFile("dummyFile0.bin", fileSize);
         CreateDummyFile("dummyFile1.bin", fileSize);
 
-        AZ::IO::RequestPath path0;
-        path0.InitFromRelativePath("dummyFile0.bin");
+        AZ::IO::RequestPath path0("dummyFile0.bin");
         AZ::IO::FileRequest* request0 = m_context->GetNewInternalRequest();
         request0->CreateRead(nullptr, buffer0.get(), fileSize, path0, 0, fileSize);
         request0->SetCompletionCallback(callback);
 
-        AZ::IO::RequestPath path1;
-        path1.InitFromRelativePath("dummyFile1.bin");
+        AZ::IO::RequestPath path1("dummyFile1.bin");
         AZ::IO::FileRequest* request1 = m_context->GetNewInternalRequest();
         request1->CreateRead(nullptr, buffer1.get(), fileSize, path1, 0, fileSize);
         request1->SetCompletionCallback(callback);
@@ -933,6 +924,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
+            Streamer_StorageDriveWindowsTestFixture::SetUp();
             SetupStorageDrive(TestOverCommit);
         }
 
@@ -960,9 +952,6 @@ namespace AZ::IO
 
         CreateDummyFile(fileSize, chunkSize, true);
 
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
-
         AZStd::binary_semaphore waitForReads;
         AZStd::atomic_size_t numCallbacks = 0;
 
@@ -970,7 +959,7 @@ namespace AZ::IO
         {
             buffers[i].reset(new u8[chunkSize]);
             requests.push_back(m_streamer->Read(
-                path.GetRelativePath(),
+                m_dummyFilepath,
                 buffers[i].get(),
                 chunkSize,
                 chunkSize,
@@ -981,7 +970,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [numChunks, &numCallbacks, &waitForReads](FileRequestHandle request)
+            auto callback = [&numCallbacks, &waitForReads](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 IStreamer* streamer = Interface<IStreamer>::Get();
@@ -1031,9 +1020,7 @@ namespace AZ::IO
         cancels.reserve(numChunks);
 
         CreateDummyFile(fileSize, chunkSize);
-        AZ::IO::RequestPath path;
-        path.InitFromAbsolutePath(m_dummyFilepath);
-
+        
         AZStd::binary_semaphore waitForReads;
         AZStd::binary_semaphore waitForSingleRead;
         AZStd::atomic_size_t numReadCallbacks = 0;
@@ -1041,7 +1028,7 @@ namespace AZ::IO
         {
             buffers[i].reset(new u8[chunkSize]);
             requests.push_back(m_streamer->Read(
-                path.GetRelativePath(),
+                m_dummyFilepath,
                 buffers[i].get(),
                 chunkSize,
                 chunkSize,
@@ -1052,7 +1039,7 @@ namespace AZ::IO
 
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [numChunks, &waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
+            auto callback = [&waitForReads, &waitForSingleRead, &numReadCallbacks]([[maybe_unused]] FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 numReadCallbacks++;
@@ -1076,7 +1063,7 @@ namespace AZ::IO
             cancels.push_back(m_streamer->Cancel(requests[numChunks - i - 1]));
             AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
                                                                       // capture. Newer versions issue unused warning
-            auto callback = [&numCancelCallbacks, &waitForCancels, numChunks](FileRequestHandle request)
+            auto callback = [&numCancelCallbacks, &waitForCancels](FileRequestHandle request)
             AZ_POP_DISABLE_WARNING
             {
                 auto result = Interface<IStreamer>::Get()->GetRequestStatus(request);
@@ -1189,6 +1176,9 @@ namespace Benchmark
             AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
             delete m_fileIO;
             m_fileIO = nullptr;
+
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
         }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
@@ -1197,6 +1187,9 @@ namespace Benchmark
         void SetupStreamer(bool enableFileSharing)
         {
             using namespace AZ::IO;
+
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
 
             m_fileIO = new UnitTest::TestFileIOBase();
             m_previousFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -1248,21 +1241,21 @@ namespace Benchmark
 
             AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
     
-            for (auto _ : state)
+            for ([[maybe_unused]] auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
-                AZStd::atomic<system_clock::time_point> end;
+                AZStd::atomic<steady_clock::time_point> end;
                 auto callback = [&end, &waitForReads]([[maybe_unused]] FileRequestHandle request)
                 {
-                    benchmark::DoNotOptimize(end = high_resolution_clock::now());
+                    benchmark::DoNotOptimize(end = steady_clock::now());
                     waitForReads.release();
                 };
 
                 FileRequestPtr request = m_streamer->Read(m_absolutePath, buffer.get(), state.range(0), state.range(0));
                 m_streamer->SetRequestCompleteCallback(request, callback);
 
-                system_clock::time_point start;
-                benchmark::DoNotOptimize(start = high_resolution_clock::now());
+                steady_clock::time_point start;
+                benchmark::DoNotOptimize(start = steady_clock::now());
                 m_streamer->QueueRequest(request);
 
                 waitForReads.try_acquire_for(AZStd::chrono::seconds(5));
@@ -1278,6 +1271,7 @@ namespace Benchmark
         AZ::IO::Streamer* m_streamer{};
         AZ::IO::FileIOBase* m_previousFileIO{};
         UnitTest::TestFileIOBase* m_fileIO{};
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
     };
 
     BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)

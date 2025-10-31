@@ -13,6 +13,7 @@ set(FILES
     Tests/FloatToStringConversionTests.cpp
     Tests/HexParsingTests.cpp
     Tests/StyleSheetCacheTests.cpp
+    Tests/WindowDecoratorWrapperTests.cpp
     Tests/qrc1.qrc
     Tests/qrc2.qrc
     Tests/qrc1/sheet1.qss

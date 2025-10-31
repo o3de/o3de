@@ -30,7 +30,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/GraphActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/VariableActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     DefineStateId(OpenMenuTest_OpenMenuState);
 
@@ -43,6 +43,7 @@ namespace ScriptCanvasDeveloper
         class OpenMenuState : public StaticIdAutomationState<OpenMenuTest_OpenMenuStateId>
         {
         public:
+            AZ_CLASS_ALLOCATOR(OpenMenuState, AZ::SystemAllocator)
             OpenMenuState(QMenu* targetMenu)
                 : m_targetMenu(targetMenu)
             {
@@ -115,6 +116,7 @@ namespace ScriptCanvasDeveloper
     class WriteToLineEditState : public StaticIdAutomationState<WriteToLineEditStateId>
     {
     public:
+        AZ_CLASS_ALLOCATOR(WriteToLineEditState, AZ::SystemAllocator)
         WriteToLineEditState(QLineEdit* targetEdit, QString targetText)
             : m_writeToLineEdit(targetEdit, targetText)
         {

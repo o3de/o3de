@@ -8,15 +8,42 @@
 
 #include <API/ToolsApplicationAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
-#include <AzCore/Component/Entity.h>
 #include <Prefab/EditorPrefabComponent.h>
 #include <ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework::Prefab
 {
+    static AZStd::unique_ptr<AZ::Entity> CreateContainerEntityAndParentEntities(const AZStd::vector<AZ::Entity*> entities)
+    {
+        bool result = false;
+        AZ::EntityId commonRoot;
+        EntityList topLevelEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive, entities, commonRoot, &topLevelEntities);
+
+        auto containerEntity = AZStd::make_unique<AZ::Entity>();
+
+        containerEntity->CreateComponent<Components::EditorLockComponent>();
+        containerEntity->CreateComponent<Components::EditorVisibilityComponent>();
+        containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
+        containerEntity->CreateComponent<Components::TransformComponent>();
+
+        for (AZ::Entity* entity : topLevelEntities)
+        {
+            if (auto* transformComponent = entity->FindComponent<Components::TransformComponent>(); transformComponent)
+            {
+                transformComponent->SetParent(containerEntity->GetId());
+            }
+        }
+        return containerEntity;
+    }
+
     void PrefabSystemScriptingHandler::Reflect(AZ::ReflectContext* context)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -56,7 +83,7 @@ namespace AzToolsFramework::Prefab
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
             AZ_Warning(
-                "PrefabSystemComponent", entity, "EntityId %s was not found and will not be added to the prefab",
+                "PrefabSystemScriptingHandler", entity, "EntityId %s was not found and will not be added to the prefab",
                 entityId.ToString().c_str());
 
             if (entity)
@@ -65,32 +92,51 @@ namespace AzToolsFramework::Prefab
             }
         }
 
-        bool result = false;
-        [[maybe_unused]] AZ::EntityId commonRoot;
-        EntityList topLevelEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(result, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonRootInactive,
-            entities, commonRoot, &topLevelEntities);
-
-        auto containerEntity = AZStd::make_unique<AZ::Entity>();
-        containerEntity->CreateComponent<Prefab::EditorPrefabComponent>();
-
-        for (AZ::Entity* entity : topLevelEntities)
-        {
-            AzToolsFramework::Components::TransformComponent* transformComponent =
-                entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
-
-            if (transformComponent)
-            {
-                transformComponent->SetParent(containerEntity->GetId());
-            }
-        }
+        AZStd::unique_ptr<AZ::Entity> containerEntity = CreateContainerEntityAndParentEntities(entities);
 
         auto prefab = m_prefabSystemComponentInterface->CreatePrefab(
             entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
-        
+
         if (!prefab)
         {
             AZ_Error("PrefabSystemComponenent", false, "Failed to create prefab %s", filePath.c_str());
+            return InvalidTemplateId;
+        }
+
+        return prefab->GetTemplateId();
+    }
+
+    TemplateId PrefabSystemScriptingHandler::CreatePrefabTemplateWithCustomEntityAliases(
+        const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entityIds, const AZStd::string& filePath)
+    {
+        AZStd::map<AZStd::string, AZ::Entity*> entities;
+        AZStd::vector<AZ::Entity*> entitiesVector;
+        for (const auto& [entityId, entityAlias] : entityIds)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+
+            AZ_Warning(
+                "PrefabSystemScriptingHandler",
+                entity,
+                "EntityId %s was not found and will not be added to the prefab",
+                entityId.ToString().c_str());
+
+            if (entity)
+            {
+                entities.emplace(entityAlias, entity);
+                entitiesVector.push_back(entity);
+            }
+        }
+        
+        AZStd::unique_ptr<AZ::Entity> containerEntity = CreateContainerEntityAndParentEntities(entitiesVector);
+
+        auto prefab = m_prefabSystemComponentInterface->CreatePrefabWithCustomEntityAliases(
+            entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
+
+        if (!prefab)
+        {
+            AZ_Error("PrefabSystemScriptingHandler", false, "Failed to create prefab %s", filePath.c_str());
             return InvalidTemplateId;
         }
 

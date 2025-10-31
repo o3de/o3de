@@ -132,9 +132,9 @@ namespace ScriptCanvas
                         }
                         else if (executionSlot.GetId() == HandlerPropertyType::GetDisconnectSlotId(&handler))
                         {
-                            if (auto disonnectedSlot = HandlerPropertyType::GetOnDisconnectedSlot(&handler))
+                            if (auto disconnectedSlot = HandlerPropertyType::GetOnDisconnectedSlot(&handler))
                             {
-                                executionSlots.push_back(disonnectedSlot);
+                                executionSlots.push_back(disconnectedSlot);
                             }
                             else
                             {

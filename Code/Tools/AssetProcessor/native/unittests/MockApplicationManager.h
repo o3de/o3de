@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include "../utilities/ApplicationManagerAPI.h"
-#include "native/AssetManager/assetProcessorManager.h"
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/utilities/assetUtils.h"
-#include "native/resourcecompiler/RCBuilder.h"
+#include <native/utilities/ApplicationManagerAPI.h>
+#include <native/AssetManager/assetProcessorManager.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/utilities/assetUtils.h>
+#include <native/resourcecompiler/RCBuilder.h>
+
 namespace AssetProcessor
 {
     class InternalMockBuilder

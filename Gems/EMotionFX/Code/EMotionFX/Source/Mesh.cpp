@@ -24,10 +24,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Mesh, MeshAllocator)
 
     Mesh::Mesh()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -40,6 +40,7 @@ namespace EMotionFX
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
+        : MCore::RefCounted()
     {
         m_numVertices        = 0;
         m_numIndices         = 0;
@@ -123,7 +124,7 @@ namespace EMotionFX
             TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
 
             // Fill the vertex attribute layer by iterating through the Atom meshes and copying over the vertex data for each.
-            size_t addedElements = 0;
+            [[maybe_unused]] size_t addedElements = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& atomMesh : sourceModelLod->GetMeshes())
             {
                 const uint32_t atomMeshVertexCount = atomMesh.GetVertexCount();
@@ -171,10 +172,27 @@ namespace EMotionFX
     {
         AZ::u32 modelVertexCount = 0;
         AZ::u32 modelIndexCount = 0;
+
+        // Find the maximum skin influences across all meshes to use when pre-allocating memory
+        bool hasSkinInfluence = false;
+        AZ::u32 maxSkinInfluences = 0;
         for (const AZ::RPI::ModelLodAsset::Mesh& mesh : sourceModelLod->GetMeshes())
         {
             modelVertexCount += mesh.GetVertexCount();
             modelIndexCount += mesh.GetIndexCount();
+            const AZ::RPI::BufferAssetView* weightView = mesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_WEIGHTS"});
+            if(weightView)
+            {
+                const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / mesh.GetVertexCount();
+                maxSkinInfluences = AZStd::max(maxSkinInfluences, meshInfluenceCount);
+                hasSkinInfluence = true;
+            }
+        }
+
+        // Assert the skin influence range only if the model has skin influence data
+        if (hasSkinInfluence)
+        {
+            AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
         }
 
         // IndicesPerFace defined in atom is 3.
@@ -184,29 +202,31 @@ namespace EMotionFX
         // The lod has shared buffers that combine the data from each submesh.
         // These buffers can be accessed through the first submesh in their entirety
         // by using the BufferViewDescriptor from the Buffer instead of the one from the sub-mesh's BufferAssetView
-        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
+        const auto sourceLodMeshes = sourceModelLod->GetMeshes();
+        const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceLodMeshes[0];
 
         // Copy the index buffer for the entire lod
-        AZStd::array_view<uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
-        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
+        AZStd::span<const uint8_t> indexBuffer = sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor =
+            sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
         const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
         const size_t indexBufferOffsetInBytes = indexBufferViewDescriptor.m_elementOffset * indexBufferViewDescriptor.m_elementSize;
         memcpy(mesh->m_indices, indexBuffer.begin() + indexBufferOffsetInBytes, indexBufferCountsInBytes);
 
         // Set the polygon buffer
+        AZ_PUSH_DISABLE_WARNING_MSVC(4244); //  warning C4244: '=': conversion from 'const int' to 'uint8', possible loss of data
         AZStd::fill(mesh->m_polyVertexCounts, mesh->m_polyVertexCounts + mesh->m_numPolygons, 3);
+        AZ_POP_DISABLE_WARNING_MSVC
 
         // Skinning data from atom are stored in two separate buffer layer.
-        AZ::u8 maxSkinInfluences = 255; // Later we will calculate this value from skinning data.
         const AZ::u16* skinJointIndices = nullptr;
         const float* skinWeights = nullptr;
 
         // Copy the vertex buffers
-        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh.GetStreamBufferInfoList())
+        for (const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo : sourceMesh0.GetStreamBufferInfoList())
         {
             const AZ::RHI::BufferViewDescriptor& bufferAssetViewDescriptor = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBufferViewDescriptor();
-            const size_t elementCountInBytes = bufferAssetViewDescriptor.m_elementSize * bufferAssetViewDescriptor.m_elementCount;
             const void* bufferData = streamBufferInfo.m_bufferAssetView.GetBufferAsset()->GetBuffer().data();
             const AZ::Name& name = streamBufferInfo.m_semantic.m_name;
 
@@ -245,21 +265,10 @@ namespace EMotionFX
                     mesh, Mesh::ATTRIB_BITANGENTS, /*keepOriginals=*/true,
                     AZ::Vector3(1.0f, 0.0f, 0.0f));
             }
-            else if (name == AZ::Name("COLOR"))
-            {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_COLORS128, /*keepOriginals=*/false,
-                    AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-            }
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
-                size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
-                maxSkinInfluences = aznumeric_caster(influenceCount / modelVertexCount);
-                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
-                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
-                AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
+                AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer");
 
                 // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
                 // and the pointer we're offsetting is pointing to 16-bit data
@@ -267,10 +276,6 @@ namespace EMotionFX
             }
             else if (name == AZ::Name("SKIN_WEIGHTS"))
             {
-                // Atom stores joint weights as float (range 0 - 1)
-                size_t influenceCount = elementCountInBytes / sizeof(float);
-                maxSkinInfluences = aznumeric_caster(influenceCount / modelVertexCount);
-                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
         }
@@ -294,26 +299,52 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
-            // Fill in skinning data from atom buffer
-            for (uint32 v = 0; v < modelVertexCount; ++v)
+            // Keep track of the number of unique jointIds
+            AZStd::bitset<AZStd::numeric_limits<uint16>::max()> usedJoints;
+            uint16 highestJointIndex = 0;
+            AZ::u32 currentVertex = 0;
+            for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
-                for (uint32 i = 0; i < maxSkinInfluences; ++i)
+                AZ::u32 meshVertexCount = sourceMesh.GetVertexCount();
+                const AZ::RPI::BufferAssetView* weightView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_WEIGHTS"});
+                const AZ::RPI::BufferAssetView* jointIdView = sourceMesh.GetSemanticBufferAssetView(AZ::Name{"SKIN_JOINTINDICES"});
+                if (weightView && jointIdView)
                 {
-                    const float weight = skinWeights[v * maxSkinInfluences + i];
-                    if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
+                    const AZ::u32 meshInfluenceCount = weightView->GetBufferViewDescriptor().m_elementCount / meshVertexCount;
+                    const AZ::u32 weightOffsetInElements = weightView->GetBufferViewDescriptor().m_elementOffset;
+                    // We multiply by two here since there are two jointId's packed per-element
+                    const AZ::u32 jointIdOffsetInElements = jointIdView->GetBufferViewDescriptor().m_elementOffset * 2;
+
+                    // Fill in skinning data from atom buffer
+                    for (AZ::u32 v = 0; v < meshVertexCount; ++v)
                     {
-                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i];
-                        if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                        for (AZ::u32 i = 0; i < meshInfluenceCount; ++i)
                         {
-                            AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
-                            continue;
+                            const float weight = skinWeights[weightOffsetInElements + v * meshInfluenceCount + i];
+                            if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
+                            {
+                                const AZ::u16 skinJointIndex = skinJointIndices[jointIdOffsetInElements + v * meshInfluenceCount + i];
+                                if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                                {
+                                    AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
+                                    continue;
+                                }
+
+                                const AZ::u16 skeletonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                                skinningLayer->AddInfluence(currentVertex, skeletonJointIndex, weight, 0);
+
+                                usedJoints.set(skeletonJointIndex);
+                                highestJointIndex = AZStd::max(highestJointIndex, skeletonJointIndex);
+                            }
                         }
 
-                        const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                        skinningLayer->AddInfluence(v, skeltonJointIndex, weight, 0);
+                        currentVertex++;
                     }
                 }
             }
+
+            mesh->SetNumUniqueJoints(aznumeric_caster(usedJoints.count()));
+            mesh->SetHighestJointIndex(highestJointIndex);
         }
 
         AZ::u32 vertexOffset = 0;
@@ -335,7 +366,6 @@ namespace EMotionFX
                 subMeshVertexCount,
                 subMeshIndexCount,
                 subMeshPolygonCount,
-                /*materialIndex*/0,
                 /*numJoints*/0);
 
             mesh->InsertSubMesh(subMeshIndex, subMesh);
@@ -581,8 +611,8 @@ namespace EMotionFX
                     &curTangent, &curBitangent);
 
                 // normalize the vectors
-                curTangent = MCore::SafeNormalize(curTangent);
-                curBitangent = MCore::SafeNormalize(curBitangent);
+                curTangent.NormalizeSafe();
+                curBitangent.NormalizeSafe();
 
                 // store the tangents in the orgTangents array
                 const AZ::Vector4 vec4Tangent(curTangent.GetX(), curTangent.GetY(), curTangent.GetZ(), 1.0f);
@@ -605,7 +635,7 @@ namespace EMotionFX
         {
             // get the normal
             AZ::Vector3 normal(normals[i]);
-            normal = MCore::SafeNormalize(normal);
+            normal.NormalizeSafe();
 
             // get the tangent
             AZ::Vector3 tangent = AZ::Vector3(orgTangents[i].GetX(), orgTangents[i].GetY(), orgTangents[i].GetZ());
@@ -631,7 +661,7 @@ namespace EMotionFX
 
             // Gram-Schmidt orthogonalize
             AZ::Vector3 fixedTangent = tangent - (normal * normal.Dot(tangent));
-            fixedTangent = MCore::SafeNormalize(fixedTangent);
+            fixedTangent.NormalizeSafe();
 
             // calculate handedness
             const AZ::Vector3 crossResult = normal.Cross(tangent);
@@ -1086,7 +1116,7 @@ namespace EMotionFX
         //------------------------------------------------------------------------
         // Fix the submesh number of vertices and start vertex offset values
         //------------------------------------------------------------------------
-        uint32 numRemoved = 0;
+        [[maybe_unused]] uint32 numRemoved = 0;
         const uint32 v = startVertexNr;
         for (uint32 w = 0; w < numVertsToRemove; ++w)
         {
@@ -1443,7 +1473,6 @@ namespace EMotionFX
             MCore::LogDebug("     + Num vertices = %d", subMesh->GetNumVertices());
             MCore::LogDebug("     + Num indices  = %d (%d polygons)", subMesh->GetNumIndices(), subMesh->GetNumPolygons());
             MCore::LogDebug("     + Num bones    = %d", subMesh->GetNumBones());
-            MCore::LogDebug("     + MaterialNr   = %d", subMesh->GetMaterial());
 
             /*      // output all triangle indices that point inside the data we output above
             LogDebug("       - Triangle Indices:");
@@ -1574,38 +1603,6 @@ namespace EMotionFX
         return result;
     }
 
-
-    // function to convert the 128bit colors into 32bit ones, if they exist
-    void Mesh::ConvertTo32BitColors()
-    {
-        // get the colors
-        MCore::RGBAColor*   colors128   = (MCore::RGBAColor*)FindOriginalVertexData(Mesh::ATTRIB_COLORS128);
-        uint32*             colors32    = (uint32*)FindOriginalVertexData(Mesh::ATTRIB_COLORS32);
-
-        // check if 32bit colors already exist or 128bit colors do not exist
-        if (colors128 == nullptr || colors32)
-        {
-            return;
-        }
-
-        // get the number of original vertices
-        const uint32 numVertices = GetNumVertices();
-
-        // create new vertex attribute layer for the 32bit colors
-        VertexAttributeLayerAbstractData* layer = VertexAttributeLayerAbstractData::Create(numVertices, Mesh::ATTRIB_COLORS32, sizeof(uint32));
-
-        // fill the layer with the converted float colors
-        uint32* data = (uint32*)layer->GetData();
-        for (uint32 i = 0; i < numVertices; ++i)
-        {
-            data[i] = colors128[i].ToInt();
-        }
-
-        // add the new layer
-        AddVertexAttributeLayer(layer);
-    }
-
-
     // extract the original vertex positions
     void Mesh::ExtractOriginalVertexPositions(AZStd::vector<AZ::Vector3>& outPoints) const
     {
@@ -1671,7 +1668,7 @@ namespace EMotionFX
                     const AZ::Vector3& posA = positions[ indexA ];
                     const AZ::Vector3& posB = positions[ indexB ];
                     const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = MCore::SafeNormalize((posB - posA).Cross(posC - posB));
+                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
 
                     // store the tangents in the orgTangents array
                     smoothNormals[ orgVerts[indexA] ] += faceNormal;
@@ -1684,7 +1681,7 @@ namespace EMotionFX
             // normalize
             for (uint32 i = 0; i < m_numOrgVerts; ++i)
             {
-                smoothNormals[i] = MCore::SafeNormalize(smoothNormals[i]);
+                smoothNormals[i].NormalizeSafe();
             }
 
             for (uint32 i = 0; i < m_numVertices; ++i)
@@ -1721,7 +1718,7 @@ namespace EMotionFX
                     const AZ::Vector3& posA = positions[ indexA ];
                     const AZ::Vector3& posB = positions[ indexB ];
                     const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = MCore::SafeNormalize((posB - posA).Cross(posC - posB));
+                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
 
                     // store the tangents in the orgTangents array
                     normals[indexA] = normals[indexA] + faceNormal;
@@ -1734,7 +1731,7 @@ namespace EMotionFX
             // normalize the normals
             for (uint32 i = 0; i < m_numVertices; ++i)
             {
-                normals[i] = MCore::SafeNormalize(normals[i]);
+                normals[i].NormalizeSafe();
             }
         }
     }

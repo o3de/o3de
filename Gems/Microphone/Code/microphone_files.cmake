@@ -11,5 +11,4 @@ set(FILES
     Source/MicrophoneSystemComponent.h
     Source/SimpleDownsample.cpp
     Source/SimpleDownsample.h
-    Include/Microphone/WAVUtil.h
 )

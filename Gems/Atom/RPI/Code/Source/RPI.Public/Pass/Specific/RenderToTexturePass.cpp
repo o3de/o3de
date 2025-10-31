@@ -65,10 +65,10 @@ namespace AZ
             PassAttachmentBinding outputBinding;
             outputBinding.m_name = "Output";
             outputBinding.m_slotType = PassSlotType::Output;
-            outputBinding.m_attachment = m_outputAttachment;
             outputBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+            outputBinding.SetAttachment(m_outputAttachment);
 
-            m_attachmentBindings.push_back(outputBinding);
+            AddAttachmentBinding(outputBinding);
             
             Base::BuildInternal();
         }

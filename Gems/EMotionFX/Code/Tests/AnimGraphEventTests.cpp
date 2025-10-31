@@ -49,7 +49,7 @@ namespace EMotionFX
             for (int i = 0; i < params.m_numStates; ++i)
             {
                 AnimGraphNode* state = aznew AnimGraphMotionNode();
-                state->SetName(AZStd::string(1, startChar + i).c_str());
+                state->SetName(AZStd::string(1, static_cast<char>(startChar + i)).c_str());
                 m_rootStateMachine->AddChildNode(state);
                 AddTransitionWithTimeCondition(prevState, state, /*blendTime*/params.m_transitionBlendTime, /*countDownTime*/params.m_conditionCountDownTime);
                 prevState = state;
@@ -195,7 +195,7 @@ namespace EMotionFX
         SimulateTest(params.m_simulationTime, params.m_expectedFps, params.m_fpsVariance);
     }
 
-    INSTANTIATE_TEST_CASE_P(TestAnimGraphEvents,
+    INSTANTIATE_TEST_SUITE_P(TestAnimGraphEvents,
          AnimGraphEventTestFixture,
          ::testing::ValuesIn(animGraphEventTestData));
 } // EMotionFX

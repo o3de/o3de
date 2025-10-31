@@ -17,10 +17,10 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroup, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Id, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Preset, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroup, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Id, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Preset, AZ::SystemAllocator);
 
     const CollisionGroup CollisionGroup::None = 0x0000000000000000ULL;
     const CollisionGroup CollisionGroup::All = 0xFFFFFFFFFFFFFFFFULL;

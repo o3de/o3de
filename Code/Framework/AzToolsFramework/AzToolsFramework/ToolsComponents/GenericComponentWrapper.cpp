@@ -52,7 +52,7 @@ namespace AzToolsFramework
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::RuntimeExportCallback, &ExportTemplateComponent)
                         ->DataElement("", &GenericComponentWrapper::m_template, "m_template", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
         }
@@ -63,7 +63,8 @@ namespace AzToolsFramework
 
         GenericComponentWrapper::GenericComponentWrapper(const AZ::SerializeContext::ClassData* templateClassData)
         {
-            EBUS_EVENT_ID_RESULT(m_template, templateClassData->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+            AZ::ComponentDescriptorBus::EventResult(
+                m_template, templateClassData->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
         }
 
         GenericComponentWrapper::GenericComponentWrapper(AZ::Component* templateClassInstance)
@@ -225,7 +226,7 @@ namespace AzToolsFramework
             }
         }
 
-        const AZ::TypeId& GenericComponentWrapper::GetUnderlyingComponentType() const
+        AZ::TypeId GenericComponentWrapper::GetUnderlyingComponentType() const
         {
             if (m_template)
             {
@@ -297,7 +298,7 @@ namespace AzToolsFramework
             : public AZ::ComponentDescriptorHelper<GenericComponentWrapper>
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenericComponentWrapperDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericComponentWrapperDescriptor, AZ::SystemAllocator);
             AZ_TYPE_INFO(GenericComponentWrapperDescriptor, "{3326B218-282B-4985-AEDE-39A77D48AD57}");
 
             AZ::ComponentDescriptor* GetTemplateDescriptor(const AZ::Component* instance) const
@@ -307,9 +308,8 @@ namespace AzToolsFramework
                 const GenericComponentWrapper* wrapper = azrtti_cast<const GenericComponentWrapper*>(instance);
                 if (wrapper && wrapper->GetTemplate())
                 {
-                    EBUS_EVENT_ID_RESULT(
-                        templateDescriptor, wrapper->GetTemplate()->RTTI_GetType(),
-                        AZ::ComponentDescriptorBus, GetDescriptor);
+                    AZ::ComponentDescriptorBus::EventResult(
+                        templateDescriptor, wrapper->GetTemplate()->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
                 }
 
                 return templateDescriptor;
@@ -360,13 +360,14 @@ namespace AzToolsFramework
         AZ::ComponentDescriptor* GenericComponentWrapper::CreateDescriptor()
         {
             AZ::ComponentDescriptor* descriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(descriptor, GenericComponentWrapper::RTTI_Type(), AZ::ComponentDescriptorBus, GetDescriptor);
+            AZ::ComponentDescriptorBus::EventResult(
+                descriptor, GenericComponentWrapper::RTTI_Type(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
             return descriptor ? descriptor : aznew GenericComponentWrapperDescriptor();
         }
     }   // namespace Components
 
-    const AZ::Uuid& GetUnderlyingComponentType(const AZ::Component& component)
+    AZ::TypeId GetUnderlyingComponentType(const AZ::Component& component)
     {
         return component.GetUnderlyingComponentType();
     }

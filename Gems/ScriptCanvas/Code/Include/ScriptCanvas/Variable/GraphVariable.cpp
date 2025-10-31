@@ -103,24 +103,24 @@ namespace ScriptCanvas
                 classElement.AddElementWithData<VariableFlags::InitialValueSource>(context, "InitialValueSource", VariableFlags::InitialValueSource::Component);
             }
 
-            classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
-            classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
+            classElement.RemoveElementByName(AZ_CRC_CE("ExposeAsInput"));
+            classElement.RemoveElementByName(AZ_CRC_CE("Exposure"));
         }
         else
             if (classElement.GetVersion() < 3)
             {
                 bool exposeAsInputField = false;
-                classElement.GetChildData<bool>(AZ_CRC("ExposeAsInput", 0x0f7879f0), exposeAsInputField);
+                classElement.GetChildData<bool>(AZ_CRC_CE("ExposeAsInput"), exposeAsInputField);
 
                 if (exposeAsInputField)
                 {
-                    classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
+                    classElement.RemoveElementByName(AZ_CRC_CE("Exposure"));
                     classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", VariableFlags::Scope::Graph);
                 }
                 else
                 {
                     AZ::u8 exposureType = VariableFlags::Deprecated::Exposure::Exp_Local;
-                    classElement.GetChildData<AZ::u8>(AZ_CRC("Exposure", 0x398f29cd), exposureType);
+                    classElement.GetChildData<AZ::u8>(AZ_CRC_CE("Exposure"), exposureType);
 
                     VariableFlags::Scope scope = VariableFlags::Scope::Graph;
 
@@ -137,8 +137,8 @@ namespace ScriptCanvas
                     classElement.AddElementWithData<VariableFlags::Scope>(context, "Scope", scope);
                 }
 
-                classElement.RemoveElementByName(AZ_CRC("Exposure", 0x398f29cd));
-                classElement.RemoveElementByName(AZ_CRC("ExposeAsInput", 0x0f7879f0));
+                classElement.RemoveElementByName(AZ_CRC_CE("Exposure"));
+                classElement.RemoveElementByName(AZ_CRC_CE("ExposeAsInput"));
             }
 
         return true;
@@ -335,6 +335,11 @@ namespace ScriptCanvas
         return &m_datum;
     }
 
+    Datum& GraphVariable::ModDatum()
+    {
+        return m_datum;
+    }
+
     void GraphVariable::ConfigureDatumView(ModifiableDatumView& datumView)
     {
         datumView.ConfigureView((*this));
@@ -491,14 +496,6 @@ namespace ScriptCanvas
     int GraphVariable::GetSortPriority() const
     {
         return m_sortPriority;
-    }
-
-    bool GraphVariable::IsInFunction() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
-        return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     AZ::u32 GraphVariable::OnInitialValueSourceChanged()

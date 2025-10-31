@@ -25,10 +25,12 @@ namespace ScriptCanvasEditor
 
     public:
 
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetIdDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetIdDataInterface, AZ::SystemAllocator);
         ScriptCanvasAssetIdDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasDataInterface(nodeId, slotId)
         {
+            m_assetType = AZ::Uuid::CreateNull();
+            m_stringFilter = "*.*";
         }
 
         ~ScriptCanvasAssetIdDataInterface() = default;
@@ -67,13 +69,25 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetType GetAssetType() const override
         {
-            return AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid(); //hardcoded for DynamicSliceAsset until the slot definitions can be queried for this
+            return m_assetType;
         }
 
         AZStd::string GetStringFilter() const override
         {
-            return AZ::DynamicSliceAsset::GetFileFilter(); //hardcoded for DynamicSliceAsset until the slot definitions can be queried for this
+            return m_stringFilter;
         }
-        ////
+
+        void SetAssetType(AZ::Data::AssetType assetType) override
+        {
+            m_assetType = assetType;
+        }
+
+        void SetStringFilter(const AZStd::string& stringFilter) override
+        {
+            m_stringFilter = stringFilter;
+        }
+
+        AZ::Data::AssetType m_assetType;
+        AZStd::string m_stringFilter;
     };
 }

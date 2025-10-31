@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetManager.h>
 
 #include <ScriptCanvas/Core/SlotNames.h>
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
 #include <ScriptEvents/ScriptEventsBus.h>
 
@@ -370,7 +369,7 @@ namespace ScriptCanvas
                 }
             }
 
-            bool SendScriptEvent::RegisterScriptEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset)
+            bool SendScriptEvent::RegisterScriptEvent([[maybe_unused]] AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset)
             {
                 if (!m_scriptEvent)
                 {

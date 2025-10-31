@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Cube",
         "modelAsset": {
             "assetId": {
                 "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",

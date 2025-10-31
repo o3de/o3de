@@ -1,0 +1,129 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Bush",
+        "Components": {
+            "Component_[1140272189295067758]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 1140272189295067758
+            },
+            "Component_[13437832196484687256]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 13437832196484687256
+            },
+            "Component_[1553903646452669645]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 1553903646452669645
+            },
+            "Component_[15914009348632444632]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 15914009348632444632,
+                "Child Entity Order": [
+                    "Entity_[7511491868318]"
+                ]
+            },
+            "Component_[18046340308818780248]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 18046340308818780248
+            },
+            "Component_[1948833233489872938]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 1948833233489872938,
+                "Parent Entity": ""
+            },
+            "Component_[2903632350157981339]": {
+                "$type": "SelectionComponent",
+                "Id": 2903632350157981339
+            },
+            "Component_[48827510535192710]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 48827510535192710
+            },
+            "Component_[5609536793322429681]": {
+                "$type": "EditorLockComponent",
+                "Id": 5609536793322429681
+            },
+            "Component_[5859168386298620990]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 5859168386298620990
+            },
+            "Component_[6604616929271524505]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 6604616929271524505
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[7511491868318]": {
+            "Id": "Entity_[7511491868318]",
+            "Name": "Bush",
+            "Components": {
+                "Component_[10227459330338484901]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 10227459330338484901,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 4998941225335869157
+                        },
+                        {
+                            "ComponentId": 9922994635792843826,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[10972351222359420947]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10972351222359420947
+                },
+                "Component_[12101122374155214392]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 12101122374155214392
+                },
+                "Component_[1535264614652988260]": {
+                    "$type": "SelectionComponent",
+                    "Id": 1535264614652988260
+                },
+                "Component_[16367811417907891218]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 16367811417907891218
+                },
+                "Component_[17044216787716682880]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 17044216787716682880
+                },
+                "Component_[2129822594969629430]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 2129822594969629430
+                },
+                "Component_[2838015156782745450]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 2838015156782745450
+                },
+                "Component_[4998941225335869157]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 4998941225335869157,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[8773358049076362578]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 8773358049076362578
+                },
+                "Component_[9922994635792843826]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 9922994635792843826,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{1201406D-FB20-5B5F-B9B5-6A6E8DE00A14}",
+                                    "subId": 276506120
+                                },
+                                "assetHint": "assets/objects/foliage/bush_privet_01.azmodel"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

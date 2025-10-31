@@ -95,10 +95,10 @@ void UiDropdownOptionComponent::InGamePostActivate()
 void UiDropdownOptionComponent::OnReleased()
 {
     // Tell our dropdown that we were selected
-    EBUS_EVENT_ID(m_owningDropdown, UiDropdownBus, SetValue, GetEntityId());
+    UiDropdownBus::Event(m_owningDropdown, &UiDropdownBus::Events::SetValue, GetEntityId());
 
     // Tell our listeners that we were selected
-    EBUS_EVENT_ID(GetEntityId(), UiDropdownOptionNotificationBus, OnDropdownOptionSelected);
+    UiDropdownOptionNotificationBus::Event(GetEntityId(), &UiDropdownOptionNotificationBus::Events::OnDropdownOptionSelected);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ void UiDropdownOptionComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDropdownOption.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDropdownOption.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -197,10 +197,15 @@ UiDropdownOptionComponent::EntityComboBoxVec UiDropdownOptionComponent::Populate
 
     // Get a list of all elements in the canvas with the dropdown component
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray dropdowns;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
-        [](const AZ::Entity* entity) { return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr; },
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
+        [](const AZ::Entity* entity)
+        {
+            return UiDropdownBus::FindFirstHandler(entity->GetId()) != nullptr;
+        },
         dropdowns);
 
     // Sort the elements by name
@@ -226,7 +231,7 @@ UiDropdownOptionComponent::EntityComboBoxVec UiDropdownOptionComponent::Populate
 
     // Get a list of all child elements
     LyShine::EntityArray children;
-    EBUS_EVENT_ID_RESULT(children, GetEntityId(), UiElementBus, GetChildElements);
+    UiElementBus::EventResult(children, GetEntityId(), &UiElementBus::Events::GetChildElements);
 
     // add their names to the StringList and their IDs to the id list
     for (auto childEntity : children)

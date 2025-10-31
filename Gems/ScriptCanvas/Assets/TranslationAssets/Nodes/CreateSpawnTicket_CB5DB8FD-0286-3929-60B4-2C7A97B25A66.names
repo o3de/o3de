@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{CB5DB8FD-0286-3929-60B4-2C7A97B25A66}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Create Spawn Ticket",
+                "category": "Prefab/Spawning",
+                "tooltip": "Creates a spawn ticket using provided prefab"
+            },
+            "slots": [
+                {
+                    "base": "Input_Create Ticket_0",
+                    "details": {
+                        "name": "Create Ticket"
+                    }
+                },
+                {
+                    "base": "DataInput_Prefab_0",
+                    "details": {
+                        "name": "Prefab"
+                    }
+                },
+                {
+                    "base": "Output_Ticket Created_0",
+                    "details": {
+                        "name": "Ticket Created"
+                    }
+                },
+                {
+                    "base": "DataOutput_SpawnTicket_0",
+                    "details": {
+                        "name": "SpawnTicket"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -2,22 +2,19 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/ExtractProperty.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="ExtractProperty"
-	       QualifiedName="ScriptCanvas::Nodes::Core::ExtractProperty"
-	       PreferredClassName="Extract Properties"
-           Uuid="{D4C9DA8E-838B-41C6-B870-C75294C323DC}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Utilities"
-           Version="1"
-           VersionConverter="VersionConverter"
-           GeneratePropertyFriend="True"
-           Description="Extracts property values from connected input">
+        QualifiedName="ScriptCanvas::Nodes::Core::ExtractProperty"
+        PreferredClassName="Extract Properties"
+        Uuid="{D4C9DA8E-838B-41C6-B870-C75294C323DC}"
+        Category="Utilities"
+        Version="1"
+        VersionConverter="VersionConverter"
+        Description="Extracts property values from connected input">
         <In Name="In" Description="When signaled assigns property values using the supplied source input"/>
         <Out Name="Out" Description="Signaled after all property haves have been pushed to the output slots"/>
         <DynamicDataSlot Name="Source"
-                         Description="The value on which to extract properties from."
-                         ConnectionType="ScriptCanvas::ConnectionType::Input"
-                         DynamicType="ScriptCanvas::DynamicDataType::Value" />
+            Description="The value on which to extract properties from."
+            ConnectionType="ScriptCanvas::ConnectionType::Input"
+            DynamicType="ScriptCanvas::DynamicDataType::Value" />
         <SerializedProperty Name="m_dataType" />
         <SerializedProperty Name="m_propertyAccounts" />
     </Class>

@@ -65,22 +65,6 @@ namespace MCore
         static MCORE_INLINE float RandF(float minVal, float maxVal)                                 { return minVal + (maxVal - minVal) * rand() / (float)RAND_MAX; }
 
         /**
-        * Generate a uniform random float in a range of a given minimum and maximum.
-        * @param minVal The minimum value of the range.
-        * @param maxVal The maximum value of the range.
-        * @result A uniform random floating point number in range of [min..max].
-        */
-        static MCORE_INLINE float RandF(float minVal, float maxVal, unsigned int seed) { AZ_UNUSED(seed); return minVal + (maxVal - minVal) * rand() / (float)RAND_MAX; }
-
-        /**
-        * Generate a uniform random float in a range of a given minimum and maximum.
-        * @param minVal The minimum value of the range.
-        * @param maxVal The maximum value of the range.
-        * @result A uniform random floating point number in range of [min..max].
-        */
-        static MCORE_INLINE float RandF(float minVal, float maxVal, LcgRandom& rand) { return minVal + (maxVal - minVal) * rand.GetRandomFloat(); }
-
-        /**
          * Generates a uniform random normalized direction vector, using floats.
          * @result A uniform random direction vector with a length of 1.
          */

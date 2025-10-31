@@ -20,11 +20,14 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(HDRiSkyboxComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::HDRiSkyboxComponentConfig, "{AEAD8F5A-8D2F-47CD-B98C-C99541F7B229}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);
 
             Data::Asset<RPI::StreamingImageAsset> m_cubemapAsset;
+            Data::AssetId m_cubemapAssetId;
+
             float m_exposure = 0.0f;
         };
     } // namespace Render

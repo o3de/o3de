@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     class ButtonGroup;
 
     //! Helper class to make switchers (toolbars) for display in Viewport UI.
-    class ViewportUiSwitcher : public QToolBar
+    class AZTF_API ViewportUiSwitcher : public QToolBar
     {
         Q_OBJECT
 
@@ -36,6 +38,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void Update();
         //! Changes the m_activeButton.
         void SetActiveButton(ButtonId buttonId);
+        //! Updates the button's tooltip to the passed string.
+        void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
 
     private:
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.

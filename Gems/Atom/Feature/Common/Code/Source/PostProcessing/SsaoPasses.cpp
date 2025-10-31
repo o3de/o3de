@@ -44,7 +44,7 @@ namespace AZ
                 return false;
             }
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (!fp)
             {
                 return true;
@@ -84,7 +84,7 @@ namespace AZ
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -154,7 +154,7 @@ namespace AZ
 
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -177,7 +177,7 @@ namespace AZ
             }
 
             AZ_Assert(GetOutputCount() > 0, "SsaoComputePass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "SsaoComputePass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;

@@ -39,69 +39,54 @@ namespace AZ
                     ;
             }
         }
-
-        void Transform2DFunctor::Process(RuntimeContext& context)
+        
+        void Transform2DFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             using namespace RPI;
 
-            auto center = context.GetMaterialPropertyValue<Vector2>(m_center);
-            auto scale = context.GetMaterialPropertyValue<float>(m_scale);
-            auto scaleX = context.GetMaterialPropertyValue<float>(m_scaleX);
-            auto scaleY = context.GetMaterialPropertyValue<float>(m_scaleY);
-            auto translateX = context.GetMaterialPropertyValue<float>(m_translateX);
-            auto translateY = context.GetMaterialPropertyValue<float>(m_translateY);
-            auto rotateDegrees = context.GetMaterialPropertyValue<float>(m_rotateDegrees);
+            UvTransformDescriptor desc;
+            desc.m_center = context.GetMaterialPropertyValue<Vector2>(m_center);
+            desc.m_scale = context.GetMaterialPropertyValue<float>(m_scale);
+            desc.m_scaleX = context.GetMaterialPropertyValue<float>(m_scaleX);
+            desc.m_scaleY = context.GetMaterialPropertyValue<float>(m_scaleY);
+            desc.m_translateX = context.GetMaterialPropertyValue<float>(m_translateX);
+            desc.m_translateY = context.GetMaterialPropertyValue<float>(m_translateY);
+            desc.m_rotateDegrees = context.GetMaterialPropertyValue<float>(m_rotateDegrees);
 
-            if (scaleX != 0.0f)
+            Matrix3x3 transform = CreateUvTransformMatrix(desc, m_transformOrder);
+
+            context.GetMaterialShaderParameter()->SetParameter(m_transformMatrix, transform);
+            if (m_transformMatrixInverse.GetIndex().IsValid())
             {
-                translateX *= (1.0f / scaleX);
-            }
-
-            if (scaleY != 0.0f)
-            {
-                translateY *= (1.0f / scaleY);
-            }
-
-            Matrix3x3 translateCenter2D = Matrix3x3::CreateIdentity();
-            translateCenter2D.SetBasisZ(-center.GetX(), -center.GetY(), 1.0f);
-
-            Matrix3x3 translateCenterInv2D = Matrix3x3::CreateIdentity();
-            translateCenterInv2D.SetBasisZ(center.GetX(), center.GetY(), 1.0f);
-
-            Matrix3x3 scale2D = Matrix3x3::CreateDiagonal(AZ::Vector3(scaleX * scale, scaleY * scale, 1.0f));
-
-            Matrix3x3 translate2D = Matrix3x3::CreateIdentity();
-            translate2D.SetBasisZ(translateX, translateY, 1.0f);
-
-            Matrix3x3 rotate2D = Matrix3x3::CreateRotationZ(AZ::DegToRad(rotateDegrees));
-
-            Matrix3x3 transform = translateCenter2D;
-            for (auto transformType : m_transformOrder)
-            {
-                switch (transformType)
-                {
-                case TransformType::Scale:
-                    transform = scale2D * transform;
-                    break;
-                case TransformType::Rotate:
-                    transform = rotate2D * transform;
-                    break;
-                case TransformType::Translate:
-                    transform = translate2D * transform;
-                    break;
-                }
-            }
-            transform = translateCenterInv2D * transform;
-
-            context.GetShaderResourceGroup()->SetConstant(m_transformMatrix, transform);
-
-            // There are some cases where the matrix is required but the inverse is not, so the SRG only has the regular matrix.
-            // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
-            if (m_transformMatrixInverse.IsValid())
-            {
-                context.GetShaderResourceGroup()->SetConstant(m_transformMatrixInverse, transform.GetInverseFull());
+                context.GetMaterialShaderParameter()->SetParameter(m_transformMatrixInverse, transform.GetInverseFull());
             }
         }
 
+        bool Transform2DFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
+        {
+            bool valid = true;
+            if (m_transformMatrix.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "Transform2DFunctorSourceData", false, "Could not find shader parameter '%s'", m_transformMatrix.GetName().GetCStr());
+                valid &= false;
+            }
+
+            // There are some cases where the matrix is required but the inverse is not, and the shader parameters only have the regular
+            // matrix.
+            if (!m_transformMatrixInverse.GetName().IsEmpty())
+            {
+                if (m_transformMatrixInverse.ValidateOrFindIndex(layout) == false)
+                {
+                    AZ_Error(
+                        "Transform2DFunctorSourceData",
+                        false,
+                        "Could not find shader parameter '%s'",
+                        m_transformMatrixInverse.GetName().GetCStr());
+                    valid &= false;
+                }
+            }
+            return valid;
+        }
     } // namespace Render
 } // namespace AZ

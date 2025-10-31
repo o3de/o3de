@@ -92,7 +92,7 @@ namespace GraphCanvas
                 }
                 else if (sourceSlotType == DataSlotType::Reference)
                 {
-                    DataSlotRequestBus::EventResult(converted, GetTargetSlotId(), &DataSlotRequests::ConvertToReference);
+                    DataSlotRequestBus::EventResult(converted, GetTargetSlotId(), &DataSlotRequests::ConvertToReference, false);
                 }
             }
             else if (m_dragContext == DragContext::MoveSource)
@@ -103,7 +103,7 @@ namespace GraphCanvas
                 }
                 else if (targetSlotType == DataSlotType::Reference)
                 {
-                    DataSlotRequestBus::EventResult(converted, GetSourceSlotId(), &DataSlotRequests::ConvertToReference);
+                    DataSlotRequestBus::EventResult(converted, GetSourceSlotId(), &DataSlotRequests::ConvertToReference, false);
                 }
             }
             else if (m_dragContext == DragContext::TryConnection)

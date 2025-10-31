@@ -14,6 +14,8 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);
+
 namespace AZ::Data
 {
     AssetFilterInfo::AssetFilterInfo(const AssetId& id, const AssetType& assetType, AssetLoadBehavior loadBehavior)
@@ -46,7 +48,7 @@ namespace AZ::Data
             return AssetId();
         }
 
-        assetId.m_subId = strtoul(&input[separatorIdx + 1], nullptr, 16);
+        assetId.m_subId = static_cast<AZ::u32>(strtoul(&input[separatorIdx + 1], nullptr, 16));
 
         return assetId;
     }
@@ -70,11 +72,14 @@ namespace AZ::Data
                 ->Attribute(AZ::Script::Attributes::Module, "asset")
                 ->Constructor()
                 ->Constructor<const Uuid&, u32>()
+                ->Constructor<AZStd::string_view, u32>()
                 ->Method("CreateString", &Data::AssetId::CreateString)
                 ->Method("IsValid", &Data::AssetId::IsValid)
                     ->Attribute(AZ::Script::Attributes::Alias, "is_valid")
                 ->Method("ToString", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                     ->Attribute(AZ::Script::Attributes::Alias, "to_string")
+                    ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                ->Method("__repr__", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                 ->Method("IsEqual", [](const Data::AssetId& self, const Data::AssetId& other) { return self == other; })
                     ->Attribute(AZ::Script::Attributes::Alias, "is_equal")
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
@@ -90,6 +95,13 @@ namespace AZ::Data
                 ->Property("relativePath", BehaviorValueGetter(&Data::AssetInfo::m_relativePath), nullptr)
                 ;
         }
+    }
+
+    AssetId::FixedString AssetId::ToFixedString() const
+    {
+        FixedString result;
+        result = FixedString::format("%s:%08x", m_guid.ToFixedString().c_str(), m_subId);
+        return result;
     }
 
     namespace AssetInternal
@@ -156,7 +168,7 @@ namespace AZ::Data
                     return { it->second, assetReferenceLoadBehavior };
                 }
             }
-            return {};
+            return {nullptr, assetReferenceLoadBehavior};
         }
 
         AssetId ResolveAssetId(const AssetId& id)

@@ -30,7 +30,7 @@ namespace GraphCanvas
     ////////////////////////////
     // GraphCanvasGraphicsView
     ////////////////////////////
-    
+
     GraphCanvasGraphicsView::GraphCanvasGraphicsView(QWidget* parent, bool registerShortcuts)
         : QGraphicsView(parent)
         , m_isDragSelecting(false)
@@ -74,7 +74,7 @@ namespace GraphCanvas
         if (registerShortcuts)
         {
             QAction* centerAction = new QAction(this);
-            centerAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::DownArrow));
+            centerAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::DownArrow));
 
             connect(centerAction, &QAction::triggered, [this]()
             {
@@ -95,7 +95,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllInputAction = new QAction(this);
-                selectAllInputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left));
+                selectAllInputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Left));
 
                 connect(selectAllInputAction, &QAction::triggered, [this]()
                 {
@@ -107,7 +107,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllOutputAction = new QAction(this);
-                selectAllOutputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right));
+                selectAllOutputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Right));
 
                 connect(selectAllOutputAction, &QAction::triggered, [this]()
                 {
@@ -119,7 +119,7 @@ namespace GraphCanvas
 
             {
                 QAction* selectAllOutputAction = new QAction(this);
-                selectAllOutputAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Up));
+                selectAllOutputAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Up));
 
                 connect(selectAllOutputAction, &QAction::triggered, [this]()
                 {
@@ -134,7 +134,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Left));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -144,7 +144,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Right));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Right));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -154,7 +154,7 @@ namespace GraphCanvas
 
             {
                 QAction* gotoStartAction = new QAction(this);
-                gotoStartAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Up));
+                gotoStartAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Up));
 
                 connect(gotoStartAction, &QAction::triggered, [this]()
                 {
@@ -165,7 +165,7 @@ namespace GraphCanvas
             // Ctrl+"0" overview shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_0));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -184,8 +184,8 @@ namespace GraphCanvas
             // Ctrl+"+" zoom-in shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus),
-                    QKeySequence(Qt::CTRL + Qt::Key_Equal) });
+                keyAction->setShortcuts({ QKeySequence(0x0 | Qt::CTRL | Qt::Key_Plus),
+                    QKeySequence(0x0 | Qt::CTRL | Qt::Key_Equal) });
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -197,7 +197,7 @@ namespace GraphCanvas
             // Ctrl+"-" zoom-out shortcut.
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Minus));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Minus));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -210,7 +210,7 @@ namespace GraphCanvas
             // Ctrl+shift+'p' screenshot graph shortcut
             {
                 QAction* keyAction = new QAction(this);
-                keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
+                keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_P));
 
                 connect(keyAction, &QAction::triggered, [this]()
                 {
@@ -229,7 +229,7 @@ namespace GraphCanvas
                 // ctrl+k, ctrl+u enable selection
                 {
                     QAction* keyAction = new QAction(this);
-                    keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_U));
+                    keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_K, 0x0 | Qt::CTRL | Qt::Key_U));
 
                     connect(keyAction, &QAction::triggered, [this]()
                     {
@@ -240,7 +240,7 @@ namespace GraphCanvas
                 // Ctrl+k, ctrl+c disable selection
                 {
                     QAction* keyAction = new QAction(this);
-                    keyAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_C));
+                    keyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_K, 0x0 | Qt::CTRL | Qt::Key_C));
 
                     connect(keyAction, &QAction::triggered, [this]()
                     {
@@ -259,7 +259,7 @@ namespace GraphCanvas
             Qt::Key currentKey = keyIndexes[i];
 
             QAction* createBookmarkKeyAction = new QAction(this);
-            createBookmarkKeyAction->setShortcut(QKeySequence(Qt::CTRL + currentKey));
+            createBookmarkKeyAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | currentKey));
 
             connect(createBookmarkKeyAction, &QAction::triggered, [this, i]()
                 {
@@ -283,7 +283,7 @@ namespace GraphCanvas
                 });
 
             addAction(activateBookmarkKeyAction);
-        }        
+        }
     }
 
     GraphCanvasGraphicsView::~GraphCanvasGraphicsView()
@@ -463,7 +463,7 @@ namespace GraphCanvas
             // Fit into view.
             fitInView(viewArea, Qt::AspectRatioMode::KeepAspectRatio);
 
-            ClampScaleBounds();            
+            ClampScaleBounds();
 
             ViewNotificationBus::Event(GetViewId(), &ViewNotifications::OnViewCenteredOnArea);
         }
@@ -501,7 +501,7 @@ namespace GraphCanvas
             m_queuedFocus->m_focusType = FocusQueue::FocusType::CenterOnArea;
             m_queuedFocus->m_focusRect = viewArea;
         }
-        
+
         {
             qreal originalZoom = transform().m11();
 
@@ -531,7 +531,7 @@ namespace GraphCanvas
     }
 
     void GraphCanvasGraphicsView::CenterOnStartOfChain()
-    {        
+    {
         AZStd::vector< AZ::EntityId > selectedEntities;
         SceneRequestBus::EventResult(selectedEntities, GetScene(), &SceneRequests::GetSelectedNodes);
 
@@ -633,7 +633,7 @@ namespace GraphCanvas
             graphicsView->adjustSize();
             graphicsView->updateGeometry();
             graphicsView->ensurePolished();
-            
+
             graphicsView->viewport()->adjustSize();
             graphicsView->viewport()->updateGeometry();
             graphicsView->viewport()->ensurePolished();
@@ -668,7 +668,6 @@ namespace GraphCanvas
             layout->addWidget(graphicsView);
 
             dialog.setLayout(layout);
-
             dialog.show();
             dialog.hide();
 
@@ -683,6 +682,14 @@ namespace GraphCanvas
 
             graphicsView->render(&localPainter, QRectF(0, 0, windowSize.width(), windowSize.height()), viewportRect);
             localPainter.end();
+
+            AzQtComponents::ToastConfiguration toastConfiguration(
+                AzQtComponents::ToastType::Information,
+                "<b>Screenshot</b>",
+                "Screenshot copied to clipboard!");
+            toastConfiguration.m_duration = AZStd::chrono::milliseconds(2000);
+            toastConfiguration.m_allowDuplicateNotifications = true;
+            m_notificationsView->ShowToastNotification(toastConfiguration);
         }
 
         return image;
@@ -783,7 +790,7 @@ namespace GraphCanvas
             // There's no scene.
             return;
         }
-        
+
 
         QWheelEvent ev(
             QPoint(0, 0),
@@ -881,7 +888,7 @@ namespace GraphCanvas
 
         centerOn(m_panningAggregator);
     }
-    
+
     QRectF GraphCanvasGraphicsView::GetCompleteArea()
     {
         // Get the grid.
@@ -915,7 +922,7 @@ namespace GraphCanvas
                 completeArea = completeArea | sceneBoundingRect;
             }
         }
-        
+
         return completeArea;
     }
 
@@ -968,7 +975,7 @@ namespace GraphCanvas
 
         return area;
     }
-    
+
     void GraphCanvasGraphicsView::OnStylesChanged()
     {
         update();
@@ -978,7 +985,7 @@ namespace GraphCanvas
     {
         m_isEditing = isEditing;
     }
-    
+
     void GraphCanvasGraphicsView::keyReleaseEvent(QKeyEvent* event)
     {
         switch (event->key())
@@ -1038,7 +1045,7 @@ namespace GraphCanvas
     void GraphCanvasGraphicsView::mousePressEvent(QMouseEvent* event)
     {
         // If we already have a mouse button down, we just want to ignore it.
-        if (event->buttons() != event->button())
+        if (!event->buttons().testFlag(event->button()))
         {
             // Even if we don't handle the mouse event here, or pass it down. The context menu still occurs.
             // Just suppress the next context menu since we know it will occur when this 'ignored'
@@ -1106,7 +1113,7 @@ namespace GraphCanvas
 
         QGraphicsView::mouseMoveEvent(event);
     }
-    
+
     void GraphCanvasGraphicsView::mouseReleaseEvent(QMouseEvent* event)
     {
         if (event->button() == Qt::RightButton)
@@ -1152,7 +1159,7 @@ namespace GraphCanvas
 
         QGraphicsView::mouseReleaseEvent(event);
     }
-    
+
     void GraphCanvasGraphicsView::wheelEvent(QWheelEvent* event)
     {
         if (!(event->modifiers() & Qt::ControlModifier))
@@ -1244,7 +1251,7 @@ namespace GraphCanvas
 
         if (settingsHandler)
         {
-            m_scrollSpeed = settingsHandler->GetEdgePanningScrollSpeed();            
+            m_scrollSpeed = settingsHandler->GetEdgePanningScrollSpeed();
             m_maxZoom = settingsHandler->GetMaxZoom();
 
             ClampScaleBounds();
@@ -1282,7 +1289,7 @@ namespace GraphCanvas
                 }
             }
         }
-        
+
         AZ::EntityId existingBookmark;
         BookmarkManagerRequestBus::EventResult(existingBookmark, sceneId, &BookmarkManagerRequests::FindBookmarkForShortcut, bookmarkShortcut);
 
@@ -1290,7 +1297,7 @@ namespace GraphCanvas
         {
             AZStd::string bookmarkName;
             BookmarkRequestBus::EventResult(bookmarkName, existingBookmark, &BookmarkRequests::GetBookmarkName);
-            
+
             QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
             response = QMessageBox::question(this, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with action and remove previous bookmark?").arg(bookmarkName.c_str()).arg(bookmarkShortcut), QMessageBox::StandardButton::Yes|QMessageBox::No);
 
@@ -1339,7 +1346,7 @@ namespace GraphCanvas
             SceneMemberUIRequestBus::EventResult(graphicsItem, memberId, &SceneMemberUIRequests::GetRootGraphicsItem);
 
             if (graphicsItem)
-            {                
+            {
                 boundingRect |= graphicsItem->sceneBoundingRect();
             }
         }
@@ -1459,7 +1466,7 @@ namespace GraphCanvas
         xfm.setMatrix(m_viewParams.m_scale, xfm.m12(), xfm.m13(),
             xfm.m21(), m_viewParams.m_scale, xfm.m23(),
             xfm.m31(), xfm.m32(), xfm.m33());
-        setTransform(xfm);        
+        setTransform(xfm);
 
         ViewNotificationBus::Event(GetViewId(), &ViewNotifications::OnZoomChanged, m_viewParams.m_scale);
     }
@@ -1548,7 +1555,7 @@ namespace GraphCanvas
         {
             zoomLevel = qreal(1.0f);
         }
-        
+
         float zoomRepresentation = aznumeric_cast<float>(1.0f / zoomLevel);
         float modifier = AZStd::max(0.5f, zoomRepresentation);
 

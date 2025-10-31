@@ -22,7 +22,7 @@ namespace AzToolsFramework
     };
 
     class EditorTransformComponentTest
-        : public UnitTest::ToolsApplicationFixture
+        : public UnitTest::ToolsApplicationFixture<>
     {
     public:
         static TransformTestEntityHierarchy BuildTestHierarchy()

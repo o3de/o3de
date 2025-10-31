@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 add_subdirectory(XML)
 
@@ -26,13 +26,14 @@ ly_add_target(
         PRIVATE
             3rdParty::expat
             3rdParty::lz4
-            3rdParty::md5
             3rdParty::TIFF
             3rdParty::zstd
             Legacy::CryCommon
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_source_properties(

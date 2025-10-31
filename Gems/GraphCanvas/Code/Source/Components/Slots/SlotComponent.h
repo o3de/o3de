@@ -8,12 +8,16 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Utils/StateControllers/StateController.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace GraphCanvas
 {
@@ -27,7 +31,6 @@ namespace GraphCanvas
     {
     public:
         AZ_COMPONENT(SlotComponent, "{EACFC8FB-C75B-4ABA-988D-89C964B9A4E4}");
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static void Reflect(AZ::ReflectContext* context);
         static AZ::Entity* CreateCoreSlotEntity();
 
@@ -40,7 +43,7 @@ namespace GraphCanvas
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(kSlotServiceProviderId);
-            provided.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
@@ -110,6 +113,8 @@ namespace GraphCanvas
         AZStd::any* GetUserData() override;
 
         bool HasConnections() const override;
+
+        bool IsNameHidden() const;
 
         AZ::EntityId GetLastConnection() const override;
         AZStd::vector<AZ::EntityId> GetConnections() const override;

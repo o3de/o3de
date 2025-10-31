@@ -27,7 +27,7 @@ namespace AZ
         {
             using Base = RHI::DeviceObject;
         public:
-            AZ_CLASS_ALLOCATOR(Sampler, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Sampler, AZ::ThreadPoolAllocator);
             AZ_RTTI(Sampler, "{58DC554B-8E8D-4533-AA9F-F9341BFC573B}", Base);
 
             static RHI::Ptr<Sampler> Create();

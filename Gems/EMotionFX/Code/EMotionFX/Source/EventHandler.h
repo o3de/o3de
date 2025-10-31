@@ -15,7 +15,7 @@
 #include "Actor.h"
 #include "ActorInstance.h"
 #include "EventManager.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "DebugDraw.h"
 #include "EventManager.h"
 #include "Importer/Importer.h"

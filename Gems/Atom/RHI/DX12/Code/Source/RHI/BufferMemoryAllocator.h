@@ -15,8 +15,6 @@ namespace AZ
 {
     namespace DX12
     {
-        class Device;
-
         class BufferMemoryAllocator
         {
         public:
@@ -34,6 +32,8 @@ namespace AZ
             BufferMemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0);
 
             void DeAllocate(const BufferMemoryView& memory);
+
+            float ComputeFragmentation() const;
 
         private:
             BufferMemoryView AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor);

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -17,7 +18,7 @@ namespace AzFramework
 {
     //! A list of ViewportControllers that allows priority-ordered dispatch to controllers registered to it.
     //! ViewportControllerList itself is-a controller, meaning it controllers can be contained in nested lists.
-    class ViewportControllerList final
+    class AZF_API ViewportControllerList final
         : public ViewportControllerInterface
     {
     public:
@@ -57,7 +58,6 @@ namespace AzFramework
         void SetEnabled(bool enabled);
 
     private:
-        void SortControllers();
         bool DispatchInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event);
         void DispatchUpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event);
 
@@ -65,4 +65,4 @@ namespace AzFramework
         AZStd::unordered_set<ViewportId> m_viewports;
         bool m_enabled = true;
     };
-} //namespace AzFramework
+} // namespace AzFramework

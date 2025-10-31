@@ -23,11 +23,11 @@ namespace AZ
          * CompressorStream wrap a GenericStream and runs the streaming functions through the supplied compressor
          *
          */
-        class CompressorStream
+        class AZCORE_API CompressorStream
             : public GenericStream
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorStream, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorStream, SystemAllocator);
             CompressorStream(const char* filename, OpenMode flags = OpenMode());
             CompressorStream(GenericStream* stream, bool ownStream);
             virtual ~CompressorStream();

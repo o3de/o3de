@@ -15,7 +15,7 @@
 
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 
-#include <AzFramework/Utils/SystemUtilsApple.h>
+#include <AzCore/Utils/SystemUtilsApple_Platform.h>
 
 #import <UIKit/UIKit.h>
 
@@ -24,12 +24,12 @@ namespace
 {
     const char* GetAppWriteStoragePath()
     {
-        static char pathToApplicationPersistentStorage[AZ_MAX_PATH_LEN] = { 0 };
+        static char pathToApplicationPersistentStorage[AZ::IO::MaxPathLength];
 
         // Unlike Mac where we have unrestricted access to the filesystem, iOS apps are sandboxed such
         // that you can only access a pre-defined set of directories.
         // https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html
-        SystemUtilsApple::GetPathToUserApplicationSupportDirectory(pathToApplicationPersistentStorage, AZ_MAX_PATH_LEN);
+        AZ::SystemUtilsApple::GetPathToUserApplicationSupportDirectory(AZStd::span(pathToApplicationPersistentStorage));
         return pathToApplicationPersistentStorage;
     }
 }
@@ -66,7 +66,7 @@ namespace
         NSString* arg = commandLine[argIndex];
         if (!mainInfo.AddArgument([arg UTF8String]))
         {
-            return static_cast<int>(ReturnCode::ErrCommandLine); 
+            return static_cast<int>(ReturnCode::ErrCommandLine);
         }
     }
 

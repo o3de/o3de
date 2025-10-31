@@ -11,12 +11,21 @@
                 {
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
+                    "ScopeAttachmentStage":  "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "DirectionalLightShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -26,6 +35,7 @@
                 {
                     "Name": "ExponentialShadowmapDirectional",
                     "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -35,6 +45,7 @@
                 {
                     "Name": "ProjectedShadowmap",
                     "ShaderInputName": "m_projectedShadowmaps",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -44,6 +55,7 @@
                 {
                     "Name": "ExponentialShadowmapProjected",
                     "ShaderInputName": "m_projectedExponentialShadowmap",
+                    "ScopeAttachmentStage":  "FragmentShader",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -54,13 +66,15 @@
                     "Name": "TileLightData",
                     "SlotType": "Input",
                     "ShaderInputName": "m_tileLightData",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "FragmentShader"
                 },
                 {
                     "Name": "LightListRemapped",
                     "SlotType": "Input",
                     "ShaderInputName": "m_lightListRemapped",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage":  "FragmentShader"
                 },
                 // Input/Outputs...
                 {
@@ -156,8 +170,12 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
@@ -169,8 +187,12 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
@@ -182,8 +204,12 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
                     },
                     "ImageDescriptor": {
                         "Format": "R8G8B8A8_UNORM",
@@ -195,8 +221,12 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
                     },
                     "ImageDescriptor": {
                         "Format": "R8G8B8A8_UNORM",
@@ -208,8 +238,12 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "DepthStencilInputOutput"
                     },
                     "ImageDescriptor": {
                         "Format": "R10G10B10A2_UNORM",
@@ -265,6 +299,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
                     }
                 }
             ]

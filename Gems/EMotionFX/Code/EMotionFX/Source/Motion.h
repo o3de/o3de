@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Distance.h>
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "PlayBackInfo.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
 
 namespace EMotionFX
@@ -27,6 +28,7 @@ namespace EMotionFX
     class Transform;
     class MotionEventTable;
     class MotionData;
+    class RootMotionExtractionData;
 
     /**
      * The motion base class.
@@ -36,11 +38,12 @@ namespace EMotionFX
      * named Update, which will output the resulting transformations into a Pose object.
      */
     class EMFX_API Motion
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(Motion, "{CCC21150-37F5-477A-9EBF-B5E71C0B5D71}", BaseObject)
+        AZ_RTTI(Motion, "{CCC21150-37F5-477A-9EBF-B5E71C0B5D71}")
 
         Motion(const char* name);
         virtual ~Motion();
@@ -250,8 +253,13 @@ namespace EMotionFX
         MotionData* GetMotionData();
         void SetMotionData(MotionData* motionData, bool delOldFromMem=true);
 
+        //------------------------------------------------
+        void SetRootMotionExtractionData(AZStd::shared_ptr<RootMotionExtractionData> data);
+        const AZStd::shared_ptr<RootMotionExtractionData>& GetRootMotionExtractionData() const;
+
     protected:
         MotionData*                 m_motionData = nullptr; /**< The motion data, which can in theory be any data representation/compression. */
+        AZStd::shared_ptr<RootMotionExtractionData> m_rootMotionExtractionData; /**< Root motion extraction settings */
         AZStd::string               m_fileName;              /**< The filename of the motion. */
         PlayBackInfo                m_defaultPlayBackInfo;  /**< The default/fallback motion playback info which will be used when no playback info is passed to the Play() function. */
         AZStd::unique_ptr<MotionEventTable> m_eventTable;   /**< The event table, which contains all events, and will make sure events get executed. */

@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/IsNull.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="IsNull"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::IsNull"
-	       PreferredClassName="Is Null"
-           Uuid="{760CE936-7059-42A3-A177-530A662E4ECF}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/IsNull.png"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Evaluates reference types for null.">
+        QualifiedName="ScriptCanvas::Nodes::Logic::IsNull"
+        PreferredClassName="Is Null"
+        Uuid="{760CE936-7059-42A3-A177-530A662E4ECF}"
+        Category="Logic"
+        Description="Evaluates reference types for null.">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description="Signaled if the reference provided is null."/>
         <Out Name="False" Description="Signaled if the reference provided is not null."/>

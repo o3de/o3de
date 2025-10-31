@@ -13,45 +13,74 @@
 namespace AzToolsFramework
 {
     RotationManipulators::RotationManipulators(const AZ::Transform& worldFromLocal)
+        : m_viewAngularManipulator { AngularManipulator::MakeShared(worldFromLocal) }
     {
+        const auto saveActionFn = [this](const AngularManipulator::Action& action)
+        {
+            m_angularManipulatorFeedback.m_mostRecentAction = action;
+        };
+
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_localAngularManipulators.size(); ++manipulatorIndex)
         {
-            m_localAngularManipulators[manipulatorIndex] = AngularManipulator::MakeShared(worldFromLocal);
+            auto angularManipulator = AngularManipulator::MakeShared(worldFromLocal);
+            angularManipulator->InstallLeftMouseDownCallback(saveActionFn);
+            angularManipulator->InstallLeftMouseUpCallback(saveActionFn);
+            angularManipulator->InstallMouseMoveCallback(saveActionFn);
+            m_localAngularManipulators[manipulatorIndex] = angularManipulator;
         }
 
-        m_viewAngularManipulator = AngularManipulator::MakeShared(worldFromLocal);
-
         m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);
+        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveActionFn);
+        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveActionFn);
+        m_viewAngularManipulator->InstallMouseMoveCallback(saveActionFn);
     }
 
     void RotationManipulators::InstallLeftMouseDownCallback(const AngularManipulator::MouseActionCallback& onMouseDownCallback)
     {
+        const auto saveActionAndCallOnMouseDownCallbackFn = [this, onMouseDownCallback](const AngularManipulator::Action& action)
+        {
+            m_angularManipulatorFeedback.m_mostRecentAction = action;
+            onMouseDownCallback(action);
+        };
+
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallLeftMouseDownCallback(onMouseDownCallback);
+            manipulator->InstallLeftMouseDownCallback(saveActionAndCallOnMouseDownCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallLeftMouseDownCallback(onMouseDownCallback);
+        m_viewAngularManipulator->InstallLeftMouseDownCallback(saveActionAndCallOnMouseDownCallbackFn);
     }
 
     void RotationManipulators::InstallMouseMoveCallback(const AngularManipulator::MouseActionCallback& onMouseMoveCallback)
     {
+        const auto saveActionAndCallOnMouseMoveCallbackFn = [this, onMouseMoveCallback](const AngularManipulator::Action& action)
+        {
+            m_angularManipulatorFeedback.m_mostRecentAction = action;
+            onMouseMoveCallback(action);
+        };
+
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallMouseMoveCallback(onMouseMoveCallback);
+            manipulator->InstallMouseMoveCallback(saveActionAndCallOnMouseMoveCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallMouseMoveCallback(onMouseMoveCallback);
+        m_viewAngularManipulator->InstallMouseMoveCallback(saveActionAndCallOnMouseMoveCallbackFn);
     }
 
     void RotationManipulators::InstallLeftMouseUpCallback(const AngularManipulator::MouseActionCallback& onMouseUpCallback)
     {
+        const auto saveActionAndCallOnMouseUpCallbackFn = [this, onMouseUpCallback](const AngularManipulator::Action& action)
+        {
+            m_angularManipulatorFeedback.m_mostRecentAction = action;
+            onMouseUpCallback(action);
+        };
+
         for (AZStd::shared_ptr<AngularManipulator>& manipulator : m_localAngularManipulators)
         {
-            manipulator->InstallLeftMouseUpCallback(onMouseUpCallback);
+            manipulator->InstallLeftMouseUpCallback(saveActionAndCallOnMouseUpCallbackFn);
         }
 
-        m_viewAngularManipulator->InstallLeftMouseUpCallback(onMouseUpCallback);
+        m_viewAngularManipulator->InstallLeftMouseUpCallback(saveActionAndCallOnMouseUpCallbackFn);
     }
 
     void RotationManipulators::SetLocalTransformImpl(const AZ::Transform& localTransform)
@@ -135,8 +164,7 @@ namespace AzToolsFramework
 
         const float viewAlignedScale = 1.12f;
         m_viewAngularManipulator->SetView(CreateManipulatorViewCircle(
-            *m_viewAngularManipulator, AZ::Color(1.0f, 1.0f, 1.0f, 1.0f), radius * viewAlignedScale, m_circleBoundWidth,
-            DrawFullCircle));
+            *m_viewAngularManipulator, AZ::Colors::White, radius * viewAlignedScale, m_circleBoundWidth, DrawFullCircle));
     }
 
     bool RotationManipulators::PerformingActionViewAxis() const
@@ -157,5 +185,15 @@ namespace AzToolsFramework
     void RotationManipulators::SetCircleBoundWidth(const float circleBoundWidth)
     {
         m_circleBoundWidth = circleBoundWidth;
+    }
+
+    void RotationManipulators::DisplayFeedback(
+        AzFramework::DebugDisplayRequests& debugDisplayRequests, const AzFramework::CameraState& cameraState)
+    {
+        ProcessManipulators(
+            [this, &debugDisplayRequests, &cameraState](BaseManipulator* manipulator)
+            {
+                m_angularManipulatorFeedback.Display(static_cast<AngularManipulator*>(manipulator), debugDisplayRequests, cameraState);
+            });
     }
 } // namespace AzToolsFramework

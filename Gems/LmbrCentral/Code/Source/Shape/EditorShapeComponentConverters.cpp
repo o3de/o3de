@@ -25,7 +25,7 @@ namespace LmbrCentral
         {
             // Cache the Configuration
             SphereShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<SphereShapeConfig>(configuration);
@@ -58,7 +58,7 @@ namespace LmbrCentral
             if (version <= 1)
             {
                 SphereShapeConfig configuration;
-                int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     classElement.GetSubElement(configIndex).GetData(configuration);
@@ -95,7 +95,7 @@ namespace LmbrCentral
         {
             // Cache the Configuration
             BoxShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<BoxShapeConfig>(configuration);
@@ -129,7 +129,7 @@ namespace LmbrCentral
             {
                 // Cache the Configuration
                 BoxShapeConfig configuration;
-                int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     classElement.GetSubElement(configIndex).GetData(configuration);
@@ -166,7 +166,7 @@ namespace LmbrCentral
         {
             // Cache the Configuration
             CylinderShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<CylinderShapeConfig>(configuration);
@@ -200,7 +200,7 @@ namespace LmbrCentral
             {
                 // Cache the Configuration
                 CylinderShapeConfig configuration;
-                int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     classElement.GetSubElement(configIndex).GetData(configuration);
@@ -238,7 +238,7 @@ namespace LmbrCentral
         {
             // Cache the Configuration
             CapsuleShapeConfig configuration;
-            int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
             if (configIndex != -1)
             {
                 classElement.GetSubElement(configIndex).GetData<CapsuleShapeConfig>(configuration);
@@ -272,7 +272,7 @@ namespace LmbrCentral
             {
                 // Cache the Configuration
                 CapsuleShapeConfig configuration;
-                int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     classElement.GetSubElement(configIndex).GetData(configuration);
@@ -311,7 +311,7 @@ namespace LmbrCentral
             {
                 // Cache the Configuration
                 PolygonPrismShape configuration;
-                int configIndex = classElement.FindElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+                int configIndex = classElement.FindElement(AZ_CRC_CE("Configuration"));
                 if (configIndex != -1)
                 {
                     classElement.GetSubElement(configIndex).GetData(configuration);

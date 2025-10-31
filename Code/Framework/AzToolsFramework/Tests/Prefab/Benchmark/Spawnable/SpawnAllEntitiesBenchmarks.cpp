@@ -22,10 +22,10 @@ namespace Benchmark
 
         SetUpSpawnableAsset(entityCountInSourcePrefab);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
-            m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
             state.ResumeTiming();
 
             for (uint64_t spwanableCounter = 0; spwanableCounter < spawnAllEntitiesCallCount; spwanableCounter++)
@@ -59,10 +59,10 @@ namespace Benchmark
 
         SetUpSpawnableAsset(entityCountInSpawnable);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
-            m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
             state.ResumeTiming();
 
             AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
@@ -93,15 +93,16 @@ namespace Benchmark
 
         SetUpSpawnableAsset(entityCountInSpawnable);
 
-        for (auto _ : state)
+        auto spawner = AzFramework::SpawnableEntitiesInterface::Get();
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
-            m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
             state.ResumeTiming();
 
             for (uint64_t spawnCallCounter = 0; spawnCallCounter < spawnCallCount; spawnCallCounter++)
             {
-                AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
+                spawner->SpawnAllEntities(*m_spawnTicket);
             }
 
             m_rootSpawnableInterface->ProcessSpawnableQueue();

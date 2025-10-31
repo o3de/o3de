@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldReadBackFocusDepthPass, "{8738691C-1D8C-4F96-8B4F-2152A4550470}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldReadBackFocusDepthPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldReadBackFocusDepthPass, SystemAllocator);
 
             static RPI::Ptr<DepthOfFieldReadBackFocusDepthPass> Create(const RPI::PassDescriptor& descriptor);
 

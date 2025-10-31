@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
 #endif
@@ -19,12 +22,12 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {   
-    class PropertyIntSpinCtrl
+    class AZTF_API PropertyIntSpinCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyIntSpinCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyIntSpinCtrl, AZ::SystemAllocator);
 
         PropertyIntSpinCtrl(QWidget* parent = NULL);
         virtual ~PropertyIntSpinCtrl();
@@ -62,7 +65,7 @@ namespace AzToolsFramework
     };
 
     // Base class to allow QObject inheritance and definitions for IntSpinBoxHandlerCommon class template
-    class IntSpinBoxHandlerQObject
+    class AZTF_API IntSpinBoxHandlerQObject
         : public QObject
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
@@ -75,7 +78,7 @@ namespace AzToolsFramework
     {
         using BaseHandler = IntWidgetHandler<ValueType, PropertyIntSpinCtrl, IntSpinBoxHandlerQObject>;
     public:
-        AZ_CLASS_ALLOCATOR(IntSpinBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntSpinBoxHandler, AZ::SystemAllocator);
     protected:
         bool IsDefaultHandler() const override;
         AZ::u32 GetHandlerName(void) const override;
@@ -101,5 +104,5 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void RegisterIntSpinBoxHandlers();
+    AZTF_API void RegisterIntSpinBoxHandlers();
 };

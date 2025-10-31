@@ -13,31 +13,29 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
 
 #include <ScriptCanvas/Core/NodeBus.h>
 
-#include "Messages/Request.h"
-#include "Messages/Notify.h"
 #include "APIArguments.h"
+#include "Messages/Notify.h"
+#include "Messages/Request.h"
 
 namespace ScriptCanvas
 {
     namespace Debugger
     {
-
-
-        //! The ScriptCanvas debugger component, this is the runtime debugger code that directly controls the execution
+        //! The ScriptCanvas debugger component - Game side only
+        //! this is the runtime debugger code that directly controls the execution
         //! and provides insight into a running ScriptCanvas graph.
-        class ServiceComponent 
+        class ServiceComponent
             : public AZ::Component
             , public Message::RequestVisitor
-            , public AzFramework::TmMsgBus::Handler
             , public ExecutionNotificationsBus::Handler
-            , public AzFramework::TargetManagerClient::Bus::Handler
+            , public AZ::SystemTickBus::Handler
         {
-           using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
+            using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
 
         public:
             AZ_COMPONENT(ServiceComponent, "{794B1BA5-DE13-46C7-9149-74FFB02CB51B}");
@@ -59,31 +57,34 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // TmMsgBus
-            void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
+            // AZ::SystemTickBus::Handler
+            void OnSystemTick() override;
             //////////////////////////////////////////////////////////////////////////
 
+            void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
+
             //////////////////////////////////////////////////////////////////////////
-            // TargetManagerClient::Bus::Handler
-            void TargetLeftNetwork(AzFramework::TargetInfo info) override;
+            // IRemoteTools handlers
+            void RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // ExecutionNotifications
             void GraphActivated(const GraphActivation&) override;
-            void GraphDeactivated(const GraphActivation&) override;
-            bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& graphIdentifier) override;
+            void GraphDeactivated(const GraphDeactivation&) override;
+            bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) override;
             bool IsVariableObserved(const VariableId& variableId) override;
             void NodeSignaledOutput(const OutputSignal&) override;
             void NodeSignaledInput(const InputSignal&) override;
+            void GraphSignaledReturn(const ReturnSignal&) override;
             void NodeStateUpdated(const NodeStateChange&) override;
-            void RuntimeError(const AZ::EntityId& entityId, const GraphIdentifier& identifier, const AZStd::string_view& description) override;
+            void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) override;
             void VariableChanged(const VariableChange&) override;
             void AnnotateNode(const AnnotateNodeSignal&) override;
             //////////////////////////////////////////////////////////////////////////
 
             bool IsAssetObserved(const AZ::Data::AssetId& assetId) const;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // Message processing
             void Visit(Message::AddBreakpointRequest& request) override;
@@ -106,35 +107,48 @@ namespace ScriptCanvas
             template<typename t_SignalType, typename t_MessageType>
             void NodeSignalled(const t_SignalType& nodeSignal)
             {
+                auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
                 if (m_state == SCDebugState_Interactive)
                 {
                     SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Interactive: %s", nodeSignal.ToString().data());
-                    AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                    if (remoteToolsInterface)
+                    {
+                        remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                    }
                     Interact();
                 }
                 else if (m_state == SCDebugState_InteractOnNext)
                 {
                     SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("IterateOnNext: %s", nodeSignal.ToString().data());
-                    AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                    if (remoteToolsInterface)
+                    {
+                        remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                    }
                     m_state = SCDebugState_Interactive;
                     Interact();
                 }
                 else if (m_state == SCDebugState_Attached)
                 {
                     const Signal& asSignal(nodeSignal);
-                    Breakpoint breakpoint(asSignal);
+                    Breakpoint breakpoint(asSignal.m_endpoint.GetNodeId());
 
                     if (m_breakpoints.find(breakpoint) != m_breakpoints.end())
                     {
                         SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Hit breakpoint: %s", nodeSignal.ToString().data());
-                        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::BreakpointHit(nodeSignal));
+                        if (remoteToolsInterface)
+                        {
+                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointHit(breakpoint));
+                        }
                         m_state = SCDebugState_Interactive;
                         Interact();
                     }
                     else if (m_client.m_script.m_logExecution)
                     {
                         SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Logging Requested: %s", nodeSignal.ToString().data());
-                        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                        if (remoteToolsInterface)
+                        {
+                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                        }
                     }
                 }
                 else
@@ -144,11 +158,11 @@ namespace ScriptCanvas
             }
 
             void Connect(Target& target);
-            Message::Request* FilterMessage(AzFramework::TmMsgPtr& msg);
+            Message::Request* FilterMessage(AzFramework::RemoteToolsMessagePointer& msg);
             void Interact();
             bool IsAttached() const;
             void ProcessMessages();
-            
+
         private:
             enum eSCDebugState
             {
@@ -173,14 +187,16 @@ namespace ScriptCanvas
             AZStd::atomic_uint m_state;
             AZStd::unordered_set<Breakpoint> m_breakpoints;
 
-            bool                    m_activeGraphStatusDirty;
-            ActiveGraphStatusMap    m_activeGraphs;
+            bool m_activeGraphStatusDirty;
+            ActiveGraphStatusMap m_activeGraphs;
 
-            bool                    m_activeEntityStatusDirty;
-            ActiveEntityStatusMap   m_activeEntities;
+            bool m_activeEntityStatusDirty;
+            ActiveEntityStatusMap m_activeEntities;
 
             AZStd::recursive_mutex m_msgMutex;
-            AzFramework::TmMsgQueue m_msgQueue;
+            AzFramework::RemoteToolsMessageQueue m_msgQueue;
+            AzFramework::IRemoteTools* m_remoteTools = nullptr;
+            AzFramework::RemoteToolsEndpointStatusEvent::Handler m_endpointLeftEventHandler;
         };
-    }
-}
+    } // namespace Debugger
+} // namespace ScriptCanvas

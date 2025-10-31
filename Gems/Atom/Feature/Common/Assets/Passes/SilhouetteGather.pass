@@ -1,0 +1,77 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SilhouetteGatherPassTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "StoreAction": "None",
+                        "StoreActionStencil": "None"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputImageAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
+                        }
+                    },
+                    "MultisampleSource": {
+                        "Pass":"This",
+                        "Attachment": "DepthStencilInputOutput"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8G8B8A8_UNORM",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputImageAttachment"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "silhouette",
+                "BindViewSrg": true,
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "SilhouetteGatherBuffer",
+                        "Slot": "Output"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -67,7 +67,7 @@ namespace AzToolsFramework
         m_searchText->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_searchText);
 
-        m_searchRegExp = QRegExp("", Qt::CaseInsensitive, QRegExp::RegExp);
+        m_searchRegExp = QRegularExpression("", QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         searchLayout->addWidget(m_searchText);
         m_searchFrame->setLayout(searchLayout);
@@ -115,14 +115,14 @@ namespace AzToolsFramework
         AZ::SerializeContext* serializeContext,
         const AzToolsFramework::EntityIdList& selectedEntityIds,
         const AzToolsFramework::ComponentFilter& componentFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter)
+        AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter)
     {
         m_serializeContext = serializeContext;
         m_selectedEntityIds = selectedEntityIds;
         m_componentFilter = componentFilter;
-        m_serviceFilter = serviceFilter;
-        m_incompatibleServiceFilter = incompatibleServiceFilter;
+        m_serviceFilter.assign_range(serviceFilter);
+        m_incompatibleServiceFilter.assign_range(incompatibleServiceFilter);
 
         UpdateContent();
         Present();
@@ -133,7 +133,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_componentModel->clear();
 
-        bool applyRegExFilter = !m_searchRegExp.isEmpty();
+        bool applyRegExFilter = !m_searchRegExp.pattern().isEmpty();
 
         // Gather all components that match our filter and group by category.
         ComponentPaletteUtil::ComponentDataTable componentDataTable;
@@ -322,7 +322,7 @@ namespace AzToolsFramework
     void ComponentPaletteWidget::UpdateSearch()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        m_searchRegExp = QRegExp(m_searchText->text(), Qt::CaseInsensitive, QRegExp::RegExp);
+        m_searchRegExp = QRegularExpression(m_searchText->text(), QRegularExpression::PatternOption::CaseInsensitiveOption);
         m_searchText->setFocus();
         UpdateContent();
     }

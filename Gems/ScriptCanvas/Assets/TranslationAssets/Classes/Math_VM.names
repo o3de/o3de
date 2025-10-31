@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ThreeGeneric",
-                    "context": "Math_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ThreeGeneric"
@@ -54,7 +53,6 @@
                 },
                 {
                     "base": "MultiplyAndAdd",
-                    "context": "Math_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyAndAdd"
@@ -98,7 +96,6 @@
                 },
                 {
                     "base": "StringToNumber",
-                    "context": "Math_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke StringToNumber"

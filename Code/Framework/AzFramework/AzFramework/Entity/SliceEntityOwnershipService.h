@@ -17,6 +17,8 @@
 #include <AzFramework/Entity/EntityOwnershipService.h>
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
+
 
 namespace AzFramework
 {
@@ -26,13 +28,13 @@ namespace AzFramework
      * SliceEntityOwnershipService uses slices as the prefab mechanism to manage entities used by an entity context.
      * This includes using a root-slice to put all the loose entities in a level that don't belong to any layers or slices.
      */
-    class SliceEntityOwnershipService
+    class AZF_API SliceEntityOwnershipService
         : public EntityOwnershipService
         , protected SliceEntityOwnershipServiceRequestBus::Handler
         , private SliceEntityRequestBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator);
 
         explicit SliceEntityOwnershipService(const EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 
@@ -81,6 +83,8 @@ namespace AzFramework
         void SetEntitiesAddedCallback(OnEntitiesAddedCallback onEntitiesAddedCallback) override;
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntityRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
+
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -147,6 +151,9 @@ namespace AzFramework
 
     private:
         EntityList GetRootSliceEntities();
+
+        // Checks if the root and root component is available, asserts if its not, and returns true if things are OK to proceed, false otherwise.
+        bool CheckAndAssertRootComponentIsAvailable();
 
         /// Helper function to send OnSliceInstantiationFailed events.
         static void DispatchOnSliceInstantiationFailed(const SliceInstantiationTicket& ticket,

@@ -9,4 +9,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+    <ComponentRelation Constraint="Incompatible" Name="NetworkRigidBodyComponent" />
+
 </Component>

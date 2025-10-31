@@ -34,14 +34,6 @@ namespace AZ
             {
                 ShaderCollection::Item* shaderVariantReference = reinterpret_cast<ShaderCollection::Item*>(classPtr);
 
-                // Dependent asset references aren't guaranteed to finish loading by the time this asset is serialized, only by
-                // the time this asset load is completed.  But since the data is needed here, we will deliberately block until the
-                // shader asset has finished loading.
-                if (shaderVariantReference->m_shaderAsset.QueueLoad())
-                {
-                    shaderVariantReference->m_shaderAsset.BlockUntilLoadComplete();
-                }
-
                 if (shaderVariantReference->m_shaderAsset.IsReady())
                 {
                     shaderVariantReference->m_shaderOptionGroup = ShaderOptionGroup{
@@ -51,8 +43,13 @@ namespace AZ
                 }
                 else
                 {
+                    // No worries, eventually the Material::Init will end up
+                    // calling InitializeShaderOptionGroup() and @m_shaderOptionGroup
+                    // will get proper data.
                     shaderVariantReference->m_shaderOptionGroup = {};
+                    shaderVariantReference->m_shaderAsset.QueueLoad(); // Not necessary to call QueueLoad, but doesn't hurt either.
                 }
+
             }
         };
 
@@ -75,15 +72,22 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
+                serializeContext->Enum<ShaderCollection::Item::DrawItemType>()
+                    ->Value("Raster", ShaderCollection::Item::DrawItemType::Raster)
+                    ->Value("Dispatch", ShaderCollection::Item::DrawItemType::Dispatch)
+                    ->Value("Deferred", ShaderCollection::Item::DrawItemType::Deferred)
+                    ->Value("RayTracing", ShaderCollection::Item::DrawItemType::RayTracing)
+                    ->Value("Custom", ShaderCollection::Item::DrawItemType::Custom);
+
                 serializeContext->Class<ShaderCollection::Item>()
-                    ->Version(6)
+                    ->Version(7)
                     ->EventHandler<ShaderVariantReferenceSerializationEvents>()
                     ->Field("ShaderAsset", &ShaderCollection::Item::m_shaderAsset)
                     ->Field("ShaderVariantId", &ShaderCollection::Item::m_shaderVariantId)
                     ->Field("Enabled", &ShaderCollection::Item::m_enabled)
                     ->Field("OwnedShaderOptionIndices", &ShaderCollection::Item::m_ownedShaderOptionIndices)
                     ->Field("ShaderTag", &ShaderCollection::Item::m_shaderTag)
-                    ;
+                    ->Field("DrawItemType", &ShaderCollection::Item::m_drawItemType);
             }
 
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
@@ -96,7 +100,8 @@ namespace AZ
                     ->Method("GetShaderAssetId", &Item::GetShaderAssetId)
                     ->Method("GetShaderVariantId", &Item::GetShaderVariantId)
                     ->Method("GetShaderOptionGroup", &Item::GetShaderOptionGroup)
-                ;
+                    ->Method("GetDrawItemType", &Item::GetDrawItemType)
+                    ->Method("MaterialOwnsShaderOption", static_cast<bool (Item::*)(const Name&) const>(&Item::MaterialOwnsShaderOption));
             }
         }
 
@@ -155,20 +160,44 @@ namespace AZ
             return (m_shaderTagIndexMap.Find(shaderTag).IsValid());
         }
 
-        ShaderCollection::Item::Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
+        void ShaderCollection::TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset)
+        {
+            for (auto& shaderItem : m_shaderItems)
+            {
+                shaderItem.TryReplaceShaderAsset(newShaderAsset);
+            }
+        }
+
+        bool ShaderCollection::InitializeShaderOptionGroups()
+        {
+            for (auto& shaderItem : m_shaderItems)
+            {
+                if (!shaderItem.InitializeShaderOptionGroup())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        ShaderCollection::Item::Item(
+            const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, DrawItemType drawItemType, ShaderVariantId variantId)
             : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
             , m_shaderAsset(shaderAsset)
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
+            , m_drawItemType(drawItemType)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)
         {
         }
 
-        ShaderCollection::Item::Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
+        ShaderCollection::Item::Item(
+            Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, DrawItemType drawItemType, ShaderVariantId variantId)
             : m_renderStatesOverlay(RHI::GetInvalidRenderStates())
             , m_shaderAsset(AZStd::move(shaderAsset))
             , m_shaderVariantId(variantId)
             , m_shaderTag(shaderTag)
+            , m_drawItemType(drawItemType)
             , m_shaderOptionGroup(shaderAsset->GetShaderOptionGroupLayout(), variantId)
         {
         }
@@ -265,6 +294,30 @@ namespace AZ
         const AZ::RPI::ShaderOptionGroup& ShaderCollection::Item::GetShaderOptionGroup() const
         {
             return m_shaderOptionGroup;
+        }
+
+        bool ShaderCollection::Item::InitializeShaderOptionGroup()
+        {
+            if (!m_shaderAsset.IsReady())
+            {
+                return false;
+            }
+            m_shaderOptionGroup = ShaderOptionGroup{
+                m_shaderAsset->GetShaderOptionGroupLayout(),
+                m_shaderVariantId };
+            return true;
+        }
+
+        void ShaderCollection::Item::TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset)
+        {
+            if (newShaderAsset.GetId() != m_shaderAsset.GetId())
+            {
+                return;
+            }
+            m_shaderAsset = newShaderAsset;
+            [[maybe_unused]] bool success = InitializeShaderOptionGroup();
+            AZ_Assert(success, "Failed to InitializeShaderOptionGroup using shaderAsset with uuid=%s and hint=%s"
+                , newShaderAsset.GetId().ToFixedString().c_str(), newShaderAsset.GetHint().c_str());
         }
 
     } // namespace RPI

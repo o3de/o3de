@@ -22,7 +22,7 @@ namespace AZ
         {
             if (classElement.GetVersion() < 3)
             {
-                constexpr AZ::u32 materialDataCrc = AZ_CRC("Materials", 0x9b1716b5);
+                constexpr AZ::u32 materialDataCrc = AZ_CRC_CE("Materials");
 
                 // MaterialAssignmentId was changed from an AZStd::pair to an explicit structure
                 // Any previously stored data needs to be converted to preserve existing levels and slices

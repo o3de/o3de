@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector2Functions_Clamp",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Clamp",
+                "category": "Math/Vector2"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector2Functions_Clamp",
+                    "details": {
+                        "name": "Clamp",
+                        "tooltip": "Returns vector clamped to [min, max] and equal to source if possible."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Min"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Max"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

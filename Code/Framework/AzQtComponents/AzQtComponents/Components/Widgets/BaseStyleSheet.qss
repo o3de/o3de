@@ -87,6 +87,8 @@ QTextEdit,
 QPlainText,
 QPlainTextEdit
 {
+    background-color: #E9E9E9;
+    color: #545454;
     margin: 2px;
     border-width: 0px;
     border-style: solid;
@@ -109,7 +111,7 @@ QPlainTextEdit:focus
     margin: 1px;
     border-width: 1px;
     border-color: #94D2FF;
-    background-color: #FFFFFF;
+    background-color: #E9E9E9;
 }
 
 @import "AssetFolderListView.qss";

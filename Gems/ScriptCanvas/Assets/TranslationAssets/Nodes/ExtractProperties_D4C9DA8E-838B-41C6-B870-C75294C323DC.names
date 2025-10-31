@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "{D4C9DA8E-838B-41C6-B870-C75294C323DC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Extract Properties",
+                "category": "Utilities",
+                "tooltip": "Extracts property values from connected input"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "When signaled assigns property values using the supplied source input"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after all property haves have been pushed to the output slots"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                }
+            ]
+        }
+    ]
+}

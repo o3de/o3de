@@ -26,9 +26,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAddRagdollJoint, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveRagdollJoint, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustRagdollJoint, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAddRagdollJoint, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveRagdollJoint, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustRagdollJoint, EMotionFX::CommandAllocator)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,7 +94,7 @@ namespace EMotionFX
         const AZ::Quaternion& parentBindRotationWorld = parentBindTransform.m_rotation;
 
         AZ::Vector3 boneDirection = GetBoneDirection(skeleton, node);
-        AZStd::vector<AZ::Quaternion> exampleRotationsLocal;
+        AZStd::vector<AZ::Quaternion> locaRotationSamples;
 
         if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
         {
@@ -102,7 +102,7 @@ namespace EMotionFX
                 jointTypeId.has_value())
             {
                 AZStd::unique_ptr<AzPhysics::JointConfiguration> jointLimitConfig = jointHelpers->ComputeInitialJointLimitConfiguration(
-                    *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
+                    *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, locaRotationSamples);
 
                 AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
                 jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ParentLocalRotation, true);
@@ -135,6 +135,8 @@ namespace EMotionFX
         }
 
         AZStd::unordered_set<AZStd::string> jointsToAdd {newJointNames};
+        // keep track of the root and its immediate children, to avoid adding colliders to those joints later
+        AZStd::unordered_set<AZStd::string> rootAndImmediateChildren;
 
         // The new joints being added are leaf joints in the ragdoll. Find all
         // parent joints that are not currently in the ragdoll, and add them as
@@ -143,7 +145,12 @@ namespace EMotionFX
         {
             AZStd::unordered_set<AZStd::string> parents;
 
-            Node* node = actor->GetSkeleton()->FindNodeByName(jointToAdd)->GetParentNode();
+            Node* node = actor->GetSkeleton()->FindNodeByName(jointToAdd);
+            if (node->GetIsRootNode() || node->GetParentNode()->GetIsRootNode())
+            {
+                rootAndImmediateChildren.emplace(node->GetNameString());
+            }
+            node = node->GetParentNode();
 
             while (node)
             {
@@ -163,7 +170,12 @@ namespace EMotionFX
                     // with bad data
                 }
 
-                node = node->GetParentNode();
+                Node* parentNode = node->GetParentNode();
+                if (node->GetIsRootNode() || parentNode->GetIsRootNode())
+                {
+                    rootAndImmediateChildren.emplace(node->GetNameString());
+                }
+                node = parentNode;
             }
 
             jointsToAdd.insert(AZStd::make_move_iterator(parents.begin()), AZStd::make_move_iterator(parents.end()));
@@ -171,7 +183,14 @@ namespace EMotionFX
 
         for(const AZStd::string& jointToAdd : jointsToAdd)
         {
-            AddJointToRagdoll(actorId, jointToAdd, AZStd::nullopt, AZStd::nullopt, commandGroup, executeInsideCommand, addDefaultCollider);
+            AddJointToRagdoll(
+                actorId,
+                jointToAdd,
+                AZStd::nullopt,
+                AZStd::nullopt,
+                commandGroup,
+                executeInsideCommand,
+                rootAndImmediateChildren.contains(jointToAdd) ? false : addDefaultCollider);
         }
     }
 

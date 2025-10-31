@@ -8,13 +8,13 @@
 
 #pragma once
 
-struct DisplayContext;
-class CBaseObjectsCache;
 class QPoint;
-struct AABB;
+namespace AZ
+{
+    class Aabb;
+}
 class CViewport;
 
-// Viewport functionality required for DisplayContext
 struct IDisplayViewport
 {
     virtual void Update() = 0;
@@ -48,7 +48,7 @@ struct IDisplayViewport
 
     virtual float GetAspectRatio() const = 0;
 
-    virtual bool IsBoundsVisible(const AABB& box) const = 0;
+    virtual bool IsBoundsVisible(const AZ::Aabb& box) const = 0;
 
     virtual void ScreenToClient(QPoint& pt) const = 0;
     virtual void GetDimensions(int* width, int* height) const = 0;

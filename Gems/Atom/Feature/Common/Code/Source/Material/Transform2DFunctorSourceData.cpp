@@ -8,6 +8,7 @@
 
 #include "./Transform2DFunctorSourceData.h"
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -18,8 +19,8 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<Transform2DFunctorSourceData>()
-                    ->Version(3)
+                serializeContext->Class<Transform2DFunctorSourceData, RPI::MaterialFunctorSourceData>()
+                    ->Version(4) // added base class
                     ->Field("transformOrder", &Transform2DFunctorSourceData::m_transformOrder)
                     ->Field("centerProperty", &Transform2DFunctorSourceData::m_center)
                     ->Field("scaleProperty", &Transform2DFunctorSourceData::m_scale)
@@ -29,8 +30,7 @@ namespace AZ
                     ->Field("translateYProperty", &Transform2DFunctorSourceData::m_translateY)
                     ->Field("rotateDegreesProperty", &Transform2DFunctorSourceData::m_rotateDegrees)
                     ->Field("float3x3ShaderInput", &Transform2DFunctorSourceData::m_transformMatrix)
-                    ->Field("float3x3InverseShaderInput", &Transform2DFunctorSourceData::m_transformMatrixInverse)
-                    ;
+                    ->Field("float3x3InverseShaderInput", &Transform2DFunctorSourceData::m_transformMatrixInverse);
             }
         }
 
@@ -62,39 +62,25 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_translateY);
             AddMaterialPropertyDependency(functor, functor->m_rotateDegrees);
 
-            functor->m_transformMatrix = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{m_transformMatrix});
-
-            if (functor->m_transformMatrix.IsNull())
+            functor->m_transformMatrix = MaterialShaderParameterNameIndex{ m_transformMatrix, context.GetNameContext() };
+            if (m_transformMatrixInverse.empty() == false)
             {
-                AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", m_transformMatrix.c_str());
-                return Failure();
+                functor->m_transformMatrixInverse = MaterialShaderParameterNameIndex{ m_transformMatrixInverse, context.GetNameContext() };
             }
-
-            // There are some cases where the matrix is required but the inverse is not, so the SRG only has the regular matrix.
-            // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
-            if (!m_transformMatrixInverse.empty())
-            {
-                functor->m_transformMatrixInverse = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{m_transformMatrixInverse});
-
-                if (functor->m_transformMatrixInverse.IsNull())
-                {
-                    AZ_Error("MaterialFunctorSourceData", false, "Could not find shader input '%s'", m_transformMatrixInverse.c_str());
-                    return Failure();
-                }
-            }
-
             functor->m_transformOrder = m_transformOrder;
 
-            AZStd::set<Transform2DFunctor::TransformType> transformSet{m_transformOrder.begin(), m_transformOrder.end()};
+            AZStd::set<TransformType> transformSet{m_transformOrder.begin(), m_transformOrder.end()};
             if (m_transformOrder.size() != transformSet.size())
             {
                 AZ_Warning("Transform2DFunctor", false, "transformOrder field contains duplicate entries");
             }
 
-            if (transformSet.find(Transform2DFunctor::TransformType::Invalid) != transformSet.end())
+            if (transformSet.find(TransformType::Invalid) != transformSet.end())
             {
                 AZ_Warning("Transform2DFunctor", false, "transformOrder contains invalid entries");
             }
+
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

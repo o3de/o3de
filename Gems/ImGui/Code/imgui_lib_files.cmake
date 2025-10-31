@@ -9,6 +9,7 @@
 set(FILES
     ../External/ImGui/v1.82/imgui/imconfig.h
     ../External/ImGui/v1.82/imgui/imgui.cpp
+    ../External/ImGui/v1.82/imgui/imgui_demo.cpp
     ../External/ImGui/v1.82/imgui/imgui.h
     ../External/ImGui/v1.82/imgui/imgui_draw.cpp
     ../External/ImGui/v1.82/imgui/imgui_internal.h

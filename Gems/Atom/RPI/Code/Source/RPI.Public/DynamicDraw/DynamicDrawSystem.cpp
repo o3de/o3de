@@ -70,7 +70,13 @@ namespace AZ
         void DynamicDrawSystem::AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
-            m_drawPackets[scene].emplace_back(AZStd::move(drawPacket));
+            m_drawPackets[scene].emplace_back(ConstPtr<RHI::DrawPacket>(drawPacket.release()));
+        }
+
+        void DynamicDrawSystem::AddDrawPacket(Scene* scene, ConstPtr<RHI::DrawPacket> drawPacket)
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
+            m_drawPackets[scene].emplace_back(drawPacket);
         }
 
         void DynamicDrawSystem::SubmitDrawData(Scene* scene, AZStd::vector<ViewPtr> views)
@@ -123,6 +129,9 @@ namespace AZ
 
         void DynamicDrawSystem::FrameEnd()
         {
+            // The DynamicDrawSystem::Init function must have been invoked
+            // for m_bufferAlloc to be non-nullptr
+            if (m_bufferAlloc != nullptr)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutexBufferAlloc);
                 m_bufferAlloc->FrameEnd();

@@ -1,0 +1,330 @@
+{
+    "O3DE": {
+        "Gems": {
+            "PythonCoverage": {
+                "Targets": {
+                    "PythonCoverage.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "InAppPurchases": {
+                "Targets": {
+                    "InAppPurchases": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Editor": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Stars": {
+                "Targets": {
+                    "Stars": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Editor": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "VirtualGamepad": {
+                "Targets": {
+                    "VirtualGamepad": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Clients": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShine": {
+                "Targets": {
+                    "LyShine": {
+                        "AutoLoad": false
+                    },
+                    "LyShine.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShine.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShineExamples": {
+                "Targets": {
+                    "LyShineExamples": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Vegetation": {
+                "Targets": {
+                    "Vegetation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Terrain": {
+                "Targets": {
+                    "Terrain.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "FastNoise": {
+                "Targets": {
+                    "FastNoise.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "GradientSignal": {
+                "Targets": {
+                    "GradientSignal.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SurfaceData": {
+                "Targets": {
+                    "SurfaceData.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PrefabBuilder": {
+                "Targets": {
+                    "PrefabBuilder.Builders": {
+                        "AutoLoad": false
+                    },
+                    "PrefabBuilder.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SceneProcessing": {
+                "Targets": {
+                    "SceneProcessing.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptEvents": {
+                "Targets": {
+                    "ScriptEvents.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ExpressionEvaluation": {
+                "Targets": {
+                    "ExpressionEvaluation": {
+                        "AutoLoad": false
+                    },
+                    "ExpressionEvaluation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AtomTressFX": {
+                "Targets": {
+                    "AtomTressFX": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Maestro": {
+                "Targets": {
+                    "Maestro.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "MotionMatching": {
+                "Targets": {
+                    "MotionMatching.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX": {
+                "Targets": {
+                    "EMotionFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX_Atom": {
+                "Targets": {
+                    "EMotionFX_Atom.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ImGui": {
+                "Targets": {
+                    "ImGui.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Gestures": {
+                "Targets": {
+                    "Gestures": {
+                        "AutoLoad": false
+                    },
+                    "Gestures.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EditorModeFeedback": {
+                "Targets": {
+                    "EditorModeFeedback": {
+                        "AutoLoad": false
+                    },
+                    "EditorModeFeedback.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "RecastNavigation": {
+                "Targets": {
+                    "RecastNavigation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AudioSystem": {
+                "Targets": {
+                    "AudioSystem.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "GraphCanvas": {
+                "Targets": {
+                    "GraphCanvas.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "GraphModel": {
+                "Targets": {
+                    "GraphModel.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX": {
+                "Targets": {
+                    "PhysX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysXDebug": {
+                "Targets": {
+                    "PhysXDebug.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5": {
+                "Targets": {
+                    "PhysX5.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5Debug": {
+                "Targets": {
+                    "PhysX5Debug.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "NvCloth": {
+                "Targets": {
+                    "NvCloth.Editor": {
+                        "AutoLoad": false
+                    },
+                    "NvCloth.Editor.Gem": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptCanvas": {
+                "Targets": {
+                    "ScriptCanvas.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptCanvasDeveloper": {
+                "Targets": {
+                    "ScriptCanvasDeveloper.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptCanvasPhysics": {
+                "Targets": {
+                    "ScriptCanvasPhysics": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptCanvasTesting": {
+                "Targets": {
+                    "ScriptCanvasTesting.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LandscapeCanvas": {
+                "Targets": {
+                    "LandscapeCanvas.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "WhiteBox": {
+                "Targets": {
+                    "WhiteBox.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PythonAssetBuilder": {
+                "Targets": {
+                    "PythonAssetBuilder.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            }
+        }
+    }
+}

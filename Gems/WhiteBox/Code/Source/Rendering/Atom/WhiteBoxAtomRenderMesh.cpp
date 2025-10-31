@@ -24,6 +24,26 @@
 
 namespace WhiteBox
 {
+    AtomRenderMesh::AtomRenderMesh(AZ::EntityId entityId)
+        : m_entityId(entityId)
+    {
+        AZ::Render::MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
+    }
+
+    AtomRenderMesh::~AtomRenderMesh()
+    {
+        m_materialInstance = {};
+        if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+            AZ::Render::MeshHandleStateNotificationBus::Event(
+                m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+        }
+        
+        AZ::Render::MeshHandleStateRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+    }
+
     bool AtomRenderMesh::AreAttributesValid() const
     {
         bool attributesAreValid = true;
@@ -148,6 +168,8 @@ namespace WhiteBox
         
         if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
         {
+            m_materialInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
+
             AZ::RPI::ModelMaterialSlot materialSlot;
             materialSlot.m_stableId = OneMaterialSlotId;
             materialSlot.m_defaultMaterialAsset = materialAsset;
@@ -162,11 +184,11 @@ namespace WhiteBox
         modelCreator.End(m_modelAsset);
     }
 
-    bool AtomRenderMesh::CreateModel(AZ::EntityId entityId)
+    bool AtomRenderMesh::CreateModel()
     {
         m_model = AZ::RPI::Model::FindOrCreate(m_modelAsset);
         m_meshFeatureProcessor =
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(entityId);
+            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(m_entityId);
 
         if (!m_meshFeatureProcessor)
         {
@@ -177,7 +199,9 @@ namespace WhiteBox
         }
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset });
+        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor(m_modelAsset, m_materialInstance));
+        AZ::Render::MeshHandleStateNotificationBus::Event(m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+
         return true;
     }
 
@@ -186,19 +210,17 @@ namespace WhiteBox
         return meshData.VertexCount() != m_vertexCount;
     }
 
-    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData, AZ::EntityId entityId)
+    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData)
     {
         if (!CreateLodAsset(meshData))
         {
-            // TODO: LYN-808
             return false;
         }
 
         CreateModelAsset();
 
-        if (!CreateModel(entityId))
+        if (!CreateModel())
         {
-            // TODO: LYN-808
             return false;
         }
 
@@ -217,17 +239,15 @@ namespace WhiteBox
         return true; // meshData.VertexCount() != m_vertexCount;
     }
 
-    void AtomRenderMesh::BuildMesh(
-        const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal, AZ::EntityId entityId)
+    void AtomRenderMesh::BuildMesh(const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal)
     {
         const WhiteBoxFaces culledFaceList = BuildCulledWhiteBoxFaces(renderData.m_faces);
         const WhiteBoxMeshAtomData meshData(culledFaceList);
 
         if (DoesMeshRequireFullRebuild(meshData))
         {
-            if (!CreateMesh(meshData, entityId))
+            if (!CreateMesh(meshData))
             {
-                // TODO: LYN-808
                 return;
             }
         }
@@ -235,7 +255,6 @@ namespace WhiteBox
         {
             if (!UpdateMeshBuffers(meshData))
             {
-                // TODO: LYN-808
                 return;
             }
         }
@@ -248,48 +267,55 @@ namespace WhiteBox
         m_meshFeatureProcessor->SetTransform(m_meshHandle, worldFromLocal);
     }
 
-    void AtomRenderMesh::UpdateMaterial([[maybe_unused]] const WhiteBoxMaterial& material)
+    void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
-        // TODO: LYN-784
-        // colors: vertex colors probs not used.
-        // (use constant color for material -> material editor)
-        //
-        // m_meshFeatureProcessor->SetMaterialAssignmentMap() (not in spectra mainline yet)
-        //
-        // for now:
-        // m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        // MaterialAssignmentMap materialMap;
-        // materialMap[DefaultMaterialAssignmentId] = (see below)
-        // m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset, materialMap)
+        if (m_meshFeatureProcessor && m_materialInstance)
+        {            
+            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.color"));
+                materialPropertyIndex.IsValid())
+            {
+                m_materialInstance->SetPropertyValue(materialPropertyIndex, AZ::Color(material.m_tint));
+            }
 
-        // from tommy (SkinnedMeshContainer.cpp)
-        /*
-            auto materialAsset =
-           AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(SkinnedMeshMaterial); auto
-           materialOverrideInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
+            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                materialPropertyIndex.IsValid())
+            {
+                m_materialInstance->SetPropertyValue(materialPropertyIndex, material.m_useTexture);
+            }
 
-            AZ::Render::MaterialAssignmentMap materialMap;
-            materialMap[AZ::Render::DefaultMaterialAssignmentId].m_materialAsset = materialAsset;
-            materialMap[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = materialOverrideInstance;
-        */
+            // If the material changes were successfully applied then disconnect from the tick bus. Otherwise, make another attempt on the next tick.
+            if (!m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
+            {
+                AZ::TickBus::Handler::BusDisconnect();
+            }
+            else if (!AZ::TickBus::Handler::BusIsConnected())
+            {
+                AZ::TickBus::Handler::BusConnect();
+            }
+        }
+    }
 
-        /*
-            changing material properties:
+    void AtomRenderMesh::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        if (!m_materialInstance || !m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+    }
 
-            (todo)
-        */
+    void AtomRenderMesh::SetVisiblity(bool visibility)
+    {
+        m_visible = visibility;
+        m_meshFeatureProcessor->SetVisible(m_meshHandle, m_visible);
     }
 
     bool AtomRenderMesh::IsVisible() const
     {
-        // TODO: LYN-788
-        return true;
+        return m_visible;
     }
 
-    void AtomRenderMesh::SetVisiblity([[maybe_unused]] bool visibility)
+    const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* AtomRenderMesh::GetMeshHandle() const
     {
-        // TODO: LYN-788
-        // hide: m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        // show: m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset);
+        return &m_meshHandle;
     }
 } // namespace WhiteBox

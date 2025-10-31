@@ -7,12 +7,12 @@
  */
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
 #endif
-
-#define TEMPLATE_GEM_CONFIGURATION_ENABLED
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
@@ -22,14 +22,15 @@ namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
-    QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(DownloadController);
 
     class CreateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit CreateProjectCtrl(QWidget* parent = nullptr);
+        explicit CreateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
         void NotifyCurrentScreen() override;
@@ -38,33 +39,27 @@ namespace O3DE::ProjectManager
         void HandleBackButton();
         void HandlePrimaryButton();
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void OnChangeScreenRequest(ProjectManagerScreen screen);
         void HandleSecondaryButton();
         void ReinitGemCatalogForSelectedTemplate();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
     private:
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void Update();
         void NextScreen();
         void PreviousScreen();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-        bool CurrentScreenIsValid();
+        
+        AZ::Outcome<void, QString> CurrentScreenIsValid();
         void CreateProject();
 
         QStackedWidget* m_stack = nullptr;
         ScreenHeader* m_header = nullptr;
 
         QPushButton* m_primaryButton = nullptr;
-
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         QPushButton* m_secondaryButton = nullptr;
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
-        GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        ProjectGemCatalogScreen* m_projectGemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
     };
 

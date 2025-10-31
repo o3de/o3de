@@ -10,8 +10,8 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceBufferPool.h>
 
 //! This file holds useful utility functions for working with the RPI.
 
@@ -23,11 +23,11 @@ namespace AZ
         //! Writes all of the data from the provided vector into the provided buffer.
         //! If the buffer is not large enough to hold the data, the map will not occur and AZ_Error will trigger.
         template <typename T>
-        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::Buffer> buffer, const AZStd::vector<T>& data);
+        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::DeviceBuffer> buffer, const AZStd::vector<T>& data);
 
         //! Writes all of the data from the provided pointer into the provided buffer.
         //! If the buffer is not large enough to hold the data, the map will not occur and AZ_Error will trigger.
-        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::Buffer> buffer, const void* data, size_t dataSize);
+        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::DeviceBuffer> buffer, const void* data, size_t dataSize);
 
         //! Creates an asset of AssetType given a path. If the path invalid, then a default constructed asset is
         //! returned. If the path is not empty and the asset isn't found, then a warning is also issued.

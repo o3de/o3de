@@ -22,9 +22,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionContainerWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionContainerHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionContainerWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionContainerHandler, EditorAllocator)
 
     BlendSpaceMotionWidget::BlendSpaceMotionWidget(BlendSpaceNode::BlendSpaceMotion* motion, QGridLayout* layout, int row)
         : m_motion(motion)
@@ -169,7 +169,7 @@ namespace EMotionFX
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setSpacing(0);
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(mainLayout);
     }
 
@@ -492,7 +492,7 @@ namespace EMotionFX
             QWidget* motionsWidget = new QWidget(m_containerWidget);
             motionsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             QGridLayout* motionsLayout = new QGridLayout();
-            motionsLayout->setMargin(0);
+            motionsLayout->setContentsMargins(0, 0, 0, 0);
 
             const size_t motionCount = m_motions.size();
             for (size_t i = 0; i < motionCount; ++i)
@@ -536,7 +536,7 @@ namespace EMotionFX
 
     AZ::u32 BlendSpaceMotionContainerHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendSpaceMotionContainer", 0x8025d37d);
+        return AZ_CRC_CE("BlendSpaceMotionContainer");
     }
 
 
@@ -546,7 +546,8 @@ namespace EMotionFX
 
         connect(picker, &BlendSpaceMotionContainerWidget::MotionsChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -557,7 +558,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstancePointer());
+            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstance());
             GUI->SetBlendSpaceNode(m_blendSpaceNode);
         }
 

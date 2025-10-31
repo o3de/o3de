@@ -36,7 +36,7 @@ namespace
     {
         if (classElement.GetVersion() <= 3)
         {
-            auto selectorArrayElementIndex = classElement.FindElement(AZ_CRC("Selectors", 0x0e4270a0));
+            auto selectorArrayElementIndex = classElement.FindElement(AZ_CRC_CE("Selectors"));
             if (selectorArrayElementIndex != -1)
             {
                 classElement.RemoveElement(selectorArrayElementIndex);
@@ -119,6 +119,8 @@ namespace
             return Styling::Attributes::Selectors;
         case Styling::Attribute::TextAlignment:
             return Styling::Attributes::TextAlignment;
+        case Styling::Attribute::LayoutOrientation:
+            return Styling::Attributes::LayoutOrientation;
         case Styling::Attribute::Invalid:
         default:
             return "Invalid Attribute";
@@ -431,7 +433,7 @@ namespace GraphCanvas
             AZStd::string result("Computed:\n");
             result += "\tObject selectors: " + m_objectSelectorsAsString + "\n";
             result += "\tStyles:\n";
-            for (const Style* style : m_styles)
+            for (const auto& style : m_styles)
             {
                 if (style)
                 {
@@ -446,7 +448,7 @@ namespace GraphCanvas
         bool ComputedStyle::HasAttribute(AZ::u32 attribute) const
         {
             Attribute typedAttribute = static_cast<Attribute>(attribute);
-            return std::any_of(m_styles.cbegin(), m_styles.cend(), [=](const Style* s) {
+            return std::any_of(m_styles.cbegin(), m_styles.cend(), [=](const AZStd::shared_ptr<Style>& s) {
                 return s && s->HasAttribute(typedAttribute);
             });
         }
@@ -454,7 +456,7 @@ namespace GraphCanvas
         QVariant ComputedStyle::GetAttribute(AZ::u32 attribute) const
         {
             Attribute typedAttribute = static_cast<Attribute>(attribute);
-            for (const Style* style : m_styles)
+            for (const auto& style : m_styles)
             {
                 if (style && style->HasAttribute(typedAttribute))
                 {

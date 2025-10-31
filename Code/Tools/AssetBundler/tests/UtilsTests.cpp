@@ -18,21 +18,21 @@
 namespace AssetBundler
 {
     class MockUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public AzFramework::ApplicationRequests::Bus::Handler
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-            m_tempDir = new UnitTest::ScopedTemporaryDirectory();
+            m_tempDir = new AZ::Test::ScopedAutoTempDirectory();
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry == nullptr)
             {
@@ -59,7 +59,7 @@ namespace AssetBundler
             delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             AzFramework::ApplicationRequests::Bus::Handler::BusDisconnect();
-            ScopedAllocatorSetupFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         // AzFramework::ApplicationRequests::Bus::Handler interface
@@ -74,7 +74,7 @@ namespace AssetBundler
 
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
-        UnitTest::ScopedTemporaryDirectory* m_tempDir = nullptr;
+        AZ::Test::ScopedAutoTempDirectory* m_tempDir = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZ::IO::Path m_oldEngineRoot;
     };

@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder Compression/Assets": {
+                    "watch": "@GEMROOT:Compression@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder Compression/Registry": {
+                    "watch": "@GEMROOT:Compression@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

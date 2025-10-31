@@ -86,7 +86,7 @@ class TestSetup(unittest.TestCase):
 
         self.mock_workspace.setup()
 
-        mock_makedirs.assert_called_once_with(self.mock_workspace.tmp_path)
+        mock_makedirs.assert_called_once_with(self.mock_workspace.tmp_path, exist_ok=True)
 
     @mock.patch('os.makedirs')
     @mock.patch('os.path.exists')
@@ -117,7 +117,7 @@ class TestSetup(unittest.TestCase):
         self.mock_workspace.output_path = 'mock_output_path'
 
         self.mock_workspace.setup()
-        mock_makedirs.assert_called_with(self.mock_workspace.output_path)
+        mock_makedirs.assert_called_with(self.mock_workspace.output_path, exist_ok=True)
         assert mock_makedirs.call_count == 2  # ArtifactManager.__init__() calls os.path.exists()
 
 

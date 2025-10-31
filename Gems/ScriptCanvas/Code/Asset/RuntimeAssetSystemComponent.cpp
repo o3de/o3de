@@ -11,8 +11,12 @@
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <Asset/RuntimeAssetSystemComponent.h>
 #include <Asset/SubgraphInterfaceAssetHandler.h>
+#include <Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/Executor.h>
+#include <ScriptCanvas/Execution/ExecutionContext.h>
 
 namespace ScriptCanvas
 {
@@ -25,6 +29,7 @@ namespace ScriptCanvas
         RuntimeData::Reflect(context);
         RuntimeDataOverrides::Reflect(context);
         SubgraphInterfaceData::Reflect(context);
+        Executor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -36,18 +41,18 @@ namespace ScriptCanvas
 
     void RuntimeAssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasRuntimeAssetService", 0x1a85bf2b));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasRuntimeAssetService"));
     }
 
     void RuntimeAssetSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
-        required.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("ScriptCanvasService"));
     }
 
     void RuntimeAssetSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void RuntimeAssetSystemComponent::Init()

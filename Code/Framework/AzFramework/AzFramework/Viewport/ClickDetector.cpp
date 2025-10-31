@@ -9,7 +9,7 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AzFramework
 {
@@ -17,7 +17,7 @@ namespace AzFramework
     {
         m_timeNowFn = []
         {
-            const auto now = AZStd::chrono::high_resolution_clock::now();
+            const auto now = AZStd::chrono::steady_clock::now();
             return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
         };
     }
@@ -48,6 +48,12 @@ namespace AzFramework
                 {
                     return ClickOutcome::Nil;
                 }
+            }
+
+            // callback for when a click or drag may first be initiated
+            if (m_downEventFn)
+            {
+                m_downEventFn();
             }
 
             m_detectionState = DetectionState::WaitingForMove;

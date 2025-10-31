@@ -128,6 +128,7 @@ namespace EMStudio
         header.m_layoutVersionHigh = 0;
         header.m_layoutVersionLow = 1;
         header.m_numPlugins = aznumeric_caster(GetPluginManager()->GetNumActivePlugins());
+
         if (file.write((char*)&header, sizeof(LayoutHeader)) == -1)
         {
             MCore::LogWarning("Failed to write layout header to layout file '%s'", filename);
@@ -255,7 +256,7 @@ namespace EMStudio
                     {
                         plugin = *itActivePlugin;
                         plugin->SetObjectName(pluginHeader.m_objectName);
-                        if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_DOCKWIDGET)
+                        if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_WINDOW)
                         {
                             DockWidgetPlugin* dockPlugin = static_cast<DockWidgetPlugin*>(plugin);
                             // Dock widgets, when maximized, sometimes fail to
@@ -326,10 +327,10 @@ namespace EMStudio
         GetMainWindow()->UpdateCreateWindowMenu(); // update Window->Create menu
 
         // Trigger the OnAfterLoadLayout callbacks.
-        const size_t numActivePlugins = pluginManager->GetNumActivePlugins();
-        for (size_t p = 0; p < numActivePlugins; ++p)
+        const PluginManager::PluginVector& newActivePlugins = pluginManager->GetActivePlugins();
+        for (EMStudioPlugin* plugin : newActivePlugins)
         {
-            GetPluginManager()->GetActivePlugin(p)->OnAfterLoadLayout();
+            plugin->OnAfterLoadLayout();
         }
 
         m_isSwitching = false;

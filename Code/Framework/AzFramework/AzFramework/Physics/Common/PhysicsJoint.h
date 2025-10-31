@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AzPhysics
     struct JointConfiguration;
 
     //! Base class for all Joints in Physics.
-    struct Joint
+    struct AZF_API Joint
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::Joint, "{1EEC9382-3434-4866-9B18-E93F151A6F59}");
@@ -82,7 +83,7 @@ namespace AzPhysics
     using JointList = AZStd::vector<Joint*>;
 
     //! Interface to access Joint utilities and helper functions
-    class JointHelpersInterface
+    class AZF_API JointHelpersInterface
     {
     public:
         AZ_RTTI(AzPhysics::JointHelpersInterface, "{A511C64D-C8A5-4E8F-9C69-8DC5EFAD0C4C}");
@@ -113,17 +114,17 @@ namespace AzPhysics
             const AZ::Vector3& axis,
             const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) = 0;
 
-        /// Generates joint limit visualization data in appropriate format to pass to DebugDisplayRequests draw functions.
-        /// @param configuration The joint configuration to generate visualization data for.
-        /// @param parentRotation The rotation of the joint's parent body (in the same frame as childRotation).
-        /// @param childRotation The rotation of the joint's child body (in the same frame as parentRotation).
-        /// @param scale Scale factor for the output display data.
-        /// @param angularSubdivisions Level of detail in the angular direction (may be clamped in the implementation).
-        /// @param radialSubdivisions Level of detail in the radial direction (may be clamped in the implementation).
-        /// @param[out] vertexBufferOut Used with indexBufferOut to define triangles to be displayed.
-        /// @param[out] indexBufferOut Used with vertexBufferOut to define triangles to be displayed.
-        /// @param[out] lineBufferOut Used to define lines to be displayed.
-        /// @param[out] lineValidityBufferOut Whether each line in the line buffer is part of a valid or violated limit.
+        //! Generates joint limit visualization data in appropriate format to pass to DebugDisplayRequests draw functions.
+        //! @param configuration The joint configuration to generate visualization data for.
+        //! @param parentRotation The rotation of the joint's parent body (in the same frame as childRotation).
+        //! @param childRotation The rotation of the joint's child body (in the same frame as parentRotation).
+        //! @param scale Scale factor for the output display data.
+        //! @param angularSubdivisions Level of detail in the angular direction (may be clamped in the implementation).
+        //! @param radialSubdivisions Level of detail in the radial direction (may be clamped in the implementation).
+        //! @param[out] vertexBufferOut Used with indexBufferOut to define triangles to be displayed.
+        //! @param[out] indexBufferOut Used with vertexBufferOut to define triangles to be displayed.
+        //! @param[out] lineBufferOut Used to define lines to be displayed.
+        //! @param[out] lineValidityBufferOut Whether each line in the line buffer is part of a valid or violated limit.
         virtual void GenerateJointLimitVisualizationData(
             const JointConfiguration& configuration,
             const AZ::Quaternion& parentRotation,
@@ -135,5 +136,25 @@ namespace AzPhysics
             AZStd::vector<AZ::u32>& indexBufferOut,
             AZStd::vector<AZ::Vector3>& lineBufferOut,
             AZStd::vector<bool>& lineValidityBufferOut) = 0;
+    };
+
+    //! Interface to access editor-only Joint utilities and helper functions
+    class AZF_API EditorJointHelpersInterface
+    {
+    public:
+        AZ_RTTI(AzPhysics::EditorJointHelpersInterface, "{79B0CE51-E7DA-4CA9-BAE0-8441E09B4713}");
+
+        EditorJointHelpersInterface() = default;
+        virtual ~EditorJointHelpersInterface() = default;
+        AZ_DISABLE_COPY_MOVE(EditorJointHelpersInterface);
+
+        //! Attempts to compute an optimal joint configuration, based on the current configuration and sample rotations of the joint.
+        //! @param currentConfiguration The current joint configuration, used to initialize the optimization.
+        //! @param localRotationSamples A vector containing sample valid rotations in the local space of the child
+        //! world body relative to the parent world body, which is used to help estimate the extents of the joint limit.
+        //! @return A new, optimized, joint configuration.
+        virtual AZStd::unique_ptr<AzPhysics::JointConfiguration> ComputeOptimalJointLimit(
+            const AzPhysics::JointConfiguration* currentConfiguration,
+            const AZStd::vector<AZ::Quaternion>& localRotationSamples) = 0;
     };
 }

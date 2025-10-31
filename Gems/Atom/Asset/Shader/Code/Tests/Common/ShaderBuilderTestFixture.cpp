@@ -11,14 +11,13 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Name/NameDictionary.h>
 
+#include <AzslShaderBuilderSystemComponent.h>
+
 namespace UnitTest
 {
     void ShaderBuilderTestFixture::SetUp()
     {
-        AllocatorsTestFixture::SetUp();
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        LeakDetectionFixture::SetUp();
 
         AZ::NameDictionary::Create();
     }
@@ -27,10 +26,7 @@ namespace UnitTest
     {
         AZ::NameDictionary::Destroy();
 
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
 }

@@ -1,9 +1,11 @@
 {
     "gem_name": "AtomContent",
+    "version": "0.0.0",
     "display_name": "Atom Content",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Asset",
     "summary": "The Atom Content Gem provides assets for Atom Renderer and a modified version of the <a href='https://renderman.pixar.com/look-development-studio'>Pixar Look Development Studio</a>.",
     "canonical_tags": [
@@ -15,9 +17,14 @@
         "Tools"
     ],
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom-content/",
+    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/rendering/atom/atom-content/",
     "dependencies": [
+        "Sponza",
+        "ReferenceMaterials"
+    ],
+    "external_subdirectories": [
+        "Sponza",
         "ReferenceMaterials",
-        "Sponza"
+        "TestData"
     ]
 }

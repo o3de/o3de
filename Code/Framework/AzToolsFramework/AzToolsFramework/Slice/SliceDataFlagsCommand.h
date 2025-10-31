@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -22,11 +23,11 @@ namespace AzToolsFramework
      * Undoable command for setting a single data flag.
      * Data flags affect how inheritance works within a slice (see @ref AZ::DataPatch::Flag).
      */
-    class SliceDataFlagsCommand
+    class AZTF_API SliceDataFlagsCommand
         : public UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceDataFlagsCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceDataFlagsCommand, AZ::SystemAllocator);
         AZ_RTTI(SliceDataFlagsCommand, "{002F9CCE-3677-46FE-A2E8-FE406A002694}", UndoSystem::URSequencePoint);
 
         /** 
@@ -61,11 +62,11 @@ namespace AzToolsFramework
      * For example, removing data flags from a component and any data within it.
      * Data flags affect how inheritance works within a slice (see @ref AZ::DataPatch::Flag).
      */
-    class ClearSliceDataFlagsBelowAddressCommand
+    class AZTF_API ClearSliceDataFlagsBelowAddressCommand
         : public UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(ClearSliceDataFlagsBelowAddressCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClearSliceDataFlagsBelowAddressCommand, AZ::SystemAllocator);
         AZ_RTTI(ClearSliceDataFlagsBelowAddressCommand, "{3128AD23-40EB-4DEE-A16A-3FA04D94B573}", UndoSystem::URSequencePoint);
 
         /**

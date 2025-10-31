@@ -27,39 +27,22 @@ namespace UnitTest
         int, int, int>>;
 
     class ArchiveCompressionTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ArchiveCompressionParamInterface
     {
     public:
         ArchiveCompressionTestFixture()
             : m_application { AZStd::make_unique<AzFramework::Application>() }
-        {}
-
-        void SetUp() override
         {
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            AZ::IO::FixedMaxPath enginePath;
-            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-            m_application->Start({});
-            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-            // in the unit tests.
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-        }
-
-        void TearDown() override
-        {
-            m_application->Stop();
+            // Create a unique alias to the user cache directory to avoid race conditions between
+            // concurrent invocations of this test target running these tests
+            AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
+            fileIo->SetAlias("@usercache@", m_tempDirectory.GetDirectory());
         }
 
     private:
         AZStd::unique_ptr<AzFramework::Application> m_application;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
     };
 
     auto IsPackValid(const char* path)
@@ -441,7 +424,7 @@ namespace UnitTest
         EXPECT_TRUE(IsPackValid(testArchivePath.c_str()));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         ArchiveCompression,
         ArchiveCompressionTestFixture,
         ::testing::Values(

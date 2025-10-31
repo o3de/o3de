@@ -19,8 +19,8 @@ function(ly_apply_platform_properties target)
         set_target_properties(${target}
             PROPERTIES
             FRAMEWORK TRUE
-            MACOSX_FRAMEWORK_IDENTIFIER "com.lumberyard.lib.${target_name}"
-            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.lumberyard.lib.${target_name}"
+            MACOSX_FRAMEWORK_IDENTIFIER "org.o3de.lib.${target_name}"
+            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "org.o3de.lib.${target_name}"
             XCODE_ATTRIBUTE_SKIP_INSTALL "YES"
         )
     endif()

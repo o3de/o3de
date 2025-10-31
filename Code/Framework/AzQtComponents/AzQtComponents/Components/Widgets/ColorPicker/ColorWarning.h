@@ -53,11 +53,8 @@ namespace AzQtComponents
 
     private:
         Mode m_mode = Mode::Warning;
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZ::Color m_color;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         QString m_message;
-
         QLabel* m_iconLabel;
         QLabel* m_messageLabel;
     };

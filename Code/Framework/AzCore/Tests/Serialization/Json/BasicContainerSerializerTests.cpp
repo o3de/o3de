@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/iterator.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
@@ -142,7 +143,7 @@ namespace JsonSerializationTests
 
         bool AreEqual(const Container& lhs, const Container& rhs) override
         {
-            if (lhs.size() != rhs.size())
+            if (AZStd::ranges::distance(lhs) != AZStd::ranges::distance(rhs))
             {
                 return false;
             }
@@ -236,7 +237,7 @@ namespace JsonSerializationTests
 
         bool AreEqual(const Container& lhs, const Container& rhs) override
         {
-            if (lhs.size() != rhs.size())
+            if (AZStd::ranges::distance(lhs) != AZStd::ranges::distance(rhs))
             {
                 return false;
             }
@@ -262,7 +263,7 @@ namespace JsonSerializationTests
         ComplextTestDescription<AZStd::vector<SimpleClass>>,
         ComplextTestDescription<AZStd::fixed_vector<SimpleClass, 256>>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonBasicContainers, JsonSerializerConformityTests, BasicContainerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonBasicContainers, JsonSerializerConformityTests, BasicContainerConformityTestTypes));
 
     class JsonBasicContainerSerializerTests
         : public BaseJsonSerializerFixture

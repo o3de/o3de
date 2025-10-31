@@ -16,15 +16,17 @@
 
  // The user defined literals have to be in the header because there were linking issues with CrySystem.
 
-constexpr AZ::u64 operator"" _kib(AZ::u64 value);
-constexpr AZ::u64 operator"" _mib(AZ::u64 value);
-constexpr AZ::u64 operator"" _gib(AZ::u64 value);
+constexpr AZ::u64 operator ""_kib(AZ::u64 value);
+constexpr AZ::u64 operator ""_mib(AZ::u64 value);
+constexpr AZ::u64 operator ""_gib(AZ::u64 value);
 
 namespace AZ::IO::IStreamerTypes
 {
+    using Deadline = AZStd::chrono::microseconds;
+
     // Default value for commonly used priorities.
-    inline constexpr static AZStd::chrono::microseconds s_deadlineNow = AZStd::chrono::microseconds::zero();
-    inline constexpr static AZStd::chrono::microseconds s_noDeadline = AZStd::chrono::microseconds::max();
+    inline constexpr static Deadline s_deadlineNow = Deadline::zero();
+    inline constexpr static Deadline s_noDeadline = Deadline::max();
 
     // Default values for commonly used priorities
     using Priority = u8;
@@ -35,7 +37,7 @@ namespace AZ::IO::IStreamerTypes
     inline constexpr static Priority s_priorityLowest = 0;
 
     //! Provides configuration recommendations for using the file streaming system.
-    struct Recommendations
+    struct AZCORE_API Recommendations
     {
         //! The minimal memory alignment that's required to avoid intermediate buffers. If the memory
         //! provided to the read request isn't aligned to this size it may require a temporary or cached buffer
@@ -89,7 +91,7 @@ namespace AZ::IO::IStreamerTypes
             //!< the allocator provided to request to later release this memory.
     };
 
-    struct RequestMemoryAllocatorResult
+    struct AZCORE_API RequestMemoryAllocatorResult
     {
         void* m_address; //!< The address to the reserved memory.
         size_t m_size; //!< The actual amount of memory that was reserved.
@@ -106,7 +108,7 @@ namespace AZ::IO::IStreamerTypes
     //! The functions in the RequestMemoryAllocator can be called from various threads and may prevent the Streamer from continuing
     //! processing. (Similar to the completion callbacks in the requests). It's recommended to spend as little time as possible in these
     //! callbacks and defer work to jobs where possible.
-    class RequestMemoryAllocator
+    class AZCORE_API RequestMemoryAllocator
     {
     public:
         virtual ~RequestMemoryAllocator() = default;
@@ -131,13 +133,13 @@ namespace AZ::IO::IStreamerTypes
 
     //! Default memory allocator for file requests. This allocator is a wrapper around the standard memory allocator and can be used
     //! if only delayed memory allocations are needed but no special memory requirements.
-    class DefaultRequestMemoryAllocator final
+    class AZCORE_API DefaultRequestMemoryAllocator final
         : public RequestMemoryAllocator
     {
     public:
         //! DefaultRequestMemoryAllocator wraps around the AZ::SystemAllocator by default.
         DefaultRequestMemoryAllocator();
-        explicit DefaultRequestMemoryAllocator(AZ::IAllocatorAllocate& allocator);
+        explicit DefaultRequestMemoryAllocator(AZ::IAllocator& allocator);
         ~DefaultRequestMemoryAllocator() override;
 
         void LockAllocator() override;
@@ -151,16 +153,23 @@ namespace AZ::IO::IStreamerTypes
     private:
         AZStd::atomic_int m_lockCounter{ 0 };
         AZStd::atomic_int m_allocationCounter{ 0 };
-        AZ::IAllocatorAllocate& m_allocator;
+        AZ::IAllocator& m_allocator;
+    };
+
+    //! The type of information that will be reported back from a call to Report.
+    enum class ReportType : int8_t
+    {
+        Config,     //!< Report the configuration of stack.
+        FileLocks   //!< Report all file locks.
     };
 
     // The following alignment functions are put here until they're available in AzCore's math library.
 
-    constexpr bool IsPowerOf2(AZ::u64 value);
-    constexpr bool IsAlignedTo(AZ::u64 value, AZ::u64 alignment);
-    inline bool IsAlignedTo(void* address, AZ::u64 alignment);
-    inline AZ::u64 GetAlignment(AZ::u64 value);
-    inline AZ::u64 GetAlignment(void* address);
+    AZCORE_API constexpr bool IsPowerOf2(AZ::u64 value);
+    AZCORE_API constexpr bool IsAlignedTo(AZ::u64 value, AZ::u64 alignment);
+    AZCORE_API inline bool IsAlignedTo(void* address, AZ::u64 alignment);
+    AZCORE_API inline AZ::u64 GetAlignment(AZ::u64 value);
+    AZCORE_API inline AZ::u64 GetAlignment(void* address);
 
 } // namespace AZ::IO::IStreamer
 

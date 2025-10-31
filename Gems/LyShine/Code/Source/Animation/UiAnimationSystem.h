@@ -14,6 +14,8 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Time/ITime.h>
 
+#include <CryCommon/StlUtils.h>
+
 struct PlayingUIAnimSequence
 {
     //! Sequence playing
@@ -38,12 +40,10 @@ class UiAnimationSystem
     typedef AZStd::vector<PlayingUIAnimSequence> PlayingSequences;
 
 public:
-    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator)
     AZ_RTTI(UiAnimationSystem, "{2592269B-EF74-4409-B29F-682DC0B45DAF}", IUiAnimationSystem)
 
     UiAnimationSystem();
-
-    ~UiAnimationSystem();
 
     void Release() override { delete this; };
 
@@ -134,11 +134,9 @@ public:
     void SerializeParamType(CUiAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version) override;
     void SerializeParamData(UiAnimParamData& animParamData, XmlNodeRef& xmlNode, bool bLoading) override;
 
-    static const char* GetParamTypeName(const CUiAnimParamType& animParamType);
+    const char* GetParamTypeName(const CUiAnimParamType& animParamType);
 
     void OnCameraCut();
-
-    static void StaticInitialize();
 
     static void Reflect(AZ::SerializeContext* serializeContext);
 
@@ -153,7 +151,6 @@ private:
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::const_iterator& sequenceIteratorOut) const;
     bool FindSequence(IUiAnimSequence* sequence, PlayingSequences::iterator& sequenceIteratorOut);
 
-    static void DoNodeStaticInitialisation();
     void UpdateInternal(const float dt, const bool bPreUpdate);
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
@@ -186,6 +183,22 @@ private:
 
     // A sequence which turned on the early animation update last time
     uint32 m_nextSequenceId;
+
+
+    using UiAnimParamSystemString = AZStd::string;
+    template <typename KeyType, typename MappedType, typename Compare = stl::less_stricmp<KeyType>>
+    using UiAnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<>>
+    using UiAnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey>;
+
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> m_animNodeEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimNodeType> m_animNodeStringToEnumMap;
+
+    UiAnimSystemUnorderedMap<int, UiAnimParamSystemString> m_animParamEnumToStringMap;
+    UiAnimSystemOrderedMap<UiAnimParamSystemString, EUiAnimParamType> m_animParamStringToEnumMap;
+
+    void RegisterNodeTypes();
+    void RegisterParamTypes();
 
     void ShowPlayedSequencesDebug();
 };

@@ -11,11 +11,11 @@
 
 #include <stdlib.h>
 
-#define XML_STATIC // Alternative to defining this here would be setting it project-wide
 #include <expat.h>
 #include "xml.h"
 #include <algorithm>
 #include <stdio.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <CryCommon/Cry_Color.h>
 #include "XMLBinaryReader.h"
@@ -26,31 +26,6 @@
 #include "../SimpleStringPool.h"
 
 #include "System.h"
-
-#if AZ_TRAIT_OS_PLATFORM_APPLE || defined(AZ_PLATFORM_LINUX)
-#include <clocale>
-#include <locale>
-
-class LocaleResetter
-{
-public:
-    LocaleResetter()
-    {
-        m_oldLocale = std::setlocale(LC_NUMERIC, "C");
-    }
-    ~LocaleResetter()
-    {
-        std::setlocale(LC_NUMERIC, m_oldLocale);
-    }
-
-private:
-    char* m_oldLocale;
-};
-#define SCOPED_LOCALE_RESETTER LocaleResetter l
-#else
-// noop on Windows
-#define SCOPED_LOCALE_RESETTER
-#endif
 
 // Global counter for memory allocated in XML string pools.
 size_t CSimpleStringPool::g_nTotalAllocInXmlStringPools = 0;
@@ -297,7 +272,7 @@ void CXmlNode::setAttr(const char* key, unsigned int value)
 void CXmlNode::setAttr(const char* key, float value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT, value);
     setAttr(key, str);
 }
@@ -305,7 +280,7 @@ void CXmlNode::setAttr(const char* key, float value)
 void CXmlNode::setAttr(const char* key, double value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, DOUBLE_FMT, value);
     setAttr(key, str);
 }
@@ -321,7 +296,7 @@ void CXmlNode::setAttr(const char* key, int64 value)
 //////////////////////////////////////////////////////////////////////////
 void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
 {
-    char str[32];
+    char str[32] = { 0 };
     if (useHexFormat)
     {
         sprintf_s(str, "%" PRIX64, value);
@@ -336,21 +311,21 @@ void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
 void CXmlNode::setAttr(const char* key, const Ang3& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec3& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec4& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
     setAttr(key, str);
 }
@@ -358,7 +333,7 @@ void CXmlNode::setAttr(const char* key, const Vec4& value)
 void CXmlNode::setAttr(const char* key, const Vec2& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
     setAttr(key, str);
 }
@@ -366,7 +341,7 @@ void CXmlNode::setAttr(const char* key, const Vec2& value)
 void CXmlNode::setAttr(const char* key, const Quat& value)
 {
     char str[128];
-    SCOPED_LOCALE_RESETTER;
+    AZ::Locale::ScopedSerializationLocale localeResetter;
     sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.w, value.v.x, value.v.y, value.v.z);
     setAttr(key, str);
 }
@@ -388,7 +363,7 @@ bool CXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoul(svalue, NULL, 10);
+        value = static_cast<unsigned int>(strtoul(svalue, NULL, 10));
         return true;
     }
     return false;
@@ -412,7 +387,7 @@ bool CXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoull(key, nullptr, useHexFormat ? 16 : 10);
+        value = strtoull(svalue, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;
@@ -445,6 +420,7 @@ bool CXmlNode::getAttr(const char* key, float& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         value = (float)atof(svalue);
         return true;
     }
@@ -456,6 +432,7 @@ bool CXmlNode::getAttr(const char* key, double& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         value = atof(svalue);
         return true;
     }
@@ -467,7 +444,7 @@ bool CXmlNode::getAttr(const char* key, Ang3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -484,7 +461,7 @@ bool CXmlNode::getAttr(const char* key, Vec3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -501,7 +478,7 @@ bool CXmlNode::getAttr(const char* key, Vec4& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y, z, w;
         if (azsscanf(svalue, "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
         {
@@ -519,7 +496,7 @@ bool CXmlNode::getAttr(const char* key, Vec2& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float x, y;
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
@@ -536,7 +513,7 @@ bool CXmlNode::getAttr(const char* key, Quat& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        SCOPED_LOCALE_RESETTER;
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
@@ -558,6 +535,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale localeResetter;
         unsigned int r, g, b, a = 255;
         int numFound = azsscanf(svalue, "%u,%u,%u,%u", &r, &g, &b, &a);
         if (numFound == 3 || numFound == 4)
@@ -1133,7 +1111,10 @@ bool CXmlNode::saveToFile(const char* fileName)
 
 bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSize, AZ::IO::HandleType fileHandle)
 {
-    CrySetFileAttributes(fileName, FILE_ATTRIBUTE_NORMAL);
+    if (AZ::IO::SystemFile::Exists(fileName) && !AZ::IO::SystemFile::IsWritable(fileName))
+    {
+        AZ::IO::SystemFile::SetWritable(fileName, true);
+    }
 
     if (chunkSize < 256 * 1024)   // make at least 256k
     {
@@ -1269,7 +1250,7 @@ void    XmlParserImp::onStartElement(const char* tagName, const char** atts)
         node->AddRef(); // Childs need to be add refed.
     }
 
-    node->setLine(XML_GetCurrentLineNumber((XML_Parser)m_parser));
+    node->setLine(static_cast<int>(XML_GetCurrentLineNumber((XML_Parser)m_parser)));
 
     // Call start element callback.
     int i = 0;
@@ -1368,15 +1349,15 @@ namespace
 {
     void* custom_xml_malloc(size_t nSize)
     {
-        return CryModuleMalloc(nSize);
+        return azmalloc(nSize);
     }
     void* custom_xml_realloc(void* p, size_t nSize)
     {
-        return CryModuleRealloc(p, nSize);
+        return azrealloc(p, nSize);
     }
     void custom_xml_free(void* p)
     {
-        CryModuleFree(p);
+        azfree(p);
     }
 }
 

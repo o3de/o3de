@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Channels/InputChannelAxis3D.h>
 #include <AzFramework/Input/Channels/InputChannelQuaternion.h>
 #include <AzFramework/Input/Devices/InputDevice.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -22,8 +23,8 @@ namespace AzFramework
     //! instance of this generic class will work correctly on any platform that support motion input,
     //! while providing access to the device name and associated channel ids on any platform through
     //! the 'null' implementation (primarily so that the editor can use them to setup input mappings).
-    class InputDeviceMotion : public InputDevice
-                            , public InputMotionSensorRequestBus::Handler
+    class AZF_API InputDeviceMotion : public InputDevice
+                                    , public InputMotionSensorRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +117,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMotion, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMotion, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info
@@ -127,19 +128,26 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceMotion&);
+        //! The factory class to create a custom implementation for this input device
+        struct ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{97354B61-7599-4D06-9888-823D5B082191}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceMotion& inputDevice) = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceMotion(const InputDeviceId& inputDeviceId = Id,
-                                   ImplementationFactory implementationFactory = &Implementation::Create);
+                                   ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying
@@ -203,12 +211,12 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Base class for platform specific implementations of motion input devices
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function

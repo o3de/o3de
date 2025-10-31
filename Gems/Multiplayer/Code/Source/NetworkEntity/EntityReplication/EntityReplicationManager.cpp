@@ -8,8 +8,6 @@
 
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
-#include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
@@ -20,13 +18,13 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
-#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
+
+AZ_DECLARE_BUDGET(MULTIPLAYER);
 
 namespace Multiplayer
 {
@@ -36,13 +34,16 @@ namespace Multiplayer
     constexpr uint32_t ReplicationManagerPacketOverhead = 16;
 
     AZ_CVAR(bool, bg_replicationWindowImmediateAddRemove, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Update replication windows immediately on visibility Add/Removes.");
-
+    AZ_CVAR(AZ::TimeMs, sv_ReplicationWindowUpdateMs, AZ::TimeMs{ 300 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Rate for replication window updates.");
+    
     EntityReplicationManager::EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode updateMode)
         : m_updateMode(updateMode)
         , m_connection(connection)
         , m_connectionListener(connectionListener)
         , m_orphanedEntityRpcs(*this)
         , m_clearRemovedReplicators([this]() { ClearRemovedReplicators(); }, AZ::Name("EntityReplicationManager::ClearRemovedReplicators"))
+        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
+        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_updateWindow([this]() { UpdateWindow(); }, AZ::Name("EntityReplicationManager::UpdateWindow"))
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
@@ -56,8 +57,11 @@ namespace Multiplayer
         // Schedule ClearRemovedReplicators()
         m_clearRemovedReplicators.Enqueue(AZ::Time::ZeroTimeMs, true);
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
+
         // Start window update events
-        m_updateWindow.Enqueue(AZ::Time::ZeroTimeMs, true);
+        m_updateWindow.Enqueue(sv_ReplicationWindowUpdateMs, true);
 
         INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
         if (networkEntityManager != nullptr)
@@ -78,6 +82,8 @@ namespace Multiplayer
 
     void EntityReplicationManager::ActivatePendingEntities()
     {
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: ActivatePendingEntities");
+
         AZStd::vector<NetEntityId> notReadyEntities;
 
         const AZ::TimeMs endTimeMs = AZ::GetElapsedTimeMs() + m_entityActivationTimeSliceMs;
@@ -110,6 +116,7 @@ namespace Multiplayer
         }
     }
 
+    // Get the list of entities to update/delete, create and send update/delete messages, send RPCs, and send entity resets.
     void EntityReplicationManager::SendUpdates()
     {
         m_frameTimeMs = AZ::GetElapsedTimeMs();
@@ -126,23 +133,31 @@ namespace Multiplayer
                 GetRemoteHostId().GetString().c_str()
             );
 
-            // Prep a replication record for send, at this point, everything needs to be sent
-            for (EntityReplicator* replicator : toSendList)
             {
-                replicator->GetPropertyPublisher()->PrepareSerialization();
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareToGenerateUpdatePacket");
+                // Prep a replication record for send, at this point, everything needs to be sent
+                for (EntityReplicator* replicator : toSendList)
+                {
+                    replicator->PrepareToGenerateUpdatePacket();
+                }
             }
 
-            // While our to send list is not empty, build up another packet to send
-            do
             {
-                SendEntityUpdateMessages(toSendList);
-            } while (!toSendList.empty());
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - SendEntityUpdateMessages");
+                // While our to send list is not empty, build up another packet to send
+                do
+                {
+                    SendEntityUpdateMessages(toSendList);
+                } while (!toSendList.empty());
+            }
         }
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
         SendEntityRpcs(m_deferredRpcMessagesUnreliable, false);
 
         m_orphanedEntityRpcs.Update();
+
+        SendEntityResets();
 
         AZLOG
         (
@@ -164,6 +179,8 @@ namespace Multiplayer
             return EntityReplicatorList();
         }
 
+        AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: GenerateEntityUpdateList");
+
         // Generate a list of all our entities that need updates
         EntityReplicatorList toSendList;
 
@@ -174,11 +191,11 @@ namespace Multiplayer
             if (EntityReplicator* replicator = GetEntityReplicator(*iter))
             {
                 NetEntityId entityId = replicator->GetEntityHandle().GetNetEntityId();
-                if (PropertyPublisher* propPublisher = replicator->GetPropertyPublisher())
+                if (replicator->IsReadyToPublish())
                 {
                     // don't have too many replicators pending creation outstanding at a time
                     bool canSend = true;
-                    if (!propPublisher->IsRemoteReplicatorEstablished())
+                    if (!replicator->IsRemoteReplicatorEstablished())
                     {
                         // If we have our maximum set of entities pending creation, and this entity isn't in that set, then skip it
                         if ((m_remoteEntitiesPendingCreation.size() >= m_maxRemoteEntitiesPendingCreationCount) && (m_remoteEntitiesPendingCreation.find(entityId) == m_remoteEntitiesPendingCreation.end()))
@@ -192,10 +209,10 @@ namespace Multiplayer
                         m_remoteEntitiesPendingCreation.erase(*iter);
                     }
 
-                    if (canSend && propPublisher->RequiresSerialization())
+                    if (canSend && replicator->HasChangesToPublish())
                     {
                         clearPendingSend = false;
-                        if (!propPublisher->IsRemoteReplicatorEstablished())
+                        if (!replicator->IsRemoteReplicatorEstablished())
                         {
                             m_remoteEntitiesPendingCreation.insert(entityId);
                         }
@@ -268,12 +285,19 @@ namespace Multiplayer
             }
         }
 
-        const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
-
-        // Update the sent things with the packet id
-        for (EntityReplicator* replicator : replicatorUpdatedList)
+        if (m_replicationWindow)
         {
-            replicator->FinalizeSerialization(sentId);
+            const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
+
+            // Update the sent things with the packet id
+            for (EntityReplicator* replicator : replicatorUpdatedList)
+            {
+                replicator->RecordSentPacketId(sentId);
+            }
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to send entity update message, replication window does not exist");
         }
     }
 
@@ -313,8 +337,24 @@ namespace Multiplayer
                 rpcMessages.pop_front();
             }
 
-            m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            if (m_replicationWindow)
+            {
+                m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            }
+            else
+            {
+                AZ_Assert(false, "Failed to send entity rpc, replication window does not exist");
+            }
         }
+    }
+
+    void EntityReplicationManager::SendEntityResets()
+    {
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        }
+        m_replicatorsPendingReset.clear();
     }
 
     void EntityReplicationManager::Clear(bool forMigration)
@@ -333,6 +373,7 @@ namespace Multiplayer
         {
             m_replicatorsPendingRemoval.clear();
             m_replicatorsPendingSend.clear();
+            m_replicatorsPendingReset.clear();
         }
 
         m_entityReplicatorMap.clear();
@@ -343,9 +384,7 @@ namespace Multiplayer
         EntityReplicator* entityReplicator = GetEntityReplicator(entityHandle.GetNetEntityId());
         if (entityReplicator)
         {
-            PropertyPublisher* propPublisher = entityReplicator->GetPropertyPublisher();
-            AZ_Assert(propPublisher, "Expected to have a property publisher");
-            propPublisher->SetRebasing();
+            entityReplicator->SetRebasing();
             return true;
         }
         return false;
@@ -354,7 +393,7 @@ namespace Multiplayer
     EntityReplicator* EntityReplicationManager::AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole remoteNetworkRole)
     {
         EntityReplicator* entityReplicator(nullptr);
-        if (const AZ::Entity* entity = entityHandle.GetEntity())
+        if (entityHandle.GetEntity())
         {
             entityReplicator = GetEntityReplicator(entityHandle);
             if (entityReplicator)
@@ -517,7 +556,12 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZLOG(NET_RepDeletes, "Got a replicator delete message that is a duplicate id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                [[maybe_unused]] const AZ::Entity* entity = entityReplicator->GetEntityHandle().GetEntity();
+                AZLOG_WARN("Entity replicator for id %llu (%s) is already marked for deletion on remote host %s",
+                    static_cast<AZ::u64>(updateMessage.GetEntityId()),
+                    entity ? entity->GetName().c_str() : "<Entity Name Unknown>",
+                    GetRemoteHostId().GetString().c_str());
+                return true;
             }
             else if (entityReplicator->OwnsReplicatorLifetime())
             {
@@ -528,8 +572,18 @@ namespace Multiplayer
             {
                 shouldDeleteEntity = true;
                 entityReplicator->MarkForRemoval();
-                AZLOG(NET_RepDeletes, "Deleting replicater for entity id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+                AZLOG(NET_RepDeletes, "Deleting replicator for entity id %llu remote host %s", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
             }
+        }
+        else
+        {
+            // Replicators are cleared on the server via ScheduledEvent. It's possible for redundant delete messages to be sent before the event fires.
+            AZLOG(
+                NET_RepDeletes,
+                "Replicator for id %llu is null on remote host %s. It likely has already been deleted.",
+                static_cast<AZ::u64>(updateMessage.GetEntityId()),
+                GetRemoteHostId().GetString().c_str());
+            return true;
         }
 
         // Handle entity cleanup
@@ -554,7 +608,7 @@ namespace Multiplayer
             }
         }
 
-        return true;
+        return shouldDeleteEntity;
     }
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
@@ -565,7 +619,8 @@ namespace Multiplayer
         NetEntityId netEntityId,
         NetEntityRole localNetworkRole,
         AzNetworking::ISerializer& serializer,
-        const PrefabEntityId& prefabEntityId
+        const PrefabEntityId& prefabEntityId,
+        [[maybe_unused]] bool isDeleted
     )
     {
         ConstNetworkEntityHandle replicatorEntity = GetNetworkEntityManager()->GetEntity(netEntityId);
@@ -573,9 +628,20 @@ namespace Multiplayer
         const bool createEntity = (replicatorEntity == nullptr);
         const bool notifySerializationChanges = (replicatorEntity && replicatorEntity.GetEntity()->GetState() == AZ::Entity::State::Active);
 
-        // Create an entity if we don't have one
+        // Create an entity if we don't have one and we're not immediately deleting it.
         if (createEntity)
         {
+            // If the entity doesn't exist yet and we're about to delete it, don't create the entity only to apply property changes
+            // and delete it. Just return immediately and skip both creation and deletion.
+            if (isDeleted)
+            {
+                AZLOG(
+                    NET_RepDeletes,
+                    "Skip creation of entity id %llu because it is also being deleted in this message.",
+                    static_cast<AZ::u64>(netEntityId));
+                return true;
+            }
+
             INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
                 prefabEntityId, netEntityId, localNetworkRole, AutoActivate::DoNotActivate, AZ::Transform::Identity());
 
@@ -651,7 +717,7 @@ namespace Multiplayer
 
         //AZLOG(NET_RepUpdate, "EntityReplicationManager: Received PropertyChangeMessage message for entity id %u for type %s role %d", netEntityId, prefabEntityId.GetString(), localNetworkRole);
 
-        bool didSucceed = entityReplicator->GetPropertySubscriber()->HandlePropertyChangeMessage(packetId, &serializer, notifySerializationChanges);
+        bool didSucceed = entityReplicator->HandlePropertyChangeMessage(packetId, &serializer, notifySerializationChanges);
 
         if (changeNetworkRole)
         {
@@ -745,7 +811,7 @@ namespace Multiplayer
                         // This can happen when Shard A migrates an entity to Shard B, then shard B migrates the entity to Shard C, and Shard A tries to delete a replicator it had to Shard C (which has already made a new replicator for Shard A)
                         result = UpdateValidationResult::DropMessage;
                     }
-                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority)// we expect to the remote role to be e_Authority
+                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority) // We expect the remote role to be NetEntityRole::Authority
                     {
                         // This entity has migrated previously, and we haven't heard back that the remove was successful, so we can accept the message
                         AZ_Assert(entityReplicator->IsMarkedForRemoval() && entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Server, "Unexpected server message is not Authority or Server");
@@ -755,8 +821,39 @@ namespace Multiplayer
             break;
         case Mode::LocalClientToRemoteServer:
             {
-                // Trust everything from the server
+                // By default, trust everything from the server
                 result = UpdateValidationResult::HandleMessage;
+
+                // For delete messages, we can potentially skip processing them if the entity hasn't been created or has already
+                // been deleted.
+                if (updateMessage.GetIsDelete())
+                {
+                    if (!entityReplicator)
+                    {
+                        // If the entity hasn't been created (or has already been deleted), drop the delete message.
+                        // We won't create or delete the entity. If we tried to handle the message, we would end up both
+                        // creating and deleting the entity in the same frame from this message. The entity would never even
+                        // have a chance to activate, so there's no real value in processing it.
+                        result = UpdateValidationResult::DropMessage;
+
+                        AZLOG(
+                            NET_RepDeletes,
+                            "Dropping message that would both add and delete entity id %llu from remote host %s",
+                            aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                            GetRemoteHostId().GetString().c_str());
+                    }
+                    else if (entityReplicator && entityReplicator->IsMarkedForRemoval())
+                    {
+                        // If the entity is already marked for deletion, we can drop the redundant delete message.
+                        result = UpdateValidationResult::DropMessage;
+
+                        AZLOG(
+                            NET_RepDeletes,
+                            "Dropping redundant client message to delete entity id %llu from remote host %s",
+                            aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                            GetRemoteHostId().GetString().c_str());
+                    }
+                }
             }
             break;
         }
@@ -764,21 +861,25 @@ namespace Multiplayer
         // Make sure if everything else looks good, that we don't have an old out of order message
         if (result == UpdateValidationResult::HandleMessage && entityReplicator && !entityReplicator->IsMarkedForRemoval())
         {
-            PropertySubscriber* propSubscriber = entityReplicator->GetPropertySubscriber();
-            AZ_Assert(propSubscriber, "Expected to have a property subscriber if we are handling a message");
-            if (!propSubscriber->IsPacketIdValid(packetId))
+            if (!entityReplicator->IsPacketIdValid(packetId))
             {
                 // Got an old message
                 result = UpdateValidationResult::DropMessage;
                 if (updateMessage.GetIsDelete())
                 {
                     AZLOG(NET_RepDeletes, "EntityReplicationManager: Received old DeleteProxy message for entity id %llu, sequence %d latest sequence %d from remote host %s",
-                        (AZ::u64)updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
+                        aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                        aznumeric_cast<uint32_t>(packetId),
+                        aznumeric_cast<uint32_t>(entityReplicator->GetLastReceivedPacketId()),
+                        GetRemoteHostId().GetString().c_str());
                 }
                 else
                 {
                     AZLOG(NET_RepUpdate, "EntityReplicationManager: Received old PropertyChangeMessage message for entity id %llu, sequence %d latest sequence %d from remote host %s",
-                        (AZ::u64)updateMessage.GetEntityId(), (uint32_t)packetId, (uint32_t)propSubscriber->GetLastReceivedPacketId(), GetRemoteHostId().GetString().c_str());
+                        aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                        aznumeric_cast<uint32_t>(packetId),
+                        aznumeric_cast<uint32_t>(entityReplicator->GetLastReceivedPacketId()),
+                        GetRemoteHostId().GetString().c_str());
                 }
             }
         }
@@ -792,6 +893,11 @@ namespace Multiplayer
         const NetworkEntityUpdateMessage& updateMessage
     )
     {
+        if (updateMessage.GetIsDelete())
+        {
+            AZLOG(NET_RepDeletes, "Handling entity delete message for entity %llu.", aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()));
+        }
+
         // May still be nullptr
         EntityReplicator* entityReplicator = GetEntityReplicator(updateMessage.GetEntityId());
         UpdateValidationResult result = ValidateUpdate(updateMessage, packetHeader.GetPacketId(), entityReplicator);
@@ -807,12 +913,7 @@ namespace Multiplayer
             AZ_Assert(false, "Unhandled case");
         }
 
-        if (updateMessage.GetIsDelete())
-        {
-            return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
-        }
-
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
+        OutputSerializer outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -829,6 +930,7 @@ namespace Multiplayer
                 // Note that we need to make sure the replicator is not marked for removal if we're server authority
                 // If a client migrates and we receive a property update message out-of-order, this would re-create a replicator which would be bad
                 AZLOG_ERROR("Unable to process NetworkEntityUpdateMessage without a prefabEntityId, our local EntityReplicator is not set up or is configured incorrectly");
+                m_replicatorsPendingReset.emplace(updateMessage.GetEntityId());
                 return true;
             }
 
@@ -836,27 +938,74 @@ namespace Multiplayer
             prefabEntityId = entityReplicator->GetPrefabEntityId();
         }
 
+        bool handled = true;
+
         // This may implicitly create a replicator for us
-        bool handled = HandlePropertyChangeMessage(invokingConnection, entityReplicator, packetHeader.GetPacketId(), updateMessage.GetEntityId(), updateMessage.GetNetworkRole(), outputSerializer, prefabEntityId);
-        AZ_Assert(handled, "Failed to handle NetworkEntityUpdateMessage message");
+        if (updateMessage.GetData()->GetSize() != 0)
+        {
+            handled = HandlePropertyChangeMessage(
+                          invokingConnection,
+                          entityReplicator,
+                          packetHeader.GetPacketId(),
+                          updateMessage.GetEntityId(),
+                          updateMessage.GetNetworkRole(),
+                          outputSerializer,
+                          prefabEntityId,
+                          updateMessage.GetIsDelete()) &&
+                handled;
+            AZ_Assert(handled, "Failed to handle NetworkEntityUpdateMessage message");
+        }
+        else
+        {
+            AZ_Assert(updateMessage.GetIsDelete(), "Only delete messages should be able to have 0 data changes.");
+        }
+
+        // Process deletes *after* processing the property updates so that any deactivation / deletion logic
+        // has access to the most up-to-date property values.
+        if (updateMessage.GetIsDelete())
+        {
+            handled = HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage) && handled;
+            AZLOG(NET_RepDeletes, "Handled entity delete message for entity %llu.", aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()));
+        }
 
         return handled;
     }
 
-    bool EntityReplicationManager::HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message)
+    bool EntityReplicationManager::HandleEntityRpcMessages(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcVector& rpcVector)
     {
-        EntityReplicator* entityReplicator = GetEntityReplicator(message.GetEntityId());
-        const bool isReplicatorValid = (entityReplicator != nullptr) && !entityReplicator->IsMarkedForRemoval();
-        const bool isEntityActivated = isReplicatorValid && entityReplicator->GetEntityHandle() && (entityReplicator->GetEntityHandle().GetEntity()->GetState() == AZ::Entity::State::Active);
-        if (!isReplicatorValid || !isEntityActivated)
+        for (NetworkEntityRpcMessage& rpcMessage : rpcVector)
         {
-            m_orphanedEntityRpcs.AddOrphanedRpc(message.GetEntityId(), message);
-            return true;
+            EntityReplicator* entityReplicator = GetEntityReplicator(rpcMessage.GetEntityId());
+            const bool isReplicatorValid = (entityReplicator != nullptr) && !entityReplicator->IsMarkedForRemoval();
+            const bool isEntityActivated = isReplicatorValid && entityReplicator->GetEntityHandle() && (entityReplicator->GetEntityHandle().GetEntity()->GetState() == AZ::Entity::State::Active);
+            if (!isReplicatorValid || !isEntityActivated)
+            {
+                m_orphanedEntityRpcs.AddOrphanedRpc(rpcMessage.GetEntityId(), rpcMessage);
+            }
+            else
+            {
+                if (!entityReplicator->HandleRpcMessage(invokingConnection, rpcMessage))
+                {
+                    AZ_Assert(false, "Failed processing RPC messages, disconnecting");
+                    return false;
+                }
+            }
         }
-        else
+        return true;
+    }
+
+    bool EntityReplicationManager::HandleEntityResetMessages([[maybe_unused]] AzNetworking::IConnection* invokingConnection, const NetEntityIdsForReset& resetIds)
+    {
+        for (NetEntityId netEntityId : resetIds)
         {
-            return entityReplicator->HandleRpcMessage(invokingConnection, message);
+            EntityReplicator* entityReplicator = GetEntityReplicator(netEntityId);
+            if (entityReplicator != nullptr)
+            {
+                // Don't reset the remote role, we want to reset the publisher/subscriber
+                entityReplicator->Reset(entityReplicator->GetRemoteNetworkRole());
+            }
         }
+        return true;
     }
 
     bool EntityReplicationManager::DispatchOrphanedRpc(NetworkEntityRpcMessage& message, EntityReplicator* entityReplicator)
@@ -961,6 +1110,38 @@ namespace Multiplayer
         orphanedRpcsIter->second.m_rpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void EntityReplicationManager::OnEntityActivated(AZ::Entity* entity)
+    {
+        ConstNetworkEntityHandle entityHandle(entity);
+        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        if (netBindComponent != nullptr && netBindComponent->HasController())
+        {
+            if (m_replicationWindow && m_replicationWindow->AddEntity(entity))
+            {
+                if (!m_entityReplicatorMap.contains(entityHandle.GetNetEntityId()))
+                {
+                    const ReplicationSet& window = m_replicationWindow->GetReplicationSet();
+                    AddEntityReplicator(entityHandle, window.find(entityHandle)->second.m_netEntityRole);
+                }
+            }
+        }
+    }
+
+    void EntityReplicationManager::OnEntityDeactivated(AZ::Entity* entity)
+    {
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->RemoveEntity(entity);
+
+            ConstNetworkEntityHandle entityHandle(entity);
+            EntityReplicator* replicator = GetEntityReplicator(entityHandle);
+            if (replicator && !replicator->IsMarkedForRemoval())
+            {
+                replicator->MarkForRemoval();
+            }
+        }
+    }
+
     void EntityReplicationManager::UpdateWindow()
     {
         if (!m_replicationWindow)
@@ -971,6 +1152,8 @@ namespace Multiplayer
 
         if (m_replicationWindow->ReplicationSetUpdateReady())
         {
+            m_replicationWindow->UpdateWindow();
+
             const ReplicationSet& newWindow = m_replicationWindow->GetReplicationSet();
 
             // Walk both for adds and removals
@@ -1065,9 +1248,9 @@ namespace Multiplayer
         if (entityReplicator && entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Authority)
         {
             isMarkedForRemoval = entityReplicator->IsMarkedForRemoval(); // Make sure we aren't telling the other side to remove the replicator
-            const PropertyPublisher* propertyPublisher = entityReplicator->GetPropertyPublisher();
-            AZ_Assert(propertyPublisher, "Expected to have a property publisher");
-            isRemoteReplicatorEstablished = propertyPublisher->IsRemoteReplicatorEstablished(); // Make sure they are setup to receive the replicator
+            AZ_Assert(entityReplicator->IsReadyToPublish(), "Expected to be ready to publish");
+            isRemoteReplicatorEstablished =
+                entityReplicator->IsRemoteReplicatorEstablished(); // Make sure they are setup to receive the replicator
         }
 
         return hasAuthority && isInDomain && !isMarkedForRemoval && isRemoteReplicatorEstablished;
@@ -1118,18 +1301,11 @@ namespace Multiplayer
         if (netBindComponent && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
         {
             EntityReplicator* replicator = AddEntityReplicator(entityHandle, NetEntityRole::Server);
-            PropertyPublisher* propPublisher = replicator->GetPropertyPublisher();
-            AZ_Assert(propPublisher, "Assumed we have a property publisher");
 
             if (m_updateMode == EntityReplicationManager::Mode::LocalServerToRemoteServer)
             {
                 netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
-
-            bool didSucceed = true;
-            EntityMigrationMessage message;
-            message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
-            message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();
 
             if (localEnt->GetState() == AZ::Entity::State::Active)
             {
@@ -1138,21 +1314,7 @@ namespace Multiplayer
 
             netBindComponent->DestructControllers();
 
-            // Gather the most recent network property state, including authoritative only network properties for migration
-            {
-                // Send an update packet if it needs one
-                propPublisher->GenerateRecord();
-                bool needsNetworkPropertyUpdate = propPublisher->PrepareSerialization();
-                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
-                if (needsNetworkPropertyUpdate)
-                {
-                    // Write out entity state into the buffer
-                    propPublisher->UpdateSerialization(inputSerializer);
-                }
-                didSucceed &= inputSerializer.IsValid();
-                message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
-            }
-            AZ_Assert(didSucceed, "Failed to migrate entity from server");
+            EntityMigrationMessage message = replicator->GenerateMigrationPacket();
 
             m_sendMigrateEntityEvent.Signal(m_connection, message);
             AZLOG(NET_RepDeletes, "Migration packet sent %llu to remote host %s", static_cast<AZ::u64>(netEntityId), GetRemoteHostId().GetString().c_str());
@@ -1171,7 +1333,8 @@ namespace Multiplayer
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
-                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
+                constexpr bool IsDeleted = false;
+                OutputSerializer outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
                     invokingConnection,
@@ -1180,7 +1343,8 @@ namespace Multiplayer
                     message.m_netEntityId,
                     NetEntityRole::Server,
                     outputSerializer,
-                    message.m_prefabEntityId
+                    message.m_prefabEntityId,
+                    IsDeleted
                 ))
                 {
                     AZ_Assert(false, "Unable to process network properties during server entity migration");
@@ -1250,12 +1414,17 @@ namespace Multiplayer
 
     void EntityReplicationManager::AddReplicatorToPendingRemoval(const EntityReplicator& replicator)
     {
-        m_replicatorsPendingRemoval.insert(replicator.GetEntityHandle().GetNetEntityId());
+        m_replicatorsPendingRemoval.emplace(replicator.GetEntityHandle().GetNetEntityId());
     }
 
     void EntityReplicationManager::AddReplicatorToPendingSend(const EntityReplicator& replicator)
     {
-        m_replicatorsPendingSend.insert(replicator.GetEntityHandle().GetNetEntityId());
+        m_replicatorsPendingSend.emplace(replicator.GetEntityHandle().GetNetEntityId());
+    }
+
+    void EntityReplicationManager::RemoveReplicatorFromPendingSend(const EntityReplicator& replicator)
+    {
+        m_replicatorsPendingSend.erase(replicator.GetEntityHandle().GetNetEntityId());
     }
 
     bool EntityReplicationManager::IsUpdateModeToServerClient()
@@ -1273,6 +1442,11 @@ namespace Multiplayer
             {
                 if (replicator->IsDeletionAcknowledged())
                 {
+                    AZLOG(
+                        NET_RepDeletes,
+                        "Deletion acknowledged for entity %llu from remote host %s",
+                        static_cast<AZ::u64>(replicator->GetEntityHandle().GetNetEntityId()),
+                        GetRemoteHostId().GetString().c_str());
                     m_remoteEntitiesPendingCreation.erase(replicator->GetEntityHandle().GetNetEntityId());
                     m_entityReplicatorMap.erase(*iter);
                     iter = m_replicatorsPendingRemoval.erase(iter);
@@ -1289,4 +1463,4 @@ namespace Multiplayer
             }
         }
     }
-}
+} // namespace Multiplayer

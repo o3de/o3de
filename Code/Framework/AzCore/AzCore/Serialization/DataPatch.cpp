@@ -184,8 +184,7 @@ namespace AZ
         DataNode* newNode;
         if (m_currentNode)
         {
-            m_currentNode->m_children.push_back();
-            newNode = &m_currentNode->m_children.back();
+            newNode = &m_currentNode->m_children.emplace_back();
         }
         else
         {
@@ -1345,12 +1344,12 @@ namespace AZ
             , m_addressClassVersion(newElementVersion)
             , m_isValid(true)
         {
-            AZ::SerializeContext* context;
+            AZ::SerializeContext* context = nullptr;
             ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
 
             auto classData = context->FindClassData(original.GetElementTypeId());
 
-            m_pathElement = AZStd::string::format("%s(%s)::%s%s%u%s", classData->m_name, m_addressClassTypeId.ToString<AZStd::string>().c_str(), newElementName.data(), AddressTypeElement::VersionDelimiter, newElementVersion, AddressTypeElement::PathDelimiter);
+            m_pathElement = AZStd::string::format("%s(%s)::%s%s%u%s", classData->m_name, m_addressClassTypeId.ToString<AZStd::string>().c_str(), newElementName.data(), AZ::DataPatchInternal::VersionDelimiter, newElementVersion, AZ::DataPatchInternal::PathDelimiter);
         }
 
         AddressTypeElement::AddressTypeElement(const AZ::TypeId& newTypeId, const AZ::u32 newElementVersion, const AddressTypeElement& original)
@@ -1418,8 +1417,8 @@ namespace AZ
             const size_t    typeIdCloseDelimLength = strlen(typeIdCloseDelim);
             const size_t    classTypeElemDelimLength = strlen(classTypeElemDelim);
             const size_t    indexTypeElemDelimLength = strlen(indexTypeElemDelim);
-            const size_t    versionDelimLength = strlen(AddressTypeElement::VersionDelimiter);
-            const size_t    pathDelimLength = strlen(AddressTypeElement::PathDelimiter);
+            const size_t versionDelimLength = strlen(AZ::DataPatchInternal::VersionDelimiter);
+            const size_t pathDelimLength = strlen(AZ::DataPatchInternal::PathDelimiter);
 
             const AZStd::string_view pathElementView(pathElement);
             const size_t typeIdOpen = pathElementView.find(typeIdOpenDelim);
@@ -1449,7 +1448,7 @@ namespace AZ
             // Every find chains from the previous: find(substr, lastFindPosition)
             // if versionMarker != npos then all markers are != npos
             // This way we save on find times and do not require an npos check on each
-            size_t versionMarker = pathElementView.find(AddressTypeElement::VersionDelimiter, elementMarker);
+            size_t versionMarker = pathElementView.find(AZ::DataPatchInternal::VersionDelimiter, elementMarker);
 
             // Validate that we have found our appropriate markers and that version marker occurs after elementMarker.
             // Also validate that elementMarker occurs directly after bracketClosed
@@ -1540,7 +1539,7 @@ namespace AZ
                 stream.Read(dataSize, streamData.data());
 
                 bool addressIsInvalid = false;
-                size_t elementWalker = streamData.find(AddressTypeElement::PathDelimiter);
+                size_t elementWalker = streamData.find(AZ::DataPatchInternal::PathDelimiter);
 
                 // Used to verify that we loaded the address in its entirety
                 size_t loadedAddressLength = 0;
@@ -1552,7 +1551,7 @@ namespace AZ
                 }
                 else
                 {
-                    const size_t pathDelimLength = strlen(AddressTypeElement::PathDelimiter);
+                    const size_t pathDelimLength = strlen(AZ::DataPatchInternal::PathDelimiter);
                     // Walk the path and build an AddressTypeElement per delimited block
                     size_t startingPos = 0;
                     while (elementWalker != AZStd::string::npos)
@@ -1568,7 +1567,7 @@ namespace AZ
 
                         loadedAddressLength += address->back().GetPathElement().size();
                         startingPos = elementWalker + pathDelimLength;
-                        elementWalker = streamData.find(AddressTypeElement::PathDelimiter, startingPos);
+                        elementWalker = streamData.find(AZ::DataPatchInternal::PathDelimiter, startingPos);
                     }
                 }
 
@@ -1762,7 +1761,7 @@ namespace AZ
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!context)
             {
                 AZ_Error("Serialization", false, "Not serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");
@@ -1842,7 +1841,7 @@ namespace AZ
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!context)
             {
                 AZ_Error("Serialization", false, "No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");
@@ -1953,13 +1952,13 @@ namespace AZ
         // Find all pair elements within the legacy DataPatch
         AZStd::vector<AZ::SerializeContext::DataElementNode*> pairElements = Utils::FindDescendantElements(context,
             dataPatchElement,
-            AZStd::vector<AZ::Crc32>({ AZ_CRC("m_patch", 0xaedc2952), AZ_CRC("element", 0x41405e39) }));
+            AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("m_patch"), AZ_CRC_CE("element") }));
 
         for (AZ::SerializeContext::DataElementNode* pairElement : pairElements)
         {
             // Pull out the first and second elements from each pair
-            AZ::SerializeContext::DataElementNode* first = pairElement->FindSubElement(AZ_CRC("value1", 0xa2756c5a));
-            AZ::SerializeContext::DataElementNode* second = pairElement->FindSubElement(AZ_CRC("value2", 0x3b7c3de0));
+            AZ::SerializeContext::DataElementNode* first = pairElement->FindSubElement(AZ_CRC_CE("value1"));
+            AZ::SerializeContext::DataElementNode* second = pairElement->FindSubElement(AZ_CRC_CE("value2"));
 
             if (!first || !second)
             {
@@ -2049,7 +2048,7 @@ namespace AZ
         AZ_PROFILE_FUNCTION(AzCore);
         // Pull the targetClassId value out of the class element before it gets cleared when converting the DataPatch TypeId
         AZ::TypeId targetClassTypeId;
-        if (!classElement.GetChildData(AZ_CRC("m_targetClassId", 0xcabab9dc), targetClassTypeId))
+        if (!classElement.GetChildData(AZ_CRC_CE("m_targetClassId"), targetClassTypeId))
         {
             AZStd::string errorMessage = "Unable to retrieve data from the TypeId field m_targetClassId in the OldDataPatch class";
 

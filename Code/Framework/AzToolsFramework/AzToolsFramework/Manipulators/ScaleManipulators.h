@@ -10,17 +10,18 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! ScaleManipulators is an aggregation of 3 linear manipulators for each basis axis who share
     //! the same transform, and a single linear manipulator at the center of the transform whose
     //! axis is world up (z).
-    class ScaleManipulators : public Manipulators
+    class AZTF_API ScaleManipulators : public Manipulators
     {
     public:
         AZ_RTTI(ScaleManipulators, "{C6350CE0-7B7A-46F8-B65F-D4A54DD9A7D9}")
-        AZ_CLASS_ALLOCATOR(ScaleManipulators, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScaleManipulators, AZ::SystemAllocator)
 
         explicit ScaleManipulators(const AZ::Transform& worldFromLocal);
 
@@ -44,11 +45,10 @@ namespace AzToolsFramework
         //! Sets the bound width to use for the line/axis of a linear manipulator.
         void SetLineBoundWidth(float lineBoundWidth);
 
+        void ProcessManipulators(const ManipulatorVisitCallback&) override;
+
     private:
         AZ_DISABLE_COPY_MOVE(ScaleManipulators)
-
-        // Manipulators
-        void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
 
         AZStd::array<AZStd::shared_ptr<LinearManipulator>, 3> m_axisScaleManipulators;
         AZStd::shared_ptr<LinearManipulator> m_uniformScaleManipulator;

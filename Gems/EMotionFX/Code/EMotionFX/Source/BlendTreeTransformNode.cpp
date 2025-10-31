@@ -23,8 +23,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTransformNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTransformNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeTransformNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -156,10 +156,8 @@ namespace EMotionFX
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ROTATE_AMOUNT));
             const float rotateFactor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_ROTATE_AMOUNT), 0.0f, 1.0f);
-            const AZ::Vector3 newAngles = MCore::LinearInterpolate<AZ::Vector3>(m_minRotation, m_maxRotation, rotateFactor);
-            outputTransform.m_rotation = inputTransform.m_rotation * MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(newAngles.GetX()), 
-                MCore::Math::DegreesToRadians(newAngles.GetY()), 
-                MCore::Math::DegreesToRadians(newAngles.GetZ()));
+            const AZ::Vector3 newAngles = m_minRotation.Lerp(m_maxRotation, rotateFactor);
+            outputTransform.m_rotation = inputTransform.m_rotation * AZ::Quaternion::CreateFromEulerDegreesZYX(newAngles);
         }
 
         // process the translation
@@ -167,7 +165,7 @@ namespace EMotionFX
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TRANSLATE_AMOUNT));
             const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_TRANSLATE_AMOUNT), 0.0f, 1.0f);
-            const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minTranslation, m_maxTranslation, factor);
+            const AZ::Vector3 newValue = m_minTranslation.Lerp(m_maxTranslation, factor);
             outputTransform.m_position = inputTransform.m_position + newValue;
         }
 
@@ -178,7 +176,7 @@ namespace EMotionFX
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_SCALE_AMOUNT));
                 const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_SCALE_AMOUNT), 0.0f, 1.0f);
-                const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minScale, m_maxScale, factor);
+                const AZ::Vector3 newValue = m_minScale.Lerp(m_maxScale, factor);
                 outputTransform.m_scale = inputTransform.m_scale + newValue;
             }
         )
@@ -258,7 +256,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeTransformNode::m_targetNodeName, "Node", "The node to apply the transform to.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeTransformNode::m_targetNodeName, "Node", "The node to apply the transform to.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeTransformNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeTransformNode::m_minTranslation, "Min Translation", "The minimum translation value, used when the input translation amount equals zero.")

@@ -1,0 +1,77 @@
+{
+    "name": "silhouette",
+    "displayName": "Silhouette",
+    "description": "Properties for configuring outline material properties.",
+    "properties": [
+        {
+            "name": "silhouetteType",
+            "displayName": "Silhouette type",
+            "description": "Silhouette type",
+            "type": "Enum",
+            "defaultValue": "AlwaysDraw",
+            "enumValues": [ "AlwaysDraw", "Visible", "XRay", "NeverDraw" ],
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_silhouetteType"
+            }
+        },
+        {
+            "name": "color",
+            "displayName": "Color",
+            "description": "Color is displayed as sRGB but the values are stored as linear color.",
+            "type": "Color",
+            "defaultValue": [ 1.0, 1.0, 1.0 ],
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_color"
+            }
+        },
+        {
+            "name": "alpha",
+            "displayName": "Transparency",
+            "description": "Transparency",
+            "type": "float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_alpha"
+            }
+        },
+        {
+            "name": "depthBias",
+            "displayName": "Depth Bias",
+            "description": "Modifies the depth to avoid intersecting small distances (e.g. character's feet through the ground)",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min":-1.0,
+            "max":1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_depthBias"
+            }
+        },
+        {
+            "name": "outlineSize",
+            "displayName": "Outline Size",
+            "description": "Modifies the vertex position alongside the normal vector direction.",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min":0.0,
+            "max":100.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_outlineSize"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/Silhouette_DepthState.lua"
+            }
+        }
+    ]
+}

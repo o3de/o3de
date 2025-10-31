@@ -17,13 +17,12 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/ReselectingTreeView.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>
@@ -37,6 +36,8 @@
 
 namespace EMotionFX
 {
+    int SimulatedObjectWidget::s_jointLabelSpacing = 17;
+
     SimulatedObjectWidget::SimulatedObjectWidget()
         : EMStudio::DockWidgetPlugin()
     {
@@ -119,7 +120,7 @@ namespace EMotionFX
             m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, m_dock);
         });
 
-        AZ::SerializeContext* serializeContext;
+        AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_selectionWidget = new QWidget();
@@ -129,6 +130,29 @@ namespace EMotionFX
         m_mainWidget = new QWidget();
         QVBoxLayout* mainLayout = new QVBoxLayout(m_mainWidget);
         mainLayout->addWidget(m_addSimulatedObjectButton);
+
+
+        // Add to simulated object button
+        AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton("Add to simulated object", m_dock);
+        selectionLayout->addWidget(addObjectButtonn);
+
+        // Add collider button
+        AddColliderButton* addColliderButton = new AddColliderButton("Add simulated object collider", m_dock,
+                                                                     PhysicsSetup::ColliderConfigType::SimulatedObjectCollider,
+                                                                     { azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
+                                                                       azrtti_typeid<Physics::SphereShapeConfiguration>() });
+        addColliderButton->setObjectName("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+
+        connect(addColliderButton, &AddColliderButton::AddCollider, this, &SimulatedObjectWidget::OnAddColliderByType);
+        selectionLayout->addWidget(addColliderButton);
+
+        m_instruction1 = new QLabel("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above", m_dock);
+        m_instruction1->setWordWrap(true);
+        m_instruction2 = new QLabel("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object", m_dock);
+        m_instruction2->setWordWrap(true);
+        selectionLayout->addWidget(m_instruction1);
+        selectionLayout->addWidget(m_instruction2);
+
         mainLayout->addWidget(m_noSelectionWidget);
         mainLayout->addWidget(m_selectionWidget, /*stretch=*/1);
         mainLayout->addStretch();
@@ -209,6 +233,19 @@ namespace EMotionFX
         m_addSimulatedObjectButton->setVisible(m_actorInstance != nullptr);
     }
 
+    QModelIndexList SimulatedObjectWidget::GetSelectedModelIndices() const
+    {
+        QModelIndexList selectedModelIndices;
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        if (skeletonModel)
+        {
+            selectedModelIndices = skeletonModel->GetSelectionModel().selectedRows();
+        }
+
+        return selectedModelIndices;
+    }
+
     SimulatedObjectModel* SimulatedObjectWidget::GetSimulatedObjectModel() const
     {
         return m_simulatedObjectModel.get();
@@ -285,7 +322,7 @@ namespace EMotionFX
 
     void SimulatedObjectWidget::OnAddCollider()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -305,9 +342,14 @@ namespace EMotionFX
         ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::SimulatedObjectCollider, colliderType);
     }
 
+    void SimulatedObjectWidget::OnAddColliderByType(const AZ::TypeId& colliderType)
+    {
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::SimulatedObjectCollider, colliderType);
+    }
+
     void SimulatedObjectWidget::OnClearColliders()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -483,104 +525,15 @@ namespace EMotionFX
         return true;
     }
 
-    // --------------------------------------------------  Rendering -------------------------------------------------------------
-
-    void SimulatedObjectWidget::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
+    void SimulatedObjectWidget::Render(EMotionFX::ActorRenderFlags renderFlags)
     {
         if (!m_actor || !m_actorInstance)
         {
             return;
         }
 
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderSimulatedJoints = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_SIMULATEJOINTS);
         const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-        if (renderSimulatedJoints && !selectedJointIndices.empty())
-        {
-            // Render the joint radius.
-            const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
-            for (size_t actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
-            {
-                ActorInstance* actorInstance = GetActorManager().GetActorInstance(actorInstanceIndex);
-                const Actor* actor = actorInstance->GetActor();
-                const SimulatedObjectSetup* setup = actor->GetSimulatedObjectSetup().get();
-                if (!setup)
-                {
-                    AZ_Assert(false, "Expected a simulated object setup on the actor instance.");
-                    return;
-                }
-
-                const size_t objectCount = setup->GetNumSimulatedObjects();
-                for (size_t objectIndex = 0; objectIndex < objectCount; ++objectIndex)
-                {
-                    const SimulatedObject* object = setup->GetSimulatedObject(objectIndex);
-                    const size_t simulatedJointCount = object->GetNumSimulatedJoints();
-                    for (size_t simulatedJointIndex = 0; simulatedJointIndex < simulatedJointCount; ++simulatedJointIndex)
-                    {
-                        const SimulatedJoint* simulatedJoint = object->GetSimulatedJoint(simulatedJointIndex);
-                        const size_t skeletonJointIndex = simulatedJoint->GetSkeletonJointIndex();
-                        if (selectedJointIndices.find(skeletonJointIndex) != selectedJointIndices.end())
-                        {
-                            LegacyRenderJointRadius(simulatedJoint, actorInstance, AZ::Color(1.0f, 0.0f, 1.0f, 1.0f));
-                        }
-                    }
-                }
-            }
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_SIMULATEDOBJECT_COLLIDERS);
-        if (renderColliders)
-        {
-            const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-            ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::SimulatedObjectCollider,
-                renderOptions->GetSimulatedObjectColliderColor(),
-                renderOptions->GetSelectedSimulatedObjectColliderColor(),
-                renderPlugin,
-                renderInfo);
-        }
-    }
-
-    void SimulatedObjectWidget::LegacyRenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color)
-    {
-#ifndef EMFX_SCALE_DISABLED
-        const float scale = actorInstance->GetWorldSpaceTransform().m_scale.GetX();
-#else
-        const float scale = 1.0f;
-#endif
-
-        const float radius = joint->GetCollisionRadius() * scale;
-        if (radius <= AZ::Constants::FloatEpsilon)
-        {
-            return;
-        }
-
-        AZ_Assert(joint->GetSkeletonJointIndex() != InvalidIndex, "Expected skeletal joint index to be valid.");
-        const EMotionFX::Transform jointTransform =
-            actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(joint->GetSkeletonJointIndex());
-
-        DebugDraw& debugDraw = GetDebugDraw();
-        DebugDraw::ActorInstanceData* drawData = debugDraw.GetActorInstanceData(actorInstance);
-        drawData->Lock();
-        drawData->DrawWireframeSphere(jointTransform.m_position, radius, color, jointTransform.m_rotation, 12, 12);
-        drawData->Unlock();
-    }
-
-    void SimulatedObjectWidget::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
-    {
-        if (!m_actor || !m_actorInstance)
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-        const bool renderSimulatedJoints = renderFlags[RENDER_SIMULATEJOINTS];
-        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-        if (renderSimulatedJoints && !selectedJointIndices.empty())
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedJoints) && !selectedJointIndices.empty())
         {
             // Render the joint radius.
             const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
@@ -611,13 +564,6 @@ namespace EMotionFX
                     }
                 }
             }
-        }
-
-        const bool renderColliders = renderFlags[RENDER_SIMULATEDOBJECT_COLLIDERS];
-        if (renderColliders)
-        {
-            ColliderContainerWidget::RenderColliders(PhysicsSetup::SimulatedObjectCollider,
-                settings.m_simulatedObjectColliderColor, settings.m_selectedSimulatedObjectColliderColor);
         }
     }
 

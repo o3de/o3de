@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DescriptorListCombinerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DescriptorListCombinerConfig, AZ::SystemAllocator);
         AZ_RTTI(DescriptorListCombinerConfig, "{A62E9C87-093C-4534-AB48-DEF8EC80C190}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZStd::vector<AZ::EntityId> m_descriptorProviders;
@@ -39,7 +39,7 @@ namespace Vegetation
         void AddDescriptorEntityId(AZ::EntityId entityId);
     };
 
-    static const AZ::Uuid DescriptorListCombinerComponentTypeId = "{1A1267EA-8A29-42AE-A385-BB0E60899EEF}";
+    inline constexpr AZ::TypeId DescriptorListCombinerComponentTypeId{ "{1A1267EA-8A29-42AE-A385-BB0E60899EEF}" };
 
     /**
     * Retrieve a list of descriptors from multiple providers

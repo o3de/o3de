@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="ScriptCanvas">
+        <xs:annotation>
+            <xs:documentation>The ScriptCanvas Function XML definition root element, it is used to declare function definitions that become ScriptCanvas nodes.</xs:documentation>
+            <xs:documentation>See https://www.o3de.org/docs/user-guide/scripting/script-canvas for more details.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="unbounded" name="Library">
+                    <xs:annotation>
+                        <xs:documentation>The function library, it will be used as registry and container of functions.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element minOccurs="1" maxOccurs="unbounded" name="Function">
+                                <xs:annotation>
+                                    <xs:documentation>The function entry to match with function declaration.</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element minOccurs="0" maxOccurs="unbounded" name="Parameter">
+                                            <xs:annotation>
+                                                <xs:documentation>The function parameter to provide detailed information, and the order has to follow the input of function signature.</xs:documentation>
+                                            </xs:annotation>
+                                            <xs:complexType>
+                                                <xs:attribute name="Name" type="NonEmptyString" use="required">
+                                                    <xs:annotation>
+                                                        <xs:documentation>The name of function parameter.</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="Description" type="NonEmptyString" use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>The description of function parameter.</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                                <xs:attribute name="DefaultValue" type="NonEmptyString" use="optional">
+                                                    <xs:annotation>
+                                                        <xs:documentation>The default value of function parameter.</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:attribute>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:sequence minOccurs="0" maxOccurs="1">
+                                            <xs:element minOccurs="2" maxOccurs="2" name="Out">
+                                                <xs:annotation>
+                                                    <xs:documentation>The function out branch to provide detailed information, including its name and description.</xs:documentation>
+                                                    <xs:documentation>Note: The order follows first True second False.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:complexType>
+                                                    <xs:attribute name="Name" type="NonEmptyString" use="required">
+                                                        <xs:annotation>
+                                                            <xs:documentation>The name of function branch out slot.</xs:documentation>
+                                                        </xs:annotation>
+                                                    </xs:attribute>
+                                                    <xs:attribute name="Description" type="NonEmptyString" use="optional">
+                                                        <xs:annotation>
+                                                            <xs:documentation>The description of function branch out slot.</xs:documentation>
+                                                        </xs:annotation>
+                                                    </xs:attribute>
+                                                </xs:complexType>
+                                            </xs:element>
+                                        </xs:sequence>
+                                    </xs:sequence>
+                                    <xs:attribute name="Name" type="NonEmptyString" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>The name of function, it must match with function signature in given namespace.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="Branch" type="NonEmptyString" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>The tag to indicate how to branch function result, either Boolean or custom check function.</xs:documentation>
+                                            <xs:documentation>Note: Boolean assumes the function result type is boolean.</xs:documentation>
+                                            <xs:documentation>Note: The check function must get registered within same namesapce in this autogen input file.</xs:documentation>
+                                            <xs:documentation>Note: The check function input parameter type must match with the function result type.</xs:documentation>
+                                            <xs:documentation>Note: The check function must return a boolean result.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="BranchWithValue" type="NonEmptyString" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>The tag to indicate whether return result with branches.</xs:documentation>
+                                            <xs:documentation>Options: True/False. Default is False.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Include" type="NonEmptyString" use="required">
+                            <xs:annotation>
+                                <xs:documentation>The header file contains function declarations.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Namespace" type="NonEmptyString" use="required">
+                            <xs:annotation>
+                                <xs:documentation>The namespace of functions, it has to be unique and same as function declaration.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="Category" type="NonEmptyString" use="optional">
+                            <xs:annotation>
+                                <xs:documentation>The category of functions in ScriptCanvas Node Palette.</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="NonEmptyString">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:pattern value=".*[^\s].*" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

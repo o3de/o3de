@@ -1,0 +1,43 @@
+{
+    "project_name": "${Name}",
+    "version": "${Version}",
+    "project_id": "${ProjectId}",
+    "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
+    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
+    "display_name": "${Name}",
+    "summary": "A short description of ${Name}.",
+    "script_only": true,
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [
+        "${Name}"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de",
+    "restricted": "${Name}",
+    "gem_names": [
+        "Atom",
+        "AudioSystem",
+        "CameraFramework",
+        "Compression",
+        "DebugDraw",
+        "DiffuseProbeGrid",
+        "EditorPythonBindings",
+        "EMotionFX",
+        "GameState",
+        "ImGui",
+        "LandscapeCanvas",
+        "LyShine",
+        "PhysX",
+        "PrimitiveAssets",
+        "PrefabBuilder",
+        "SaveData",
+        "ScriptCanvasPhysics",
+        "ScriptEvents",
+        "StartingPointInput",
+        "TextureAtlas",
+        "WhiteBox",
+        "RemoteTools"
+    ]
+}

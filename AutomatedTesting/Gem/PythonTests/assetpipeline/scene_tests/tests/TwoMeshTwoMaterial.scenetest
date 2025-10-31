@@ -1,0 +1,73 @@
+{
+    "test_name": "MultipleMeshMultipleMaterial_MultipleAssetInfo_RunAP_SuccessWithMatchingProducts",
+    "asset_folder": "TwoMeshTwoMaterial",
+    "override_asset_folder": "OverrideAssetInfoForTwoMeshTwoMaterial",
+    "scene_debug_file": "multiple_mesh_multiple_material.dbgsg",
+    "override_scene_debug_file": "multiple_mesh_multiple_material_override.dbgsg",
+    "assets": {
+        "source_file_name": "multiple_mesh_multiple_material.fbx",
+        "uuid": "b5915fb874af5c8a866ccabbddb57595",
+        "jobs": {
+            "job_key": "Scene compilation",
+            "builder_guid": "bd8bf65894854fe3830e8ec3a23c35f3",
+            "status": 4,
+            "error_count": 0,
+            "products": [
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg",
+                    "sub_id": 1718635869,
+                    "asset_type": "48a78be7b3f244b88aa6f0607e9a75a5"
+                },
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg",
+                    "sub_id": 896980093,
+                    "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
+                },
+                {
+                    "product_name" : "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json",
+                    "sub_id" : -1300898491,
+                    "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+                },
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",
+                    "sub_id": -1556988544,
+                    "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                }
+            ]
+        }
+    },
+    "override_assets": {
+        "source_file_name": "multiple_mesh_multiple_material.fbx",
+        "uuid": "b5915fb874af5c8a866ccabbddb57595",
+        "jobs": {
+            "job_key": "Scene compilation",
+            "builder_guid": "bd8bf65894854fe3830e8ec3a23c35f3",
+            "status": 4,
+            "error_count": 0,
+            "products": [
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg",
+                    "sub_id": 1718635869,
+                    "asset_type": "48a78be7b3f244b88aa6f0607e9a75a5"
+                },
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg",
+                    "sub_id": 896980093,
+                    "asset_type": "07f289d14dc74c4094b40a53bbcb9f0b"
+                },
+                {
+                    "product_name" : "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.json",
+                    "sub_id" : -1300898491,
+                    "asset_type" : "4342b27e0e1449c3b3b9bcdb9a5fca23"
+                },
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",
+                    "sub_id": -1556988544,
+                    "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                }
+            ]
+        }
+    },
+    "id": "34389075",
+    "marks": "pytest.mark.test_case_id('C34389075')"
+}

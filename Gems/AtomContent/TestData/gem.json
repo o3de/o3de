@@ -1,0 +1,29 @@
+{
+    "gem_name": "Atom_TestData",
+    "version": "1.0.0",
+    "display_name": "Atom Test Data",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Asset",
+    "summary": "A set of Test Asset Data to use with Atom",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Atom_TestData",
+        "Assets"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "Atom_TestData"
+}

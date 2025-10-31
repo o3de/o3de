@@ -8,6 +8,7 @@
 
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
@@ -20,11 +21,12 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     {
         if (settingsRegistry != nullptr)
         {
-            auto ForwardSettingsUpdateToProxyEvent = [notifyEventProxy](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+            auto ForwardSettingsUpdateToProxyEvent = [notifyEventProxy](
+                const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
                 if (notifyEventProxy)
                 {
-                    notifyEventProxy->m_scriptNotifyEvent.Signal(path);
+                    notifyEventProxy->m_scriptNotifyEvent.Signal(notifyEventArgs.m_jsonKeyPath);
                 }
             };
             // Register the forwarding function with the BehaviorContext
@@ -33,6 +35,10 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     }
 
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy() = default;
+    SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::nullptr_t)
+        : SettingsRegistryScriptProxy()
+    {}
+
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
         : m_settingsRegistry(AZStd::move(settingsRegistry))
         , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())
@@ -386,5 +392,17 @@ namespace AZ::SettingsRegistryScriptUtils
         Internal::ReflectSettingsRegistryCreateMethod(behaviorContext);
         // Reflect SettingsRegistryInterface Format enum
         Internal::ReflectSettingsRegistryMergeFormatEnum(behaviorContext);
+    }
+
+    void ReflectSettingsRegistry(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext{ azrtti_cast<AZ::SerializeContext*>(context) }; serializeContext != nullptr)
+        {
+            serializeContext->Class<Internal::SettingsRegistryScriptProxy>();
+        }
+        if (auto behaviorContext{ azrtti_cast<AZ::BehaviorContext*>(context) }; behaviorContext != nullptr)
+        {
+            AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
+        }
     }
 }

@@ -7,9 +7,9 @@
  */
 
 #include <QCoreApplication>
-#include <qgraphicslayoutitem.h>
-#include <qgraphicsscene.h>
-#include <qsizepolicy.h>
+#include <QGraphicsLayoutItem>
+#include <QGraphicsScene>
+#include <QSizePolicy>
 
 #include <Components/Slots/Property/PropertySlotLayoutComponent.h>
 
@@ -29,7 +29,6 @@ namespace GraphCanvas
         : m_connectionType(ConnectionType::CT_Invalid)
         , m_owner(owner)
         , m_nodePropertyDisplay(nullptr)
-        , m_layoutItem(nullptr)
     {
         setInstantInvalidatePropagation(true);
         setOrientation(Qt::Horizontal);

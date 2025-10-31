@@ -10,15 +10,13 @@
 set -o errexit # exit on the first failure encountered
 
 {
-    # We dont remove this symlink that we potentially created because the user could have
-    # installed themselves. 
-    #if [[ -L "/usr/lib/x86_64-linux-gnu/libffi.so.6" ]]; then
-    #    sudo rm /usr/lib/x86_64-linux-gnu/libffi.so.6
-    #fi
-
     pushd @CPACK_PACKAGING_INSTALL_PREFIX@
-    # delete python downloads
-    rm -rf python/downloaded_packages python/runtime
+
+    # delete __pycache__
+    rm -rf scripts/o3de/o3de/__pycache__
+    # delete the user folder
+    rm -rf bin/Linux/profile/Default/user
+    # delete any generated egg-link files
     find . -type d -name *.egg-info -prune -exec rm -rf {} \;
     popd
 } &> /dev/null # hide output

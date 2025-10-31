@@ -25,9 +25,12 @@ namespace Multiplayer
         const ReplicationSet& GetReplicationSet() const override;
         uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
+        bool AddEntity(AZ::Entity* entity) override;
+        void RemoveEntity(AZ::Entity* entity) override;
         void UpdateWindow() override;
         AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
         void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
+        void SendEntityResets(const NetEntityIdSet& resetIds) override;
         void DebugDraw() const override;
         //! @}
 

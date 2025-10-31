@@ -26,7 +26,7 @@ namespace ScriptCanvas
     struct ReplicaNetworkProperties
     {
     AZ_TYPE_INFO(ReplicaNetworkProperties, "{4F055551-DD75-4877-93CE-E80C844FC155}");
-    AZ_CLASS_ALLOCATOR(ReplicaNetworkProperties, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ReplicaNetworkProperties, AZ::SystemAllocator);
 
     static void Reflect(AZ::ReflectContext* context);
 
@@ -74,7 +74,7 @@ namespace ScriptCanvas
     public:
 
         AZ_TYPE_INFO(GraphVariable, "{5BDC128B-8355-479C-8FA8-4BFFAB6915A8}");
-        AZ_CLASS_ALLOCATOR(GraphVariable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphVariable, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         static const char* GetVariableNotificationBusName() { return k_OnVariableWriteEbusName; }
@@ -126,6 +126,8 @@ namespace ScriptCanvas
         const VariableId& GetVariableId() const;
 
         const Datum*    GetDatum() const;
+
+        Datum& ModDatum();
 
         bool IsComponentProperty() const;
 
@@ -194,9 +196,7 @@ namespace ScriptCanvas
             choices.emplace_back(AZStd::make_pair(static_cast<unsigned char>(VariableFlags::Scope::Function), s_ScopeNames[1]));
             return choices;
         }
-
-        bool IsInFunction() const;
-        
+                
         void OnScopeTypedChanged();
         AZ::u32 OnInitialValueSourceChanged();
         void OnSortPriorityChanged();

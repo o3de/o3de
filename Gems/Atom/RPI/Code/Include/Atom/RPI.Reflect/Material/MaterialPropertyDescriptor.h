@@ -10,32 +10,40 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Name/Name.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Limits.h>
 
 namespace AZ
 {
     namespace RPI
     {
+        class MaterialPropertyDescriptor;
+
         struct MaterialPropertyIndexType {
             AZ_TYPE_INFO(MaterialPropertyIndexType, "{cfc09268-f3f1-4474-bd8f-f2c8de27c5f1}");
         };
 
         using MaterialPropertyIndex = RHI::Handle<uint32_t, MaterialPropertyIndexType>;
 
+        using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
+
         enum class MaterialPropertyOutputType
         {
-            ShaderInput,  //!< Maps to a ShaderResourceGroup input
-            ShaderOption, //!< Maps to a shader variant option
+            ShaderInput,   //!< Maps to a ShaderResourceGroup input
+            ShaderOption,  //!< Maps to a shader variant option
+            ShaderEnabled, //!< Maps to the enabled flag for a shader
+            InternalProperty, //!< Maps to the internal properties of a MaterialPipelinePayload
             Invalid,
             Count = Invalid
         };
 
         static const uint32_t MaterialPropertyOutputTypeCount = static_cast<uint32_t>(MaterialPropertyOutputType::Count);
-        const char* ToString(MaterialPropertyOutputType materialPropertyOutputType);
+        ATOM_RPI_REFLECT_API const char* ToString(MaterialPropertyOutputType materialPropertyOutputType);
 
         //! Represents a specific output data binding for the material property layer. 
-        class MaterialPropertyOutputId
+        class ATOM_RPI_REFLECT_API MaterialPropertyOutputId
         {
         public:
             AZ_TYPE_INFO(MaterialPropertyOutputId, "{98AAD47F-3603-4CE3-B218-FB920B74027D}")
@@ -44,18 +52,24 @@ namespace AZ
 
             MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-            //! For m_type==ShaderOption, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
-            //! For m_type==ShaderInput, this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
+            Name m_materialPipelineName;
+
+            //! For m_type==ShaderOption,  this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderEnabled, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderInput,   this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
             RHI::Handle<uint32_t> m_containerIndex;
 
             //! Index to the specific setting that the material property maps to. 
             //! The MaterialPropertyDataType, MaterialPropertyOutputType, and m_containerIndex determine which list this refers to.
             RHI::Handle<uint32_t> m_itemIndex;
+
+            //! For m_type==ShaderInput, this is the name of the variable in the ShaderResourceGroup / MaterialShaderParameter.
+            Name m_shaderInputName;
         };
-                
+
         enum class MaterialPropertyDataType : uint32_t
         {
-            Invalid, 
+            Invalid,
 
             Bool,
             Int,
@@ -66,16 +80,20 @@ namespace AZ
             Vector4,
             Color,
             Image,
-            Enum,   //!< This type is only used in source data files, not runtime data
+            Enum, //!< This type is only used in source data files, not runtime data
+            SamplerState,
 
             Count
         };
 
         static const uint32_t MaterialPropertyDataTypeCount = static_cast<uint32_t>(MaterialPropertyDataType::Count);
 
-        const char* ToString(MaterialPropertyDataType materialPropertyDataType);
+        ATOM_RPI_REFLECT_API const char* ToString(MaterialPropertyDataType materialPropertyDataType);
 
-        AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
+        ATOM_RPI_REFLECT_API AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
+        
+        //! Checks that the TypeId matches the type expected by materialPropertyDescriptor
+        ATOM_RPI_REFLECT_API bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError);
 
         //! A material property is any data input to a material, like a bool, float, Vector, Image, Buffer, etc.
         //! This descriptor defines a single input property, including it's name ID, and how it maps
@@ -86,7 +104,7 @@ namespace AZ
         //! Alternatively, the property may not have any direct connections and would be processed by a custom material functor
         //! instead (see MaterialFunctor.h). Note that having direct output connections does not preclude the use of a functor;
         //! a property with a direct connection may also be processed by a material functor for additional indirect handling.
-        class MaterialPropertyDescriptor
+        class ATOM_RPI_REFLECT_API MaterialPropertyDescriptor
         {
             friend class MaterialTypeAssetCreator;
         public:
@@ -99,6 +117,8 @@ namespace AZ
             MaterialPropertyDescriptor() = default;
 
             MaterialPropertyDataType GetDataType() const;
+            //! Returns the TypeId that is used within assets for this material property.
+            AZ::TypeId GetAssetDataTypeId() const;
             //! Returns the TypeId that is used to store values for this material property.
             AZ::TypeId GetStorageDataTypeId() const;
 

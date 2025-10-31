@@ -63,21 +63,22 @@ namespace AzManipulatorTestFramework
 
     AzToolsFramework::ManipulatorManagerId IndirectCallManipulatorManager::GetId() const
     {
-        return AzToolsFramework::g_mainManipulatorManagerId;
+        return AzToolsFramework::GetMainManipulatorManagerId();
     }
 
     bool IndirectCallManipulatorManager::ManipulatorBeingInteracted() const
     {
         bool manipulatorInteracting;
         AzToolsFramework::ManipulatorManagerRequestBus::EventResult(
-            manipulatorInteracting, AzToolsFramework::g_mainManipulatorManagerId,
+            manipulatorInteracting, AzToolsFramework::GetMainManipulatorManagerId(),
             &AzToolsFramework::ManipulatorManagerRequestBus::Events::Interacting);
 
         return manipulatorInteracting;
     }
 
-    IndirectCallManipulatorViewportInteraction::IndirectCallManipulatorViewportInteraction()
-        : m_viewportInteraction(AZStd::make_unique<ViewportInteraction>())
+    IndirectCallManipulatorViewportInteraction::IndirectCallManipulatorViewportInteraction(
+        AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_viewportInteraction(AZStd::make_unique<ViewportInteraction>(AZStd::move(debugDisplayRequests)))
         , m_manipulatorManager(AZStd::make_unique<IndirectCallManipulatorManager>(*m_viewportInteraction))
     {
     }

@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Source/Editor/ui_AudioControlsEditorMainWindow.h>
 #include <ATLControlsModel.h>
 #include <ATLControlsPanel.h>
 #include <AudioControlsEditorPlugin.h>
@@ -50,7 +51,8 @@ namespace AudioControls
     {
         InitACEResources();
 
-        setupUi(this);
+        m_gui = new Ui::MainWindow();
+        m_gui->setupUi(this);
 
         m_pATLModel = CAudioControlsEditorPlugin::GetATLModel();
         IAudioSystemEditor* pAudioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
@@ -60,21 +62,21 @@ namespace AudioControls
             m_pInspectorPanel = new CInspectorPanel(m_pATLModel);
             m_pAudioSystemPanel = new CAudioSystemPanel();
 
-            CDockTitleBarWidget* pTitleBar = new CDockTitleBarWidget(m_pATLControlsDockWidget);
-            m_pATLControlsDockWidget->setTitleBarWidget(pTitleBar);
+            CDockTitleBarWidget* pTitleBar = new CDockTitleBarWidget(m_gui->m_pATLControlsDockWidget);
+            m_gui->m_pATLControlsDockWidget->setTitleBarWidget(pTitleBar);
 
-            pTitleBar = new CDockTitleBarWidget(m_pInspectorDockWidget);
-            m_pInspectorDockWidget->setTitleBarWidget(pTitleBar);
+            pTitleBar = new CDockTitleBarWidget(m_gui->m_pInspectorDockWidget);
+            m_gui->m_pInspectorDockWidget->setTitleBarWidget(pTitleBar);
 
-            pTitleBar = new CDockTitleBarWidget(m_pMiddlewareDockWidget);
-            m_pMiddlewareDockWidget->setTitleBarWidget(pTitleBar);
+            pTitleBar = new CDockTitleBarWidget(m_gui->m_pMiddlewareDockWidget);
+            m_gui->m_pMiddlewareDockWidget->setTitleBarWidget(pTitleBar);
 
             // Custom title based on Middleware name
-            m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
+            m_gui->m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
 
-            m_pATLControlsDockLayout->addWidget(m_pATLControlsPanel);
-            m_pInspectorDockLayout->addWidget(m_pInspectorPanel);
-            m_pMiddlewareDockLayout->addWidget(m_pAudioSystemPanel);
+            m_gui->m_pATLControlsDockLayout->addWidget(m_pATLControlsPanel);
+            m_gui->m_pInspectorDockLayout->addWidget(m_pInspectorPanel);
+            m_gui->m_pMiddlewareDockLayout->addWidget(m_pAudioSystemPanel);
 
             Update();
 
@@ -100,6 +102,7 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     CAudioControlsEditorWindow::~CAudioControlsEditorWindow()
     {
+        delete m_gui;
         GetIEditor()->UnregisterNotifyListener(this);
     }
 
@@ -119,27 +122,6 @@ namespace AudioControls
                 StartWatchingFolder(file.Native());
             }
         }
-    }
-
-    //-------------------------------------------------------------------------------------------//
-    void CAudioControlsEditorWindow::keyPressEvent(QKeyEvent* pEvent)
-    {
-        if (pEvent->key() == Qt::Key_S && pEvent->modifiers() == Qt::ControlModifier)
-        {
-            Save();
-        }
-        else if (pEvent->key() == Qt::Key_Z && (pEvent->modifiers() & Qt::ControlModifier))
-        {
-            if (pEvent->modifiers() & Qt::ShiftModifier)
-            {
-                GetIEditor()->Redo();
-            }
-            else
-            {
-                GetIEditor()->Undo();
-            }
-        }
-        QMainWindow::keyPressEvent(pEvent);
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -215,7 +197,25 @@ namespace AudioControls
         if (pAudioSystemImpl)
         {
             StartWatchingFolder(pAudioSystemImpl->GetDataPath().LexicallyNormal().Native());
-            m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
+            m_gui->m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
+        }
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    void CAudioControlsEditorWindow::RefreshAudioSystem()
+    {
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            audioSystem != nullptr)
+        {
+            QString sLevelName = GetIEditor()->GetLevelName();
+
+            if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+            {
+                // Rather pass empty QString to indicate that no level is loaded!
+                sLevelName = QString();
+            }
+
+            audioSystem->RefreshAudioSystem(sLevelName.toUtf8().data());
         }
     }
 
@@ -236,15 +236,7 @@ namespace AudioControls
             messageBox.setWindowTitle("Audio Controls Editor");
             if (messageBox.exec() == QMessageBox::Yes)
             {
-                QString sLevelName = GetIEditor()->GetLevelName();
-
-                if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
-                {
-                    // Rather pass empty QString to indicate that no level is loaded!
-                    sLevelName = QString();
-                }
-
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+                RefreshAudioSystem();
             }
         }
         m_pATLModel->ClearDirtyFlags();
@@ -291,32 +283,30 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::UpdateAudioSystemData()
     {
+        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
         IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
-        if (!audioSystemImpl)
+        if (!audioSystemImpl || !audioSystem)
         {
             return;
         }
 
-        Audio::SAudioRequest oConfigDataRequest;
-        oConfigDataRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-
-        //clear the AudioSystem control config data
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oClearRequestData(Audio::eADS_ALL);
-        oConfigDataRequest.pData = &oClearRequestData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
+        // clear the AudioSystem controls data
+        Audio::SystemRequest::UnloadControls unloadControls;
+        unloadControls.m_scope = Audio::eADS_ALL;
+        audioSystem->PushRequest(AZStd::move(unloadControls));
 
         // parse the AudioSystem global config data
         // this is technically incorrect, we should just use GetControlsPath() unmodified when loading controls.
         // calling GetEditingGameDataFolder ensures that the reloaded file has been written to, a temp fix.
         // once we can listen to delete messages from Asset system, this can be changed to an EBus handler.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = audioSystem->GetControlsPath();
 
         AZ::IO::FixedMaxPath controlsFolder{ controlsPath };
 
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseGlobalRequestData(controlsFolder.c_str(), Audio::eADS_GLOBAL);
-        oConfigDataRequest.pData = &oParseGlobalRequestData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
+        // load the controls again
+        Audio::SystemRequest::LoadControls loadGlobalControls;
+        loadGlobalControls.m_scope = Audio::eADS_GLOBAL;
+        audioSystem->PushRequest(AZStd::move(loadGlobalControls));
 
         // parse the AudioSystem level-specific config data
         AZStd::string levelName;
@@ -325,9 +315,10 @@ namespace AudioControls
         {
             controlsFolder /= "levels";
             controlsFolder /= levelName;
-            Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(controlsFolder.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-            oConfigDataRequest.pData = &oParseLevelRequestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
+
+            Audio::SystemRequest::LoadControls loadLevelControls;
+            loadLevelControls.m_scope = Audio::eADS_LEVEL_SPECIFIC;
+            audioSystem->PushRequest(AZStd::move(loadLevelControls));
         }
 
         // inform the middleware specific plugin that the data has been saved

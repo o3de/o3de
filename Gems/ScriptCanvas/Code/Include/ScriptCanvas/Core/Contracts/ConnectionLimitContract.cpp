@@ -7,7 +7,6 @@
  */
 
 #include "ConnectionLimitContract.h"
-#include <ScriptCanvas/Core/ContractBus.h>
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/Endpoint.h>

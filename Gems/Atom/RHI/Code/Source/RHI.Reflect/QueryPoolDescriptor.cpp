@@ -9,21 +9,18 @@
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void QueryPoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void QueryPoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<QueryPoolDescriptor, ResourcePoolDescriptor>()
-                    ->Version(1)
-                    ->Field("m_count", &QueryPoolDescriptor::m_queriesCount)
-                    ->Field("m_type", &QueryPoolDescriptor::m_type)
-                    ->Field("m_pipelineStatisticsMask", &QueryPoolDescriptor::m_pipelineStatisticsMask)
-                    ;
-            }
+            serializeContext->Class<QueryPoolDescriptor, ResourcePoolDescriptor>()
+                ->Version(1)
+                ->Field("m_count", &QueryPoolDescriptor::m_queriesCount)
+                ->Field("m_type", &QueryPoolDescriptor::m_type)
+                ->Field("m_pipelineStatisticsMask", &QueryPoolDescriptor::m_pipelineStatisticsMask)
+                ;
         }
     }
 }

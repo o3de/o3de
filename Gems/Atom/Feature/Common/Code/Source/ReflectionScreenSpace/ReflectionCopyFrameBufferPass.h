@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionCopyFrameBufferPass, "{8B0D4281-0913-4662-81ED-37CB890B5653}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionCopyFrameBufferPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionCopyFrameBufferPass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionCopyFrameBufferPass> Create(const RPI::PassDescriptor& descriptor);

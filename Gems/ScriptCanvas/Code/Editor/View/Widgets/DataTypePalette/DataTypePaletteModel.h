@@ -11,6 +11,7 @@
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
 #include <QTableView>
+#include <QRegularExpression>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -32,7 +33,7 @@ namespace ScriptCanvasEditor
             Count
         };
 
-        AZ_CLASS_ALLOCATOR(DataTypePaletteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataTypePaletteModel, AZ::SystemAllocator);
 
         DataTypePaletteModel(QObject* parent = nullptr);
 
@@ -83,7 +84,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(DataTypePaletteSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataTypePaletteSortFilterProxyModel, AZ::SystemAllocator);
 
         DataTypePaletteSortFilterProxyModel(QObject* parent = nullptr);
         
@@ -96,6 +97,6 @@ namespace ScriptCanvasEditor
 
     private:
         QString m_filter;
-        QRegExp m_testRegex;
+        QRegularExpression m_testRegex;
     };
 }

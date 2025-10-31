@@ -9,10 +9,9 @@
 #pragma once
 
 #include <AzFramework/Input/Channels/InputChannelId.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include <AzCore/EBus/EBus.h>
-
-#include <AzCore/RTTI/ReflectContext.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -21,7 +20,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! EBus interface used to query for available input channels
-    class InputChannelRequests : public AZ::EBusTraits
+    class AZF_API InputChannelRequests : public AZ::EBusTraits
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,12 +37,12 @@ namespace AzFramework
         //! EBus Trait: requests should be addressed to a specific channel id / device index pair.
         //! While input channel ids must be unique across different input devices, multiple devices
         //! of the same type can exist, so requests must be addressed using an id/device index pair.
-        class BusIdType
+        class AZF_API BusIdType
         {
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(BusIdType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BusIdType, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -83,6 +82,14 @@ namespace AzFramework
             // Variables
             InputChannelId m_channelId;   //!< Id of the input channel to address requests
             AZ::u32        m_deviceIndex; //!< Index of the input device to address requests
+
+            //! Size_t conversion operator for std::hash to return a reasonable hash.
+            [[nodiscard]] explicit constexpr operator size_t() const
+            {
+                size_t hashValue = m_channelId.GetNameCrc32();
+                AZStd::hash_combine(hashValue, m_deviceIndex);
+                return hashValue;
+            }       
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,31 +215,6 @@ namespace AzFramework
         return !(*this == other);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline const InputChannel* InputChannelRequests::FindInputChannel(const InputChannelId& channelId,
-                                                                      AZ::u32 deviceIndex)
-    {
-        const InputChannel* inputChannel = nullptr;
-        const BusIdType inputChannelRequestId(channelId, deviceIndex);
-        InputChannelRequestBus::EventResult(inputChannel,
-                                            inputChannelRequestId,
-                                            &InputChannelRequests::GetInputChannel);
-        return inputChannel;
-    }
 } // namespace AzFramework
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace AZStd
-{
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Hash structure specialization for InputChannelRequests::BusIdType
-    template<> struct hash<AzFramework::InputChannelRequests::BusIdType>
-    {
-        inline size_t operator()(const AzFramework::InputChannelRequests::BusIdType& busIdType) const
-        {
-            size_t hashValue = busIdType.m_channelId.GetNameCrc32();
-            AZStd::hash_combine(hashValue, busIdType.m_deviceIndex);
-            return hashValue;
-        }
-    };
-} // namespace AZStd
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::InputChannelRequests);

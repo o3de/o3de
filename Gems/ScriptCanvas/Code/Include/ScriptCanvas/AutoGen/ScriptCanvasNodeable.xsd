@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="ScriptCanvas">
+		<xs:annotation>
+            <xs:documentation>The ScriptCanvas Nodeable XML definition root element. All nodeables must be contained within ScriptCanvas tags. See https://docs.o3de.org/docs/user-guide/scripting/script-canvas/programmer-guide/custom-nodes/custom-nodeable-nodes/ for more details.</xs:documentation>
+        </xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Class">
+					<xs:annotation>
+						<xs:documentation>Crates a new node.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType mixed="true">
+						<xs:sequence>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="Input">
+								<xs:annotation>
+									<xs:documentation>Adds an input execution slot and a corresponding output execution slot.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence minOccurs="0" maxOccurs="unbounded" >
+										<xs:element maxOccurs="unbounded" minOccurs="0" name="Parameter">
+											<xs:annotation>
+												<xs:documentation>Adds a data input slot.</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="Name" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The name of the data slot. This will be displayed next to the slot by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Type" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The data type of the slot, which will determine what type of input this slot will accept.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DefaultValue" type="xs:string" use="optional">
+													<xs:annotation>
+														<xs:documentation>The default value of this slot when there are no connections or references.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Description" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>A description of the slot. This will appear when someone hovers their mouse over it.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="HideInputField" type="xs:boolean" use="optional" >
+													<xs:annotation>
+														<xs:documentation>Either true or false. If true, the input field that would normally show up when this slot is not connected will remain hidden. Set to false by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="HideName" type="xs:boolean" use="optional" >
+													<xs:annotation>
+														<xs:documentation>Either true or false. If true, this slot's name will not be displayed. Set to false by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DisplayGroup" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The display group that this slot belongs to. Slots in the same slot group will be displayed together on the node.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+										<xs:element maxOccurs="unbounded" minOccurs="0" name="Return">
+											<xs:annotation>
+												<xs:documentation>Adds a data output slot.</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="Name" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The name of the data slot. This will be displayed next to the slot by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Type" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The data type of the slot.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DefaultValue" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The default value of this slot.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Description" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>A description of the slot. This will appear when someone hovers their mouse over it.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="HideName" type="xs:boolean" use="optional" >
+													<xs:annotation>
+														<xs:documentation>Either true or false. If true, this slot's name will not be displayed. Set to false by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DisplayGroup" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The display group that this slot belongs to. Slots in the same slot group will be displayed together on the node.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="Name" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>The name of the execution input slot. This will be displayed next to the slot.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Description" type="xs:string" use="optional" >
+										<xs:annotation>
+											<xs:documentation>The description of the slot. This will appear when someone hovers their mouse over it.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="OutputName" type="xs:string" use="optional" >
+										<xs:annotation>
+											<xs:documentation>The name of the execution output slot created by this tag. By default, this will be set to On [Name], where [Name] is the value of the Name attribute.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="DisplayGroup" type="xs:string" use="optional" >
+										<xs:annotation>
+											<xs:documentation>The display group that this slot belongs to. Slots in the same slot group will be displayed together on the node.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Implicit" type="xs:boolean" use="optional" >
+										<xs:annotation>
+											<xs:documentation>Either true or false. If set to true, this slot will implicitly connect itself to other execution slots depending on where its corresponding data slots are connected. Set to false by default.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Hidden" type="xs:boolean" use="optional" >
+										<xs:annotation>
+											<xs:documentation>Either true or false. If set to true, this slot will not be displayed but still exist behind the scenes. Set to false by default.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Output" minOccurs="0" maxOccurs="unbounded" >
+								<xs:annotation>
+									<xs:documentation>Creates a latent execution output slot.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element minOccurs="0" maxOccurs="unbounded" name="Parameter">
+											<xs:annotation>
+												<xs:documentation>Adds a latent data ouput slot.</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:attribute name="Name" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The name for the slot. This will be displayed next to the slot by default.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Type" type="xs:string" use="required" >
+													<xs:annotation>
+														<xs:documentation>The slot's data type.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="Description" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The description of the slot. This will appear when someone hovers their mouse over it.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DefaultValue" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The default value of this slot.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="HideName" type="xs:boolean" use="optional" >
+													<xs:annotation>
+														<xs:documentation>Either true or false. If set to true, this slot will not display its name.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+												<xs:attribute name="DisplayGroup" type="xs:string" use="optional" >
+													<xs:annotation>
+														<xs:documentation>The display group that this slot belongs to. Slots in the same slot group will be displayed together on the node.</xs:documentation>
+													</xs:annotation>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="Name" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>The name for this slot. This will be displayed next to the slot by default.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Description" type="xs:string" use="optional" >
+										<xs:annotation>
+											<xs:documentation>The description of the slot. This will appear when someone hovers their mouse over it.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="DisplayGroup" type="xs:string" use="optional" >
+										<xs:annotation>
+											<xs:documentation>The display group that this slot belongs to. Slots in the same slot group will be displayed together on the node.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element maxOccurs="unbounded" minOccurs="0" name="PropertyInterface">
+								<xs:annotation>
+									<xs:documentation>Adds a property interface, or a separate field that is not tied to any particular slot.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="Name" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>The name of the property interface.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Description" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>The description of the property interface. This will appear when someone hovers their mouse over it.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Property" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>The member variabe of the C++ class associated with this node that this property interface should control.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="Type" type="xs:string" use="required" >
+										<xs:annotation>
+											<xs:documentation>Either Input or Output.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="Name" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The name of the custom nodeable class.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="QualifiedName" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The full name of the nodeable's C++ class, including any extra namespaces.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="PreferredClassName" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The name for the node that is displayed in the editor.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Category" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The category of the Node Palette for the node to show up under.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Namespace" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The namespace of this node, which should match with the outer namespace of custom nodeable class.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Description" type="xs:string" use="required" >
+							<xs:annotation>
+								<xs:documentation>The node's description that appears when someone hovers their mouse over it in the Node Palette.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Uuid" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>A UUID that can be used to identify the class.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Base" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>The base class that this node inherits from.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Style" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>The Graph Canvas sub-style for this node that influences how it looks. See Gems\ScriptCanvas\Assets\ScriptCanvas\StyleSheet\graphcanvas_style.json (Sub-styles are always preceeded by a '.').</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Preset" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>This can be configured to alter the defaults of other attributes. See https://docs.o3de.org/docs/user-guide/scripting/script-canvas/programmer-guide/custom-nodes/custom-nodeable-nodes/#advanced-scriptcanvasnodeablexml-usage for more details.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="Include" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

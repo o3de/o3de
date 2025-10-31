@@ -12,15 +12,17 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class InstanceEntityMapper final
+        class AZTF_API InstanceEntityMapper final
             : public InstanceEntityMapperInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(InstanceEntityMapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceEntityMapper, AZ::SystemAllocator);
             AZ_RTTI(InstanceEntityMapper, "{6B11401C-A852-45E5-9016-A90BE285C932}", InstanceEntityMapperInterface);
 
             InstanceEntityMapper();

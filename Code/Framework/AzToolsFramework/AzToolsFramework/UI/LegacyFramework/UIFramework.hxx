@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -17,10 +19,10 @@
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have dll-interface to be used by clients of class '...'
-#include <QtCore/QObject>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTableView>
-#include <QtGui/QStandardItemModel>
+#include <QObject>
+#include <QWidget>
+#include <QTableView>
+#include <QStandardItemModel>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -40,12 +42,12 @@ namespace AzToolsFramework
     class AZPreferencesDataModel;
     class AZQtApplication;
 
-    class QTickBusTicker
+    class AZTF_API QTickBusTicker
         : public QObject
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(QTickBusTicker, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QTickBusTicker, AZ::SystemAllocator);
 
         QTickBusTicker();
         static QTickBusTicker* SpinUp();
@@ -65,7 +67,7 @@ namespace AzToolsFramework
         void doTick();
     };
 
-    class Framework
+    class AZTF_API Framework
         : public QObject
         , public AZ::Component
         , FrameworkMessages::Handler
@@ -201,12 +203,12 @@ namespace AzToolsFramework
         bool m_bTicking;
     };
 
-    class AZPreferencesView
+    class AZTF_API AZPreferencesView
         : public QTableView
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesView, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesView, AZ::SystemAllocator)
 
         AZPreferencesView(QWidget* parent = 0);
         virtual ~AZPreferencesView();
@@ -221,11 +223,11 @@ namespace AzToolsFramework
         void OnDoubleClicked(const QModelIndex&);
     };
 
-    class AZPreferencesItem
+    class AZTF_API AZPreferencesItem
         : public QStandardItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesItem, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesItem, AZ::SystemAllocator)
 
         AZPreferencesItem(Framework::HotkeyData& hkData);
         virtual ~AZPreferencesItem();
@@ -240,12 +242,12 @@ namespace AzToolsFramework
         AZPreferencesItem& operator=(const AZPreferencesItem&);
     };
 
-    class AZPreferencesDataModel
+    class AZTF_API AZPreferencesDataModel
         : public QAbstractTableModel
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesDataModel, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesDataModel, AZ::SystemAllocator)
 
         AZPreferencesDataModel(QObject* pParent);
         virtual ~AZPreferencesDataModel();

@@ -9,4 +9,5 @@
 set(FILES
     Source/SurfaceDataModule.h
     Source/SurfaceDataModule.cpp
+    Source/SurfaceDataProfiler.h
 )

@@ -13,8 +13,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Sphere.h>
+#include <AzCore/Math/Capsule.h>
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Hemisphere.h>
+#include <AzCore/Math/Sphere.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/vector.h>
@@ -33,7 +35,8 @@ namespace AzFramework
         {
             TYPE_None = 0,
             TYPE_Entity = 1 << 0,      // All entities
-            TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
+            TYPE_RPI_Cullable = 1 << 2, // Cullable by the render system
+            TYPE_RPI_VisibleObjectList = 1 << 3 // Culled by the render system, then output to a a list of visible objects
         };
 
         AZ::Aabb m_boundingVolume = AZ::Aabb::CreateNull();
@@ -79,20 +82,34 @@ namespace AzFramework
         //! Intersects an axis aligned bounding box against the visibility system.
         //! @param aabb the axis aligned bounding box to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the aabb against the visibility system
         virtual void Enumerate(const AZ::Aabb& aabb, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a sphere against the visibility system.
         //! @param sphere the sphere to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the sphere against the visibility system
         virtual void Enumerate(const AZ::Sphere& sphere, const EnumerateCallback& callback) const = 0;
+
+        //! Intersects a hemisphere against the visibility system.
+        //! @param hemisphere the hemisphere to test against
+        //! @param callback the callback to invoke when a node is visible
+        virtual void Enumerate(const AZ::Hemisphere& hemisphere, const EnumerateCallback& callback) const = 0;
+
+        //! Intersects a capsule against the visibility system.
+        //! @param capsule the capsule to test against
+        //! @param callback the callback to invoke when a node is visible
+        virtual void Enumerate(const AZ::Capsule& capsule, const EnumerateCallback& callback) const = 0;
 
         //! Intersects a frustum against the visibility system.
         //! @param frustum the frustum to test against
         //! @param callback the callback to invoke when a node is visible
-        //! @return the intersection result of the frustum against the visibility system
         virtual void Enumerate(const AZ::Frustum& frustum, const EnumerateCallback& callback) const = 0;
+
+        //! Intersects a frustum against the visibility system, but rejects everything entirely contained inside the excludeFrustum.
+        //! This is useful for cascade shadows where a larger cascade need not render things completely covered by a smaller cascade.
+        //! @param includeFrustum the frustum to test against for inclusion
+        //! @param excludeFrustum the frustum to test against for exclusion
+        //! @param callback the callback to invoke when a node is visible
+        virtual void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const = 0;
 
         //! Enumerate *all* OctreeNodes that have any entries in them (without any culling).
         //! @param callback the callback to invoke when a node is visible

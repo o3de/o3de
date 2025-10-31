@@ -1,0 +1,36 @@
+{
+    // For Android, it is necessary the macro "PRE_HLSL_2021", which fixes
+    // a runtime error where StandardPBR related shaders fail to create their PSO
+    // (Pipeline State Object) in devices with Qualcomm GPUs like some Samsung phones
+    // or Meta Quest devices.
+    // Long Story: Starting with HLSL 2021, the ternary operator: "cond ? true : false" stopped
+    // compiling for vectors and is limited to only scalar variables. HLSL 2021 introduced
+    // new keywords like "select" which function as the ternary operator for vectors.
+    // The problem is that the generated SPIRV binary for the "select" keyword causes
+    // runtime issues in Qualcomm GPUs.
+    // SOLUTION: The macro "PRE_HLSL_2021" was instroduced in all of the shaders that call "select"
+    // with the purpose of NOT calling "select" and defaulting to the ternary operator for vectors,
+    // which also requires the "-HV 2018" command line option so DXC runs with HLSL version 2018 instead
+    // of version 2021. TODO: Remove this in the future once DXC addresses this problem. 
+    "Definitions": [ "PRE_HLSL_2021" ],
+    "AddBuildArguments": {
+        "debug": false,
+        "preprocessor": [],
+        "azslc": ["--namespace=vk"
+                , "--min-descriptors=80,8,8,-1,-1" //Sets,Spaces,Samplers,Textures,Buffers
+                , "--max-spaces=4"
+                , "--unique-idx"
+        ],
+        "dxc": ["-spirv"
+              , "-fvk-use-dx-layout" // Use the same memory layout as DX12, otherwise some offset of constant may get wrong.
+              // For mobile, which has 16 bit support in almost all GPUs, we allow 16 bit types in the shader.
+              // For PC, 16 bit types will fallback to 32 bit types with a "RelaxedPrecision" decoration. This
+              // decoration allows drivers to only compute 16-bits of precision if they want. We don't use "RelaxedPrecision" for
+              // mobile because that decoration is not supported by most mobile drivers.
+              , "-enable-16bit-types"
+              , "-fvk-disable-depth-hint" // Disable image depth hint because it causes some crashes on mobile drivers.
+              , "-HV"  // Need HLSL Version 2018. See comment above, related with "PRE_HLSL_2021".
+              , "2018"
+        ]
+    }
+}

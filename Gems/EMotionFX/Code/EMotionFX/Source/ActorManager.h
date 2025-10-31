@@ -11,7 +11,7 @@
 // include the required headers
 #include <AzCore/std/containers/vector.h>
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 #include "MemoryCategories.h"
 #include <MCore/Source/MultiThreadManager.h>
 #include <AzCore/std/containers/vector.h>
@@ -35,7 +35,7 @@ namespace EMotionFX
      * For example if you attach a cowboy to a horse, the horse is the root actor instance.
      */
     class EMFX_API ActorManager
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;
@@ -135,6 +135,12 @@ namespace EMotionFX
          * @result A pointer to the actor instance.
          */
         MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return m_actorInstances[nr]; }
+
+        /**
+         * Get a given registered actor instance owned by editor (not owned by runtime).
+         * @result A pointer to the actor instance.
+         */
+        ActorInstance* GetFirstEditorActorInstance() const;
 
         /**
          * Get the array of actor instances.

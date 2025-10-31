@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -20,7 +21,7 @@ namespace AzToolsFramework
 
     //! Surface manipulator will ensure the point(s) it controls snap precisely to the xy grid
     //! while also staying aligned exactly to the height of the terrain.
-    class SurfaceManipulator
+    class AZTF_API SurfaceManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalPosition
     {
@@ -29,7 +30,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(SurfaceManipulator, "{75B8EF42-A5F0-48EB-893E-84BED1BC8BAF}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator)
 
         SurfaceManipulator() = delete;
         SurfaceManipulator(const SurfaceManipulator&) = delete;
@@ -39,6 +40,9 @@ namespace AzToolsFramework
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<SurfaceManipulator> MakeShared(const AZ::Transform& worldFromLocal);
+
+        //! Callback function to determine which EntityIds to ignore when performing the ray intersection.
+        using EntityIdsToIgnoreFn = AZStd::function<UniqueEntityIds(const ViewportInteraction::MouseInteraction&)>;
 
         //! The state of the manipulator at the start of an interaction.
         struct Start
@@ -77,11 +81,13 @@ namespace AzToolsFramework
         void InstallLeftMouseUpCallback(const MouseActionCallback& onMouseUpCallback);
         void InstallMouseMoveCallback(const MouseActionCallback& onMouseMoveCallback);
 
+        void InstallEntityIdsToIgnoreFn(EntityIdsToIgnoreFn entityIdsToIgnoreFn);
+
         void Draw(
             const ManipulatorManagerState& managerState,
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AzFramework::CameraState& cameraState,
-            const ViewportInteraction::MouseInteraction& mouseInteraction) override;
+            const ViewportInteraction::MouseInteraction& interaction) override;
 
         void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
 
@@ -108,6 +114,9 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         MouseActionCallback m_onMouseMoveCallback = nullptr;
+
+        //! Customization point to determine which (if any) EntityIds to ignore while performing the ray intersection.
+        EntityIdsToIgnoreFn m_entityIdsToIgnoreFn = nullptr;
 
         //! Cached ray request initialized at mouse down and updated during mouse move.
         AzFramework::RenderGeometry::RayRequest m_rayRequest;

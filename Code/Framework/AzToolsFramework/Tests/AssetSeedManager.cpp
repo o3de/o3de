@@ -15,7 +15,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
@@ -23,7 +23,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzTest/Utils.h>
-#include <Utils/Utils.h>
+
 
 namespace // anonymous
 {
@@ -49,7 +49,7 @@ namespace // anonymous
 namespace UnitTest
 {
     class AssetSeedManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
@@ -70,7 +70,9 @@ namespace UnitTest
             m_assetSeedManager = new AzToolsFramework::AssetSeedManager();
             m_assetRegistry = new AzFramework::AssetRegistry();
 
-            m_application->Start(AzFramework::Application::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over platforms and it will be included as part of the relative path of the file.
@@ -170,7 +172,7 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            AZ::SerializeContext* context;
+            AZ::SerializeContext* context = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             ASSERT_TRUE(context) << "No serialize context.\n";
 
@@ -226,20 +228,18 @@ namespace UnitTest
 
         void AssetSeedManager_SaveSeedListFile_FileIsReadOnly()
         {
-            AZ::Test::ScopedAutoTempDirectory tempDir;
-
-            constexpr const char fileName[] = "ReadOnlyTestFile.seed";
-            AZStd::string filePath = tempDir.Resolve(fileName);
+            constexpr const char* fileName = "ReadOnlyTestFile.seed";
+            AZ::IO::Path filePath = m_tempDir.Resolve(fileName);
 
             // Create the file
-            EXPECT_TRUE(m_assetSeedManager->Save(filePath));
+            EXPECT_TRUE(m_assetSeedManager->Save(filePath.Native()));
 
             // Mark the file Read-Only
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_FALSE(m_assetSeedManager->Save(filePath));
+            EXPECT_FALSE(m_assetSeedManager->Save(filePath.Native()));
             AZ_TEST_STOP_TRACE_SUPPRESSION(1); // One error expected
 
             // Clean up the test environment
@@ -249,23 +249,21 @@ namespace UnitTest
 
         void AssetSeedManager_SaveAssetInfoFile_FileIsReadOnly()
         {
-            AZ::Test::ScopedAutoTempDirectory tempDir;
-
-            constexpr const char fileName[] = "ReadOnlyTestFile.assetlist";
-            AZStd::string filePath = tempDir.Resolve(fileName);
+            constexpr const char* fileName = "ReadOnlyTestFile.assetlist";
+            AZ::IO::Path filePath = m_tempDir.Resolve(fileName);
 
             // Add a single asset - empty asset list files don't save
             m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC);
 
             // Create the file
-            EXPECT_TRUE(m_assetSeedManager->SaveAssetFileInfo(filePath, AzFramework::PlatformFlags::Platform_PC, {}));
+            EXPECT_TRUE(m_assetSeedManager->SaveAssetFileInfo(filePath.Native(), AzFramework::PlatformFlags::Platform_PC, {}));
 
             // Mark the file Read-Only
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EXPECT_FALSE(m_assetSeedManager->SaveAssetFileInfo(filePath, AzFramework::PlatformFlags::Platform_PC, {}));
+            EXPECT_FALSE(m_assetSeedManager->SaveAssetFileInfo(filePath.Native(), AzFramework::PlatformFlags::Platform_PC, {}));
             AZ_TEST_STOP_TRACE_SUPPRESSION(1); // One error expected
 
             // Clean up the test environment
@@ -758,7 +756,7 @@ namespace UnitTest
         AZStd::string m_assetsPath[s_totalAssets];
         AZStd::string m_assetsPathFull[s_totalTestPlatforms][s_totalAssets];
         AZ::Data::AssetId m_testDynamicSliceAssetId;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
     };
 
     TEST_F(AssetSeedManagerTest, AssetSeedManager_SaveSeedListFile_FileIsReadOnly)

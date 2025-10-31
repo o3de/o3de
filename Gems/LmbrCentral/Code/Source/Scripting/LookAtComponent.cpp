@@ -171,6 +171,7 @@ namespace LmbrCentral
                 targetPosition,
                 m_forwardAxis
                 );
+            lookAtTransform.SetUniformScale(currentTM.GetUniformScale());
 
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, lookAtTransform);
         }

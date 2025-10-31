@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <RHI/DX12.h>
 
 namespace AZ
@@ -17,11 +17,11 @@ namespace AZ
         class Device;
 
         class SwapChain
-            : public RHI::SwapChain
+            : public RHI::DeviceSwapChain
         {
         public:
-            AZ_RTTI(SwapChain, "{974AC6A9-5009-47BE-BD7E-61348BF623F0}", RHI::SwapChain);
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_RTTI(SwapChain, "{974AC6A9-5009-47BE-BD7E-61348BF623F0}", RHI::DeviceSwapChain);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
 
             static RHI::Ptr<SwapChain> Create();
 
@@ -32,12 +32,12 @@ namespace AZ
             friend class SwapChainFactory;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SwapChain
+            // RHI::DeviceSwapChain
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions) override;
             void ShutdownInternal() override;
             uint32_t PresentInternal() override;
             RHI::ResultCode InitImageInternal(const InitImageRequest& request) override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             bool IsExclusiveFullScreenPreferred() const override;
             bool GetExclusiveFullScreenState() const override;

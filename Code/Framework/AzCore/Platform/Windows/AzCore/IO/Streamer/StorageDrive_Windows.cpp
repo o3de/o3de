@@ -13,6 +13,8 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StorageDrive_Windows.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -65,7 +67,9 @@ namespace AZ::IO
     //
     StorageDriveWin::StorageDriveWin(const AZStd::vector<AZStd::string_view>& drivePaths, u32 maxFileHandles, u32 maxMetaDataCacheEntries,
         size_t physicalSectorSize, size_t logicalSectorSize, u32 ioChannelCount, s32 overCommit, ConstructionOptions options)
-        : m_maxFileHandles(maxFileHandles)
+        : m_metaDataCache_recentlyUsed(maxMetaDataCacheEntries)
+        , m_taskExecutor(AZ::TaskExecutor::Instance())
+        , m_maxFileHandles(maxFileHandles)
         , m_physicalSectorSize(physicalSectorSize)
         , m_logicalSectorSize(logicalSectorSize)
         , m_ioChannelCount(ioChannelCount)
@@ -73,7 +77,7 @@ namespace AZ::IO
         , m_constructionOptions(options)
     {
         AZ_Assert(!drivePaths.empty(), "StorageDrive_win requires at least one drive path to work.");
-        
+
         // Get drive paths
         m_drivePaths.reserve(drivePaths.size());
         for (AZStd::string_view drivePath : drivePaths)
@@ -146,10 +150,12 @@ namespace AZ::IO
         m_readSizeAverage.PushEntry(1);
         m_readTimeAverage.PushEntry(AZStd::chrono::microseconds(1));
 
-        AZ_Assert(IStreamerTypes::IsPowerOf2(maxMetaDataCacheEntries),
-            "StorageDriveWin requires a power-of-2 for maxMetaDataCacheEntries. Received %zu", maxMetaDataCacheEntries);
         m_metaDataCache_paths.resize(maxMetaDataCacheEntries);
         m_metaDataCache_fileSize.resize(maxMetaDataCacheEntries);
+
+        // Initialize read request task descriptor
+        m_readTaskDescriptor.taskName = "WinAPI ReadFile";
+        m_readTaskDescriptor.taskGroup = "AZ::IO:Streamer";         
     }
 
     StorageDriveWin::~StorageDriveWin()
@@ -172,9 +178,9 @@ namespace AZ::IO
         AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-        if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
+        if (AZStd::holds_alternative<Requests::ReadRequestData>(request->GetCommand()))
         {
-            auto& readRequest = AZStd::get<FileRequest::ReadRequestData>(request->GetCommand());
+            auto& readRequest = AZStd::get<Requests::ReadRequestData>(request->GetCommand());
             if (IsServicedByThisDrive(readRequest.m_path.GetAbsolutePath()))
             {
                 FileRequest* read = m_context->GetNewInternalRequest();
@@ -195,7 +201,7 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 if (IsServicedByThisDrive(args.m_path.GetAbsolutePath()))
                 {
@@ -203,8 +209,8 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
-                AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData> ||
+                AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 if (IsServicedByThisDrive(args.m_path.GetAbsolutePath()))
                 {
@@ -212,7 +218,7 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CancelData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CancelData>)
             {
                 if (CancelRequest(request, args.m_target))
                 {
@@ -221,15 +227,15 @@ namespace AZ::IO
                     return;
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
             {
                 FlushCache(args.m_path);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
             {
                 FlushEntireCache();
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
             {
                 Report(args);
             }
@@ -240,44 +246,68 @@ namespace AZ::IO
     bool StorageDriveWin::ExecuteRequests()
     {
         bool hasFinalizedReads = FinalizeReads();
-        bool hasWorked = false;
 
-        if (!m_pendingReadRequests.empty())
+        TaskGraph readTasks("ExecuteRequests");
+
+        // Queue as many read requests as possible in order to maximize throughput.
+        while (!m_pendingReadRequests.empty())
         {
             FileRequest* request = m_pendingReadRequests.front();
-            if (ReadRequest(request))
+            if (ReadRequest(request, readTasks))
             {
                 m_pendingReadRequests.pop_front();
-                hasWorked = true;
+            }
+            else
+            {
+                break;
             }
         }
-        else if (!m_pendingRequests.empty())
-        {
-            FileRequest* request = m_pendingRequests.front();
-            hasWorked = AZStd::visit([this, request](auto&& args)
-            {
-                using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
-                {
-                    FileExistsRequest(request);
-                    m_pendingRequests.pop_front();
-                    return true;
-                }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
-                {
-                    FileMetaDataRetrievalRequest(request);
-                    m_pendingRequests.pop_front();
-                    return true;
-                }
-                else
-                {
-                    AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
-                    return false;
-                }
-            }, request->GetCommand());
-        }
 
-        return StreamStackEntry::ExecuteRequests() || hasFinalizedReads || hasWorked;
+        if (!readTasks.IsEmpty())
+        {
+            readTasks.Detach();
+            readTasks.SubmitOnExecutor(m_taskExecutor);
+
+            StreamStackEntry::ExecuteRequests();
+            return true;
+        }
+        else
+        {
+            // Pick up one other synchronous request if no read requests were issued.
+            if (!m_pendingRequests.empty())
+            {
+                FileRequest* request = m_pendingRequests.front();
+                bool hasWorked = AZStd::visit(
+                    [this, request](auto&& args)
+                    {
+                        using Command = AZStd::decay_t<decltype(args)>;
+                        if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
+                        {
+                            FileExistsRequest(request);
+                            m_pendingRequests.pop_front();
+                            return true;
+                        }
+                        else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
+                        {
+                            FileMetaDataRetrievalRequest(request);
+                            m_pendingRequests.pop_front();
+                            return true;
+                        }
+                        else
+                        {
+                            AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
+                            return false;
+                        }
+                    },
+                    request->GetCommand());
+
+                return StreamStackEntry::ExecuteRequests() || hasFinalizedReads || hasWorked;
+            }
+            else
+            {
+                return StreamStackEntry::ExecuteRequests() || hasFinalizedReads;
+            }
+        }
     }
 
     void StorageDriveWin::UpdateStatus(Status& status) const
@@ -287,7 +317,7 @@ namespace AZ::IO
         status.m_isIdle = status.m_isIdle && m_pendingReadRequests.empty() && m_pendingRequests.empty() && (m_activeReads_Count == 0);
     }
 
-    void StorageDriveWin::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+    void StorageDriveWin::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
         StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd)
     {
         StreamStackEntry::UpdateCompletionEstimates(now, internalPending, pendingBegin, pendingEnd);
@@ -300,22 +330,23 @@ namespace AZ::IO
         u64 activeOffset = m_activeOffset;
 
         // Determine the time of the first available slot
-        AZStd::chrono::system_clock::time_point earliestSlot = AZStd::chrono::system_clock::time_point::max();
+        AZStd::chrono::steady_clock::time_point earliestSlot = AZStd::chrono::steady_clock::time_point::max();
         for (size_t i = 0; i < m_readSlots_readInfo.size(); ++i)
         {
             if (m_readSlots_active[i])
             {
                 FileReadInformation& read = m_readSlots_readInfo[i];
                 u64 totalBytesRead = m_readSizeAverage.GetTotal();
-                double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
-                auto readCommand = AZStd::get_if<FileRequest::ReadData>(&read.m_request->GetCommand());
+                double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
+                auto readCommand = AZStd::get_if<Requests::ReadData>(&read.m_request->GetCommand());
                 AZ_Assert(readCommand, "Request currently reading doesn't contain a read command.");
-                auto endTime = read.m_startTime + AZStd::chrono::microseconds(aznumeric_cast<u64>((readCommand->m_size * totalReadTimeUSec) / totalBytesRead));
+                AZStd::chrono::steady_clock::time_point endTime =
+                    read.m_startTime + Statistic::TimeValue(aznumeric_cast<u64>((readCommand->m_size * totalReadTime) / totalBytesRead));
                 earliestSlot = AZStd::min(earliestSlot, endTime);
                 read.m_request->SetEstimatedCompletion(endTime);
             }
         }
-        if (earliestSlot != AZStd::chrono::system_clock::time_point::max())
+        if (earliestSlot != AZStd::chrono::steady_clock::time_point::max())
         {
             now = earliestSlot;
         }
@@ -344,7 +375,7 @@ namespace AZ::IO
         }
     }
 
-    void StorageDriveWin::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+    void StorageDriveWin::EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
         const RequestPath*& activeFile, u64& activeOffset) const
     {
         u64 readSize = 0;
@@ -354,25 +385,25 @@ namespace AZ::IO
         AZStd::visit([&](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 targetFile = &args.m_path;
                 readSize = args.m_size;
                 offset = args.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 targetFile = &args.m_compressionInfo.m_archiveFilename;
                 readSize = args.m_compressionInfo.m_compressedSize;
                 offset = args.m_compressionInfo.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds getFileExistsTimeAverage = m_getFileExistsTimeAverage.CalculateAverage();
                 startTime += getFileExistsTimeAverage;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds getFileExistsTimeAverage = m_getFileMetaDataRetrievalTimeAverage.CalculateAverage();
@@ -398,28 +429,28 @@ namespace AZ::IO
             }
 
             u64 totalBytesRead = m_readSizeAverage.GetTotal();
-            double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
-            startTime += AZStd::chrono::microseconds(aznumeric_cast<u64>((readSize * totalReadTimeUSec) / totalBytesRead));
+            double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
+            startTime += Statistic::TimeValue(aznumeric_cast<u64>((readSize * totalReadTime) / totalBytesRead));
             activeOffset = offset + readSize;
         }
         request->SetEstimatedCompletion(startTime);
     }
 
     void StorageDriveWin::EstimateCompletionTimeForRequestChecked(FileRequest* request,
-        AZStd::chrono::system_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const
+        AZStd::chrono::steady_clock::time_point startTime, const RequestPath*& activeFile, u64& activeOffset) const
     {
         AZStd::visit([&, this](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData> ||
-                          AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData> ||
+                          AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 if (IsServicedByThisDrive(args.m_path.GetAbsolutePath()))
                 {
                     EstimateCompletionTimeForRequest(request, startTime, activeFile, activeOffset);
                 }
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 if (IsServicedByThisDrive(args.m_compressionInfo.m_archiveFilename.GetAbsolutePath()))
                 {
@@ -435,17 +466,18 @@ namespace AZ::IO
             aznumeric_cast<s32>(m_pendingRequests.size()) - m_activeReads_Count;
     }
 
-    auto StorageDriveWin::OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const FileRequest::ReadData& data) -> OpenFileResult
+    auto StorageDriveWin::OpenFile(HANDLE& fileHandle, u32& cacheSlot, FileRequest* request, const Requests::ReadData& data) -> OpenFileResult
     {
         HANDLE file = INVALID_HANDLE_VALUE;
 
         // If the file is already opened for use, use that file handle and update it's last touched time.
-        size_t cacheIndex = FindInFileHandleCache(data.m_path);
+        u32 cacheIndex = FindInFileHandleCache(data.m_path);
         if (cacheIndex != InvalidFileCacheIndex)
         {
             file = m_fileCache_handles[cacheIndex];
             AZ_Assert(file != INVALID_HANDLE_VALUE, "Found the file '%s' in cache, but file handle is invalid.\n",
                 data.m_path.GetRelativePath());
+            m_fileCache_recentlyUsed.Touch(cacheIndex);
         }
         else
         {
@@ -469,7 +501,7 @@ namespace AZ::IO
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
                 AZStd::wstring filenameW;
-                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePath());
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePathCStr());
                 file = ::CreateFileW(
                     filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
@@ -486,7 +518,7 @@ namespace AZ::IO
                     return OpenFileResult::RequestForwarded;
                 }
 
-                // Remove any alertable IO completion notifications that could be queued by the IO Manager.
+                // Remove any alert-able IO completion notifications that could be queued by the IO Manager.
                 if (!::SetFileCompletionNotificationModes(file, FILE_SKIP_SET_EVENT_ON_HANDLE | FILE_SKIP_COMPLETION_PORT_ON_SUCCESS))
                 {
                     AZ_Warning("StorageDriveWin", false, "Failed to remove alertable IO completion notifications. (Error: %u)\n", ::GetLastError());
@@ -498,6 +530,8 @@ namespace AZ::IO
                 }
             }
 
+            m_fileCache_recentlyUsed.TouchLeastRecentlyUsed();
+
             // Fill the cache entry with data about the new file.
             m_fileCache_handles[cacheIndex] = file;
             m_fileCache_activeReads[cacheIndex] = 0;
@@ -507,26 +541,24 @@ namespace AZ::IO
         AZ_Assert(file != INVALID_HANDLE_VALUE, "While searching for file '%s' in StorageDeviceWin::OpenFile failed to detect a problem.",
             data.m_path.GetRelativePath());
 
-        // Set the current request and update timestamp, regardless of cache hit or miss.
-        m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::now();
         fileHandle = file;
         cacheSlot = cacheIndex;
         return OpenFileResult::FileOpened;
     }
 
-    bool StorageDriveWin::ReadRequest(FileRequest* request)
+    bool StorageDriveWin::ReadRequest(FileRequest* request, TaskGraph& tasks)
     {
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
         if (!m_cachesInitialized)
         {
-            m_fileCache_lastTimeUsed.resize(m_maxFileHandles, AZStd::chrono::system_clock::time_point::min());
+            m_fileCache_recentlyUsed = RecentlyUsedFileIndex(m_maxFileHandles);
             m_fileCache_paths.resize(m_maxFileHandles);
             m_fileCache_handles.resize(m_maxFileHandles, INVALID_HANDLE_VALUE);
             m_fileCache_activeReads.resize(m_maxFileHandles, 0);
 
             m_readSlots_readInfo.resize(m_ioChannelCount);
-            m_readSlots_statusInfo.resize(m_ioChannelCount);
+            m_readSlots_statusInfo = AZStd::make_unique<FileReadStatus[]>(m_ioChannelCount);
             m_readSlots_active.resize(m_ioChannelCount);
 
             m_cachesInitialized = true;
@@ -539,11 +571,10 @@ namespace AZ::IO
 
         size_t readSlot = FindAvailableReadSlot();
         AZ_Assert(readSlot != InvalidReadSlotIndex, "Active read slot count indicates there's a read slot available, but no read slot was found.");
-
-        return ReadRequest(request, readSlot);
+        return ReadRequest(request, readSlot, tasks);
     }
 
-    bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot)
+    bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot, [[maybe_unused]]TaskGraph& tasks)
     {
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
@@ -553,11 +584,11 @@ namespace AZ::IO
             return false;
         }
 
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data, "Read request in StorageDriveWin doesn't contain read data.");
 
         HANDLE file = INVALID_HANDLE_VALUE;
-        size_t fileCacheSlot = InvalidFileCacheIndex;
+        u32 fileCacheSlot = InvalidFileCacheIndex;
         switch (OpenFile(file, fileCacheSlot, request, *data))
         {
         case OpenFileResult::FileOpened:
@@ -583,7 +614,7 @@ namespace AZ::IO
             // If any are unaligned to the sector sizes, make adjustments and allocate an aligned buffer.
             const bool alignedAddr = IStreamerTypes::IsAlignedTo(data->m_output, aznumeric_caster(m_physicalSectorSize));
             const bool alignedOffs = IStreamerTypes::IsAlignedTo(data->m_offset, aznumeric_caster(m_logicalSectorSize));
-            
+
             // Adjust the offset if it's misaligned.
             // Align the offset down to next lowest sector.
             // Change the size to compensate.
@@ -656,44 +687,54 @@ namespace AZ::IO
             Statistic::PlotImmediate(m_name, DirectReadsName, m_directReadsPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         }
-        
+
         FileReadStatus& readStatus = m_readSlots_statusInfo[readSlot];
         LPOVERLAPPED overlapped = &readStatus.m_overlapped;
+        ::ZeroMemory(overlapped, sizeof(OVERLAPPED));
+        // Set explicitly to avoid FinalizeRequest thinking a request has completed before it's started. Note that "Internal" is somewhat of
+        // a misnomer and is documented.
+        overlapped->Internal = STATUS_PENDING;
         overlapped->Offset = aznumeric_caster(readOffs);
         overlapped->OffsetHigh = aznumeric_caster(readOffs >> (sizeof(overlapped->Offset) << 3));
         overlapped->hEvent = m_context->GetStreamerThreadSynchronizer().CreateEventHandle();
         readStatus.m_fileHandleIndex = fileCacheSlot;
 
-        bool result = false;
         {
             AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
-            result = ::ReadFile(file, output, readSize, nullptr, overlapped);
+            tasks.AddTask(
+                m_readTaskDescriptor,
+                [this, file, output, readSize, overlapped, state = &readStatus.m_requestState]()
+                {
+                    AZ_PROFILE_SCOPE(AzCore, "::ReadFile WinAPI.");
+                    // Set the state now to avoid a race condition where by the read request completes and wakes up the
+                    // scheduler thread before the state is set. In that case the read won't be finalized as processing
+                    // is skipped and the scheduler thread goes back to sleep waiting for the thread to be woken up again,
+                    // which never happens as the read isn't going to wake it up again. The worst that can happen with
+                    // putting it early like this is that the overlapped status is checked before the read completes.
+                    *state = FileReadStatus::RequestState::SuccessfullyStarted;
+                            
+                    if (!::ReadFile(file, output, readSize, nullptr, overlapped))
+                    {
+                        DWORD error = ::GetLastError();
+                        // If the result is ERROR_IO_PENDING or ERROR_IO_INCOMPLETE it means the read request has been
+                        // queued with the OS and once completed the OS will wake up the scheduler thread.
+                        if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
+                        {
+                            *state = FileReadStatus::RequestState::Error;
+                            m_context->WakeUpSchedulingThread();
+                        }
+                    }
+                    else
+                    {
+                        // If this scope is reached, it means that ::ReadFile processed the read synchronously.  This can happen if
+                        // the OS already had the file in the cache. The OVERLAPPED struct will still be filled out so we proceed as
+                        // if the read was fully asynchronous.
+                        m_context->WakeUpSchedulingThread();
+                    }
+                });
         }
 
-        if (!result)
-        {
-            DWORD error = ::GetLastError();
-            if (error != ERROR_IO_PENDING)
-            {
-                AZ_Warning("StorageDriveWin", false, "::ReadFile failed with error: %u\n", error);
-
-                m_context->GetStreamerThreadSynchronizer().DestroyEventHandle(overlapped->hEvent);
-
-                // Finish the request since this drive opened the file handle but the read failed.
-                request->SetStatus(IStreamerTypes::RequestStatus::Failed);
-                m_context->MarkRequestAsCompleted(request);
-                readInfo.Clear();
-                return true;
-            }
-        }
-        else
-        {
-            // If this scope is reached, it means that ::ReadFile processed the read synchronously.  This can happen if
-            // the OS already had the file in the cache.  The OVERLAPPED struct will still be filled out so we proceed as
-            // if the read was fully asynchronous.
-        }
-
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         if (m_activeReads_Count++ == 0)
         {
             m_activeReads_startTime = now;
@@ -716,7 +757,7 @@ namespace AZ::IO
         Statistic::PlotImmediate(m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetMostRecentSample());
         Statistic::PlotImmediate(m_name, SeeksName, m_seekPercentageStat.GetMostRecentSample());
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        
+
         m_fileCache_activeReads[fileCacheSlot]++;
         m_activeCacheSlot = fileCacheSlot;
         m_activeOffset = readOffs + readSize;
@@ -780,7 +821,7 @@ namespace AZ::IO
 
     void StorageDriveWin::FileExistsRequest(FileRequest* request)
     {
-        auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
+        auto& fileExists = AZStd::get<Requests::FileExistsCheckData>(request->GetCommand());
 
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
             m_name.c_str(), fileExists.m_path.GetRelativePath());
@@ -790,7 +831,7 @@ namespace AZ::IO
             "FileExistsRequest was queued on a StorageDriveWin that doesn't service files on the given path '%s'.",
             fileExists.m_path.GetRelativePath());
 
-        size_t cacheIndex = FindInFileHandleCache(fileExists.m_path);
+        u32 cacheIndex = FindInFileHandleCache(fileExists.m_path);
         if (cacheIndex != InvalidFileCacheIndex)
         {
             fileExists.m_found = true;
@@ -805,12 +846,13 @@ namespace AZ::IO
             fileExists.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
             m_context->MarkRequestAsCompleted(request);
+            m_metaDataCache_recentlyUsed.Touch(cacheIndex);
             return;
         }
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
-        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePath());
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
         if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
@@ -820,7 +862,7 @@ namespace AZ::IO
                 fileSize.LowPart = attributes.nFileSizeLow;
                 fileSize.HighPart = attributes.nFileSizeHigh;
 
-                cacheIndex = GetNextMetaDataCacheSlot();
+                cacheIndex = m_metaDataCache_recentlyUsed.TouchLeastRecentlyUsed();
                 m_metaDataCache_paths[cacheIndex] = fileExists.m_path;
                 m_metaDataCache_fileSize[cacheIndex] = aznumeric_caster(fileSize.QuadPart);
                 fileExists.m_found = true;
@@ -836,19 +878,20 @@ namespace AZ::IO
 
     void StorageDriveWin::FileMetaDataRetrievalRequest(FileRequest* request)
     {
-        auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+        auto& command = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
 
         AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
             m_name.c_str(), command.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataRetrievalTimeAverage);
 
-        size_t cacheIndex = FindInMetaDataCache(command.m_path);
+        u32 cacheIndex = FindInMetaDataCache(command.m_path);
         if (cacheIndex != InvalidMetaDataCacheIndex)
         {
             command.m_fileSize = m_metaDataCache_fileSize[cacheIndex];
             command.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
             m_context->MarkRequestAsCompleted(request);
+            m_metaDataCache_recentlyUsed.Touch(cacheIndex);
             return;
         }
 
@@ -869,7 +912,7 @@ namespace AZ::IO
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
             AZStd::wstring filenameW;
-            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePath());
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePathCStr());
             if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {
@@ -886,7 +929,7 @@ namespace AZ::IO
         command.m_fileSize = aznumeric_caster(fileSize.QuadPart);
         command.m_found = true;
 
-        cacheIndex = GetNextMetaDataCacheSlot();
+        cacheIndex = m_metaDataCache_recentlyUsed.TouchLeastRecentlyUsed();
 
         m_metaDataCache_paths[cacheIndex] = command.m_path;
         m_metaDataCache_fileSize[cacheIndex] = aznumeric_caster(fileSize.QuadPart);
@@ -899,26 +942,35 @@ namespace AZ::IO
     {
         if (m_cachesInitialized)
         {
-            size_t cacheIndex = FindInFileHandleCache(filePath);
-            if (cacheIndex != InvalidFileCacheIndex)
+            // Clear file handle from cache.
             {
-                if (m_fileCache_handles[cacheIndex] != INVALID_HANDLE_VALUE)
+                u32 cacheIndex = FindInFileHandleCache(filePath);
+                if (cacheIndex != InvalidFileCacheIndex)
                 {
-                    AZ_Assert(m_fileCache_activeReads[cacheIndex] == 0, "Flushing '%s' but it has %u active reads\n",
-                        filePath.GetRelativePath(), m_fileCache_activeReads[cacheIndex]);
-                    ::CloseHandle(m_fileCache_handles[cacheIndex]);
-                    m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
+                    if (m_fileCache_handles[cacheIndex] != INVALID_HANDLE_VALUE)
+                    {
+                        AZ_Assert(
+                            m_fileCache_activeReads[cacheIndex] == 0, "Flushing '%s' but it has %u active reads\n",
+                            filePath.GetRelativePath(), m_fileCache_activeReads[cacheIndex]);
+                        ::CloseHandle(m_fileCache_handles[cacheIndex]);
+                        m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
+                        m_fileCache_recentlyUsed.Flush(cacheIndex);
+                    }
+                    m_fileCache_activeReads[cacheIndex] = 0;
+                    m_fileCache_recentlyUsed.Flush(cacheIndex);
+                    m_fileCache_paths[cacheIndex].Clear();
                 }
-                m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
-                m_fileCache_paths[cacheIndex].Clear();
             }
 
-            cacheIndex = FindInMetaDataCache(filePath);
-            if (cacheIndex != InvalidMetaDataCacheIndex)
+            // Clear file meta data from cache.
             {
-                m_metaDataCache_paths[cacheIndex].Clear();
-                m_metaDataCache_fileSize[cacheIndex] = 0;
+                u32 cacheIndex = FindInMetaDataCache(filePath);
+                if (cacheIndex != InvalidMetaDataCacheIndex)
+                {
+                    m_metaDataCache_paths[cacheIndex].Clear();
+                    m_metaDataCache_fileSize[cacheIndex] = 0;
+                    m_metaDataCache_recentlyUsed.Flush(cacheIndex);
+                }
             }
         }
     }
@@ -938,15 +990,15 @@ namespace AZ::IO
                     m_fileCache_handles[cacheIndex] = INVALID_HANDLE_VALUE;
                 }
                 m_fileCache_activeReads[cacheIndex] = 0;
-                m_fileCache_lastTimeUsed[cacheIndex] = AZStd::chrono::system_clock::time_point();
                 m_fileCache_paths[cacheIndex].Clear();
             }
+            m_fileCache_recentlyUsed.FlushAll();
 
             // Clear meta data cache
+            m_metaDataCache_recentlyUsed.FlushAll();
             auto metaDataCacheSize = m_metaDataCache_paths.size();
             m_metaDataCache_paths.clear();
             m_metaDataCache_fileSize.clear();
-            m_metaDataCache_front = 0;
             m_metaDataCache_paths.resize(metaDataCacheSize);
             m_metaDataCache_fileSize.resize(metaDataCacheSize);
         }
@@ -956,6 +1008,8 @@ namespace AZ::IO
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
+        TaskGraph readTasks("FinalizeReadRequests");
+
         bool hasWorked = false;
         for (size_t readSlot = 0; readSlot < m_readSlots_active.size(); ++readSlot)
         {
@@ -963,34 +1017,53 @@ namespace AZ::IO
             {
                 FileReadStatus& status = m_readSlots_statusInfo[readSlot];
 
-                if (HasOverlappedIoCompleted(&status.m_overlapped))
+                if (status.m_requestState != FileReadStatus::RequestState::NotStarted)
                 {
-                    DWORD bytesTransferred = 0;
-                    BOOL result = ::GetOverlappedResult(m_fileCache_handles[status.m_fileHandleIndex],
-                        &status.m_overlapped, &bytesTransferred, FALSE);
-                    DWORD error = ::GetLastError();
-
-                    if (result || error == ERROR_OPERATION_ABORTED)
+                    if (status.m_requestState == FileReadStatus::RequestState::Error)
                     {
-                        hasWorked = true;
-                        constexpr bool encounteredError = false;
-                        FinalizeSingleRequest(status, readSlot, bytesTransferred, error == ERROR_OPERATION_ABORTED, encounteredError);
-                    }
-                    else if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
-                    {
-                        AZ_Error("StorageDriveWin", false, "Async file read operation completed with extended error code %u\n", error);
+                        AZ_Error("StorageDriveWin", false, "Async file read operation failed to queue a read request with the OS.\n");
                         hasWorked = true;
                         constexpr bool encounteredError = true;
-                        FinalizeSingleRequest(status, readSlot, bytesTransferred, false, encounteredError);
+                        constexpr bool isCanceled = false;
+                        FinalizeSingleRequest(status, readSlot, 0, isCanceled, encounteredError, readTasks);
+                    }
+                    else if (HasOverlappedIoCompleted(&status.m_overlapped))
+                    {
+                        DWORD bytesTransferred = 0;
+                        BOOL result = ::GetOverlappedResult(
+                            m_fileCache_handles[status.m_fileHandleIndex], &status.m_overlapped, &bytesTransferred, FALSE);
+                        DWORD error = ::GetLastError();
+
+                        if (result || error == ERROR_OPERATION_ABORTED)
+                        {
+                            hasWorked = true;
+                            constexpr bool encounteredError = false;
+                            FinalizeSingleRequest(
+                                status, readSlot, bytesTransferred, error == ERROR_OPERATION_ABORTED, encounteredError, readTasks);
+                        }
+                        else if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
+                        {
+                            AZ_Error("StorageDriveWin", false, "Async file read operation completed with extended error code %u\n", error);
+                            hasWorked = true;
+                            constexpr bool encounteredError = true;
+                            constexpr bool isCanceled = false;
+                            FinalizeSingleRequest(status, readSlot, bytesTransferred, isCanceled, encounteredError, readTasks);
+                        }
                     }
                 }
             }
         }
+
+        if (hasWorked && !readTasks.IsEmpty())
+        {
+            readTasks.Detach();
+            readTasks.SubmitOnExecutor(m_taskExecutor);
+        }
         return hasWorked;
     }
 
-    void StorageDriveWin::FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
-        bool isCanceled, bool encounteredError)
+    void StorageDriveWin::FinalizeSingleRequest(
+        FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred, bool isCanceled, bool encounteredError, TaskGraph& readTasks)
     {
         m_activeReads_ByteCount += numBytesTransferred;
         if (--m_activeReads_Count == 0)
@@ -998,16 +1071,16 @@ namespace AZ::IO
             // Update read stats now that the operation is done.
             m_readSizeAverage.PushEntry(m_activeReads_ByteCount);
             m_readTimeAverage.PushEntry(AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(
-                AZStd::chrono::system_clock::now() - m_activeReads_startTime));
+                AZStd::chrono::steady_clock::now() - m_activeReads_startTime));
 
             m_activeReads_ByteCount = 0;
         }
 
         FileReadInformation& fileReadInfo = m_readSlots_readInfo[readSlot];
 
-        auto readCommand = AZStd::get_if<FileRequest::ReadData>(&fileReadInfo.m_request->GetCommand());
+        auto readCommand = AZStd::get_if<Requests::ReadData>(&fileReadInfo.m_request->GetCommand());
         AZ_Assert(readCommand != nullptr, "Request stored with the overlapped I/O call did not contain a read request.");
-        
+
         if (fileReadInfo.m_sectorAlignedOutput && !encounteredError)
         {
             auto offsetAddress = reinterpret_cast<u8*>(fileReadInfo.m_sectorAlignedOutput) + fileReadInfo.m_copyBackOffset;
@@ -1029,50 +1102,44 @@ namespace AZ::IO
 
         m_fileCache_activeReads[status.m_fileHandleIndex]--;
         m_readSlots_active[readSlot] = false;
+        status.m_requestState = FileReadStatus::RequestState::NotStarted;
         m_context->GetStreamerThreadSynchronizer().DestroyEventHandle(status.m_overlapped.hEvent);
         fileReadInfo.Clear();
-
+        
         // There's now a slot available to queue the next request, if there is one.
         if (!m_pendingReadRequests.empty())
         {
             FileRequest* request = m_pendingReadRequests.front();
-            if (ReadRequest(request, readSlot))
+            if (ReadRequest(request, readSlot, readTasks))
             {
                 m_pendingReadRequests.pop_front();
             }
         }
     }
 
-    size_t StorageDriveWin::FindInFileHandleCache(const RequestPath& filePath) const
+    u32 StorageDriveWin::FindInFileHandleCache(const RequestPath& filePath) const
     {
         size_t numFiles = m_fileCache_paths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
             if (m_fileCache_paths[i] == filePath)
             {
-                return i;
+                return aznumeric_caster(i);
             }
         }
         return InvalidFileCacheIndex;
     }
 
-    size_t StorageDriveWin::FindAvailableFileHandleCacheIndex() const
+    u32 StorageDriveWin::FindAvailableFileHandleCacheIndex()
     {
         AZ_Assert(m_cachesInitialized, "Using file cache before it has been (lazily) initialized\n");
 
-        // This needs to look for files with no active reads, and the oldest file among those.
-        size_t cacheIndex = InvalidFileCacheIndex;
-        AZStd::chrono::system_clock::time_point oldest = AZStd::chrono::system_clock::time_point::max();
-        for (size_t index = 0; index < m_maxFileHandles; ++index)
+        u32 cacheIndex = m_fileCache_recentlyUsed.GetLeastRecentlyUsed();
+        if (m_fileCache_activeReads[cacheIndex] == 0)
         {
-            if (m_fileCache_activeReads[index] == 0 && m_fileCache_lastTimeUsed[index] < oldest)
-            {
-                oldest = m_fileCache_lastTimeUsed[index];
-                cacheIndex = index;
-            }
+            return cacheIndex;
         }
-
-        return cacheIndex;
+        return InvalidFileCacheIndex;
     }
 
     size_t StorageDriveWin::FindAvailableReadSlot()
@@ -1087,26 +1154,20 @@ namespace AZ::IO
         return InvalidReadSlotIndex;
     }
 
-    size_t StorageDriveWin::FindInMetaDataCache(const RequestPath& filePath) const
+    u32 StorageDriveWin::FindInMetaDataCache(const RequestPath& filePath) const
     {
         size_t numFiles = m_metaDataCache_paths.size();
         for (size_t i = 0; i < numFiles; ++i)
         {
             if (m_metaDataCache_paths[i] == filePath)
             {
-                return i;
+                return aznumeric_caster(i);
             }
         }
         return InvalidMetaDataCacheIndex;
     }
 
-    size_t StorageDriveWin::GetNextMetaDataCacheSlot()
-    {
-        m_metaDataCache_front = (m_metaDataCache_front + 1) & (m_metaDataCache_paths.size() - 1);
-        return m_metaDataCache_front;
-    }
-
-    bool StorageDriveWin::IsServicedByThisDrive(const char* filePath) const
+    bool StorageDriveWin::IsServicedByThisDrive(AZ::IO::PathView filePath) const
     {
         // This approach doesn't allow paths to be resolved to the correct drive when junctions are used or when a drive
         // is mapped as folder of another drive. To do this correctly "GetVolumePathName" should be used, but this takes
@@ -1114,7 +1175,7 @@ namespace AZ::IO
         // multiple disks.
         for (const AZStd::string& drivePath : m_drivePaths)
         {
-            if (azstrnicmp(filePath, drivePath.c_str(), drivePath.length()) == 0)
+            if (filePath.RootName().Compare(drivePath) == 0)
             {
                 return true;
             }
@@ -1126,45 +1187,133 @@ namespace AZ::IO
     {
         if (m_cachesInitialized)
         {
-            constexpr double bytesToMB = aznumeric_cast<double>(1_mib);
             using DoubleSeconds = AZStd::chrono::duration<double>;
 
-            double totalBytesReadMB = m_readSizeAverage.GetTotal() / bytesToMB;
+            u64 totalBytesRead = m_readSizeAverage.GetTotal();
             double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
-            statistics.push_back(Statistic::CreateFloat(m_name, "Read Speed (avg. mbps)", totalBytesReadMB / totalReadTimeSec));
-            statistics.push_back(Statistic::CreateInteger(m_name, "File Open & Close (avg. us)", m_fileOpenCloseTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file exists (avg. us)", m_getFileExistsTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file meta data (avg. us)", m_getFileMetaDataRetrievalTimeAverage.CalculateAverage().count()));
+            statistics.push_back(Statistic::CreateBytesPerSecond(m_name, "Read Speed", totalBytesRead / totalReadTimeSec,
+                "The average read speed in megabytes per second this drive achieved. This is the maximum achievable speed for reading from "
+                "disk. If this is lower than expected it may indicate that there's an overhead from the operating system, the drive has "
+                "seen a lot of use, other applications are using the same drive and/or anti-virus scans are slowing down reads. Enabling "
+                "buffered reads through the Settings Registry can increase the read speeds as the operating system can cache files, but "
+                "this will typically only accelerate files that are read multiple times and will be slower for the first read. Artificial "
+                "can therefore be misleading if the same files are repeatedly loaded."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "File Open & Close", m_fileOpenCloseTimeAverage.CalculateAverage(), m_fileOpenCloseTimeAverage.GetMinimum(),
+                m_fileOpenCloseTimeAverage.GetMaximum(),
+                "The average amount of time needed to open and close file handles. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file exists", m_getFileExistsTimeAverage.CalculateAverage(),
+                m_getFileExistsTimeAverage.GetMinimum(), m_getFileExistsTimeAverage.GetMaximum(),
+                "The average amount of time needed to check if a file exists. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file meta data", m_getFileMetaDataRetrievalTimeAverage.CalculateAverage(),
+                m_getFileMetaDataRetrievalTimeAverage.GetMinimum(), m_getFileMetaDataRetrievalTimeAverage.GetMaximum(),
+                "The average amount of time in microseconds needed to retrieve file information. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
 
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateNumAvailableSlots()));
+            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateNumAvailableSlots(),
+                "The total number of available slots to queue requests on. The lower this number, the more active this node is. A small "
+                "number is ideal as it means there are a few requests available for immediate processing next once a request "
+                "completes. If this is value is often negative then increasing the over-commit value, but keep in mind that too many "
+                "over-committed reduces the ability of scheduler to order requests."));
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            statistics.push_back(Statistic::CreatePercentage(m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, SeeksName, m_seekPercentageStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, DirectReadsName, m_directReadsPercentageStat.GetAverage()));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetAverage(), m_fileSwitchPercentageStat.GetMinimum(),
+                m_fileSwitchPercentageStat.GetMaximum(),
+                "The percentage of file requests that required switching to a different file. When running from loose file this should be "
+                "close to 100% as that would indicate mostly full file reads. When running from archives this should be as close to 0 as "
+                "possible as that would indicate efficiently running from archives."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, SeeksName, m_seekPercentageStat.GetAverage(), m_seekPercentageStat.GetMinimum(), m_seekPercentageStat.GetMaximum(),
+                "The percentage of file reads that required seeking within a file. For loose files this should be lose to zero to indicate "
+                "no partial file reads. For archives this value is typically high, which is not a problem, but lower values indicate more "
+                "efficient scheduling and archive layout which will result in better hardware cache utilization."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, DirectReadsName, m_directReadsPercentageStat.GetAverage(), m_directReadsPercentageStat.GetMinimum(),
+                m_directReadsPercentageStat.GetMaximum(),
+                "The percentage of reads that did not require any additional aligning. If this number isn't close to 100 percent "
+                "performance will suffer as temporary buffers need to be allocated and freed. The best way to avoid this is by adding a "
+                "block cache and/or read splitter in front of this node."));
 #endif
         }
         StreamStackEntry::CollectStatistics(statistics);
     }
 
-    void StorageDriveWin::Report(const FileRequest::ReportData& data) const
+    void StorageDriveWin::Report(const Requests::ReportData& data) const
     {
         switch (data.m_reportType)
         {
-        case FileRequest::ReportData::ReportType::FileLocks:
+        case IStreamerTypes::ReportType::Config:
+            {
+                AZStd::string drivePaths;
+                AZ::StringFunc::Join(drivePaths, m_drivePaths, ' ');
+                data.m_output.push_back(Statistic::CreatePersistentString(
+                    m_name, "Drive paths", AZStd::move(drivePaths), "The drive paths this node monitors."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Max file handles", m_maxFileHandles,
+                    "The maximum number of file handles this drive node will cache. Increasing this will allow files that are read "
+                    "multiple times to be processed faster. It's recommended to have this set to at least the largest number of archives "
+                    "that can be in use at the same time."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Max meta data cache", m_metaDataCache_paths.size(),
+                    "The maximum number of meta data like file sizes this drive node will cache."));
+                data.m_output.push_back(Statistic::CreateByteSize(
+                    m_name, "Physical sector size", m_physicalSectorSize,
+                    "The sector size used by the hardware. For optimal performance memory alignment and read sizes need to be multiples of "
+                    "this value."));
+                data.m_output.push_back(Statistic::CreateByteSize(
+                    m_name, "Logical sector size", m_logicalSectorSize,
+                    "The sector size used by the operating system. This is typically the same or smaller than the physical sector size. If "
+                    "the physical sector size alignment can't be met, this is the next best size to align to."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "IO channel count", m_ioChannelCount, "The amount of requests the hardware can process in parallel."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Overcommit", m_overCommit,
+                    "The number of additional requests this node will accept. Higher numbers means that drives don't have to wait for the "
+                    "scheduler to provide new request to process and the next request can immediately start reading. If this value is too "
+                    "high though it will negatively impact the scheduler's ability to order and prioritize requests, which can lead to "
+                    "poorer hardware and software cache performance and slower cancellations, among others."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Has seek penalty", m_constructionOptions.m_hasSeekPenalty,
+                    "Whether or not the hardware has a penalty for seeking. This refers to drives that need to physically position a read "
+                    "head to retrieve data, which can cause additional seek times for non-consecutive reads. This does not refer to seeks "
+                    "impacting hardware cache performance."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Unbuffered reads enabled", m_constructionOptions.m_enableUnbufferedReads,
+                    "Whether or not this drive will use the operating system's cache (buffered) or not (unbuffered). Buffered reads are "
+                    "beneficial when reading the same file frequently, which happens during development. Unbuffered typically is faster "
+                    "when reading the initial file as there's much less the operating system has to do, but subsequential reads are "
+                    "slower. Unbuffered is optimal for released games as these don't often read the same file. Please keep in mind that "
+                    "artificial tests may show an improvement with buffered enabled but this can be due to repeatedly reading the same "
+                    "files and often doesn't reflect a real-world scenario."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Enable sharing", m_constructionOptions.m_enableSharing,
+                    "Whether or not file read sharing is enabled. When enabled this enabled other applications can continue to read the "
+                    "files, though not write to them. This doesn't have any noticeable impact on performance, but may be a security "
+                    "concern."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Minimal reporting", m_constructionOptions.m_minimalReporting,
+                    "Whether or not this node only reports issues or reports all information."));
+                data.m_output.push_back(Statistic::CreateReferenceString(
+                    m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                    "The name of the node that follows this node or none."));
+            }
+            break;
+        case IStreamerTypes::ReportType::FileLocks:
             if (m_cachesInitialized)
             {
                 for (u32 i = 0; i < m_maxFileHandles; ++i)
                 {
                     if (m_fileCache_handles[i] != INVALID_HANDLE_VALUE)
                     {
-                        AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_fileCache_paths[i].GetRelativePath());
+                        data.m_output.push_back(
+                            Statistic::CreatePersistentString(m_name, "File lock", m_fileCache_paths[i].GetRelativePath().Native()));
                     }
                 }
-            }
-            else
-            {
-                AZ_Printf("Streamer", "File lock in %s : No files have been streamed.\n", m_name.c_str());
             }
             break;
         default:

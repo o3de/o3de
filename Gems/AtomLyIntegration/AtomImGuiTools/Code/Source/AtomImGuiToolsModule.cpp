@@ -18,7 +18,7 @@ namespace AtomImGuiTools
     {
     public:
         AZ_RTTI(AtomImGuiToolsModule, "{1B65F246-7977-4DC4-B5D9-BDAD374388FF}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AtomImGuiToolsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomImGuiToolsModule, AZ::SystemAllocator);
 
         AtomImGuiToolsModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace AtomImGuiTools
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AtomImGuiTools::AtomImGuiToolsModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AtomImGuiTools, AtomImGuiTools::AtomImGuiToolsModule)
+#endif

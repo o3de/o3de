@@ -8,7 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <Atom/Feature/LookupTable/LookupTableAsset.h>
+#include <LookupTable/LookupTableAsset.h>
 
 namespace AZ
 {

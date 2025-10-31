@@ -1,0 +1,67 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter",
+            "config": {
+                "type": "CPU",
+                "maxSize": 1,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": "Materials/OpenParticle/Mesh_Transparent.material",
+            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
+            "OpenParticle::MeshConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 10.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 100.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [],
+        "curves": []
+    }
+}

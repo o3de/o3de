@@ -27,5 +27,5 @@ namespace SandboxEditor
     };
 
     using EditorModularViewportCameraComposerNotificationBus =
-        AZ::EBus<EditorModularViewportCameraComposerNotifications, AzToolsFramework::ViewportInteraction::ViewportEBusTraits>;
+        AZ::EBus<EditorModularViewportCameraComposerNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits>;
 } // namespace SandboxEditor

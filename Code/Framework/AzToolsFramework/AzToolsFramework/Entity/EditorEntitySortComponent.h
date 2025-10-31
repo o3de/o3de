@@ -12,12 +12,13 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
-        class EditorEntitySortComponent
+        class AZTF_API EditorEntitySortComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorEntitySortRequestBus::Handler
             , public EditorEntityContextNotificationBus::Handler
@@ -44,6 +45,10 @@ namespace AzToolsFramework
             bool AddChildEntityAtPosition(const AZ::EntityId& entityId, const AZ::EntityId& beforeEntity) override;
             bool RemoveChildEntity(const AZ::EntityId& entityId) override;
             AZ::u64 GetChildEntityIndex(const AZ::EntityId& entityId) override;
+            bool CanMoveChildEntityUp(const AZ::EntityId& entityId) override;
+            void MoveChildEntityUp(const AZ::EntityId& entityId) override;
+            bool CanMoveChildEntityDown(const AZ::EntityId& entityId) override;
+            void MoveChildEntityDown(const AZ::EntityId& entityId) override;
 
             //////////////////////////////////////////////////////////////////////////
             // EditorEntityContextNotificationBus::Handler

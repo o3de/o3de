@@ -9,11 +9,16 @@
 #include "ScriptRemoteDebugging.h"
 #include "ScriptDebugAgentBus.h"
 #include "ScriptDebugMsgReflection.h"
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
+#include <AzFramework/AzFramework_Traits_Platform.h> // Need to know the state of AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -24,8 +29,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <GridMate/Serialize/Buffer.h>
-#include <GridMate/Serialize/DataMarshal.h>
+#include <AzNetworking/Framework/INetworking.h>
 
 namespace AzFramework
 {
@@ -35,8 +39,7 @@ namespace AzFramework
         static bool EnumClass(const char* name, const AZ::Uuid& typeId, void* userData)
         {
             ScriptUserClassList& output = *reinterpret_cast<ScriptUserClassList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_typeId = typeId;
             return true;
         }
@@ -45,8 +48,7 @@ namespace AzFramework
         {
             (void)classTypeId;
             ScriptUserMethodList& output = *reinterpret_cast<ScriptUserMethodList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_dbgParamInfo = dbgParamInfo ? dbgParamInfo : "null";
             return true;
         }
@@ -55,8 +57,7 @@ namespace AzFramework
         {
             (void)classTypeId;
             ScriptUserPropertyList& output = *reinterpret_cast<ScriptUserPropertyList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_isRead = isRead;
             output.back().m_isWrite = isWrite;
             return true;
@@ -80,8 +81,7 @@ namespace AzFramework
 
             if (!found)
             {
-                output.push_back();
-                auto& ebus = output.back();
+                auto& ebus = output.emplace_back();
                 ebus.m_name = name;
                 ebus.m_canBroadcast = canBroadcast;
                 ebus.m_canQueue = canQueue;
@@ -99,8 +99,7 @@ namespace AzFramework
             {
                 if (ebusName == it->m_name)
                 {
-                    it->m_events.push_back();
-                    auto& event = it->m_events.back();
+                    auto& event = it->m_events.emplace_back();
                     event.m_name = senderName;
                     event.m_dbgParamInfo = dbgParamInfo;
                     event.m_category = category;
@@ -166,7 +165,6 @@ namespace AzFramework
     class ScriptDebugAgent
         : public AZ::Component
         , public ScriptDebugAgentBus::Handler
-        , public TmMsgBus::Handler
         , AZ::SystemTickBus::Handler
     {
     public:
@@ -190,11 +188,6 @@ namespace AzFramework
         void UnregisterContext(AZ::ScriptContext* sc) override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // TmMsgBus
-        void OnReceivedMsg(TmMsgPtr msg) override;
-        //////////////////////////////////////////////////////////////////////////
-
     protected:
         ScriptDebugAgent(const ScriptDebugAgent&) = delete;
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -202,7 +195,7 @@ namespace AzFramework
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
         static void Reflect(AZ::ReflectContext* context);
 
-        void Attach(const TargetInfo& ti, const char* scriptContextName);
+        void Attach(const RemoteToolsEndpointInfo& ti, const char* scriptContextName);
         void Detach();
 
         void BreakpointCallback(AZ::ScriptContextDebug* debugContext, const AZ::ScriptContextDebug::Breakpoint* breakpoint);
@@ -210,8 +203,8 @@ namespace AzFramework
 
         void Process();
 
-        TargetInfo              m_debugger;
-        TmMsgQueue              m_msgQueue;
+        RemoteToolsEndpointInfo     m_debugger;
+        RemoteToolsMessageQueue     m_msgQueue;
         AZStd::mutex            m_msgMutex;
         AZ::ScriptContext*   m_curContext;
 
@@ -245,14 +238,16 @@ namespace AzFramework
 
         // register default app script context if there is one
         AZ::ScriptContext* defaultScriptContext = nullptr;
-        EBUS_EVENT_RESULT(defaultScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            defaultScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
         if (defaultScriptContext)
         {
             RegisterContext(defaultScriptContext, "Default");
         }
 
         AZ::ScriptContext* cryScriptContext = nullptr;
-        EBUS_EVENT_RESULT(cryScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::CryScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            cryScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::CryScriptContextId);
         if (cryScriptContext)
         {
             RegisterContext(cryScriptContext, "Cry");
@@ -260,12 +255,10 @@ namespace AzFramework
 
         ScriptDebugAgentBus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
-        TmMsgBus::Handler::BusConnect(AZ_CRC("ScriptDebugAgent", 0xb6be0836));
     }
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::Deactivate()
     {
-        TmMsgBus::Handler::BusDisconnect(AZ_CRC("ScriptDebugAgent", 0xb6be0836));
         AZ::SystemTickBus::Handler::BusDisconnect();
 
         // TODO: Make thread safe if we ever have multithreaded script contexts!
@@ -280,6 +273,22 @@ namespace AzFramework
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::OnSystemTick()
     {
+        AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+        if (remoteTools)
+        {
+            const AzFramework::ReceivedRemoteToolsMessages* messages =
+                remoteTools->GetReceivedMessages(AzFramework::LuaToolsKey);
+            if (messages)
+            {
+                for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                {
+                    AZStd::lock_guard<AZStd::mutex> l(m_msgMutex);
+                    m_msgQueue.push_back(msg);
+                }
+                remoteTools->ClearReceivedMessages(AzFramework::LuaToolsKey);
+            }
+        }
+
         // If we are attached, then all processing should happen
         // in the attached context.
         if (m_executionState == SDA_STATE_DETACHED)
@@ -298,8 +307,7 @@ namespace AzFramework
                 return;
             }
         }
-        m_availableContexts.push_back();
-        m_availableContexts.back().m_context = sc;
+        m_availableContexts.emplace_back().m_context = sc;
         m_availableContexts.back().m_name = name;
     }
     //-------------------------------------------------------------------------
@@ -320,13 +328,7 @@ namespace AzFramework
         }
     }
     //-------------------------------------------------------------------------
-    void ScriptDebugAgent::OnReceivedMsg(TmMsgPtr msg)
-    {
-        AZStd::lock_guard<AZStd::mutex> l(m_msgMutex);
-        m_msgQueue.push_back(msg);
-    }
-    //-------------------------------------------------------------------------
-    void ScriptDebugAgent::Attach(const TargetInfo& ti, const char* scriptContextName)
+    void ScriptDebugAgent::Attach(const RemoteToolsEndpointInfo& ti, const char* scriptContextName)
     {
         for (ContextMap::iterator it = m_availableContexts.begin(); it != m_availableContexts.end(); ++it)
         {
@@ -350,8 +352,9 @@ namespace AzFramework
                     dbgContext->EnableDebugCmdProcess(debugCommandCallback);
                 }
 
-                // Notify debugger that he successfully connected
-                EBUS_EVENT(TargetManager::Bus, SendTmMessage, ti, ScriptDebugAck(AZ_CRC("AttachDebugger", 0x6590ff36), AZ_CRC("Ack", 0x22e4f8b1)));
+                // Notify debugger that we successfully connected
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(
+                    ti, ScriptDebugAck(AZ_CRC_CE("AttachDebugger"), AZ_CRC_CE("Ack")));
                 AZ_TracePrintf("LUA", "Remote debugger %s has attached to context %s.\n", m_debugger.GetDisplayName(), it->m_name.c_str());
                 m_executionState = SDA_STATE_RUNNING;
 
@@ -359,12 +362,14 @@ namespace AzFramework
             }
         }
         // Failed to find context, notify debugger that the connection was rejected.
-        EBUS_EVENT(TargetManager::Bus, SendTmMessage, ti, ScriptDebugAck(AZ_CRC("AttachDebugger", 0x6590ff36), AZ_CRC("IllegalOperation", 0x437dc900)));
+        RemoteToolsInterface::Get()->SendRemoteToolsMessage(
+            ti, ScriptDebugAck(AZ_CRC_CE("AttachDebugger"), AZ_CRC_CE("IllegalOperation")));
     }
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::Detach()
     {
-        EBUS_EVENT(TargetManager::Bus, SendTmMessage, m_debugger, ScriptDebugAck(AZ_CRC("DetachDebugger", 0x88a2ee04), AZ_CRC("Ack", 0x22e4f8b1)));
+        RemoteToolsInterface::Get()->SendRemoteToolsMessage(
+            m_debugger, ScriptDebugAck(AZ_CRC_CE("DetachDebugger"), AZ_CRC_CE("Ack")));
 
         // TODO: We need to make sure we are thread safe if the contexts are running on
         // different threads.
@@ -378,7 +383,7 @@ namespace AzFramework
         m_curContext->DisableDebug();
 
         AZ_TracePrintf("LUA", "Remote debugger %s has detached from context 0x%p.\n", m_debugger.GetDisplayName(), m_curContext);
-        m_debugger = TargetInfo();
+        m_debugger = RemoteToolsEndpointInfo();
         m_curContext = nullptr;
         m_executionState = SDA_STATE_DETACHED;
     }
@@ -415,20 +420,60 @@ namespace AzFramework
         if (m_executionState == SDA_STATE_RUNNING)
         {
             m_executionState = SDA_STATE_PAUSED;
-            if (m_debugger.IsValid())
-            {
-                ScriptDebugAckBreakpoint response;
-                response.m_id = AZ_CRC("BreakpointHit", 0xf1a38e0b);
-                response.m_moduleName = breakpoint->m_sourceName;
-                response.m_line = static_cast<AZ::u32>(breakpoint->m_lineNumber);
-                EBUS_EVENT(TargetManager::Bus, SendTmMessage, m_debugger, response);
-            }
+
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // We are about to block the main thread, only allowing to process
+            // network events. This works fine on Windows, but on Linux the mouse
+            // pointer doesn't show up when the user ALT+TAB out of the Editor window.
+            // We need to make mouse cursor visible again and it fixes all the Linux
+            // problems, and it doesn't hurt Windows either.
+            SystemCursorState systemCursorState{}; // Remember the state of the cursor.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                [&systemCursorState](AzFramework::InputSystemCursorRequests* requests)
+                {
+                    systemCursorState = requests->GetSystemCursorState();
+                    requests->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
+                }
+            );
+#endif
+
+            ScriptDebugAckBreakpoint response;
+            response.m_id = AZ_CRC_CE("BreakpointHit");
+            response.m_moduleName = breakpoint->m_sourceName;
+            response.m_line = static_cast<AZ::u32>(breakpoint->m_lineNumber);
+            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_debugger, response);
+
             while (m_executionState == SDA_STATE_PAUSED)
             {
-                EBUS_EVENT(TargetManager::Bus, DispatchMessages, AZ_CRC("ScriptDebugAgent", 0xb6be0836));
+                AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+                if (remoteTools)
+                {
+                    const AzFramework::ReceivedRemoteToolsMessages* messages =
+                        remoteTools->GetReceivedMessages(AzFramework::LuaToolsKey);
+                    if (messages)
+                    {
+                        for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                        {
+                            AZStd::lock_guard<AZStd::mutex> l(m_msgMutex);
+                            m_msgQueue.push_back(msg);
+                        }
+                        remoteTools->ClearReceivedMessages(AzFramework::LuaToolsKey);
+                    }
+                }
                 Process();
+                AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 AZStd::this_thread::yield();
             }
+
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // Restore the state of the mouse cursor, and the game should continue running as usual.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                systemCursorState);
+#endif
+
         }
     }
     //-------------------------------------------------------------------------
@@ -439,21 +484,24 @@ namespace AzFramework
         while (!m_msgQueue.empty())
         {
             m_msgMutex.lock();
-            TmMsgPtr msg = *m_msgQueue.begin();
+            RemoteToolsMessagePointer msg = *m_msgQueue.begin();
             m_msgQueue.pop_front();
             m_msgMutex.unlock();
             AZ_Assert(msg, "We received a NULL message in the script debug agent's message queue!");
-            TargetInfo sender;
-            EBUS_EVENT_RESULT(sender, TargetManager::Bus, GetTargetInfo, msg->GetSenderTargetId());
+            RemoteToolsEndpointInfo sender = RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::LuaToolsKey, msg->GetSenderTargetId());
 
             // The only message we accept without a target match is AttachDebugger
-            if (m_debugger.GetNetworkId() != sender.GetNetworkId())
+            if (!m_debugger.IsIdentityEqualTo(sender))
             {
                 ScriptDebugRequest* request = azdynamic_cast<ScriptDebugRequest*>(msg.get());
-                if (!request || (request->m_request != AZ_CRC("AttachDebugger", 0x6590ff36) && request->m_request != AZ_CRC("EnumContexts", 0xbdb959ba)))
+                if (!request ||
+                    (request->m_request != AZ_CRC_CE("AttachDebugger") &&
+                     request->m_request != AZ_CRC_CE("EnumContexts")))
                 {
-                    AZ_TracePrintf("LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("AccessDenied", 0xde72ce21)));
+                    AZ_TracePrintf(
+                        "LUA", "Rejecting msg 0x%x (%s is not the attached debugger)\n", request->m_request, sender.GetDisplayName());
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(
+                        sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("AccessDenied")));
                     continue;
                 }
             }
@@ -466,12 +514,12 @@ namespace AzFramework
                 bp.m_sourceName = request->m_context.c_str();
                 bp.m_lineNumber = request->m_line;
 
-                if (request->m_request == AZ_CRC("AddBreakpoint", 0xba71daa4))
+                if (request->m_request == AZ_CRC_CE("AddBreakpoint"))
                 {
                     AZ_TracePrintf("LUA", "Adding breakpoint %s:%d\n", bp.m_sourceName.c_str(), bp.m_lineNumber);
                     dbgContext->AddBreakpoint(bp);
                 }
-                else if (request->m_request == AZ_CRC("RemoveBreakpoint", 0x90ade500))
+                else if (request->m_request == AZ_CRC_CE("RemoveBreakpoint"))
                 {
                     AZ_TracePrintf("LUA", "Removing breakpoint %s:%d\n", bp.m_sourceName.c_str(), bp.m_lineNumber);
                     dbgContext->RemoveBreakpoint(bp);
@@ -481,7 +529,7 @@ namespace AzFramework
                 response.m_id = request->m_request;
                 response.m_moduleName = request->m_context;
                 response.m_line = request->m_line;
-                EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
             }
             else if (azrtti_istypeof<ScriptDebugSetValue*>(msg.get()))      // sets the value of a variable
             {
@@ -491,12 +539,12 @@ namespace AzFramework
                     ScriptDebugSetValueResult response;
                     response.m_name = request->m_value.m_name;
                     response.m_result = dbgContext->SetValue(request->m_value);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                 }
                 else
                 {
                     AZ_TracePrintf("LUA", "Command rejected. 'SetValue' can only be issued while on a breakpoint.\n");
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(AZ_CRC("SetValue", 0xd595caa6), AZ_CRC("IllegalOperation", 0x437dc900)));
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(AZ_CRC_CE("SetValue"), AZ_CRC_CE("IllegalOperation")));
                 }
             }
             else if (azrtti_istypeof<ScriptDebugRequest*>(msg.get()))
@@ -504,90 +552,90 @@ namespace AzFramework
                 ScriptDebugRequest* request = azdynamic_cast<ScriptDebugRequest*>(msg.get());
                 // Check request type
                 // EnumLocals
-                if (request->m_request == AZ_CRC("EnumLocals", 0x4aa29dcf))     // enumerates local variables
+                if (request->m_request == AZ_CRC_CE("EnumLocals"))     // enumerates local variables
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
                         ScriptDebugEnumLocalsResult response;
                         AZ::ScriptContextDebug::EnumLocalCallback enumCB = AZStd::bind(&ScriptDebugAgentInternal::EnumLocals, &response.m_names, AZStd::placeholders::_1, AZStd::placeholders::_2);
                         dbgContext->EnumLocals(enumCB);
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'EnumLocals' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // GetValue
                 }
-                else if (request->m_request == AZ_CRC("GetValue", 0x2d64f577))
+                else if (request->m_request == AZ_CRC_CE("GetValue"))
                 {
                     ScriptDebugGetValueResult response;
                     response.m_value.m_name = request->m_context;
                     dbgContext->GetValue(response.m_value);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     // StepOver
                 }
-                else if (request->m_request == AZ_CRC("StepOver", 0x6b89bf41))
+                else if (request->m_request == AZ_CRC_CE("StepOver"))
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
                         dbgContext->StepOver();
                         m_executionState = SDA_STATE_RUNNING;
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("Ack", 0x22e4f8b1)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("Ack")));
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'StepOver' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // StepIn
                 }
-                else if (request->m_request == AZ_CRC("StepIn", 0x761a6b13))
+                else if (request->m_request == AZ_CRC_CE("StepIn"))
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
                         dbgContext->StepInto();
                         m_executionState = SDA_STATE_RUNNING;
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("Ack", 0x22e4f8b1)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("Ack")));
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'StepIn' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // StepOut
                 }
-                else if (request->m_request == AZ_CRC("StepOut", 0xac19b635))
+                else if (request->m_request == AZ_CRC_CE("StepOut"))
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
                         dbgContext->StepOut();
                         m_executionState = SDA_STATE_RUNNING;
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("Ack", 0x22e4f8b1)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("Ack")));
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'StepOut' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // Continue
                 }
-                else if (request->m_request == AZ_CRC("Continue", 0x13e32adf))
+                else if (request->m_request == AZ_CRC_CE("Continue"))
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
                         m_executionState = SDA_STATE_RUNNING;
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("Ack", 0x22e4f8b1)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("Ack")));
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'Continue' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // GetCallstack
                 }
-                else if (request->m_request == AZ_CRC("GetCallstack", 0x343b24f3))
+                else if (request->m_request == AZ_CRC_CE("GetCallstack"))
                 {
                     if (m_executionState == SDA_STATE_PAUSED)
                     {
@@ -595,59 +643,62 @@ namespace AzFramework
                         dbgContext->StackTrace(bufStackTrace, 4096);
                         ScriptDebugCallStackResult response;
                         response.m_callstack = bufStackTrace;
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     }
                     else
                     {
                         AZ_TracePrintf("LUA", "Command rejected. 'GetCallstack' can only be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // enumerates global C++ functions that have been exposed to script
                 }
-                else if (request->m_request == AZ_CRC("EnumRegisteredGlobals", 0x80d1e6af))
+                else if (request->m_request == AZ_CRC_CE("EnumRegisteredGlobals"))
                 {
                     ScriptDebugRegisteredGlobalsResult response;
                     dbgContext->EnumRegisteredGlobals(&ScriptDebugAgentInternal::EnumGlobalMethod, &ScriptDebugAgentInternal::EnumGlobalProperty, &response);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     // enumerates C++ classes that have been exposed to script
                 }
-                else if (request->m_request == AZ_CRC("EnumRegisteredClasses", 0xed6b8070))
+                else if (request->m_request == AZ_CRC_CE("EnumRegisteredClasses"))
                 {
                     ScriptDebugRegisteredClassesResult response;
                     dbgContext->EnumRegisteredClasses(&ScriptDebugAgentInternal::EnumClass, &ScriptDebugAgentInternal::EnumClassMethod, &ScriptDebugAgentInternal::EnumClassProperty, &response.m_classes);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
-                    // ExecuteScript
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
+                    // enumerates C++ busses that have been exposed to script
                 }
-                else if (request->m_request == AZ_CRC("EnumRegisteredEBuses", 0x8237bde7))
+                else if (request->m_request == AZ_CRC_CE("EnumRegisteredEBuses"))
                 {
                     ScriptDebugRegisteredEBusesResult response;
                     dbgContext->EnumRegisteredEBuses(&ScriptDebugAgentInternal::EnumEBus, &ScriptDebugAgentInternal::EnumEBusSender, &response.m_ebusList);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
+                    // ExecuteScript
                 }
-                else if (request->m_request == AZ_CRC("ExecuteScript", 0xc35e01e7))
+                else if (request->m_request == AZ_CRC_CE("ExecuteScript"))
                 {
-                    if (m_executionState == SDA_STATE_RUNNING)
+                    if (sender.IsSelf() && m_debugger.IsSelf() && m_executionState == SDA_STATE_RUNNING)
                     {
-                        AZ_Assert(request->GetCustomBlob(), "ScriptDebugAgent was asked to execute a script but script is missing!");
+                        AZ_Assert(!request->GetCustomBlob().empty(), "ScriptDebugAgent was asked to execute a script but script is missing!");
                         ScriptDebugAckExecute response;
                         response.m_moduleName = request->m_context;
-                        response.m_result = m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                        response.m_result =
+                            m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob().data()), request->m_context.c_str());
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     }
                     else
                     {
-                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint.\n");
-                        EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("IllegalOperation", 0x437dc900)));
+                        AZ_TracePrintf("LUA", "Command rejected. 'ExecuteScript' cannot be issued while on a breakpoint or remotely.\n");
+                        RemoteToolsInterface::Get()->SendRemoteToolsMessage(
+                            sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("IllegalOperation")));
                     }
                     // AttachDebugger
                 }
-                else if (request->m_request == AZ_CRC("AttachDebugger", 0x6590ff36))
+                else if (request->m_request == AZ_CRC_CE("AttachDebugger"))
                 {
                     if (m_executionState == SDA_STATE_DETACHED)
                     {
                         Attach(sender, request->m_context.c_str());
                     }
-                    else
+                    else if (m_debugger.GetNetworkId() != sender.GetNetworkId())
                     {
                         // we need to detach from the current context first
                         AZ_TracePrintf("LUA", "Received connection from %s while still connected to %s! Detaching from %s.\n", sender.GetDisplayName(), m_debugger.GetDisplayName(), m_debugger.GetDisplayName());
@@ -661,15 +712,18 @@ namespace AzFramework
                     return;
                     // DetachDebugger
                 }
-                else if (request->m_request == AZ_CRC("DetachDebugger", 0x88a2ee04))
+                else if (request->m_request == AZ_CRC_CE("DetachDebugger"))
                 {
                     // We need to switch contexts before any more processing, keep remaining messages
                     // in the queue and return.
-                    m_executionState = SDA_STATE_DETACHING;
+                    if (m_executionState != SDA_STATE_DETACHED)
+                    {
+                        m_executionState = SDA_STATE_DETACHING;
+                    }
                     return;
                     // EnumContexts
                 }
-                else if (request->m_request == AZ_CRC("EnumContexts", 0xbdb959ba))
+                else if (request->m_request == AZ_CRC_CE("EnumContexts"))
                 {
                     AZ_TracePrintf("LUA", "Received EnumContexts request\n");
                     ScriptDebugEnumContextsResult response;
@@ -677,13 +731,13 @@ namespace AzFramework
                     {
                         response.m_names.push_back(it->m_name);
                     }
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, response);
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     // Invalid command
                 }
                 else
                 {
                     AZ_TracePrintf("LUA", "Received invalid command 0x%x.\n", request->m_request);
-                    EBUS_EVENT(TargetManager::Bus, SendTmMessage, sender, ScriptDebugAck(request->m_request, AZ_CRC("InvalidCmd", 0x926abd27)));
+                    RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, ScriptDebugAck(request->m_request, AZ_CRC_CE("InvalidCmd")));
                 }
             }
             else
@@ -695,9 +749,7 @@ namespace AzFramework
         // Check if our debugger is still around
         if (m_executionState != SDA_STATE_DETACHED)
         {
-            bool debuggerOnline = false;
-            EBUS_EVENT_RESULT(debuggerOnline, TargetManager::Bus, IsTargetOnline, m_debugger.GetNetworkId());
-            if (!debuggerOnline)
+            if (!RemoteToolsInterface::Get()->IsEndpointOnline(AzFramework::LuaToolsKey, m_debugger.GetPersistentId()))
             {
                 m_executionState = SDA_STATE_DETACHING;
             }
@@ -706,17 +758,17 @@ namespace AzFramework
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptDebugService", 0x5b0c3898));
+        provided.push_back(AZ_CRC_CE("ScriptDebugService"));
     }
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptDebugService", 0x5b0c3898));
+        incompatible.push_back(AZ_CRC_CE("ScriptDebugService"));
     }
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("ScriptService", 0x787235ab));
+        dependent.push_back(AZ_CRC_CE("ScriptService"));
     }
     //-------------------------------------------------------------------------
     void ScriptDebugAgent::Reflect(AZ::ReflectContext* context)
@@ -733,7 +785,6 @@ namespace AzFramework
                     "Script Debug Agent", "Provides remote debugging services for script contexts")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Profiling")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -742,8 +793,11 @@ namespace AzFramework
         static bool registeredComponentUuidWithMetricsAlready = false;
         if (!registeredComponentUuidWithMetricsAlready)
         {
-            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain text, without hashing
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
+            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain
+            // text, without hashing
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending,
+                AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
 
             // only ever do this once
             registeredComponentUuidWithMetricsAlready = true;
@@ -756,7 +810,7 @@ namespace AzFramework
     //public:
     //    AZ_CLASS_ALLOCATOR(ScriptDebugAgentFactory, AZ::SystemAllocator,0);
 
-    //    ScriptDebugAgentFactory() : AZ::ComponentFactory<ScriptDebugAgent>(AZ_CRC("ScriptDebugAgent", 0xb6be0836))
+    //    ScriptDebugAgentFactory() : AZ::ComponentFactory<ScriptDebugAgent>(AZ_CRC_CE("ScriptDebugAgent"))
     //    {
     //    }
 

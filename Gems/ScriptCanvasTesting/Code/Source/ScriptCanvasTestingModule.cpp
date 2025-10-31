@@ -18,7 +18,7 @@ namespace ScriptCanvasTesting
     {
     public:
         AZ_RTTI(ScriptCanvasTestingModule, "{AF32BC51-C4E5-48C4-B5E4-D7877C303D43}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasTestingModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasTestingModule, AZ::SystemAllocator);
 
         ScriptCanvasTestingModule()
         {
@@ -39,7 +39,8 @@ namespace ScriptCanvasTesting
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ScriptCanvasTesting::ScriptCanvasTestingModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasTesting, ScriptCanvasTesting::ScriptCanvasTestingModule)
+#endif

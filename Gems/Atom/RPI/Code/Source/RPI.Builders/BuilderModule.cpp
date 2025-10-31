@@ -32,6 +32,7 @@ namespace AZ
             {
                 m_descriptors.push_back(ModelExporterComponent::CreateDescriptor());
                 m_descriptors.push_back(ModelAssetBuilderComponent::CreateDescriptor());
+                m_descriptors.push_back(ModelAssetDependenciesComponent::CreateDescriptor());
                 m_descriptors.push_back(MaterialAssetBuilderComponent::CreateDescriptor());
                 m_descriptors.push_back(MaterialAssetDependenciesComponent::CreateDescriptor());
                 m_descriptors.push_back(BuilderComponent::CreateDescriptor());
@@ -45,7 +46,8 @@ namespace AZ
     } // namespace RPI
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_RPI_Edit_Builders, AZ::RPI::BuilderModule);
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::RPI::BuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_RPI_Edit_Builders, AZ::RPI::BuilderModule)
+#endif

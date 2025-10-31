@@ -73,7 +73,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, CreateFromNormalAndDistance)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -85,7 +85,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, GetDistance)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -97,7 +97,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, GetNormal)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -109,7 +109,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, CreateFromNormalAndPoint)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -128,7 +128,7 @@ namespace Benchmark
             coeff.push_back(unif(rng));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -148,7 +148,7 @@ namespace Benchmark
             coeff.push_back(unif(rng));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -160,7 +160,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, SetVector3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -179,7 +179,7 @@ namespace Benchmark
             vecs.push_back(AZ::Vector4(unif(rng), unif(rng), unif(rng), unif(rng)));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -192,7 +192,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, SetNormal)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -205,7 +205,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, SetDistance)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -218,7 +218,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, GetPlaneEquationCoefficients)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -236,7 +236,7 @@ namespace Benchmark
             trans.push_back(AZ::Transform::CreateRotationY(AZ::DegToRad(unif(rng))));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -254,7 +254,7 @@ namespace Benchmark
             trans.push_back(AZ::Transform::CreateRotationY(AZ::DegToRad(unif(rng))));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -265,7 +265,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, GetPointDist)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -277,7 +277,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, GetProjected)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -291,7 +291,7 @@ namespace Benchmark
     {
         AZ::Vector3 rayResult;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -305,7 +305,7 @@ namespace Benchmark
     {
         float rayResult;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {
@@ -319,7 +319,7 @@ namespace Benchmark
     {
         AZ::Vector3 rayResult;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters - 1; ++i)
             {
@@ -333,7 +333,7 @@ namespace Benchmark
     {
         float rayResult;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters - 1; ++i)
             {
@@ -345,7 +345,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathPlane, IsFinite)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int i = 0; i < m_numIters; ++i)
             {

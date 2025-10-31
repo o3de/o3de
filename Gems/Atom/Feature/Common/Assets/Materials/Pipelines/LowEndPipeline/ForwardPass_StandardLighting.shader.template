@@ -1,0 +1,53 @@
+{
+    // TODO(MaterialPipeline): This file is identical to ForwardPass_BaseLighting.shader.template. We should have just a single ForwardPass.shader.template used
+    // for both templates in the .materialpipeline file. First, we just need to add a "name" setting to the .materialpipeline file for each template, instead of
+    // using the .shader.template stem name as the template key.
+    "Source" : "",
+
+    "DepthStencilState" :
+    {
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual"
+        },
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x00",
+            "WriteMask" : "0xFF",
+            "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            }
+        }
+    },
+
+    "ProgramSettings":
+    {
+      "EntryPoints":
+      [
+        {
+          "name": "VertexShader",
+          "type": "Vertex"
+        },
+        {
+          "name": "PixelShader",
+          "type": "Fragment"
+        }
+      ]
+    },
+
+    "DrawList" : "lowEndForward"
+}
+

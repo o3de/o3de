@@ -7,18 +7,18 @@
  */
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 
 namespace AZ
 {
     namespace Null
     {
         class ShaderResourceGroup final
-            : public RHI::ShaderResourceGroup
+            : public RHI::DeviceShaderResourceGroup
         {
-            using Base = RHI::ShaderResourceGroup;
+            using Base = RHI::DeviceShaderResourceGroup;
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
             static RHI::Ptr<ShaderResourceGroup> Create();
 

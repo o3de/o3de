@@ -10,8 +10,8 @@
 #include "PropertyQTConstants.h"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QHBoxLayout>
+#include <QCheckBox>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 
@@ -92,6 +92,12 @@ namespace AzToolsFramework
                     &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
             });
         return newCtrl;
+    }
+
+    void CheckBoxHandlerCommon::ResetValueCommon(PropertyCheckBoxCtrl* widget)
+    {
+        widget->setValue(false);
+        widget->SetCheckBoxToolTip("");
     }
 
     void CheckBoxHandlerCommon::ConsumeAttributeCommon(

@@ -56,7 +56,7 @@ namespace AzNetworking
         //! Returns the provided timeout item if it exists, also refreshes the timeout value.
         //! @param timeoutId the identifier of the item to fetch
         //! @return pointer to the timeout item if it exists
-        TimeoutItem *RetrieveItem(TimeoutId timeoutId);
+        TimeoutItem* RetrieveItem(TimeoutId timeoutId);
 
         //! Removes an item from the TimeoutQueue.
         //! @param timeoutId the identifier of the item to remove
@@ -86,6 +86,10 @@ namespace AzNetworking
         TimeoutId        m_nextTimeoutId = TimeoutId{ 0 };
         TimeoutItemMap   m_timeoutItemMap;
         TimeoutItemQueue m_timeoutItemQueue;
+
+        // TimeoutQueue is a shared resource among connections. A mutex (or a read-write sync object) is required with multi-threaded sends.
+        // See @sv_multithreadedConnectionUpdates cvar.
+        AZStd::recursive_mutex m_mutex;
     };
 }
 

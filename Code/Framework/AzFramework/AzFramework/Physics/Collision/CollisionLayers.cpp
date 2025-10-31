@@ -16,8 +16,8 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionLayer, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionLayers, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionLayer, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionLayers, AZ::SystemAllocator);
 
     const CollisionLayer CollisionLayer::Default = 0;
 

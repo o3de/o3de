@@ -50,7 +50,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void FastDepthAwareBlurHorPass::SetConstants(float constFalloff, float depthFalloffThreshold, float depthFalloffStrength)
@@ -63,7 +63,7 @@ namespace AZ
         void FastDepthAwareBlurHorPass::FrameBeginInternal(FramePrepareParams params)
         {
             AZ_Assert(GetOutputCount() > 0, "FastDepthAwareBlurHorPass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurHorPass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
@@ -92,7 +92,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
             // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void FastDepthAwareBlurVerPass::SetConstants(float constFalloff, float depthFalloffThreshold, float depthFalloffStrength)
@@ -105,7 +105,7 @@ namespace AZ
         void FastDepthAwareBlurVerPass::FrameBeginInternal(FramePrepareParams params)
         {
             AZ_Assert(GetOutputCount() > 0, "FastDepthAwareBlurVerPass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurVerPass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;

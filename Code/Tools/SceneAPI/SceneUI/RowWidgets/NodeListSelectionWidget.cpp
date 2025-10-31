@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionWidget, SystemAllocator);
 
             NodeListSelectionWidget::NodeListSelectionWidget(QWidget* parent)
                 : QComboBox(parent)
@@ -136,7 +136,7 @@ namespace AZ
 
             void NodeListSelectionWidget::BuildList(const Containers::SceneGraph& graph)
             {
-                EntrySet entries;
+                QStringList entries;
 
                 auto view = Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
                 for (auto it = view.begin(); it != view.end(); ++it)
@@ -162,6 +162,12 @@ namespace AZ
 
                     AddEntry(entries, it->first);
                 }
+
+                if (!entries.empty())
+                {
+                    entries.removeDuplicates();
+                    addItems(entries);
+                }
             }
 
             bool NodeListSelectionWidget::IsCorrectType(const DataTypes::IGraphObject& object) const
@@ -180,25 +186,17 @@ namespace AZ
                 }
             }
 
-            void NodeListSelectionWidget::AddEntry(EntrySet& entries, const Containers::SceneGraph::Name& name)
+            void NodeListSelectionWidget::AddEntry(QStringList& comboListEntries, const Containers::SceneGraph::Name& name)
             {
                 if (m_useShortNames)
                 {
                     const char* shortName = name.GetName();
-                    if (entries.find(shortName) == entries.end())
-                    {
-                        entries.insert(shortName);
-                        addItem(shortName);
-                    }
+                    comboListEntries.append(QString(shortName));
                 }
                 else
                 {
                     const char* pathName = name.GetPath();
-                    if (entries.find(pathName) == entries.end())
-                    {
-                        entries.insert(pathName);
-                        addItem(pathName);
-                    }
+                    comboListEntries.append(QString(pathName));
                 }
             }
 

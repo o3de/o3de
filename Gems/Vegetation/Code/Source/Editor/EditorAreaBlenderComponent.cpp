@@ -44,7 +44,7 @@ namespace Vegetation
     {
         if (m_configuration.m_vegetationAreaIds.empty())
         {
-            m_configuration.m_vegetationAreaIds.push_back();
+            m_configuration.m_vegetationAreaIds.emplace_back();
             SetDirty();
         }
     }

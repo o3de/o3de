@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "ToString",
-                    "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke To String"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "Equal",
-                    "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -79,7 +77,6 @@
                 },
                 {
                     "base": "Clone",
-                    "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clone"
@@ -110,7 +107,6 @@
                 },
                 {
                     "base": "CreateInputEventNotificationId",
-                    "context": "InputEventNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Input Event Notification Id"

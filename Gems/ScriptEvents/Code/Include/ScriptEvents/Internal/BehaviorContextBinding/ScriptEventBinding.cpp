@@ -22,7 +22,7 @@ namespace ScriptEvents
 
             if (parameter.m_returnValue && !(parameter.m_returnValue->m_traits & referenceTypes))
             {
-                AZ::BehaviorValueParameter returnValue(*parameter.m_returnValue);
+                AZ::BehaviorArgument returnValue(*parameter.m_returnValue);
                 reinterpret_cast<AZ::BehaviorEBusHandler::GenericHookType>(forwarderEvent.m_function)(forwarderEvent.m_userData, forwarderEvent.m_name, functionIndex, &returnValue, parameter.m_parameterCount, parameter.m_parameters);
 
                 // check for BehaviorClass type that must be cloned back to storage pointed to by m_returnValue.GetValueAddress(), regardless if GenericHookType() returned a pointer
@@ -158,7 +158,7 @@ namespace ScriptEvents
                     // use the default comparer for classes exposed through behaviorContext->Class<SomeType>(
                     if (m_equalityOperatorMethod)
                     {
-                        AZ::BehaviorValueParameter addresses[2];
+                        AZ::BehaviorArgument addresses[2];
                         // we are going to call an equality operator on this, but the behavior method expects the args to be continuous
 
                         // capture the value of the address
@@ -187,7 +187,7 @@ namespace ScriptEvents
                         addresses[1].m_tempData = handler->GetBusId()->m_tempData;
                         addresses[1].m_traits = m_equalityOperatorMethod->GetArgument(1)->m_traits;
 
-                        AZ::BehaviorValueParameter addressMatch;
+                        AZ::BehaviorArgument addressMatch;
                         addressMatch.Set(&isEqual);
 
                         m_equalityOperatorMethod->Call(addresses, 2, &addressMatch);
@@ -216,7 +216,7 @@ namespace ScriptEvents
         }
     }
 
-    void ScriptEventBinding::Connect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler)
+    void ScriptEventBinding::Connect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler)
     {
         AZ_Warning("Script Event", address, "%s: Address was not specified when connecting,", m_scriptEventName.data());
         if (address && address->m_value)
@@ -230,7 +230,7 @@ namespace ScriptEvents
         }
     }
 
-    void ScriptEventBinding::Disconnect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler)
+    void ScriptEventBinding::Disconnect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler)
     {
         if (address->m_value)
         {
@@ -263,7 +263,7 @@ namespace ScriptEvents
         m_broadcasts.erase(handler);
     }
 
-    size_t ScriptEventBinding::GetAddressHash(const AZ::BehaviorValueParameter* address)
+    size_t ScriptEventBinding::GetAddressHash(const AZ::BehaviorArgument* address)
     {
         const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(address->m_typeId);
         AZ_Assert(behaviorClass, "The specified type %s is not in the Behavior Context, make sure it is reflected.", address->m_name);

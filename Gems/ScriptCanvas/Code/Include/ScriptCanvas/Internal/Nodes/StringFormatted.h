@@ -94,10 +94,10 @@ namespace ScriptCanvas
                 AZStd::string ProcessFormat();
 
                 AZStd::string GetDisplayGroup() const { return "PrintDisplayGroup"; }
-                AZ::Crc32 GetDisplayGroupId() const { return AZ_CRC("PrintDisplayGroup", 0x3c802873); }
+                AZ::Crc32 GetDisplayGroupId() const { return AZ_CRC_CE("PrintDisplayGroup"); }
 
-                AZ::Crc32 GetExtensionId() const { return AZ_CRC("AddPrintOperand", 0x7aec4eae); }
-                AZ::Crc32 GetPropertyId() const { return AZ_CRC("FormatStringProperty", 0x2c587efa); }
+                AZ::Crc32 GetExtensionId() const { return AZ_CRC_CE("AddPrintOperand"); }
+                AZ::Crc32 GetPropertyId() const { return AZ_CRC_CE("FormatStringProperty"); }
 
                 const AZStd::regex& GetRegex() const
                 {

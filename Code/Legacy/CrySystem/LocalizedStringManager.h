@@ -14,7 +14,6 @@
 #include <StlUtils.h>
 #include <VectorMap.h>
 #include <AzCore/std/containers/map.h>
-#include <CryCommon/LegacyAllocator.h>
 
 #include "Huffman.h"
 
@@ -142,9 +141,9 @@ private:
         CryHalf     fVolume;
         CryHalf     fRadioRatio;
         // SoundMoods
-        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> SoundMoods;
+        AZStd::vector<SLocalizedAdvancesSoundEntry> SoundMoods;
         // EventParameters
-        AZStd::vector<SLocalizedAdvancesSoundEntry, AZ::StdLegacyAllocator> EventParameters;
+        AZStd::vector<SLocalizedAdvancesSoundEntry> EventParameters;
         // ~audio specific part
 
         // subtitle & radio flags
@@ -261,7 +260,6 @@ private:
     // CVARs
     int m_cvarLocalizationDebug;
     int m_cvarLocalizationEncode;   //Encode/Compress translated text to save memory
-    int m_cvarLocalizationFormat;
 
     //The localizations that are available for this SKU. Used for determining what to show on a language select screen or whether to show one at all
     TLocalizationBitfield m_availableLocalizations;

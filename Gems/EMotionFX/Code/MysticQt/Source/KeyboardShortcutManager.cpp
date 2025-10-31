@@ -14,9 +14,9 @@
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
-#include <QtCore/QStringList>
-#include <QtCore/QSettings>
-#include <QtGui/QKeyEvent>
+#include <QStringList>
+#include <QSettings>
+#include <QKeyEvent>
 
 namespace MysticQt
 {

@@ -7,14 +7,18 @@
 #
 
 set(FILES
-    Source/RHI.Reflect/BufferPoolDescriptor.cpp
-    Include/Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h
-    Source/RHI.Reflect/ImagePoolDescriptor.cpp
-    Include/Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h
+    Include/Atom/RHI.Reflect/VkAllocator.h
+    Source/RHI.Reflect/VkAllocator.cpp
     Source/RHI.Reflect/ShaderStageFunction.cpp
     Include/Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h
     Source/RHI.Reflect/ReflectSystemComponent.cpp
     Include/Atom/RHI.Reflect/Vulkan/ReflectSystemComponent.h
     Source/RHI.Reflect/PlatformLimitsDescriptor.cpp
     Include/Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h
+    Include/Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h
+    Source/RHI.Reflect/Conversion.cpp
+    Source/RHI.Reflect/Formats.inl
+    Include/Atom/RHI.Reflect/Vulkan/Conversion.h
+    Include/Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h
+    Include/Atom/RHI.Reflect/Vulkan/VulkanBus.h
 )

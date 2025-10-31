@@ -68,8 +68,6 @@ void CDisplaySettings::SetObjectHideMask(int hideMask)
     m_objectHideMask = hideMask;
 
     gSettings.objectHideMask = m_objectHideMask;
-
-    GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -152,13 +152,7 @@ namespace AZ
             va_start(mark, format);
             azvsnprintf(message, MAX_PRINT_MSG, format, mark);
             va_end(mark);
-            AZ::Debug::Platform::OutputToDebugger(nullptr, message);
-        }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            // Not currently supported
-            return nullptr;
+            AZ::Debug::Platform::OutputToDebugger({}, message);
         }
     } // Test
 } // AZ

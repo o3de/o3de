@@ -27,4 +27,8 @@ namespace FastNoiseGem
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_FastNoiseEditor, FastNoiseGem::FastNoiseEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), FastNoiseGem::FastNoiseEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_FastNoise_Editor, FastNoiseGem::FastNoiseEditorModule)
+#endif

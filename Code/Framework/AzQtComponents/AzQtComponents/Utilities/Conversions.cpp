@@ -8,7 +8,9 @@
 
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzCore/Math/MathUtils.h>
+
 #include <QLocale>
+#include <QRegularExpression>
 
 namespace AzQtComponents
 {
@@ -39,15 +41,23 @@ namespace AzQtComponents
         return AZ::Color(static_cast<float>(rgb.redF()), static_cast<float>(rgb.greenF()), static_cast<float>(rgb.blueF()), static_cast<float>(rgb.alphaF()));
     }
 
-    QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator)
+    QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool round)
     {
         const QChar decimalPoint = locale.decimalPoint();
         const QChar zeroDigit = locale.zeroDigit();
         const int numToStringDecimals = AZStd::max(numDecimals, 20);
+        QString retValue;
 
-        // We want to truncate, not round. toString will round, so we add extra decimal places to the formatting
-        // so we can remove the last values
-        QString retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
+        // If we want to truncate, not round, we add extra decimal places to the formatting
+        // so we can remove the last values otherwise we allow rounding
+        if (round)
+        {
+            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
+        }
+        else
+        {
+            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
+        }
 
         // Handle special cases when we have decimals in our value
         if (numDecimals > 0)
@@ -62,7 +72,7 @@ namespace AzQtComponents
             // Remove trailing zeros, since the locale conversion won't do
             // it for us
             QString trailingZeros = QString("%1+$").arg(zeroDigit);
-            retValue.remove(QRegExp(trailingZeros));
+            retValue.remove(QRegularExpression(trailingZeros));
 
             // It's possible we could be left with a decimal point on the end
             // if we stripped the trailing zeros, so if that's the case, then

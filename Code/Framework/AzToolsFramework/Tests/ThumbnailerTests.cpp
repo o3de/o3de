@@ -25,7 +25,9 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
             // Without this, the user settings component would sometimes attempt to save
             // changes on shutdown. In some cases this would cause a crash while the unit test
             // was running, because the environment wasn't setup for it to save these settings.
@@ -71,83 +73,4 @@ namespace UnitTest
 
         AZ::Entity* m_testEntity = nullptr;
     };
-
-    TEST_F(ThumbnailerTests, ThumbnailerComponent_RegisterUnregisterContext)
-    {
-        constexpr const char* contextName1 = "Context1";
-        constexpr const char* contextName2 = "Context2";
-
-        auto checkHasContext = [](const char* contextName)
-        {
-            bool hasContext = false;
-            AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::BroadcastResult(hasContext, &AzToolsFramework::Thumbnailer::ThumbnailerRequests::HasContext, contextName);
-            return hasContext;
-        };
-
-        EXPECT_FALSE(checkHasContext(contextName1));
-        EXPECT_FALSE(checkHasContext(contextName2));
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
-
-        EXPECT_TRUE(checkHasContext(contextName1));
-        EXPECT_FALSE(checkHasContext(contextName2));
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2);
-
-        EXPECT_TRUE(checkHasContext(contextName1));
-        EXPECT_TRUE(checkHasContext(contextName2));
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::UnregisterContext, contextName1);
-
-        EXPECT_FALSE(checkHasContext(contextName1));
-        EXPECT_TRUE(checkHasContext(contextName2));
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::UnregisterContext, contextName2);
-
-        EXPECT_FALSE(checkHasContext(contextName1));
-        EXPECT_FALSE(checkHasContext(contextName2));
-    }
-
-    TEST_F(ThumbnailerTests, ThumbnailerComponent_Deactivate_ClearTumbnailContexts)
-    {
-        constexpr const char* contextName1 = "Context1";
-        constexpr const char* contextName2 = "Context2";
-
-        auto checkHasContext = [](const char* contextName)
-        {
-            bool hasContext = false;
-            AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::BroadcastResult(hasContext, &AzToolsFramework::Thumbnailer::ThumbnailerRequests::HasContext, contextName);
-            return hasContext;
-        };
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2);
-
-        EXPECT_TRUE(checkHasContext(contextName1));
-        EXPECT_TRUE(checkHasContext(contextName2));
-
-        m_testEntity->Deactivate();
-        m_testEntity->Activate();
-
-        EXPECT_FALSE(checkHasContext(contextName1));
-        EXPECT_FALSE(checkHasContext(contextName2));
-    }
-
-    TEST_F(ThumbnailerTests, ThumbnailerComponent_RegisterContextTwice_Assert)
-    {
-        constexpr const char* contextName1 = "Context1";
-
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-    }
-
-    TEST_F(ThumbnailerTests, ThumbnailerComponent_UnregisterUnknownContext_Assert)
-    {
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::UnregisterContext, "ContextDoesNotExist");
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-    }
 } // namespace UnitTest

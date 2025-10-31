@@ -60,8 +60,12 @@ namespace AZ
                 shaderOption.SetValue(o_enableMarschner_TT, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableMarschner_TT });
                 shaderOption.SetValue(o_enableLongtitudeCoeff, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableLongtitudeCoeff });
                 shaderOption.SetValue(o_enableAzimuthCoeff, AZ::RPI::ShaderOptionValue{ m_hairGlobalSettings.m_enableAzimuthCoeff });
+                shaderOption.SetUnspecifiedToDefaultValues();
 
-                m_shaderOptions = shaderOption.GetShaderVariantKeyFallbackValue();
+                if (m_pipelineStateForDraw.GetShaderVariantId() != shaderOption.GetShaderVariantId())
+                {
+                    UpdateShaderOptions(shaderOption.GetShaderVariantId());
+                }
             }
 
             RPI::Ptr<HairPPLLResolvePass> HairPPLLResolvePass::Create(const RPI::PassDescriptor& descriptor)
@@ -116,12 +120,6 @@ namespace AZ
                 }
 
                 UpdateGlobalShaderOptions();
-
-                if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
-                {
-                    m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_shaderOptions);
-                }
-
 
                 SrgBufferDescriptor descriptor = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,

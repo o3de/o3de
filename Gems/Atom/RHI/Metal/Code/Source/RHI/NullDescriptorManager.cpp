@@ -29,7 +29,7 @@ namespace AZ
             AZ_Assert(m_nullDescriptorHeap, "Null descriptorheap should not be null");
             [heapDescriptor release] ;
             
-            RHI::ResultCode result = CreateImages();
+            [[maybe_unused]] RHI::ResultCode result = CreateImages();
             AZ_Assert(result == RHI::ResultCode::Success, "Image creation was unsuccessfull");
             
             result = CreateBuffer();
@@ -100,7 +100,7 @@ namespace AZ
                 {
                     m_nullImages[imageIndex].m_memoryView = device.CreateImagePlaced(m_nullImages[imageIndex].m_imageDescriptor, m_nullDescriptorHeap, alignedHeapSize, textureSizeAndAlign);
                 }
-                heapSize = (alignedHeapSize + textureSizeAndAlign.size) ;
+                heapSize = static_cast<uint32_t>(alignedHeapSize + textureSizeAndAlign.size);
                 if(!m_nullImages[imageIndex].m_memoryView.IsValid())
                 {
                     AZ_Assert(false, "Couldnt create a null image for ArgumentTable");

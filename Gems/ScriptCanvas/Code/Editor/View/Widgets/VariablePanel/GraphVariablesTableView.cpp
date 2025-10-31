@@ -6,10 +6,10 @@
  *
  */
 
-#include <qaction.h>
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qheaderview.h>
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QHeaderView>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
@@ -30,11 +30,15 @@
 
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
+#include <ScriptCanvasContextIdentifiers.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 
 namespace ScriptCanvasEditor
@@ -623,8 +627,8 @@ namespace ScriptCanvasEditor
 
             if (graphVariable->GetScope() != ScriptCanvas::VariableFlags::Scope::FunctionReadOnly)
             {
-            itemFlags |= Qt::ItemIsEditable;
-        }
+                itemFlags |= Qt::ItemIsEditable;
+            }
 
         }
         else if (index.column() == ColumnIndex::InitialValueSource)
@@ -716,10 +720,6 @@ namespace ScriptCanvasEditor
     void GraphVariablesModel::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
-
-        m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
         m_scriptCanvasId = scriptCanvasId;
 
         if (m_scriptCanvasId.IsValid())
@@ -870,6 +870,19 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void GraphVariablesModel::OnVariableRenamed(AZStd::string_view /*newVariableName*/)
+    {
+        const ScriptCanvas::GraphScopedVariableId* variableId = ScriptCanvas::VariableNotificationBus::GetCurrentBusId();
+
+        int index = FindRowForVariableId((*variableId).m_identifier);
+
+        if (index >= 0)
+        {
+            QModelIndex modelIndex = createIndex(index, ColumnIndex::Name, nullptr);
+            dataChanged(modelIndex, modelIndex);
+        }
+    }
+
     QVariant GraphVariablesModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
     {
         if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
@@ -920,11 +933,6 @@ namespace ScriptCanvasEditor
         }
 
         return -1;
-    }
-
-    bool GraphVariablesModel::IsFunction()const
-    {
-        return m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     ////////////////////////////////////////////
@@ -997,8 +1005,8 @@ namespace ScriptCanvasEditor
 
     void GraphVariablesModelSortFilterProxyModel::SetFilter(const QString& filter)
     {
-        m_filter = QRegExp::escape(filter);
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_filter = QRegularExpression::escape(filter);
+        m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         invalidateFilter();
     }
@@ -1087,6 +1095,7 @@ namespace ScriptCanvasEditor
         m_proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
         setModel(m_proxyModel);
+        setSortingEnabled(true);
 
         ApplyPreferenceSort();
         setItemDelegateForColumn(GraphVariablesModel::Name, aznew GraphCanvas::IconDecoratedNameDelegate(this));
@@ -1130,7 +1139,7 @@ namespace ScriptCanvasEditor
 
         {
             QAction* duplicateAction = new QAction(this);
-            duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+            duplicateAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_D));
 
             QObject::connect(duplicateAction, &QAction::triggered, this, &GraphVariablesTableView::OnDuplicate);
 
@@ -1159,6 +1168,21 @@ namespace ScriptCanvasEditor
 
         setMinimumSize(0, 0);
         ResizeColumns();
+
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(
+                ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
+        }
+    }
+
+    GraphVariablesTableView::~GraphVariablesTableView()
+    {
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
+        }
     }
 
     void GraphVariablesTableView::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
@@ -1250,7 +1274,7 @@ namespace ScriptCanvasEditor
 
     void GraphVariablesTableView::ApplyPreferenceSort()
     {
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         m_proxyModel->sort(settings->m_variablePanelSorting);
     }
 

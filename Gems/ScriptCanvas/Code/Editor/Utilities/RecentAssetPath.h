@@ -8,10 +8,12 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasEditor
 {
-    AZ::Data::AssetId ReadRecentAssetId();
-    void SetRecentAssetId(const AZ::Data::AssetId& assetId);
+    using SourceHandle = SourceHandle;
+
+    void SetRecentAssetId(SourceHandle assetId);
     void ClearRecentAssetId();
 }

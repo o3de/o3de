@@ -8,13 +8,17 @@
 
 #pragma once
 
+#include <imgui/imgui.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
+
+#include <Profiler/ImGuiTreemap.h>
 
 namespace AZ
 {
@@ -39,6 +43,9 @@ namespace AZ
             //! Calling this method will effectively add a parent->child reference for this instance, and all parent entries leading up to this
             //! entry from the root entry.
             void LinkChild(PassEntry* childEntry);
+
+            //! Propagate deviceIndex to parents
+            void PropagateDeviceIndex(int deviceIndex);
 
             //! Checks if timestamp queries are enabled for this PassEntry.
             bool IsTimestampEnabled() const;
@@ -66,6 +73,8 @@ namespace AZ
 
             //! Mirrors the enabled/disabled state of the pass.
             bool m_enabled = false;
+            int m_deviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            AZStd::unordered_set<int> m_childrenDeviceIndices;
 
             //! Dirty flag to determine if this entry is linked to an parent entry.
             bool m_linked = false;
@@ -201,9 +210,9 @@ namespace AZ
         private:
             // Draw option for the hierarchical view of the passes.
             // Recursively iterates through the timestamp entries, and creates an hierarchical structure.
-            void DrawHierarchicalView(const PassEntry* entry) const;
+            void DrawHierarchicalView(const PassEntry* entry, int deviceIndex) const;
             // Draw option for the flat view of the passes.
-            void DrawFlatView() const;
+            void DrawFlatView(int deviceIndex) const;
 
             // Sorts the entries array depending on the sorting type.
             void SortFlatView();
@@ -246,11 +255,15 @@ namespace AZ
 
             // Show pass execution timeline
             bool m_showTimeline = false;
+            float m_timelineOffset{ 0.f };
+            float m_timelineWindowWidth{ 1.f };
 
             // Controls how often the timestamp data is refreshed
             RefreshType m_refreshType = RefreshType::Realtime;
             AZStd::sys_time_t m_lastUpdateTimeMicroSecond = 0;
 
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_lastCalibratedTimestamps;
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_calibratedTimestamps;
         };
 
         class ImGuiGpuMemoryView
@@ -258,24 +271,51 @@ namespace AZ
         public:
             // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
+            ImGuiGpuMemoryView();
+            ~ImGuiGpuMemoryView();
 
         private:
+            // Collate data from RHI and update memory view tables and treemap
+            void PerformCapture();
+
             // Draw the heap usage pie chart
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+
+            // Update allocations and pools in the device and heap treemap widgets.
+            void UpdateTreemaps();
 
             // Update the saved pointers in m_tableRows according to new data/filters
             void UpdateTableRows();
 
-            void DrawTable();
+            void DrawTables();
 
             // Sort the table according to the appropriate column.
-            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            struct TableRow
+            // Save and load data to and from CSV/JSON files
+            void SaveToJSON();
+            void LoadFromJSON(const AZStd::string& fileName);
+            void LoadFromCSV(const AZStd::string& fileName);
+
+            struct PoolTableRow
+            {
+                Name m_poolName;
+
+                bool m_deviceHeap = false;
+                size_t m_budgetBytes = 0;
+                size_t m_allocatedBytes = 0;
+                size_t m_usedBytes = 0;
+                float m_fragmentation = 0.f;
+                size_t m_uniqueBytes = 0;
+            };
+
+            struct ResourceTableRow
             {
                 Name m_parentPoolName;
                 Name m_bufImgName;
                 size_t m_sizeInBytes = 0;
+                float m_fragmentation = 0.f;
                 AZStd::string m_bindFlags;
             };
 
@@ -283,12 +323,25 @@ namespace AZ
             bool m_includeBuffers = true;
             bool m_includeImages = true;
             bool m_includeTransientAttachments = true;
+            bool m_hideEmptyBufferPools = true;
 
             ImGuiTextFilter m_nameFilter;
 
-            AZStd::vector<TableRow> m_tableRows;
+            AZStd::vector<PoolTableRow> m_poolTableRows;
+            AZStd::vector<ResourceTableRow> m_resourceTableRows;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
+
+            Profiler::ImGuiTreemap* m_hostTreemap = nullptr;
+            Profiler::ImGuiTreemap* m_deviceTreemap = nullptr;
+            bool m_showHostTreemap = false;
+            bool m_showDeviceTreemap = false;
+
+            AZStd::string m_memoryCapturePath;
+            AZStd::string m_loadedCapturePath;
+            AZStd::string m_captureMessage;
+            char m_captureInput[AZ::IO::MaxPathLength] = { '\0' };
+            size_t m_captureSelection = 0;
         };
 
         class ImGuiGpuProfiler
@@ -325,4 +378,3 @@ namespace AZ
     } //namespace Render
 } // namespace AZ
 
-#include "ImGuiGpuProfiler.inl"

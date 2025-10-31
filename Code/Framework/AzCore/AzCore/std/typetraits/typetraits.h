@@ -27,6 +27,8 @@
 #include <AzCore/std/typetraits/add_volatile.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
+#include <AzCore/std/typetraits/common_reference.h>
+#include <AzCore/std/typetraits/common_type.h>
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/conjunction.h>
 #include <AzCore/std/typetraits/decay.h>
@@ -57,7 +59,6 @@
 #include <AzCore/std/typetraits/is_member_object_pointer.h>
 #include <AzCore/std/typetraits/is_member_pointer.h>
 #include <AzCore/std/typetraits/is_object.h>
-#include <AzCore/std/typetraits/is_pod.h>
 #include <AzCore/std/typetraits/is_polymorphic.h>
 #include <AzCore/std/typetraits/is_pointer.h>
 #include <AzCore/std/typetraits/is_reference.h>

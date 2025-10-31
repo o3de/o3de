@@ -17,12 +17,13 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 class AssetBundleComponentTests
-    : public UnitTest::ScopedAllocatorSetupFixture,
+    : public UnitTest::LeakDetectionFixture,
     public AZ::Debug::TraceMessageBus::Handler
 {
 public:
@@ -52,7 +53,6 @@ protected:
 
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
         app.Start(desc);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -173,4 +173,4 @@ TEST_F(AssetBundleComponentTests, RemoveNonAssetEntries_PakAssetEntryWasRemoved_
     EXPECT_EQ(itr, fileEntriesHasCatalog.end());
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

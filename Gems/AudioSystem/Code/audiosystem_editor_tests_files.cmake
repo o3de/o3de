@@ -8,5 +8,4 @@
 
 set(FILES
     Tests/AudioSystemEditorTest.cpp
-    Source/AudioSystemModule.cpp
 )

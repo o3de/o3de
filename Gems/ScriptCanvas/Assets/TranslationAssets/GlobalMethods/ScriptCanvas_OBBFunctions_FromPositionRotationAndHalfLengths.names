@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_OBBFunctions_FromPositionRotationAndHalfLengths",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Position Rotation And Half Lengths",
+                "category": "Math/OBB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_OBBFunctions_FromPositionRotationAndHalfLengths",
+                    "details": {
+                        "name": "From Position Rotation And Half Lengths",
+                        "tooltip": "Returns an OBB from the position, rotation and half lengths"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Rotation"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Half Lengths"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "OBB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

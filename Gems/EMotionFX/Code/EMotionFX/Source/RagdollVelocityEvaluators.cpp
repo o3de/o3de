@@ -13,9 +13,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollVelocityEvaluator, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MovingAverageVelocityEvaluator, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(RunningAverageVelocityEvaluator, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollVelocityEvaluator, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MovingAverageVelocityEvaluator, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(RunningAverageVelocityEvaluator, EMotionFX::ActorAllocator)
 
     void RagdollVelocityEvaluator::CalculateVelocities(Physics::RagdollState& outRagdollPose, const Physics::RagdollState& lastRagdollPose, const Physics::RagdollState& currentRagdollPose, float timeDelta)
     {
@@ -75,7 +75,7 @@ namespace EMotionFX
         }
 
         // Update the oldest pose in history pose ring buffer.
-        AZStd::pair<Physics::RagdollState, float> pair = AZStd::make_pair<Physics::RagdollState, float>(lastRagdollPose, timeDelta);
+        AZStd::pair<Physics::RagdollState, float> pair = AZStd::make_pair(lastRagdollPose, timeDelta);
         CalculateVelocities(pair.first, lastRagdollPose, currentRagdollPose, timeDelta);
         m_poseHistory.push_back(pair);
     }

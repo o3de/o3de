@@ -17,6 +17,7 @@
 
 #include <AzFramework/Asset/AssetSystemTypes.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -124,15 +125,15 @@ namespace AzFramework
 
         //! Convenience function which can be used to read the AssetProcessor connection settings
         //! from the /Amazon/AzCore/Bootstrap section of the SettingsRegistry
-        bool ReadConnectionSettingsFromSettingsRegistry(ConnectionSettings& outputConnectionSettings);
+        AZF_API bool ReadConnectionSettingsFromSettingsRegistry(ConnectionSettings& outputConnectionSettings);
 
         //! Launch the asset processor
         //! \return Whether or not the asset processor launched
-        bool LaunchAssetProcessor();
+        AZF_API bool LaunchAssetProcessor();
 
         //! AssetSystemRequestBusTraits
         //! This bus is for making requests to the asset system
-        class AssetSystemRequests
+        class AZF_API AssetSystemRequests
             : public AZ::EBusTraits
         {
         public:
@@ -268,6 +269,7 @@ namespace AzFramework
 
             //! Show the AssetProcessor App
             virtual void ShowAssetProcessor() = 0;
+            virtual void UpdateSourceControlStatus(bool newStatus) = 0;
             //! Show an asset in the AssetProcessor App
             virtual void ShowInAssetProcessor(const AZStd::string& assetPath) = 0;
 
@@ -306,8 +308,8 @@ namespace AzFramework
 
         namespace ConnectionIdentifiers
         {
-            static const char* Editor = "EDITOR";
-            static const char* Game = "GAME";
+            static constexpr const char* Editor = "EDITOR";
+            static constexpr const char* Game = "GAME";
         }
 
         //! AssetSystemStatusBusTraits
@@ -325,6 +327,10 @@ namespace AzFramework
             virtual void AssetSystemAvailable() {}
             //! Notifies listeners Asset System turns not available
             virtual void AssetSystemUnavailable() {}
+            //! Notifies listeners Asset System is still waiting.
+            //! This will get called every N milliseconds during the Asset System startup
+            //! until the Asset System becomes available.
+            virtual void AssetSystemWaiting() {}
         };
 
     } // namespace AssetSystem
@@ -338,3 +344,8 @@ namespace AzFramework
     using AssetSystemConnectionNotificationsBus = AZ::EBus<AssetSystem::AssetSystemConnectionNotifications>;
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemInfoNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemConnectionNotifications)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemStatus)

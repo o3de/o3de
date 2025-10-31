@@ -16,6 +16,7 @@
 // Qt
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QRegularExpression>
 
 // Editor
 #include "LevelTreeModel.h"
@@ -23,9 +24,7 @@
 #include "API/ToolsApplicationAPI.h"
 
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_LevelFileDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 static const char lastLoadPathFilename[] = "lastLoadPath.preset";
 
@@ -66,6 +65,7 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     if (m_bOpenDialog)
     {
         setWindowTitle(tr("Open Level"));
+        ui->treeView->expandToDepth(1);
         ui->newFolderButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Open"));
     }
@@ -83,7 +83,7 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     }
 
     // reject invalid file names
-    ui->nameLineEdit->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9_\\-./]*$"), ui->nameLineEdit));
+    ui->nameLineEdit->setValidator(new QRegularExpressionValidator(QRegularExpression("^[a-zA-Z0-9_\\-./]*$"), ui->nameLineEdit));
 
     ReloadTree();
     LoadLastUsedLevelPath();
@@ -106,6 +106,13 @@ void CLevelFileDialog::OnCancel()
 
 void CLevelFileDialog::OnOK()
 {
+    QString errorMessage;
+    if (!ValidateSaveLevelPath(errorMessage))
+    {
+        QMessageBox::warning(this, tr("Error"), errorMessage);
+        return;
+    }
+
     if (m_bOpenDialog)
     {
         // For Open button
@@ -120,13 +127,6 @@ void CLevelFileDialog::OnOK()
     }
     else
     {
-        QString errorMessage;
-        if (!ValidateSaveLevelPath(errorMessage))
-        {
-            QMessageBox::warning(this, tr("Error"), errorMessage);
-            return;
-        }
-
         QString levelPath = GetLevelPath();
         if (CFileUtil::PathExists(levelPath) && CheckLevelFolder(levelPath))
         {
@@ -429,6 +429,13 @@ bool CLevelFileDialog::ValidateSaveLevelPath(QString& errorMessage) const
     if (CFileUtil::PathExists(levelPath) && !CheckLevelFolder(levelPath))
     {
         errorMessage = tr("Please enter a level name");
+        return false;
+    }
+
+    if (!ui->nameLineEdit->hasAcceptableInput())
+    {
+        QString message = tr("The level name %1 contains illegal characters.");
+        errorMessage = message.arg(enteredPath);
         return false;
     }
 

@@ -52,4 +52,8 @@ namespace Terrain
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_TerrainEditor, Terrain::EditorTerrainModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), Terrain::EditorTerrainModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Terrain_Editor, Terrain::EditorTerrainModule)
+#endif

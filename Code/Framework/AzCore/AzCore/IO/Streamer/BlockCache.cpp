@@ -114,12 +114,12 @@ namespace AZ::IO
         {
             m_onlyEpilogWrites = true;
         }
+        m_recentlyUsed = RecentlyUsedBlockIndex(m_numBlocks);
 
         m_cache = reinterpret_cast<u8*>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-            m_cacheSize, alignment, 0, "AZ::IO::Streamer BlockCache", __FILE__, __LINE__));
+            m_cacheSize, alignment));
         m_cachedPaths = AZStd::unique_ptr<RequestPath[]>(new RequestPath[m_numBlocks]);
         m_cachedOffsets = AZStd::unique_ptr<u64[]>(new u64[m_numBlocks]);
-        m_blockLastTouched = AZStd::unique_ptr<TimePoint[]>(new TimePoint[m_numBlocks]);
         m_inFlightRequests = AZStd::unique_ptr<FileRequest*[]>(new FileRequest*[m_numBlocks]);
 
         ResetCache();
@@ -137,20 +137,24 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 ReadFile(request, args);
                 return;
             }
             else
             {
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
                 {
                     FlushCache(args.m_path);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
                 {
                     FlushEntireCache();
+                }
+                else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
+                {
+                    Report(args);
                 }
                 StreamStackEntry::QueueRequest(request);
             }
@@ -166,7 +170,7 @@ namespace AZ::IO
         {
             Section& delayed = m_delayedSections.front();
             AZ_Assert(delayed.m_parent, "Delayed section doesn't have a reference to the original request.");
-            auto data = AZStd::get_if<FileRequest::ReadData>(&delayed.m_parent->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&delayed.m_parent->GetCommand());
             AZ_Assert(data, "A request in the delayed queue of the BlockCache didn't have a parent with read data.");
             // This call can add the same section to the back of the queue if there's not
             // enough space. Because of this the entry needs to be removed from the delayed
@@ -191,7 +195,7 @@ namespace AZ::IO
             m_delayedSections.empty();
     }
 
-    void BlockCache::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+    void BlockCache::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
         StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd)
     {
         // Have the stack downstream estimate the completion time for the requests that are waiting for a slot to execute in.
@@ -233,7 +237,7 @@ namespace AZ::IO
         }
     }
 
-    void BlockCache::ReadFile(FileRequest* request, FileRequest::ReadData& data)
+    void BlockCache::ReadFile(FileRequest* request, Requests::ReadData& data)
     {
         if (!m_next)
         {
@@ -250,7 +254,7 @@ namespace AZ::IO
             m_numMetaDataRetrievalInProgress--;
             if (fileSizeRequest.GetStatus() == IStreamerTypes::RequestStatus::Completed)
             {
-                auto& requestInfo = AZStd::get<FileRequest::FileMetaDataRetrievalData>(fileSizeRequest.GetCommand());
+                auto& requestInfo = AZStd::get<Requests::FileMetaDataRetrievalData>(fileSizeRequest.GetCommand());
                 if (requestInfo.m_found)
                 {
                     ContinueReadFile(request, requestInfo.m_fileSize);
@@ -272,7 +276,7 @@ namespace AZ::IO
         Section main;
         Section epilog;
 
-        auto& data = AZStd::get<FileRequest::ReadData>(request->GetCommand());
+        auto& data = AZStd::get<Requests::ReadData>(request->GetCommand());
 
         if (!SplitRequest(prolog, main, epilog, data.m_path, fileLength, data.m_offset, data.m_size,
             reinterpret_cast<u8*>(data.m_output)))
@@ -365,6 +369,7 @@ namespace AZ::IO
             if (m_cachedPaths[i] == filePath)
             {
                 ResetCacheEntry(i);
+                m_recentlyUsed.Flush(i);
             }
         }
     }
@@ -372,13 +377,25 @@ namespace AZ::IO
     void BlockCache::FlushEntireCache()
     {
         ResetCache();
+        m_recentlyUsed.FlushAll();
     }
 
     void BlockCache::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        statistics.push_back(Statistic::CreatePercentage(m_name, CacheHitRateName, CalculateHitRatePercentage()));
-        statistics.push_back(Statistic::CreatePercentage(m_name, CacheableName, CalculateCacheableRatePercentage()));
-        statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateAvailableRequestSlots()));
+        statistics.push_back(Statistic::CreatePercentage(
+            m_name, CacheHitRateName, CalculateHitRatePercentage(),
+            "The percentage of requests that could be (partially) serviced with cached data. When running from loose files a lower value "
+            "is better as it indicate full file reads. When running from archives higher values are better as it indicates better "
+            "scheduling efficiency and/or better archive layouts."));
+        statistics.push_back(Statistic::CreatePercentage(
+            m_name, CacheableName, CalculateCacheableRatePercentage(),
+            "The percentage of requests that were candidates for caching. The percentage of requests that could be (partially) serviced "
+            "with cached data. When running from loose files a lower value is better as it indicate full file reads. When running from "
+            "archives higher values are better as it indicates better scheduling efficiency and/or better archive layouts."));
+        statistics.push_back(Statistic::CreateInteger(
+            m_name, "Available slots", CalculateAvailableRequestSlots(),
+            "The total number of slots available to processing cache-able requests with. If this value is low more memory may need to be "
+            "allocated to the cache so more slots are available."));
 
         StreamStackEntry::CollectStatistics(statistics);
     }
@@ -416,7 +433,7 @@ namespace AZ::IO
     {
         if (!IsCacheBlockInFlight(cacheBlock))
         {
-            TouchBlock(cacheBlock);
+            m_recentlyUsed.Touch(cacheBlock);
             memcpy(section.m_output, GetCacheBlockData(cacheBlock) + section.m_blockOffset, section.m_copySize);
             return CacheResult::ReadFromCache;
         }
@@ -530,12 +547,13 @@ namespace AZ::IO
 
         if (requestWasSuccessful)
         {
-            TouchBlock(cacheBlockIndex);
+            m_recentlyUsed.Touch(cacheBlockIndex);
             m_inFlightRequests[cacheBlockIndex] = nullptr;
         }
         else
         {
             ResetCacheEntry(cacheBlockIndex);
+            m_recentlyUsed.Flush(cacheBlockIndex);
         }
         AZ_Assert(m_numInFlightRequests > 0, "Clearing out an in-flight request, but there shouldn't be any in flight according to records.");
         m_numInFlightRequests--;
@@ -670,34 +688,17 @@ namespace AZ::IO
         return m_cache + (index * m_blockSize);
     }
 
-    void BlockCache::TouchBlock(u32 index)
-    {
-        AZ_Assert(index < m_numBlocks, "Index for touch a cache entry in the BlockCache is out of bounds.");
-        m_blockLastTouched[index] = AZStd::chrono::high_resolution_clock::now();
-    }
-
     u32 BlockCache::RecycleOldestBlock(const RequestPath& filePath, u64 offset)
     {
         AZ_Assert((offset & (m_blockSize - 1)) == 0, "The offset used to recycle a block cache needs to be a multiple of the block size.");
 
-        // Find the oldest cache block.
-        TimePoint oldest = m_blockLastTouched[0];
-        u32 oldestIndex = 0;
-        for (u32 i = 1; i < m_numBlocks; ++i)
-        {
-            if (m_blockLastTouched[i] < oldest && !m_inFlightRequests[i])
-            {
-                oldest = m_blockLastTouched[i];
-                oldestIndex = i;
-            }
-        }
-
+        u32 oldestIndex = m_recentlyUsed.GetLeastRecentlyUsed();
         if (!IsCacheBlockInFlight(oldestIndex))
         {
             // Recycle the block.
             m_cachedPaths[oldestIndex] = filePath;
             m_cachedOffsets[oldestIndex] = offset;
-            TouchBlock(oldestIndex);
+            m_recentlyUsed.TouchLeastRecentlyUsed();
             return oldestIndex;
         }
         else
@@ -732,7 +733,6 @@ namespace AZ::IO
 
         m_cachedPaths[index].Clear();
         m_cachedOffsets[index] = 0;
-        m_blockLastTouched[index] = TimePoint::min();
         m_inFlightRequests[index] = nullptr;
     }
 
@@ -743,5 +743,35 @@ namespace AZ::IO
             ResetCacheEntry(i);
         }
         m_numInFlightRequests = 0;
+    }
+
+    void BlockCache::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Cache size", m_cacheSize,
+                "The size of the cache. Increasing the size will allow more blocks to be created and as a result more file data to "
+                "be cached."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Blocks size", m_blockSize,
+                "The size of the individual blocks in the cache. Larger blocks means fewer blocks, but larger blocks can also hold more "
+                "additional data. Use a drive nodes sector size as a guide."));
+            data.m_output.push_back(
+                Statistic::CreateInteger(m_name, "Block count", m_numBlocks, "The total number of blocks the cache has available."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Alignment", m_alignment,
+                "The number of bytes the cache will align to. For prologs this means adding bytes to the start of the request to meet the "
+                "alignment and for the epilog adding additional bytes at the end of the request. If the alignment matches sector sizes it "
+                "typically means there's no additional cost and the additional data is essentially read for free."));
+            data.m_output.push_back(Statistic::CreateBoolean(
+                m_name, "Only epilog writes", m_onlyEpilogWrites,
+                "Whether or not only the epilog is considered or that both prolog and epilog are used for caching."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

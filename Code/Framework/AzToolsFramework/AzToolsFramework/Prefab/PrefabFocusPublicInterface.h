@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 #include <AzFramework/Entity/EntityContext.h>
 
@@ -20,7 +22,15 @@ namespace AzToolsFramework::Prefab
 {
     using PrefabFocusOperationResult = AZ::Outcome<void, AZStd::string>;
 
-    //! Public Interface for external systems to utilize the Prefab Focus system.
+    enum class PrefabEditScope
+    {
+        HIDE_NESTED_INSTANCES_CONTENT = 0,
+        SHOW_NESTED_INSTANCES_CONTENT
+    };
+
+    //! Public Interface for external systems to utilize the Prefab Focus system. This interface shouldn't expose
+    //! internal prefab constructs like TemplateIds and prefab instances. For such cases, use the PrefabFocusInterface
+    //! instead.
     class PrefabFocusPublicInterface
     {
     public:
@@ -36,6 +46,10 @@ namespace AzToolsFramework::Prefab
         //! Set the focused prefab instance to the instance at position index of the current path. Supports undo/redo.
         //! @param index The index of the instance in the current path that we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) = 0;
+
+        //! Opens the prefab instance owning the entityId provided.Supports undo/redo.
+        //! @param entityId The entityId of the entity whose owning instance we want to open for overrides.
+        virtual PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) = 0;
 
         //! Returns the entity id of the container entity for the instance the prefab system is focusing on.
         virtual AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const = 0;
@@ -56,6 +70,9 @@ namespace AzToolsFramework::Prefab
 
         //! Returns the size of the path to the currently focused instance.
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
+
+        //! Sets the currently using prefab edit scope in editor.
+        virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope) = 0;
     };
 
     /**

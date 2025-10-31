@@ -46,7 +46,7 @@ void CEditorPreferencesPage_ViewportDebug::Reflect(AZ::SerializeContext& seriali
 
         editContext->Class<CEditorPreferencesPage_ViewportDebug>("Viewport Debug Preferences", "Viewport Debug Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_profiling, "Profiling", "Profiling")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_warnings, "Viewport Warning Settings", "Viewport Warning Settings");
     }

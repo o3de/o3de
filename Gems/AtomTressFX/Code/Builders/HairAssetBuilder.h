@@ -20,7 +20,7 @@ namespace AZ
                 : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
             {
             public:
-                AZ_RTTI(AnimGraphBuilderWorker, "{7D77A133-115E-4A14-860D-C1DB9422C190}");
+                AZ_RTTI(HairAssetBuilder, "{7D77A133-115E-4A14-860D-C1DB9422C190}");
 
                 void RegisterBuilder();
 

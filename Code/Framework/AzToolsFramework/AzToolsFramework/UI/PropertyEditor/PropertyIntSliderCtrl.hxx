@@ -5,11 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef PROPERTY_INTSLIDER_CTRL
-#define PROPERTY_INTSLIDER_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
@@ -18,12 +17,12 @@
 
 namespace AzToolsFramework
 {
-    class PropertyIntSliderCtrl
+    class AZTF_API PropertyIntSliderCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyIntSliderCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyIntSliderCtrl, AZ::SystemAllocator);
 
         explicit PropertyIntSliderCtrl(QWidget* parent = nullptr);
         virtual ~PropertyIntSliderCtrl();
@@ -64,7 +63,7 @@ namespace AzToolsFramework
     };
 
     // Base class to allow QObject inheritance and definitions for IntSpinBoxHandlerCommon class template
-    class IntSliderHandlerQObject
+    class AZTF_API IntSliderHandlerQObject
         : public QObject
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
@@ -77,7 +76,7 @@ namespace AzToolsFramework
     {
         using BaseHandler = IntWidgetHandler<ValueType, PropertyIntSliderCtrl, IntSliderHandlerQObject>;
     public:
-        AZ_CLASS_ALLOCATOR(IntSliderHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntSliderHandler, AZ::SystemAllocator);
     protected:
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Slider; }
         QWidget* CreateGUI(QWidget* parent) override;
@@ -135,7 +134,5 @@ namespace AzToolsFramework
         }
     }
 
-    void RegisterIntSliderHandlers();
+    AZTF_API void RegisterIntSliderHandlers();
 };
-
-#endif

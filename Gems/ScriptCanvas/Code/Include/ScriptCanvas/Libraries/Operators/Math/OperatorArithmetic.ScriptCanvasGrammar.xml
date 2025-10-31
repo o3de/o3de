@@ -2,25 +2,25 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OperatorArithmetic"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-	       PreferredClassName="OperatorArithmetic"
-           Uuid="{FE0589B0-F835-4CD5-BBD3-86510CBB985B}"
-           Base="ScriptCanvas::Node"
-           Category="Operators"
-           Version="1"
-           VersionConverter="OperatorArithmeticVersionConverter"
-           GeneratePropertyFriend="True"
-           Description="">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        PreferredClassName="OperatorArithmetic"
+        Uuid="{FE0589B0-F835-4CD5-BBD3-86510CBB985B}"
+        BaseClass="True"
+        Base="ScriptCanvas::Node"
+        Category="Operators"
+        Version="1"
+        VersionConverter="OperatorArithmeticVersionConverter"
+        Description="">
         <In Name="In" Description=""/>
         <Out Name="Out" Description=""/>
     </Class>
     <Class Name="OperatorArithmeticUnary"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorArithmeticUnary"
-	       PreferredClassName="OperatorArithmeticUnary"
-           Uuid="{4B68DF49-35DE-48CF-BCE3-F892CCF2639D}"
-           Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-           Category="Operators/Math"
-           Version="0"
-           Description="">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorArithmeticUnary"
+        PreferredClassName="OperatorArithmeticUnary"
+        Uuid="{4B68DF49-35DE-48CF-BCE3-F892CCF2639D}"
+        BaseClass="True"
+        Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        Category="Operators/Math"
+        Description="">
     </Class>
 </ScriptCanvas>

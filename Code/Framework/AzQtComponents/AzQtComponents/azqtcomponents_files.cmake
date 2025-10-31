@@ -44,6 +44,8 @@ set(FILES
     Components/FilteredSearchWidget.ui
     Components/GlobalEventFilter.h
     Components/GlobalEventFilter.cpp
+    Components/InputDialog.h
+    Components/InputDialog.cpp
     Components/O3DEStylesheet.h
     Components/Titlebar.cpp
     Components/Titlebar.h
@@ -107,6 +109,8 @@ set(FILES
     Components/Widgets/AssetFolderListView.cpp
     Components/Widgets/AssetFolderListView.h
     Components/Widgets/AssetFolderListView.qss
+    Components/Widgets/AssetFolderTableView.cpp
+    Components/Widgets/AssetFolderTableView.h
     Components/Widgets/AssetFolderThumbnailView.cpp
     Components/Widgets/AssetFolderThumbnailView.h
     Components/Widgets/AssetFolderThumbnailViewConfig.ini
@@ -171,6 +175,8 @@ set(FILES
     Components/Widgets/MessageBox.h
     Components/Widgets/OverlayWidget.cpp
     Components/Widgets/OverlayWidget.h
+    Components/Widgets/Internal/RectangleWidget.cpp
+    Components/Widgets/Internal/RectangleWidget.h
     Components/Widgets/Internal/OverlayWidgetLayer.cpp
     Components/Widgets/Internal/OverlayWidgetLayer.h
     Components/Widgets/Internal/OverlayWidgetLayer.ui
@@ -255,6 +261,7 @@ set(FILES
     Components/Widgets/ColorPicker/ColorGrid.h
     Components/Widgets/ColorPicker/ColorValidator.cpp
     Components/Widgets/ColorPicker/ColorValidator.h
+    Components/Widgets/ColorPicker/QtMetaTypes.h
     Components/Widgets/ColorPicker/PaletteView.cpp
     Components/Widgets/ColorPicker/PaletteView.h
     Components/Widgets/ColorPicker/PaletteViewConfig.ini
@@ -271,6 +278,8 @@ set(FILES
     Components/Widgets/ColorPicker/ColorWarning.h
     Components/Widgets/ColorPicker/ColorWarning.cpp
     Images/resources.qrc
+    PropertyInput/PropertyInputWidgets.h
+    PropertyInput/PropertyInputWidgets.cpp
     Utilities/AutoSettingsGroup.h
     Utilities/ColorUtilities.cpp
     Utilities/ColorUtilities.h

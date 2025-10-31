@@ -12,8 +12,8 @@
 #include "CommentNodeAnimator.h"
 
 // CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/IFont.h>
+#include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "Settings.h"
@@ -21,7 +21,7 @@
 
 CCommentNodeAnimator::CCommentNodeAnimator(CTrackViewAnimNode* pCommentNode)
 {
-    assert(pCommentNode);
+    AZ_Assert(pCommentNode, "pCommentNode is null");
     m_pCommentNode = pCommentNode;
 }
 

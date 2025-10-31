@@ -25,7 +25,7 @@ namespace AZ
 
         void Matrix3x4SetRowGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool rowIsSet = false;
+            [[maybe_unused]] bool rowIsSet = false;
             if (dc.GetNumArguments() >= 5)
             {
                 if (dc.IsNumber(0))
@@ -88,7 +88,7 @@ namespace AZ
 
         void Matrix3x4SetColumnGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool columnIsSet = false;
+            [[maybe_unused]] bool columnIsSet = false;
             if (dc.GetNumArguments() >= 4)
             {
                 if (dc.IsNumber(0))
@@ -133,7 +133,7 @@ namespace AZ
 
         void Matrix3x4SetTranslationGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool translationIsSet = false;
+            [[maybe_unused]] bool translationIsSet = false;
 
             if (dc.GetNumArguments() == 3 &&
                 dc.IsNumber(0) &&
@@ -433,7 +433,7 @@ namespace AZ
         // calculate the determinant
         const float determinant = result.m_rows[0].Dot3(GetColumn(0));
 
-        if (determinant != 0.0f)
+        if (!AZ::IsClose(determinant, 0.0f, Constants::FloatEpsilon))
         {
             float determinantInv = 1.0f / determinant;
             result.m_rows[0] *= determinantInv;
@@ -514,12 +514,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(eulerRadians.GetSimdValue(), sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         SetRow(0, cy * cz, -cy * sz, sy, 0.0f);
         SetRow(1, cx * sz + sx * sy * cz, cx * cz - sx * sy * sz, -sx * cy, 0.0f);

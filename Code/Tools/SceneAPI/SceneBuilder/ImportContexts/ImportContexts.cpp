@@ -21,12 +21,14 @@ namespace AZ
                 : m_scene(scene)
                 , m_currentGraphPosition(currentGraphPosition)
                 , m_nodeNameMap(nodeNameMap)
+                , m_contextProvider(nullptr)
             {
             }
 
             ImportContext::ImportContext(Containers::Scene& scene, RenamedNodesMap& nodeNameMap)
                 : m_scene(scene)
                 , m_nodeNameMap(nodeNameMap)
+                , m_contextProvider(nullptr)
             {
                 m_currentGraphPosition = Containers::SceneGraph::NodeIndex();
             }
@@ -46,9 +48,9 @@ namespace AZ
             }
 
             SceneDataPopulatedContextBase::SceneDataPopulatedContextBase(NodeEncounteredContext& parent,
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& graphData, const AZStd::string& dataName)
+                AZStd::shared_ptr<DataTypes::IGraphObject> graphData, const AZStd::string& dataName)
                 : ImportContext(parent.m_scene, parent.m_currentGraphPosition, parent.m_nodeNameMap)
-                , m_graphData(graphData)
+                , m_graphData(AZStd::move(graphData))
                 , m_dataName(dataName)
             {
             }
@@ -56,9 +58,9 @@ namespace AZ
             SceneDataPopulatedContextBase::SceneDataPopulatedContextBase(Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex currentGraphPosition,
                 RenamedNodesMap& nodeNameMap,
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData, const AZStd::string& dataName)
+                AZStd::shared_ptr<DataTypes::IGraphObject> nodeData, const AZStd::string& dataName)
                 : ImportContext(scene, currentGraphPosition, nodeNameMap)
-                , m_graphData(nodeData)
+                , m_graphData(AZStd::move(nodeData))
                 , m_dataName(dataName)
             {
             }
@@ -76,10 +78,10 @@ namespace AZ
             }
 
             SceneAttributeDataPopulatedContextBase::SceneAttributeDataPopulatedContextBase(SceneNodeAppendedContextBase& parent,
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                 const Containers::SceneGraph::NodeIndex attributeNodeIndex, const AZStd::string& dataName)
                 : ImportContext(parent.m_scene, attributeNodeIndex, parent.m_nodeNameMap)
-                , m_graphData(nodeData)
+                , m_graphData(AZStd::move(nodeData))
                 , m_dataName(dataName)
             {
             }

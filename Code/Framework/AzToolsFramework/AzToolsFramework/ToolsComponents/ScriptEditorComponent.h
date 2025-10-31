@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -24,7 +25,7 @@ namespace AzToolsFramework
         /**
         *
         */
-        class ScriptEditorComponent
+        class AZTF_API ScriptEditorComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , private AZ::Data::AssetBus::Handler
         {
@@ -64,6 +65,8 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
 
             void LaunchLuaEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
+            // make sure internal script (m_scriptComponent.m_script) is set before loading
+            void LoadScript();
 
         protected:
             ScriptEditorComponent(const ScriptEditorComponent&) = delete;
@@ -76,9 +79,7 @@ namespace AzToolsFramework
                 float m_sortOrder; // Sort order of the property as defined by using the "order" attribute, by default the order is FLT_MAX which means alphabetical sort will be used
             };
 
-            void LoadProperties();
-            // make sure internal script (m_scriptComponent.m_script) is set before loading
-            void LoadScript();
+            bool LoadProperties(); // returns true if properties have changed.
             void LoadProperties(AZ::ScriptDataContext& sdc, AzFramework::ScriptPropertyGroup& group);
             void RemovedOldProperties(AzFramework::ScriptPropertyGroup& group);
             void SortProperties(AzFramework::ScriptPropertyGroup& group);
@@ -108,6 +109,7 @@ namespace AzToolsFramework
             AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
 
             AZStd::string m_customName;
+            bool m_loadingNewScript = false;
         };
     } // namespace Component
 } // namespace AzToolsFramework

@@ -10,12 +10,19 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/osstring.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AZ
 {
+    //! Type alias for a non-dynamic allocating string type
+    //! that can be used to format messages to send to the JsonIssueCallback.
+    //! NOTE: Any string type that is convertible to AZStd::string_view can be used.
+    //! This alias is provided for convenience.
+    using ReporterString = AZStd::fixed_string<1024>;
+
     namespace JsonSerializationResult
     {
         // Note the order of the various components is important since the Json Serializer will return
@@ -68,7 +75,7 @@ namespace AZ
         //! A lightweight result returned by all major functions in the Json Serialization.
         //! This is essentially a 32 bit integer but with additional functionality to be
         //! more descriptive than a standard integer result code.
-        union ResultCode
+        union AZCORE_API ResultCode
         {
         public:
             explicit ResultCode(Tasks task);
@@ -119,7 +126,7 @@ namespace AZ
         //! Result is a wrapper around ResultCode to encourage serializer to report results
         //! at least once per load/store call. The most common use is to call context.Report
         //! which returns a Result (which can also be used as a ResultCode).
-        class Result
+        class AZCORE_API Result
         {
         public:
             Result(const JsonIssueCallback& callback, AZStd::string_view message, ResultCode result, AZStd::string_view path);

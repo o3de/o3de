@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef LOGPANEL_PANEL_H
-#define LOGPANEL_PANEL_H
-
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
@@ -17,7 +16,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
@@ -122,13 +120,13 @@ namespace AzToolsFramework
 
         //! BaseLogPanel is the base GUI class that has tabs (as opposed to a single view)
         //!    you derive from this class and handle the AddTab() and other such messages
-        class BaseLogPanel
+        class AZTF_API BaseLogPanel
             : public QWidget
         {
             Q_OBJECT
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code (from .ui files)
-            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator);
             BaseLogPanel(QWidget* pParent = nullptr);
             virtual ~BaseLogPanel();
 
@@ -177,7 +175,7 @@ namespace AzToolsFramework
         //! it can be set to have a maximum number of lines, which will cause the older lines to drop off when they accumulate too deeply
         //! it is primarily used for incoming data streams that are constantly filling, not static sources such as files.
         //! of particular interest here is how it implements the required rowCount, columnCount, data, and flags functions
-        class RingBufferLogDataModel
+        class AZTF_API RingBufferLogDataModel
             : public QAbstractTableModel
         {
             Q_OBJECT
@@ -217,7 +215,7 @@ namespace AzToolsFramework
         //! this is a list-based (uses a vector) data model
         //! its meant for static or ever-growing data that we do not want to discard older lines for.  For example
         //! if you are forensically examining a previously-captured file.
-        class ListLogDataModel
+        class AZTF_API ListLogDataModel
             : public QAbstractTableModel
         {
             Q_OBJECT
@@ -248,7 +246,7 @@ namespace AzToolsFramework
         };
 
         //! FilteredLogDataModel filters data based on whats in the TabSettings.
-        class FilteredLogDataModel
+        class AZTF_API FilteredLogDataModel
             : public QSortFilterProxyModel
         {
         public:
@@ -264,12 +262,12 @@ namespace AzToolsFramework
         // ------------------------- INTERNAL IMPLEMENTATION STUFF -----------------------
         //! This log panel layout class just exists to glue the last element to the top right corner, ie, the add button
         //! The rest of the children are just standard.  usually there is only one other.
-        class LogPanelLayout
+        class AZTF_API LogPanelLayout
             : public QLayout
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator);
             LogPanelLayout(QWidget* pParent);
             virtual ~LogPanelLayout();
             virtual void addItem(QLayoutItem*);
@@ -288,12 +286,12 @@ namespace AzToolsFramework
 
 
         // this is a private class, but its here because its a Q object and needs MOC to run.
-        class LogPanelItemDelegate
+        class AZTF_API LogPanelItemDelegate
             : public QStyledItemDelegate
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator);
             LogPanelItemDelegate(QWidget* pParent, int messageColumn);
             virtual ~LogPanelItemDelegate();
 
@@ -318,35 +316,17 @@ Q_SIGNALS:
             int m_messageColumn; // which column contains the message data ?
         };
 
-        class SavedState
+        class AZTF_API SavedState
             : public AZ::UserSettings
         {
         public:
             AZ_RTTI(SavedState, "{38930360-DB02-445A-9CA0-3D1FB07B8236}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator);
             AZStd::vector<LogPanel::TabSettings> m_tabSettings;
 
             SavedState() {}
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-                if (serialize)
-                {
-                    serialize->Class<SavedState>()
-                        ->Version(1)
-                        ->Field("m_tabSettings", &SavedState::m_tabSettings);
-
-                    serialize->Class<TabSettings>()
-                        ->Version(1)
-                        ->Field("window", &TabSettings::m_window)
-                        ->Field("tabName", &TabSettings::m_tabName)
-                        ->Field("textFilter", &TabSettings::m_textFilter)
-                        ->Field("filterFlags", &TabSettings::m_filterFlags);
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
         };
     } // namespace LogPanel
 } // namespace AzToolsFramework
-
-#endif

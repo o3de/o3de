@@ -1,0 +1,121 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_Skin
+#endif
+
+#if MATERIAL_USES_VERTEX_DETAIL_UV
+#include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
+#endif
+
+VsOutput EvaluateVertexGeometry_Skin(
+    const MaterialParameters params,
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0_tiled,
+    float2 uv1_unwrapped,
+    float4 optionalBlendMask,
+    VsSystemValues SV)
+{
+    VsOutput output;
+
+#if MATERIAL_USES_VERTEX_POSITION
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
+    output.worldPosition = worldPosition.xyz;
+
+#if MATERIAL_USES_VERTEX_POSITIONWS
+    float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+    output.position = mul(viewProjectionMatrix, worldPosition);
+#endif // MATERIAL_USES_VERTEX_POSITIONWS
+
+#endif // MATERIAL_USES_VERTEX_POSITION
+
+#if MATERIAL_USES_VERTEX_UV  
+    // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
+    // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
+    // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
+    // could consider adding the main layer UV transform back in.
+    // Note, even though the "unwrapped" stream is considered the main stream from a material perspective (it is the default), we
+    // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
+    // use the "tiled" stream, and need better quality tangents because of the high frequency.
+    output.uvs[0] = uv0_tiled;
+    // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
+    output.uvs[1] = uv1_unwrapped;
+    
+    
+#endif
+
+#if MATERIAL_USES_VERTEX_DETAIL_UV    
+    // Detail UVs
+    // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
+    // either UV0 or UV1, in either case we apply the transform.
+    output.detailUvs[0] = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
+    output.detailUvs[0] = mul(params.m_detailUvMatrix, float3(output.detailUvs[0], 1.0)).xy;
+    output.detailUvs[1] = output.detailUvs[0];
+
+#endif // MATERIAL_USES_VERTEX_DETAIL_UV
+
+#if MATERIAL_USES_VERTEX_BLENDMASK
+    if(o_blendMask_isBound)
+    {
+        output.blendFactors = optionalBlendMask;
+    }
+    else
+    {
+        output.blendFactors = float4(0,0,0,0);
+    }
+#endif // MATERIAL_USES_VERTEX_BLENDMASK
+
+#if MATERIAL_USES_VERTEX_NORMAL
+    output.normal = normal;
+#endif // MATERIAL_USES_VERTEX_NORMAL
+
+#if MATERIAL_USES_VERTEX_TANGENT
+    output.tangent = tangent;
+#endif // MATERIAL_USES_VERTEX_TANGENT
+    
+    return output;
+}
+
+// Added this version to make it compatible with the number of arguments in BasePBR.
+// Avoids compilation errors for compute shaders, listed in a materialpipeline,
+// that call EvaluateVertexGeometry().
+VsOutput EvaluateVertexGeometry_Skin(
+    const MaterialParameters params,
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0_tiled,
+    float2 uv1_unwrapped,
+    uint instanceId)
+{
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    return EvaluateVertexGeometry_Skin(params, position, normal, tangent, uv0_tiled, uv1_unwrapped, float4(0, 0, 0, 0), SV);
+}
+
+VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+{
+    return EvaluateVertexGeometry_Skin(
+        params,
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.uv0,
+        IN.uv1,
+        IN.m_optional_blendMask,
+        SV);
+}

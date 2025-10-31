@@ -11,16 +11,15 @@
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
 
+static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
+
 //Used for normal map sampling
 #define AZ_TRAIT_ASTC_COMPRESSION 1
 
-static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
+//In Vulkan not all texture formats can be sampled using linear filtering. This causes validation errors on Android, so we downgrade to 
+//point sample for certain formats that are not supported on Android and switch from linear to point filtering for depth related 
+//textures (since linear filtering for non linear textures is not correct).
+#define AZ_TRAIT_DOWNGRADE_LINEAR_SAMPLE 1
 
-// Uniform limitation need to be taken into consideration for mobile devices. This would help alleviate device lost errors if the constant buffer
-// size overshoots the device's memory constraints. An example is a large number of constant buffers associated with mesh instances that would result in device lost,
-// but otherwise OK on PC. We can separate out the number of instances for the different platforms with this define.
-// [ATOM-14949]
-#define AZ_TRAIT_CONSTANT_BUFFER_LIMITATIONS 1
+#include <Atom/RPI/Platform/Android/AzslcPlatformHeader.azsli>
 
-// Different constant buffer alignment on platforms
-#define AZ_TRAIT_CONSTANT_BUFFER_ALIGNMENT      16

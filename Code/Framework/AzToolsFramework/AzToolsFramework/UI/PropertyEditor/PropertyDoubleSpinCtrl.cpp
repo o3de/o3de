@@ -46,6 +46,9 @@ namespace AzToolsFramework
 
         connect(m_pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChildSpinboxValueChange(double)));
         connect(m_pSpinBox, &QDoubleSpinBox::editingFinished, this, &PropertyDoubleSpinCtrl::editingFinished);
+
+        m_defaultDecimals = m_pSpinBox->decimals();
+        m_defaultDisplayDecimals = m_pSpinBox->displayDecimals();
     }
 
     QWidget* PropertyDoubleSpinCtrl::GetFirstInTabOrder()
@@ -88,6 +91,7 @@ namespace AzToolsFramework
         //the value didn't change, so don't send a notify
         if (!AZ::ClampIfCloseMag(value, oldValue) && notifyLater)
         {
+            // Send a change notification for value being clamped to min/max
             float newValue = static_cast<float>(m_pSpinBox->value());
             // queue an invocation of value changed next tick after everything is good.)
             QTimer::singleShot(0, this, [this, newValue]() { Q_EMIT valueChanged(newValue); });
@@ -178,6 +182,16 @@ namespace AzToolsFramework
         return m_multiplier;
     }
 
+    int PropertyDoubleSpinCtrl::GetDefaultDecimals() const
+    {
+        return m_defaultDecimals;
+    }
+
+    int PropertyDoubleSpinCtrl::GetDefaultDisplayDecimals() const
+    {
+        return m_defaultDisplayDecimals;
+    }
+
     void PropertyDoubleSpinCtrl::onChildSpinboxValueChange(double newValue)
     {
         newValue = AZ::ClampIfCloseMag(newValue, double(round(newValue)));
@@ -232,7 +246,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Multiplier", 0xa49aa95b))
+        else if (attrib == AZ_CRC_CE("Multiplier"))
         {
             if (attrValue->Read<double>(value))
             {
@@ -258,7 +272,7 @@ namespace AzToolsFramework
             }
             return;
         }
-        else if (attrib == AZ_CRC("Prefix", 0x93b1868e))
+        else if (attrib == AZ_CRC_CE("Prefix"))
         {
             AZStd::string result;
             if (attrValue->Read<AZStd::string>(result))
@@ -301,12 +315,32 @@ namespace AzToolsFramework
         }
     }
 
+    void doublePropertySpinboxHandler::ResetGUIToDefaultsCommon(PropertyDoubleSpinCtrl* GUI)
+    {
+        GUI->setStep(1);
+        GUI->setMultiplier(1);
+        GUI->setSuffix("");
+        GUI->setPrefix("");
+        GUI->setDecimals(GUI->GetDefaultDecimals());
+        GUI->setDisplayDecimals(GUI->GetDefaultDisplayDecimals());
+    }
+
+    bool doublePropertySpinboxHandler::GetDefaultDecimals(PropertyDoubleSpinCtrl* GUI)
+    {
+        return GUI->GetDefaultDecimals();
+    }
+
+    bool doublePropertySpinboxHandler::GetDefaultDisplayDecimals(PropertyDoubleSpinCtrl* GUI)
+    {
+        return GUI->GetDefaultDisplayDecimals();
+    }
+
     QWidget* doublePropertySpinboxHandler::CreateGUI(QWidget* pParent)
     {
         PropertyDoubleSpinCtrl* newCtrl = aznew PropertyDoubleSpinCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSpinCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
@@ -326,7 +360,7 @@ namespace AzToolsFramework
         PropertyDoubleSpinCtrl* newCtrl = aznew PropertyDoubleSpinCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSpinCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
@@ -339,6 +373,22 @@ namespace AzToolsFramework
         newCtrl->setMaximum(std::numeric_limits<float>::max());
 
         return newCtrl;
+    }
+
+    bool doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    {
+        GUI->setMinimum(AZStd::numeric_limits<double>::lowest());
+        GUI->setMaximum(AZStd::numeric_limits<double>::max());
+        ResetGUIToDefaultsCommon(GUI);
+        return true;
+    }
+
+    bool floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    {
+        GUI->setMinimum(AZStd::numeric_limits<float>::lowest());
+        GUI->setMaximum(AZStd::numeric_limits<float>::max());
+        doublePropertySpinboxHandler::ResetGUIToDefaultsCommon(GUI);
+        return true;
     }
 
     void doublePropertySpinboxHandler::ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
@@ -463,8 +513,10 @@ namespace AzToolsFramework
 
     void RegisterDoubleSpinBoxHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew doublePropertySpinboxHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew floatPropertySpinboxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew doublePropertySpinboxHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew floatPropertySpinboxHandler());
     }
 
 }

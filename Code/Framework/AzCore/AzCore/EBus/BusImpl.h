@@ -10,8 +10,7 @@
  * @file
  * Header file for internal EBus classes.
  * For more information about EBuses, see AZ::EBus and AZ::EBusTraits in this guide and
- * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
- * in the *Open 3D Engine Developer Guide*.
+ * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/messaging/ebus/).
  */
 
 #pragma once
@@ -190,12 +189,35 @@ namespace AZ
             static constexpr bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
 
             /**
+             * The following Lock Guard classes are exposed so that it's possible to override them with custom lock/unlock functionality
+             * when using custom types for the EBus MutexType.
+             */
+
+            /**
             * Template Lock Guard class that wraps around the Mutex
             * The EBus uses for Dispatching Events.
             * This is not the EBus Context Mutex if LocklessDispatch is true
             */
             template <typename DispatchMutex>
             using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex, Traits::LocklessDispatch>;
+
+            /**
+             * Template Lock Guard class that protects connection / disconnection. 
+             */
+            template<typename ContextMutex>
+            using ConnectLockGuard = typename Traits::template ConnectLockGuard<ContextMutex>;
+
+            /**
+             * Template Lock Guard class that protects bind calls. 
+             */
+            template<typename ContextMutex>
+            using BindLockGuard = typename Traits::template BindLockGuard<ContextMutex>;
+
+            /**
+             * Template Lock Guard class that protects callstack tracking.
+             */
+            template<typename ContextMutex>
+            using CallstackTrackerLockGuard = typename Traits::template CallstackTrackerLockGuard<ContextMutex>;
         };
 
         /**
@@ -609,13 +631,28 @@ namespace AZ
             , public EBusBroadcastEnumerator<Bus, Traits>
             , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
+            using EBusBroadcastEnumerator<Bus, Traits>::FindFirstHandler;
+
+            static typename Traits::InterfaceType* FindFirstHandler(const NullBusId&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
+
+            static typename Traits::InterfaceType* FindFirstHandler(const typename Traits::BusPtr&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
         };
 
         template <class Bus, class Traits>
         inline void EBusEventer<Bus, Traits>::Bind(BusPtr& ptr, const BusIdType& id)
         {
             auto& context = Bus::GetOrCreateContext();
-            AZStd::scoped_lock<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
+            typename Traits::template BindLockGuard<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
             context.m_buses.Bind(ptr, id);
         }
 

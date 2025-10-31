@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class SlopeFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlopeFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlopeFilterNode, AZ::SystemAllocator);
         AZ_RTTI(SlopeFilterNode, "{00DF204E-6915-488C-801F-E9E72568C8FF}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         SlopeFilterNode() = default;
         explicit SlopeFilterNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
     };
 }

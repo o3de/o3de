@@ -173,9 +173,29 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Map> CreatePartialDefaultInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass(188, 188.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(242, 242.0), aznew SimpleClass()));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(342, 342.0), aznew SimpleClass(388, 388.0)));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            size_t i = 0;
+            for (auto& entry : *instance)
+            {
+                if (i == 0)
+                {
+                    *entry.first = {};
+                    *entry.second = {188, 188.0};
+                }
+                else if (i == 1)
+                {
+                    *entry.first = {242, 242.0};
+                    *entry.second = {};
+                }
+                else if (i == 2)
+                {
+                    *entry.first = {342, 342.0};
+                    *entry.second = {388, 388.0};
+                }
+                ++i;
+            }
             return instance;
         }
 
@@ -212,9 +232,29 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Map> CreateFullySetInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(142, 142.0), aznew SimpleClass(188, 188.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(242, 242.0), aznew SimpleClass(288, 288.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(342, 342.0), aznew SimpleClass(388, 388.0)));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            size_t i = 0;
+            for (auto& entry : *instance)
+            {
+                if (i == 0)
+                {
+                    *entry.first = {142, 142.0};
+                    *entry.second = {188, 188.0};
+                }
+                else if (i == 1)
+                {
+                    *entry.first = {242, 242.0};
+                    *entry.second = {288, 288.0};
+                }
+                else if (i == 2)
+                {
+                    *entry.first = {342, 342.0};
+                    *entry.second = {388, 388.0};
+                }
+                ++i;
+            }
             return instance;
         }
 
@@ -296,7 +336,7 @@ namespace JsonSerializationTests
         MapPointerTestDescription<AZStd::unordered_map, AZ::JsonUnorderedMapSerializer, false>,
         MapPointerTestDescription<AZStd::unordered_multimap, AZ::JsonUnorderedMultiMapSerializer, true>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonMapSerializer, JsonSerializerConformityTests, MapSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonMapSerializer, JsonSerializerConformityTests, MapSerializerConformityTestTypes));
 
 
     struct TestString
@@ -315,7 +355,7 @@ namespace JsonSerializationTests
     {
     public:
         AZ_RTTI(TestStringSerializer, "{05012877-0A5C-4514-8AC2-695E753C77A2}", BaseJsonSerializer);
-        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result Load(void* outputValue, const AZ::Uuid&, const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context) override
@@ -475,7 +515,7 @@ namespace JsonSerializationTests
         EXPECT_STRCASEEQ("value_42", worldKey->second.m_value.c_str());
     }
 
-    TEST_F(JsonMapSerializerTests, Load_DuplicateKey_EntryIgnored)
+    TEST_F(JsonMapSerializerTests, Load_DuplicateKey_EntryUpdated)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -489,12 +529,12 @@ namespace JsonSerializationTests
         StringMap values;
         ResultCode result = m_unorderedMapSerializer.Load(&values, azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
 
-        EXPECT_EQ(Processing::PartialAlter, result.GetProcessing());
-        EXPECT_EQ(Outcomes::Unavailable, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         auto entry = values.find("Hello");
         ASSERT_NE(values.end(), entry);
-        EXPECT_STRCASEEQ("World", entry->second.c_str());
+        EXPECT_EQ("Other", entry->second);
     }
 
     TEST_F(JsonMapSerializerTests, Load_DuplicateMultiKey_LoadEverything)
@@ -536,8 +576,8 @@ namespace JsonSerializationTests
         ResultCode result = m_unorderedMapSerializer.Load(&values,
             azrtti_typeid(&values), *m_jsonDocument, *m_jsonDeserializationContext);
 
-        EXPECT_EQ(Processing::Altered, result.GetProcessing());
-        EXPECT_EQ(Outcomes::Unavailable, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         auto entry = values.find("Hello");
         ASSERT_NE(values.end(), entry);

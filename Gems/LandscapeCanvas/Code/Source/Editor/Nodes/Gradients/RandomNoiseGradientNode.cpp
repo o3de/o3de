@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString RandomNoiseGradientNode::TITLE = QObject::tr("Random Noise");
+    const char* RandomNoiseGradientNode::TITLE = "Random Noise";
 
     RandomNoiseGradientNode::RandomNoiseGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)

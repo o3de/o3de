@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_AABBFunctions_ToSphere",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Sphere",
+                "category": "Math/AABB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_AABBFunctions_ToSphere",
+                    "details": {
+                        "name": "To Sphere",
+                        "tooltip": "Returns the center and radius of smallest sphere that contains Source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Center"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Radius"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

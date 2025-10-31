@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionEvent, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionEvent, MotionEventAllocator)
 
     MotionEvent::MotionEvent()
         : Event()

@@ -13,7 +13,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NamedPropertyStringValue, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NamedPropertyStringValue, EMStudio::UIAllocator)
 
     NamedPropertyStringValue::NamedPropertyStringValue(const AZStd::string& name, const AZStd::string& value)
         : m_name(name)

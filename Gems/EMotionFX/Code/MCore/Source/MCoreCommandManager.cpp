@@ -7,6 +7,9 @@
  */
 
 #include "MCoreCommandManager.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "LogManager.h"
 #include "CommandManagerCallback.h"
 #include "StringConversions.h"
@@ -547,7 +550,12 @@ namespace MCore
                     }
 
                     tmpStr = commandString.substr(lastResultIndex, rightPercentagePos - lastResultIndex + 1);
-                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), intermediateCommandResults[i - relativeIndex].c_str());
+                    AZStd::string replaceStr = intermediateCommandResults[i - relativeIndex];
+                    if (replaceStr.empty())
+                    {
+                        replaceStr = "-1";
+                    }
+                    AzFramework::StringFunc::Replace(commandString, tmpStr.c_str(), replaceStr.c_str());
                     replaceHappen = true;
 
                     // Search again in case the command group is referring to other results
@@ -962,7 +970,7 @@ namespace MCore
         }
 
         // add the command to the hash table
-        m_registeredCommands.insert(AZStd::make_pair<AZStd::string, Command*>(command->GetNameString(), command));
+        m_registeredCommands.insert(AZStd::make_pair(command->GetNameString(), command));
 
         // we're going to insert the command in a sorted way now
         bool found = false;
@@ -1016,6 +1024,8 @@ namespace MCore
         bool handleErrors,
         bool autoDeleteCommand)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope;  // make sure '%f' uses the "C" Locale.
+
 #ifdef MCORE_COMMANDMANAGER_PERFORMANCE
         Timer commandTimer;
 #endif

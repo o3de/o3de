@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SMAABlendingWeightCalculationPass, "{989CD6FD-41E4-4F2A-99D0-40A4BA74FE95}", SMAABasePass);
-            AZ_CLASS_ALLOCATOR(SMAABlendingWeightCalculationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SMAABlendingWeightCalculationPass, SystemAllocator);
             virtual ~SMAABlendingWeightCalculationPass() = default;
 
             //! Creates a SMAABlendingWeightCalculationPass

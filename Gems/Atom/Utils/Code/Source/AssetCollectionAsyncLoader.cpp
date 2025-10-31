@@ -12,6 +12,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/algorithm.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
+
 namespace AZ
 {
     //! This is the Job class that runs until all assetPaths become valid AssetIds.
@@ -21,7 +23,7 @@ namespace AZ
     class AssetDiscoveryJob : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetDiscoveryJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AssetDiscoveryJob, ThreadPoolAllocator);
 
         //! @queryWaitMilliseconds How long to wait between each attempt to query for assets that are not yet present in the asset database.
         AssetDiscoveryJob(AssetCollectionAsyncLoader& assetCollectionLoadManager,
@@ -119,6 +121,10 @@ namespace AZ
             const auto& assetPath = assetToLoadInfo.m_assetPath;
             AZ_Warning(AssetCollectionAsyncLoaderName, !m_assetsToLoad.count(assetPath), "Asset with path %s was already scheduled for loading", assetPath.c_str());
             m_assetsToLoad.insert(assetPath);
+            // we can try to escalate the asset so that it moves to the top of the AP's queue.
+            // This is an effictive no-op in shipped builds, and in profile and debug its a non-blocking fire and forget call
+            // that just places an outgoing message in the queue to send, and returns immediately with low overhead.
+            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystemRequestBus::Events::EscalateAssetBySearchTerm, assetToLoadInfo.m_assetPath);
         }
 
         // Prepare to create a cancellable job.
@@ -170,6 +176,7 @@ namespace AZ
         m_assetsToNotify.clear();
         m_assetIdStrToAssetPath.clear();
         m_readyAssets.clear();
+        m_notReadyAssets.clear();
     }
 
     void AssetCollectionAsyncLoader::PostNotifyReadyAssetsCB(Data::Asset<Data::AssetData> asset, bool success)
@@ -187,6 +194,7 @@ namespace AZ
 
             AZ_Assert(m_assetsToLoad.count(assetPath), "Asset with path %s, hint %s was not scheduled to load\n", assetPath.c_str(), asset.GetHint().c_str());
 
+            m_notReadyAssets.erase(assetPath);
             m_assetsToLoad.erase(assetPath);
             m_readyAssets[assetPath] = asset;
             m_assetsToNotify[assetPath] = success;
@@ -213,17 +221,18 @@ namespace AZ
 
     void AssetCollectionAsyncLoader::OnAssetIsValid(AZStd::string_view assetPath, const Data::AssetId& assetId, const Data::AssetType& assetType)
     {
+        // Kick off asset loading.
+        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
+
         const auto assetIdStr = assetId.ToString<AZStd::string>();
 
         {
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
             m_assetIdStrToAssetPath[assetIdStr] = assetPath;
+            m_notReadyAssets[assetPath] = asset;
         }
 
         Data::AssetBus::MultiHandler::BusConnect(assetId);
-        // Kick off asset loading.
-        auto asset = Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.BlockUntilLoadComplete();
     }
 
     ///////////////////////////////////////////////////////////////////////

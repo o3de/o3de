@@ -34,7 +34,6 @@ namespace EMotionFX
 
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-        mainLayout->setMargin(0);
         mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->addWidget(m_propertyEditor);
         setLayout(mainLayout);
@@ -59,10 +58,31 @@ namespace EMotionFX
         m_object = nullptr;
     }
 
+    void ObjectEditor::SetFilterString(QString filterString)
+    {
+        m_propertyEditor->SetFilterString(AZStd::string{filterString.toLatin1().data()});
+        InvalidateAll();
+    }
+
+    bool ObjectEditor::HasDisplayedNodes() const
+    {
+        return !m_propertyEditor->HasFilteredOutNodes() || m_propertyEditor->HasVisibleNodes();
+    }
+
 
     void ObjectEditor::InvalidateAll()
     {
-        m_propertyEditor->InvalidateAll();
+        // If we Invalidate without giving the Search string, filtering Colliders will not work
+        // properly (nothing will be filtered out, instead only highlighted)
+        // If we pass an empty filterString, the Motion Id Picker will not be shown
+        if (m_propertyEditor->GetFilterString().size() > 0)
+        {
+            m_propertyEditor->InvalidateAll(m_propertyEditor->GetFilterString().c_str());
+        }
+        else
+        {
+            m_propertyEditor->InvalidateAll();
+        }
     }
 
 

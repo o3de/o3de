@@ -82,7 +82,11 @@ namespace UnitTest
         return viewportInteractionRequests.ViewportWorldToScreen(worldResult);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ViewportInteractionImplFixture, DISABLED_ViewportInteractionRequestsMapsFromScreenToWorldAndBack)
+#else
     TEST_F(ViewportInteractionImplFixture, ViewportInteractionRequestsMapsFromScreenToWorldAndBack)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         using AzFramework::ScreenPoint;
 
@@ -167,7 +171,8 @@ namespace UnitTest
         const auto ray = m_viewportInteractionImpl->ViewportScreenToWorldRay(ScreenPoint(832, 226));
 
         float unused;
-        auto intersection = AZ::Intersect::IntersectRaySphere(ray.origin, ray.direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
+        auto intersection =
+            AZ::Intersect::IntersectRaySphere(ray.m_origin, ray.m_direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
 
         EXPECT_EQ(intersection, AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_ISECT);
     }

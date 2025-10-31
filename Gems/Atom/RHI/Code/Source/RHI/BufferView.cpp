@@ -9,72 +9,59 @@
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Buffer.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Given a device index, return the corresponding DeviceBufferView for the selected device
+    const RHI::Ptr<RHI::DeviceBufferView> BufferView::GetDeviceBufferView(int deviceIndex) const
     {
-        ResultCode BufferView::Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor)
-        {
-            if (!ValidateForInit(buffer, viewDescriptor))
+        return ResourceView::GetDeviceResourceView<DeviceBufferView>(deviceIndex, m_descriptor);
+    }
+
+    AZStd::unordered_map<int, uint32_t> BufferView::GetBindlessReadIndex() const
+    {
+        AZStd::unordered_map<int, uint32_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            GetResource()->GetDeviceMask(),
+            [this, &result](int deviceIndex)
             {
-                return ResultCode::InvalidOperation;
-            }
-            if (Validation::IsEnabled())
+                result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex();
+                return true;
+            });
+
+        return result;
+    }
+    
+    bool BufferView::GetBindlessIndices(int deviceIndex, uint32_t* outReadIndex, uint32_t* outReadWriteIndex) const
+    {
+        const auto& deviceBufferView = GetDeviceBufferView(deviceIndex);
+        if (!deviceBufferView)
+        {
+            return false;
+        }
+        if (outReadIndex != nullptr)
+        {
+            *outReadIndex = deviceBufferView->GetBindlessReadIndex();
+        }
+        if (outReadWriteIndex != nullptr)
+        {
+            *outReadWriteIndex = deviceBufferView->GetBindlessReadWriteIndex();
+        }
+        return true;
+    }
+
+    AZStd::unordered_map<int, uint64_t> BufferView::GetDeviceAddress() const
+    {
+        AZStd::unordered_map<int, uint64_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            GetResource()->GetDeviceMask(),
+            [this, &result](int deviceIndex)
             {
-                // Check buffer view does not reach outside buffer's memory
-                if (buffer.GetDescriptor().m_byteCount < (viewDescriptor.m_elementOffset + viewDescriptor.m_elementCount) * viewDescriptor.m_elementSize)
-                {
-                    AZ_Warning("BufferView", false, "Buffer view out of boundaries of buffer's memory.");
-                    return ResultCode::OutOfMemory;
-                }
-            }
+                result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetDeviceAddress();
+                return true;
+            });
 
-            m_descriptor = viewDescriptor;
-            return ResourceView::Init(buffer);
-        }
-
-        bool BufferView::ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const
-        {
-            if (Validation::IsEnabled())
-            {
-                if (IsInitialized())
-                {
-                    AZ_Warning("BufferView", false, "Buffer view already initialized");
-                    return false;
-                }
-
-                if (!buffer.IsInitialized())
-                {
-                    AZ_Warning("BufferView", false, "Attempting to create view from uninitialized buffer '%s'.", buffer.GetName().GetCStr());
-                    return false;
-                }
-
-                if (!CheckBitsAll(buffer.GetDescriptor().m_bindFlags, viewDescriptor.m_overrideBindFlags))
-                {
-                    AZ_Warning("BufferView", false, "Buffer view has bind flags that are incompatible with the underlying buffer.");
-            
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        const BufferViewDescriptor& BufferView::GetDescriptor() const
-        {
-            return m_descriptor;
-        }
-
-        const Buffer& BufferView::GetBuffer() const
-        {
-            return static_cast<const Buffer&>(GetResource());
-        }
-
-        bool BufferView::IsFullView() const
-        {
-            const BufferDescriptor& bufferDescriptor = GetBuffer().GetDescriptor();
-            const uint32_t bufferViewSize = m_descriptor.m_elementCount * m_descriptor.m_elementSize;
-            return m_descriptor.m_elementOffset == 0 && bufferViewSize >= bufferDescriptor.m_byteCount;
-        }
+        return result;
     }
 }

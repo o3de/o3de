@@ -14,7 +14,6 @@
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Transform.h>
 #include <MCore/Source/Compare.h>
-#include <MCore/Source/Matrix4.h>
 #include <Tests/Printers.h>
 #include <AzCore/std/string/string.h>
 
@@ -57,22 +56,25 @@ inline bool IsCloseMatcherP<AZ::Quaternion>::gmock_Impl<const AZ::Quaternion&>::
         return true;
     }
 
-    AZ::Vector3 gotAxis;
-    AZ::Vector3 expectedAxis;
-    float gotAngle;
-    float expectedAngle;
+    // its possible for the stream to be NULL if the result listener "is not interested" in explanation.
+    if ((result_listener) && (result_listener->IsInterested()))
+    {
+        AZ::Vector3 gotAxis;
+        AZ::Vector3 expectedAxis;
+        float gotAngle;
+        float expectedAngle;
 
-    // convert to an axis and angle representation
-    expected.ConvertToAxisAngle(expectedAxis, expectedAngle);
-    compareQuat.ConvertToAxisAngle(gotAxis, gotAngle);
+        // convert to an axis and angle representation
+        expected.ConvertToAxisAngle(expectedAxis, expectedAngle);
+        compareQuat.ConvertToAxisAngle(gotAxis, gotAngle);
 
-    *result_listener << "\n     Got Axis: ";
-    PrintTo(gotAxis, result_listener->stream());
-    *result_listener << ", Got Angle: " << gotAngle << "\n";
-    *result_listener << "Expected Axis: ";
-    PrintTo(expectedAxis, result_listener->stream());
-    *result_listener << ", Expected Angle: " << expectedAngle;
-
+        *result_listener << "\n     Got Axis: ";
+        PrintTo(gotAxis, result_listener->stream());
+        *result_listener << ", Got Angle: " << gotAngle << "\n";
+        *result_listener << "Expected Axis: ";
+        PrintTo(expectedAxis, result_listener->stream());
+        *result_listener << ", Expected Angle: " << expectedAngle;
+    }
     return false;
 }
 
@@ -88,28 +90,4 @@ inline bool IsCloseMatcherP<EMotionFX::Transform>::gmock_Impl<const EMotionFX::T
     return ::testing::ExplainMatchResult(IsClose(expected.m_position), arg.m_position, result_listener)
         && ::testing::ExplainMatchResult(IsClose(expected.m_rotation), arg.m_rotation, result_listener);
 #endif
-}
-
-template<>
-template<>
-inline bool IsCloseMatcherP<MCore::Matrix>::gmock_Impl<const MCore::Matrix&>::MatchAndExplain(const MCore::Matrix& arg, ::testing::MatchResultListener* result_listener) const
-{
-    using ::testing::FloatEq;
-    using ::testing::ExplainMatchResult;
-    return ExplainMatchResult(FloatEq(expected.m_m16[0]), arg.m_m16[0], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[1]), arg.m_m16[1], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[2]), arg.m_m16[2], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[3]), arg.m_m16[3], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[4]), arg.m_m16[4], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[5]), arg.m_m16[5], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[6]), arg.m_m16[6], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[7]), arg.m_m16[7], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[8]), arg.m_m16[8], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[9]), arg.m_m16[9], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[10]), arg.m_m16[10], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[11]), arg.m_m16[11], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[12]), arg.m_m16[12], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[13]), arg.m_m16[13], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[14]), arg.m_m16[14], result_listener)
-        && ExplainMatchResult(FloatEq(expected.m_m16[15]), arg.m_m16[15], result_listener);
 }

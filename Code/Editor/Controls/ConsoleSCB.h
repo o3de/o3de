@@ -14,6 +14,8 @@
 #if !defined(Q_MOC_RUN)
 
 #include "Settings.h"
+#include "IConsole.h"
+#include "IEditor.h"
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 #include <QLineEdit>
@@ -45,7 +47,6 @@ struct ConsoleLine
 };
 typedef std::deque<ConsoleLine> Lines;
 
-
 class ConsoleLineEdit
     : public QLineEdit
 {
@@ -68,23 +69,6 @@ private:
     QStringList m_history;
     unsigned int m_historyIndex;
     bool m_bReusedHistory;
-};
-
-class ConsoleTextEdit
-    : public QPlainTextEdit
-{
-    Q_OBJECT
-public:
-    explicit ConsoleTextEdit(QWidget* parent = nullptr);
-    virtual bool event(QEvent* theEvent) override;
-
-signals:
-    void searchBarRequested();
-
-private:
-    void showContextMenu(const QPoint& pt);
-
-    QScopedPointer<QMenu> m_contextMenu;
 };
 
 class ConsoleVariableItemDelegate
@@ -154,6 +138,7 @@ private:
     ConsoleVariableModel* m_model;
     ConsoleVariableItemDelegate* m_itemDelegate;
     CVarBlock* m_varBlock;
+    static AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
 };
 
 class CConsoleSCB
@@ -186,9 +171,12 @@ private Q_SLOTS:
     void toggleConsoleSearch();
     void findPrevious();
     void findNext();
+    void toggleClearOnPlay();
 
 private:
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+    void SetupOptionsMenu();
+    void UpdateOptionsMenu();
 
     QScopedPointer<Ui::Console> ui;
 
@@ -200,6 +188,9 @@ private:
 
     class SearchHighlighter;
     SearchHighlighter* m_highlighter;
+
+    QMenu* m_optionsMenu;
+    QAction* m_clearOnPlayAction;
 };
 
 #endif // CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H

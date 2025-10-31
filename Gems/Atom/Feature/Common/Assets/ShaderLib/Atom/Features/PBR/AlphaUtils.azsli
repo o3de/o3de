@@ -10,8 +10,11 @@
 
 option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
 
-void CheckClipping(float alpha, float opacityFactor)
+void CheckClipping(real alpha, real opacityFactor)
 {
+#ifdef CS_SAMPLERS
+    // In compute shaders the clip() intrinsic is not allowed.
+#else
     switch(o_opacity_mode)
     {
         case OpacityMode::Cutout:
@@ -29,4 +32,5 @@ void CheckClipping(float alpha, float opacityFactor)
         default:
             break;
     }
+#endif //ifdef CS_SAMPLERS
 }

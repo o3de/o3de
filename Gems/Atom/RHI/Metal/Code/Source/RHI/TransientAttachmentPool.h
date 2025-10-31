@@ -10,7 +10,7 @@
 #include <Atom/RHI/Scope.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <RHI/AliasedHeap.h>
 
@@ -21,11 +21,11 @@ namespace AZ
         using AliasedAttachmentAllocator = RHI::AliasedAttachmentAllocator<AliasedHeap>;
     
         class TransientAttachmentPool
-            : public RHI::TransientAttachmentPool
+            : public RHI::DeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::DeviceTransientAttachmentPool;
         public:
-            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
             AZ_RTTI(TransientAttachmentPool, "{7E958929-A44F-4C5F-946D-61C283968C29}", Base);
 
             static RHI::Ptr<TransientAttachmentPool> Create();
@@ -34,12 +34,12 @@ namespace AZ
             TransientAttachmentPool() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::TransientAttachmentPool
+            // RHI::DeviceTransientAttachmentPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags flags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
-            RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
-            RHI::Buffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+            RHI::DeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+            RHI::DeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
             void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
             void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
             void ShutdownInternal() override;

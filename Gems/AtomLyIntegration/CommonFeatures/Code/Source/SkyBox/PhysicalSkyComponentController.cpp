@@ -49,18 +49,18 @@ namespace AZ
 
         void PhysicalSkyComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            provided.push_back(AZ_CRC_CE("SkyBoxService"));
         }
 
         void PhysicalSkyComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            incompatible.push_back(AZ_CRC_CE("SkyBoxService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void PhysicalSkyComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         PhysicalSkyComponentController::PhysicalSkyComponentController(const PhysicalSkyComponentConfig& config)

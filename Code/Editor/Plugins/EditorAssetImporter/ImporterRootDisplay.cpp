@@ -9,42 +9,119 @@
 #include <ImporterRootDisplay.h>
 #include <ui_ImporterRootDisplay.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <IEditor.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzQtComponents/Components/Widgets/Text.h>
 
-ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QDir>
+#include <QDockWidget>
+#include <QFileInfo>
+#include <QUrl>
+
+
+SceneSettingsRootDisplayScriptRequestHandler::SceneSettingsRootDisplayScriptRequestHandler()
+{
+    SceneSettingsRootDisplayScriptRequestBus::Handler::BusConnect();
+}
+
+SceneSettingsRootDisplayScriptRequestHandler::~SceneSettingsRootDisplayScriptRequestHandler()
+{
+    SceneSettingsRootDisplayScriptRequestBus::Handler::BusDisconnect();
+}
+
+void SceneSettingsRootDisplayScriptRequestHandler::Reflect(AZ::ReflectContext* context)
+{
+    if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serialize->Class<SceneSettingsRootDisplayScriptRequestHandler>()->Version(0);
+    }
+
+    if (AZ::BehaviorContext* behavior = azrtti_cast<AZ::BehaviorContext*>(context))
+    {
+        behavior->EBus<SceneSettingsRootDisplayScriptRequestBus>("SceneSettingsRootDisplayScriptRequestBus")
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+            ->Attribute(AZ::Script::Attributes::Module, "qt")
+            ->Event("HasUnsavedChanges", &SceneSettingsRootDisplayScriptRequestBus::Events::HasUnsavedChanges);
+    }
+}
+
+void SceneSettingsRootDisplayScriptRequestHandler::SetRootDisplay(ImporterRootDisplayWidget* importerRootDisplay)
+{
+    m_importerRootDisplay = importerRootDisplay;
+}
+
+bool SceneSettingsRootDisplayScriptRequestHandler::HasUnsavedChanges() const
+{
+    if (m_importerRootDisplay)
+    {
+        return m_importerRootDisplay->HasUnsavedChanges();
+    }
+    return false;
+}
+
+ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ImporterRootDisplay())
     , m_manifestWidget(new AZ::SceneAPI::UI::ManifestWidget(serializeContext))
     , m_hasUnsavedChanges(false)
+    , m_filePath("")
 {
     ui->setupUi(this);
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
-    ui->m_updateButton->setEnabled(false);
-    ui->m_updateButton->setProperty("class", "Primary");
+    ui->m_timeStamp->setVisible(false);
+    ui->m_timeStampTitle->setVisible(false);
 
-    connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
+    AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
+    m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayScriptRequestHandler>();
+    m_requestHandler->SetRootDisplay(this);
 
-    BusConnect();
+    connect(
+        this,
+        &ImporterRootDisplayWidget::AppendUnsavedChangesToTitle,
+        m_manifestWidget.data(),
+        &AZ::SceneAPI::UI::ManifestWidget::AppendUnsavedChangesToTitle);
+
+    connect(ui->m_closeButton, &QPushButton::clicked, this, [this]{ ui->m_pythonBuilderLayout->hide(); });
 }
 
-ImporterRootDisplay::~ImporterRootDisplay()
+ImporterRootDisplayWidget::~ImporterRootDisplayWidget()
 {
-    BusDisconnect();
+    AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusDisconnect();
     delete ui;
 }
 
-AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
+AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplayWidget::GetManifestWidget()
 {
     return m_manifestWidget.data();
 }
 
-void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
+void ImporterRootDisplayWidget::SetSceneHeaderText(const QString& headerText)
+{
+    QFileInfo fileInfo(headerText);
+    m_filePath = fileInfo.fileName();
+}
+
+void ImporterRootDisplayWidget::SetPythonBuilderText(QString pythonBuilderText)
+{
+    ui->m_pythonBuilder->setText(QString("<b>Assigned Python Builder Script:</b> %1").arg(pythonBuilderText));
+    ui->m_pythonBuilderLayout->setVisible(!pythonBuilderText.isEmpty());
+}
+
+QString ImporterRootDisplayWidget::GetHeaderFileName() const
+{
+    return m_filePath;
+}
+
+void ImporterRootDisplayWidget::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);
     if (!scene)
@@ -53,44 +130,79 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
         return;
     }
 
-    ui->m_filePathText->setText(headerText);
-
+    SetSceneHeaderText(headerText);
     HandleSceneWasReset(scene);
-
-    ui->m_updateButton->setEnabled(false);
-    m_hasUnsavedChanges = false;
+    SetUnsavedChanges(false);
 }
 
-void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
+void ImporterRootDisplayWidget::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);
     // Don't accept updates while the widget is being filled in.
     BusDisconnect();
     m_manifestWidget->BuildFromScene(scene);
     BusConnect();
+
+    // Resetting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
+    SetUnsavedChanges(true);
 }
 
-void ImporterRootDisplay::HandleSaveWasSuccessful()
+void ImporterRootDisplayWidget::HandleSaveWasSuccessful()
 {
-    ui->m_updateButton->setEnabled(false);
-    m_hasUnsavedChanges = false;
+    SetUnsavedChanges(false);
 }
 
-bool ImporterRootDisplay::HasUnsavedChanges() const
+bool ImporterRootDisplayWidget::HasUnsavedChanges() const
 {
     return m_hasUnsavedChanges;
 }
 
-void ImporterRootDisplay::ObjectUpdated(const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject* /*target*/, void* /*sender*/)
+void ImporterRootDisplayWidget::ObjectUpdated(
+    const AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::DataTypes::IManifestObject* /*target*/, void* /*sender*/)
 {
     if (m_manifestWidget)
     {
         if (&scene == m_manifestWidget->GetScene().get())
         {
-            m_hasUnsavedChanges = true;
-            ui->m_updateButton->setEnabled(true);
+            SetUnsavedChanges(true);
         }
     }
 }
 
+void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath, bool enableInspector)
+{
+    const QFileInfo info(manifestFilePath);
+    if (info.exists())
+    {
+        const QDateTime lastModifiedTime(info.lastModified());
+        QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
+        ui->m_timeStampTitle->setVisible(true);
+        ui->m_timeStamp->setVisible(true);
+        ui->m_timeStamp->setText(lastModifiedDisplay);
+    }
+    else
+    {
+        // If the scene manifest doesn't yet exist, then don't show a timestamp.
+        // Don't mark this as dirty, because standard dirty workflows (popup "Would you like to save changes?" on closing, for example)
+        // shouldn't be applied to unsaved, unmodified scene settings.
+        ui->m_timeStampTitle->setVisible(false);
+        ui->m_timeStamp->setVisible(false);
+    }
+    m_manifestWidget->SetInspectButtonVisibility(enableInspector);
+}
+
+void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
+{
+    bool refreshTitle = false;
+    if (hasUnsavedChanges != m_hasUnsavedChanges)
+    {
+        refreshTitle = true;
+    }
+    m_hasUnsavedChanges = hasUnsavedChanges;
+
+    if (refreshTitle)
+    {
+       emit AppendUnsavedChangesToTitle(m_hasUnsavedChanges);
+    }
+}
 #include <moc_ImporterRootDisplay.cpp>

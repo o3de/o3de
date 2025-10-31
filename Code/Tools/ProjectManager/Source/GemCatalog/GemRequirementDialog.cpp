@@ -27,16 +27,15 @@ namespace O3DE::ProjectManager
         setAttribute(Qt::WA_DeleteOnClose);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
         vLayout->setContentsMargins(25, 10, 25, 10);
         vLayout->setSizeConstraint(QLayout::SetFixedSize);
         setLayout(vLayout);
 
         QHBoxLayout* instructionLayout = new QHBoxLayout();
-        instructionLayout->setMargin(0);
+        instructionLayout->setContentsMargins(0, 0, 0, 0);
 
         QLabel* instructionIconLabel = new QLabel();
-        instructionIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
+        instructionIconLabel->setPixmap(QIcon(":/Info.svg").pixmap(32, 32));
         instructionLayout->addWidget(instructionIconLabel);
 
         instructionLayout->addSpacing(10);
@@ -64,6 +63,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::AcceptRole);
+        continueButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(continueButton, &QPushButton::clicked, this, &QDialog::accept);

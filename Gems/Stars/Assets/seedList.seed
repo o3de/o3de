@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{A2640D6F-A59B-579A-A433-13844CA44859}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/stars/stars.azshader"
+        }
+    ]
+}
+

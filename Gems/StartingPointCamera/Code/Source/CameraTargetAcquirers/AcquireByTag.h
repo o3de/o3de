@@ -30,7 +30,7 @@ namespace Camera
     public:
         ~AcquireByTag() override = default;
         AZ_RTTI(AcquireByTag, "{E76621A5-E5A8-41B0-AC1D-EC87553181F5}", ICameraTargetAcquirer)
-        AZ_CLASS_ALLOCATOR(AcquireByTag, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AcquireByTag, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

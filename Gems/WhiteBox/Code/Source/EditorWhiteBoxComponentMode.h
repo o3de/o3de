@@ -20,6 +20,7 @@ namespace WhiteBox
 {
     class DefaultMode;
     class EdgeRestoreMode;
+    class TransformMode;
 
     //! The type of edge selection the component mode is in (either normal selection of
     //! 'user' edges or selection of all edges ('mesh') in restoration mode).
@@ -39,17 +40,32 @@ namespace WhiteBox
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorWhiteBoxComponentMode, "{F05B83A8-6F3A-43C6-A742-11BAB2D8A7C1}", EditorBaseComponentMode)
+
+        constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
+        constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
+        constexpr static const char* const WhiteboxModeClusterManipulatorTooltip = "Switch to Manipulator mode";
 
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
         EditorWhiteBoxComponentMode& operator=(EditorWhiteBoxComponentMode&&) = delete;
         ~EditorWhiteBoxComponentMode() override;
 
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActionContextModes();
+        static void RegisterActionUpdaters();
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
+
         // EditorBaseComponentMode ...
         void Refresh() override;
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
+        AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
         // EditorWhiteBoxComponentModeRequestBus ...
         void MarkWhiteBoxIntersectionDataDirty() override;
@@ -76,6 +92,8 @@ namespace WhiteBox
         void EnterDefaultMode();
         //! Enter the sub-mode for edge restore.
         void EnterEdgeRestoreMode();
+        //! Enter the sub-mode for transforming
+        void EnterTransformMode();
 
         //! Create the Viewport UI cluster for sub mode selection.
         void CreateSubModeSelectionCluster();
@@ -83,25 +101,42 @@ namespace WhiteBox
         void RemoveSubModeSelectionCluster();
 
         //! The current set of 'sub' modes the white box component mode can be in.
-        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>> m_modes;
+        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>> m_modes;
 
         //! The most up to date intersection and render data for the white box (edge and polygon bounds).
         AZStd::optional<IntersectionAndRenderData> m_intersectionAndRenderData;
-        AZ::Transform m_worldFromLocal; //!< The world transform of the entity this ComponentMode is on.
-        KeyboardModifierQueryFn
-            m_keyboardMofifierQueryFn; //! The function to use for querying modifier keys (while drawing).
+        //! The world transform of the entity this ComponentMode is on.
+        AZ::Transform m_worldFromLocal;
+        //! The function to use for querying modifier keys (while drawing).
+        KeyboardModifierQueryFn m_keyboardModifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
 
         AzToolsFramework::ViewportUi::ClusterId
-            m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
+            m_transformClusterId; 
         AzToolsFramework::ViewportUi::ButtonId
-            m_defaultModeButtonId; //!< Id of the Viewport UI button for default mode.
+            m_transformTranslateButtonId; 
         AzToolsFramework::ViewportUi::ButtonId
-            m_edgeRestoreModeButtonId; //!< Id of the Viewport UI button for edge restore mode.
+            m_transformRotateButtonId; 
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformScaleButtonId; 
+
+        //! Viewport UI cluster for changing sub mode.
+        AzToolsFramework::ViewportUi::ClusterId
+            m_modeSelectionClusterId;
+        //! Id of the Viewport UI button for default mode.
+        AzToolsFramework::ViewportUi::ButtonId
+            m_defaultModeButtonId;
+        //! Id of the Viewport UI button for edge restore mode.
+        AzToolsFramework::ViewportUi::ButtonId
+            m_edgeRestoreModeButtonId;
+        //! Id of the Viewport UI button for transform mode.
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformModeButtonId;
+        //! Event handler for sub mode changes.
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
-            m_modeSelectionHandler; //!< Event handler for sub mode changes.
+            m_modeSelectionHandler;
     };
 
     inline SubMode EditorWhiteBoxComponentMode::GetCurrentSubMode() const

@@ -9,10 +9,12 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/intrusive_refcount.h>
+#include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO::ZipDir
 {
@@ -23,28 +25,31 @@ namespace AZ::IO::ZipDir
         FileEntryBase* pFileEntryBase{}; // the file entry itself
     };
 
-    struct FileDataRecord;
-    struct FileDataRecordDeleter
-    {
-        void operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>* ptr) const;
-
-        AZ::IAllocatorAllocate* m_allocator{};
-    };
-    struct FileDataRecord
+    struct AZF_API FileDataRecord
         : public FileRecord
-        , public AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>
+        , public AZStd::intrusive_base
     {
-        FileDataRecord();
+        AZ_CLASS_ALLOCATOR(FileDataRecord, AZ::SystemAllocator);
+        FileDataRecord(const FileRecord& rThat);
 
-        static auto New(const FileRecord& rThat, AZ::IAllocatorAllocate* allocator) ->AZStd::intrusive_ptr<FileDataRecord>;
+        AZ_DISABLE_COPY_MOVE(FileDataRecord);
 
-        void* GetData() {return this + 1; }
+        void* GetData() {return m_data.get(); }
+    private:
+        struct DataDeleter
+        {
+            void operator()(void* ptr) const
+            {
+                azfree(ptr);
+            }
+        };
+        AZStd::unique_ptr<AZStd::byte[], DataDeleter> m_data;
     };
 
     using FileDataRecordPtr = AZStd::intrusive_ptr<FileDataRecord>;
 
     // this is used for construction of CDR
-    class FileRecordList
+    class AZF_API FileRecordList
         : public AZStd::vector<FileRecord>
     {
     public:
@@ -95,11 +100,14 @@ namespace AZ::IO::ZipDir
     };
 
     // this is used for refreshing EOFOffsets
-    class FileEntryList
+    class AZF_API FileEntryList
         : public AZStd::set<FileEntry*, FileEntryFileOffsetOrder>
     {
     public:
         FileEntryList(FileEntryTree* pTree, uint32_t lCDROffset);
+
+        AZ_DISABLE_COPY(FileEntryList);
+
         // updates each file entry's info about the next file entry
         void RefreshEOFOffsets();
     protected:

@@ -15,7 +15,7 @@ class AssetEditorRequestsHandler
     , public AzToolsFramework::EditorEvents::Bus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(AssetEditorRequestsHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetEditorRequestsHandler, AZ::SystemAllocator);
 
     AssetEditorRequestsHandler();
     ~AssetEditorRequestsHandler() override;
@@ -23,7 +23,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // AssetEditorRequests
     //////////////////////////////////////////////////////////////////////////
-    void CreateNewAsset(const AZ::Data::AssetType& assetType) override;
+    void CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) override;
     void OpenAssetEditor(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
     void OpenAssetEditorById(const AZ::Data::AssetId assetId) override;
 

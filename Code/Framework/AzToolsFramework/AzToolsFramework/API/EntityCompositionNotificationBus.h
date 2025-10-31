@@ -7,21 +7,17 @@
  */
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     class EntityCompositionNotifications
         : public AZ::EBusTraits
     {
     public:
-
         /*!
         * Notification that the specified entities are about to have their composition changed due to user interaction in the editor
         *
@@ -49,3 +45,5 @@ namespace AzToolsFramework
     using EntityCompositionNotificationBus = AZ::EBus<EntityCompositionNotifications>;
 
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityCompositionNotifications);

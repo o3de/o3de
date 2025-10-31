@@ -22,7 +22,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<OcclusionCullingPlaneFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

@@ -9,7 +9,10 @@
 set(FILES
     PrefabBuilderTests.h
     PrefabBuilderTests.cpp
-    PrefabGroup/PrefabGroupTests.cpp
-    PrefabGroup/PrefabBehaviorTests.cpp
-    PrefabGroup/PrefabBehaviorTests.inl
+    PrefabGroup/tests/PrefabGroupTests.cpp
+    PrefabGroup/tests/PrefabBehaviorTests.cpp
+    PrefabGroup/tests/PrefabBehaviorTests.inl
+    PrefabGroup/tests/PrefabBehaviorTestMocks.h
+    PrefabGroup/tests/PrefabBehaviorTestMocks.cpp
+    PrefabGroup/tests/DefaultProceduralPrefabGroupTests.cpp
 )

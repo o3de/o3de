@@ -15,7 +15,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUuidSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUuidSerializer, SystemAllocator);
 
     JsonUuidSerializer::MessageResult::MessageResult(AZStd::string_view message, JsonSerializationResult::ResultCode result)
         : m_message(message)

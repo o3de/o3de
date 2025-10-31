@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MathRandoms_RandomPointInSquare",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Square",
+                "category": "Math/Random"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MathRandoms_RandomPointInSquare",
+                    "details": {
+                        "name": "Random Point In Square",
+                        "tooltip": "Returns a random point in a square."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Dimensions"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -26,7 +27,16 @@ namespace AzToolsFramework::Prefab
         //////////////////////////////////////////////////////////////////////////
         
         //! Triggered when the editor focus is changed to a different prefab.
-        virtual void OnPrefabFocusChanged() = 0;
+        virtual void OnPrefabFocusChanged([[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId) {}
+
+        //! Triggered when the editor focus path is changed, but the focused instance stays the same.
+        virtual void OnPrefabFocusRefreshed() {}
+
+        //! Triggered when the edit scope is changed.
+        virtual void OnPrefabEditScopeChanged() {}
+
+        //! Triggered when a prefab instance is opened/expanded.
+        virtual void OnInstanceOpened([[maybe_unused]] AZ::EntityId containerEntityId) {}
 
     protected:
         ~PrefabFocusNotifications() = default;
@@ -35,3 +45,5 @@ namespace AzToolsFramework::Prefab
     using PrefabFocusNotificationBus = AZ::EBus<PrefabFocusNotifications>;
 
 } // namespace AzToolsFramework::Prefab
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabFocusNotifications);

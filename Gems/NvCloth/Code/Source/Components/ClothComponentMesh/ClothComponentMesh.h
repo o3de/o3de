@@ -90,6 +90,9 @@ namespace NvCloth
         void MoveCloth(const AZ::Transform& worldTransform);
         void TeleportCloth(const AZ::Transform& worldTransform);
 
+        void EnableSkinning() const;
+        void DisableSkinning() const;
+
         AZ::Vector3 GetWindBusVelocity();
 
         // Entity Id of the cloth component

@@ -1,0 +1,10 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.textureMap": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png",
+        "parallax.factor": 0.02500000037252903,
+        "parallax.quality": "High",
+        "parallax.textureMap": "../../Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png"
+    }
+}

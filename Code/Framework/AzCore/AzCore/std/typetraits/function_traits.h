@@ -67,7 +67,7 @@ namespace AZStd
             using type = T;
             /// set to class type if a pointer to member function or pointer to member object is supplied
             using class_type = error_type;
-            /// set to the qualified refernce type of the class type. Suitable for use with Atd::invoke
+            /// set to the qualified reference type of the class type. Suitable for use with Atd::invoke
             using invoke_type = error_type;
             /// return type of function
             using return_type = error_type;
@@ -173,7 +173,7 @@ namespace AZStd
                 using function_type = return_type(invoke_type, Args..., ...) noexcept_qualifier; \
                 using function_object_signature = return_type(Args..., ...) noexcept_qualifier; \
                 template<template<class...> class Container> \
-                using expand_args = Container<invoke_type, Args...>; \
+                using expand_args = Container<Args...>; \
                 \
                 using class_fp_type = type; \
                 using result_type = return_type; \
@@ -235,7 +235,7 @@ namespace AZStd
             using arg_types = Internal::pack_traits_arg_sequence<invoke_type>;
             using non_invoke_arg_types = Internal::pack_traits_arg_sequence<>;
             template<template<class...> class Container>
-            using expand_args = Container<invoke_type>;
+            using expand_args = Container<>;
 
         };
 
@@ -267,7 +267,7 @@ namespace AZStd
             using get_arg_t = Internal::pack_traits_get_arg_t<index, Args...>;
             using arg_sequence = Internal::pack_traits_arg_sequence<Args...>;
         };
-        
+
     #if __cpp_noexcept_function_type
         // C++17 makes exception specifications as part of the type in paper P0012R1
         // Therefore noexcept overloads must distinguished from non-noexcept overloads
@@ -306,7 +306,7 @@ namespace AZStd
             using get_arg_t = Internal::pack_traits_get_arg_t<index, Args...>;
             using arg_sequence = Internal::pack_traits_arg_sequence<Args...>;
         };
-        
+
     #if __cpp_noexcept_function_type
         // C++17 makes exception specifications as part of the type in paper P0012R1
         // Therefore noexcept overloads must distinguished from non-noexcept overloads

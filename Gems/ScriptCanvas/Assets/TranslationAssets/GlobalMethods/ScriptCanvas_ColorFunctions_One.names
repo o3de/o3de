@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_ColorFunctions_One",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "One",
+                "category": "Math/Color"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_ColorFunctions_One",
+                    "details": {
+                        "name": "One",
+                        "tooltip": "Returns a Color with every element set to 1."
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

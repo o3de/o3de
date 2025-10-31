@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 
 #include <AzCore/base.h>
@@ -21,6 +23,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -38,6 +41,7 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -47,10 +51,11 @@ namespace AzToolsFramework
     //! Model for items in the OutlinerTreeView.
     //! Each item represents an Entity.
     //! Items are parented in the tree according to their transform hierarchy.
-    class EntityOutlinerListModel
+    class AZTF_API EntityOutlinerListModel
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
+        , private FocusModeNotificationBus::Handler
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
@@ -60,7 +65,7 @@ namespace AzToolsFramework
         Q_OBJECT;
 
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator);
 
         //! Columns of data to display about each Entity.
         enum Column
@@ -68,6 +73,7 @@ namespace AzToolsFramework
             ColumnName,                 //!< Entity name
             ColumnVisibilityToggle,     //!< Visibility Icons
             ColumnLockToggle,           //!< Lock Icons
+            ColumnSpacing,              //!< Spacing to allow for drag select
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
         };
@@ -114,6 +120,7 @@ namespace AzToolsFramework
 
         // Spacing is appropriate and matches the outliner concept work from the UI team.
         static const int s_OutlinerSpacing = 7;
+        static const int s_OutlinerSpacingForLevel = 10;
 
         static bool s_paintingName;
 
@@ -121,6 +128,9 @@ namespace AzToolsFramework
         ~EntityOutlinerListModel();
 
         void Initialize();
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         // Qt overrides.
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -155,7 +165,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();
@@ -175,10 +184,9 @@ namespace AzToolsFramework
         void InvalidateFilter();
 
     protected:
-
-        //! Editor entity context notification bus
+        // EditorEntityContextNotificationBus overrides ...
         void OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, const AZ::EntityId& newEntity) override;
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
 
@@ -189,7 +197,6 @@ namespace AzToolsFramework
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
-        AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityChangeQueue;
         bool m_entityChangeQueued;
         bool m_entityLayoutQueued;
@@ -197,6 +204,7 @@ namespace AzToolsFramework
 
         bool m_autoExpandEnabled = true;
         bool m_layoutResetQueued = false;
+        bool m_suppressNextSelectEntity = false;
 
         AZStd::string m_filterString;
         AZStd::vector<ComponentTypeValue> m_componentFilters;
@@ -232,17 +240,13 @@ namespace AzToolsFramework
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
-        // Drag/Drop of entities.
+        // Drag/Drop of entities.  Internally handled.
         bool canDropMimeDataForEntityIds(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
         bool dropMimeDataEntities(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
-        // Drag/Drop of assets from asset browser.
-        using ComponentAssetPair = AZStd::pair<AZ::TypeId, AZ::Data::AssetId>;
-        using ComponentAssetPairs = AZStd::vector<ComponentAssetPair>;
-        bool DecodeAssetMimeData(const QMimeData* data, AZStd::optional<ComponentAssetPairs*> componentAssetPairs = AZStd::nullopt,
-            AZStd::optional<AZStd::vector<AZStd::string>*> sourceFiles = AZStd::nullopt) const;
-        bool DropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
-        bool CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
+        // Drag/Drop of assets that are not internally handled
+        bool DropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+        bool CanDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
 
         QMap<int, QVariant> itemData(const QModelIndex& index) const override;
         QVariant dataForAll(const QModelIndex& index, int role) const;
@@ -267,13 +271,6 @@ namespace AzToolsFramework
         bool AreAllDescendantsSameLockState(const AZ::EntityId& entityId) const;
         bool AreAllDescendantsSameVisibleState(const AZ::EntityId& entityId) const;
 
-        enum LayerProperty
-        {
-            Locked,
-            Invisible
-        };
-        bool IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const;
-
         // These are needed until we completely disassociated selection control from the outliner state to
         // keep track of selection state before/during/after filtering and searching
         EntityIdList m_unfilteredSelectionEntityIds;
@@ -289,6 +286,7 @@ namespace AzToolsFramework
         
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox
@@ -309,11 +307,11 @@ namespace AzToolsFramework
     * OutlinerItemDelegate exists to render custom item-types.
     * Other item-types render in the default fashion.
     */
-    class EntityOutlinerItemDelegate
+    class AZTF_API EntityOutlinerItemDelegate
         : public QStyledItemDelegate
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator);
 
         EntityOutlinerItemDelegate(QWidget* parent = nullptr);
 
@@ -344,6 +342,9 @@ namespace AzToolsFramework
         // Paint the entity name using rich text
         void PaintEntityNameAsRichText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
+        // Paint the read-only icon on the entity
+        void PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
         struct CheckboxGroup
         {
             EntityOutlinerCheckBox m_default;
@@ -372,10 +373,17 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
+        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
+
+        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
+        inline static const int s_readOnlyRadius = 6;
+
+        QIcon s_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

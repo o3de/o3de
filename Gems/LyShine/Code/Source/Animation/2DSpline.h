@@ -11,7 +11,11 @@
 
 
 #include <ISplines.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace UiSpline
 {
@@ -233,7 +237,7 @@ namespace UiSpline
         virtual void interp_keys(int key1, int key2, float u, value_type& val) = 0;
         //////////////////////////////////////////////////////////////////////////
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext*) {}
 
     protected:
         AZStd::vector<key_type> m_keys;     // List of keys.
@@ -296,24 +300,18 @@ namespace UiSpline
         }
     };
 
-    template    <class T>
-    struct  SplineKey
+    template <class T>
+    struct SplineKey
     {
-        typedef T   value_type;
+        typedef T value_type;
 
-        float               time;       //!< Key time.
-        int                 flags;  //!< Key flags.
-        value_type  value;  //!< Key value.
-        value_type  ds;         //!< Incoming tangent.
-        value_type  dd;         //!< Outgoing tangent.
-        SplineKey()
-        {
-            memset(this, 0, sizeof(SplineKey));
-        }
+        float time = 0;                 //!< Key time.
+        int flags = 0;                  //!< Key flags.
+        value_type value = type_zero(); //!< Key value.
+        value_type ds = type_zero();    //!< Incoming tangent.
+        value_type dd = type_zero();    //!< Outgoing tangent.
 
-        SplineKey& operator=(const SplineKey& src) { memcpy(this, &src, sizeof(*this)); return *this; }
-
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext*) {}
     };
 
     template    <class T>
@@ -326,16 +324,7 @@ namespace UiSpline
     bool    operator > (const SplineKey<T>& k1, const SplineKey<T>& k2) { return k1.time > k2.time; };
 
     template<>
-    inline void SplineKey<Vec2>::Reflect(AZ::SerializeContext* serializeContext)
-    {
-        serializeContext->Class<SplineKey<Vec2> >()
-            ->Version(1)
-            ->Field("time", &SplineKey<Vec2>::time)
-            ->Field("flags", &SplineKey<Vec2>::flags)
-            ->Field("value", &SplineKey<Vec2>::value)
-            ->Field("ds", &SplineKey<Vec2>::ds)
-            ->Field("dd", &SplineKey<Vec2>::dd);
-    }
+    void SplineKey<Vec2>::Reflect(AZ::ReflectContext* context);
 
     /** Bezier spline key extended for tangent unify/break.
     */
@@ -354,7 +343,7 @@ namespace UiSpline
             : theta_from_dd_to_ds(gf_PI)
             , scale_from_dd_to_ds(1.0f) {}
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext*) {}
     };
 
     template <>
@@ -391,12 +380,7 @@ namespace UiSpline
     }
 
     template<>
-    inline void SplineKeyEx<Vec2>::Reflect(AZ::SerializeContext* serializeContext)
-    {
-        serializeContext->Class<SplineKeyEx<Vec2>, SplineKey<Vec2> >()
-            ->Version(1)
-            ;
-    }
+    void SplineKeyEx<Vec2>::Reflect(AZ::ReflectContext* context);
 
     //////////////////////////////////////////////////////////////////////////
     // Bezier Spline.
@@ -497,7 +481,7 @@ namespace UiSpline
             }
         }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext*) {}
 
     protected:
         virtual void interp_keys(int from, int to, float u, T& val)
@@ -532,7 +516,7 @@ namespace UiSpline
         : public spline::CBaseSplineInterpolator<Vec2, UiSpline::BezierSpline<Vec2, UiSpline::SplineKeyEx<Vec2> > >
     {
     public:
-        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator)
 
         virtual int GetNumDimensions()
         {
@@ -989,12 +973,6 @@ namespace UiSpline
             return keyIndex;
         }
 
-        inline static void Reflect(AZ::SerializeContext* serializeContext)
-        {
-            serializeContext->Class<TrackSplineInterpolator<Vec2>,
-                UiSpline::BezierSpline<Vec2, UiSpline::SplineKeyEx<Vec2> > >()
-                ->Version(1)
-                ;
-        }
+        static void Reflect(AZ::ReflectContext* context);
     };
 }; // namespace spline

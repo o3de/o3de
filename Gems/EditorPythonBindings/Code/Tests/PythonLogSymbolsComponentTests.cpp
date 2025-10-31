@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <Source/PythonSystemComponent.h>
 #include <Source/PythonReflectionComponent.h>
@@ -167,19 +167,12 @@ namespace UnitTest
             return AZStd::string::format(AZ_STRING_FORMAT, AZ_STRING_ARG(s));
         };
 
-        auto uuidHelper = [](const AZ::Uuid& uuid)
-        {
-            char buffer[AZ::Uuid::MaxStringBuffer];
-            uuid.ToString(buffer, AZ::Uuid::MaxStringBuffer, true, true);
-            return AZStd::string(buffer);
-        };
-
         for (auto& typeInfo : typesToTest)
         {
             AZStd::string_view result = pythonLogSymbolsComponent.FetchPythonTypeAndTraitsWrapper(AZStd::get<0>(typeInfo), AZStd::get<1>(typeInfo));
             EXPECT_EQ(result, AZStd::get<2>(typeInfo))
                 << "Expected '" << stringViewHelper(AZStd::get<2>(typeInfo)).c_str()
-                << "' when converting type with id " << uuidHelper(AZStd::get<0>(typeInfo)).c_str()
+                << "' when converting type with id " << AZStd::get<0>(typeInfo).ToFixedString().c_str()
                 << " but got '" << stringViewHelper(result).c_str() << "'.";
         }
     }
@@ -192,7 +185,7 @@ namespace UnitTest
         intParam.m_typeId = AZ::AzTypeInfo<AZ::s8>::Uuid(); // Uuid for a supported type
         intParam.m_traits = AZ::BehaviorParameter::TR_NONE;
 
-        AZStd::string_view result = pythonLogSymbolsComponent.FetchPythonTypeWrapper(intParam);
+        AZStd::string result = pythonLogSymbolsComponent.FetchPythonTypeWrapper(intParam);
         EXPECT_EQ(result, "int");
     }
 
@@ -204,7 +197,7 @@ namespace UnitTest
         voidParam.m_typeId = AZ::Uuid("{9B3E8886-B749-418E-A696-6D7E9EB4D691}"); // A random Uuid
         voidParam.m_traits = AZ::BehaviorParameter::TR_NONE;
         
-        AZStd::string_view result = m_pythonLogSymbolsComponent.FetchPythonTypeWrapper(voidParam);
+        AZStd::string result = m_pythonLogSymbolsComponent.FetchPythonTypeWrapper(voidParam);
         EXPECT_EQ(result, "None");
     }
 }

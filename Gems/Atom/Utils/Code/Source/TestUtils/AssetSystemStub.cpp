@@ -13,33 +13,44 @@ namespace UnitTest
 {
     void AssetSystemStub::Activate()
     {
-        m_sourceInfoMap.clear();
+        m_sourcePath_sourceInfo_map.clear();
+        m_sourceGuid_sourceInfo_map.clear();
         BusConnect();
     }
 
     void AssetSystemStub::Deactivate()
     {
-        m_sourceInfoMap.clear();
+        m_sourcePath_sourceInfo_map.clear();
+        m_sourceGuid_sourceInfo_map.clear();
         BusDisconnect();
     }
 
-    void AssetSystemStub::RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetId& assetId)
+    void AssetSystemStub::RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetId& assetId)
     {
         AZ::Data::AssetInfo assetInfo;
         assetInfo.m_assetId = assetId;
+        assetInfo.m_relativePath = sourcePath;
         RegisterSourceInfo(sourcePath, assetInfo, "");
     }
 
-    void AssetSystemStub::RegisterSourceInfo(const char* sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder)
+    void AssetSystemStub::RegisterSourceInfo(const AZStd::string& sourcePath, const AZ::Data::AssetInfo& assetInfo, const AZStd::string& watchFolder)
     {
-        SourceInfo sourceInfo{ assetInfo , watchFolder };
+        SourceInfo sourceInfo{ assetInfo, watchFolder };
 
         // Because GetSourceInfoBySourcePath should always return 0 for the sub-id, since it's about the source file not product file.
         sourceInfo.m_assetInfo.m_assetId.m_subId = 0; 
 
         AZStd::string normalizedSourcePath = sourcePath;
         AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
-        m_sourceInfoMap.emplace(normalizedSourcePath, sourceInfo);
+        m_sourcePath_sourceInfo_map.emplace(normalizedSourcePath, sourceInfo);
+        m_sourceGuid_sourceInfo_map.emplace(assetInfo.m_assetId.m_guid, sourceInfo);
+    }
+
+    void AssetSystemStub::RegisterScanFolder(const AZStd::string& scanFolderPath)
+    {
+        AZStd::string normalizedScanFolderPath = scanFolderPath;
+        AzFramework::StringFunc::Path::Normalize(normalizedScanFolderPath);
+        m_scanFolders.push_back(normalizedScanFolderPath);
     }
 
     bool AssetSystemStub::GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
@@ -47,9 +58,8 @@ namespace UnitTest
         AZStd::string normalizedSourcePath = sourcePath;
         AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
 
-        auto iter = m_sourceInfoMap.find(normalizedSourcePath);
-
-        if (iter != m_sourceInfoMap.end())
+        auto iter = m_sourcePath_sourceInfo_map.find(normalizedSourcePath);
+        if (iter != m_sourcePath_sourceInfo_map.end())
         {
             assetInfo = iter->second.m_assetInfo;
             watchFolder = iter->second.m_watchFolder;
@@ -68,6 +78,17 @@ namespace UnitTest
         [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
         [[maybe_unused]] AZStd::string& watchFolder)
     {
+        AZStd::string normalizedSourcePath = sourcePath;
+        AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
+
+        auto iter = m_sourcePath_sourceInfo_map.find(normalizedSourcePath);
+        if (iter != m_sourcePath_sourceInfo_map.end())
+        {
+            relativePath = iter->second.m_assetInfo.m_relativePath;
+            watchFolder = iter->second.m_watchFolder;
+            return true;
+        }
+
         return false;
     }
 
@@ -82,19 +103,29 @@ namespace UnitTest
         return false;
     }
 
-    bool AssetSystemStub::GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder)
+    bool AssetSystemStub::GetSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
-        return false;
+        auto iter = m_sourceGuid_sourceInfo_map.find(sourceUuid);
+        if (iter == m_sourceGuid_sourceInfo_map.end())
+        {
+            return false;
+        }
+
+        assetInfo = iter->second.m_assetInfo;
+        watchFolder = iter->second.m_watchFolder;
+        return true;
     }
 
     bool AssetSystemStub::GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders)
     {
-        return false;
+        scanFolders = m_scanFolders;
+        return true;
     }
 
     bool AssetSystemStub::GetAssetSafeFolders([[maybe_unused]] AZStd::vector<AZStd::string>& assetSafeFolders)
     {
-        return false;
+        assetSafeFolders = m_scanFolders;
+        return true;
     }
 
     bool AssetSystemStub::IsAssetPlatformEnabled(const char* /*platform*/)
@@ -110,7 +141,7 @@ namespace UnitTest
     bool AssetSystemStub::GetAssetsProducedBySourceUUID(const AZ::Uuid& sourceUuid, AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo)
     {
         productsAssetInfo.clear();
-        for (AZStd::pair<AZStd::string, SourceInfo> element : m_sourceInfoMap)
+        for (AZStd::pair<AZStd::string, SourceInfo> element : m_sourcePath_sourceInfo_map)
         {
             if (element.second.m_assetInfo.m_assetId.m_guid == sourceUuid)
             {

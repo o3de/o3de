@@ -118,7 +118,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionGlobalFullscreen.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

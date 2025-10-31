@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -19,7 +20,7 @@ namespace AzFramework
     public:
         using MutexType = AZStd::recursive_mutex;
 
-        //! Callback to allow the entity aliases in a spawnable to adjusted based on runtime requirements.
+        //! Callback to allow the entity aliases in a spawnable to be adjusted based on runtime requirements.
         //! This will be called by the Asset Manager as part of the creation of the spawnable asset from loaded file data. Any work done
         //! in this callback will be counted towards the maximum amount of time allocated to asset handlers to construct their assets,
         //! it's recommended to keep work done in this callback to a minimum and prefer delaying any complex processing.
@@ -36,3 +37,5 @@ namespace AzFramework
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::SpawnableAssetEvents);

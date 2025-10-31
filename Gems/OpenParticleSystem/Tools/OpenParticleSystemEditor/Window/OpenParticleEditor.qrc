@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>OpenParticleEditor.qss</file>
+    </qresource>
+</RCC>

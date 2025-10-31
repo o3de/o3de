@@ -19,11 +19,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorManager, ActorManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorManager, ActorManagerAllocator)
 
     // constructor
     ActorManager::ActorManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_scheduler  = nullptr;
 
@@ -431,6 +431,20 @@ namespace EMotionFX
     ActorAssetData ActorManager::GetActorAsset(size_t nr) const
     {
         return m_actorAssets[nr];
+    }
+
+
+    ActorInstance* ActorManager::GetFirstEditorActorInstance() const
+    {
+        const size_t numActorInstances = m_actorInstances.size();
+        for (size_t i = 0; i < numActorInstances; ++i)
+        {
+            if (!m_actorInstances[i]->GetIsOwnedByRuntime())
+            {
+                return m_actorInstances[i];
+            }
+        }
+        return nullptr;
     }
 
 

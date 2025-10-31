@@ -12,7 +12,7 @@
 #include <AzCore/std/sort.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
+#include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
 namespace AzFramework
 {
@@ -54,7 +54,7 @@ namespace AzFramework
         AZ::ObjectStream::FilterDescriptor filter(assetLoadFilterCB);
         if (AZ::Utils::LoadObjectFromStreamInPlace(*stream, *spawnable, nullptr /*SerializeContext*/, filter))
         {
-            ResolveEntityAliases(spawnable, asset, stream->GetStreamingDeadline(), stream->GetStreamingPriority(), assetLoadFilterCB);
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, asset.GetHint(), AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(stream->GetStreamingDeadline()), stream->GetStreamingPriority(), assetLoadFilterCB);
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
         else
@@ -91,44 +91,7 @@ namespace AzFramework
 
     uint32_t SpawnableAssetHandler::BuildSubId(AZStd::string_view id)
     {
-        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
+        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id);
         return azlossy_caster(subIdHash.GetHash());
-    }
-
-    void SpawnableAssetHandler::ResolveEntityAliases(
-        Spawnable* spawnable,
-        [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-        AZStd::chrono::milliseconds streamingDeadline,
-        AZ::IO::IStreamerTypes::Priority streamingPriority,
-        const AZ::Data::AssetFilterCB& assetLoadFilterCB)
-    {
-        Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-        AZ_Assert(aliases.IsValid(), "Newly created Spawnable '%s' was already locked.", asset.GetHint().c_str());
-        if (aliases.HasAliases())
-        {
-            AZ_Assert(
-                AZStd::is_sorted(
-                    aliases.begin(), aliases.end(),
-                    [](const Spawnable::EntityAlias& lhs, const Spawnable::EntityAlias& rhs)
-                    {
-                        return lhs.HasLowerIndex(rhs);
-                    }),
-                "Spawnable '%s' has an unsorted entity alias list.", asset.GetHint().c_str());
-
-            SpawnableAssetEventsBus::Broadcast(
-                &SpawnableAssetEvents::OnResolveAliases, aliases, spawnable->GetMetaData(), spawnable->GetEntities());
-
-            // The aliases will only be optimized if OnResolveAliases has made any changes.
-            aliases.Optimize();
-            aliases.ListSpawnablesRequiringLoad(
-                [&assetLoadFilterCB, streamingDeadline, streamingPriority](AZ::Data::Asset<Spawnable>& assetPendingLoad)
-                {
-                    AZ::Data::AssetLoadParameters loadInfo;
-                    loadInfo.m_assetLoadFilterCB = assetLoadFilterCB;
-                    loadInfo.m_deadline = streamingDeadline;
-                    loadInfo.m_priority = streamingPriority;
-                    assetPendingLoad.QueueLoad(loadInfo);
-                });
-        }
     }
 } // namespace AzFramework

@@ -6,10 +6,10 @@
  *
  */
 
-
+#include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <MorphTargets/MorphTargetComputePass.h>
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
-#include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
 
@@ -35,11 +35,6 @@ namespace AZ
             return m_shader;
         }
 
-        void MorphTargetComputePass::SetFeatureProcessor(SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor)
-        {
-            m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
-        }
-
         void MorphTargetComputePass::BuildInternal()
         {
             // The same buffer that skinning writes to is used to manage the computed vertex deltas that are passed from the
@@ -47,16 +42,36 @@ namespace AZ
             AttachBufferToSlot(Name{ "MorphTargetDeltaOutput" }, SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer());
         }
 
+        void MorphTargetComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        {
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
+            {
+                featureProcessor->SetupMorphTargetScope(frameGraph, Pass::GetDeviceIndex());
+            }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
+        }
+
         void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            if (m_skinnedMeshFeatureProcessor)
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
             {
-                RHI::CommandList* commandList = context.GetCommandList();
+                SetSrgsForDispatch(context);
 
-                SetSrgsForDispatch(commandList);
-
-                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList);
+                featureProcessor->SubmitMorphTargetDispatchItems(
+                    context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
+        }
+
+        SkinnedMeshFeatureProcessor* MorphTargetComputePass::GetSkinnedMeshFeatureProcessor()
+        {
+            AZ::RPI::Scene* scene{ GetScene() };
+            if (!scene)
+            {
+                return nullptr;
+            }
+            auto result = scene->GetFeatureProcessor<SkinnedMeshFeatureProcessor>();
+            return result;
         }
     }   // namespace Render
 }   // namespace AZ

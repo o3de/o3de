@@ -8,15 +8,16 @@
 
 
 // Description : Classes for 2D Bezier Spline curves
-// Notice      : some extra helpfull information
+// Notice      : some extra helpful information
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_2DSPLINE_H
-#define CRYINCLUDE_CRYMOVIE_2DSPLINE_H
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <ISplines.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace spline
 {
@@ -31,15 +32,26 @@ namespace spline
         float theta_from_dd_to_ds;
         float scale_from_dd_to_ds;
 
-        void ComputeThetaAndScale() { assert(0); }
-        void SetOutTangentFromIn() { assert(0); }
-        void SetInTangentFromOut() { assert(0); }
+        void ComputeThetaAndScale()
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetOutTangentFromIn()
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
+
+        void SetInTangentFromOut()
+        {
+            AZ_Assert(false, "Not expected to be used");
+        }
 
         SplineKeyEx()
             : theta_from_dd_to_ds(gf_PI)
             , scale_from_dd_to_ds(1.0f) {}
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext*) {}
     };
 
     inline void ComputeUnifiedTangent(Vec2& destTan, float angle, float length)
@@ -81,7 +93,7 @@ namespace spline
     inline void SplineKeyEx<Vec2>::SetOutTangentFromIn()
     {
         // "Unifying" tangents really means we try to maintain the angle between them
-        assert((flags & SPLINE_KEY_TANGENT_ALL_MASK) == SPLINE_KEY_TANGENT_UNIFIED);
+        AZ_Assert((flags & SPLINE_KEY_TANGENT_ALL_MASK) == SPLINE_KEY_TANGENT_UNIFIED, "Invalid spline key flag");
         float outLength = (ds.GetLength() + 1.0f) / scale_from_dd_to_ds - 1.0f;
         float in = fabs(ds.x) > g_tanEpsilon ? atan_tpl(ds.y / ds.x) : (ds.y >= .0f ? gf_halfPI : -gf_halfPI);
         float outAngle = in + gf_PI - theta_from_dd_to_ds;
@@ -93,7 +105,7 @@ namespace spline
     inline void SplineKeyEx<Vec2>::SetInTangentFromOut()
     {
         // "Unifying" tangents really means we try to maintain the angle between them
-        assert((flags & SPLINE_KEY_TANGENT_ALL_MASK) == SPLINE_KEY_TANGENT_UNIFIED);
+        AZ_Assert((flags & SPLINE_KEY_TANGENT_ALL_MASK) == SPLINE_KEY_TANGENT_UNIFIED, "Invalid spline key flag");
         float inLength = scale_from_dd_to_ds * (dd.GetLength() + 1.0f) - 1.0f;
         float out = fabs(dd.x) > g_tanEpsilon ? atan_tpl(dd.y / dd.x) : (dd.y >= .0f ? gf_halfPI : -gf_halfPI);
         float inAngle = out + theta_from_dd_to_ds - gf_PI;
@@ -102,28 +114,24 @@ namespace spline
     }
 
     template<>
-    inline void SplineKeyEx<Vec2>::Reflect(AZ::SerializeContext* serializeContext)
-    {
-        serializeContext->Class<SplineKeyEx<Vec2>, SplineKey<Vec2> >()
-            ->Version(1);
-    }
+    void SplineKeyEx<Vec2>::Reflect(AZ::ReflectContext* context);
 
     template <class T>
     class TrackSplineInterpolator;
 
     template <>
     class TrackSplineInterpolator<Vec2>
-        : public spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >
+        : public spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2>>>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator);
 
-        virtual int GetNumDimensions()
+        int GetNumDimensions() override
         {
             // It's actually one-dimensional since the x component curve is for a time-warping.
             return 1;
         }
-        virtual void SerializeSpline([[maybe_unused]] XmlNodeRef& node, [[maybe_unused]] bool bLoading) {};
+        void SerializeSpline([[maybe_unused]] XmlNodeRef& node, [[maybe_unused]] bool bLoading) override {}
     private:
         // An utility function for the Newton-Raphson method
         float comp_time_deriv(int from, int to, float u) const
@@ -255,7 +263,7 @@ namespace spline
                 else
                 {
                     // Apply the Newton's method to compute the next time value to try.
-                    assert(next != curr);
+                    AZ_Assert(next != curr, "Next time to try equal current");
                     float dt = comp_time_deriv(curr, next, u);
                     double dfdt = (double(value[0]) - double(time)) / (double(dt) + epsilon);
                     u -= float(dfdt);
@@ -300,7 +308,7 @@ namespace spline
         }
     public:
         // We should override following 4 methods to make it act like an 1D curve although it's actually a 2D curve.
-        virtual void  SetKeyTime(int key, float time)
+        void SetKeyTime(int key, float time) override
         {
             ISplineInterpolator::ValueType value;
             ISplineInterpolator::ZeroValue(value);
@@ -309,7 +317,8 @@ namespace spline
             spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >::SetKeyValue(key, value);
             spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >::SetKeyTime(key, time);
         }
-        virtual void  SetKeyValue(int key, ISplineInterpolator::ValueType value)
+
+        void SetKeyValue(int key, ISplineInterpolator::ValueType value) override
         {
             ISplineInterpolator::ValueType value0;
             ISplineInterpolator::ZeroValue(value0);
@@ -317,7 +326,8 @@ namespace spline
             value0[1] = value[0];
             spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >::SetKeyValue(key, value0);
         }
-        virtual bool  GetKeyValue(int key, ISplineInterpolator::ValueType& value)
+
+        bool GetKeyValue(int key, ISplineInterpolator::ValueType& value) override
         {
             if (spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >::GetKeyValue(key, value))
             {
@@ -327,7 +337,8 @@ namespace spline
             }
             return false;
         }
-        virtual void Interpolate(float time, ISplineInterpolator::ValueType& value)
+
+        void Interpolate(float time, ISplineInterpolator::ValueType& value) override
         {
             if (empty())
             {
@@ -339,6 +350,7 @@ namespace spline
             value[0] = value[1];
             value[1] = 0;
         }
+
         float Integrate(float time)
         {
             if (empty())
@@ -369,7 +381,8 @@ namespace spline
             }
             return area;
         }
-        virtual void SetKeyFlags(int k, int flags)
+
+        void SetKeyFlags(int k, int flags) override
         {
             if (k >= 0 && k < this->num_keys())
             {
@@ -381,7 +394,8 @@ namespace spline
             }
             spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >::SetKeyFlags(k, flags);
         }
-        virtual void SetKeyInTangent(int k, ISplineInterpolator::ValueType tin)
+
+        void SetKeyInTangent(int k, ISplineInterpolator::ValueType tin) override
         {
             if (k >= 0 && k < this->num_keys())
             {
@@ -394,7 +408,8 @@ namespace spline
                 this->SetModified(true);
             }
         }
-        virtual void SetKeyOutTangent(int k, ISplineInterpolator::ValueType tout)
+
+        void SetKeyOutTangent(int k, ISplineInterpolator::ValueType tout) override
         {
             if (k >= 0 && k < this->num_keys())
             {
@@ -418,6 +433,7 @@ namespace spline
                 this->key(k).dd *= (this->time(k + 1) - this->time(k)) / this->key(k).dd.x;
             }
         }
+
         void ConstrainInTangentsOf(int k)
         {
             if (k > 0
@@ -427,7 +443,7 @@ namespace spline
             }
         }
 
-        virtual void comp_deriv()
+        void comp_deriv() override
         {
             spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> >::comp_deriv();
 
@@ -510,7 +526,7 @@ namespace spline
             }
         }
 
-        virtual int InsertKey(float t, ISplineInterpolator::ValueType val)
+        int InsertKey(float t, ISplineInterpolator::ValueType val) override
         {
             Vec2 tangent;
             float u = 0;
@@ -563,7 +579,7 @@ namespace spline
                 }
                 else
                 {
-                    assert(0);
+                    AZ_Assert(false, "Invalid keyIndex %i", keyIndex);
                 }
             }
             // Sets the unified tangent handles to the default.
@@ -582,12 +598,7 @@ namespace spline
             return keyIndex;
         }
 
-        inline static void Reflect(AZ::SerializeContext* serializeContext)
-        {
-            serializeContext->Class<TrackSplineInterpolator<Vec2>,spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >()
-                ->Version(1);
-        }
+        static void Reflect(AZ::ReflectContext* context);
     };
-}; // namespace spline
 
-#endif // CRYINCLUDE_CRYMOVIE_2DSPLINE_H
+} // namespace spline

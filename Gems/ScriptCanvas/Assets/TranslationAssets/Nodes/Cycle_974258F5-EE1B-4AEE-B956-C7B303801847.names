@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "base": "{974258F5-EE1B-4AEE-B956-C7B303801847}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Cycle",
+                "category": "Logic"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out 0_0",
+                    "details": {
+                        "name": "Out 0",
+                        "tooltip": "Output 0"
+                    }
+                }
+            ]
+        }
+    ]
+}

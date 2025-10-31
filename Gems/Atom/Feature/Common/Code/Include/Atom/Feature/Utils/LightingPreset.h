@@ -16,6 +16,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
@@ -30,7 +31,7 @@ namespace AZ
         class ExposureControlSettingsInterface;
 
         //! ExposureControlConfig describes exposure settings that can be added to a LightingPreset
-        struct ExposureControlConfig final
+        struct ATOM_FEATURE_COMMON_API ExposureControlConfig final
         {
             AZ_TYPE_INFO(AZ::Render::ExposureControlConfig, "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}");
             static void Reflect(AZ::ReflectContext* context);
@@ -52,7 +53,7 @@ namespace AZ
         };
 
         //! LightConfig describes a directional light that can be added to a LightingPreset
-        struct LightConfig final
+        struct ATOM_FEATURE_COMMON_API LightConfig final
         {
             AZ_TYPE_INFO(AZ::Render::LightConfig, "{02644F52-9483-47A8-9028-37671695C34E}");
             static void Reflect(AZ::ReflectContext* context);
@@ -69,13 +70,13 @@ namespace AZ
         };
 
         //! LightingPreset describes a lighting environment that can be applied to the viewport
-        struct LightingPreset final
+        struct ATOM_FEATURE_COMMON_API LightingPreset final
         {
             AZ_TYPE_INFO(AZ::Render::LightingPreset, "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}");
-            AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZStd::string m_displayName;
+            static constexpr char const Extension[] = "lightingpreset.azasset";
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;
@@ -95,9 +96,7 @@ namespace AZ
                 DirectionalLightFeatureProcessorInterface* directionalLightFeatureProcessor,
                 const Camera::Configuration& cameraConfig,
                 AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
-                Data::Instance<AZ::RPI::Material> shadowCatcherMaterial = nullptr,
-                RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex = RPI::MaterialPropertyIndex(),
-                bool enableAlternateSkybox = false) const;
+                bool enableAlternateSkybox) const;
         };
 
         using LightingPresetPtr = AZStd::shared_ptr<LightingPreset>;

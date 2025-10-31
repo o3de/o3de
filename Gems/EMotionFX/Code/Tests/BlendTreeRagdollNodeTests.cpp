@@ -61,7 +61,6 @@ namespace EMotionFX
             m_animGraphInstance = m_blendTreeAnimGraph->GetAnimGraphInstance(m_actorInstance, m_motionSet);
         }
 
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTreeRagdollNode* m_ragdollNode = nullptr;
     };
 
@@ -76,7 +75,7 @@ namespace EMotionFX
             << "Activation expected in case const float value is not zero.";
     }
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeRagdollNode_ConstFloatActivateInputTest,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeRagdollNode_ConstFloatActivateInputTest,
         BlendTreeRagdollNode_ConstFloatActivateInputTest,
         ::testing::ValuesIn({ -1.0f, 0.0f, 0.1f, 1.0f }));
 
@@ -208,7 +207,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(RagdollRootNodeIsSimulatedTests,
+    INSTANTIATE_TEST_SUITE_P(RagdollRootNodeIsSimulatedTests,
         RagdollRootNodeFixture,
         ::testing::ValuesIn(ragdollRootNodeIsSimulatedTestValues));
 } // namespace EMotionFX

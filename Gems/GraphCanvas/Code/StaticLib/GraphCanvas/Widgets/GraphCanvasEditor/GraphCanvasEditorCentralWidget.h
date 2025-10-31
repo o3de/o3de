@@ -79,7 +79,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorCentralDockWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorCentralDockWindow, AZ::SystemAllocator);
 
         AssetEditorCentralDockWindow(const EditorId& editorId, const char* saveIdentifier);
         ~AssetEditorCentralDockWindow();

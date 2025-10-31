@@ -17,6 +17,7 @@
 #include <SceneAPI/SceneBuilder/SceneImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpBitangentStreamImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpCustomPropertyImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h>
 #include <SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h>
@@ -62,6 +63,7 @@ namespace AZ
                     g_componentDescriptors.push_back(AssImpBoneImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpAnimationImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpBlendShapeImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(AssImpCustomPropertyImporter::CreateDescriptor());
 
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
@@ -99,9 +101,8 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
@@ -114,7 +115,6 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context)
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
     AZ::SceneAPI::SceneBuilder::Uninitialize();
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

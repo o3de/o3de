@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 
 
 namespace EMotionFX
@@ -30,7 +30,7 @@ namespace EMotionFX
      * deformers which are executed in the specified order.
      */
     class EMFX_API MeshDeformer
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
 
@@ -48,8 +48,9 @@ namespace EMotionFX
          * @param actor The actor that will use the deformer.
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
+         * @param highestJointIndex The pre-calculated highest index of all the joint id's in m_mesh
          */
-        virtual void Reinitialize(Actor* actor, Node* node, size_t lodLevel);
+        virtual void Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex);
 
         /**
          * Creates an exact clone (copy) of this deformer, and returns a pointer to it.

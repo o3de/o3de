@@ -16,12 +16,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphTarget, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphTarget, DeformerAllocator)
 
 
     // the constructor
     MorphTarget::MorphTarget(const char* name)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_rangeMin       = 0.0f;
         m_rangeMax       = 1.0f;

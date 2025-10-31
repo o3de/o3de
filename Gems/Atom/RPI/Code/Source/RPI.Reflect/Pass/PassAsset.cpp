@@ -16,10 +16,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* PassAsset::DisplayName = "Pass";
-        const char* PassAsset::Group = "RenderingPipeline";
-        const char* PassAsset::Extension = "pass";
-
         void PassAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

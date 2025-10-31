@@ -1,0 +1,32 @@
+{
+    "O3DE": {
+        "AssetProcessor": {
+            "Settings": {
+                "Server": {
+                    "cacheServerAddress": "",
+                    "assetCacheServerMode": "inactive",
+                    "ACS Atom Image Builder": {
+                        "name": "Atom Image Builder",
+                        "glob": "*.tiff",
+                        "checkServer": true
+                    },
+                    "ACS Precompiled Shader Builder": {
+                        "name": "Precompiled Shader Builder",
+                        "glob": "*.precompiledshader",
+                        "checkServer": true
+                    },
+                    "ACS Scene Builder": {
+                        "name": "Scene Builder",
+                        "glob": "*.fbx",
+                        "checkServer": true
+                    },
+                    "ACS Shader Asset Builder": {
+                        "name": "Shader Asset Builder",
+                        "glob": "*.shader",
+                        "checkServer": true
+                    }
+                }
+            }
+        }
+    }
+}

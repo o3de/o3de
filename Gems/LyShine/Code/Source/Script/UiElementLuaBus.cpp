@@ -26,7 +26,7 @@ bool UiElementLuaProxy::IsEnabled()
         "UiElementLuaProxy:IsEnabled is deprecated. Please use UiElementBus:IsEnabled instead\n");
 
     bool isEnabled = false;
-    EBUS_EVENT_ID_RESULT(isEnabled, m_targetEntity, UiElementBus, IsEnabled);
+    UiElementBus::EventResult(isEnabled, m_targetEntity, &UiElementBus::Events::IsEnabled);
     return isEnabled;
 }
 
@@ -35,7 +35,7 @@ void UiElementLuaProxy::SetIsEnabled(bool isEnabled)
     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING,
         "UiElementLuaProxy:SetIsEnabled is deprecated. Please use UiElementBus:SetIsEnabled instead\n");
 
-    EBUS_EVENT_ID(m_targetEntity, UiElementBus, SetIsEnabled, isEnabled);
+    UiElementBus::Event(m_targetEntity, &UiElementBus::Events::SetIsEnabled, isEnabled);
 }
 
 void UiElementLuaProxy::BusConnect(AZ::EntityId entityId)
@@ -44,7 +44,7 @@ void UiElementLuaProxy::BusConnect(AZ::EntityId entityId)
         "UiElementLuaProxy:BusConnect is deprecated. Please use the UiElement bus directly instead\n");
 
     AZ::Entity* elementEntity = nullptr;
-    EBUS_EVENT_RESULT(elementEntity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(elementEntity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
     if (elementEntity)
     {

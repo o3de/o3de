@@ -12,7 +12,7 @@
 #include "ViewportCameraSelectorWindow_Internals.h"
 
 class CameraEditorUITests
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 };
 

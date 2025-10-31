@@ -8,8 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt: off
 class Tests():
-    level_created   = ("Successfully created temporary level", "Failed to create temporary level")
-    entity_created  = ("Successfully created test entity",     "Failed to create test entity")
     enter_game_mode = ("Successfully entered game mode",       "Failed to enter game mode")
     lines_found     = ("Successfully found expected message",  "Failed to find expected message")
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
@@ -28,68 +26,55 @@ def ScriptEvents_Default_SendReceiveSuccessfully():
     Test Steps:
      1) Create test level
      2) Create test entity
-     3) Start Tracer
-     4) Enter Game Mode
-     5) Read for line
-     6) Exit Game Mode
+     3) Enter Game Mode
+     4) Read for line
+     5) Exit Game Mode
 
     Note:
-     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
     :return: None
     """
     import os
-    from editor_entity_utils import EditorEntity as Entity
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
-
-    import azlmbr.legacy.general as general
-    import azlmbr.asset as asset
+    from editor_python_test_tools.utils import Report, Tracer
+    from editor_python_test_tools.utils import TestHelper as TestHelper
+    import azlmbr.paths as paths
     import azlmbr.math as math
-    import azlmbr.bus as bus
+    import azlmbr.legacy.general as general
+    import scripting_utils.scripting_tools as scripting_tools
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent
+    from scripting_utils.scripting_constants import (WAIT_TIME_3)
 
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
+    ENTITY_NAME = "TestEntity"
     EXPECTED_LINES = ["T92567320: Message Received"]
-    SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92567320.scriptcanvas")
+    SC_ASSET_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "T92567320.scriptcanvas")
 
-    def create_editor_entity(name, sc_asset):
-        entity = Entity.create_editor_entity(name)
-        sc_comp = entity.add_component("Script Canvas")
-        asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", sc_asset, math.Uuid(), False)
-        sc_comp.set_component_property_value("Script Canvas Asset|Script Canvas Asset", asset_id)
-        Report.critical_result(Tests.entity_created, entity.id.isValid())
-
-    def locate_expected_lines(line_list: list):
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-
-        return all(line in found_lines for line in line_list)
+    # Preconditions
+    general.idle_enable(True)
 
     # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+    TestHelper.open_level("", "Base")
 
     # 2) Create test entity
-    create_editor_entity("TestEntity", SC_ASSET_PATH)
+    position = math.Vector3(512.0, 512.0, 32.0)
+    editor_entity = EditorEntity.create_editor_entity_at(position, ENTITY_NAME)
+    scriptcanvas_component = ScriptCanvasComponent(editor_entity)
+    scriptcanvas_component.set_component_graph_file_from_path(SC_ASSET_PATH)
 
-    # 3) Start Tracer
     with Tracer() as section_tracer:
 
-        # 4) Enter Game Mode
-        helper.enter_game_mode(Tests.enter_game_mode)
+        # 3) Enter Game Mode
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
 
-        # 5) Read for line
-        lines_located = helper.wait_for_condition(lambda: locate_expected_lines(EXPECTED_LINES), WAIT_TIME)
+        # 4) Read for line
+        lines_located = TestHelper.wait_for_condition(
+            lambda: scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES), WAIT_TIME_3)
         Report.result(Tests.lines_found, lines_located)
 
-    # 6) Exit Game Mode
-    helper.exit_game_mode(Tests.exit_game_mode)
+    # 5) Exit Game Mode
+    TestHelper.exit_game_mode(Tests.exit_game_mode)
 
 
 if __name__ == "__main__":

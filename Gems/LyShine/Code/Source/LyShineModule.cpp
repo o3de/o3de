@@ -46,6 +46,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiSpawnerComponent.h"
+#include "UiHierarchyInteractivityToggleComponent.h"
 
 #include "World/UiCanvasAssetRefComponent.h"
 #include "World/UiCanvasProxyRefComponent.h"
@@ -54,6 +55,8 @@
 #if defined(LYSHINE_BUILDER)
 #include "Pipeline/LyShineBuilder/LyShineBuilderComponent.h"
 #endif // LYSHINE_BUILDER
+
+#include <CryCommon/LoadScreenBus.h>
 
 namespace LyShine
 {
@@ -102,6 +105,7 @@ namespace LyShine
                 UiRadioButtonComponent::CreateDescriptor(),
                 UiRadioButtonGroupComponent::CreateDescriptor(),
                 UiParticleEmitterComponent::CreateDescriptor(),
+                UiHierarchyInteractivityToggleComponent::CreateDescriptor(),
     #if defined(LYSHINE_BUILDER)
                 // Builder
                 LyShineBuilder::LyShineBuilderComponent::CreateDescriptor(),
@@ -132,7 +136,8 @@ namespace LyShine
     }
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), LyShine::LyShineModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_LyShine, LyShine::LyShineModule)
+#endif

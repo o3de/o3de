@@ -1,11 +1,13 @@
 {
     "gem_name": "DccScriptingInterface",
+    "version": "0.0.2",
     "display_name": "Atom DccScriptingInterface (DCCsi)",
-    "summary": "A python framework for working with various DCC tools and workflows.",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
+    "summary": "A python framework for working with various DCC tools and workflows.",
     "canonical_tags": [
         "Gem"
     ],
@@ -15,6 +17,8 @@
         "Content",
         "Creation"
     ],
-    "requirements": "",
-    "dependencies": []
+    "requirements": "Change directory to DccScriptingInterface (gem folder), run '>.\\python.cmd foundation.py' to configure dependencies. See readme for more detail <a href='https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md'>DccScriptingInterface README</a>.",
+    "documentation_url": "https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md",
+	"dependencies": [
+        "QtForPython"]
 }

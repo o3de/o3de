@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import azlmbr.atom
+import azlmbr.utils
 import azlmbr.legacy.general as general
 
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
@@ -55,19 +56,18 @@ class ScreenshotHelper(object):
         """
         Capture a screenshot and block the execution until the screenshot has been written to the disk.
         """
-        self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-        self.handler.connect()
-        self.handler.add_callback('OnCaptureFinished', self.on_screenshot_captured)
-
         self.done = False
         self.capturedScreenshot = False
-        success = azlmbr.atom.FrameCaptureRequestBus(
+        outcome = azlmbr.atom.FrameCaptureRequestBus(
             azlmbr.bus.Broadcast, "CaptureScreenshot", f"{folder_path}/{filename}")
-        if success:
+        if outcome.IsSuccess():
+            self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
+            self.handler.connect(outcome.GetValue())
+            self.handler.add_callback('OnFrameCaptureFinished', self.on_screenshot_captured)
             self.wait_until_screenshot()
             general.log("Screenshot taken.")
         else:
-            general.log("Screenshot failed")
+            general.log(f"Screenshot failed. {outcome.GetError().error_message}")
         return self.capturedScreenshot
 
     def on_screenshot_captured(self, parameters):
@@ -92,19 +92,36 @@ class ScreenshotHelper(object):
                 frames_waited = frames_waited + 1
         general.log(f"(waited {frames_waited} frames)")
 
-
 def take_screenshot_game_mode(screenshot_name, entity_name=None):
     """
     Enters game mode & takes a screenshot, then exits game mode after.
-    :param screenshot_name: name to give the captured screenshot .ppm file.
+    :param screenshot_name: name to give the captured screenshot .png file.
     :param entity_name: name of the entity being tested (for generating unique log lines).
     :return: None
     """
     general.enter_game_mode()
     helper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Entered game mode: {general.is_in_game_mode()}")
-    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.ppm")
+    ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{screenshot_name}.png")
     general.idle_wait(1.0)
     general.exit_game_mode()
     helper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
     general.log(f"{entity_name}_test: Exit game mode: {not general.is_in_game_mode()}")
+
+def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
+    """
+    Compare 2 images through an Ebus call. Image order doesn't matter.
+    RMS (root mean square) is used for the difference indicator.
+    2 final scores are provided: diff_score, filtered_diff_score (after applying min_diff_filter).
+    The higher value the more different.
+    :param imageA: one of the image.
+    :param imageB: the other image.
+    :param min_diff_filter: diff values less than this will be filtered out when calculating filtered_diff_score.
+    :return: Outcome, if success, outcome contains a class ImageDiffResult, containing
+        result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
+        diff_score, filtered_diff_score. If failure, out come contains result_code only.
+    """
+    outcome = azlmbr.atom.FrameCaptureTestRequestBus(
+        azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, min_diff_filter)
+
+    return outcome

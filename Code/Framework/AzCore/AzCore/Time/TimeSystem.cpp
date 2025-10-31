@@ -23,11 +23,11 @@ namespace AZ
             }
         }
 
-        void cvar_t_simulationTickDeltaOverride_Changed(const float& value)
+        void cvar_t_simulationTickDeltaOverride_Changed(const int64_t& value)
         {
             if (auto* timeSystem = AZ::Interface<ITime>::Get())
             {
-                timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(value));
+                timeSystem->SetSimulationTickDeltaOverride(static_cast<AZ::TimeUs>(value));
             }
         }
 
@@ -44,8 +44,8 @@ namespace AZ
     AZ_CVAR(float, t_simulationTickScale, 1.0f, cvar_t_simulationTickScale_Changed, AZ::ConsoleFunctorFlags::Null,
         "A scalar amount to adjust time passage by, 1.0 == realtime, 0.5 == half realtime, 2.0 == doubletime");
 
-    AZ_CVAR(float, t_simulationTickDeltaOverride, 0.0f, cvar_t_simulationTickDeltaOverride_Changed, AZ::ConsoleFunctorFlags::Null,
-        "If > 0, overrides the simulation tick delta time with the provided value (Seconds) and ignores any t_simulationTickScale value.");
+    AZ_CVAR(int64_t, t_simulationTickDeltaOverride, 0, cvar_t_simulationTickDeltaOverride_Changed, AZ::ConsoleFunctorFlags::Null,
+        "If > 0, overrides the simulation tick delta time with the provided value (Milliseconds) and ignores any t_simulationTickScale value.");
 
     AZ_CVAR(int, t_simulationTickRate, 0, cvar_t_simulationTickRate_Changed, AZ::ConsoleFunctorFlags::Null,
         "The minimum rate to force the game simulation tick to run. 0 for as fast as possible. 30 = ~33ms, 60 = ~16ms");
@@ -62,6 +62,7 @@ namespace AZ
     TimeSystem::TimeSystem()
     {
         m_lastInvokedTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        m_realLastInvokedTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
         AZ::Interface<ITime>::Register(this);
         ITimeRequestBus::Handler::BusConnect();
     }
@@ -101,7 +102,25 @@ namespace AZ
 
     TimeUs TimeSystem::GetRealElapsedTimeUs() const
     {
-        return static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        const TimeUs currentTime = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        m_realAccumulatedTimeUs += currentTime - m_realLastInvokedTimeUs;
+        m_realLastInvokedTimeUs = currentTime;
+
+        return m_realAccumulatedTimeUs;
+    }
+
+    void TimeSystem::SetElapsedTimeMsDebug([[maybe_unused]] TimeMs time)
+    {
+#ifndef AZ_RELEASE_BUILD
+        m_accumulatedTimeUs = TimeMsToUs(time);
+#endif
+    }
+
+    void TimeSystem::SetElapsedTimeUsDebug([[maybe_unused]] TimeUs time)
+    {
+#ifndef AZ_RELEASE_BUILD
+        m_accumulatedTimeUs = time;
+#endif
     }
 
     TimeUs TimeSystem::GetSimulationTickDeltaTimeUs() const
@@ -171,13 +190,21 @@ namespace AZ
         if (timeUs != m_simulationTickDeltaOverride)
         {
             m_simulationTickDeltaOverride = timeUs;
-            t_simulationTickDeltaOverride = AZ::TimeUsToSeconds(timeUs); //update the cvar
+            t_simulationTickDeltaOverride = static_cast <int64_t>(timeMs); // update the cvar
         }
     }
 
-    TimeMs TimeSystem::GetSimulationTickDeltaOverride() const
+    void TimeSystem::SetSimulationTickDeltaOverride(TimeUs timeUs)
     {
-        return AZ::TimeUsToMs(m_simulationTickDeltaOverride);
+        if (timeUs != m_simulationTickDeltaOverride)
+        {
+            m_simulationTickDeltaOverride = timeUs;
+        }
+    }
+
+    TimeUs TimeSystem::GetSimulationTickDeltaOverride() const
+    {
+        return m_simulationTickDeltaOverride;
     }
 
     void TimeSystem::SetSimulationTickScale(float scale)

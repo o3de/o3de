@@ -40,19 +40,19 @@ namespace LyShineExamples
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("UiDynamicContentProviderService", 0xe25f3f73));
+            provided.push_back(AZ_CRC_CE("UiDynamicContentProviderService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("UiDynamicContentProviderService", 0xe25f3f73));
+            incompatible.push_back(AZ_CRC_CE("UiDynamicContentProviderService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("UiDynamicScrollBoxService", 0x11112f1a));
-            required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-            required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+            required.push_back(AZ_CRC_CE("UiDynamicScrollBoxService"));
+            required.push_back(AZ_CRC_CE("UiElementService"));
+            required.push_back(AZ_CRC_CE("UiTransformService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

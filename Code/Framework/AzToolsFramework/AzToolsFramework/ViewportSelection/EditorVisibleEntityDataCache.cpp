@@ -117,10 +117,30 @@ namespace AzToolsFramework
     static EntityData EntityDataFromEntityId(const AZ::EntityId entityId)
     {
         bool visible = false;
-        EditorEntityInfoRequestBus::EventResult(visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
-
         bool locked = false;
-        EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+        bool iconHidden = false;
+
+        // Check to see if the given entity is an Editor entity or a Runtime entity.
+        bool isEditorEntity = false;
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            isEditorEntity, &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity, entityId);
+
+        if (isEditorEntity)
+        {
+            EditorEntityInfoRequestBus::EventResult(visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
+            EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+            EditorEntityIconComponentRequestBus::EventResult(
+                iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
+        }
+        else
+        {
+            // If this is a runtime entity, default visible / locked / iconHidden to true. This will cause the entity to be displayed
+            // but not selectable assuming it is listening to the debug display bus.
+
+            visible = true;
+            locked = true;
+            iconHidden = true;
+        }
 
         bool inFocus = false;
         if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
@@ -133,10 +153,6 @@ namespace AzToolsFramework
         {
             descendantOfClosedContainer = containerEntityInterface->IsUnderClosedContainerEntity(entityId);
         }
-
-        bool iconHidden = false;
-        EditorEntityIconComponentRequestBus::EventResult(
-            iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
@@ -297,6 +313,11 @@ namespace AzToolsFramework
     {
         return m_impl->m_visibleEntityDatas[index].m_visible && !m_impl->m_visibleEntityDatas[index].m_locked &&
             m_impl->m_visibleEntityDatas[index].m_inFocus && !m_impl->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
+    }
+
+    bool EditorVisibleEntityDataCache::IsVisibleEntityInFocusSubTree(size_t index) const
+    {
+        return m_impl->m_visibleEntityDatas[index].m_inFocus;
     }
 
     AZStd::optional<size_t> EditorVisibleEntityDataCache::GetVisibleEntityIndexFromId(const AZ::EntityId entityId) const

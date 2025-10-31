@@ -546,7 +546,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
                     'description': name,
                     'materialType': default_settings.get('materialType'),
                     'parentMaterial': default_settings.get('parentMaterial'),
-                    'propertyLayoutVersion': default_settings.get('propertyLayoutVersion'),
+                    'materialTypeVersion': default_settings.get('materialTypeVersion'),
                     'properties': self.get_lumberyard_material_properties(name, material_type, file_connections)}
         self.material_definitions[name if name not in self.material_definitions.keys() else
                                   self.get_filename_increment(name)] = material

@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="WeightedRandomSequencer"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::WeightedRandomSequencer"
-	       PreferredClassName="Random Signal"
-           Uuid="{DFB13C5E-5FB3-4650-BD3A-E1AD79CD42AC}"
-           Base="ScriptCanvas::Node"
-           Category="Logic"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Triggers one of the selected outputs at Random depending on the weights provided.">
+        QualifiedName="ScriptCanvas::Nodes::Logic::WeightedRandomSequencer"
+        PreferredClassName="Random Signal"
+        Uuid="{DFB13C5E-5FB3-4650-BD3A-E1AD79CD42AC}"
+        Category="Logic"
+        Description="Triggers one of the selected outputs at Random depending on the weights provided.">
         <In Name="In" Description="Input signal"/>
         <SerializedProperty Name="m_weightedPairings" />
     </Class>

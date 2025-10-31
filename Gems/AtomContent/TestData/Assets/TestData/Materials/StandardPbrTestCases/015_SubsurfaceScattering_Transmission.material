@@ -1,0 +1,10 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "propertyValues": {
+        "subsurfaceScattering.enableSubsurfaceScattering": true,
+        "subsurfaceScattering.scatterDistance": 64.6464614868164,
+        "subsurfaceScattering.thicknessMap": "../../Textures/checker8x8_512.png",
+        "subsurfaceScattering.transmissionMode": "ThickObject"
+    }
+}

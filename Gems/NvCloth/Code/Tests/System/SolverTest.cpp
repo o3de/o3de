@@ -368,7 +368,7 @@ namespace UnitTest
         // Ticking Cloth System updates all its solvers
         AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
             deltaTimeSim,
-            AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+            AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
         EXPECT_TRUE(solverPreSimulationEventSignaled);
         EXPECT_TRUE(solverPostSimulationEventSignaled);
@@ -380,7 +380,7 @@ namespace UnitTest
         // Ticking Cloth System updates all its solvers
         AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
             deltaTimeSim,
-            AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+            AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
         EXPECT_FALSE(solverPreSimulationEventSignaled);
         EXPECT_FALSE(solverPostSimulationEventSignaled);

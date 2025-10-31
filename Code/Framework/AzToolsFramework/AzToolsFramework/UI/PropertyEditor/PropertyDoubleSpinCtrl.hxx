@@ -6,15 +6,15 @@
  *
  */
 
-#ifndef PROPERTY_DOUBLESPINBOX_CTRL
-#define PROPERTY_DOUBLESPINBOX_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include "PropertyEditorAPI.h"
 #endif
 
@@ -25,12 +25,12 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
-    class PropertyDoubleSpinCtrl
+    class AZTF_API PropertyDoubleSpinCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyDoubleSpinCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyDoubleSpinCtrl, AZ::SystemAllocator);
 
         PropertyDoubleSpinCtrl(QWidget* pParent = NULL);
         virtual ~PropertyDoubleSpinCtrl();
@@ -40,6 +40,9 @@ namespace AzToolsFramework
         double maximum() const;
         double step() const;
         double multiplier() const;
+
+        int GetDefaultDecimals() const;
+        int GetDefaultDisplayDecimals() const;
 
         QWidget* GetFirstInTabOrder();
         QWidget* GetLastInTabOrder();
@@ -66,6 +69,8 @@ namespace AzToolsFramework
     private:
         AzQtComponents::DoubleSpinBox* m_pSpinBox;
         double m_multiplier;
+        int m_defaultDecimals;
+        int m_defaultDisplayDecimals;
 
     protected:
         void focusInEvent(QFocusEvent* e) override;
@@ -84,35 +89,40 @@ namespace AzToolsFramework
         void UpdateWidgetInternalTabbing(PropertyDoubleSpinCtrl* widget) override { widget->UpdateTabOrder(); }
     };
 
-    class doublePropertySpinboxHandler
+    class AZTF_API doublePropertySpinboxHandler
         : QObject
         , public DoubleSpinBoxHandlerCommon<double>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(doublePropertySpinboxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(doublePropertySpinboxHandler, AZ::SystemAllocator);
 
         // common to all double spinners
         static void ConsumeAttributeCommon(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
+        static void ResetGUIToDefaultsCommon(PropertyDoubleSpinCtrl* GUI);
+        static bool GetDefaultDecimals(PropertyDoubleSpinCtrl* GUI);
+        static bool GetDefaultDisplayDecimals(PropertyDoubleSpinCtrl* GUI);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
         bool ModifyTooltip(QWidget* widget, QString& toolTipString) override;
     };
 
-    class floatPropertySpinboxHandler
+    class AZTF_API floatPropertySpinboxHandler
         : QObject
         , public DoubleSpinBoxHandlerCommon<float>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
@@ -120,7 +130,5 @@ namespace AzToolsFramework
     };
 
 
-    void RegisterDoubleSpinBoxHandlers();
+    AZTF_API void RegisterDoubleSpinBoxHandlers();
 };
-
-#endif

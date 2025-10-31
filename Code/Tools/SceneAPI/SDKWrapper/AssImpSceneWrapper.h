@@ -7,7 +7,9 @@
  */
 #pragma once
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 #include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 struct aiScene;
 
@@ -23,33 +25,35 @@ namespace AZ
             AssImpSceneWrapper(aiScene* aiScene);
             ~AssImpSceneWrapper() override = default;
 
-            bool LoadSceneFromFile(const char* fileName) override;
-            bool LoadSceneFromFile(const AZStd::string& fileName) override;
+            bool LoadSceneFromFile(const char* fileName, const AZ::SceneAPI::SceneImportSettings& importSettings) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
             virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
+            void CalculateAABBandVertices(const aiScene* scene, aiAABB& aabb, uint32_t& vertices);
 
-            enum class AxisVector
-            {
-                X = 0,
-                Y = 1,
-                Z = 2,
-                Unknown
-            };
-
-            AZStd::pair<AxisVector, int32_t> GetUpVectorAndSign() const;
-            AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
+            AZStd::pair<AxisVector, int32_t> GetUpVectorAndSign() const override;
+            AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const override;
+            AZStd::pair<AxisVector, int32_t> GetRightVectorAndSign() const override;
+            AZStd::optional<SceneAPI::DataTypes::MatrixType> UseForcedRootTransform() const override;
+            float GetUnitSizeInMeters() const override;
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
+            AZ::Aabb GetAABB() const override;
+            uint32_t GetVerticesCount() const override { return m_vertices; }
+
+            bool GetExtractEmbeddedTextures() const { return m_extractEmbeddedTextures; }
         protected:
             const aiScene* m_assImpScene = nullptr;
-            Assimp::Importer m_importer;
+            AZStd::unique_ptr<Assimp::Importer> m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
             // AssImp does not, so it needs to be specifically handled.
             AZStd::string m_sceneFileName;
+            aiAABB m_aabb;
+            uint32_t m_vertices;
+            bool m_extractEmbeddedTextures;
         };
 
     } // namespace AssImpSDKWrapper

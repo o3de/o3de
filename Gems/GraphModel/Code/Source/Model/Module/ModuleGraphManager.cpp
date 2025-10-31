@@ -16,12 +16,12 @@
 
 // Graph Model
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Module/ModuleGraphManager.h>
 
 namespace GraphModel
 {
-    ModuleGraphManager::ModuleGraphManager(IGraphContextPtr graphContext, AZ::SerializeContext* serializeContext)
+    ModuleGraphManager::ModuleGraphManager(GraphContextPtr graphContext, AZ::SerializeContext* serializeContext)
         : m_graphContext(graphContext)
         , m_moduleFileExtension(graphContext->GetModuleFileExtension())
         , m_serializeContext(serializeContext)
@@ -44,7 +44,7 @@ namespace GraphModel
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
     }
 
-    void ModuleGraphManager::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID)
+    void ModuleGraphManager::SourceFileChanged(AZStd::string relativePath, [[maybe_unused]] AZStd::string scanFolder, AZ::Uuid sourceUUID)
     {
         AZStd::string extension;
         if (AzFramework::StringFunc::Path::GetExtension(relativePath.data(), extension) && extension == m_moduleFileExtension)

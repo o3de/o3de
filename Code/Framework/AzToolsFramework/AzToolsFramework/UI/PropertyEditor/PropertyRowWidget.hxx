@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs to have dll-interface to be used by clients of class '...'
@@ -15,14 +18,14 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs t
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLayout>
-#include <QtWidgets/QToolButton>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QFrame>
-#include <QtCore/QPointer>
-#include <QtCore/QElapsedTimer>
+#include <QWidget>
+#include <QLabel>
+#include <QLayout>
+#include <QToolButton>
+#include <QCheckBox>
+#include <QFrame>
+#include <QPointer>
+#include <QElapsedTimer>
 AZ_POP_DISABLE_WARNING
 
 #include "PropertyEditorAPI.h"
@@ -35,7 +38,7 @@ namespace AzToolsFramework
     // the purpose of a Property Row Widget is to house the user's property GUI
     // and serve as a conduit to talk to the system.  You should never need to do anything
     // with this guy, except tell him to expand, collapse, etc.
-    class PropertyRowWidget : public QFrame
+    class AZTF_API PropertyRowWidget : public QFrame
     {
         Q_OBJECT;
         Q_PROPERTY(bool hasChildRows READ HasChildRows);
@@ -44,7 +47,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool canBeReordered READ CanBeReordered);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
-        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator)
 
         enum class DragImageType
         {
@@ -236,7 +239,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
-        bool m_canChildrenBeReordered = false;
+        bool m_isSceneSetting = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;
@@ -260,6 +263,8 @@ namespace AzToolsFramework
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;
+
+        bool m_reorderAllow = false;
 
         /// Marks the field to be visualized as "overridden".
         void SetOverridden(bool overridden);

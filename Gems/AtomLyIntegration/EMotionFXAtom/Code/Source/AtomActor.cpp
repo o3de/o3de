@@ -24,7 +24,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CLASS_ALLOCATOR_IMPL(AtomActor, EMotionFX::Integration::EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(AtomActor, EMotionFX::Integration::EMotionFXAllocator);
 
         AtomActor::AtomActor(EMotionFX::Integration::ActorAsset* actorAsset)
             : RenderActor()

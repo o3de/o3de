@@ -17,6 +17,8 @@
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
 
+#include <VegetationProfiler.h>
+
 namespace Vegetation
 {
     void SlopeAlignmentModifierConfig::Reflect(AZ::ReflectContext* context)
@@ -67,18 +69,18 @@ namespace Vegetation
 
     void SlopeAlignmentModifierComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
-        services.push_back(AZ_CRC("VegetationAlignmentModifierService", 0xdf9ddf2b));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
+        services.push_back(AZ_CRC_CE("VegetationAlignmentModifierService"));
     }
 
     void SlopeAlignmentModifierComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAlignmentModifierService", 0xdf9ddf2b));
+        services.push_back(AZ_CRC_CE("VegetationAlignmentModifierService"));
     }
 
     void SlopeAlignmentModifierComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void SlopeAlignmentModifierComponent::Reflect(AZ::ReflectContext* context)
@@ -159,7 +161,7 @@ namespace Vegetation
 
     void SlopeAlignmentModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_surfaceAlignmentOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_surfaceAlignmentMin : m_configuration.m_rangeMin;

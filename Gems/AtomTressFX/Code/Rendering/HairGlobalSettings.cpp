@@ -50,7 +50,7 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_R, "Enable Marschner R", "Enable Marschner R.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TRT, "Enable Marschner TRT", "Enable Marschner TRT.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TT, "Enable Marschner TT", "Enable Marschner TT.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableLongtitudeCoeff, "Enable Longtitude", "Enable Longtitude Contribution")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableLongtitudeCoeff, "Enable Longitude", "Enable Longitude Contribution")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAzimuthCoeff, "Enable Azimuth", "Enable Azimuth Contribution")
                             ;
                     }

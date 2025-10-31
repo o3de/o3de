@@ -5,16 +5,11 @@
         "Depth" : { "Enable" : false }
     },
     
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
         "BlendOp" : "Add"
-    },
-
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
     },
     
     "ProgramSettings":

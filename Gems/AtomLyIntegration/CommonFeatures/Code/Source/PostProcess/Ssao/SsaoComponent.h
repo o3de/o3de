@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace Ssao
         {
-            static constexpr const char* const SsaoComponentTypeId = "{F1203F4B-89B6-409E-AB99-B9CC87AABC2E}";
+            inline constexpr AZ::TypeId SsaoComponentTypeId{ "{F1203F4B-89B6-409E-AB99-B9CC87AABC2E}" };
         }
 
         class SsaoComponent final

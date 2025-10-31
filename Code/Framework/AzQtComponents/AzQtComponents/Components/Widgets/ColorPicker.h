@@ -33,6 +33,7 @@ class QSettings;
 class QToolButton;
 class QUndoStack;
 class QLabel;
+class QLineEdit;
 
 namespace AzQtComponents
 {
@@ -128,6 +129,11 @@ namespace AzQtComponents
 
         //! Sets a comment string that will be included in the UI as a custom message that may provide some context for the user
         void setComment(QString comment);
+
+        //! Sets up some read-only output for displaying color values in an alternate color space.
+        void setAlternateColorspaceEnabled(bool enabled);
+        void setAlternateColorspaceName(const QString& name);
+        void setAlternateColorspaceValue(const AZ::Color& color);
 
         //! Populates the palette list with the palettes stored at the folder path provided.
         void importPalettesFromFolder(const QString& path);
@@ -282,8 +288,16 @@ namespace AzQtComponents
         qreal m_defaultVForHsMode = 0.0f;
         qreal m_defaultLForHsMode = 0.0f;
 
+        QWidget* m_floatEditSeparator = nullptr;
+
         QWidget* m_commentSeparator = nullptr;
         QLabel* m_commentLabel = nullptr;
+
+        QGridLayout* m_alternateColorSpaceInfoLayout = nullptr;
+        QLabel* m_alternateColorSpaceIntLabel = nullptr;
+        QLabel* m_alternateColorSpaceFloatLabel = nullptr;
+        QLineEdit* m_alternateColorSpaceIntValue = nullptr;
+        QLineEdit* m_alternateColorSpaceFloatValue = nullptr;
 
         QString m_lastSaveDirectory;
         QVector<QWidget*> m_separators;

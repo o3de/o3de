@@ -19,7 +19,7 @@ namespace UnitTest
      * Rapid XML parser
      */
     class RapidXML
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         RapidXML() {}

@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -45,16 +46,14 @@ namespace AzToolsFramework
         using SourceWithFileID = AZStd::pair<AZ::s64, AssetDatabase::SourceDatabaseEntry>;
 
         //! RootAssetBrowserEntry is a root node for Asset Browser tree view, it's not related to any asset path.
-        class RootAssetBrowserEntry
+        class AZTF_API RootAssetBrowserEntry
             : public AssetBrowserEntry
         {
         public:
             AZ_RTTI(RootAssetBrowserEntry, "{A35CA80E-E1EB-420B-8BFE-B7792E3CCEDB}");
-            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator);
 
             RootAssetBrowserEntry();
-
-            static void Reflect(AZ::ReflectContext* context);
 
             AssetEntryType GetEntryType() const override;
 
@@ -73,6 +72,7 @@ namespace AzToolsFramework
 
             bool IsInitialUpdate() const;
             void SetInitialUpdate(bool newValue);
+            void PrepareForReset();
 
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;
@@ -81,11 +81,13 @@ namespace AzToolsFramework
             AZ_DISABLE_COPY_MOVE(RootAssetBrowserEntry);
 
             AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
+            AZStd::unordered_set<AZ::IO::Path> m_gemNames;
 
             //! Create folder entry child
-            FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent);
+            FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent, bool isScanFolder);
             //! Recursively create folder structure leading to  path from parent
-            AssetBrowserEntry* CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent);
+            AssetBrowserEntry* CreateFolders(AZStd::string_view absolutePath, AssetBrowserEntry* parent, bool isScanFolder);
             // Retrieves the nearest ancestor AssetBrowserEntry from the absolutePath
             static AssetBrowserEntry* GetNearestAncestor(AZ::IO::PathView absolutePath, AssetBrowserEntry* parent,
                 AZStd::unordered_set<AssetBrowserEntry*>& visitedSet);

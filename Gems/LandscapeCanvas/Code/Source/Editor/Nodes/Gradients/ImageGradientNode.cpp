@@ -11,6 +11,10 @@
 
 // AZ
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
+#include <GraphModel/Integration/Helpers.h>
+#include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
 #include "ImageGradientNode.h"
@@ -29,12 +33,29 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString ImageGradientNode::TITLE = QObject::tr("Image");
+    const char* ImageGradientNode::TITLE = "Image";
 
     ImageGradientNode::ImageGradientNode(GraphModel::GraphPtr graph)
         : BaseGradientNode(graph)
     {
         RegisterSlots();
         CreateSlotData();
+    }
+
+    void ImageGradientNode::RegisterSlots()
+    {
+        BaseGradientNode::RegisterSlots();
+
+        // Image Gradient has an additional input slot for the image asset
+        GraphModel::DataTypePtr pathDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
+            IMAGE_ASSET_SLOT_ID,
+            IMAGE_ASSET_SLOT_LABEL.toUtf8().constData(),
+            IMAGE_ASSET_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ pathDataType },
+            pathDataType->GetDefaultValue()));
     }
 } // namespace LandscapeCanvas

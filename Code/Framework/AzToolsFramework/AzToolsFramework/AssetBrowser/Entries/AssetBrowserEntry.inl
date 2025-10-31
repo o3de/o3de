@@ -45,7 +45,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            AZStd::vector<AssetBrowserEntry*> entries;
+            AZStd::vector<const AssetBrowserEntry*> entries;
             if (!AssetBrowserEntry::FromMimeData(mimeData, entries))
             {
                 // if mimedata does not even contain product entries, no point in proceeding.

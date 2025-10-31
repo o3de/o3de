@@ -8,6 +8,7 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 struct VertexInput
 {
@@ -40,22 +41,11 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     column_major float4x4 m_projectionMatrix;
 }
 
-float3 SRGBToLinear( float3 x )
-{
-    return x < 0.04045f ? x / 12.92f : pow( (abs(x) + 0.055f) / 1.055f, 2.4f );
-
-    // NOTE: abs on x quiets FXC warning "X3571: pow(f, e) will not work for negative f, 
-    // use abs(f) or conditionally handle negative values if you expect them".
-    // Ternary operator ?: in shaders can handle vectors in the condition, but it doesn't
-    // count as 'conditionally handle' since branching is not involved. When we start using
-    // DXC instead of FXC we can remove abs since DXC handles it correctly with no warnings.
-}
-
 VertexOutput MainVS(in VertexInput input)
 {
     VertexOutput output;
     output.Position = mul(float4(input.Position, 0.0f, 1.0f), ObjectSrg::m_projectionMatrix);
-    output.Color = float4(SRGBToLinear(input.Color.rgb), input.Color.a);
+    output.Color = float4(Srgb_To_LinearSrgb(input.Color.rgb), input.Color.a);
     output.UV = input.UV;
     return output;
 }

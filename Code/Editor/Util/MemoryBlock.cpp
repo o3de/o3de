@@ -10,7 +10,6 @@
 #include "EditorDefs.h"
 
 #include "MemoryBlock.h"
-#include "Include/ILogFile.h"
 #include <zlib.h>
 
 #include <QMessageBox>
@@ -92,11 +91,11 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
         }
         if (!m_buffer)
         {
-            GetIEditor()->GetLogFile()->Warning("Reducing working memory set failed, Sandbox must quit");
+            AZ_Warning("CMemoryBlock", false, "Reducing working memory set failed, Sandbox must quit");
         }
         else
         {
-            GetIEditor()->GetLogFile()->Warning("Reducing working memory set succeeded\r\nSandbox may become unstable, it is advised to save the level and restart editor.");
+            AZ_Warning("CMemoryBlock", false, "Reducing working memory set succeeded\r\nSandbox may become unstable, it is advised to save the level and restart editor.");
         }
     }
 
@@ -154,12 +153,12 @@ void CMemoryBlock::Compress(CMemoryBlock& toBlock) const
     assert(this != &toBlock);
     unsigned long destSize = m_size * 2 + 128;
     CMemoryBlock temp;
-    temp.Allocate(destSize);
+    temp.Allocate(static_cast<int>(destSize));
 
     compress((unsigned char*)temp.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), m_size);
 
-    toBlock.Allocate(destSize);
-    toBlock.Copy(temp.GetBuffer(), destSize);
+    toBlock.Allocate(static_cast<int>(destSize));
+    toBlock.Copy(temp.GetBuffer(), static_cast<int>(destSize));
     toBlock.m_uncompressedSize = GetSize();
 }
 
@@ -170,10 +169,7 @@ void CMemoryBlock::Uncompress(CMemoryBlock& toBlock) const
     toBlock.Allocate(m_uncompressedSize);
     toBlock.m_uncompressedSize = 0;
     unsigned long destSize = m_uncompressedSize;
-#if !defined(NDEBUG)
-    int result =
-#endif
-        uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
+    [[maybe_unused]] int result = uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
     assert(result == Z_OK);
     assert(destSize == static_cast<unsigned long>(m_uncompressedSize));
 }

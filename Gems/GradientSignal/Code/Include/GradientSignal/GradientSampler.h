@@ -28,13 +28,17 @@ namespace GradientSignal
     class GradientSampler final
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientSampler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSampler, AZ::SystemAllocator);
         AZ_RTTI(GradientSampler, "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}");
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetValue(const GradientSampleParams& sampleParams) const;
+        inline void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
+
+        //! Given a dirty region for a gradient, transform the dirty region in world space based on the gradient transform settings.
+        AZ::Aabb TransformDirtyRegion(const AZ::Aabb& dirtyRegion) const;
 
         AZ::EntityId m_gradientId;
         //! Entity that owns the gradientSampler itself, used by the gradient previewer
@@ -59,6 +63,8 @@ namespace GradientSignal
         bool ValidateGradientEntityId();
 
     private:
+        AZ::Matrix3x4 GetTransformMatrix() const;
+
         // Pass-through for UIElement attribute
         GradientSampler* GetSampler();
         AZ::u32 ChangeNotify() const;
@@ -66,9 +72,6 @@ namespace GradientSignal
         bool AreTransformSettingsDisabled() const;
 
         AZ::Outcome<void, AZStd::string>  ValidatePotentialEntityId(void* newValue, const AZ::Uuid& valueType) const;
-
-        //prevent recursion in case user attaches cyclic dependences
-        mutable bool m_isRequestInProgress = false; 
     };
 
     namespace GradientSamplerUtil
@@ -86,10 +89,24 @@ namespace GradientSignal
         }
     }
 
+    inline AZ::Matrix3x4 GradientSampler::GetTransformMatrix() const
+    {
+        if (m_enableTransform)
+        {
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
+            return matrix3x4;
+        }
+        else
+        {
+            return AZ::Matrix3x4::CreateIdentity();
+        }
+    }
+
     inline float GradientSampler::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
         {
             return 0.0f;
@@ -100,33 +117,21 @@ namespace GradientSignal
         //apply transform if set
         if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
         {
-            AZ::Matrix3x4 matrix3x4;
-            matrix3x4.SetFromEulerDegrees(m_rotate);
-            matrix3x4.MultiplyByScale(m_scale);
-            matrix3x4.SetTranslation(m_translate);
-
+            // We use the inverse here because we're going from world space to gradient space.
+            AZ::Matrix3x4 matrix3x4 = GetTransformMatrix().GetInverseFull();
             sampleParamsTransformed.m_position = matrix3x4 * sampleParamsTransformed.m_position;
         }
 
         float output = 0.0f;
 
         {
-            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
-            // that create false detection of cyclic dependencies when multiple requests occur on different threads simultaneously.
-            // (One case where this was previously able to occur was in rapid updating of the Preview widget on the GradientSurfaceDataComponent
-            // in the Editor when moving the threshold sliders back and forth rapidly)
-            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
-
-            if (m_isRequestInProgress)
+            if (GradientRequestBus::HasReentrantEBusUseThisThread())
             {
-                AZ_ErrorOnce("GradientSignal", !m_isRequestInProgress, "Detected cyclic dependences with gradient entity references");
+                AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
             }
             else
             {
-                m_isRequestInProgress = true;
-
                 GradientRequestBus::EventResult(output, m_gradientId, &GradientRequestBus::Events::GetValue, sampleParamsTransformed);
 
                 if (m_invertInput)
@@ -139,12 +144,77 @@ namespace GradientSignal
                 {
                     output = GetLevels(output, m_inputMid, m_inputMin, m_inputMax, m_outputMin, m_outputMax);
                 }
-
-                m_isRequestInProgress = false;
             }
 
         }
 
         return output * m_opacity;
     }
+
+    inline void GradientSampler::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        auto ClearOutputValues = [](AZStd::span<float> outValues)
+        {
+            // If we don't have a valid gradient (or it is fully transparent), clear out all the output values.
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
+        };
+
+        if (m_opacity <= 0.0f || !m_gradientId.IsValid())
+        {
+            ClearOutputValues(outValues);
+            return;
+        }
+
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        bool useTransformedPositions = false;
+
+        // apply transform if set
+        if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
+        {
+            // We use the inverse here because we're going from world space to gradient space.
+            AZ::Matrix3x4 matrix3x4 = GetTransformMatrix().GetInverseFull();
+
+            useTransformedPositions = true;
+            transformedPositions.resize(positions.size());
+            for (size_t index = 0; index < positions.size(); index++)
+            {
+                transformedPositions[index] = matrix3x4 * positions[index];
+            }
+        }
+
+        {
+            if (GradientRequestBus::HasReentrantEBusUseThisThread())
+            {
+                AZ_ErrorOnce(
+                    "GradientSignal", false, "Detected cyclic dependencies with gradient entity references on entity id %s",
+                    m_gradientId.ToString().c_str());
+                ClearOutputValues(outValues);
+                return;
+            }
+            else
+            {
+                GradientRequestBus::Event(
+                    m_gradientId, &GradientRequestBus::Events::GetValues, useTransformedPositions ? transformedPositions : positions,
+                    outValues);
+            }
+        }
+
+        // Perform any post-fetch transformations on the gradient values (invert, levels, opacity).
+        for (auto& outValue : outValues)
+        {
+            if (m_invertInput)
+            {
+                outValue = 1.0f - outValue;
+            }
+
+            // apply levels if set
+            if (m_enableLevels && GradientSamplerUtil::AreLevelParamsSet(*this))
+            {
+                outValue = GetLevels(outValue, m_inputMid, m_inputMin, m_inputMax, m_outputMin, m_outputMax);
+            }
+
+            outValue = outValue * m_opacity;
+        }
+    }
+
 }

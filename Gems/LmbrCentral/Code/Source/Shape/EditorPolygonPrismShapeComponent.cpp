@@ -24,16 +24,16 @@ namespace LmbrCentral
     void EditorPolygonPrismShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC("PolygonPrismShapeService", 0x1cbc4ed4));
-        provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-        provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        provided.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
+        provided.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+        provided.push_back(AZ_CRC_CE("FixedVertexContainerService"));
     }
 
     void EditorPolygonPrismShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
-        incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-        incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+        incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
     }
 
     void EditorPolygonPrismShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -145,6 +145,8 @@ namespace LmbrCentral
 
     void EditorPolygonPrismShapeComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorPolygonPrismShapeComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorPolygonPrismShapeComponent, EditorBaseShapeComponent>()
@@ -162,8 +164,8 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PolygonPrism.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PolygonPrism.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/polygon-prism-shape/")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/polygon-prism-shape/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPolygonPrismShapeComponent::m_polygonPrismShape, "Configuration", "PolygonPrism Shape Configuration")
                         // ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
@@ -183,7 +185,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawPolygonPrismShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_polygonShapeConfig.GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_polygonPrismMesh, debugDisplay);
 
                 debugDisplay.SetColor(m_shapeWireColor);
@@ -193,7 +195,7 @@ namespace LmbrCentral
                     AzToolsFramework::VertexContainerDisplay::DisplayVertexContainerIndices(
                         debugDisplay, AzToolsFramework::VariableVerticesVertexContainer<AZ::Vector2>(
                             m_polygonPrismShape.GetPolygonPrism()->m_vertexContainer),
-                        AzToolsFramework::TransformUniformScale(m_polygonPrismShape.GetCurrentTransform()),
+                        m_polygonPrismShape.GetCurrentTransform(),
                         m_polygonPrismShape.GetCurrentNonUniformScale(),
                         IsSelected());
                 }

@@ -81,7 +81,7 @@ namespace ScriptCanvasEditor
 
         // VariableNotificationBus::Handler
         void OnVariableRemoved() override;
-        void OnVariableRenamed(AZStd::string_view variableName) override;        
+        void OnVariableRenamed(AZStd::string_view variableName) override;
         void OnVariableScopeChanged() override;
 
         void OnVariableValueChanged() override;
@@ -100,7 +100,8 @@ namespace ScriptCanvasEditor
         : public QMenu
     {
     public:
-        VariablePanelContextMenu(VariableDockWidget* contextMenu, const ScriptCanvas::ScriptCanvasId& scriptCanvasExecutionId, ScriptCanvas::VariableId varId);
+        VariablePanelContextMenu(VariableDockWidget* contextMenu, const ScriptCanvas::ScriptCanvasId& scriptCanvasExecutionId
+            , ScriptCanvas::VariableId varId, QPoint position);
     };
 
     class VariableDockWidget
@@ -112,7 +113,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator);
 
         static AZStd::string ConstructDefaultVariableName(AZ::u32 variableCounter);
         static AZStd::string FindDefaultVariableName(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId);
@@ -164,6 +165,7 @@ namespace ScriptCanvasEditor
         void OnHighlightVariables(const AZStd::unordered_set< ScriptCanvas::VariableId>& variableIds);
 
         void OnRemoveUnusedVariables();
+        void OnConfigureVariable(const ScriptCanvas::VariableId& variableId, QPoint position);
 
     Q_SIGNALS:
         void OnVariableSelectionChanged(const AZStd::vector<AZ::EntityId>& variableIds);
@@ -192,8 +194,6 @@ namespace ScriptCanvasEditor
         VariablePropertiesComponent* AllocateComponent(const ScriptCanvas::VariableId& variableId);
         void ReleaseComponent(const ScriptCanvas::VariableId& variableId);
         void ResetPool();
-
-        bool m_manipulatingSelection;
 
         AZStd::unordered_map< ScriptCanvas::VariableId, VariablePropertiesComponent* > m_usedElements;
         AZStd::vector< VariablePropertiesComponent* > m_unusedPool;

@@ -8,9 +8,9 @@
 #include "PropertyEnumComboBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include "DHQComboBox.hxx"
-#include <QtWidgets/QComboBox>
+#include <QComboBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -45,7 +45,7 @@ namespace AzToolsFramework
     void PropertyEnumComboBoxCtrl::setValue(AZ::s64 value)
     {
         m_pComboBox->blockSignals(true);
-        bool indexWasFound = false;
+        [[maybe_unused]] bool indexWasFound = false;
         for (size_t enumValIndex = 0; enumValIndex < m_enumValues.size(); enumValIndex++)
         {
             if (m_enumValues[enumValIndex].first == value)

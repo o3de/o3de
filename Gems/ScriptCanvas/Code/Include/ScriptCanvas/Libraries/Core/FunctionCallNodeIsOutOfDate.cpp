@@ -163,6 +163,27 @@ namespace ScriptCanvas
                 return false;
             }
 
+            bool IsLocallyDefinedFunctionCallNodeOutOfDate
+                ( const FunctionCallNode& functionCallNode
+                , const FunctionCallNodeCompareConfig& compareConfig
+                , const Grammar::SubgraphInterface& latestInterface)
+            {
+                if (!functionCallNode.GetSlotExecutionMap())
+                {
+                    return true;
+                }
+
+                const IsFunctionCallOutOfDateConfig isOutOfDateConfig
+                    { compareConfig
+                    , functionCallNode
+                    , *functionCallNode.GetSlotExecutionMap()
+                    , functionCallNode.GetSourceId()
+                    , functionCallNode.GetSlotExecutionMapSource()
+                    , latestInterface };
+
+                return IsFunctionCallNodeOutOfDate(isOutOfDateConfig);
+            }
+
             bool IsOutOfDate(const FunctionCallNodeCompareConfig& config, const Grammar::In& theOld, const Grammar::In& theNew)
             {
                 if (!config.ignorePurityChanges && theOld.isPure != theNew.isPure)

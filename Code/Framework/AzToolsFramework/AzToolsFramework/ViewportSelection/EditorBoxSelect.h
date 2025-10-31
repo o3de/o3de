@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Viewport/ClickDetector.h>
@@ -26,7 +28,7 @@ namespace AzToolsFramework
 {
     //! Utility to provide box select (click and drag) support for viewport types.
     //! Users can override the mouse event callbacks and display scene function to customize behavior.
-    class EditorBoxSelect
+    class AZTF_API EditorBoxSelect
     {
     public:
         EditorBoxSelect();
@@ -36,7 +38,8 @@ namespace AzToolsFramework
 
         //! Update the box select for various mouse events.
         //! Call HandleMouseInteraction from type/system implementing MouseViewportRequests interface.
-        void HandleMouseInteraction(
+        //! @return Returns true if box select is active.
+        bool HandleMouseInteraction(
             const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for drawing the 2d box representing the selection in screen space.

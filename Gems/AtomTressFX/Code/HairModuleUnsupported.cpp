@@ -7,5 +7,3 @@
  */
 
 #include <AzCore/Module/Module.h>
-//AZ_DECLARE_MODULE_CLASS(Gem_AtomTressFX, AZ::Module)
-

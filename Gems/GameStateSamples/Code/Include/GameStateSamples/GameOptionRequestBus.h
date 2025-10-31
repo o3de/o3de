@@ -9,10 +9,14 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameStateSamples
@@ -37,7 +41,7 @@ namespace GameStateSamples
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(GameOptions, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameOptions, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info
@@ -109,18 +113,6 @@ namespace GameStateSamples
         virtual AZStd::shared_ptr<GameOptions> GetGameOptions() = 0;
     };
     using GameOptionRequestBus = AZ::EBus<GameOptionRequests>;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline void GameOptions::Reflect(AZ::SerializeContext& sc)
-    {
-        sc.Class<GameOptions>()
-            ->Version(1)
-            ->Field("ambientVolume", &GameOptions::m_ambientVolume)
-            ->Field("effectsVolume", &GameOptions::m_effectsVolume)
-            ->Field("mainVolume", &GameOptions::m_mainVolume)
-            ->Field("musicVolume", &GameOptions::m_musicVolume)
-        ;
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline void GameOptions::OnLoadedFromPersistentData()

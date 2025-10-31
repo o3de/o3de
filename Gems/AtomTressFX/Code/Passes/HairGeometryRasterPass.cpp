@@ -8,8 +8,8 @@
 
 //#include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DeviceDrawPacketBuilder.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -90,6 +90,40 @@ namespace AZ
                 return (RPI::RasterPass::IsEnabled() && m_initialized) ? true : false;
             }
 
+            bool HairGeometryRasterPass::UpdateShaderOptions(const RPI::ShaderVariantId& variantId)
+            {
+                m_currentShaderVariantId = variantId;
+                const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(m_currentShaderVariantId);
+                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_currentShaderVariantId);
+
+                RPI::Scene* scene = GetScene();
+                if (!scene)
+                {
+                    AZ_Error("Hair Gem", false, "Scene could not be acquired");
+                    return false;
+                }
+                RHI::DrawListTag drawListTag = m_shader->GetDrawListTag();
+                scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
+
+                pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
+                pipelineStateDescriptor.m_inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
+                pipelineStateDescriptor.m_inputStreamLayout.Finalize();
+
+                m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+                if (!m_pipelineState)
+                {
+                    AZ_Error("Hair Gem", false, "Pipeline state could not be acquired");
+                    return false;
+                }
+
+                if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry() && shaderVariant.UseKeyFallback())
+                {
+                    m_shaderResourceGroup->SetShaderVariantKeyFallbackValue(m_currentShaderVariantId.m_key);
+                }
+                return true;
+            }
+
             bool HairGeometryRasterPass::LoadShaderAndPipelineState()
             {
                 RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
@@ -108,7 +142,7 @@ namespace AZ
                 Data::Asset<RPI::ShaderAsset> shaderAsset =
                     RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderAsset>(shaderFilePath, RPI::AssetUtils::TraceLevel::Error);
 
-                if (!shaderAsset.GetId().IsValid())
+                if (!shaderAsset.IsReady())
                 {
                     AZ_Error("Hair Gem", false, "Invalid shader asset for shader '%s'!", shaderFilePath);
                     return false;
@@ -117,7 +151,7 @@ namespace AZ
                 m_shader = RPI::Shader::FindOrCreate(shaderAsset);
                 if (m_shader == nullptr)
                 {
-                    AZ_Error("Hair Gem", false, "Pass failed to load shader '%s'!", shaderFilePath);
+                    AZ_Error("Hair Gem", false, "Pass failed to create shader instance from asset '%s'!", shaderFilePath);
                     return false;
                 }
 
@@ -135,27 +169,9 @@ namespace AZ
                     }
                 }
 
-                const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-
-                RPI::Scene* scene = GetScene();
-                if (!scene)
+                if (!UpdateShaderOptions(m_shader->GetDefaultShaderOptions().GetShaderVariantId()))
                 {
-                    AZ_Error("Hair Gem", false, "Scene could not be acquired" );
-                    return false;
-                }
-                RHI::DrawListTag drawListTag = m_shader->GetDrawListTag();
-                scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
-
-                pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
-                pipelineStateDescriptor.m_inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
-                pipelineStateDescriptor.m_inputStreamLayout.Finalize();
-
-                m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-                if (!m_pipelineState)
-                {
-                    AZ_Error("Hair Gem", false, "Pipeline state could not be acquired");
+                    AZ_Error("Hair Gem", false, "Failed to create pipeline state");
                     return false;
                 }
 
@@ -177,6 +193,7 @@ namespace AZ
             void HairGeometryRasterPass::SchedulePacketBuild(HairRenderObject* hairObject)
             {
                 m_newRenderObjects.insert(hairObject);
+                BuildDrawPacket(hairObject);
             }
 
             bool HairGeometryRasterPass::BuildDrawPacket(HairRenderObject* hairObject)
@@ -249,7 +266,6 @@ namespace AZ
                 for (HairRenderObject* newObject : m_newRenderObjects)
                 {
                     newObject->BindPerObjectSrgForRaster();
-                    BuildDrawPacket(newObject);
                 }
 
                 // Clear the new added objects - BuildDrawPacket should only be carried out once per

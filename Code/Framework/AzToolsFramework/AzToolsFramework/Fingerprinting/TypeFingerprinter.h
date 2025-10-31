@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,10 +27,10 @@ namespace AzToolsFramework
         /**
          * Generates fingerprints for each type known to the AZ::SerializeContext.
          */
-        class TypeFingerprinter
+        class AZTF_API TypeFingerprinter
         {
         public:
-            AZ_CLASS_ALLOCATOR(TypeFingerprinter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TypeFingerprinter, AZ::SystemAllocator);
 
             TypeFingerprinter(const AZ::SerializeContext& serializeContext);
 

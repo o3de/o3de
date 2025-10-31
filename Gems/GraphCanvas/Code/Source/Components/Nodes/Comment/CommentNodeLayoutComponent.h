@@ -40,14 +40,14 @@ namespace GraphCanvas
         // AZ::Component
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("GraphCanvas_NodeLayoutSupportService", 0xa8b639be));
-            dependent.push_back(AZ_CRC("GraphCanvas_CommentTextService", 0xb650db99));
+            dependent.push_back(AZ_CRC_CE("GraphCanvas_NodeLayoutSupportService"));
+            dependent.push_back(AZ_CRC_CE("GraphCanvas_CommentTextService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_NodeService", 0xcc0f32cc));
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
+            required.push_back(AZ_CRC_CE("GraphCanvas_NodeService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
         }
 
         void Init() override;

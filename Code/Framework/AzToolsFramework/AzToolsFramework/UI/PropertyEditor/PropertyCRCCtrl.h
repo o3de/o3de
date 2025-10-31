@@ -7,9 +7,13 @@
  */
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include "PropertyEditorAPI.h"
 #endif
@@ -20,12 +24,12 @@ class QString;
 namespace AzToolsFramework
 {
     // a control for storing a CRC-like u32 hex value and displaying it as hex.
-    class PropertyCRCCtrl
+    class AZTF_API PropertyCRCCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator);
 
         PropertyCRCCtrl(QWidget* pParent = NULL);
         virtual ~PropertyCRCCtrl();
@@ -39,6 +43,7 @@ namespace AzToolsFramework
 
     Q_SIGNALS:
         void valueChanged(AZ::u32 newValue);
+        void finishedEditing(AZ::u32 newValue);
 
     public Q_SLOTS:
         void setValue(AZ::u32 val);
@@ -50,31 +55,46 @@ namespace AzToolsFramework
 
         void UpdateValueText();
         AZ::u32 TextToValue();
-
-    protected:
-        void FocusChangedEdit(bool hasFocus);
         
     };
 
-    // note:  QT Objects cannot themselves be templates, else I would templatize creategui as well.
-    class U32CRCHandler  
-        : public QObject
-        , public PropertyHandler<AZ::u32, PropertyCRCCtrl>
+    template<class ValueType>
+    class CRC32HandlerCommon : public PropertyHandler<ValueType, PropertyCRCCtrl>
     {
-    Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator, 0);
-
-        AZ::u32 GetHandlerName(void) const override;
-        QWidget* GetFirstInTabOrder(PropertyCRCCtrl* widget) override;
-        QWidget* GetLastInTabOrder(PropertyCRCCtrl* widget) override;
-        void UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget) override;
-
-        QWidget* CreateGUI(QWidget* pParent) override;
-        void ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
-        void WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
-        bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
+        AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Crc; }
+        QWidget* GetFirstInTabOrder(PropertyCRCCtrl* widget) override { return widget->GetFirstInTabOrder(); }
+        QWidget* GetLastInTabOrder(PropertyCRCCtrl* widget) override { return widget->GetLastInTabOrder(); }
+        void UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget) override { widget->UpdateTabOrder(); }
     };
 
-    void RegisterCrcHandler();
+    class AZTF_API U32CRCHandler
+        : public QObject
+        , public CRC32HandlerCommon<AZ::u32>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator);
+
+        QWidget* CreateGUI(QWidget* pParent) override;
+        bool IsDefaultHandler() const override { return false; }
+        void ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        void WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
+    };
+
+    class AZTF_API CRC32Handler
+        : public QObject
+        , public CRC32HandlerCommon<AZ::Crc32>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator);
+
+        QWidget* CreateGUI(QWidget* pParent) override;
+        bool IsDefaultHandler() const override { return true; }
+        void ConsumeAttribute(PropertyCRCCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        void WriteGUIValuesIntoProperty(size_t index, PropertyCRCCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
+    };
+
+    AZTF_API void RegisterCrcHandler();
 };

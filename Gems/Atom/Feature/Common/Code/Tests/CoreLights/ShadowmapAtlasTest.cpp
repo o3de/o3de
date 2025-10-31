@@ -27,26 +27,6 @@ namespace UnitTest
     class ShadowmapAtlasTests
         : public ::testing::Test
     {
-        void SetUp() override
-        {
-            SystemAllocator::Descriptor desc;
-            desc.m_heap.m_numFixedMemoryBlocks = 1;
-            desc.m_heap.m_fixedMemoryBlocksByteSize[0] = 100 * 1024 * 1024;
-            m_memBlock = AZ_OS_MALLOC(
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0],
-                desc.m_heap.m_memoryBlockAlignment);
-            desc.m_heap.m_fixedMemoryBlocks[0] = m_memBlock;
-
-            AllocatorInstance<AZ::SystemAllocator>::Create(desc);
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            AZ_OS_FREE(m_memBlock);
-            m_memBlock = nullptr;
-        }
-
     public:
         // This randomize the given array with the given random seed.
         template<typename T>
@@ -92,9 +72,6 @@ namespace UnitTest
             }
             return pixelArray;
         }
-
-    private:
-        void* m_memBlock = nullptr;
     };
 
     // no shadowmap

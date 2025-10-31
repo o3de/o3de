@@ -59,7 +59,7 @@ namespace Audio
         class Implementation : public MicrophoneRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             static Implementation* Create();
         };

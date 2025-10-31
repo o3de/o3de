@@ -48,7 +48,7 @@ namespace EMotionFX
             AZ::u32 m_numTransitionsEnded;
         };
 
-        std::vector<ActiveObjectsAtFrame> m_activeObjectsAtFrame;
+        AZStd::fixed_vector<ActiveObjectsAtFrame, 16> m_activeObjectsAtFrame;
     };
 
     class AnimGraphStateMachine_InterruptionFixture
@@ -120,6 +120,12 @@ namespace EMotionFX
         {
             m_animGraphInstance->RemoveEventHandler(m_eventHandler);
             delete m_eventHandler;
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
 
             AnimGraphFixture::TearDown();
         }
@@ -142,7 +148,7 @@ namespace EMotionFX
             /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
             /*postUpdateCallback*/[this](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, int frame)
             {
-                const std::vector<AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame>& activeObjectsAtFrame = GetParam().m_activeObjectsAtFrame;
+                const auto& activeObjectsAtFrame = GetParam().m_activeObjectsAtFrame;
                 const AnimGraphStateMachine* stateMachine = this->m_rootStateMachine;
                 const AZStd::vector<AnimGraphNode*>& activeStates = stateMachine->GetActiveStates(animGraphInstance);
                 const AZStd::vector<AnimGraphStateTransition*>& activeTransitions = stateMachine->GetActiveTransitions(animGraphInstance);
@@ -163,22 +169,22 @@ namespace EMotionFX
                 compareAgainst.m_transitionRight = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
                     [](AnimGraphStateTransition* element) -> bool { return element->GetTargetNode()->GetNameString() == "C"; }) != activeTransitions.end();
 
-                for (const auto& activeObjects : activeObjectsAtFrame)
+                for (const AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame& activeObjects : activeObjectsAtFrame)
                 {
                     if (activeObjects.m_frameNr == static_cast<AZ::u32>(frame))
                     {
                         // Check which states and transitions are active and compare it to the expected ones.
-                        EXPECT_EQ(activeObjects.m_stateA, compareAgainst.m_stateA)
+                        EXPECT_THAT(activeObjects.m_stateA, ::testing::Eq(compareAgainst.m_stateA))
                             << "State A expected to be " << (activeObjects.m_stateA ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.m_stateB, compareAgainst.m_stateB)
+                        EXPECT_THAT(activeObjects.m_stateB, ::testing::Eq(compareAgainst.m_stateB))
                             << "State B expected to be " << (activeObjects.m_stateB ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.m_stateC, compareAgainst.m_stateC)
+                        EXPECT_THAT(activeObjects.m_stateC, ::testing::Eq(compareAgainst.m_stateC))
                             << "State C expected to be " << (activeObjects.m_stateB ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.m_transitionLeft, compareAgainst.m_transitionLeft)
+                        EXPECT_THAT(activeObjects.m_transitionLeft, ::testing::Eq(compareAgainst.m_transitionLeft))
                             << "Transition Start->A expected to be " << (activeObjects.m_transitionLeft ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.m_transitionMiddle, compareAgainst.m_transitionMiddle)
+                        EXPECT_THAT(activeObjects.m_transitionMiddle, ::testing::Eq(compareAgainst.m_transitionMiddle))
                             << "Transition Start->B expected to be " << (activeObjects.m_transitionMiddle ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.m_transitionRight, compareAgainst.m_transitionRight)
+                        EXPECT_THAT(activeObjects.m_transitionRight, ::testing::Eq(compareAgainst.m_transitionRight))
                             << "Transition Start->C expected to be " << (activeObjects.m_transitionRight ? "active." : "inactive.");
 
                         // Check anim graph events.
@@ -194,17 +200,19 @@ namespace EMotionFX
                             << this->m_eventHandler->m_numTransitionsStarted << " transitions started while " << activeObjects.m_numTransitionsStarted << " are expected.";
                         EXPECT_EQ(this->m_eventHandler->m_numTransitionsEnded, activeObjects.m_numTransitionsEnded)
                             << this->m_eventHandler->m_numTransitionsEnded << " transitions ended while " << activeObjects.m_numTransitionsEnded << " are expected.";
+
+
                     }
                 }
             }
         );
     }
 
-    std::vector<AnimGraphStateMachine_InterruptionTestData> animGraphStateMachineInterruptionTestData
+    AZStd::array animGraphStateMachineInterruptionTestData
     {
         // Start transition Start->A, interrupt with Start->B while Start->A is still transitioning
         // Interrupt with Start->C while the others keep transitioning till Start->C is done
-        {
+        AnimGraphStateMachine_InterruptionTestData{
             10.0f/*transitionLeftBlendTime*/,
             1.0f/*transitionLeftCountDownTime*/,
             10.0f/*transitionMiddleBlendTime*/,
@@ -280,7 +288,7 @@ namespace EMotionFX
         },
         // Start transition Start->A and let Start->B/C interrupt it
         // Start->A/B finishes and holds the target state active while Start->C is finishing
-        {
+        AnimGraphStateMachine_InterruptionTestData{
             2.0f/*transitionLeftBlendTime*/,
             1.0f/*transitionLeftCountDownTime*/,
             3.0f/*transitionMiddleBlendTime*/,
@@ -372,7 +380,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphStateMachine_InterruptionTest,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphStateMachine_InterruptionTest,
         AnimGraphStateMachine_InterruptionFixture,
             ::testing::ValuesIn(animGraphStateMachineInterruptionTestData)
         );
@@ -446,6 +454,18 @@ namespace EMotionFX
             m_animGraphInstance = m_motionNodeAnimGraph->GetAnimGraphInstance(m_actorInstance, m_motionSet);
         }
 
+        void TearDown() override
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
+
+            AnimGraphFixture::TearDown();
+        }
+
         AZStd::unique_ptr<TwoMotionNodeAnimGraph> m_motionNodeAnimGraph;
         AnimGraphStateTransition* m_transitionLeft = nullptr;
         AnimGraphStateTransition* m_transitionRight = nullptr;
@@ -494,10 +514,10 @@ namespace EMotionFX
             );
     }
 
-    std::vector<AnimGraphStateMachine_InterruptionPropertiesTestData> animGraphStateMachineInterruptionPropertiesTestData
+    AZStd::array animGraphStateMachineInterruptionPropertiesTestData
     {
         // Enable right transition at 0.5 while this is over the max blend weight already, don't allow interruption.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f /*transitionLeftBlendTime*/,
             0.0f /*transitionLeftCountDownTime*/,
             1.0f /*transitionRightBlendTime*/,
@@ -507,7 +527,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue /*interruptionBlendBehavior*/
         },
         // Right transition ready after 0.5 while still in range for the max blend weight, interruption expected.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f,
             0.0f,
             1.0f,
@@ -517,7 +537,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue
         },
         // Interruption always allowed.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             0.5f,
             0.0f,
             0.5f,
@@ -527,7 +547,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue
         },
         // Test if interrupted transitions stop transitioning with blend behavior set to stop.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f,
             0.0f,
             1.0f,
@@ -538,7 +558,7 @@ namespace EMotionFX
         },
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphStateMachine_InterruptionPropertiesTest,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphStateMachine_InterruptionPropertiesTest,
         AnimGraphStateMachine_InterruptionPropertiesFixture,
             ::testing::ValuesIn(animGraphStateMachineInterruptionPropertiesTestData)
         );

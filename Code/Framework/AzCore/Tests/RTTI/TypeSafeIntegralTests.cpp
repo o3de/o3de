@@ -24,13 +24,12 @@ namespace UnitTest
 
     template <typename IntegralType>
     class TypeSafeIntegralTests
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
-        ;
     };
 
     using IntegralTypes = ::testing::Types<TestInt8, TestInt16, TestInt32, TestInt64, TestUInt8, TestUInt16, TestUInt32, TestUInt64>;
-    TYPED_TEST_CASE(TypeSafeIntegralTests, IntegralTypes);
+    TYPED_TEST_SUITE(TypeSafeIntegralTests, IntegralTypes);
 
     TYPED_TEST(TypeSafeIntegralTests, TestSum)
     {

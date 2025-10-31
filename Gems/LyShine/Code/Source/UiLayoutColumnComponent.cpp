@@ -128,7 +128,7 @@ AZ::Vector2 UiLayoutColumnComponent::GetSizeToFitChildElements(const AZ::Vector2
 
     // Check if anchors are together
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
     if (anchors.m_left == anchors.m_right)
     {
         size.SetX(numChildElements > 0 ? childElementSize.GetX() : 0.0f);
@@ -137,7 +137,7 @@ AZ::Vector2 UiLayoutColumnComponent::GetSizeToFitChildElements(const AZ::Vector2
     {
         // Anchors are apart, so width remains untouched
         AZ::Vector2 curSize(0.0f, 0.0f);
-        EBUS_EVENT_ID_RESULT(curSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(curSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
         size.SetX(curSize.GetX());
     }
 
@@ -327,7 +327,7 @@ void UiLayoutColumnComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutColumn.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutColumn.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutColumnComponent::m_padding, "Padding", "The layout padding")
@@ -459,12 +459,12 @@ void UiLayoutColumnComponent::ApplyLayoutWidth(float availableWidth)
         UiTransform2dInterface::Anchors anchors(0.0f, 0.0f, 0.0f, 0.0f);
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
         int childIndex = 0;
         for (auto child : childEntityIds)
         {
             // Set the anchors
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
             // Calculate occupied width
             float width = UiLayoutHelpers::CalculateSingleElementSize(layoutCells[childIndex], availableWidth);
@@ -474,12 +474,12 @@ void UiLayoutColumnComponent::ApplyLayoutWidth(float availableWidth)
 
             // Set the offsets
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, child, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, child, &UiTransform2dBus::Events::GetOffsets);
 
             offsets.m_left = m_padding.m_left + alignmentOffset;
             offsets.m_right = offsets.m_left + width;
 
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
 
             childIndex++;
         }
@@ -511,7 +511,7 @@ void UiLayoutColumnComponent::ApplyLayoutHeight(float availableHeight)
 
         // Set the child elements' transform properties based on the calculated child heights
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
 
         float curY = alignmentOffset;
         switch (m_order)
@@ -532,7 +532,7 @@ void UiLayoutColumnComponent::ApplyLayoutHeight(float availableHeight)
         {
             // Set the offsets
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, child, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, child, &UiTransform2dBus::Events::GetOffsets);
             switch (m_order)
             {
             case UiLayoutInterface::VerticalOrder::TopToBottom:
@@ -551,7 +551,7 @@ void UiLayoutColumnComponent::ApplyLayoutHeight(float availableHeight)
                 AZ_Assert(0, "Unrecognized VerticalOrder type in UiLayoutColumnComponent");
                 break;
             }
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
 
             childIndex++;
         }

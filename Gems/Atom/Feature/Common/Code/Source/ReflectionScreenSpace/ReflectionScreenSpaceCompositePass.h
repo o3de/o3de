@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceCompositePass, "{88739CC9-C3F1-413A-A527-9916C697D93A}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceCompositePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceCompositePass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceCompositePass> Create(const RPI::PassDescriptor& descriptor);
@@ -34,9 +34,11 @@ namespace AZ
 
             // Pass Overrides...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-            bool IsEnabled() const override;
 
-            mutable uint32_t m_frameDelayCount = 0;
+            RHI::ShaderInputNameIndex m_outputScaleNameIndex = "m_outputScale";
+            RHI::ShaderInputNameIndex m_outputWidthNameIndex = "m_outputWidth";
+            RHI::ShaderInputNameIndex m_outputHeightNameIndex = "m_outputHeight";
+            RHI::ShaderInputNameIndex m_maxRoughnessNameIndex = "m_maxRoughness";
         };
     }   // namespace RPI
 }   // namespace AZ

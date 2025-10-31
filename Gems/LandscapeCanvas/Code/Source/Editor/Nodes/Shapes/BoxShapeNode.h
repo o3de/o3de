@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class BoxShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BoxShapeNode, AZ::SystemAllocator);
         AZ_RTTI(BoxShapeNode, "{8901D121-7F43-4EDE-8858-AFAC9D2E55F0}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,8 +24,8 @@ namespace LandscapeCanvas
         BoxShapeNode() = default;
         explicit BoxShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
 
     };
 }

@@ -8,6 +8,7 @@
 #include <RHI/Device.h>
 #include <RHI/Buffer.h>
 #include <RHI/CommandList.h>
+#include <RHI/Fence.h>
 #include <RHI/QueryPool.h>
 #include <RHI/QueryPoolResolver.h>
 #include <RHI/Scope.h>
@@ -19,37 +20,36 @@ namespace AZ
 {
     namespace DX12
     {
-        QueryPoolResolver::QueryPoolResolver(Device& device, QueryPool& queryPool)
+        QueryPoolResolver::QueryPoolResolver(int deviceIndex, QueryPool& queryPool)
             : m_queryPool(queryPool)
-            , m_device(device)
+            , m_deviceIndex(deviceIndex)
         {
-            m_resolveFence = FenceImpl::Create();
-            m_resolveFence->Init(device, RHI::FenceState::Reset);
-
+            m_resolveFence = new RHI::Fence;
+            m_resolveFence->Init(static_cast<RHI::MultiDevice::DeviceMask>(1 << deviceIndex), RHI::FenceState::Reset);
         }
 
         uint64_t QueryPoolResolver::QueueResolveRequest(const ResolveRequest& request)
         {
             m_resolveRequests.push_back(request);
-            return m_resolveFence->Get().Increment();
+            return static_cast<FenceImpl*>(m_resolveFence->GetDeviceFence(m_deviceIndex).get())->Get().Increment();
         }
 
         bool QueryPoolResolver::IsResolveFinished(uint64_t fenceValue)
         {
-            return fenceValue <= m_resolveFence->Get().GetCompletedValue();
+            return fenceValue <= static_cast<FenceImpl*>(m_resolveFence->GetDeviceFence(m_deviceIndex).get())->Get().GetCompletedValue();
         }
 
         void QueryPoolResolver::WaitForResolve(uint64_t fenceValue)
         {
             FenceEvent event("WaitForResolve");
-            m_resolveFence->Get().Wait(event, fenceValue);
+            static_cast<FenceImpl*>(m_resolveFence->GetDeviceFence(m_deviceIndex).get())->Get().Wait(event, fenceValue);
         }
 
         void QueryPoolResolver::Compile(Scope& scope)
         {
             if (!m_resolveRequests.empty())
             {
-                scope.AddFenceToSignal(AZStd::static_pointer_cast<RHI::Fence>(m_resolveFence));
+                scope.AddFenceToSignal(m_resolveFence);
             }
         }
 

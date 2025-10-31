@@ -140,7 +140,7 @@ namespace ScriptCanvas
                 }
             }
 
-            void ReceiveScriptEvent::InitializeEvent(AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, int eventIndex, SlotIdMapping& populationMapping)
+            void ReceiveScriptEvent::InitializeEvent([[maybe_unused]] AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset, int eventIndex, SlotIdMapping& populationMapping)
             {
                 if (!m_handler)
                 {

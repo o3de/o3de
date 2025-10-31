@@ -164,18 +164,6 @@ namespace AZ
                 return false;
             }
         
-            MTLBlitOption GetBlitOption(RHI::Format format)
-            {
-                switch(format)
-                {
-                    case RHI::Format::PVRTC4_UNORM:
-                    case RHI::Format::PVRTC4_UNORM_SRGB:
-                        return MTLBlitOptionRowLinearPVRTC;
-                    default:
-                        return MTLBlitOptionNone;
-                }
-            }
-        
             MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode)
             {
                 //No iOS specific addressMode.

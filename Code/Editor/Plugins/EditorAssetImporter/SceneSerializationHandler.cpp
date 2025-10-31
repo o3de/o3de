@@ -38,27 +38,24 @@ namespace AZ
     }
 
     AZStd::shared_ptr<SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
-        const AZStd::string& filePath, Uuid sceneSourceGuid)
+        const AZStd::string& sceneFilePath,
+        Uuid sceneSourceGuid,
+        const AZStd::string& watchFolder)
     {
         AZ_PROFILE_FUNCTION(Editor);
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
+        using namespace SceneAPI::SceneCore;
 
         CleanSceneMap();
 
-        AZ_TraceContext("File", filePath);
-        if (!IsValidExtension(filePath))
+        AZ_TraceContext("File", sceneFilePath.c_str());
+        if (!IsValidExtension(sceneFilePath))
         {
             return nullptr;
         }
 
-        AZ::IO::Path enginePath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        }
-
-        AZ::IO::Path cleanPath = (enginePath / filePath).LexicallyNormal();
+        AZ::IO::Path cleanPath(BuildCleanPathFromFilePath(sceneFilePath));
 
         auto sceneIt = m_scenes.find(cleanPath.Native());
         if (sceneIt != m_scenes.end())
@@ -82,8 +79,8 @@ namespace AZ
         {
             bool result = false;
             AZ::Data::AssetInfo info;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, cleanPath.c_str(), info, watchFolder);
+            AZStd::string watchFolderFromDatabase;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, cleanPath.c_str(), info, watchFolderFromDatabase);
             if (!result)
             {
                 AZ_TracePrintf(Utilities::ErrorWindow, "Failed to retrieve file info needed to determine the uuid of the source file.");
@@ -93,7 +90,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = 
-            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath.Native(), sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
+            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath.Native(), sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, LoadingComponent::TYPEINFO_Uuid(), watchFolder);
         if (!scene)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load the requested scene.");
@@ -103,6 +100,33 @@ namespace AZ
         m_scenes.emplace(AZStd::move(cleanPath.Native()), scene);
         
         return scene;
+    }
+    
+    bool SceneSerializationHandler::IsSceneCached(const AZStd::string& sceneFilePath)
+    {
+        if (!IsValidExtension(sceneFilePath))
+        {
+            return false;
+        }
+        AZ::IO::Path cleanPath(BuildCleanPathFromFilePath(sceneFilePath));
+        
+        CleanSceneMap();
+        // There's a small window where all shared pointers might be released after cleaning the map
+        // and before checking the list here, so this won't be 100% accurate, but it will still catch
+        // cases where the scene is in use somewhere.
+        return m_scenes.find(cleanPath.Native()) != m_scenes.end();
+
+    }
+
+    AZ::IO::Path SceneSerializationHandler::BuildCleanPathFromFilePath(const AZStd::string& filePath) const
+    {
+        AZ::IO::Path enginePath;
+        if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        return((enginePath / filePath).LexicallyNormal());
     }
 
     bool SceneSerializationHandler::IsValidExtension(const AZStd::string& filePath) const

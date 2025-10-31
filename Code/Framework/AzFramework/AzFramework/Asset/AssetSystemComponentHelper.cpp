@@ -43,6 +43,13 @@ namespace AzFramework
             SendRequest(request);
         }
 
+        void AssetSystemComponent::UpdateSourceControlStatus(bool newStatus)
+        {
+            UpdateSourceControlStatusRequest request;
+            request.m_sourceControlEnabled = newStatus;
+            SendRequest(request);
+        }
+
         void AssetSystemComponent::ShowInAssetProcessor(const AZStd::string& assetPath)
         {
             AllowAssetProcessorToForeground();
@@ -97,12 +104,12 @@ namespace AzFramework
                 if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, ip,
                     AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::AssetProcessorRemoteIp))
                 {
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Failed to find ip, setting 127.0.0.1\n");
+                    AZ_TraceOnce("AssetSystemComponent", "Failed to find ip, setting 127.0.0.1\n");
                     outputConnectionSettings.m_assetProcessorIp = "127.0.0.1";
                 }
                 else if (ip.empty())
                 {
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Ip is empty, setting 127.0.0.1\n");
+                    AZ_TraceOnce("AssetSystemComponent", "Ip is empty, setting 127.0.0.1\n");
                     outputConnectionSettings.m_assetProcessorIp = "127.0.0.1";
                 }
                 else
@@ -146,7 +153,7 @@ namespace AzFramework
                 AZ::s64 port64;
                 if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, port64, AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::AssetProcessorRemotePort))
                 {
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Failed to find port, setting 45643\n");
+                    AZ_TraceOnce("AssetSystemComponent", "Failed to find port, setting 45643\n");
                     outputConnectionSettings.m_assetProcessorPort = 45643;
                 }
                 else
@@ -160,7 +167,7 @@ namespace AzFramework
                 AZ::SettingsRegistryInterface::FixedValueString assetsPlatform;
                 if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetsPlatform, AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::Assets))
                 {
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Failed to find asset platform, setting 'pc'\n");
+                    AZ_TraceOnce("AssetSystemComponent", "Failed to find asset platform, setting 'pc'\n");
                     outputConnectionSettings.m_assetPlatform = "pc";
                 }
                 else
@@ -171,7 +178,7 @@ namespace AzFramework
                 if (outputConnectionSettings.m_assetPlatform.empty())
                 {
                     assetsPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Asset platform read from bootstrap is empty, setting %s\n", assetsPlatform.c_str());
+                    AZ_TraceOnce("AssetSystemComponent", "Asset platform read from bootstrap is empty, setting %s\n", assetsPlatform.c_str());
                 }
             }
 
@@ -184,7 +191,7 @@ namespace AzFramework
                     // The first time the AssetProcessor runs within a branch the bootstrap.cfg does not have a branch token set
                     // Therefore it is not an error for the branch token to not be in the bootstrap.cfg file
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, branchToken);
-                    AZ_TracePrintfOnce("AssetSystemComponent", "Failed to read branch token from bootstrap. Calculating Branch Token: %s\n", branchToken.c_str());
+                    AZ_TraceOnce("AssetSystemComponent", "Failed to read branch token from bootstrap. Calculating Branch Token: %s\n", branchToken.c_str());
                     outputConnectionSettings.m_branchToken = branchToken;
                 }
                 else
@@ -193,7 +200,7 @@ namespace AzFramework
                     if (outputConnectionSettings.m_branchToken.empty())
                     {
                         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, branchToken);
-                        AZ_TracePrintfOnce("AssetSystemComponent", "Branch token read from bootstrap is empty. Calculating Branch Token: %s\n", branchToken.c_str());
+                        AZ_TraceOnce("AssetSystemComponent", "Branch token read from bootstrap is empty. Calculating Branch Token: %s\n", branchToken.c_str());
                         outputConnectionSettings.m_branchToken = branchToken;
                     }
                 }

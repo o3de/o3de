@@ -35,6 +35,7 @@ namespace {{ xml.attrib['Name'] }}
                 {
                     return AzNetworking::PacketDispatchResult::Success;
                 }
+                break;
             }
 {%      endfor %}
         }

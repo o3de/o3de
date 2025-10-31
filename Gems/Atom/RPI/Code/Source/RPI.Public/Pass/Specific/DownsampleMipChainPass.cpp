@@ -67,7 +67,7 @@ namespace AZ
         {
             // Get the input/output mip chain attachment for this pass (at binding 0)
             AZ_Assert(GetInputOutputCount() > 0, "[DownsampleMipChainPass '%s']: must have an input/output", GetPathName().GetCStr());
-            PassAttachment* attachment = GetInputOutputBinding(0).m_attachment.get();
+            PassAttachment* attachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (attachment != nullptr)
             {
@@ -99,7 +99,7 @@ namespace AZ
             passData->m_shaderReference = m_passData.m_shaderReference;
 
             PassAttachmentBinding& inOutBinding = GetInputOutputBinding(0);
-            Ptr<PassAttachment>& inOutAttachment = inOutBinding.m_attachment;
+            const Ptr<PassAttachment>& inOutAttachment = inOutBinding.GetAttachment();
 
             // We are downsampling a mip chain where the first mip is already written to
             // Create passes to write to the other [mipLevels - 1] mips
@@ -118,13 +118,13 @@ namespace AZ
                     inBinding.m_name = "Input";
                     inBinding.m_slotType = PassSlotType::Input;
                     inBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    inBinding.m_attachment = inOutAttachment;
                     inBinding.m_connectedBinding = &inOutBinding;
 
                     RHI::ImageViewDescriptor inViewDesc;
                     inViewDesc.m_mipSliceMin = mip;
                     inViewDesc.m_mipSliceMax = mip;
                     inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
+                    inBinding.SetAttachment(inOutAttachment);
 
                     childPass->AddAttachmentBinding(inBinding);
                 }
@@ -135,13 +135,13 @@ namespace AZ
                     outBinding.m_name = "Output";
                     outBinding.m_slotType = PassSlotType::InputOutput;
                     outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                    outBinding.m_attachment = inOutAttachment;
                     outBinding.m_connectedBinding = &inOutBinding;
 
                     RHI::ImageViewDescriptor outViewDesc;
                     outViewDesc.m_mipSliceMin = mip + 1;
                     outViewDesc.m_mipSliceMax = mip + 1;
                     outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                    outBinding.SetAttachment(inOutAttachment);
 
                     childPass->AddAttachmentBinding(outBinding);
                 }

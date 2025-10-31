@@ -7,10 +7,11 @@
  */
 #pragma once
 
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/functional.h>
 
 #include <Atom/RHI.Reflect/Size.h>
@@ -53,13 +54,16 @@ namespace AZ
             //! @return the loaded PngFile or an invalid PngFile if there was an error.
             static PngFile Load(const char* path, LoadSettings loadSettings = {});
 
+            //! @return the loaded PngFile or an invalid PngFile if there was an error.
+            static PngFile LoadFromBuffer(AZStd::span<const uint8_t> data, LoadSettings loadSettings = {});
+
             //! Create a PngFile from an RHI data buffer.
             //! @param size the dimensions of the image (m_depth is not used, assumed to be 1)
             //! @param format indicates the pixel format represented by @data. Only a limited set of formats are supported, see implementation.
             //! @param data the buffer of image data. The size of the buffer must match the @size and @format parameters.
             //! @param errorHandler optional callback function describing any errors that are encountered
             //! @return the created PngFile or an invalid PngFile if there was an error.
-            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler = {});
+            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::span<const uint8_t> data, ErrorHandler errorHandler = {});
             static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data, ErrorHandler errorHandler = {});
 
             PngFile() = default;
@@ -83,10 +87,12 @@ namespace AZ
         private:
             AZ_DEFAULT_COPY(PngFile)
 
-                static const int HeaderSize = 8;
+            static const int HeaderSize = 8;
 
             static void DefaultErrorHandler(const char* message);
 
+            static PngFile LoadInternal(AZ::IO::GenericStream& dataStream, LoadSettings loadSettings);
+                
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             int32_t m_bitDepth = 0;

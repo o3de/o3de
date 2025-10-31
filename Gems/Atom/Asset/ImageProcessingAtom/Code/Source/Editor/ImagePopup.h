@@ -27,7 +27,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ImagePopup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImagePopup, AZ::SystemAllocator);
         explicit ImagePopup(QImage previewImage, QWidget* parent = nullptr);
         ~ImagePopup();
 

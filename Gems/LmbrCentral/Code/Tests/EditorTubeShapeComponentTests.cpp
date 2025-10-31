@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -21,13 +22,13 @@ namespace AZ
 namespace UnitTest
 {
     class EditorTubeShapeFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<bool>
     {
     };
 
     // test both open and closed versions of the spline
-    INSTANTIATE_TEST_CASE_P(GenerateTubeManipulatorStates, EditorTubeShapeFixture, ::testing::Values(true, false));
+    INSTANTIATE_TEST_SUITE_P(GenerateTubeManipulatorStates, EditorTubeShapeFixture, ::testing::Values(true, false));
 
     TEST_P(EditorTubeShapeFixture, GenerateTubeManipulatorStates_returns_no_TubeManipulatorStates_when_spline_is_empty)
     {

@@ -17,7 +17,7 @@ namespace UnitTest
     };
 
     using MathTestConfigs = ::testing::Types<float, double, long double>;
-    TYPED_TEST_CASE(StdMathTest, MathTestConfigs);
+    TYPED_TEST_SUITE(StdMathTest, MathTestConfigs);
 
     TYPED_TEST(StdMathTest, LerpOperations)
     {

@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModule, "{7B330394-BE9C-4BDA-9345-1A0859815982}", Module);
-            AZ_CLASS_ALLOCATOR(EditorModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModule, AZ::SystemAllocator);
 
             EditorModule()
                 : Module()
@@ -46,7 +46,8 @@ namespace AZ
     }
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_AtomBridge.Editor, AZ::AtomBridge::EditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::AtomBridge::EditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_AtomBridge_Editor, AZ::AtomBridge::EditorModule)
+#endif

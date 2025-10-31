@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
@@ -22,11 +23,11 @@ namespace AZ
         using AuxGeomDrawPtr = AZStd::shared_ptr<AuxGeomDraw>;
 
         //! Interface of AuxGeom system, which is used for drawing Auxiliary Geometry, both for debug and things like editor manipulators.
-        class AuxGeomFeatureProcessorInterface
+        class ATOM_RPI_PUBLIC_API AuxGeomFeatureProcessorInterface
             : public FeatureProcessor
         {
         public:
-            AZ_RTTI(AuxGeomFeatureProcessorInterface, "{2750EE44-5AE6-4379-BA3B-EDCD1507C997}", FeatureProcessor);
+            AZ_RTTI(AZ::RPI::AuxGeomFeatureProcessorInterface, "{2750EE44-5AE6-4379-BA3B-EDCD1507C997}", AZ::RPI::FeatureProcessor);
 
             AuxGeomFeatureProcessorInterface() = default;
             virtual ~AuxGeomFeatureProcessorInterface() = default;

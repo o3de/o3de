@@ -6,7 +6,7 @@
  *
  */
 
-#include <qpushbutton.h>
+#include <QPushButton>
 
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
@@ -25,7 +25,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/GraphStates.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/UtilityStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ///////////////////////
     // AltClickDeleteTest

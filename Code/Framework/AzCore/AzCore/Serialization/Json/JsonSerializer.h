@@ -16,7 +16,7 @@ namespace AZ
 {
     class JsonSerializerContext;
 
-    class JsonSerializer final
+    class AZCORE_API JsonSerializer final
     {
         friend class JsonSerialization;
         friend class BaseJsonSerializer;
@@ -79,7 +79,7 @@ namespace AZ
             const void*& object, const void*& defaultObject, AZStd::any& defaultObjectStorage,
             const SerializeContext::ClassData*& elementClassData, const AZ::IRttiHelper& rtti,  JsonSerializerContext& context);
 
-        static rapidjson::Value StoreTypeName(const SerializeContext::ClassData& classData, JsonSerializerContext& context);
+        static rapidjson::Value StoreTypeName(const SerializeContext::ClassData& classData, const Uuid& typeId, JsonSerializerContext& context);
         static JsonSerializationResult::ResultCode StoreTypeName(rapidjson::Value& output,
             const Uuid& typeId, JsonSerializerContext& context);
 

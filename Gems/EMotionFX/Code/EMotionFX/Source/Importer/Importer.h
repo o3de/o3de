@@ -11,7 +11,7 @@
 #include "../EMotionFXConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Endian.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/std/string/string.h>
 
@@ -45,7 +45,8 @@ namespace EMotionFX
      *
      * The same applies to other types like motions, but using the LoadMotion, LoadAnimGraph and LoadMotionSet methods.
      */
-    class EMFX_API Importer : public BaseObject
+    class EMFX_API Importer : 
+        public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;
@@ -83,7 +84,6 @@ namespace EMotionFX
             bool m_optimizeForServer = false;                       /**< Set to true if you witsh to optimize this actor to be used on server. */
             uint32 m_threadIndex = 0;
             AZStd::vector<uint32>    m_chunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
-            AZStd::vector<uint32>    m_layerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
 
             /**
              * If the actor need to be optimized for server, will overwrite a few other actor settings.
@@ -451,11 +451,6 @@ namespace EMotionFX
          */
         bool ProcessChunk(MCore::File* file, Importer::ImportParameters& importParams);
 
-        /**
-         * Validate and resolve any conflicting settings inside a specific actor import settings object.
-         * @param settings The actor settings to verify and fix/modify when needed.
-         */
-        void ValidateActorSettings(ActorSettings* settings);
 
         /**
          * Validate and resolve any conflicting settings inside a specific motion import settings object.

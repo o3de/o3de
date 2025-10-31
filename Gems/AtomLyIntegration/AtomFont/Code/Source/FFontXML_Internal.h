@@ -191,7 +191,15 @@ namespace AtomFontInternal
                     m_FontTexSize.set(512, 512);
                 }
 
-                bool fontLoaded = m_font->Load(m_strFontPath.c_str(), m_FontTexSize.x, m_FontTexSize.y, m_slotSizes.x, m_slotSizes.y, CreateTTFFontFlag(m_FontSmoothMethod, m_FontSmoothAmount), m_SizeRatio);
+                bool fontLoaded = m_font->Load(
+                                            m_strFontPath.c_str(), 
+                                            static_cast<unsigned int>(m_FontTexSize.x), 
+                                            static_cast<unsigned int>(m_FontTexSize.y), 
+                                            m_slotSizes.x, 
+                                            m_slotSizes.y, 
+                                            CreateTTFFontFlag(m_FontSmoothMethod, m_FontSmoothAmount), 
+                                            m_SizeRatio
+                                            );
                 if (!fontLoaded)
                 {
                     FoundElementImpl();

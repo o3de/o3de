@@ -34,6 +34,9 @@ namespace AZ
 
             /// A set of user fences to signal after executing the command lists.
             AZStd::vector<Fence*> m_userFencesToSignal;
+
+            /// A set of user fences to wait for before executing the command lists.
+            AZStd::vector<Fence*> m_userFencesToWaitFor;
         };
 
         enum class HardwareQueueSubclass
@@ -54,7 +57,7 @@ namespace AZ
             using Base = RHI::CommandQueue;
         public:
             
-            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator);
             AZ_RTTI(CommandQueue, "{9F93F430-E440-4033-9FBD-1A399B03355B}", Base);
 
             static RHI::Ptr<CommandQueue> Create();
@@ -66,6 +69,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             void CalibrateClock();
+            AZStd::pair<uint64_t, uint64_t> GetClockCalibration();
 
             ID3D12CommandQueue* GetPlatformQueue() const;
 
@@ -86,9 +90,6 @@ namespace AZ
             void ShutdownInternal() override;
             void* GetNativeQueue() override;
             //////////////////////////////////////////////////////////////////////////
-
-            void ProcessQueue();
-
             
             void UpdateTileMappings(CommandList& commandList);
 
@@ -98,11 +99,12 @@ namespace AZ
             HardwareQueueSubclass   m_hardwareQueueSubclass{ HardwareQueueSubclass::Primary };
 
             uint64_t m_calibratedGpuTimestampFrequency = 0;
-            AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;
-            AZStd::vector<uint32_t> m_rangeCounts;
 
             AZStd::sys_time_t m_lastExecuteDuration{};
             AZStd::sys_time_t m_lastPresentDuration{};
         };
+
+        // helper function
+        void UpdateTileMap(RHI::Ptr<ID3D12CommandQueue> queue, const CommandList::TileMapRequest& request);
     }
 }

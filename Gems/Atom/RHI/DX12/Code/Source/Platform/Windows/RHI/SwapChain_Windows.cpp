@@ -24,22 +24,23 @@ namespace AZ
 
         Device& SwapChain::GetDevice() const
         {
-            return static_cast<Device&>(RHI::SwapChain::GetDevice());
+            return static_cast<Device&>(RHI::DeviceSwapChain::GetDevice());
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
         {
             // Check whether tearing support is available for full screen borderless windowed mode.
+            Device& device = static_cast<Device&>(deviceBase);
             BOOL allowTearing = FALSE;
             DX12Ptr<IDXGIFactoryX> dxgiFactory;
-            DX12::AssertSuccess(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory.GetAddressOf())));
+            device.AssertSuccess(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory.GetAddressOf())));
             m_isTearingSupported = SUCCEEDED(dxgiFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))) && allowTearing;
 
             if (nativeDimensions)
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
-            const uint32_t SwapBufferCount = RHI::Limits::Device::FrameCountMax;
+            const uint32_t SwapBufferCount = AZStd::max(RHI::Limits::Device::MinSwapChainImages, RHI::Limits::Device::FrameCountMax);
 
             DXGI_SWAP_CHAIN_DESCX swapChainDesc = {};
             swapChainDesc.SampleDesc.Quality = 0;
@@ -49,7 +50,7 @@ namespace AZ
             swapChainDesc.Width = descriptor.m_dimensions.m_imageWidth;
             swapChainDesc.Height = descriptor.m_dimensions.m_imageHeight;
             swapChainDesc.Format = ConvertFormat(descriptor.m_dimensions.m_imageFormat);
-            swapChainDesc.Scaling = DXGI_SCALING_NONE;
+            swapChainDesc.Scaling = ConvertScaling(descriptor.m_scalingMode);
             swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
             swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
             if (m_isTearingSupported)
@@ -59,7 +60,7 @@ namespace AZ
             }
 
             IUnknown* window = reinterpret_cast<IUnknown*>(descriptor.m_window.GetIndex());
-            RHI::ResultCode result = static_cast<Device&>(deviceBase).CreateSwapChain(reinterpret_cast<IUnknown*>(descriptor.m_window.GetIndex()), swapChainDesc, m_swapChain);
+            RHI::ResultCode result = device.CreateSwapChain(reinterpret_cast<IUnknown*>(descriptor.m_window.GetIndex()), swapChainDesc, m_swapChain);
             if (result == RHI::ResultCode::Success)
             {
                 ConfigureDisplayMode(*nativeDimensions);
@@ -84,7 +85,7 @@ namespace AZ
                     // target HWND swap chain, which you can guarantee by calling the IDXGIObject::GetParent method on the swap chain to locate the factory.
                     IDXGIFactoryX* parentFactory = nullptr;
                     m_swapChain->GetParent(__uuidof(IDXGIFactoryX), (void **)&parentFactory);
-                    DX12::AssertSuccess(parentFactory->MakeWindowAssociation(reinterpret_cast<HWND>(window), DXGI_MWA_NO_ALT_ENTER));
+                    device.AssertSuccess(parentFactory->MakeWindowAssociation(reinterpret_cast<HWND>(window), DXGI_MWA_NO_ALT_ENTER));
                 }
             }
             return result;
@@ -109,65 +110,7 @@ namespace AZ
                 // UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
                 HRESULT hresult = m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, 0);
 
-                if (hresult == DXGI_ERROR_DEVICE_REMOVED)
-                {
-                    HRESULT deviceRemovedResult = GetDevice().GetDevice()->GetDeviceRemovedReason();
-                    switch (deviceRemovedResult)
-                    {
-                    case DXGI_ERROR_DEVICE_HUNG:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_DEVICE_HUNG - The application's device failed due to badly formed commands sent by the "
-                            "application. This is an design-time issue that should be investigated and fixed.");
-                        break;
-                    case DXGI_ERROR_DEVICE_REMOVED:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_DEVICE_REMOVED - The video card has been physically removed from the system, or a driver upgrade "
-                            "for the video card has occurred. The application should destroy and recreate the device. For help debugging "
-                            "the problem, call ID3D10Device::GetDeviceRemovedReason.");
-                        break;
-                    case DXGI_ERROR_DEVICE_RESET:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_DEVICE_RESET - The device failed due to a badly formed command. This is a run-time issue; The "
-                            "application should destroy and recreate the device.");
-                        break;
-                    case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_DRIVER_INTERNAL_ERROR - The driver encountered a problem and was put into the device removed "
-                            "state.");
-                        break;
-                    case DXGI_ERROR_INVALID_CALL:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_INVALID_CALL - The application provided invalid parameter data; this must be debugged and fixed "
-                            "before the application is released.");
-                        break;
-                    case DXGI_ERROR_ACCESS_DENIED:
-                        AZ_TracePrintf(
-                            "DX12",
-                            "DXGI_ERROR_ACCESS_DENIED - You tried to use a resource to which you did not have the required access "
-                            "privileges. This error is most typically caused when you write to a shared resource with read-only access.");
-                        break;
-                    case S_OK:
-                        AZ_TracePrintf("DX12", "S_OK - The method succeeded without an error.");
-                        break;
-                    }
-
-                    if (GetDevice().IsAftermathInitialized())
-                    {
-                        // DXGI_ERROR error notification is asynchronous to the NVIDIA display
-                        // driver's GPU crash handling. Give the Nsight Aftermath GPU crash dump
-                        // thread some time to do its work before terminating the process.
-                        Sleep(3000);
-
-                        // Try outputting the name of the last scope that was executing on the GPU
-                        // There is a good chance that is the cause of the GPU crash and should be investigated first
-                        Aftermath::OutputLastScopeExecutingOnGPU(GetDevice().GetAftermathGPUCrashTracker());
-                    }
-                }
+                GetDevice().AssertSuccess(hresult);
 
                 return (GetCurrentImageIndex() + 1) % GetImageCount();
             }
@@ -180,7 +123,7 @@ namespace AZ
             Device& device = GetDevice();
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            DX12::AssertSuccess(m_swapChain->GetBuffer(request.m_imageIndex, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            GetDevice().AssertSuccess(m_swapChain->GetBuffer(request.m_imageIndex, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             device.GetImageAllocationInfo(request.m_descriptor, allocationInfo);
@@ -195,21 +138,21 @@ namespace AZ
             image.SetAttachmentState(D3D12_RESOURCE_STATE_COMMON);
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes += allocationInfo.SizeInBytes;
-            memoryUsage.m_residentInBytes += allocationInfo.SizeInBytes;
+            memoryUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
+            memoryUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
 
             return RHI::ResultCode::Success;
         }
 
-        void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void SwapChain::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
 
             const size_t sizeInBytes = image.GetMemoryView().GetSize();
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes -= sizeInBytes;
-            memoryUsage.m_residentInBytes -= sizeInBytes;
+            memoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            memoryUsage.m_usedResidentInBytes -= sizeInBytes;
 
             GetDevice().QueueForRelease(image.m_memoryView);
 

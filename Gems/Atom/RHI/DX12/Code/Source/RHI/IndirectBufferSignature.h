@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/DeviceIndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/DX12.h>
@@ -19,11 +19,11 @@ namespace AZ
         //! DX12 implementation of the RHI IndirectBufferSignature. 
         //! It represents the DX12 object ID3D12CommandSignature when doing indirect rendering. 
         class IndirectBufferSignature final
-            : public RHI::IndirectBufferSignature
+            : public RHI::DeviceIndirectBufferSignature
         {
-            using Base = RHI::IndirectBufferSignature;
+            using Base = RHI::DeviceIndirectBufferSignature;
         public:
-            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferSignature, "{3BAE9C56-555B-4145-96B6-07C81FF9D3AC}", Base);
 
             static RHI::Ptr<IndirectBufferSignature> Create();
@@ -34,8 +34,8 @@ namespace AZ
             IndirectBufferSignature() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::IndirectBufferSignature
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::IndirectBufferSignatureDescriptor& descriptor) override;
+            // RHI::DeviceIndirectBufferSignature
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceIndirectBufferSignatureDescriptor& descriptor) override;
             uint32_t GetByteStrideInternal() const override;
             uint32_t GetOffsetInternal(RHI::IndirectCommandIndex index) const override;
             void ShutdownInternal() override;

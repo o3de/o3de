@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_LOGWINDOWPLUGIN_H
-#define __EMSTUDIO_LOGWINDOWPLUGIN_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/LogManager.h>
@@ -31,7 +30,7 @@ namespace EMStudio
         : public EMStudio::DockWidgetPlugin
     {
         Q_OBJECT // AUTOMOC
-                           MCORE_MEMORYOBJECTCATEGORY(LogWindowPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        MCORE_MEMORYOBJECTCATEGORY(LogWindowPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         enum
@@ -43,16 +42,13 @@ namespace EMStudio
         ~LogWindowPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override;
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
         bool GetIsClosable() const override             { return true; }
         bool GetIsFloatable() const override            { return true; }
         bool GetIsVertical() const override             { return false; }
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new LogWindowPlugin(); }
 
     private slots:
         void OnTextFilterChanged(const QString& text);
@@ -65,5 +61,3 @@ namespace EMStudio
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
     };
 }   // namespace EMStudio
-
-#endif

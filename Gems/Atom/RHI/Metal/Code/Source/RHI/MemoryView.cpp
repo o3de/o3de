@@ -51,7 +51,7 @@ namespace AZ
         
         void MemoryView::SetName(const AZStd::string_view& name)
         {
-            if (m_memoryAllocation.m_memory)
+            if (RHI::Validation::IsEnabled() && m_memoryAllocation.m_memory)
             {
                 m_memoryAllocation.m_memory->SetName(Name(name.data()));
                 
@@ -73,7 +73,7 @@ namespace AZ
                     {
                         AZ_Assert(false, "Undefined type");
                     }
-                }                
+                }
             }
         }
     

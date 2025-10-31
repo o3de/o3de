@@ -62,6 +62,10 @@ namespace GraphCanvas
 
             const char* const CommentText = ".commentText";
 
+            // The compact sub-style makes a node appear more compact by reducing margins and placing the node title between
+            // slots instead of above them.
+            const char* const Compact = ".compact";
+
             // Custom Widgets
             const char* const CheckBox = "checkBox";
 
@@ -157,6 +161,8 @@ namespace GraphCanvas
 
             const char* const Spacing = "spacing";
 
+            const char* const LayoutOrientation = "layout-orientation";
+
             // Custom Attributes
             const char* const ConnectionJut = "connection-jut";
             const char* const ConnectionDragMaximumDistance = "connection-drag-max-distance";
@@ -234,6 +240,8 @@ namespace GraphCanvas
             Spacing,
             TextAlignment,
             TextVerticalAlignment,
+
+            LayoutOrientation,
 
             // Custom Attributes
             ConnectionJut,

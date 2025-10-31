@@ -40,6 +40,9 @@ namespace AZ
                 SCENE_DATA_API double GetTimeStepBetweenFrames() const override;
 
                 SCENE_DATA_API void GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const override;
+
+                SCENE_DATA_API AZStd::vector<SceneAPI::DataTypes::MatrixType>& GetKeyFrames();
+                SCENE_DATA_API const AZStd::vector<SceneAPI::DataTypes::MatrixType>& GetKeyFrames() const;
             protected:
                 AZStd::vector<SceneAPI::DataTypes::MatrixType>    m_keyFrames;
                 double                                            m_timeStepBetweenFrames;
@@ -68,6 +71,9 @@ namespace AZ
                 SCENE_DATA_API double GetTimeStepBetweenFrames() const override;
 
                 SCENE_DATA_API void GetDebugOutput(SceneAPI::Utilities::DebugOutput& output) const override;
+
+                SCENE_DATA_API AZStd::vector<double>& GetKeyFrames();
+                SCENE_DATA_API const AZStd::vector<double>& GetKeyFrames() const;
             protected:
                 AZStd::string            m_blendShapeName;
                 AZStd::vector<double>    m_keyFrames;

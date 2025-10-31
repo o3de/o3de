@@ -10,6 +10,6 @@
 * The shader build pipeline has 2 preprocess stages. The first one happens 
 * after appending this header and pre-processing with mcpp ahead of azslc.
 */
-
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
 
+#include <Atom/RPI/Platform/Linux/AzslcPlatformHeader.azsli>

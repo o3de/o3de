@@ -33,7 +33,7 @@ _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'DCCsi.SDK.substance.builder.atom_material'
 
 import azpy
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     material_path = Path(Path(__file__).parent.parent, 'resources', 'atom')
     # material_01 = AtomPBR("atom_pbr.material", "awesome.material")
     # material_01 = AtomPBR("atom_pbr.material")
-    material_01 = AtomMaterial(Path(material_path, "StandardPBR_AllProperties.material"))
+    material_01 = AtomMaterial(Path(material_path, "StandardPBR_AllProperties.json"))
     # material_01.load("atom_pbr.material")
     # material_01.map(material_01.tex[2]).textureMap = "materials/substance/amazing_xzzzx.tif"
     # # print(material_01.metallic)

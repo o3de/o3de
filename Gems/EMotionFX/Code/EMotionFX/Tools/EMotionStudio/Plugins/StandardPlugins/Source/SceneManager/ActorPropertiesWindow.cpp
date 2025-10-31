@@ -31,12 +31,12 @@ namespace EMStudio
     void ActorPropertiesWindow::Init()
     {
         QVBoxLayout* mainVerticalLayout = new QVBoxLayout();
-        mainVerticalLayout->setMargin(0);
+        mainVerticalLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(mainVerticalLayout);
 
         QGridLayout* layout = new QGridLayout();
         uint32 rowNr = 0;
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setVerticalSpacing(0);
         layout->setAlignment(Qt::AlignLeft);
         mainVerticalLayout->addLayout(layout);
@@ -52,7 +52,7 @@ namespace EMStudio
         rowNr++;
         QHBoxLayout* extractNodeLayout = new QHBoxLayout();
         extractNodeLayout->setDirection(QBoxLayout::LeftToRight);
-        extractNodeLayout->setMargin(0);
+        extractNodeLayout->setContentsMargins(0, 0, 0, 0);
 
         m_motionExtractionJointBrowseEdit = aznew ActorJointBrowseEdit(this);
         m_motionExtractionJointBrowseEdit->setToolTip("The joint used to drive the character's movement and rotation.");
@@ -334,6 +334,12 @@ namespace EMStudio
             return;
         }
 
+        // If the names are the same, do not change them.
+        if (m_nameEdit->text().compare(m_actor->GetName()) == 0)
+        {
+            return;
+        }
+ 
         // execute the command
         const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -name \"%s\"", m_actor->GetID(), m_nameEdit->text().toUtf8().data());
 

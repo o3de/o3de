@@ -1,0 +1,74 @@
+{
+    "entries": [
+        {
+            "base": "SoundAssetRef",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Sound Asset Ref"
+            },
+            "methods": [
+                {
+                    "base": "GetAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Asset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Asset is invoked"
+                    },
+                    "details": {
+                        "name": "Get Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1EDBA837-5590-4F2C-A61C-9001EB18505B}",
+                            "details": {
+                                "name": "Sound Asset Ref",
+                                "tooltip": "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{52B5A81B-FE6B-549F-B89D-59694CA08EBD}",
+                            "details": {
+                                "name": "Asset< Sound Asset>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Asset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Asset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1EDBA837-5590-4F2C-A61C-9001EB18505B}",
+                            "details": {
+                                "name": "Sound Asset Ref",
+                                "tooltip": "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas."
+                            }
+                        },
+                        {
+                            "typeid": "{52B5A81B-FE6B-549F-B89D-59694CA08EBD}",
+                            "details": {
+                                "name": "Asset< Sound Asset>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

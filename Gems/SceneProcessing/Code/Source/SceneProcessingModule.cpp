@@ -16,7 +16,10 @@
 #include <Config/Widgets/GraphTypeSelector.h>
 #include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
 #include <Generation/Components/TangentGenerator/TangentPreExportComponent.h>
+#include <Generation/Components/UVsGenerator/UVsGenerateComponent.h>
+#include <Generation/Components/UVsGenerator/UVsPreExportComponent.h>
 #include <Generation/Components/MeshOptimizer/MeshOptimizerComponent.h>
+#include <SceneAPI/SceneBuilder/ImportContextRegistryComponent.h>
 #include <Source/SceneProcessingModule.h>
 
 namespace AZ
@@ -40,10 +43,13 @@ namespace AZ
                 {
                     SceneProcessingConfig::SceneProcessingConfigSystemComponent::CreateDescriptor(),
                     SceneProcessingConfig::SoftNameBehavior::CreateDescriptor(),
+                    SceneAPI::SceneBuilder::ImportContextRegistryComponent::CreateDescriptor(),
                     SceneBuilder::BuilderPluginComponent::CreateDescriptor(),
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
                     AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
                     AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsGenerateComponentDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsPreExportComponentDescriptor(),
                     AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
                 });
 
@@ -75,12 +81,12 @@ namespace AZ
 
             void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("SceneConfiguration", 0x2a3785fb));
+                provided.push_back(AZ_CRC_CE("SceneConfiguration"));
             }
 
             void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("SceneConfiguration", 0x2a3785fb));
+                incompatible.push_back(AZ_CRC_CE("SceneConfiguration"));
             }
 
         protected:
@@ -91,11 +97,11 @@ namespace AZ
                     module = DynamicModuleHandle::Create(name);
                     if (module)
                     {
-                        module->Load(false);
+                        module->Load();
                         auto init = module->GetFunction<InitializeDynamicModuleFunction>(InitializeDynamicModuleFunctionName);
                         if (init)
                         {
-                            (*init)(AZ::Environment::GetInstance());
+                            (*init)();
                         }
                     }
                 }
@@ -117,4 +123,8 @@ namespace AZ
     } // namespace SceneProcessing
 } // namespace AZ
 
-AZ_DECLARE_MODULE_CLASS(Gem_SceneProcessing, AZ::SceneProcessing::SceneProcessingModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::SceneProcessing::SceneProcessingModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_SceneProcessing_Editor, AZ::SceneProcessing::SceneProcessingModule)
+#endif

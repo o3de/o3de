@@ -34,14 +34,14 @@ namespace UnitTest
         : public ITestSystem
     {
     public:
-        void Activate()
+        AZ::InterfaceRegisterOutcome Activate()
         {
-            AZ::Interface<ITestSystem>::Register(this);
+            return AZ::Interface<ITestSystem>::Register(this);
         }
 
-        void Deactivate()
+        AZ::InterfaceRegisterOutcome Deactivate()
         {
-            AZ::Interface<ITestSystem>::Unregister(this);
+            return AZ::Interface<ITestSystem>::Unregister(this);
         }
 
         void SetNumber(uint32_t number) override
@@ -78,7 +78,7 @@ namespace UnitTest
     };
 
     class InterfaceTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -134,24 +134,20 @@ namespace UnitTest
         EXPECT_EQ(testSystemInterface, nullptr);
     }
 
-    TEST_F(InterfaceTest, RegisterTwiceAssertTest)
+    TEST_F(InterfaceTest, RegisterTwiceReturnsFailure)
     {
         TestSystem testSystem1;
         TestSystem testSystem2;
 
-        testSystem1.Activate();
+        EXPECT_TRUE(testSystem1.Activate());
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         // This should fail.
-        testSystem2.Activate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(testSystem2.Activate());
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         // This should also fail.
-        testSystem2.Deactivate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(testSystem2.Deactivate());
 
-        testSystem1.Deactivate();
+        EXPECT_TRUE(testSystem1.Deactivate());
     }
 
     TEST_F(InterfaceTest, RegisterMismatchTest)
@@ -159,13 +155,11 @@ namespace UnitTest
         TestSystem testSystem1;
         TestSystem testSystem2;
 
-        testSystem1.Activate();
+        EXPECT_TRUE(testSystem1.Activate());
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         // This should fail.
-        testSystem2.Deactivate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(testSystem2.Deactivate());
 
-        testSystem1.Deactivate();
+        EXPECT_TRUE(testSystem1.Deactivate());
     }
 }

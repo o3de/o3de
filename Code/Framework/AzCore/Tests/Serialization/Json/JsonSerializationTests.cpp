@@ -37,7 +37,7 @@ namespace JsonSerializationTests
         bool m_fullyReflected = true;
     };
 
-    TYPED_TEST_CASE(TypedJsonSerializationTests, JsonSerializationTestCases);
+    TYPED_TEST_SUITE(TypedJsonSerializationTests, JsonSerializationTestCases);
 
     TYPED_TEST(TypedJsonSerializationTests, Store_SerializedDefaultInstance_EmptyJsonReturned)
     {
@@ -79,7 +79,7 @@ namespace JsonSerializationTests
             *description.m_instance, *this->m_serializationSettings);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        this->Expect_DocStrEq(description.m_json);
+        this->Expect_DocStrEq(description.m_jsonWithStrippedDefaults);
     }
 
     TYPED_TEST(TypedJsonSerializationTests, Load_JsonWithoutDefaults_SucceedsAndObjectMatches)
@@ -88,7 +88,7 @@ namespace JsonSerializationTests
 
         this->Reflect(true);
         auto description = TypeParam::GetInstanceWithoutDefaults();
-        this->m_jsonDocument->Parse(description.m_json);
+        this->m_jsonDocument->Parse(description.m_jsonWithStrippedDefaults);
 
         TypeParam loadInstance;
         ResultCode loadResult = AZ::JsonSerialization::Load(loadInstance, *this->m_jsonDocument, *this->m_deserializationSettings);
@@ -196,7 +196,7 @@ namespace JsonSerializationTests
 
         this->Reflect(true);
         auto description = TypeParam::GetInstanceWithoutDefaults();
-        this->m_jsonDocument->Parse(description.m_json);
+        this->m_jsonDocument->Parse(description.m_jsonWithStrippedDefaults);
         this->InjectAdditionalFields(*this->m_jsonDocument, rapidjson::kStringType, this->m_jsonDocument->GetAllocator());
 
         TypeParam loadInstance;

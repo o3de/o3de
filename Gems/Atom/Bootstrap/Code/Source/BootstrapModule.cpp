@@ -22,7 +22,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(BootstrapModule, "{ADDE20F4-03E6-4692-A736-E56B87952727}", AZ::Module);
-                AZ_CLASS_ALLOCATOR(BootstrapModule, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(BootstrapModule, AZ::SystemAllocator);
 
                 BootstrapModule()
                     : AZ::Module()
@@ -47,7 +47,8 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::Bootstrap::BootstrapModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Atom_Bootstrap, AZ::Render::Bootstrap::BootstrapModule)
+#endif

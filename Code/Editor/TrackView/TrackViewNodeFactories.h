@@ -6,15 +6,11 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODEFACTORIES_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODEFACTORIES_H
 #pragma once
 
-
-class CTrackViewTrack;
 class CTrackViewAnimNode;
 class CTrackViewNode;
+class CTrackViewTrack;
 
 class CTrackViewAnimNodeFactory
 {
@@ -28,4 +24,3 @@ public:
     CTrackViewTrack* BuildTrack(IAnimTrack* pTrack, CTrackViewAnimNode* pTrackAnimNode,
         CTrackViewNode* pParentNode, bool bIsSubTrack = false, unsigned int subTrackIndex = 0);
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWNODEFACTORIES_H

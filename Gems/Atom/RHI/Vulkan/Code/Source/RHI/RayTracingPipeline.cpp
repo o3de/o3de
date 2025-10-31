@@ -7,7 +7,7 @@
  */
 #include <RHI/RayTracingPipeline.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
 

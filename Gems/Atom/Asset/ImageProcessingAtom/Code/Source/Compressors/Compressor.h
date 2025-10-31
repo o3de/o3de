@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 

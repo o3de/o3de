@@ -17,7 +17,7 @@ namespace FastNoiseGem
     {
     public:
         AZ_RTTI(FastNoiseEditorModule, "{119E8542-E0D2-4D58-9C87-B8E7CF032274}", FastNoiseModule);
-        AZ_CLASS_ALLOCATOR(FastNoiseEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FastNoiseEditorModule, AZ::SystemAllocator);
 
         FastNoiseEditorModule();
 

@@ -38,11 +38,11 @@ UiDynamicLayoutComponent::~UiDynamicLayoutComponent()
 void UiDynamicLayoutComponent::SetNumChildElements(int numChildren)
 {
     AZ::Entity* prototypeEntity = nullptr;
-    EBUS_EVENT_RESULT(prototypeEntity, AZ::ComponentApplicationBus, FindEntity, m_prototypeElement);
+    AZ::ComponentApplicationBus::BroadcastResult(prototypeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_prototypeElement);
     if (prototypeEntity)
     {
         int curNumChildren = 0;
-        EBUS_EVENT_ID_RESULT(curNumChildren, GetEntityId(), UiElementBus, GetNumChildElements);
+        UiElementBus::EventResult(curNumChildren, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
 
         if (curNumChildren != numChildren)
         {
@@ -51,13 +51,14 @@ void UiDynamicLayoutComponent::SetNumChildElements(int numChildren)
                 SetPrototypeElementActive(true);
 
                 AZ::EntityId canvasEntityId;
-                EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+                UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
                 for (int i = 0; i < numChildren - curNumChildren; i++)
                 {
                     // Clone the prototype element and add it as a child
                     AZ::Entity* clonedElement = nullptr;
-                    EBUS_EVENT_ID_RESULT(clonedElement, canvasEntityId, UiCanvasBus, CloneElement, prototypeEntity, GetEntity());
+                    UiCanvasBus::EventResult(
+                        clonedElement, canvasEntityId, &UiCanvasBus::Events::CloneElement, prototypeEntity, GetEntity());
                 }
 
                 SetPrototypeElementActive(false);
@@ -71,11 +72,11 @@ void UiDynamicLayoutComponent::SetNumChildElements(int numChildren)
                 {
                     // Remove the cloned child element
                     AZ::Entity* element = nullptr;
-                    EBUS_EVENT_ID_RESULT(element, GetEntityId(), UiElementBus, GetChildElement, i);
+                    UiElementBus::EventResult(element, GetEntityId(), &UiElementBus::Events::GetChildElement, i);
                     if (element)
                     {
                         elementComponent->RemoveChild(element);
-                        EBUS_EVENT_ID(element->GetId(), UiElementBus, DestroyElement);
+                        UiElementBus::Event(element->GetId(), &UiElementBus::Events::DestroyElement);
                     }
                 }
             }
@@ -91,12 +92,12 @@ void UiDynamicLayoutComponent::InGamePostActivate()
 {
     // Find the prototype element
     int numChildren = 0;
-    EBUS_EVENT_ID_RESULT(numChildren, GetEntityId(), UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildren, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
 
     if (numChildren > 0)
     {
         AZ::Entity* prototypeEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(prototypeEntity, GetEntityId(), UiElementBus, GetChildElement, 0);
+        UiElementBus::EventResult(prototypeEntity, GetEntityId(), &UiElementBus::Events::GetChildElement, 0);
 
         if (prototypeEntity)
         {
@@ -104,7 +105,8 @@ void UiDynamicLayoutComponent::InGamePostActivate()
             m_prototypeElement = prototypeEntity->GetId();
 
             // Store the size of the prototype element for future layout element size calculations
-            EBUS_EVENT_ID_RESULT(m_prototypeElementSize, m_prototypeElement, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(
+                m_prototypeElementSize, m_prototypeElement, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             UiElementComponent* elementComponent = GetEntity()->FindComponent<UiElementComponent>();
             AZ_Assert(elementComponent, "entity has no UiElementComponent");
@@ -116,11 +118,11 @@ void UiDynamicLayoutComponent::InGamePostActivate()
                 {
                     // Remove the child element
                     AZ::Entity* element = nullptr;
-                    EBUS_EVENT_ID_RESULT(element, GetEntityId(), UiElementBus, GetChildElement, i);
+                    UiElementBus::EventResult(element, GetEntityId(), &UiElementBus::Events::GetChildElement, i);
                     if (element)
                     {
                         elementComponent->RemoveChild(element);
-                        EBUS_EVENT_ID(element->GetId(), UiElementBus, DestroyElement);
+                        UiElementBus::Event(element->GetId(), &UiElementBus::Events::DestroyElement);
                     }
                 }
             }
@@ -163,7 +165,7 @@ void UiDynamicLayoutComponent::OnUiElementBeingDestroyed()
 {
     if (m_prototypeElement.IsValid())
     {
-        EBUS_EVENT_ID(m_prototypeElement, UiElementBus, DestroyElement);
+        UiElementBus::Event(m_prototypeElement, &UiElementBus::Events::DestroyElement);
         m_prototypeElement.SetInvalid();
     }
 }
@@ -192,7 +194,7 @@ void UiDynamicLayoutComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDynamicLayout.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDynamicLayout.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicLayoutComponent::m_numChildElementsToClone, "Num Cloned Elements",
@@ -237,7 +239,7 @@ void UiDynamicLayoutComponent::Deactivate()
 void UiDynamicLayoutComponent::SetPrototypeElementActive(bool active)
 {
     AZ::Entity* prototypeEntity = nullptr;
-    EBUS_EVENT_RESULT(prototypeEntity, AZ::ComponentApplicationBus, FindEntity, m_prototypeElement);
+    AZ::ComponentApplicationBus::BroadcastResult(prototypeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_prototypeElement);
     if (prototypeEntity)
     {
         LyShine::EntityArray descendantElements;
@@ -247,15 +249,25 @@ void UiDynamicLayoutComponent::SetPrototypeElementActive(bool active)
             prototypeEntity->Activate();
 
             // Have to get children after it is Activated since it will not be connected to bus before that
-            EBUS_EVENT_ID(prototypeEntity->GetId(), UiElementBus, FindDescendantElements,
-                [](const AZ::Entity*) { return true; },
+            UiElementBus::Event(
+                prototypeEntity->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity*)
+                {
+                    return true;
+                },
                 descendantElements);
         }
         else
         {
             // Have to get children before it is Deactivated since it will not be connected to bus after that
-            EBUS_EVENT_ID(prototypeEntity->GetId(), UiElementBus, FindDescendantElements,
-                [](const AZ::Entity*) { return true; },
+            UiElementBus::Event(
+                prototypeEntity->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity*)
+                {
+                    return true;
+                },
                 descendantElements);
 
             prototypeEntity->Deactivate();
@@ -301,11 +313,11 @@ void UiDynamicLayoutComponent::ResizeToFitChildElements()
 
     // Only change the layout's size if it's not being controlled by its parent
     AZ::Entity* parentElement = nullptr;
-    EBUS_EVENT_ID_RESULT(parentElement, GetEntityId(), UiElementBus, GetParent);
+    UiElementBus::EventResult(parentElement, GetEntityId(), &UiElementBus::Events::GetParent);
     if (parentElement)
     {
         bool isControlledByParent = false;
-        EBUS_EVENT_ID_RESULT(isControlledByParent, parentElement->GetId(), UiLayoutBus, IsControllingChild, GetEntityId());
+        UiLayoutBus::EventResult(isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, GetEntityId());
 
         if (isControlledByParent)
         {
@@ -314,21 +326,21 @@ void UiDynamicLayoutComponent::ResizeToFitChildElements()
     }
 
     int numChildren = 0;
-    EBUS_EVENT_ID_RESULT(numChildren, GetEntityId(), UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildren, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
 
     AZ::Vector2 curSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(curSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(curSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     AZ::Vector2 newSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(newSize, GetEntityId(), UiLayoutBus, GetSizeToFitChildElements, m_prototypeElementSize, numChildren);
+    UiLayoutBus::EventResult(newSize, GetEntityId(), &UiLayoutBus::Events::GetSizeToFitChildElements, m_prototypeElementSize, numChildren);
 
     if (!curSize.IsClose(newSize, 0.05f))
     {
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
         AZ::Vector2 sizeDiff = newSize - curSize;
 
@@ -348,7 +360,7 @@ void UiDynamicLayoutComponent::ResizeToFitChildElements()
 
         if (offsetsChanged)
         {
-            EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
         }
     }
 }

@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME Gestures.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         gestures_files.cmake
@@ -25,7 +25,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Gestures ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         gestures_shared_files.cmake
@@ -37,14 +37,24 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::Gestures.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/GesturesModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # All types of applications use the same module.
-ly_create_alias(NAME Gestures.Clients  NAMESPACE Gem TARGETS Gestures)
-ly_create_alias(NAME Gestures.Servers  NAMESPACE Gem TARGETS Gestures)
-ly_create_alias(NAME Gestures.Builders NAMESPACE Gem TARGETS Gestures)
-ly_create_alias(NAME Gestures.Tools    NAMESPACE Gem TARGETS Gestures)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS ${gem_name})
 
 ################################################################################
 # Tests
@@ -52,7 +62,7 @@ ly_create_alias(NAME Gestures.Tools    NAMESPACE Gem TARGETS Gestures)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
-        NAME Gestures.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             gestures_test_files.cmake
@@ -64,9 +74,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Legacy::CryCommon
-                Gem::Gestures.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::Gestures.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

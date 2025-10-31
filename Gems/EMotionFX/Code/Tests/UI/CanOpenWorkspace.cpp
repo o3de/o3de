@@ -22,7 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 
@@ -153,7 +153,7 @@ namespace EMotionFX
             saveDirtyPopupHandler.WaitForCompletion();
             resetSettingsHandler.WaitForCompletion();
 
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
             ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
         }
 
@@ -162,13 +162,6 @@ namespace EMotionFX
             // AnimGraph
             m_animGraphPlugin->GetViewWidget()->OnCreateAnimGraph();
             ASSERT_TRUE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to create AnimGraph.";
-
-            // MotionSset
-            EMStudio::MotionSetManagementWindow* managementWindow = GetMotionSetManagementWindow();
-            ASSERT_TRUE(managementWindow);
-
-            managementWindow->OnCreateMotionSet();
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to create motion set for reset test.";
 
             CreateAnimGraphParameter("TestParam1");
             CreateAnimGraphParameter("TestParam2");
@@ -226,11 +219,7 @@ namespace EMotionFX
         QString m_workspaceSavePath;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanOpenWorkspaceFixture, DISABLED_CanAddAnimGraph)
-#else
     TEST_F(CanOpenWorkspaceFixture, CanAddAnimGraph)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C953542");
 
@@ -241,7 +230,7 @@ namespace EMotionFX
         ResetAll();
 
         //Check everything has gone.
-        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
         ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
 
         // Reload the saved workspace and check everything reappears:

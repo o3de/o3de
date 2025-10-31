@@ -42,7 +42,7 @@ namespace GameStateSamples
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline void GameStatePrimaryUserMonitor::OnActiveGameStateChanged(AZStd::shared_ptr<IGameState> oldGameState,
-                                                                      AZStd::shared_ptr<IGameState> newGameState)
+                                                                      [[maybe_unused]] AZStd::shared_ptr<IGameState> newGameState)
     {
         if (m_primaryUserSignedOutWhileLevelLoading &&
             azrtti_istypeof<GameStateLevelLoading>(oldGameState.get()))

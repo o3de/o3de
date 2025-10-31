@@ -7,12 +7,12 @@
  */
 #include <Source/PythonSystemComponent.h>
 
-#include <Source/PythonCommon.h>
-#include <Source/PythonTypeCasters.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
-#include <pybind11/pybind11.h>
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <Source/PythonTypeCasters.h>
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>

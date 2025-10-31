@@ -1,0 +1,15 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{69CD1E4D-A474-53A8-8A06-BD4077C6C1AC}"
+            },
+            "platformFlags": 255,
+            "pathHint": "physx_dependencies.xml"
+        }
+    ]
+}
+

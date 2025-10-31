@@ -70,7 +70,7 @@ namespace EMotionFX
         : public RagdollVelocityEvaluator
     {
     public:
-        AZ_RTTI(WeightedRunningAverageVelocityEvaluator, "{A74CEDF2-92A5-4788-9711-8D1DBA0C9D04}", RagdollVelocityEvaluator)
+        AZ_RTTI(RunningAverageVelocityEvaluator, "{A74CEDF2-92A5-4788-9711-8D1DBA0C9D04}", RagdollVelocityEvaluator)
         AZ_CLASS_ALLOCATOR_DECL
 
         RunningAverageVelocityEvaluator() = default;

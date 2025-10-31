@@ -38,7 +38,7 @@ namespace GraphCanvas
             // AZ::Component
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("GraphCanvas_StyleService", 0x1a69884f));
+                provided.push_back(AZ_CRC_CE("GraphCanvas_StyleService"));
             }
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -89,7 +89,7 @@ namespace GraphCanvas
     public:
         // Takes in the Id used to identify this StyleSheet and a relative path to the style sheet json file.
         //
-        // This path should be relative to your gems <dev>/Gems/<GemName>/Assets folder.
+        // This path should be relative to your gems <GraphCanvas GemRoot>/Assets folder.
         StyleManager(const EditorId& editorId, AZStd::string_view assetPath);
         virtual ~StyleManager();
 

@@ -7,5 +7,5 @@
 # {END_LICENSE}
 
 set(FILES
-    Source/${Name}Module.cpp
+    Source/Clients/${Name}Module.cpp
 )

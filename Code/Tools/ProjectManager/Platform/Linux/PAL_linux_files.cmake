@@ -7,8 +7,8 @@
 #
 
 set(FILES
-    Python_linux.cpp
     ProjectBuilderWorker_linux.cpp
+    ProjectExportWorker_linux.cpp
     ProjectUtils_linux.cpp
     ProjectManagerDefs_linux.cpp
     ProjectManager_Traits_Platform.h

@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -103,7 +103,7 @@ namespace AZ
                 // the dynamic data that can be changed between passes.
                 Name bufferName = Name{ "SkinnedHairSharedBuffer" };
                 RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
-                if (localBinding && !localBinding->m_attachment)
+                if (localBinding && !localBinding->GetAttachment())
                 {
                     AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, HairSharedBufferInterface::Get()->GetBuffer());
                 }
@@ -138,6 +138,13 @@ namespace AZ
                 m_newRenderObjects.clear();
 
                 RPI::ComputePass::FrameBeginInternal(params);
+            }
+
+            void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+            {
+                frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(m_dispatchItems.size()));
+
+                RPI::ComputePass::SetupFrameGraphDependencies(frameGraph);
             }
 
             void HairSkinningComputePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
@@ -196,7 +203,7 @@ namespace AZ
                         continue;
                     }
 
-                    const RHI::DispatchItem* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
+                    const auto* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
                     if (!dispatchItem)
                     {
                         continue;
@@ -223,11 +230,14 @@ namespace AZ
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
                 // and sends them to the command list ahead of the dispatch.
                 // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
-                SetSrgsForDispatch(commandList);
+                SetSrgsForDispatch(context);
 
-                for (const RHI::DispatchItem* dispatchItem : m_dispatchItems)
+                auto it = m_dispatchItems.begin();
+                AZStd::advance(it, context.GetSubmitRange().m_startIndex);
+
+                for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
                 {
-                    commandList->Submit(*dispatchItem);
+                    commandList->Submit((*it)->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
                 }
 
                 // Clear the dispatch items. They will need to be re-populated next frame

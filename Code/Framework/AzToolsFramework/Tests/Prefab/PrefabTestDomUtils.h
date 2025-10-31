@@ -22,11 +22,11 @@ namespace UnitTest
     {
         using namespace AzToolsFramework::Prefab;
 
-        inline static const char* ComponentsValueName = "Components";
-        inline static const char* ComponentIdName = "Id";
-        inline static const char* EntitiesValueName = "Entities";
-        inline static const char* EntityNameValueName = "Name";
-        inline static const char* BoolPropertyName = "BoolProperty";
+        inline static constexpr const char* ComponentsValueName = "Components";
+        inline static constexpr const char* ComponentIdName = "Id";
+        inline static constexpr const char* EntitiesValueName = "Entities";
+        inline static constexpr const char* EntityNameValueName = "Name";
+        inline static constexpr const char* BoolPropertyName = "BoolProperty";
 
         inline PrefabDomPath GetPrefabDomEntitiesPath()
         {
@@ -156,7 +156,7 @@ namespace UnitTest
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
 
-        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, AZ::u64 componentId);
+        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, const char* componentName, AZ::u64 componentId);
 
         //! Serializes Dom into a string
         AZStd::string DomToString(const AzToolsFramework::Prefab::PrefabDom& dom);

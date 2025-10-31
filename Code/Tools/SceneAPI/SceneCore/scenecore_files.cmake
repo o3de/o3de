@@ -10,13 +10,12 @@ set(FILES
     SceneCoreConfiguration.h
     DllMain.cpp
     SceneBuilderDependencyBus.h
-    SceneCoreStandaloneAllocator.h
-    SceneCoreStandaloneAllocator.cpp
     DataTypes/IManifestObject.h
     DataTypes/IGraphObject.h
     DataTypes/DataTypeUtilities.h
     DataTypes/DataTypeUtilities.inl
     DataTypes/DataTypeUtilities.cpp
+    DataTypes/GraphData/ICustomPropertyData.h
     DataTypes/GraphData/IMeshData.h
     DataTypes/GraphData/IMeshVertexColorData.h
     DataTypes/GraphData/IMeshVertexUVData.h
@@ -29,6 +28,7 @@ set(FILES
     DataTypes/GraphData/IAnimationData.h
     DataTypes/GraphData/IBlendShapeData.h
     DataTypes/Groups/IGroup.h
+    DataTypes/Groups/IImportGroup.h
     DataTypes/Groups/ISceneNodeGroup.h
     DataTypes/Groups/IMeshGroup.h
     DataTypes/Groups/ISkeletonGroup.h
@@ -45,13 +45,13 @@ set(FILES
     DataTypes/Rules/ISkeletonProxyRule.h
     DataTypes/Rules/ICoordinateSystemRule.h
     DataTypes/Rules/IClothRule.h
+    DataTypes/Rules/IUnmodifiableRule.h
     DataTypes/Rules/ISkinRule.h
+    DataTypes/Rules/ITagRule.h
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h
     Components/ExportingComponent.cpp
-    Components/RCExportingComponent.h
-    Components/RCExportingComponent.cpp
     Components/GenerationComponent.h
     Components/GenerationComponent.cpp
     Components/LoadingComponent.h
@@ -120,8 +120,8 @@ set(FILES
     Events/SceneSerializationBus.h
     Import/ManifestImportRequestHandler.h
     Import/ManifestImportRequestHandler.cpp
-    Export/MtlMaterialExporter.h
-    Export/MtlMaterialExporter.cpp
+    Import/SceneImportSettings.h
+    Import/SceneImportSettings.cpp
     Utilities/CoordinateSystemConverter.h
     Utilities/CoordinateSystemConverter.cpp
     Utilities/SceneGraphSelector.h

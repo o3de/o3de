@@ -12,6 +12,6 @@ namespace ScriptCanvas
     namespace ExecutionValidationIds
     {
         constexpr const char* UnusedNodeId = "EV-0001";
-        static const AZ::Crc32 UnusedNodeCrc = AZ_CRC(UnusedNodeId);
+        static const AZ::Crc32 UnusedNodeCrc = AZ_CRC_CE(UnusedNodeId);
     }
 }

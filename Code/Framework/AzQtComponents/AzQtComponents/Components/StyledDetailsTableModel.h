@@ -73,7 +73,7 @@ namespace AzQtComponents
         explicit StyledDetailsTableModel(QObject* parent = nullptr);
         ~StyledDetailsTableModel() override;
 
-        void AddColumn(const QString& name, ColumnStyle style = TextString);
+        int AddColumn(const QString& name, ColumnStyle style = TextString);
         void MoveColumn(const QString& name, int toIndex);
         void AddColumnAlias(const QString& aliasName, const QString& columnName);
 
@@ -92,6 +92,7 @@ namespace AzQtComponents
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         int columnCount(const QModelIndex& index = {}) const override;
         int rowCount(const QModelIndex& index = {}) const override;
+        bool removeRows(int row, int count, const QModelIndex& parent = {}) override;
 
         void RegisterStatusIcon(int statusType, const QPixmap& icon);
 

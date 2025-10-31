@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    ArrayView.cpp
     ConcurrencyCheckerTests.cpp
     InstanceDatabase.cpp
     lru_cache.cpp

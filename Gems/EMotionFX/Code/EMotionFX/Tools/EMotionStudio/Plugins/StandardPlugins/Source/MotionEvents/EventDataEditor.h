@@ -79,6 +79,9 @@ namespace EMStudio
         EMotionFX::Motion* GetMotion() const;
         EMotionFX::MotionEvent* GetMotionEvent() const;
 
+    Q_SIGNALS:
+        void eventsChanged(EMotionFX::Motion*, EMotionFX::MotionEvent*);
+
     private:
         void Init();
 

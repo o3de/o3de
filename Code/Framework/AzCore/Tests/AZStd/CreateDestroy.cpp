@@ -12,10 +12,10 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <array>
 
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace UnitTestInternal;
+
     TEST(CreateDestroy, UninitializedFill_StdArray_IntType_AllEight)
     {
         const int intArraySize = 5;

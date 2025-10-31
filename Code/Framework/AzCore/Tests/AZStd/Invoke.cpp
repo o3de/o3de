@@ -79,18 +79,8 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class InvocableTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     TEST_F(InvocableTest, InvalidInvocableArgsTest)
@@ -291,19 +281,9 @@ namespace UnitTest
     }
 
     class InvokeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
         static int RawIntFunc(int num)
         {
             return num;

@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_QuaternionFunctions_Normalize",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Normalize",
+                "category": "Math/Quaternion"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_QuaternionFunctions_Normalize",
+                    "details": {
+                        "name": "Normalize",
+                        "tooltip": "Returns the normalized version of Source"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

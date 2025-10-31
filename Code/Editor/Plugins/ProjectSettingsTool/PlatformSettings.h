@@ -11,3 +11,4 @@
 #include "PlatformSettings_Android.h"
 #include "PlatformSettings_Base.h"
 #include "PlatformSettings_Ios.h"
+#include "PlatformSettings_Windows.h"

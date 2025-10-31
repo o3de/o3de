@@ -8,11 +8,10 @@
 
 #pragma once
 
-
-#include "./ConvertEmissiveUnitFunctor.h"
-#include <AzCore/Math/Vector2.h>
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace AZ
 {
@@ -26,6 +25,7 @@ namespace AZ
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(ConvertEmissiveUnitFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(ConvertEmissiveUnitFunctorSourceData, "{B476A346-C5E0-4DB9-BCFD-B2AFA8587D24}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -44,8 +44,8 @@ namespace AZ
             AZStd::string m_shaderInputName;
 
             // The indices of photometric units in the dropdown list
-            uint32_t m_ev100Index;
-            uint32_t m_nitIndex;
+            uint32_t m_ev100Index = 0;
+            uint32_t m_nitIndex = 1;
 
             // Minimum and Maximum value for different photometric units
             AZ::Vector2 m_ev100MinMax;

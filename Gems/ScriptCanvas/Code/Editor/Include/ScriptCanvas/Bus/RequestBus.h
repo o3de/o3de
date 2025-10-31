@@ -8,18 +8,16 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
-
+#include <AzCore/Outcome/Outcome.h>
 #include <GraphCanvas/Types/Types.h>
-
-#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
-
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 class QLineEdit;
@@ -27,7 +25,11 @@ class QPushButton;
 class QTableView;
 class QToolButton;
 
-namespace ScriptCanvas { class Slot; }
+namespace ScriptCanvas
+{
+    class Slot;
+    class GraphVariable;
+}
 
 namespace GraphCanvas
 {
@@ -39,16 +41,22 @@ namespace GraphCanvas
     class NodePaletteDockWidget;
 }
 
-namespace ScriptCanvas
-{
-    class ScriptCanvasAssetBase;
-}
-
 namespace ScriptCanvasEditor
 {
     struct CategoryInformation;
     struct NodePaletteModelInformation;
 
+    namespace Tracker
+    {
+        enum class ScriptCanvasFileState : AZ::s32
+        {
+            NEW,
+            MODIFIED,
+            UNMODIFIED,
+            SOURCE_REMOVED,
+            INVALID = -1
+        };
+    }
 
     namespace Widget
     {
@@ -70,16 +78,16 @@ namespace ScriptCanvasEditor
         //! Opens an existing graph and returns the tab index in which it was open in.
         //! \param File AssetId
         //! \return index of open tab if the asset was able to be open successfully or error message of why the open failed
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(AZ::Data::AssetId scriptCanvasAssetId, int tabIndex = -1) = 0;
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& scriptCanvasAsset) = 0;        
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1) = 0;
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState) = 0;
         
-        virtual int CloseScriptCanvasAsset(const AZ::Data::AssetId&) = 0;
+        virtual int CloseScriptCanvasAsset(const SourceHandle&) = 0;
 
         virtual bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingComponent) = 0;
 
-        virtual bool IsScriptCanvasAssetOpen(const AZ::Data::AssetId& assetId) const = 0;
+        virtual bool IsScriptCanvasAssetOpen(const SourceHandle& assetId) const = 0;
 
-        virtual void OnChangeActiveGraphTab(AZ::Data::AssetId) {}
+        virtual void OnChangeActiveGraphTab(SourceHandle) {}
 
         virtual void CreateNewRuntimeAsset() = 0;
 
@@ -103,12 +111,12 @@ namespace ScriptCanvasEditor
             return ScriptCanvas::ScriptCanvasId();
         }
 
-        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return GraphCanvas::GraphId();
         }
 
-        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return ScriptCanvas::ScriptCanvasId();
         }
@@ -126,7 +134,7 @@ namespace ScriptCanvasEditor
         virtual void DisconnectEndpoints(const AZ::EntityId& /*sceneId*/, const AZStd::vector<GraphCanvas::Endpoint>& /*endpoints*/) {}
 
         virtual void PostUndoPoint(ScriptCanvas::ScriptCanvasId) = 0;
-        virtual void SignalSceneDirty(AZ::Data::AssetId) = 0;
+        virtual void SignalSceneDirty(SourceHandle) = 0;
 
         // Increment the value of the ignore undo point tracker
         virtual void PushPreventUndoStateUpdate() = 0;
@@ -165,7 +173,7 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
+        using BusIdType = SourceHandle;
 
         virtual void OnAssetVisualized() {};
         virtual void OnAssetUnloaded() {};
@@ -193,13 +201,27 @@ namespace ScriptCanvasEditor
 
         virtual bool IsValidVariableType(const ScriptCanvas::Data::Type& variableType) const = 0;
 
-        struct SlotSetup
+        struct VariableConfigurationInput
         {
-            AZStd::string m_name;
-            AZ::Uuid m_type = AZ::Uuid::CreateNull();
+            bool m_createVariable = false;
+            bool m_changeVariableType = false;
+            bool m_changeVariableName = false;
+            ScriptCanvas::GraphVariable* m_graphVariable = nullptr;
+            AZStd::string m_currentName;
+            ScriptCanvas::Data::Type m_currentType;
+            AZStd::string m_configurationVariableTitle = "Variable";
         };
 
-        virtual bool ShowSlotTypeSelector(ScriptCanvas::Slot* slot, const QPoint& scenePosition, SlotSetup&) = 0;
+        struct VariableConfigurationOutput
+        {
+            bool m_actionIsValid = false;
+            bool m_nameChanged = false;
+            bool m_typeChanged = false;
+            AZStd::string m_name;
+            ScriptCanvas::Data::Type m_type;
+        };
+
+        virtual VariableConfigurationOutput ShowVariableConfigurationWidget(const VariableConfigurationInput& input, const QPoint& scenePosition) = 0;
     };
 
     using VariablePaletteRequestBus = AZ::EBus<VariablePaletteRequests>;

@@ -72,18 +72,17 @@ namespace UnitTest
     };
 
     class FileTagTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_data = AZStd::make_unique<StaticData>();
             using namespace  AzFramework::FileTag;
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_enableDrilling = false;
             m_data->m_application.Start(desc);
 
             const char* testAssetRoot = m_tempDirectory.GetDirectory();
@@ -140,7 +139,7 @@ namespace UnitTest
             m_data->m_application.Stop();
             m_data.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
 

@@ -47,8 +47,7 @@ def ImageGradient_RequiresShape():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Create a new Entity in the level
     entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())

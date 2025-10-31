@@ -75,7 +75,6 @@ namespace LocalUser
             {
                 ec->Class<LocalUserSystemComponent>("LocalUser", "Provides functionality for mapping local user ids to local player slots and managing local user profiles.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -107,13 +106,13 @@ namespace LocalUser
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void LocalUserSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LocalUserService"));
+        provided.push_back(AZ_CRC_CE("LocalUserService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void LocalUserSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LocalUserService"));
+        incompatible.push_back(AZ_CRC_CE("LocalUserService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +127,7 @@ namespace LocalUser
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void LocalUserSystemComponent::Activate()
     {
-        m_pimpl.reset(Implementation::Create(*this));
+        m_pimpl.reset(Implementation::Create());
         LocalUserRequestBus::Handler::BusConnect();
     }
 
@@ -156,7 +155,8 @@ namespace LocalUser
 
         // On platforms with no concept of a local user profile the local user id corresponds
         // to a unique input device index, so the maximum is the number of supported gamepads.
-        return AzFramework::InputDeviceGamepad::GetMaxSupportedGamepads();
+        auto deviceGamepadImplFactory = AZ::Interface<AzFramework::InputDeviceGamepad::ImplementationFactory>::Get();
+        return (deviceGamepadImplFactory != nullptr) ? deviceGamepadImplFactory->GetMaxSupportedGamepads() : 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

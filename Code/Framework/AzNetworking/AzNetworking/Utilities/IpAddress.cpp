@@ -66,6 +66,11 @@ namespace AzNetworking
         return IpString::format("%hhu.%hhu.%hhu.%hhu", GetQuadA(), GetQuadB(), GetQuadC(), GetQuadD());
     }
 
+    bool IpAddress::IsValid() const
+    {
+        return m_ipv4Address != InvalidAddress && m_port != InvalidPort;
+    }
+
     bool IpAddress::Serialize(ISerializer& serializer)
     {
         serializer.Serialize(m_ipv4Address, "Ipv4Address");

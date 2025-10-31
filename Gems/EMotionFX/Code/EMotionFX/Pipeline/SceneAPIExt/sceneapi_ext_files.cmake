@@ -25,11 +25,10 @@ set(FILES
     Behaviors/LodRuleBehavior.cpp
     Behaviors/SkeletonOptimizationRuleBehavior.h
     Behaviors/SkeletonOptimizationRuleBehavior.cpp
+    Behaviors/RootMotionExtractionRuleBehavior.h
+    Behaviors/RootMotionExtractionRuleBehavior.cpp
     Rules/ActorPhysicsSetupRule.h
     Rules/ActorPhysicsSetupRule.cpp
-    Rules/IActorScaleRule.h
-    Rules/ActorScaleRule.h
-    Rules/ActorScaleRule.cpp
     Rules/ExternalToolRule.h
     Rules/ExternalToolRule.inl
     Rules/MetaDataRule.h
@@ -40,9 +39,6 @@ set(FILES
     Rules/MotionCompressionSettingsRule.cpp
     Rules/MotionMetaDataRule.h
     Rules/MotionMetaDataRule.cpp
-    Rules/IMotionScaleRule.h
-    Rules/MotionScaleRule.h
-    Rules/MotionScaleRule.cpp
     Rules/MotionSamplingRule.cpp
     Rules/MotionSamplingRule.h
     Rules/SimulatedObjectSetupRule.h
@@ -55,6 +51,8 @@ set(FILES
     Rules/LodRule.cpp
     Rules/MotionAdditiveRule.h
     Rules/MotionAdditiveRule.cpp
+    Rules/RootMotionExtractionRule.h
+    Rules/RootMotionExtractionRule.cpp
     Rules/SkeletonOptimizationRule.h
     Rules/SkeletonOptimizationRule.cpp
     Data/LodNodeSelectionList.h

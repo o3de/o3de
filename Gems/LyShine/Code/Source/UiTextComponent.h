@@ -19,6 +19,7 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
 #include <LyShine/UiAssetTypes.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -31,7 +32,6 @@
 
 #include <IFont.h>
 #include <ILocalizationManager.h>
-#include <IRenderer.h>
 #include <TextureAtlas/TextureAtlasBus.h>
 #include <TextureAtlas/TextureAtlasNotificationBus.h>
 #include <TextureAtlas/TextureAtlas.h>
@@ -343,20 +343,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
-        provided.push_back(AZ_CRC("UiTextService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
+        provided.push_back(AZ_CRC_CE("UiTextService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
-        incompatible.push_back(AZ_CRC("UiTextService"));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
+        incompatible.push_back(AZ_CRC_CE("UiTextService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);
@@ -608,13 +608,13 @@ private: // types
         ColorB              m_color;
         IFFont*             m_font;
         uint32              m_fontTextureVersion;
-        DynUiPrimitive      m_cachedPrimitive;
+        LyShine::UiPrimitive      m_cachedPrimitive;
     };
 
     struct RenderCacheImageBatch
     {
         AZ::Data::Instance<AZ::RPI::Image>  m_texture;
-        DynUiPrimitive                      m_cachedPrimitive;
+        LyShine::UiPrimitive             m_cachedPrimitive;
     };
 
     struct RenderCacheData

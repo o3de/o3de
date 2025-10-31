@@ -12,6 +12,7 @@
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Archive/ZipDirCache.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
@@ -31,11 +32,11 @@ namespace AZ::IO
         }
     };
 
-    class NestedArchive
+    class AZF_API NestedArchive
         : public INestedArchive
     {
     public:
-        AZ_CLASS_ALLOCATOR(NestedArchive, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NestedArchive, AZ::SystemAllocator);
 
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;

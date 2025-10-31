@@ -9,6 +9,8 @@
 
 #include "LmbrCentral.h"
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+
 namespace LmbrCentral
 {
     /**
@@ -20,12 +22,20 @@ namespace LmbrCentral
      */
     class LmbrCentralEditorModule
         : public LmbrCentralModule
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(LmbrCentralEditorModule, AZ::SystemAllocator)
         AZ_RTTI(LmbrCentralEditorModule, "{1BF648D7-3703-4B52-A688-67C253A059F2}", LmbrCentralModule);
 
         LmbrCentralEditorModule();
         ~LmbrCentralEditorModule();
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnActionContextModeBindingHook() override;
+        void OnMenuBindingHook() override;
+        void OnPostActionManagerRegistrationHook() override;
     };
 } // namespace LmbrCentral

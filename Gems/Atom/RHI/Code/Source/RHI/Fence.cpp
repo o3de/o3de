@@ -8,138 +8,133 @@
 
 #include <Atom/RHI/Fence.h>
 
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
+
 #include <AzCore/Debug/Profiler.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    bool Fence::ValidateIsInitialized() const
     {
-        Fence::~Fence() {}
-
-        bool Fence::ValidateIsInitialized() const
+        if (Validation::IsEnabled())
         {
-            if (Validation::IsEnabled())
+            if (!IsInitialized())
             {
-                if (!IsInitialized())
-                {
-                    AZ_Error("Fence", false, "Fence is not initialized!");
-                    return false;
-                }
+                AZ_Error("Fence", false, "Fence is not initialized!");
+                return false;
             }
-
-            return true;
         }
 
-        ResultCode Fence::Init(Device& device, FenceState initialState)
-        {
-            if (Validation::IsEnabled())
-            {
-                if (IsInitialized())
-                {
-                    AZ_Error("Fence", false, "Fence is already initialized!");
-                    return ResultCode::InvalidOperation;
-                }
-            }
+        return true;
+    }
 
-            const ResultCode resultCode = InitInternal(device, initialState);
-
-            if (resultCode == ResultCode::Success)
-            {
-                DeviceObject::Init(device);
-            }
-
-            return resultCode;
-        }
-
-        void Fence::Shutdown()
+    ResultCode Fence::Init(
+        MultiDevice::DeviceMask deviceMask, FenceState initialState, bool usedForWaitingOnDevice, AZStd::optional<int> ownerDeviceIndex)
+    {
+        if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                if (m_waitThread.joinable())
+                AZ_Error("Fence", false, "Fence is already initialized!");
+                return ResultCode::InvalidOperation;
+            }
+        }
+
+        MultiDeviceObject::Init(deviceMask);
+
+        ResultCode resultCode = ResultCode::Success;
+
+        auto flags = FenceFlags::None;
+        if (usedForWaitingOnDevice)
+        {
+            flags |= FenceFlags::WaitOnDevice;
+        }
+        if (ownerDeviceIndex)
+        {
+            auto* device = RHISystemInterface::Get()->GetDevice(ownerDeviceIndex.value());
+            m_deviceObjects[ownerDeviceIndex.value()] = Factory::Get().CreateFence();
+            flags |= FenceFlags::CrossDevice;
+            resultCode = GetDeviceFence(ownerDeviceIndex.value())->Init(*device, initialState, flags);
+        }
+        m_ownerDeviceIndex = ownerDeviceIndex;
+
+        IterateDevices(
+            [this, initialState, ownerDeviceIndex, flags, &resultCode](int deviceIndex)
+            {
+                auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                if (ownerDeviceIndex)
                 {
-                    m_waitThread.join();
+                    if (deviceIndex != ownerDeviceIndex.value())
+                    {
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                        resultCode = GetDeviceFence(deviceIndex)->InitCrossDevice(*device, GetDeviceFence(ownerDeviceIndex.value()));
+                    }
+                }
+                else
+                {
+                    m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+
+                    resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState, flags);
                 }
 
-                ShutdownInternal();
-                DeviceObject::Shutdown();
-            }
-        }
-
-        ResultCode Fence::SignalOnCpu()
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            SignalOnCpuInternal();
-            return ResultCode::Success;
-        }
-
-        ResultCode Fence::WaitOnCpu() const
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
-            WaitOnCpuInternal();
-            return ResultCode::Success;
-        }
-
-        ResultCode Fence::WaitOnCpuAsync(SignalCallback callback)
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            if (!callback)
-            {
-                AZ_Error("Fence", false, "Callback is null.");
-                return ResultCode::InvalidOperation;
-            }
-
-            if (m_waitThread.joinable())
-            {
-                m_waitThread.join();
-            }
-
-            AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
-
-            m_waitThread = AZStd::thread(threadDesc, [this, callback]()
-            {
-                ResultCode resultCode = WaitOnCpu();
-                if (resultCode != ResultCode::Success)
-                {
-                    AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
-                }
-                callback();
+                return resultCode == ResultCode::Success;
             });
 
-            return ResultCode::Success;
+        if (resultCode != ResultCode::Success)
+        {
+            // Reset already initialized device-specific Fences and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
-        ResultCode Fence::Reset()
+        if (const auto& name = GetName(); !name.IsEmpty())
         {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            ResetInternal();
-            return ResultCode::Success;
+            SetName(name);
         }
 
-        FenceState Fence::GetFenceState() const
-        {
-            if (!ValidateIsInitialized())
-            {
-                return FenceState::Reset;
-            }
+        return resultCode;
+    }
 
-            return GetFenceStateInternal();
+    void Fence::Shutdown()
+    {
+        MultiDeviceObject::Shutdown();
+    }
+
+    ResultCode Fence::SignalOnCpu()
+    {
+        if (!ValidateIsInitialized())
+        {
+            return ResultCode::InvalidOperation;
+        }
+
+        return IterateObjects<DeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+        {
+            return deviceFence->SignalOnCpu();
+        });
+    }
+
+    ResultCode Fence::Reset()
+    {
+        if (!ValidateIsInitialized())
+        {
+            return ResultCode::InvalidOperation;
+        }
+
+        if (m_ownerDeviceIndex)
+        {
+            // Only the owner device is reset here
+            // All the other device fences share the state of the owner device and thus resetting them does not make sense
+            return GetDeviceFence(m_ownerDeviceIndex.value())->Reset();
+        }
+        else
+        {
+            return IterateObjects<DeviceFence>(
+                []([[maybe_unused]] auto deviceIndex, auto deviceFence)
+                {
+                    return deviceFence->Reset();
+                });
         }
     }
-}
+} // namespace AZ::RHI

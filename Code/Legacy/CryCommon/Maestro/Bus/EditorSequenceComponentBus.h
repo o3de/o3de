@@ -30,7 +30,7 @@ namespace Maestro
         //////////////////////////////////////////////////////////////////////////
 
         //! Adds an entity to be animated
-        virtual void AddEntityToAnimate(AZ::EntityId entityToAnimate) = 0;
+        virtual bool AddEntityToAnimate(AZ::EntityId entityToAnimate) = 0;
 
         //! Remove EntityToAnimate
         virtual void RemoveEntityToAnimate(AZ::EntityId removedEntityId) = 0;

@@ -30,7 +30,6 @@ namespace AzFramework
                     "AzFramework Configuration Component", "System component responsible for configuring AzFramework")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -78,18 +77,18 @@ namespace AzFramework
 
     void AzFrameworkConfigurationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AzFrameworkConfigurationSystemComponentService", 0xcc49c96e));
+        provided.push_back(AZ_CRC_CE("AzFrameworkConfigurationSystemComponentService"));
     }
 
     void AzFrameworkConfigurationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AzFrameworkConfigurationSystemComponentService", 0xcc49c96e));
+        incompatible.push_back(AZ_CRC_CE("AzFrameworkConfigurationSystemComponentService"));
     }
 
     void AzFrameworkConfigurationSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
-        dependent.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+        dependent.push_back(AZ_CRC_CE("SceneSystemComponentService"));
+        dependent.push_back(AZ_CRC_CE("GameEntityContextService"));
     }
 
 } // AzFramework

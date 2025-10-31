@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzCore/PlatformIncl.h>
@@ -24,10 +23,7 @@
 #include <dirent.h>
 
 
-namespace AZ::IO
-{
-
-namespace UnixLikePlatformUtil
+namespace AZ::IO::UnixLikePlatformUtil
 {
     bool CanCreateDirRecursive(char*)
     {
@@ -36,82 +32,115 @@ namespace UnixLikePlatformUtil
     }
 }
 
-namespace
+namespace AZ::IO
 {
-    static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    namespace
+    {
+        static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    }
 }
 
-bool SystemFile::PlatformOpen(int mode, int platformFlags)
+namespace AZ::IO
 {
-    int desiredAccess = 0;
-    int permissions = S_IRWXU | S_IRGRP | S_IROTH;
-
-    bool createPath = false;
-    if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
+     SystemFile SystemFile::GetStdin()
     {
-        desiredAccess = O_RDWR;
-    }
-    else if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
-    {
-        desiredAccess = O_RDONLY;
-    }
-    else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY || (mode & SF_OPEN_APPEND))
-    {
-        desiredAccess = O_WRONLY;
-    }
-    else
-    {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, 0);
-        return false;
+        SystemFile systemFile;
+        systemFile.m_handle = STDIN_FILENO;
+        systemFile.m_fileName = "/dev/stdin";
+        // The destructor of the SystemFile will not close the stdin handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
     }
 
-    if ((mode & SF_OPEN_CREATE_NEW) == SF_OPEN_CREATE_NEW)
+    SystemFile SystemFile::GetStdout()
     {
-        desiredAccess |= O_CREAT | O_EXCL;
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        SystemFile systemFile;
+        systemFile.m_handle = STDOUT_FILENO;
+        systemFile.m_fileName = "/dev/stdout";
+        // The destructor of the SystemFile will not close the stdout handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
     }
-    else if ((mode & SF_OPEN_CREATE) ==  SF_OPEN_CREATE)
+    SystemFile SystemFile::GetStderr()
     {
-        desiredAccess |= O_CREAT | O_TRUNC;
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
-    }
-    else if ((mode & SF_OPEN_TRUNCATE))
-    {
-        desiredAccess |= O_TRUNC;
+        SystemFile systemFile;
+        systemFile.m_handle = STDERR_FILENO;
+        systemFile.m_fileName = "/dev/stderr";
+        // The destructor of the SystemFile will not close the stderr handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
     }
 
-    if (createPath)
+    bool SystemFile::PlatformOpen(int mode, int platformFlags)
     {
-        CreatePath(m_fileName.c_str());
-    }
-    m_handle = open(m_fileName.c_str(), desiredAccess, permissions);
+        int desiredAccess = 0;
+        int permissions = S_IRWXU | S_IRGRP | S_IROTH;
 
-    if (m_handle == PlatformSpecificInvalidHandle)
-    {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, errno);
-        return false;
-    }
-    else
-    {
-        if (mode & SF_OPEN_APPEND)
+        bool createPath = false;
+        if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
         {
-            lseek(m_handle, 0, SEEK_END);
+            desiredAccess = O_RDWR;
+        }
+        else if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
+        {
+            desiredAccess = O_RDONLY;
+        }
+        else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY || (mode & SF_OPEN_APPEND))
+        {
+            desiredAccess = O_WRONLY;
+        }
+        else
+        {
+            return false;
+        }
+
+        if ((mode & SF_OPEN_CREATE_NEW) == SF_OPEN_CREATE_NEW)
+        {
+            desiredAccess |= O_CREAT | O_EXCL;
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+        else if ((mode & SF_OPEN_CREATE) ==  SF_OPEN_CREATE)
+        {
+            desiredAccess |= O_CREAT | O_TRUNC;
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+        else if ((mode & SF_OPEN_TRUNCATE))
+        {
+            desiredAccess |= O_TRUNC;
+        }
+
+        if (createPath)
+        {
+            CreatePath(m_fileName.c_str());
+        }
+        m_handle = open(m_fileName.c_str(), desiredAccess, permissions);
+
+        if (m_handle == PlatformSpecificInvalidHandle)
+        {
+            return false;
+        }
+        else
+        {
+            if (mode & SF_OPEN_APPEND)
+            {
+                lseek(m_handle, 0, SEEK_END);
+            }
+        }
+
+        return true;
+    }
+
+    void SystemFile::PlatformClose()
+    {
+        if (m_handle != PlatformSpecificInvalidHandle)
+        {
+            close(m_handle);
+            m_handle = PlatformSpecificInvalidHandle;
         }
     }
+} // namespace AZ::IO
 
-    return true;
-}
-
-void SystemFile::PlatformClose()
-{
-    if (m_handle != PlatformSpecificInvalidHandle)
-    {
-        close(m_handle);
-        m_handle = PlatformSpecificInvalidHandle;
-    }
-}
-
-namespace Platform
+namespace AZ::IO::Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
@@ -119,11 +148,7 @@ namespace Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            int result = lseek(handle, offset, mode);
-            if (result == -1)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            lseek(handle, offset, mode);
         }
     }
 
@@ -132,10 +157,6 @@ namespace Platform
         if (handle != PlatformSpecificInvalidHandle)
         {
             off_t result = lseek(handle, 0, SEEK_CUR);
-            if (result == (off_t)-1)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
             return aznumeric_cast<SizeType>(result);
         }
 
@@ -149,14 +170,12 @@ namespace Platform
             off_t current = lseek(handle, 0, SEEK_CUR);
             if (current == (off_t)-1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, current);
                 return false;
             }
 
             off_t end = lseek(handle, 0, SEEK_END);
             if (end == (off_t)-1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, end);
                 return false;
             }
 
@@ -191,7 +210,6 @@ namespace Platform
             ssize_t bytesRead = read(handle, buffer, byteSize);
             if (bytesRead == -1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
             return bytesRead;
@@ -207,7 +225,6 @@ namespace Platform
             ssize_t result = write(handle, buffer, byteSize);
             if (result == -1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
             return result;
@@ -221,10 +238,7 @@ namespace Platform
         if (handle != PlatformSpecificInvalidHandle)
         {
         #if AZ_TRAIT_SYSTEMFILE_FSYNC_IS_DEFINED
-            if (fsync(handle) != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            fsync(handle);
         #endif
         }
     }
@@ -236,7 +250,6 @@ namespace Platform
             struct stat stat;
             if (fstat(handle, &stat) < 0)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, 0);
                 return 0;
             }
             return stat.st_size;
@@ -259,6 +272,4 @@ namespace Platform
         }
         return false;
     }
-}
-
-} // namespace AZ::IO
+} // namespace AZ::IO::Platform

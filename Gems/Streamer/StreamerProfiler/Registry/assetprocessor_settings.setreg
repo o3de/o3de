@@ -1,0 +1,13 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder StreamerProfiler/Registry": {
+                    "watch": "@GEMROOT:StreamerProfiler@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

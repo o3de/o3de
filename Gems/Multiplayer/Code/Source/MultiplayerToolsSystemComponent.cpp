@@ -17,6 +17,12 @@ namespace Multiplayer
 
     void MultiplayerToolsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<MultiplayerToolsSystemComponent, AZ::Component>()
+                ->Version(0);
+        }
+
         NetworkPrefabProcessor::Reflect(context);
     }
 

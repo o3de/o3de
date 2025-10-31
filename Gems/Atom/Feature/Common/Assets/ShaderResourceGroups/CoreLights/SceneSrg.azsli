@@ -12,14 +12,6 @@
 
 partial ShaderResourceGroup SceneSrg
 { 
-    struct DirectionalLight
-    {
-        float3 m_direction;
-        float m_angularRadius;
-        float3 m_rgbIntensityLux;
-        float padding2; // explicit padding between float3s, can use this for other data later.
-    };
-
     StructuredBuffer<DirectionalLight> m_directionalLights;
     uint m_directionalLightCount;
     
@@ -39,5 +31,21 @@ partial ShaderResourceGroup SceneSrg
         ComparisonFunc = Less;
         MaxAnisotropy = 16;
         ReductionType = Comparison;
+    };
+
+    Sampler LtcSampler
+    {
+#if AZ_TRAIT_DOWNGRADE_LINEAR_SAMPLE 
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+#else
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+#endif
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };    
 }

@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
@@ -80,7 +80,7 @@ namespace UnitTest
     {
         AZ_TYPE_INFO(PythonReflectionContainerSimpleTypes, "{378AD363-467D-4285-BE40-4D1CB1A09A19}");
 
-        AZStd::vector<float> m_floatValues{ 1.0, 2.2, 3.3, 4.4 };
+        AZStd::vector<float> m_floatValues{ 1.0f, 2.2f, 3.3f, 4.4f };
 
         AZStd::vector<float>& ReturnVectorOfFloats()
         {
@@ -92,7 +92,7 @@ namespace UnitTest
             m_floatValues.assign(values.begin(), values.end());
         }
 
-        AZStd::vector<double> m_doubleValues{ 1.0, 2.2, 3.3, 4.4 };
+        AZStd::vector<double> m_doubleValues{ 1.0f, 2.2f, 3.3f, 4.4f };
 
         AZStd::vector<double>& ReturnVectorOfDoubles()
         {
@@ -987,7 +987,7 @@ namespace UnitTest
     // all accepted types tested with this test class
     struct PythonReflectionTypesTester
     {
-        AZ_TYPE_INFO(PythonReflectionTestDoPrint, "{CA1146E2-A2DF-4AE3-A712-5333CE60D65C}");
+        AZ_TYPE_INFO(PythonReflectionTypesTester, "{CA1146E2-A2DF-4AE3-A712-5333CE60D65C}");
 
         static AZ::u32 s_returned;
         static AZ::u32 s_accepted;
@@ -1349,7 +1349,7 @@ namespace UnitTest
                     print ('MathStaticMembers')
                 # testing the Uuid math type member like functions
                 uuidString = '{E866B520-D667-48A2-82F6-6AEBE1EC9C58}'
-                uuid = azlmbr.math.Uuid_CreateString(uuidString, 0)
+                uuid = azlmbr.math.Uuid_CreateString(uuidString)
                 if( uuid.ToString() == uuidString):
                     print ('MathStaticMembers')
             )");

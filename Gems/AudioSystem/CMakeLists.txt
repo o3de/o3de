@@ -6,4 +6,6 @@
 #
 #
 
+o3de_gem_setup("AudioSystem")
+
 add_subdirectory(Code)

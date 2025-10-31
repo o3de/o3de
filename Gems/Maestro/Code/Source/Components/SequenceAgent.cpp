@@ -53,7 +53,7 @@ namespace Maestro
     void SequenceAgent::CacheAllVirtualPropertiesFromBehaviorContext()
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         
         AZ::Entity::ComponentArrayType entityComponents;
         GetEntityComponents(entityComponents);
@@ -75,7 +75,7 @@ namespace Maestro
                         AZ::BehaviorEBus* behaviorEbus = findBusIter->second;
                         for (auto virtualPropertyIter = behaviorEbus->m_virtualProperties.begin(); virtualPropertyIter != behaviorEbus->m_virtualProperties.end(); virtualPropertyIter++)
                         {
-                            Maestro::SequenceComponentRequests::AnimatablePropertyAddress   address(component->GetId(), virtualPropertyIter->first);
+                            SequenceComponentRequests::AnimatablePropertyAddress   address(component->GetId(), virtualPropertyIter->first);
                             m_addressToBehaviorVirtualPropertiesMap[address] = &virtualPropertyIter->second;
                         }
 
@@ -124,7 +124,7 @@ namespace Maestro
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Uuid SequenceAgent::GetVirtualPropertyTypeId(const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) const
+    AZ::Uuid SequenceAgent::GetVirtualPropertyTypeId(const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress) const
     {
         AZ::Uuid retTypeUuid = AZ::Uuid::CreateNull();
 
@@ -144,7 +144,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool SequenceAgent::SetAnimatedPropertyValue(AZ::EntityId entityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const Maestro::SequenceComponentRequests::AnimatedValue& value)
+    bool SequenceAgent::SetAnimatedPropertyValue(AZ::EntityId entityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const SequenceComponentRequests::AnimatedValue& value)
     {
         bool changed = false;
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
@@ -202,6 +202,13 @@ namespace Maestro
                 findIter->second->m_setter->m_event->Invoke(entityId, assetIdValue);
                 changed = true;
             }
+            else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
+            {
+                AZStd::string stringValue;
+                value.GetValue(stringValue);
+                findIter->second->m_setter->m_event->Invoke(entityId, stringValue);
+                changed = true;
+            }
             else
             {
                 // fall-through default is to cast to float
@@ -211,11 +218,12 @@ namespace Maestro
                 changed = true;
             }
         }
+        AZ_Trace("SequenceAgent::SetAnimatedPropertyValue", "Value changed: %s", changed ? "true" : "false");
         return changed;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceAgent::GetAnimatedPropertyValue(Maestro::SequenceComponentRequests::AnimatedValue& returnValue, AZ::EntityId entityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    void SequenceAgent::GetAnimatedPropertyValue(SequenceComponentRequests::AnimatedValue& returnValue, AZ::EntityId entityId, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
 
@@ -264,6 +272,12 @@ namespace Maestro
                 findIter->second->m_getter->m_event->InvokeResult(assetIdValue, entityId);
                 returnValue.SetValue(assetIdValue);
             }
+            else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
+            {
+                AZStd::string stringValue;
+                findIter->second->m_getter->m_event->InvokeResult(stringValue, entityId);
+                returnValue.SetValue(stringValue);
+            }
             else
             {
                 // fall-through default is to cast to float
@@ -274,7 +288,7 @@ namespace Maestro
         }
     }
 
-    void SequenceAgent::GetAssetDuration(Maestro::SequenceComponentRequests::AnimatedValue& returnValue, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
+    void SequenceAgent::GetAssetDuration(SequenceComponentRequests::AnimatedValue& returnValue, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         auto findIter = m_addressToGetAssetDurationMap.find(componentId);
         if (findIter != m_addressToGetAssetDurationMap.end())
@@ -296,4 +310,4 @@ namespace Maestro
         }
     }
 
-}// namespace Maestro
+} // namespace Maestro

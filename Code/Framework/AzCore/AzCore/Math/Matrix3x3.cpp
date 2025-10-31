@@ -260,7 +260,7 @@ namespace AZ
             behaviorContext->Class<Matrix3x3>()->
                 Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)->
                 Attribute(Script::Attributes::Module, "math")->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(AZ::Script::Attributes::ConstructorOverride, &Internal::Matrix3x3ScriptConstructor)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::Matrix3x3DefaultConstructor)->

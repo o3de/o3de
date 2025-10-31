@@ -10,7 +10,6 @@
 #include <RHI/Device.h>
 
 #include <AzCore/Casting/lossy_cast.h>
-#include <AzCore/Debug/EventTrace.h> 
 
 namespace AZ
 {
@@ -82,7 +81,7 @@ namespace AZ
 
         BufferMemoryView BufferMemoryAllocator::Allocate(size_t sizeInBytes, size_t overrideSubAllocAlignment)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             BufferMemoryView bufferMemoryView;
 
@@ -112,7 +111,13 @@ namespace AZ
             }
 
             // Next, try a unique buffer allocation.
-            if (!bufferMemoryView.IsValid())
+            if (bufferMemoryView.IsValid())
+            {
+                RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+                heapMemoryUsage.m_usedResidentInBytes += bufferMemoryView.GetSize();
+                heapMemoryUsage.Validate();
+            }
+            else
             {
                 RHI::BufferDescriptor bufferDescriptor;
                 bufferDescriptor.m_byteCount = azlossy_caster(sizeInBytes);
@@ -129,6 +134,11 @@ namespace AZ
             {
             case BufferMemoryType::SubAllocated:
                 m_subAllocatorMutex.lock();
+                {
+                    RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+                    heapMemoryUsage.m_usedResidentInBytes -= memoryView.GetSize();
+                    heapMemoryUsage.Validate();
+                }
                 m_subAllocator.DeAllocate(memoryView.m_memoryAllocation);
                 m_subAllocatorMutex.unlock();
                 break;
@@ -139,18 +149,25 @@ namespace AZ
             }
         }
 
+        float BufferMemoryAllocator::ComputeFragmentation() const
+        {
+            if (m_usePageAllocator)
+            {
+                return m_subAllocator.ComputeFragmentation();
+            }
+            return 0.f;
+        }
+
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
-            AZ_TRACE_METHOD();
-
+            AZ_PROFILE_FUNCTION(RHI);
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::CommittedBuffer);
 
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(alignedSize))
+            if (!heapMemoryUsage.CanAllocate(alignedSize))
             {
                 return BufferMemoryView();
             }
-
             D3D12_RESOURCE_STATES initialResourceState = ConvertInitialResourceState(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
             if (RHI::CheckBitsAny(m_descriptor.m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
@@ -162,13 +179,12 @@ namespace AZ
             MemoryView memoryView = m_descriptor.m_device->CreateBufferCommitted(bufferDescriptor, initialResourceState, heapType);
             if (memoryView.IsValid())
             {
+                const size_t sizeInBytes = memoryView.GetSize();
+
                 // Add the resident usage now that everything succeeded.
-                heapMemoryUsage.m_residentInBytes += alignedSize;
-            }
-            else
-            {
-                // The allocation failed. Back out memory reservation.
-                heapMemoryUsage.m_reservedInBytes -= alignedSize;
+                heapMemoryUsage.m_totalResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_usedResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_uniqueAllocationBytes += sizeInBytes;
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
@@ -179,9 +195,10 @@ namespace AZ
             AZ_Assert(memoryView.GetType() == BufferMemoryType::Unique, "This call only supports unique BufferMemoryView allocations.");
             const size_t sizeInBytes = memoryView.GetSize();
 
-            RHI::HeapMemoryUsage& heapHemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapHemoryUsage.m_residentInBytes -= sizeInBytes;
-            heapHemoryUsage.m_reservedInBytes -= sizeInBytes;
+            RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+            heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_uniqueAllocationBytes -= sizeInBytes;
 
             m_descriptor.m_device->QueueForRelease(memoryView);
         }

@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
@@ -28,7 +31,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, cl_manipulatorDrawDebug);
+    AZ_CVAR_EXTERNED(bool, ed_manipulatorDrawDebug);
 
     namespace UndoSystem
     {
@@ -43,7 +46,7 @@ namespace AzToolsFramework
     struct ManipulatorManagerState;
 
     //! The base class for manipulators, providing interfaces for users of manipulators to talk to.
-    class BaseManipulator : public AZStd::enable_shared_from_this<BaseManipulator>
+    class AZTF_API BaseManipulator : public AZStd::enable_shared_from_this<BaseManipulator>
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -54,7 +57,8 @@ namespace AzToolsFramework
 
         virtual ~BaseManipulator();
 
-        using EntityComponentIds = AZStd::unordered_set<AZ::EntityComponentIdPair>;
+        using UniqueEntityIds = AZStd::unordered_set<AZ::EntityId>;
+        using UniqueEntityComponentIds = AZStd::unordered_set<AZ::EntityComponentIdPair>;
 
         //! Callback for the event when the mouse pointer is over this manipulator and the left mouse button is pressed.
         //! @param interaction It contains various mouse states when the event happens, as well as a ray shooting from the viewing camera
@@ -137,7 +141,7 @@ namespace AzToolsFramework
         }
 
         //! Returns all EntityComponentIdPairs associated with this manipulator.
-        const EntityComponentIds& EntityComponentIdPairs() const
+        const UniqueEntityComponentIds& EntityComponentIdPairs() const
         {
             return m_entityComponentIdPairs;
         }
@@ -147,10 +151,10 @@ namespace AzToolsFramework
 
         //! Remove an entity from being affected by this manipulator.
         //! @note All components on this entity registered with the manipulator will be removed.
-        EntityComponentIds::iterator RemoveEntityId(AZ::EntityId entityId);
+        UniqueEntityComponentIds::iterator RemoveEntityId(AZ::EntityId entityId);
 
         //! Remove a specific component (via a EntityComponentIdPair) being affected by this manipulator.
-        EntityComponentIds::iterator RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        UniqueEntityComponentIds::iterator RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
         //! Is this entity currently being tracked by this manipulator.
         bool HasEntityId(AZ::EntityId entityId) const;
@@ -272,7 +276,7 @@ namespace AzToolsFramework
 
     //! Base class to be used when composing aggregate manipulator types - wraps some
     //! common functionality all manipulators need.
-    class Manipulators
+    class AZTF_API Manipulators
     {
     public:
         virtual ~Manipulators() = default;
@@ -286,11 +290,6 @@ namespace AzToolsFramework
         bool PerformingAction();
         bool Registered();
 
-        //! Refresh the Manipulator and/or View based on the current view position.
-        virtual void RefreshView(const AZ::Vector3& /*worldViewPosition*/)
-        {
-        }
-
         const AZ::Transform& GetLocalTransform() const;
         const AZ::Transform& GetSpace() const;
         const AZ::Vector3& GetNonUniformScale() const;
@@ -299,11 +298,26 @@ namespace AzToolsFramework
         void SetLocalPosition(const AZ::Vector3& localPosition);
         void SetLocalOrientation(const AZ::Quaternion& localOrientation);
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
+        
+        //! Callback function that is used to visit every manipulator in this group of Manipulators
+        using ManipulatorVisitCallback = AZStd::function<void(BaseManipulator*)>;
 
-    protected:
+        //! Refresh the Manipulator and/or View based on the current view position.
+        virtual void RefreshView([[maybe_unused]] const AZ::Vector3& worldViewPosition)
+        {
+        }
+
+        //! Provide additional display feedback for an aggregate manipulator.
+        virtual void DisplayFeedback(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay, [[maybe_unused]] const AzFramework::CameraState& cameraState)
+        {
+        }
+
         //! Common processing for base manipulator type - Implement for all
         //! individual manipulators used in an aggregate manipulator.
-        virtual void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) = 0;
+        virtual void ProcessManipulators(const ManipulatorVisitCallback&) = 0;
+
+    protected:
 
         //!@{
         //! Allows implementers to perform additional logic when updating the location of the manipulator group.
@@ -342,7 +356,7 @@ namespace AzToolsFramework
         //! @param[out] resultIntersectingPoint  This stores the result intersecting point. It will be left unchanged
         //!                                      if there is no intersection between the ray and the plane.
         //! @return                              Was there an intersection
-        bool CalculateRayPlaneIntersectingPoint(
+        AZTF_API bool CalculateRayPlaneIntersectingPoint(
             const AZ::Vector3& rayOrigin,
             const AZ::Vector3& rayDirection,
             const AZ::Vector3& pointOnPlane,
@@ -350,7 +364,7 @@ namespace AzToolsFramework
             AZ::Vector3& resultIntersectingPoint);
 
         //! Returns startLocalHitPosition if currentLocalHitPosition is further away than the camera's far clip plane.
-        AZ::Vector3 TryConstrainHitPositionToView(
+        AZTF_API AZ::Vector3 TryConstrainHitPositionToView(
             const AZ::Vector3& currentLocalHitPosition,
             const AZ::Vector3& startLocalHitPosition,
             const AZ::Transform& localFromWorld,

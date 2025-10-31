@@ -11,6 +11,11 @@
                     "Name": "Depth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    },
                     "ShaderImageDimensionsConstant": "m_fullResDimensions"
                 },
                 {
@@ -30,7 +35,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/NewDepthOfFieldComposite.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "AuthorityToClientNoParams Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Authority To Client No Params Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "AuthorityToClientNoParams Notify Event",
+                    "details": {
+                        "name": "AuthorityToClientNoParams Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

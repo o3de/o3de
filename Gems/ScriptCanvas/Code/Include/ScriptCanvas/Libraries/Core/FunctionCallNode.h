@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -22,8 +22,6 @@
 #include <Include/ScriptCanvas/Libraries/Core/FunctionCallNode.generated.h>
 
 namespace ScriptCanvas { class RuntimeComponent; }
-
-namespace ScriptCanvas { struct SubgraphInterfaceData; }
 
 namespace AZ
 {
@@ -37,6 +35,13 @@ namespace ScriptCanvas
         namespace Core
         {
             struct FunctionCallNodeCompareConfig;
+
+            enum class IsFunctionCallNodeOutOfDateResult
+            {
+                No,
+                Yes,
+                EvaluateAfterLocalDefinition
+            };
 
             class FunctionCallNode
                 : public Node
@@ -69,11 +74,13 @@ namespace ScriptCanvas
 
                 const AZStd::string& GetName() const;
 
+                Grammar::FunctionSourceId GetSourceId() const;
+
                 void Initialize(AZ::Data::AssetId assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId);
 
                 bool IsOutOfDate(const VersionData& graphVersion) const override;
 
-                bool IsOutOfDate(const FunctionCallNodeCompareConfig& config) const;
+                IsFunctionCallNodeOutOfDateResult IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const;
 
                 UpdateResult OnUpdateNode() override;
 
@@ -90,9 +97,11 @@ namespace ScriptCanvas
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
 
-                AZStd::string GetInterfaceName() const;
+                AZ::Outcome<AZStd::string, AZStd::string> GetInterfaceNameFromAssetOrLastSave() const;
 
                 const SlotExecution::Map* GetSlotExecutionMap() const override;
+
+                const Grammar::SubgraphInterface& GetSlotExecutionMapSource() const;
 
                 const Grammar::SubgraphInterface* GetSubgraphInterface() const override;
 

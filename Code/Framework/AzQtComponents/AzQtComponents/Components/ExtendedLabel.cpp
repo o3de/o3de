@@ -20,8 +20,31 @@ namespace AzQtComponents
 
     void ExtendedLabel::setPixmap(const QPixmap& p)
     {
+        m_keepAspectRatio = false;
         m_pix = p;
         rescale();
+    }
+
+    void ExtendedLabel::setPixmapKeepAspectRatio(const QPixmap& pixmap)
+    {
+        m_keepAspectRatio = true;
+        m_pix = pixmap;
+
+        // If the available space is smaller than the pixmap, do not scale the pixmap to fit the space
+        if (contentsRect().size().width() < m_pix.size().width() || contentsRect().size().height() < m_pix.size().height())
+        {
+            QLabel::setPixmap(pixmap);
+        }
+        else
+        {
+            rescale();
+        }
+    }
+
+    void ExtendedLabel::setText(const QString& text)
+    {
+        m_pix = QPixmap();
+        QLabel::setText(text);
     }
 
     void ExtendedLabel::resizeEvent(QResizeEvent* /*event*/)
@@ -33,39 +56,44 @@ namespace AzQtComponents
     {
         if (!m_pix.isNull())
         {
-            setAlignment(Qt::AlignCenter);
-
-            int realWidth;
-            int realHeight;
-
-            m_pixmapSize = property("pixmapSize").toSize();
-
-            if (m_pixmapSize.isValid())
+            if (m_keepAspectRatio)
             {
-                realWidth = qMin(m_pixmapSize.width(), this->width());
-                realHeight = qMin(m_pixmapSize.height(), this->height());
+                QSize labelSize = contentsRect().size();
+                QPixmap scaledPixmap = m_pix.scaled(labelSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                QLabel::setPixmap(scaledPixmap);
             }
             else
             {
-                realWidth = this->width();
-                realHeight = this->height();
-            }
+                setAlignment(Qt::AlignCenter);
 
-            double aspectRatioExpected = aspectRatio(
-                realWidth,
-                realHeight);
-            double aspectRatioSource = aspectRatio(
-                m_pix.width(),
-                m_pix.height());
+                int realWidth;
+                int realHeight;
 
-            //use the one that fits
-            if (aspectRatioExpected > aspectRatioSource)
-            {
-                QLabel::setPixmap(m_pix.scaledToHeight(realHeight));
-            }
-            else
-            {
-                QLabel::setPixmap(m_pix.scaledToWidth(realWidth));
+                m_pixmapSize = property("pixmapSize").toSize();
+
+                if (m_pixmapSize.isValid())
+                {
+                    realWidth = qMin(m_pixmapSize.width(), this->width());
+                    realHeight = qMin(m_pixmapSize.height(), this->height());
+                }
+                else
+                {
+                    realWidth = this->width();
+                    realHeight = this->height();
+                }
+
+                double aspectRatioExpected = aspectRatio(realWidth, realHeight);
+                double aspectRatioSource = aspectRatio(m_pix.width(), m_pix.height());
+
+                // use the one that fits
+                if (aspectRatioExpected > aspectRatioSource)
+                {
+                    QLabel::setPixmap(m_pix.scaledToHeight(realHeight));
+                }
+                else
+                {
+                    QLabel::setPixmap(m_pix.scaledToWidth(realWidth));
+                }
             }
         }
     }

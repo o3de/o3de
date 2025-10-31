@@ -10,6 +10,11 @@
 
 #include <AzCore/Component/EntityId.h>
 
+namespace ScriptCanvas
+{
+    class Node;
+}
+
 namespace ScriptCanvasEditor
 {
     struct NodeIdPair
@@ -21,5 +26,11 @@ namespace ScriptCanvasEditor
             : m_graphCanvasId(AZ::EntityId::InvalidEntityId)
             , m_scriptCanvasId(AZ::EntityId::InvalidEntityId)
         {}
+    };
+
+    struct CreateNodeResult
+    {
+        NodeIdPair nodeIdPair;
+        ScriptCanvas::Node* node = nullptr;
     };
 }

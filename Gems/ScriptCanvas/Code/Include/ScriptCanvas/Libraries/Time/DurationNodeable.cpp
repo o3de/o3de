@@ -29,7 +29,7 @@ namespace ScriptCanvas
             void DurationNodeable::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
                 AZ_PROFILE_FUNCTION(ScriptCanvas);
-                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
+                SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT_NODEABLE
 
                 if (m_elapsedTime <= m_duration)
                 {

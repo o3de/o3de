@@ -14,6 +14,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // This header file and CPP handles the platform specific implementation of code as defined by the FileIOBase interface class.
 // In order to make your code portable and functional with both this and the RemoteFileIO class, use the interface to access
@@ -24,12 +25,12 @@ namespace AZ
     namespace IO
     {
         class SystemFile;
-        class LocalFileIO
+        class AZF_API LocalFileIO
             : public FileIOBase
         {
         public:
             AZ_RTTI(LocalFileIO, "{87A8D32B-F695-4105-9A4D-D99BE15DFD50}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator);
 
             LocalFileIO();
             ~LocalFileIO();

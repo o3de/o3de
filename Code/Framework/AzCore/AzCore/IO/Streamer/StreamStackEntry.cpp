@@ -80,7 +80,7 @@ namespace AZ
             }
         }
 
-        void StreamStackEntry::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now,
+        void StreamStackEntry::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now,
             AZStd::vector<FileRequest*>& internalPending, StreamerContext::PreparedQueue::iterator pendingBegin,
             StreamerContext::PreparedQueue::iterator pendingEnd)
         {

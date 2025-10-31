@@ -9,13 +9,13 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
@@ -38,7 +38,7 @@ namespace AZ
             {
                 Q_OBJECT
             public:
-                AZ_CLASS_ALLOCATOR(MaterialModelUvNameMapInspector, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(MaterialModelUvNameMapInspector, AZ::SystemAllocator);
 
                 explicit MaterialModelUvNameMapInspector(
                     const AZ::Data::AssetId& assetId,

@@ -66,7 +66,7 @@ namespace WhiteBox
 
         const char* WhiteBoxMeshAssetHandler::GetBrowserIcon() const
         {
-            return "Editor/Icons/Components/WhiteBoxMesh.png";
+            return "Editor/Icons/Components/WhiteBox.svg";
         }
 
         const char* WhiteBoxMeshAssetHandler::GetGroup() const
@@ -76,7 +76,7 @@ namespace WhiteBox
 
         AZ::Uuid WhiteBoxMeshAssetHandler::GetComponentTypeId() const
         {
-            return "{C9F2D913-E275-49BB-AB4F-2D221C16170A}"; // EditorWhiteBoxComponent
+            return AZ::Uuid("{C9F2D913-E275-49BB-AB4F-2D221C16170A}"); // EditorWhiteBoxComponent
         }
 
         AZ::Data::AssetPtr WhiteBoxMeshAssetHandler::CreateAsset(

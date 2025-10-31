@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Utilities/SelectionProxyModel.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemRequirementFilterProxyModel
         : public QSortFilterProxyModel
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         GemRequirementFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);

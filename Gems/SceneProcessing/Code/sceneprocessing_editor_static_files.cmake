@@ -20,6 +20,12 @@ set(FILES
     Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.cpp
     Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.h
     Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.cpp
+    Source/Generation/Components/UVsGenerator/UVsGenerateComponent.h
+    Source/Generation/Components/UVsGenerator/UVsGenerateComponent.cpp
+    Source/Generation/Components/UVsGenerator/UVsPreExportComponent.h
+    Source/Generation/Components/UVsGenerator/UVsPreExportComponent.cpp
+    Source/Generation/Components/UVsGenerator/UVsGenerators/SphereMappingUVsGenerator.h
+    Source/Generation/Components/UVsGenerator/UVsGenerators/SphereMappingUVsGenerator.cpp
     Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp
     Source/Generation/Components/MeshOptimizer/MeshBuilder.h
     Source/Generation/Components/MeshOptimizer/MeshBuilderInvalidIndex.h

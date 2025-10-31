@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
 
         m_layout = new QVBoxLayout();
         m_layout->setSpacing(0);
-        m_layout->setMargin(5);
+        m_layout->setContentsMargins(5, 5, 5, 5);
         m_layout->setAlignment(Qt::AlignTop);
         setLayout(m_layout);
         setMinimumHeight(400);
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         closeButton->setFlat(true);
         closeButton->setFocusPolicy(Qt::NoFocus);
         closeButton->setIcon(QIcon(":/WindowClose.svg"));
-        connect(closeButton, &QPushButton::clicked, this, [=]
+        connect(closeButton, &QPushButton::clicked, this, [this]
             {
                 deleteLater();
             });
@@ -59,7 +59,7 @@ namespace O3DE::ProjectManager
         CreateDownloadSection();
 
         // added
-        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [=]
+        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/false);
@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed
-        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [=]
+        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/false);
@@ -93,7 +93,7 @@ namespace O3DE::ProjectManager
             });
 
         // added dependencies 
-        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [=]
+        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
@@ -110,7 +110,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed dependencies 
-        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
+        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -125,12 +125,6 @@ namespace O3DE::ProjectManager
                 }
                 return dependencies;
             });
-    }
-
-    GemCartWidget::~GemCartWidget()
-    {
-        // disconnect from all download controller signals
-        disconnect(m_downloadController, nullptr, this, nullptr);
     }
 
     void GemCartWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
@@ -150,7 +144,7 @@ namespace O3DE::ProjectManager
         TagContainerWidget* tagContainer = new TagContainerWidget();
         layout->addWidget(tagContainer);
 
-        auto update = [=]()
+        auto update = [this, widget, getTagIndices, tagContainer, singularTitle, pluralTitle, label]()
         {
             const QVector<QModelIndex> tagIndices = getTagIndices();
             if (tagIndices.isEmpty())
@@ -171,7 +165,7 @@ namespace O3DE::ProjectManager
 
     void GemCartWidget::OnCancelDownloadActivated(const QString& gemName)
     {
-        m_downloadController->CancelGemDownload(gemName);
+        m_downloadController->CancelObjectDownload(gemName, DownloadController::DownloadObjectType::Gem);
     }
 
     void GemCartWidget::CreateDownloadSection()
@@ -195,7 +189,7 @@ namespace O3DE::ProjectManager
         downloadingGemsWidget->setObjectName("GemCatalogCartOverlayGemDownloadHeader");
         layout->addWidget(downloadingGemsWidget);
         QVBoxLayout* gemDownloadLayout = new QVBoxLayout();
-        gemDownloadLayout->setMargin(0);
+        gemDownloadLayout->setContentsMargins(0, 0, 0, 0);
         gemDownloadLayout->setAlignment(Qt::AlignTop);
         downloadingGemsWidget->setLayout(gemDownloadLayout);
         QLabel* processingQueueLabel = new QLabel("Processing Queue");
@@ -219,22 +213,30 @@ namespace O3DE::ProjectManager
         else
         {
             // Setup gem download rows for gems that are already in the queue
-            const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+            const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
 
-            for (const QString& gemName : downloadQueue)
+            for (const DownloadController::DownloadableObject& o3deObject : downloadQueue)
             {
-                GemDownloadAdded(gemName);
+                if (o3deObject.m_objectType == DownloadController::DownloadObjectType::Gem)
+                {
+                    ObjectDownloadAdded(o3deObject.m_objectName, o3deObject.m_objectType);
+                }
             }
         }
 
         // connect to download controller data changed
-        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCartWidget::GemDownloadAdded);
-        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCartWidget::GemDownloadRemoved);
-        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, &GemCartWidget::GemDownloadProgress);
+        connect(m_downloadController, &DownloadController::ObjectDownloadAdded, this, &GemCartWidget::ObjectDownloadAdded);
+        connect(m_downloadController, &DownloadController::ObjectDownloadRemoved, this, &GemCartWidget::ObjectDownloadRemoved);
+        connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &GemCartWidget::ObjectDownloadProgress);
     }
 
-    void GemCartWidget::GemDownloadAdded(const QString& gemName)
+    void GemCartWidget::ObjectDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         // Containing widget for the current download item
         QWidget* newGemDownloadWidget = new QWidget();
         newGemDownloadWidget->setObjectName(gemName);
@@ -263,7 +265,7 @@ namespace O3DE::ProjectManager
 
         m_downloadingListWidget->layout()->addWidget(newGemDownloadWidget);
 
-        const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+        const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
         QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
         numDownloads->setText(QString("%1 %2")
                                   .arg(downloadQueue.size())
@@ -272,8 +274,13 @@ namespace O3DE::ProjectManager
         m_downloadingListWidget->show();
     }
 
-    void GemCartWidget::GemDownloadRemoved(const QString& gemName)
+    void GemCartWidget::ObjectDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         QWidget* gemToRemove = m_downloadingListWidget->findChild<QWidget*>(gemName);
         if (gemToRemove)
         {
@@ -294,8 +301,13 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCartWidget::GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes)
+    void GemCartWidget::ObjectDownloadProgress(const QString& gemName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         QWidget* gemToUpdate = m_downloadingListWidget->findChild<QWidget*>(gemName);
         if (gemToUpdate)
         {
@@ -335,7 +347,32 @@ namespace O3DE::ProjectManager
         tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+            const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+            if(gemInfo.m_isEngineGem)
+            {
+                // don't show engine gem versions
+                tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+            }
+            else
+            {
+                // show non-engine gem versions if available
+                QString version =  GemModel::GetNewVersion(modelIndex);
+                if (version.isEmpty())
+                {
+                    version =  gemInfo.m_version;
+                }
+
+                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive) || gemInfo.m_displayName.contains(version))
+                {
+                    tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+                }
+                else
+                {
+                    const QString& title = QString("%1 %2").arg(gemInfo.m_displayName, version);
+                    tags.push_back({ title, gemInfo.m_name });
+                }
+            }
+
         }
         return tags;
     }
@@ -346,7 +383,7 @@ namespace O3DE::ProjectManager
         , m_downloadController(downloadController)
     {
         m_layout = new QHBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         setLayout(m_layout);
 
         QPushButton* iconButton = new QPushButton();
@@ -357,7 +394,7 @@ namespace O3DE::ProjectManager
         connect(iconButton, &QPushButton::clicked, this, &CartButton::ShowGemCart);
         m_layout->addWidget(iconButton);
 
-        m_countLabel = new QLabel();
+        m_countLabel = new QLabel("0");
         m_countLabel->setObjectName("GemCatalogCartCountLabel");
         m_countLabel->setFixedHeight(s_iconSize - 1); // Compensate for the empty icon space by using a slightly smaller label height.
         m_layout->addWidget(m_countLabel);
@@ -371,7 +408,7 @@ namespace O3DE::ProjectManager
         m_layout->addWidget(m_dropDownButton);
 
         // Adjust the label text whenever the model gets updated.
-        connect(gemModel, &GemModel::dataChanged, [=]
+        connect(gemModel, &GemModel::dataChanged, [this]
             {
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -421,7 +458,7 @@ namespace O3DE::ProjectManager
         }
 
         m_gemCart = new GemCartWidget(m_gemModel, m_downloadController, this);
-        connect(m_gemCart, &QWidget::destroyed, this, [=]
+        connect(m_gemCart, &QWidget::destroyed, this, [this]
             {
                 // Reset the overlay pointer on destruction to prevent dangling pointers.
                 m_gemCart = nullptr;
@@ -461,7 +498,6 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         m_filterLineEdit = new AzQtComponents::SearchLineEdit();
-        m_filterLineEdit->setStyleSheet("background-color: #DDDDDD;");
         connect(m_filterLineEdit, &QLineEdit::textChanged, this, [=](const QString& text)
             {
                 filterProxyModel->SetSearchString(text);
@@ -501,10 +537,11 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        gemMenu->addAction( tr("Refresh"), [this]() { emit RefreshGems(); });
+        gemMenu->addAction(tr("Refresh"), [this]() { emit RefreshGems(/*refreshRemoteRepos*/true); });
         gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
         gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });
+        gemMenu->addAction( tr("Create New Gem"), [this]() { emit CreateGem(); });
 
         QPushButton* gemMenuButton = new QPushButton(this);
         gemMenuButton->setObjectName("gemCatalogMenuButton");
@@ -513,8 +550,8 @@ namespace O3DE::ProjectManager
         gemMenuButton->setIconSize(QSize(36, 24));
         hLayout->addWidget(gemMenuButton);
 
-        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
-        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
+        connect(m_downloadController, &DownloadController::ObjectDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
+        connect(m_downloadController, &DownloadController::ObjectDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
 
         connect(
             m_cartButton, &CartButton::UpdateGemCart, this,
@@ -528,17 +565,22 @@ namespace O3DE::ProjectManager
             });
     }
 
-    void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/)
+    void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         m_downloadSpinner->show();
         m_downloadLabel->show();
         m_downloadSpinnerMovie->start();
         m_cartButton->ShowGemCart();
     }
 
-    void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/)
+    void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/, DownloadController::DownloadObjectType objectType)
     {
-        if (m_downloadController->IsDownloadQueueEmpty())
+        if (objectType == DownloadController::DownloadObjectType::Gem && m_downloadController->IsDownloadQueueEmpty())
         {
             m_downloadSpinner->hide();
             m_downloadLabel->hide();

@@ -230,8 +230,8 @@ namespace AssetBundler
         AZStd::vector<AZStd::string> outputFilePaths;
         bool hasFileGenerationErrors = false;
 
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames =
-            AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags());
+        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames{ AZStd::from_range,
+            AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags()) };
         for (const AZStd::string& platformName : selectedPlatformNames)
         {
             // We do not want to modify the original Rules file, as we do not save Asset List file paths to disk
@@ -429,12 +429,12 @@ namespace AssetBundler
 
         QAction* moveUpAction = new QAction(tr("Move Up"), this);
         moveUpAction->setEnabled(comparisonDataIndex > 0);
-        connect(moveUpAction, &QAction::triggered, this, [=]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex - 1); });
+        connect(moveUpAction, &QAction::triggered, this, [this, comparisonDataIndex]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex - 1); });
         menu.addAction(moveUpAction);
 
         QAction* moveDownAction = new QAction(tr("Move Down"), this);
         moveDownAction->setEnabled(comparisonDataIndex < m_selectedComparisonRules->GetNumComparisonSteps() - 1);
-        connect(moveDownAction, &QAction::triggered, this, [=]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex + 2); });
+        connect(moveDownAction, &QAction::triggered, this, [this, comparisonDataIndex]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex + 2); });
         menu.addAction(moveDownAction);
 
         QAction* separator = new QAction(this);
@@ -442,7 +442,7 @@ namespace AssetBundler
         menu.addAction(separator);
 
         QAction* deleteAction = new QAction(tr("Remove Comparison Step"), this);
-        connect(deleteAction, &QAction::triggered, this, [=]() { RemoveComparisonStep(comparisonDataIndex); });
+        connect(deleteAction, &QAction::triggered, this, [this, comparisonDataIndex]() { RemoveComparisonStep(comparisonDataIndex); });
         menu.addAction(deleteAction);
 
         menu.exec(position);

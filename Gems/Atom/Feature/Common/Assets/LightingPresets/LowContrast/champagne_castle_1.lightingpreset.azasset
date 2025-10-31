@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Champagne Castle 1",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{40D2CCBC-1372-59E5-BF36-D2EA46C10195}",

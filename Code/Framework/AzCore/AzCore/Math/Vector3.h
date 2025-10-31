@@ -23,7 +23,7 @@ namespace AZ
     class ReflectContext;
 
     //! 3-dimensional vector class.
-    class Vector3
+    class AZCORE_API Vector3
     {
     public:
 
@@ -35,15 +35,20 @@ namespace AZ
 
         //! Default constructor, components are uninitialized.
         Vector3() = default;
-        Vector3(const Vector3& v);
+        Vector3(const Vector3& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector3(float x);
 
         Vector3(float x, float y, float z);
 
+        //! Sets x,y components from a Vector2, sets z to 0.0.
         explicit Vector3(const Vector2& source);
 
+        //! Sets x,y components from a Vector2, specify z separately.
+        Vector3(const Vector2& source, float z);
+
+        //! Sets x,y,z components from a Vector4.
         explicit Vector3(const Vector4& source);
 
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.
@@ -228,8 +233,6 @@ namespace AZ
         float GetMaxElement() const;
         float GetMinElement() const;
 
-        Vector3& operator=(const Vector3& rhs);
-
         Vector3 operator-() const;
         Vector3 operator+(const Vector3& rhs) const;
         Vector3 operator-(const Vector3& rhs) const;
@@ -244,6 +247,8 @@ namespace AZ
         Vector3& operator/=(const Vector3& rhs);
         Vector3& operator*=(float multiplier);
         Vector3& operator/=(float divisor);
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector3 GetSin() const;
@@ -312,10 +317,14 @@ namespace AZ
         //! Project this vector onto a normal and return the resulting projection. P = v - (v.Dot(Normal) * normal)
         Vector3 GetProjectedOnNormal(const Vector3& normal);
 
-        //! Returns true if all elements are finite, false if at least one element is not finite
+        //! Returns true if the vector contains no nan or inf values, false if at least one element is not finite.
         bool IsFinite() const;
 
+        //! Returns the underlying SIMD vector.
         Simd::Vec3::FloatType GetSimdValue() const;
+
+        //! Directly sets the underlying SIMD vector.
+        void SetSimdValue(Simd::Vec3::FloatArgType value);
 
     private:
 

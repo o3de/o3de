@@ -7,9 +7,9 @@
  */
 #include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
-#include <QtCore/QObject>
-#include <QtCore/QJsonDocument>
-#include <QtCore/QJsonObject>
+#include <QObject>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRegularExpression>
 
 namespace
@@ -134,7 +134,7 @@ namespace AzQtComponents
             QColor color;
             QString colorName(m_namedVariables.value(name));
 
-            bool colorSet = false;
+            [[maybe_unused]] bool colorSet = false;
             if (QColor::isValidColor(colorName))
             {
                 color.setNamedColor(colorName);

@@ -59,6 +59,9 @@ namespace AzQtComponents
             qreal disabledIconAlpha;    //!< Alpha value for disabled icons. Must be a value between 0.0 and 1.0.
         };
 
+        static void applyContainerStyle(Card* card);
+        static void applySectionStyle(Card* card);
+
         Card(QWidget* parent = nullptr);
 
         //! Sets the Primary Content Widget for this Card.
@@ -69,6 +72,9 @@ namespace AzQtComponents
         //! Sets the Card's Title.
         //! Equivalent to calling setTitle on the CardHeader.
         void setTitle(const QString& title);
+        //! Sets the tool tip for the card header and card header title.
+        //! Equivalent to calling setTitle on the CardHeader.
+        void setTitleToolTip(const QString& toolTip);
         //! Returns the Card's Title.
         QString title() const;
 

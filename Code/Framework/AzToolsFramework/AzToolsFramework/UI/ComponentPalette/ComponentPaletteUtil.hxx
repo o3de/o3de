@@ -8,10 +8,14 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
+
 #include <QString>
+#include <QRegularExpression>
 
 namespace AZ
 {
@@ -27,40 +31,40 @@ namespace AzToolsFramework
         using ComponentIconTable = AZStd::map<const AZ::SerializeContext::ClassData*, QString>;
 
         // Returns true if the given component is addable by the user
-        bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);
+        AZTF_API bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);
 
-        void BuildComponentTables(
+        AZTF_API void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter,
-            ComponentDataTable &componentDataTable,
-            ComponentIconTable &componentIconTable
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter,
+            ComponentDataTable& componentDataTable,
+            ComponentIconTable& componentIconTable
         );
 
-        void BuildComponentTables(
+        AZTF_API void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            ComponentDataTable &componentDataTable,
-            ComponentIconTable &componentIconTable
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            ComponentDataTable& componentDataTable,
+            ComponentIconTable& componentIconTable
         );
 
         // Returns true if any components in the given filter provide any of the services
         // specified and are addable/editable by the user
-        bool ContainsEditableComponents(
+        AZTF_API bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
         );
 
-        bool ContainsEditableComponents(
+        AZTF_API bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter
         );
 
-        QRegExp BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
+        AZTF_API QRegularExpression BuildFilterRegExp(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     }
 }

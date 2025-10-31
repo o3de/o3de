@@ -16,7 +16,6 @@
 
 #include <QScopedPointer>
 
-struct CUIEnumsDatabase_SEnum;
 class ReflectedPropertyItem;
 
 // Class to wrap the CReflectedVars and sync them with corresponding IVariable.
@@ -65,9 +64,7 @@ public:
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarInt > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_valueMultiplier = 1.0f;
 };
 
@@ -81,9 +78,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarFloat > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_valueMultiplier = 1.0f;
 };
 
@@ -96,9 +91,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarString > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarBoolAdapter
@@ -110,9 +103,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarBool > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarEnumAdapter
@@ -134,32 +125,37 @@ protected:
     virtual void updateIVariableEnumList([[maybe_unused]] IVariable* pVariable) {};
 
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarEnum<AZStd::string>  > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     IVariable* m_pVariable;
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     IVarEnumListPtr m_enumList;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     bool m_updatingEnums;
 };
 
-class EDITOR_CORE_API ReflectedVarDBEnumAdapter
-    : public ReflectedVarAdapter
+class EDITOR_CORE_API ReflectedVarColor3Adapter : public ReflectedVarAdapter
 {
 public:
     void SetVariable(IVariable* pVariable) override;
     void SyncReflectedVarToIVar(IVariable* pVariable) override;
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
-private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    QScopedPointer<CReflectedVarEnum<AZStd::string>  > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-    CUIEnumsDatabase_SEnum* m_pEnumDBItem;
+private:
+    QScopedPointer<CReflectedVarVector3> m_reflectedVar;
 };
+
+class EDITOR_CORE_API ReflectedVarColor4Adapter : public ReflectedVarAdapter
+{
+public:
+    void SetVariable(IVariable* pVariable) override;
+    void SyncReflectedVarToIVar(IVariable* pVariable) override;
+    void SyncIVarToReflectedVar(IVariable* pVariable) override;
+    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
+
+private:
+    QScopedPointer<CReflectedVarVector4> m_reflectedVar;
+};
+
 
 class EDITOR_CORE_API ReflectedVarVector2Adapter
     : public ReflectedVarAdapter
@@ -170,9 +166,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarVector2 > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarVector3Adapter
@@ -184,9 +178,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarVector3 > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarVector4Adapter
@@ -198,24 +190,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarVector4 > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-};
-
-
-class EDITOR_CORE_API ReflectedVarColorAdapter
-    : public ReflectedVarAdapter
-{
-public:
-    void SetVariable(IVariable* pVariable) override;
-    void SyncReflectedVarToIVar(IVariable* pVariable) override;
-    void SyncIVarToReflectedVar(IVariable* pVariable) override;
-    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
-private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    QScopedPointer<CReflectedVarColor > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarResourceAdapter
@@ -227,9 +202,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarResource> m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarUserAdapter
@@ -243,9 +216,7 @@ public:
         return m_reflectedVar.data();
     }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarUser> m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 class EDITOR_CORE_API ReflectedVarSplineAdapter
@@ -260,9 +231,7 @@ public:
         return m_reflectedVar.data();
     }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarSpline > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     bool m_bDontSendToControl;
     PropertyType m_propertyType;
     ReflectedPropertyItem *m_parentItem;
@@ -279,9 +248,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarGenericProperty > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     PropertyType m_propertyType;
 };
 
@@ -294,9 +261,7 @@ public:
     void SyncIVarToReflectedVar(IVariable* pVariable) override;
     CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
 private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QScopedPointer<CReflectedVarMotion > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 

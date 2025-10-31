@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBoolLogicNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBoolLogicNode, AnimGraphAllocator)
 
     BlendTreeBoolLogicNode::BlendTreeBoolLogicNode()
         : AnimGraphNode()

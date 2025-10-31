@@ -31,7 +31,7 @@ namespace AzToolsFramework
             uiManager->windowNameBox->addItem("All");
 
             AZStd::vector<AZStd::string> knownWindows;
-            EBUS_EVENT(LegacyFramework::LogComponentAPI::Bus, EnumWindowTypes, knownWindows);
+            LegacyFramework::LogComponentAPI::Bus::Broadcast(&LegacyFramework::LogComponentAPI::Bus::Events::EnumWindowTypes, knownWindows);
 
             if (knownWindows.size() > 0)
             {

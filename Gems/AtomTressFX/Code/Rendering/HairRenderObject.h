@@ -11,8 +11,9 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/GeometryView.h>
 
 // Hair specific
 #include <TressFX/AMD_TressFX.h>
@@ -110,8 +111,14 @@ namespace AZ
                     PrepareSrgDescriptors(m_dynamicBuffersDescriptors, vertexCount, strandsCount);
                 }
  
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute() { return m_simSrgForCompute; }
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster() { return m_simSrgForRaster; }
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute()
+                {
+                    return m_initialized ? m_simSrgForCompute : nullptr;
+                }
+
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster()
+                {
+                    return m_initialized ? m_simSrgForRaster : nullptr; }
 
                 bool IsInitialized() { return m_initialized;  }
 
@@ -310,9 +317,9 @@ namespace AZ
                 Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
 
                 //! DrawPacket for the multi object geometry raster pass.
-                AZStd::unordered_map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
+                AZStd::unordered_map<RPI::Shader*, RHI::ConstPtr<RHI::DrawPacket>>  m_geometryDrawPackets;
 
-                float m_frameDeltaTime = 0.02;
+                float m_frameDeltaTime = 0.02f;
 
                 //! The following are the configuration settings that might be required during the update.
                 AMD::TressFXSimulationSettings* m_simSettings = nullptr;
@@ -375,7 +382,7 @@ namespace AZ
  
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::Buffer> m_indexBuffer;
-                RHI::IndexBufferView m_indexBufferView;
+                RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

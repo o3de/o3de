@@ -260,10 +260,7 @@ namespace ImageProcessingAtom
             u32 mipLevels = imageDescriptor.m_mipLevels;
             u32 arraySize = imageDescriptor.m_arraySize;
 
-            if (imageDescriptor.m_isCubemap)
-            {
-                height *= 6;
-            }
+            height *= arraySize;
 
             IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, mipLevels, format));
 
@@ -286,7 +283,7 @@ namespace ImageProcessingAtom
 
                 for (u32 slice = 0; slice < arraySize; slice++)
                 {
-                    AZStd::array_view<uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
+                    AZStd::span<const uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
                     memcpy(imageBuf + slice * imageData.size(), imageData.data(), imageData.size());
                 }
             }
@@ -296,7 +293,8 @@ namespace ImageProcessingAtom
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> LoadImageAsset(const AZ::Data::AssetId& imageAssetId)
         {
             // Blocking loading streaming image asset with its mipchain assets
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(imageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(imageAssetId,
+                AZ::Data::AssetLoadBehavior::PreLoad, AZ::Data::AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
 
             imageAsset.BlockUntilLoadComplete();
 
@@ -392,6 +390,42 @@ namespace ImageProcessingAtom
                         || alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
                         || alphaContent == EAlphaContent::eAlphaContent_Greyscale);
         }
-    }
 
+        AsyncImageAssetLoader::~AsyncImageAssetLoader()
+        {
+             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+        }
+
+        void AsyncImageAssetLoader::QueueAsset(const AZ::Data::AssetId& assetId, const Callback& callback)
+        {
+             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> asset;
+             asset.Create(assetId, AZ::Data::AssetLoadBehavior::PreLoad, true);
+             m_assetCallbackMap.emplace(assetId, AssetCallbackPair{ asset, callback });
+             AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+        }
+
+        void AsyncImageAssetLoader::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             HandleAssetNotification(asset);
+        }
+
+        void AsyncImageAssetLoader::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             HandleAssetNotification(asset);
+        }
+
+        void AsyncImageAssetLoader::HandleAssetNotification(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             if (auto itr = m_assetCallbackMap.find(asset.GetId()); itr != m_assetCallbackMap.end())
+             {
+                if (auto& callback = itr->second.second; callback)
+                {
+                    callback(asset);
+                }
+
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(itr->first);
+                m_assetCallbackMap.erase(itr);
+             }
+        }
+    } // namespace Utils
 } // namespace ImageProcessingAtom

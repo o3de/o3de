@@ -32,18 +32,18 @@ namespace AZ
 
         void ActorSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ActorSystemService", 0x5e493d6c));
+            provided.push_back(AZ_CRC_CE("ActorSystemService"));
         }
 
         void ActorSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ActorSystemService", 0x5e493d6c));
+            incompatible.push_back(AZ_CRC_CE("ActorSystemService"));
         }
 
         void ActorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("SkinnedMeshService", 0xac7cea96));
-            required.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+            required.push_back(AZ_CRC_CE("SkinnedMeshService"));
+            required.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
         }
 
         void ActorSystemComponent::Activate()

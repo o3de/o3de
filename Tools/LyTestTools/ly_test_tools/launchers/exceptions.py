@@ -21,7 +21,7 @@ class TeardownError(Exception):
 
 
 class WaitTimeoutError(Exception):
-    """ Indicates a timeout was reaching while waitinf for a process """
+    """ Indicates a timeout was reaching while waiting for a process """
     
 
 class ProcessNotStartedError(Exception):

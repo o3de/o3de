@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Cone (Beveled)",
         "modelAsset": {
             "assetId": {
                 "guid": "{51B1B230-910D-500D-8BDB-D72F5DA9507E}",

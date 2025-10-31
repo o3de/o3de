@@ -41,15 +41,16 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->UIElement("GradientPreviewer", "Previewer")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC("GradientSampler", 0xaec97010), &DistributionFilterConfig::GetSampler)
-                    ->Attribute(AZ_CRC("GradientFilter", 0x99bf0362), &DistributionFilterConfig::GetFilterFunc)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ_CRC_CE("GradientSampler"), &DistributionFilterConfig::GetSampler)
+                    ->Attribute(AZ_CRC_CE("GradientFilter"), &DistributionFilterConfig::GetFilterFunc)
+                    ->EndGroup()
+
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistributionFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
                     ->EnumAttribute(FilterStage::Default, "Default")
                     ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
@@ -95,18 +96,18 @@ namespace Vegetation
 
     void DistributionFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationDistributionFilterService", 0x700e73eb));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationDistributionFilterService"));
     }
 
     void DistributionFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDistributionFilterService", 0x700e73eb));
+        services.push_back(AZ_CRC_CE("VegetationDistributionFilterService"));
     }
 
     void DistributionFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void DistributionFilterComponent::Reflect(AZ::ReflectContext* context)
@@ -188,7 +189,7 @@ namespace Vegetation
 
     bool DistributionFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         const float noise = m_configuration.m_gradientSampler.GetValue(sampleParams);

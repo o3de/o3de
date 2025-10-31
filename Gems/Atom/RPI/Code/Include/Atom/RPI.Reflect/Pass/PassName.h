@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Name/Name.h>
 
 namespace AZ
@@ -17,17 +18,17 @@ namespace AZ
         // For example if a pass has a path 'Root.Window1' and it's child pass is 'Forward'
         // we can use these concatenation functions to get 'Root.Window1.Forward'
 
-        inline AZStd::string ConcatPassString(const AZStd::string_view& first, const AZStd::string_view& second)
+        ATOM_RPI_REFLECT_API inline AZStd::string ConcatPassString(const AZStd::string_view& first, const AZStd::string_view& second)
         {
             return AZStd::string::format("%.*s.%.*s", static_cast<int>(first.length()), first.data(), static_cast<int>(second.length()), second.data());
         }
 
-        inline AZStd::string ConcatPassString(const Name& first, const Name& second)
+        ATOM_RPI_REFLECT_API inline AZStd::string ConcatPassString(const Name& first, const Name& second)
         {
             return ConcatPassString(first.GetStringView(), second.GetStringView());
         }
 
-        inline Name ConcatPassName(const Name& first, const Name& second)
+        ATOM_RPI_REFLECT_API inline Name ConcatPassName(const Name& first, const Name& second)
         {
             return Name(ConcatPassString(first, second));
         }

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <qglobal.h>
-#include <qpoint.h>
+#include <QPoint>
 
 #include <AzCore/EBus/EBus.h>
 

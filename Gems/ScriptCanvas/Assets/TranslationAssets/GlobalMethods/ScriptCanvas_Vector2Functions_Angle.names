@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector2Functions_Angle",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Angle",
+                "category": "Math/Vector2"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector2Functions_Angle",
+                    "details": {
+                        "name": "Angle",
+                        "tooltip": "Returns a unit length vector from an angle in radians."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Angle"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

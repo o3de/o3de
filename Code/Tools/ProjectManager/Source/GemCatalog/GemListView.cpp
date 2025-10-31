@@ -8,12 +8,15 @@
 
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <AdjustableHeaderWidget.h>
 
 #include <QMovie>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    GemListView::GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
+    GemListView::GemListView(
+        QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, bool readOnly, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("GemCatalogListView");
@@ -21,16 +24,18 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        GemItemDelegate* itemDelegate = new GemItemDelegate(model, this);
+        GemItemDelegate* itemDelegate = new GemItemDelegate(model, header, readOnly, this);
         
-        connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [=](const QMovie* playingMovie)
+        connect(itemDelegate, &GemItemDelegate::MovieStartedPlaying, [this](const QMovie* playingMovie)
             {
                 // Force redraw when movie is playing so animation is smooth
-                connect(playingMovie, &QMovie::frameChanged, this, [=]
+                connect(playingMovie, &QMovie::frameChanged, this, [this]
                     {
                         this->viewport()->repaint();
                     });
             });
+        
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [this] { update(); });
 
         setItemDelegate(itemDelegate);
     }

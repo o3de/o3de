@@ -38,7 +38,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(AreaSystemConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AreaSystemConfig, AZ::SystemAllocator);
         AZ_RTTI(AreaSystemConfig, "{14CCBE43-52DD-4F56-92A8-2BB011A0F7A2}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -134,7 +134,11 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceData::SurfaceDataSystemNotificationBus
-        void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) override;
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
 
 
         ////////////////////////////////////////////////////////////////////////////
@@ -163,7 +167,7 @@ namespace Vegetation
         // SectorInfo contains basic sector information and the set of "plantable points" in the sector that have been claimed
         struct SectorInfo
         {
-            AZ_CLASS_ALLOCATOR(SectorInfo, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SectorInfo, AZ::SystemAllocator);
 
             SectorId m_id = {};
             AZ::Aabb m_bounds = {};
@@ -181,7 +185,7 @@ namespace Vegetation
         // to which sectors, and in which order.
         struct VegetationAreaInfo
         {
-            AZ_CLASS_ALLOCATOR(VegetationAreaInfo, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VegetationAreaInfo, AZ::SystemAllocator);
 
             AZ::EntityId m_id;
             AZ::Aabb m_bounds = {};
@@ -241,8 +245,8 @@ namespace Vegetation
 
             bool IsInside(const SectorId& sector) const;
             ViewRect Overlap(const ViewRect& b) const;
-            bool operator !=(const ViewRect& b);
-            bool operator ==(const ViewRect& b);
+            bool operator !=(const ViewRect& b) const;
+            bool operator ==(const ViewRect& b) const;
             size_t GetNumSectors() const;
             int GetMinXSector() const { return m_x; }
             int GetMinYSector() const { return m_y; }

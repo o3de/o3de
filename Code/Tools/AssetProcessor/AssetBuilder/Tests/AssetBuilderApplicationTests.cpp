@@ -11,6 +11,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzToolsFramework/Component/EditorComponentAPIComponent.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityModelComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
@@ -20,7 +21,7 @@ namespace AssetBuilder
 {
     using namespace UnitTest;
 
-    using AssetBuilderAppTest = AllocatorsFixture;
+    using AssetBuilderAppTest = LeakDetectionFixture;
 
     TEST_F(AssetBuilderAppTest, AssetBuilder_EditorScriptingComponents_Exists)
     {
@@ -59,7 +60,7 @@ namespace AssetBuilder
     }
 
     struct LoggingTest
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
     {
         void SetUp() override
         {

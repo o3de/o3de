@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation Issues
+    about: Report issues with the documentation for O3DE
+    url: https://github.com/o3de/o3de.org/issues/new/choose 
+

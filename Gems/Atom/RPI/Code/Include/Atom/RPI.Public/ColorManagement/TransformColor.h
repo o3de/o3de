@@ -9,22 +9,24 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ
 {
     namespace RPI
     {
+        // !! THIS ENUM MUST MATCH THE ONE IN: TransformColor.azsli !!
         enum class ColorSpaceId
         {
             SRGB = 0,
             LinearSRGB,
+            ACEScc,
             ACEScg,
             ACES2065,
             XYZ,
-
-            ColorSpaceIdCount
+            Invalid
         };
 
-        Color TransformColor(Color color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace);
+        ATOM_RPI_PUBLIC_API Color TransformColor(Color color, ColorSpaceId fromColorSpace, ColorSpaceId toColorSpace);
     } // namespace Render
 } // namespace AZ

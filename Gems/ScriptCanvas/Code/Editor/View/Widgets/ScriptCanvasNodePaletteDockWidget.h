@@ -11,7 +11,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -32,6 +31,8 @@
 #include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Core.h>
 #endif
+
+#include <QScopedPointer>
 
 class QToolButton;
 namespace ScriptCanvasEditor { class FunctionPaletteTreeItem; }
@@ -61,7 +62,7 @@ namespace ScriptCanvasEditor
             , AZ::SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator);
             ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
             ~ScriptCanvasRootPaletteTreeItem();
 
@@ -113,7 +114,6 @@ namespace ScriptCanvasEditor
 
             void RequestBuildChildrenFromSubgraphInterface(NodePaletteTreeItem* item, AZ::Data::Asset<AZ::Data::AssetData> asset);
 
-            const NodePaletteModel& m_nodePaletteModel;
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
 
             GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;
@@ -147,6 +147,7 @@ namespace ScriptCanvasEditor
 
 
             ScriptCanvasNodePaletteToolbar(QWidget* parent);
+            ~ScriptCanvasNodePaletteToolbar() override;
 
         signals:
 
@@ -155,7 +156,7 @@ namespace ScriptCanvasEditor
 
         private:
 
-            AZStd::unique_ptr< Ui::ScriptCanvasNodePaletteToolbar > m_ui;
+            QScopedPointer<Ui::ScriptCanvasNodePaletteToolbar> m_ui;
         };
 
         class ScriptCanvasNodePaletteConfig
@@ -175,7 +176,7 @@ namespace ScriptCanvasEditor
             , public GraphCanvas::SceneNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator);
 
             static const char* GetMimeType() { return "scriptcanvas/node-palette-mime-event"; }
 
@@ -209,6 +210,7 @@ namespace ScriptCanvasEditor
             void HandleTreeItemDoubleClicked(GraphCanvas::GraphCanvasTreeItem* treeItem);
             void OpenTranslationData();
             void GenerateTranslation();
+            void NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem*);
 
             void ConfigureHelper();
             void ParseCycleTargets(GraphCanvas::GraphCanvasTreeItem* treeItem);
@@ -216,7 +218,7 @@ namespace ScriptCanvasEditor
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
             const NodePaletteModel& m_nodePaletteModel;
 
-            QToolButton* m_newCustomEvent;
+            // QToolButton* m_newCustomEvent; // See comment in code
 
             AZStd::unordered_set< ScriptCanvas::NodeTypeIdentifier > m_cyclingIdentifiers;
             GraphCanvas::NodeFocusCyclingHelper m_cyclingHelper;

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/typetraits/static_storage.h>
 #include <AzCore/Math/Internal/MathTypes.h>
@@ -33,8 +32,8 @@ namespace AZ
         typedef W128_T w128_t;
         static_assert(N == MEXP / (sizeof(W128_T) * 8) + 1, "The m_smft member array must fit all iterations of the correct 128-bit size.");
 
-        void gen_rand_all(Sfmt& g);
-        void gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);
+        AZCORE_API void gen_rand_all(Sfmt& g);
+        AZCORE_API void gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);
     }
 
     /**
@@ -52,7 +51,7 @@ namespace AZ
      * The new BSD License is applied to this software.
      * see LICENSE.txt
      */
-    class Sfmt
+    class AZCORE_API Sfmt
     {
         friend void SfmtInternal::gen_rand_all(Sfmt& g);
         friend void SfmtInternal::gen_rand_array(Sfmt& g, SfmtInternal::w128_t* array, int size);
@@ -60,12 +59,12 @@ namespace AZ
         /// By default we seed with Seed()
         Sfmt();
         /// Seed the generator with user defined seed Seed(AZ::u32* keys, int numKeys)
-        Sfmt(AZ::u32* keys, int numKeys);
+        Sfmt(const AZ::u32* keys, int numKeys);
 
         /// Seed the generator, with the best pseudo-random number the system can generate \ref BetterPseudoRandom
         void Seed();
         /// Seed the generator with user defined seed.
-        void Seed(AZ::u32* keys, int numKeys);
+        void Seed(const AZ::u32* keys, int numKeys);
 
         /// Return u32 pseudo random integer
         AZ::u32 Rand32();
@@ -106,10 +105,10 @@ namespace AZ
         void    PeriodCertification();
 
         SfmtInternal::w128_t        m_sfmt[SfmtInternal::N];
-        AZStd::atomic_int           m_index;   ///  Index into the pre-generated tables
-        AZ::u32*                    m_psfmt32; ///  Read only tables of pre-generated random numbers
-        AZ::u64*                    m_psfmt64;
+        size_t                      m_index = 0;         ///  Index into the pre-generated tables
+        AZ::u32*                    m_psfmt32 = nullptr; ///  Read only tables of pre-generated random numbers
+        AZ::u64*                    m_psfmt64 = nullptr;
 
-        AZStd::recursive_mutex      m_generationMutex;
+        AZStd::mutex                m_sfmtMutex;         /// Guards access to m_index and m_sfmt
     };
 }

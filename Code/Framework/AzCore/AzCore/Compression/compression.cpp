@@ -25,8 +25,8 @@ using namespace AZ;
 ZLib::ZLib(IAllocator* workMemAllocator)
     : m_strDeflate(nullptr)
     , m_strInflate(nullptr)
+    , m_workMemoryAllocator(workMemAllocator)
 {
-    m_workMemoryAllocator = workMemAllocator ? workMemAllocator->GetAllocationSource() : nullptr;
     if (!m_workMemoryAllocator)
     {
         m_workMemoryAllocator = &AllocatorInstance<SystemAllocator>::Get();
@@ -55,8 +55,8 @@ ZLib::~ZLib()
 //=========================================================================
 void* ZLib::AllocateMem(void* userData, unsigned int items, unsigned int size)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
-    return allocator->Allocate(items * size, 4, 0, "ZLib", __FILE__, __LINE__);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
+    return allocator->Allocate(items * size, 4);
 }
 
 //=========================================================================
@@ -65,7 +65,7 @@ void* ZLib::AllocateMem(void* userData, unsigned int items, unsigned int size)
 //=========================================================================
 void ZLib::FreeMem(void* userData, void* address)
 {
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     allocator->DeAllocate(address);
 }
 

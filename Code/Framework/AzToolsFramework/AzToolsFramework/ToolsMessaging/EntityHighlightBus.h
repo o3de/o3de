@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ENTITY_HIGHLIGHT_BUS_H
-#define ENTITY_HIGHLIGHT_BUS_H
+#pragma once
 
-#include <AzCore/base.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,4 +28,4 @@ namespace AzToolsFramework
     };
 }
 
-#endif // EDITOR_ENTITY_ID_LIST_CONTAINER_H
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EntityHighlightMessages);

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 namespace UnitTest
@@ -15,18 +15,18 @@ namespace UnitTest
     /** Trace message handler to track messages during tests
     */
     struct PythonTraceMessageSink final
-        : public AZ::Debug::TraceMessageDrillerBus::Handler
+        : public AZ::Debug::TraceMessageBus::Handler
         , public AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
         PythonTraceMessageSink()
         {
-            AZ::Debug::TraceMessageDrillerBus::Handler::BusConnect();
+            AZ::Debug::TraceMessageBus::Handler::BusConnect();
             AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
         }
 
         ~PythonTraceMessageSink()
         {
-            AZ::Debug::TraceMessageDrillerBus::Handler::BusDisconnect();
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
             AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         }
 
@@ -47,13 +47,13 @@ namespace UnitTest
         }
 
         //////////////////////////////////////////////////////////////////////////
-        // TraceMessageDrillerBus
-        void OnPrintf(const char* window, const char* message) override
+        // TraceMessageBus
+        bool OnPrintf(const char* window, const char* message) override
         {
-            OnOutput(window, message);
+            return OnOutput(window, message);
         }
 
-        void OnOutput(const char* window, const char* message) override
+        bool OnOutput(const char* window, const char* message) override
         {
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
 
@@ -73,6 +73,7 @@ namespace UnitTest
                     }
                 }
             }
+            return false;
         }
 
         //////////////////////////////////////////////////////////////////////////

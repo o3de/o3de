@@ -9,8 +9,11 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -19,22 +22,20 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     namespace Prefab
     {
         //! Collects the entities added during deserialization
-        class InstanceEntityScrubber
+        class AZTF_API InstanceEntityScrubber
         {
         public:
             AZ_TYPE_INFO(InstanceEntityScrubber, "{0BC12562-C240-48AD-89C6-EDF572C9B485}");
 
-            explicit InstanceEntityScrubber(Instance::EntityList& entities);
+            explicit InstanceEntityScrubber(EntityList& entities);
 
-            void AddEntitiesToScrub(const EntityList& entities);
+            void AddEntitiesToScrub(const AZStd::span<AZ::Entity*>& entities);
 
         private:
-            Instance::EntityList& m_entities;
+            EntityList& m_entities;
         };
     }
  }

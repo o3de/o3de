@@ -21,7 +21,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(AlignSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AlignSelectionMenuAction, AZ::SystemAllocator);
     
         static void CreateAlignmentSubMenu(EditorContextMenu* contextMenu);
     

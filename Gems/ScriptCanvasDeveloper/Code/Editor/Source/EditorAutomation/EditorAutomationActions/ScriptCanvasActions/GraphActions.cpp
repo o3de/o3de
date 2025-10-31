@@ -23,7 +23,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorMouseActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorKeyActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /////////////////////////
     // CreateNewGraphAction
@@ -134,7 +134,10 @@ namespace ScriptCanvasDeveloper
 
     void CreateNewFunctionAction::OnActionsComplete()
     {
-        m_graphId = m_newGraphAction->GetGraphId();
+        if (m_newGraphAction)
+        {
+            m_graphId = m_newGraphAction->GetGraphId();
+        }
     }
 
     ////////////////////////////////

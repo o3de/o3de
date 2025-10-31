@@ -21,7 +21,7 @@ endfunction()
 
 function(ly_upload_to_url in_url in_local_path in_file_regex)
 
-    message(STATUS "Uploading ${in_local_path}/${in_file_regex} artifacts to ${CPACK_UPLOAD_URL}")
+    message(STATUS "Uploading ${in_local_path}/${in_file_regex} artifacts to ${in_url}")
     ly_is_s3_url(${in_url} _is_s3_bucket)
     if(NOT _is_s3_bucket)
         message(FATAL_ERROR "Only S3 installer uploading is supported at this time")

@@ -15,6 +15,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -31,9 +32,9 @@ namespace AzFramework
     //! Other systems/modules/gems/games are free to create additional input device instances of any
     //! type; this system component manages devices that are supported "out of the box", which other
     //! systems (and most games) will expect to be available for platforms where they are supported.
-    class InputSystemComponent : public AZ::Component
-                               , public AZ::TickBus::Handler
-                               , public InputSystemRequestBus::Handler
+    class AZF_API InputSystemComponent : public AZ::Component
+                                       , public AZ::TickBus::Handler
+                                       , public InputSystemRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +52,15 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref AZ::ComponentDescriptor::GetIncompatibleServices
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetDependentServices
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetRequiredServices
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -121,5 +131,6 @@ namespace AzFramework
         // Other Variables
         bool m_currentlyUpdatingInputDevices;   //!< Are we currently updating input devices?
         bool m_recreateInputDevicesAfterUpdate; //!< Should we recreate devices after update?
+        bool m_captureMouseCursor;              //!< Should we capture the mouse cursor?
     };
 } // namespace AzFramework

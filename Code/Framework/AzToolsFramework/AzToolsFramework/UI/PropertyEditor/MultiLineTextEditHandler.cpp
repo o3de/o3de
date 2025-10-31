@@ -8,6 +8,7 @@
 
 #include "MultiLineTextEditHandler.h"
 #include <AzToolsFramework/Debug/TraceContext.h>
+#include <QSignalBlocker>
 
 namespace AzToolsFramework
 {
@@ -16,7 +17,8 @@ namespace AzToolsFramework
         GrowTextEdit* textEdit = aznew GrowTextEdit(parent);
         connect(textEdit, &GrowTextEdit::textChanged, this, [textEdit]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, textEdit);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, textEdit);
         });
         connect(textEdit, &GrowTextEdit::EditCompleted, this, [textEdit]()
         {
@@ -26,9 +28,19 @@ namespace AzToolsFramework
         return textEdit;
     }
 
+    bool MultiLineTextEditHandler::ResetGUIToDefaults(GrowTextEdit* GUI)
+    {
+        QSignalBlocker blocker(GUI);
+        QString blankString;
+        GUI->setPlaceholderText(blankString);
+        GUI->setText(blankString);
+        GUI->setReadOnly(false);
+        return true;
+    }
+
     AZ::u32 MultiLineTextEditHandler::GetHandlerName() const
     {
-        return AZ_CRC("MultiLineEdit", 0xf5d93777);
+        return AZ::Edit::UIHandlers::MultiLineEdit;
     }
 
     bool MultiLineTextEditHandler::AutoDelete() const
@@ -40,7 +52,7 @@ namespace AzToolsFramework
     {
         AZ_TraceContext("Attribute name", debugName);
 
-        if (attrib == AZ_CRC("PlaceholderText", 0xa23ec278))
+        if (attrib == AZ::Edit::Attributes::PlaceholderText)
         {
             AZStd::string placeholderText;
             if (attrValue->Read<AZStd::string>(placeholderText))
@@ -51,6 +63,20 @@ namespace AzToolsFramework
             {
                 AZ_WarningOnce("AzToolsFramework", false, 
                     "Failed to read 'PlaceholderText' attribute from property '%s' into multi-line text field.", debugName);
+            }
+        }
+        else if (attrib == AZ::Edit::Attributes::ValueText)
+        {
+            AZStd::string valueText;
+            if (attrValue->Read<AZStd::string>(valueText))
+            {
+                QSignalBlocker blocker(GUI);
+                GUI->SetText(valueText.c_str());
+            }
+            else
+            {
+                AZ_WarningOnce("AzToolsFramework", false,
+                    "Failed to read 'ValueText' attribute from property '%s' into multi-line text field.", debugName);
             }
         }
         else if (attrib == AZ::Edit::Attributes::ReadOnly)
@@ -75,15 +101,15 @@ namespace AzToolsFramework
 
     bool MultiLineTextEditHandler::ReadValuesIntoGUI(size_t /*index*/, GrowTextEdit* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* /*node*/)
     {
-        GUI->blockSignals(true);
+        QSignalBlocker blocker(GUI);
         GUI->SetText(instance);
-        GUI->blockSignals(false);
         return true;
     }
 
     void RegisterMultiLineEditHandler()
     {
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew MultiLineTextEditHandler());
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew MultiLineTextEditHandler());
     }
 }
 

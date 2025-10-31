@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 
 namespace AZ
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Provides a common way to report errors and warnings when processing Atom assets with JsonSerialization.
-        class JsonReportingHelper
+        class ATOM_RPI_EDIT_API JsonReportingHelper
         {
         public:
             //! Attach this helper to the JsonSerializerSettings reporting callback

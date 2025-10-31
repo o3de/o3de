@@ -6,12 +6,11 @@
  *
  */
 #include "PropertyIntSliderCtrl.hxx"
-#include "DHQSlider.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 #include <QSignalBlocker>
 AZ_POP_DISABLE_WARNING
 

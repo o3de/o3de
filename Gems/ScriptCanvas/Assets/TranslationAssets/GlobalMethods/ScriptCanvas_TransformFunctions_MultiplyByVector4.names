@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_TransformFunctions_MultiplyByVector4",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Vector4",
+                "category": "Math/Transform"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_TransformFunctions_MultiplyByVector4",
+                    "details": {
+                        "name": "Multiply By Vector4",
+                        "tooltip": "Returns Source post multiplied by Multiplier."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Multiplier"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

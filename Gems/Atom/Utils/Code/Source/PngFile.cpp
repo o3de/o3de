@@ -8,6 +8,7 @@
 
 #include <Atom/Utils/PngFile.h>
 #include <png.h>
+#include <AzCore/IO/SystemFile.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
             }
         }
 
-        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler)
+        PngFile PngFile::Create(const RHI::Size& size, RHI::Format format, AZStd::span<const uint8_t> data, ErrorHandler errorHandler)
         {
             return Create(size, format, AZStd::vector<uint8_t>{data.begin(), data.end()}, errorHandler);
         }
@@ -68,24 +69,63 @@ namespace AZ
         {
             if (!loadSettings.m_errorHandler)
             {
-                loadSettings.m_errorHandler = [path](const char* message) { DefaultErrorHandler(AZStd::string::format("Could not load file '%s'. %s", path, message).c_str()); };
+                loadSettings.m_errorHandler = [path](const char* message)
+                {
+                    DefaultErrorHandler(AZStd::string::format("Could not load file '%s'. %s", path, message).c_str());
+                };
             }
 
-            // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 3
-
-            FILE* fp = NULL;
-            azfopen(&fp, path, "rb"); // return type differs across platforms so can't do inside if
-            if (!fp)
+            AZ::IO::SystemFileStream fileLoadStream(path, AZ::IO::OpenMode::ModeRead);
+            if (!fileLoadStream.IsOpen())
             {
                 loadSettings.m_errorHandler("Cannot open file.");
                 return {};
             }
 
-            png_byte header[HeaderSize] = {};
+            auto pngFile = LoadInternal(fileLoadStream, loadSettings);
+            return pngFile;
+        }
 
-            if (fread(header, 1, HeaderSize, fp) != HeaderSize)
+        PngFile PngFile::LoadFromBuffer(AZStd::span<const uint8_t> data, LoadSettings loadSettings)
+        {
+            if (!loadSettings.m_errorHandler)
             {
-                fclose(fp);
+                loadSettings.m_errorHandler = [](const char* message)
+                {
+                    DefaultErrorHandler(AZStd::string::format("Could not load Png from buffer. %s", message).c_str());
+                };
+            }
+
+            if (data.empty())
+            {
+                loadSettings.m_errorHandler("Buffer is empty.");
+                return {};
+            }
+
+            AZ::IO::MemoryStream memStream(data.data(), data.size());
+
+            return LoadInternal(memStream, loadSettings);
+        }
+
+        PngFile PngFile::LoadInternal(AZ::IO::GenericStream& dataStream, LoadSettings loadSettings)
+        {
+            // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 3
+
+            // Verify that we've passed in a valid data stream.
+            if (!dataStream.IsOpen()  || !dataStream.CanRead())
+            {
+                loadSettings.m_errorHandler("Data stream isn't valid.");
+                return {};
+            }
+
+            png_byte header[HeaderSize] = {};
+            size_t headerBytesRead = 0;
+
+            // This is the one I/O read that occurs outside of the png library, so either read from the file or the buffer and
+            // verify the results.
+            headerBytesRead = dataStream.Read(HeaderSize, header);
+            if (headerBytesRead != HeaderSize)
+            {
                 loadSettings.m_errorHandler("Invalid png header.");
                 return {};
             }
@@ -93,7 +133,6 @@ namespace AZ
             bool isPng = !png_sig_cmp(header, 0, HeaderSize);
             if (!isPng)
             {
-                fclose(fp);
                 loadSettings.m_errorHandler("Invalid png header.");
                 return {};
             }
@@ -105,7 +144,6 @@ namespace AZ
             png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, user_error_ptr, user_error_fn, user_warning_fn);
             if (!png_ptr)
             {
-                fclose(fp);
                 loadSettings.m_errorHandler("png_create_read_struct failed.");
                 return {};
             }
@@ -114,7 +152,6 @@ namespace AZ
             if (!info_ptr)
             {
                 png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-                fclose(fp);
                 loadSettings.m_errorHandler("png_create_info_struct failed.");
                 return {};
             }
@@ -123,22 +160,35 @@ namespace AZ
             if (!end_info)
             {
                 png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-                fclose(fp);
                 loadSettings.m_errorHandler("png_create_info_struct failed.");
                 return {};
             }
 
-AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option") // Disables "interaction between '_setjmp' and C++ object destruction is non-portable". See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+// Disables "interaction between '_setjmp' and C++ object destruction is non-portable".
+// See https://docs.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-160
+AZ_PUSH_DISABLE_WARNING(4611, "-Wunknown-warning-option") 
             if (setjmp(png_jmpbuf(png_ptr)))
             {
                 png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-                fclose(fp);
                 // We don't report an error message here because the user_error_fn should have done that already.
                 return {};
             }
 AZ_POP_DISABLE_WARNING
 
-            png_init_io(png_ptr, fp);
+            auto genericStreamReader = [](png_structp pngPtr, png_bytep data, png_size_t length)
+            {
+                // Here we get our IO pointer back from the read struct.
+                // This should be the GenericStream pointer we passed to the png_set_read_fn() function.
+                png_voidp ioPtr = png_get_io_ptr(pngPtr);
+
+                if (ioPtr != nullptr)
+                {
+                    AZ::IO::GenericStream* genericStream = static_cast<AZ::IO::GenericStream*>(ioPtr);
+                    genericStream->Read(length, data);
+                }
+            };
+
+            png_set_read_fn(png_ptr, &dataStream, genericStreamReader);
 
             png_set_sig_bytes(png_ptr, HeaderSize);
 
@@ -187,7 +237,6 @@ AZ_POP_DISABLE_WARNING
             default:
                 AZ_Assert(false, "The png transforms should have ensured a pixel format of RGB or RGBA, 8 bits per channel");
                 png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
-                fclose(fp);
                 loadSettings.m_errorHandler("Unsupported pixel format.");
                 return {};
             }
@@ -201,7 +250,6 @@ AZ_POP_DISABLE_WARNING
             }
 
             png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-            fclose(fp);
             return pngFile;
         }
 
@@ -322,3 +370,4 @@ AZ_POP_DISABLE_WARNING
 
     } // namespace Utils
 }// namespace AZ
+

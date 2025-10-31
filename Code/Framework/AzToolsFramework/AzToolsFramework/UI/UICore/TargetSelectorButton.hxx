@@ -6,56 +6,61 @@
  *
  */
 
-#ifndef INC_TARGETSELECTORBUTTON_H
-#define INC_TARGETSELECTORBUTTON_H
+#pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include "AzFramework/TargetManagement/TargetManagementAPI.h"
-#include <QtWidgets/QPushButton>
-#include <qwidgetaction.h>
+#include <AzFramework/Network/IRemoteTools.h>
+#include <QPushButton>
+#include <QWidgetAction>
 #endif
 
-#pragma once
 
 namespace AzToolsFramework
 {
-    class TargetSelectorButton
+    class AZTF_API TargetSelectorButton
         : public QPushButton
-        , private AzFramework::TargetManagerClient::Bus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator);
 
-        TargetSelectorButton(QWidget* pParent = 0);
-        virtual ~TargetSelectorButton();
+        TargetSelectorButton(AZ::Crc32 key, QWidget* pParent = 0);
+        virtual ~TargetSelectorButton() = default;
 
         // implement AzFramework::TargetManagerClient::Bus::Handler
         void DesiredTargetConnected(bool connected);
 
     private:
         void UpdateStatus();
-        void ConstructDisplayTargetString(QString& outputString, const AzFramework::TargetInfo& info);
+        void ConstructDisplayTargetString(QString& outputString, const AzFramework::RemoteToolsEndpointInfo& info);
+
+        AZ::Crc32 m_remoteToolsKey;
+        AzFramework::RemoteToolsEndpointConnectedEvent::Handler m_connectedEventHandler;
 
     private slots:
         void DoPopup();
     };
 
 
-    class TargetSelectorButtonAction
+    class AZTF_API TargetSelectorButtonAction
         : public QWidgetAction
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator);
 
-        TargetSelectorButtonAction(QObject* pParent);                                     // create default action
+        TargetSelectorButtonAction(AZ::Crc32 key, QObject* pParent); // create default action
+        bool HasTarget() const;
+        void ConnectToFirstTargetIfNotConnected() const;
 
     protected:
         virtual QWidget* createWidget(QWidget* pParent);
+
+    private:
+        AZ::Crc32 m_remoteToolsKey;
     };
 }
-
-#endif

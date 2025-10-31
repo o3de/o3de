@@ -20,6 +20,6 @@ namespace AZ
         VertexContainer<Vector3>::Reflect(context);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(VertexContainer<Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(VertexContainer<Vector3>, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(VertexContainer<Vector2>, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(VertexContainer<Vector3>, AZ::SystemAllocator);
 }

@@ -11,15 +11,12 @@
 #define CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H
 #pragma once
 
-// CErrorReportDialog dialog
-
 #if !defined(Q_MOC_RUN)
 #include "ErrorReport.h"
 
 namespace Ui {
     class CErrorReportDialog;
 }
-
 class CErrorReportTableModel;
 
 #include <QWidget>

@@ -7,14 +7,13 @@
  */
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSPLINECTRL_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSPLINECTRL_H
 #pragma once
-
 
 #include <IMovieSystem.h>
 #include "Controls/SplineCtrlEx.h"
-#include <functional>
+
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/functional.h>
 
 class CTrackViewTrack;
 
@@ -33,7 +32,7 @@ public:
     void AddSpline(ISplineInterpolator* pSpline, CTrackViewTrack* pTrack, const QColor& color);
     void AddSpline(ISplineInterpolator * pSpline, CTrackViewTrack * pTrack, QColor anColorArray[4]);
 
-    const std::vector<CTrackViewTrack*>& GetTracks() const { return m_tracks; }
+    const AZStd::vector<CTrackViewTrack*>& GetTracks() const { return m_tracks; }
     void RemoveAllSplines();
 
     void OnUserCommand(UINT cmd);
@@ -56,7 +55,7 @@ private:
     void SelectKey(ISplineInterpolator* pSpline, int nKey, int nDimension, bool bSelect) override;
     void SelectRectangle(const QRect& rc, bool bSelect) override;
 
-    std::vector<CTrackViewTrack*> m_tracks;
+    AZStd::vector<CTrackViewTrack*> m_tracks;
 
     bool GetTangentHandlePts(QPoint& inTangentPt, QPoint& pt, QPoint& outTangentPt,
         int nSpline, int nKey, int nDimension) override;
@@ -76,4 +75,3 @@ private:
     std::function<void()> m_playCallback;
 };
 
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSPLINECTRL_H

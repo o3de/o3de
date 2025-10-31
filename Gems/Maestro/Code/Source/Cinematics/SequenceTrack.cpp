@@ -6,113 +6,120 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include "SequenceTrack.h"
 
-//////////////////////////////////////////////////////////////////////////
-/// @deprecated Serialization for Sequence Tracks in Component Entity Sequences now occur through AZ::SerializeContext and the Sequence Component
-void CSequenceTrack::SerializeKey(ISequenceKey& key, XmlNodeRef& keyNode, bool bLoading)
+namespace Maestro
 {
-    if (bLoading)
+
+    /// @deprecated Serialization for Sequence Tracks in Component Entity Sequences now occur through AZ::SerializeContext and the Sequence
+    /// Component
+    void CSequenceTrack::SerializeKey(ISequenceKey& key, XmlNodeRef& keyNode, bool bLoading)
     {
-        const char* szSelection;
-        szSelection = keyNode->getAttr("node");
-        key.szSelection = szSelection;
-
-        AZ::u64 id64;
-        if (keyNode->getAttr("sequenceEntityId", id64))
+        if (bLoading)
         {
-            key.sequenceEntityId = AZ::EntityId(id64);
-        }
+            const char* szSelection;
+            szSelection = keyNode->getAttr("node");
+            key.szSelection = szSelection;
 
-        if (!keyNode->getAttr("overridetimes", key.bOverrideTimes))
-        {
-            key.bOverrideTimes = false;
-        }
+            AZ::u64 id64;
+            if (keyNode->getAttr("sequenceEntityId", id64))
+            {
+                key.sequenceEntityId = AZ::EntityId(id64);
+            }
 
-        if (key.bOverrideTimes == true)
-        {
-            if (!keyNode->getAttr("starttime", key.fStartTime))
+            if (!keyNode->getAttr("overridetimes", key.bOverrideTimes))
+            {
+                key.bOverrideTimes = false;
+            }
+
+            if (key.bOverrideTimes == true)
+            {
+                if (!keyNode->getAttr("starttime", key.fStartTime))
+                {
+                    key.fStartTime = 0.0f;
+                }
+                if (!keyNode->getAttr("endtime", key.fEndTime))
+                {
+                    key.fEndTime = 0.0f;
+                }
+            }
+            else
             {
                 key.fStartTime = 0.0f;
-            }
-            if (!keyNode->getAttr("endtime", key.fEndTime))
-            {
-                key.fEndTime  = 0.0f;
+                key.fEndTime = 0.0f;
             }
         }
         else
         {
-            key.fStartTime = 0.0f;
-            key.fEndTime = 0.0f;
+            keyNode->setAttr("node", key.szSelection.c_str());
+            AZ::u64 id64 = static_cast<AZ::u64>(key.sequenceEntityId);
+            keyNode->setAttr("sequenceEntityId", id64);
+
+            if (key.bOverrideTimes == true)
+            {
+                keyNode->setAttr("overridetimes", key.bOverrideTimes);
+                keyNode->setAttr("starttime", key.fStartTime);
+                keyNode->setAttr("endtime", key.fEndTime);
+            }
         }
     }
-    else
-    {
-        keyNode->setAttr("node", key.szSelection.c_str());
-        AZ::u64 id64 = static_cast<AZ::u64>(key.sequenceEntityId);
-        keyNode->setAttr("sequenceEntityId", id64);
 
-        if (key.bOverrideTimes == true)
+    void CSequenceTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
+    {
+        description = 0;
+        duration = 0;
+
+        if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {
-            keyNode->setAttr("overridetimes", key.bOverrideTimes);
-            keyNode->setAttr("starttime", key.fStartTime);
-            keyNode->setAttr("endtime", key.fEndTime);
+            AZ_Assert(false, "Key index (%d) is out of range (0 .. %d).", keyIndex, GetNumKeys());
+            return;
+        }
+
+        duration = m_keys[keyIndex].fDuration;
+
+        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
+
+        IAnimSequence* sequence = movieSystem ? movieSystem->FindSequence(m_keys[keyIndex].sequenceEntityId) : nullptr;
+        if (sequence)
+        {
+            description = sequence->GetName();
         }
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-void CSequenceTrack::GetKeyInfo(int key, const char*& description, float& duration)
-{
-    assert(key >= 0 && key < (int)m_keys.size());
-    CheckValid();
-    description = 0;
-    duration = m_keys[key].fDuration;
-    IAnimSequence* sequence = gEnv->pMovieSystem->FindSequence(m_keys[key].sequenceEntityId);
-    if (sequence)
+    static bool SequencTrackVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
     {
-        description = sequence->GetName();
-    }
-}
+        if (rootElement.GetVersion() < 3)
+        {
+            rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+        }
 
-//////////////////////////////////////////////////////////////////////////
-static bool SequencTrackVersionConverter(
-    AZ::SerializeContext& serializeContext,
-    AZ::SerializeContext::DataElementNode& rootElement)
-{
-    if (rootElement.GetVersion() < 3)
-    {
-        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimTrack>());
+        return true;
     }
 
-    return true;
-}
-
-template<>
-inline void TAnimTrack<ISequenceKey>::Reflect(AZ::ReflectContext* context)
-{
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    template<>
+    inline void TAnimTrack<ISequenceKey>::Reflect(AZ::ReflectContext* context)
     {
-        serializeContext->Class<TAnimTrack<ISequenceKey>, IAnimTrack>()
-            ->Version(3, &SequencTrackVersionConverter)
-            ->Field("Flags", &TAnimTrack<ISequenceKey>::m_flags)
-            ->Field("Range", &TAnimTrack<ISequenceKey>::m_timeRange)
-            ->Field("ParamType", &TAnimTrack<ISequenceKey>::m_nParamType)
-            ->Field("Keys", &TAnimTrack<ISequenceKey>::m_keys)
-            ->Field("Id", &TAnimTrack<ISequenceKey>::m_id);
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TAnimTrack<ISequenceKey>, IAnimTrack>()
+                ->Version(3, &SequencTrackVersionConverter)
+                ->Field("Flags", &TAnimTrack<ISequenceKey>::m_flags)
+                ->Field("Range", &TAnimTrack<ISequenceKey>::m_timeRange)
+                ->Field("ParamType", &TAnimTrack<ISequenceKey>::m_nParamType)
+                ->Field("Keys", &TAnimTrack<ISequenceKey>::m_keys)
+                ->Field("Id", &TAnimTrack<ISequenceKey>::m_id);
+        }
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-void CSequenceTrack::Reflect(AZ::ReflectContext* context)
-{
-    TAnimTrack<ISequenceKey>::Reflect(context);
-
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    void CSequenceTrack::Reflect(AZ::ReflectContext* context)
     {
-        serializeContext->Class<CSequenceTrack, TAnimTrack<ISequenceKey> >()
-            ->Version(1);
+        TAnimTrack<ISequenceKey>::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CSequenceTrack, TAnimTrack<ISequenceKey>>()->Version(1);
+        }
     }
-}
+
+} // namespace Maestro

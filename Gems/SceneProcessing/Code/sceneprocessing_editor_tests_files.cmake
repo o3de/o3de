@@ -15,5 +15,6 @@ set(FILES
     Tests/MeshOptimizer/HasBlendshapes.cpp
     Tests/SceneBuilder/SceneBuilderPhasesTests.cpp
     Tests/SceneBuilder/SceneBuilderTests.cpp
-    Tests/SceneProcessingConfigTest.cpp
+    Tests/SceneBuilder/SceneBuilderConfigTests.cpp
+    Tests/SceneProcessingConfigEditorTest.cpp
 )

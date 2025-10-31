@@ -87,7 +87,8 @@ namespace Multiplayer
         bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityUpdateMessage(AzNetworking::IConnection* invokingConnection, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
-        bool HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message);
+        bool HandleEntityRpcMessages(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcVector& rpcVector);
+        bool HandleEntityResetMessages(AzNetworking::IConnection* invokingConnection, const NetEntityIdsForReset& resetIds);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 
@@ -99,6 +100,7 @@ namespace Multiplayer
         AZ::TimeMs GetFrameTimeMs();
 
         void AddReplicatorToPendingSend(const EntityReplicator& entityReplicator);
+        void RemoveReplicatorFromPendingSend(const EntityReplicator& entityReplicator);
         
         bool IsUpdateModeToServerClient();
 
@@ -122,6 +124,7 @@ namespace Multiplayer
 
         void SendEntityUpdateMessages(EntityReplicatorList& replicatorList);
         void SendEntityRpcs(RpcMessages& rpcMessages, bool reliable);
+        void SendEntityResets();
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);
@@ -134,6 +137,8 @@ namespace Multiplayer
         EntityReplicator* GetEntityReplicator(const ConstNetworkEntityHandle& entityHandle);
 
         void UpdateWindow();
+        void OnEntityActivated(AZ::Entity* entity);
+        void OnEntityDeactivated(AZ::Entity* entity);
 
         bool HandlePropertyChangeMessage
         (
@@ -143,7 +148,8 @@ namespace Multiplayer
             NetEntityId netEntityId,
             NetEntityRole netEntityRole,
             AzNetworking::ISerializer& serializer,
-            const PrefabEntityId& prefabEntityId
+            const PrefabEntityId& prefabEntityId,
+            bool isDeleted
         );
 
         void AddReplicatorToPendingRemoval(const EntityReplicator& replicator);
@@ -179,10 +185,11 @@ namespace Multiplayer
         EntityReplicatorMap m_entityReplicatorMap;
 
         //! The set of entities that we have sent creation messages for, but have not received confirmation back that the create has occurred
-        AZStd::unordered_set<NetEntityId> m_remoteEntitiesPendingCreation;
+        NetEntityIdSet m_remoteEntitiesPendingCreation;
         AZStd::deque<NetEntityId> m_entitiesPendingActivation;
-        AZStd::set<NetEntityId> m_replicatorsPendingRemoval;
-        AZStd::unordered_set<NetEntityId> m_replicatorsPendingSend;
+        NetEntityIdSet m_replicatorsPendingRemoval;
+        NetEntityIdSet m_replicatorsPendingSend;
+        NetEntityIdSet m_replicatorsPendingReset;
 
         // Deferred RPC Sends
         RpcMessages m_deferredRpcMessagesReliable;
@@ -192,6 +199,8 @@ namespace Multiplayer
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
         SendMigrateEntityEvent m_sendMigrateEntityEvent;
         NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
+        AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
+        AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

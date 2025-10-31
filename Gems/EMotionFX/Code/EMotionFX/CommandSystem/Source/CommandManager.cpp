@@ -16,10 +16,10 @@
 #include <EMotionFX/CommandSystem/Source/AnimGraphNodeGroupCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphParameterCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphTriggerActionCommands.h>
-#include <EMotionFX/CommandSystem/Source/AttachmentCommands.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
+#include <EMotionFX/CommandSystem/Source/JointLimitCommands.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/MorphTargetCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
@@ -52,10 +52,6 @@ namespace CommandSystem
         RegisterCommand(new CommandAdjustMorphTarget());
         RegisterCommand(new CommandAdjustActorInstance());
         RegisterCommand(new CommandResetToBindPose());
-        RegisterCommand(new CommandAddAttachment());
-        RegisterCommand(new CommandRemoveAttachment());
-        RegisterCommand(new CommandClearAttachments());
-        RegisterCommand(new CommandAddDeformableAttachment());
         RegisterCommand(new CommandAdjustActor());
         RegisterCommand(new CommandActorSetCollisionMeshes());
         RegisterCommand(new CommandReInitRenderActors());
@@ -66,6 +62,7 @@ namespace CommandSystem
         RegisterCommand(aznew EMotionFX::CommandAddRagdollJoint());
         RegisterCommand(aznew EMotionFX::CommandAdjustRagdollJoint());
         RegisterCommand(aznew EMotionFX::CommandRemoveRagdollJoint());
+        RegisterCommand(aznew EMotionFX::CommandAdjustJointLimit());
 
         // register simulated object related commands.
         RegisterCommand(aznew EMotionFX::CommandAddSimulatedObject());
@@ -82,7 +79,6 @@ namespace CommandSystem
         RegisterCommand(new CommandPlayMotion());
         RegisterCommand(new CommandAdjustMotionInstance());
         RegisterCommand(new CommandAdjustDefaultPlayBackInfo());
-        RegisterCommand(new CommandStopMotionInstances());
         RegisterCommand(new CommandStopAllMotionInstances());
         RegisterCommand(aznew CommandAdjustMotion());
 

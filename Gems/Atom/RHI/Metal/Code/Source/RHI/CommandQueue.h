@@ -44,7 +44,7 @@ namespace AZ
         {
             using Base = RHI::CommandQueue;
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator);
             AZ_RTTI(CommandQueue, "{C50C1546-EC3B-45A3-BF48-C2A99C1BAE8A}", Base);
             
             using Descriptor = RHI::CommandQueueDescriptor;

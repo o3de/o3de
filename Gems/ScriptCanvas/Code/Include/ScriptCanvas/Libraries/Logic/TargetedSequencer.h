@@ -27,7 +27,12 @@ namespace ScriptCanvas
 
             public:
 
-                TargetedSequencer();
+                TargetedSequencer()
+                    : Node()
+                    , m_numOutputs(0)
+                {}
+
+                ~TargetedSequencer() override {}
 
                 void OnInit() override;
                 void OnConfigured() override;
@@ -53,14 +58,14 @@ namespace ScriptCanvas
 
             protected:
 
-                AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
+                inline AZStd::string GetDisplayGroup() const { return "OutputGroup"; }
 
                 void OnSlotRemoved(const SlotId& slotId) override;
 
             private:
 
-                AZStd::string GenerateOutputName(int counter);
-                void FixupStateNames();
+                inline AZStd::string GenerateOutputName(int counter);
+                inline void FixupStateNames();
 
                 int m_numOutputs;
             };

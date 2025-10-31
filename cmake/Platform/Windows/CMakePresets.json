@@ -1,0 +1,258 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "include": [
+        "../Common/CMakePresets.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "windows-default",
+            "displayName": "Windows",
+            "description": "Default Windows",
+            "inherits": [
+                "windows-unity"
+            ]
+        },
+        {
+            "name": "windows-mono-default",
+            "displayName": "Windows Monolithic with Unity and Visual Studio",
+            "description": "Configures Windows to build the Monolithic permutation using Visual Studio with Unity builds",
+            "binaryDir": "${sourceDir}/build/windows_mono",
+            "inherits": [
+                "windows-unity",
+                "windows-monolithic"
+            ]
+        },
+        {
+            "name": "windows-unity",
+            "displayName": "Windows Unity",
+            "description": "Windows build which uses unity files",
+            "binaryDir": "${sourceDir}/build/windows",
+            "inherits": [
+                "unity",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-no-unity",
+            "displayName": "Windows without Unity",
+            "description": "Windows build which uses unity files",
+            "binaryDir": "${sourceDir}/build/windows",
+            "inherits": [
+                "no-unity",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-non-monolithic",
+            "displayName": "Windows Non-Monolithic",
+            "description": "Default configuration for non-monolithic builds",
+            "inherits": [
+                "non-monolithic",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-monolithic",
+            "displayName": "Windows Monolithic",
+            "description": "Default configuration for monolithic builds",
+            "binaryDir": "${sourceDir}/build/windows_mono",
+            "inherits": [
+                "monolithic",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-vs",
+            "displayName": "Windows Visual Studio",
+            "description": "Configure Windows with the Visual Studio IDE",
+            "inherits": [
+                "windows-vs-unity"
+            ]
+        },
+        {
+            "name": "windows-vs-unity",
+            "displayName": "Windows Visual Studio Unity",
+            "description": "Configure Windows with the Visual Studio IDE + Unity Builds",
+            "inherits": [
+                "windows-vs2022",
+                "unity"
+            ]
+        },
+        {
+            "name": "windows-vs-no-unity",
+            "displayName": "Windows Visual Studio without Unity",
+            "description": "Configure Windows with the Visual Studio IDE without unity builds",
+            "inherits": [
+                "windows-vs2022",
+                "no-unity"
+            ]
+        },
+        {
+            "name": "windows-vs2019",
+            "displayName": "Windows Visual Studio 2019",
+            "description": "Configure Windows to use the VS2019 generator",
+            "binaryDir": "${sourceDir}/build/windows_vs2019",
+            "inherits": [
+                "vs2019"
+            ]
+        },
+        {
+            "name": "windows-vs2022",
+            "displayName": "Windows Visual Studio 2022",
+            "description": "Configure Windows to use the VS2022 generator",
+            "binaryDir": "${sourceDir}/build/windows_vs2022",
+            "inherits": [
+                "vs2022"
+            ]
+        },
+        {
+            "name": "windows-ninja-clang-cl",
+            "displayName": "Windows Visual Studio 2022 + ClangCl",
+            "description": "Configure Windows to use the VS2022 generator and the clang-cl compiler",
+            "binaryDir": "${sourceDir}/build/windows_clangcl",
+            "inherits": [
+                "windows-vs2022",
+                "unity"
+            ],
+            "toolset": {
+                "value": "ClangCl"
+            }
+        },
+        {
+            "name": "windows-ninja",
+            "displayName": "Windows Ninja",
+            "description": "Configure Windows using the Ninja Multi-Config generator",
+            "binaryDir": "${sourceDir}/build/windows_ninja",
+            "inherits": [
+                "ninja-multi-config",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-ninja-clang",
+            "displayName": "Windows Ninja + Clang",
+            "description": "Configure Windows using the Ninja Multi-Config generator and the clang compiler. ninja and clang must be in the path",
+            "binaryDir": "${sourceDir}/build/windows_clang",
+            "inherits": [
+                "windows-ninja"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "clang++"
+                }
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "windows-default",
+            "displayName": "Windows",
+            "description": "Builds all targets for Windows",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-install",
+            "displayName": "Windows install",
+            "description": "Builds the \"install\" target for windows, which builds all target and runs the CMake --install step",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "install",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-mono-default",
+            "displayName": "Windows Monolithic",
+            "description": "Builds all targets for Windows in the monolithic permutation",
+            "configurePreset": "windows-mono-default",
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-mono-install",
+            "displayName": "Windows Monolithic install",
+            "description": "Builds the \"install\" target for windows monolithic permutation, which builds all target and runs the CMake --install step",
+            "configurePreset": "windows-mono-default",
+            "inherits": [
+                "install",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-editor",
+            "displayName": "Windows Editor",
+            "description": "Builds the Editor application for Windows",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "editor",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-assetprocessor",
+            "displayName": "Windows AssetProcessor",
+            "description": "Builds the AssetProcessor application for windows",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "assetprocessor",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-test",
+            "displayName": "Windows CTest",
+            "description": "Builds the TEST_SUITE_smoke/TEST_SUITE_main custom targets for Windows",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "test-default",
+                "host-windows"
+            ]
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "windows-test-default",
+            "displayName": "Windows CTest",
+            "description": "Runs the Smoke + Main Test Suite. Requires the windows-test build preset to have completed successfully",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "test-default",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-test-debug",
+            "displayName": "Windows CTest debug",
+            "description": "Runs the Smoke + Main Test Suite in debug configuration. Requires the windows-test build preset to have completed successfully",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "test-default-debug",
+                "host-windows"
+            ]
+        },
+        {
+            "name": "windows-test-profile",
+            "displayName": "Windows CTest profile",
+            "description": "Runs the Smoke + Main Test Suite in profile configuration. Requires the windows test build preset to have completed successfully",
+            "configurePreset": "windows-default",
+            "inherits": [
+                "test-default-profile",
+                "host-windows"
+            ]
+        }
+    ]
+}

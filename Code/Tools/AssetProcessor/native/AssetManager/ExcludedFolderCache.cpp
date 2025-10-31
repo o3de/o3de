@@ -25,10 +25,51 @@ namespace AssetProcessor
         AZ::Interface<ExcludedFolderCacheInterface>::Unregister(this);
     }
 
+    void ExcludedFolderCache::InitializeFromKnownSet(AZStd::unordered_set<AZStd::string>&& excludedFolders)
+    {
+        m_excludedFolders = AZStd::move(excludedFolders);
+
+        // Add the cache to the list as well
+        AZStd::string projectCacheRootValue;
+        AZ::SettingsRegistry::Get()->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+        projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
+        m_excludedFolders.emplace(projectCacheRootValue);
+
+        // Register to be notified about deletes so we can remove old ignored folders
+        auto fileStateCache = AZ::Interface<IFileStateRequests>::Get();
+
+        if (fileStateCache)
+        {
+            m_handler = AZ::Event<FileStateInfo>::Handler(
+                [this](FileStateInfo fileInfo)
+                {
+                    if (fileInfo.m_isDirectory)
+                    {
+                        AZStd::scoped_lock lock(m_pendingNewFolderMutex);
+
+                        m_pendingDeletes.emplace(fileInfo.m_absolutePath.toUtf8().constData());
+                    }
+                });
+
+            fileStateCache->RegisterForDeleteEvent(m_handler);
+        }
+        else
+        {
+            AZ_Error("ExcludedFolderCache", false, "Failed to find IFileStateRequests interface");
+        }
+
+        m_builtCache = true;
+    }
+
     const AZStd::unordered_set<AZStd::string>& ExcludedFolderCache::GetExcludedFolders()
     {
         if (!m_builtCache)
         {
+            AZ_Warning("AssetProcessor", false, "ExcludedFolderCache lazy-rebuilding instead of being prepopulated (May impact startup performance).  Call InitializeFromKnownSet.\n");
+
+            // manually warm up the cache.
+            AZStd::unordered_set<AZStd::string> excludedFolders;
+
             for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
             {
                 const auto& scanFolderInfo = m_platformConfig->GetScanFolderAt(i);
@@ -36,7 +77,7 @@ namespace AssetProcessor
                 QString absolutePath = rooted.absolutePath();
                 AZStd::stack<QString> dirs;
                 dirs.push(absolutePath);
-                
+
                 while (!dirs.empty())
                 {
                     absolutePath = dirs.top();
@@ -54,7 +95,8 @@ namespace AssetProcessor
                         if (m_platformConfig->IsFileExcluded(pathMatch))
                         {
                             // Add the folder to the list and do not proceed any deeper
-                            m_excludedFolders.emplace(pathMatch.toUtf8().constData());
+                            pathMatch = AssetUtilities::NormalizeFilePath(pathMatch);
+                            excludedFolders.emplace(pathMatch.toUtf8().constData());
                         }
                         else if (scanFolderInfo.RecurseSubFolders())
                         {
@@ -65,35 +107,8 @@ namespace AssetProcessor
                 }
             }
 
-            // Add the cache to the list as well
-            AZStd::string projectCacheRootValue;
-            AZ::SettingsRegistry::Get()->Get(projectCacheRootValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
-            projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
-            m_excludedFolders.emplace(projectCacheRootValue);
-
-            // Register to be notified about deletes so we can remove old ignored folders
-            auto fileStateCache = AZ::Interface<IFileStateRequests>::Get();
-
-            if (fileStateCache)
-            {
-                m_handler = AZ::Event<FileStateInfo>::Handler([this](FileStateInfo fileInfo)
-                {
-                    if (fileInfo.m_isDirectory)
-                    {
-                        AZStd::scoped_lock lock(m_pendingNewFolderMutex);
-
-                        m_pendingDeletes.emplace(fileInfo.m_absolutePath.toUtf8().constData());
-                    }
-                });
-
-                fileStateCache->RegisterForDeleteEvent(m_handler);
-            }
-            else
-            {
-                AZ_Error("ExcludedFolderCache", false, "Failed to find IFileStateRequests interface");
-            }
-
-            m_builtCache = true;
+            InitializeFromKnownSet(AZStd::move(excludedFolders));
+            return m_excludedFolders;
         }
 
         // Incorporate any pending folders
@@ -108,14 +123,20 @@ namespace AssetProcessor
 
         if (!pendingAdds.empty())
         {
-            m_excludedFolders.insert(pendingAdds.begin(), pendingAdds.end());
+            for (const auto& pendingAdd : pendingAdds)
+            {
+                QString normalizedAdd = AssetUtilities::NormalizeFilePath(QString::fromUtf8(pendingAdd.c_str()));
+                m_excludedFolders.insert(normalizedAdd.toUtf8().constData());
+
+            }
         }
 
         if (!pendingDeletes.empty())
         {
             for (const auto& pendingDelete : pendingDeletes)
             {
-                m_excludedFolders.erase(pendingDelete);
+                QString normalizedDelete = AssetUtilities::NormalizeFilePath(QString::fromUtf8(pendingDelete.c_str()));
+                m_excludedFolders.erase(normalizedDelete.toUtf8().constData());
             }
         }
 

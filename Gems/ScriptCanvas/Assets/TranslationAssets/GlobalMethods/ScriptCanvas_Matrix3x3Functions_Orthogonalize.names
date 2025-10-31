@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix3x3Functions_Orthogonalize",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Orthogonalize",
+                "category": "Math/Matrix3x3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix3x3Functions_Orthogonalize",
+                    "details": {
+                        "name": "Orthogonalize",
+                        "tooltip": "Returns an orthogonal matrix from the Source matrix"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

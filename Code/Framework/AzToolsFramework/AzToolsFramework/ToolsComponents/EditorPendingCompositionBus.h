@@ -9,6 +9,8 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/Entity.h> // for Entity::ComponentArrayType
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -16,10 +18,13 @@ namespace AzToolsFramework
         : public AZ::ComponentBus
     {
     public:
-        virtual void GetPendingComponents(AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void GetPendingComponents(AZ::Entity::ComponentArrayType& components) = 0;
         virtual void AddPendingComponent(AZ::Component* componentToAdd) = 0;
         virtual void RemovePendingComponent(AZ::Component* componentToRemove) = 0;
+        virtual bool IsComponentPending(const AZ::Component* component) = 0;
     };
 
     using EditorPendingCompositionRequestBus = AZ::EBus<EditorPendingCompositionRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorPendingCompositionRequests);

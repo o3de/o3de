@@ -1,0 +1,10 @@
+{"textures":[
+    {"name":"BaseColor","channels":["base_r","base_g","base_b","1.0"],"color_space":"linear"},
+    {"name":"Opacity","channels":["opac","opac","opac","1.0"],"color_space":"linear"},
+    {"name":"Metallic","channels":["metal","metal","metal","1.0"],"color_space":"linear"},
+    {"name":"Roughness","channels":["rough","rough","rough","1.0"],"color_space":"linear"},
+    {"name":"Normal","channels":["nor_r","nor_g","nor_b","1.0"],"color_space":"linear"},
+    {"name":"AO","channels":["occ","occ","occ","1.0"],"color_space":"linear"},
+    {"name":"Emissive","channels":["emis","emis","emis","1.0"],"color_space":"linear"},
+    {"name":"Height","channels":["height","height","height","1.0"],"color_space":"linear"},
+    {"name":"Subsurface","channels":["subs","subs","subs","1.0"],"color_space":"linear"}]}

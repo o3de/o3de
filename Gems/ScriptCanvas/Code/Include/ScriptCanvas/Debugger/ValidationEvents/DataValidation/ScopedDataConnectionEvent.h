@@ -28,7 +28,7 @@ namespace ScriptCanvas
         , public FocusOnEntityEffect
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopedDataConnectionEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScopedDataConnectionEvent, AZ::SystemAllocator);
         AZ_RTTI(ScopedDataConnectionEvent, "{4C77B468-1405-4997-9A0E-A399E7464906}", HighlightEntityEffect, ValidationEvent, FocusOnEntityEffect);
         
         ScopedDataConnectionEvent(const AZ::EntityId& connectionId)

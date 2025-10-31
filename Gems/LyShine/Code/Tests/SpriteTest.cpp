@@ -21,8 +21,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            appDesc.m_stackRecordLevels = 20;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
             AZ::ComponentApplication::StartupParameters appStartup;
             appStartup.m_createStaticModulesCallback =
@@ -50,7 +49,7 @@ namespace UnitTest
 
     };
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     TEST_F(LyShineSpriteTest, Sprite_CanAcquireRenderTarget)
     {
         // initialize to create the static sprite cache

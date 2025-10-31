@@ -8,24 +8,12 @@
 
 #pragma once
 
-// This header is only meant to include the nodes and should not contain
-// shared code
+namespace AZ
+{
+    class ReflectContext;
+} // namespace AZ
 
-#ifndef _RELEASE
-
-#include "AddFailure.h"
-#include "AddSuccess.h"
-#include "Checkpoint.h"
-#include "ExpectEqual.h"
-#include "ExpectFalse.h"
-#include "ExpectGreaterThan.h"
-#include "ExpectGreaterThanEqual.h"
-#include "ExpectLessThan.h"
-#include "ExpectLessThanEqual.h"
-#include "ExpectNotEqual.h"
-#include "ExpectTrue.h"
-#include "MarkComplete.h"
-#include "UnitTestBus.h"
-#include "Auxiliary/Auxiliary.h"
-
-#endif
+namespace ScriptCanvas::UnitTestingLibrary
+{
+    void Reflect(AZ::ReflectContext* reflection);
+} // namespace ScriptCanvas

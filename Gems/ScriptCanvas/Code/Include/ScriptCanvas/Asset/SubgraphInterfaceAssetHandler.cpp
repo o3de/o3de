@@ -6,12 +6,6 @@
  *
  */
 
-#include <ScriptCanvas/Core/Graph.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
-
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Utils.h>
@@ -19,7 +13,9 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 namespace ScriptCanvas
 {
@@ -93,7 +89,7 @@ namespace ScriptCanvas
         if (runtimeFunctionAsset && m_serializeContext)
         {
             stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, runtimeFunctionAsset->m_runtimeData, m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB));
+            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, runtimeFunctionAsset->m_interfaceData, m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB));
             return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
         }
         return AZ::Data::AssetHandler::LoadResult::Error;
@@ -105,8 +101,11 @@ namespace ScriptCanvas
         AZ_Assert(runtimeFunctionAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
         if (runtimeFunctionAsset && m_serializeContext)
         {
-            AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext, AZ::ObjectStream::ST_XML);
-            bool graphSaved = binaryObjStream->WriteClass(&runtimeFunctionAsset->m_runtimeData);
+            AZ::ObjectStream* binaryObjStream = AZ::ObjectStream::Create(stream, *m_serializeContext
+                , ScriptCanvas::g_saveEditorAssetsAsPlainTextForDebug
+                ? AZ::ObjectStream::ST_JSON
+                : AZ::ObjectStream::ST_BINARY);
+            bool graphSaved = binaryObjStream->WriteClass(&runtimeFunctionAsset->m_interfaceData);
             binaryObjStream->Finalize();
             return graphSaved;
         }

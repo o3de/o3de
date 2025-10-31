@@ -18,9 +18,7 @@
 // Qt
 #include <QTextStream>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_CustomResolutionDlg.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #define MIN_RES 64
 #define MAX_RES 8192

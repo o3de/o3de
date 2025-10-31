@@ -21,7 +21,7 @@ namespace JsonSerializationTests
         : public JsonSerializerMock
     {
     public:
-        AZ_CLASS_ALLOCATOR(JsonSerializerTemplatedMock, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JsonSerializerTemplatedMock, AZ::SystemAllocator);
         
         ~JsonSerializerTemplatedMock() override = default;
 
@@ -140,14 +140,14 @@ namespace AZ
 namespace JsonSerializationTests
 {
     class JsonRegistrationContextTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         ~JsonRegistrationContextTests() override = default;
 
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         }
@@ -156,7 +156,7 @@ namespace JsonSerializationTests
         {
             m_jsonRegistrationContext.reset();
 
-            UnitTest::AllocatorsTestFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
@@ -327,17 +327,13 @@ namespace JsonSerializationTests
         SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
     }
 
-#if GTEST_HAS_DEATH_TEST
-    using JsonSerializationDeathTests = JsonRegistrationContextTests;
-    TEST_F(JsonSerializationDeathTests, DoubleUnregisterSerializer_Asserts)
+    TEST_F(JsonRegistrationContextTests, DoubleUnregisterSerializer_Asserts)
     {
-        ASSERT_DEATH({
-            SerializerWithOneType::Reflect(m_jsonRegistrationContext.get());
-            SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
-            SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
-            }, ".*"
-        );
+        SerializerWithOneType::Reflect(m_jsonRegistrationContext.get());
+        SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
+        AZ_TEST_START_ASSERTTEST;
+        SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
+        AZ_TEST_STOP_ASSERTTEST(1);
     }
-#endif // GTEST_HAS_DEATH_TEST
 
 } //namespace JsonSerializationTests

@@ -21,11 +21,11 @@ namespace AZ
             return AZ::Name(AZStd::string::format("MergedSRG%d_%s", bindingSlot, shaderInputName.GetCStr()));
         }
 
-        RHI::ShaderResourceGroupData MergedShaderResourceGroup::MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const
+        RHI::DeviceShaderResourceGroupData MergedShaderResourceGroup::MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const
         {
             // Merge the SRG data of each of the SRG instances.
             const RHI::ShaderResourceGroupLayout* srgLayout = GetPool()->GetLayout();
-            RHI::ShaderResourceGroupData data(srgLayout);
+            RHI::DeviceShaderResourceGroupData data(srgLayout);
             for (const auto* srg : srgList)
             {
                 if (!srg)
@@ -47,7 +47,7 @@ namespace AZ
                     }
 
                     const auto& sourceViews = srgData.GetBufferViewArray(RHI::ShaderInputBufferIndex(i));
-                    AZStd::vector<const RHI::BufferView*> destViews;
+                    AZStd::vector<const RHI::DeviceBufferView*> destViews;
                     AZStd::transform(sourceViews.begin(), sourceViews.end(), AZStd::back_inserter(destViews), [](const auto& view) { return view.get(); });
                     data.SetBufferViewArray(shaderInputIndex, destViews);
                 }
@@ -65,7 +65,7 @@ namespace AZ
                     }
 
                     const auto& sourceViews = srgData.GetImageViewArray(RHI::ShaderInputImageIndex(i));
-                    AZStd::vector<const RHI::ImageView*> destViews;
+                    AZStd::vector<const RHI::DeviceImageView*> destViews;
                     AZStd::transform(sourceViews.begin(), sourceViews.end(), AZStd::back_inserter(destViews), [](const auto& view) { return view.get(); });
                     data.SetImageViewArray(shaderInputIndex, destViews);
                 }
@@ -122,8 +122,8 @@ namespace AZ
         void MergedShaderResourceGroup::Compile()
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_compileMutex);
-            RHI::ShaderResourceGroupData srgData = MergeShaderResourceData(m_mergedShaderResourceGroupList);
-            RHI::ShaderResourceGroup::Compile(srgData, RHI::ShaderResourceGroup::CompileMode::Sync);
+            RHI::DeviceShaderResourceGroupData srgData = MergeShaderResourceData(m_mergedShaderResourceGroupList);
+            RHI::DeviceShaderResourceGroup::Compile(srgData, RHI::DeviceShaderResourceGroup::CompileMode::Sync);
             // Update the last frame iteration value.
             for (uint32_t i = 0; i < m_mergedShaderResourceGroupList.size(); ++i)
             {

@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_Split",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Split",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_Split",
+                    "details": {
+                        "name": "Split",
+                        "tooltip": "Split a string at the specified separator and returns a list of strings."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The string to search in."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Delimiters",
+                                "tooltip": "The characters that can be used as delimiters."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "A list of strings"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -11,6 +11,7 @@
 #include "Cry_Color.h"
 #include "XMLBinaryNode.h"
 
+#include <AzCore/Serialization/Locale.h>
 //////////////////////////////////////////////////////////////////////////
 CBinaryXmlData::~CBinaryXmlData()
 {
@@ -88,6 +89,8 @@ bool CBinaryXmlNode::getAttr(const char* key, int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = atoi(svalue);
         return true;
     }
@@ -99,7 +102,9 @@ bool CBinaryXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoul(svalue, nullptr, 10);
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
+        value = static_cast<unsigned int>(strtoul(svalue, nullptr, 10));
         return true;
     }
     return false;
@@ -111,6 +116,8 @@ bool CBinaryXmlNode::getAttr(const char* key, int64& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = strtoll(svalue, nullptr, 10);
         return true;
     }
@@ -123,6 +130,8 @@ bool CBinaryXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) 
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = strtoull(svalue, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
@@ -134,6 +143,8 @@ bool CBinaryXmlNode::getAttr(const char* key, bool& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = atoi(svalue) != 0;
         return true;
     }
@@ -145,6 +156,8 @@ bool CBinaryXmlNode::getAttr(const char* key, float& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = (float)atof(svalue);
         return true;
     }
@@ -156,6 +169,8 @@ bool CBinaryXmlNode::getAttr(const char* key, double& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         value = atof(svalue);
         return true;
     }
@@ -167,6 +182,8 @@ bool CBinaryXmlNode::getAttr(const char* key, Ang3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -183,6 +200,8 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec3& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         float x, y, z;
         if (azsscanf(svalue, "%f,%f,%f", &x, &y, &z) == 3)
         {
@@ -199,6 +218,8 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec4& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         float x, y, z, w;
         if (azsscanf(svalue, "%f,%f,%f,%f", &x, &y, &z, &w) == 4)
         {
@@ -215,6 +236,8 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec2& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         float x, y;
         if (azsscanf(svalue, "%f,%f", &x, &y) == 2)
         {
@@ -231,6 +254,8 @@ bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
@@ -247,6 +272,8 @@ bool CBinaryXmlNode::getAttr(const char* key, ColorB& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing to be culture invariant
+
         unsigned int r, g, b, a = 255;
         int numFound = azsscanf(svalue, "%u,%u,%u,%u", &r, &g, &b, &a);
         if (numFound == 3 || numFound == 4)

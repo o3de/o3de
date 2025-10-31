@@ -17,12 +17,12 @@
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/Bus/UiEditorChangeNotificationBus.h>
 #include <LyShine/UiComponentTypes.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <IRenderer.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 //! \brief Image component capable of indexing and displaying from multiple image files in a directory.
 //!
@@ -99,19 +99,19 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
-        provided.push_back(AZ_CRC("UiIndexableImageService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
+        provided.push_back(AZ_CRC_CE("UiIndexableImageService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
 protected: // member functions
@@ -137,7 +137,7 @@ private: // member functions
     void RenderStretchedToFitOrFillSprite(ISprite* sprite, int cellIndex, uint32 packedColor, bool toFit);
     void RenderSingleQuad(const AZ::Vector2* positions, const AZ::Vector2* uvs, uint32 packedColor);
     bool IsPixelAligned();
-    void RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, int numVertices, int numIndices);
+    void RenderTriangleList(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, int numVertices, int numIndices);
     void ClearCachedVertices();
     void ClearCachedIndices();
     void MarkRenderCacheDirty();
@@ -157,6 +157,6 @@ private: // data
     ImageType m_imageType = ImageType::Fixed;       //!< Affects how the texture/sprite is mapped to the image rectangle
 
     // cached rendering data for performance optimization
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
     bool m_isRenderCacheDirty = true;
 };

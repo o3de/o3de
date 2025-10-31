@@ -41,7 +41,7 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Prevents vegetation from being placed in the mesh";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/vegetation/vegetation-layer-blocker-mesh/";
 
     private:
         bool m_drawDebugBounds = false;

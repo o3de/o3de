@@ -7,5 +7,6 @@
 #
 
 set(FILES
+    Tests/EditorGradientSignalBakerTests.cpp
     Tests/EditorGradientSignalPreviewTests.cpp
 )

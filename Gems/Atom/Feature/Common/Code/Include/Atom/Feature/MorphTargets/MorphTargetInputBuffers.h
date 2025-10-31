@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
@@ -38,11 +39,11 @@ namespace AZ
         //! and the index of the target vertex that is going to be modified
         //! The morph target pass will read these values, apply a weight, and write the accumulated deltas
         //! to an intermediate buffer that will be consumed by the skinning pass
-        class MorphTargetInputBuffers
+        class ATOM_FEATURE_COMMON_API MorphTargetInputBuffers
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator);
             MorphTargetInputBuffers(const RPI::BufferAssetView& bufferAssetView, const AZStd::string& bufferNamePrefix);
 
             //! Set the buffer views and vertex count on the given SRG
@@ -52,15 +53,17 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_vertexDeltaBuffer;
         };
 
-        struct MorphTargetMetaData
+        struct MorphTargetComputeMetaData
         {
             float m_minWeight;
             float m_maxWeight;
             float m_minDelta;
             float m_maxDelta;
             uint32_t m_vertexCount;
-            uint32_t m_positionOffset;
-            bool m_hasColorDeltas;
+            // Each morph target dispatch is associated with a single mesh. We need to keep track of which mesh
+            // so that we can calculate the maximum range a given mesh might be morphed if all of the morph targets
+            // associated with it were active at once.
+            uint32_t m_meshIndex;
         };
 
         namespace MorphTargetConstants
@@ -80,7 +83,6 @@ namespace AZ
             uint32_t m_accumulatedNormalDeltaOffsetInBytes;
             uint32_t m_accumulatedTangentDeltaOffsetInBytes;
             uint32_t m_accumulatedBitangentDeltaOffsetInBytes;
-            uint32_t m_accumulatedColorDeltaOffsetInBytes;
         };
 
     }// Render

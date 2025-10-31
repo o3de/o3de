@@ -2,23 +2,21 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="ReceiveScriptEvent"
-	       QualifiedName="ScriptCanvas::Nodes::Core::ReceiveScriptEvent"
-	       PreferredClassName="Receive Script Event"
-           Uuid="{76CF9938-4A7E-4CDA-8DF3-77C10239D99C}"
-           Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
-           Icon="Icons/ScriptCanvas/Bus.png"
-           Version="4"
-           VersionConverter="ScriptCanvas::VersionConverters::ReceiveScriptEventVersionConverter"
-           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-           GraphEntryPoint="True"
-           GeneratePropertyFriend="True"
-           Description="Allows you to handle a event.">
+        QualifiedName="ScriptCanvas::Nodes::Core::ReceiveScriptEvent"
+        PreferredClassName="Receive Script Event"
+        Uuid="{76CF9938-4A7E-4CDA-8DF3-77C10239D99C}"
+        Base="ScriptCanvas::Nodes::Core::Internal::ScriptEventBase"
+        Version="4"
+        VersionConverter="ScriptCanvas::VersionConverters::ReceiveScriptEventVersionConverter"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        GraphEntryPoint="True"
+        Description="Allows you to handle a event.">
         <SerializedProperty Name="m_busId" />
+        <SerializedProperty Name="m_autoConnectToGraphOwner" />
         <In Name="Connect" Description="Connect this event handler to the specified entity."/>
         <In Name="Disconnect" Description="Disconnect this event handler."/>
         <Out Name="OnConnected" Description="Signaled when a connection has taken place."/>
         <Out Name="OnDisconnected" Description="Signaled when this event handler is disconnected."/>
         <Out Name="OnFailure" Description="Signaled when it is not possible to connect this handler."/>
-        <SerializedProperty Name="m_autoConnectToGraphOwner" />
     </Class>
 </ScriptCanvas>

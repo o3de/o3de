@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/Serialization/Locale.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConditionCommands.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -44,6 +45,8 @@ namespace EMotionFX
 
     TEST_F(AnimGraphConditionCommandTestFixture, AdjustConditionCommandTests)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         AZStd::string result;
         CommandSystem::CommandManager commandManager;
 

@@ -18,8 +18,8 @@ namespace AZ::SettingsRegistryVisitorUtils
     {
     }
 
-    auto FieldVisitor::Traverse(AZStd::string_view path, AZStd::string_view valueName,
-        VisitAction action, Type type) -> VisitResponse
+    auto FieldVisitor::Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+        VisitAction action) -> VisitResponse
     {
         // A default response skip prevents visiting grand children(depth 2 or lower)
         VisitResponse visitResponse = VisitResponse::Skip;
@@ -28,10 +28,15 @@ namespace AZ::SettingsRegistryVisitorUtils
             // Invoke FieldVisitor override if the root path has been set
             if (m_rootPath.has_value())
             {
-                Visit(path, valueName, type);
+                // Only check the VisitResponse of Done to halt iteration
+                if (VisitResponse fieldResponse = Visit(visitArgs);
+                    fieldResponse == VisitResponse::Done)
+                {
+                    visitResponse = VisitResponse::Done;
+                }
             }
             // To make sure only the direct children are visited(depth 1)
-            // set the root path once and set the VisitReponsoe
+            // set the root path once and set the VisitResponse
             // to Continue to recurse into is fields
             if (!m_rootPath.has_value())
             {
@@ -39,13 +44,14 @@ namespace AZ::SettingsRegistryVisitorUtils
                 switch (m_visitFieldType)
                 {
                 case VisitFieldType::Array:
-                    visitableFieldType = type == Type::Array;
+                    visitableFieldType = visitArgs.m_type.m_type == AZ::SettingsRegistryInterface::Type::Array;
                     break;
                 case VisitFieldType::Object:
-                    visitableFieldType = type == Type::Object;
+                    visitableFieldType = visitArgs.m_type.m_type == AZ::SettingsRegistryInterface::Type::Object;
                     break;
                 case VisitFieldType::ArrayOrObject:
-                    visitableFieldType = type == Type::Array || type ==Type::Object;
+                    visitableFieldType = visitArgs.m_type.m_type == AZ::SettingsRegistryInterface::Type::Array
+                        || visitArgs.m_type.m_type == AZ::SettingsRegistryInterface::Type::Object;
                     break;
                 default:
                     AZ_Error("FieldVisitor", false, "The field visitation type value is invalid");
@@ -54,7 +60,7 @@ namespace AZ::SettingsRegistryVisitorUtils
 
                 if (visitableFieldType)
                 {
-                    m_rootPath = path;
+                    m_rootPath = visitArgs.m_jsonKeyPath;
                     visitResponse = VisitResponse::Continue;
                 }
             }
@@ -64,13 +70,18 @@ namespace AZ::SettingsRegistryVisitorUtils
             // Invoke FieldVisitor override if the root path has been set
             if (m_rootPath.has_value())
             {
-                Visit(path, valueName, type);
+                // Only check the VisitResponse of Done to halt iteration
+                if (VisitResponse fieldResponse = Visit(visitArgs);
+                    fieldResponse == VisitResponse::Done)
+                {
+                    visitResponse = VisitResponse::Done;
+                }
             }
         }
         else if (action == VisitAction::End)
         {
             // Reset m_rootPath back to null when the root path has finished being visited
-            if (m_rootPath.has_value() && *m_rootPath == path)
+            if (m_rootPath.has_value() && *m_rootPath == visitArgs.m_jsonKeyPath)
             {
                 m_rootPath = AZStd::nullopt;
             }
@@ -104,9 +115,9 @@ namespace AZ::SettingsRegistryVisitorUtils
                 : m_visitCallback{ visitCallback }
             {}
 
-            void Visit(AZStd::string_view path, AZStd::string_view fieldIndex, typename BaseVisitor::Type type) override
+            AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) override
             {
-                m_visitCallback(path, fieldIndex, type);
+                return m_visitCallback(visitArgs);
             }
 
             const VisitorCallback& m_visitCallback;

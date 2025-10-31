@@ -19,13 +19,7 @@ namespace GraphModelIntegration
 
     AZStd::string ReadOnlyDataInterface::GetString() const
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
-        {
-            return slot->GetValue<AZStd::string>();
-        }
-        else
-        {
-            return "";
-        }
+        GraphModel::SlotPtr slot = m_slot.lock();
+        return slot ? slot->GetValue<AZStd::string>() : AZStd::string();
     }
-}
+} // namespace GraphModelIntegration

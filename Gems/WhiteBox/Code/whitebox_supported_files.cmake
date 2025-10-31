@@ -8,8 +8,6 @@
 
 set(FILES
     Include/WhiteBox/WhiteBoxBus.h
-    Source/WhiteBoxAllocator.cpp
-    Source/WhiteBoxAllocator.h
     Source/WhiteBoxComponent.cpp
     Source/WhiteBoxComponent.h
     Source/WhiteBoxSystemComponent.cpp
@@ -22,6 +20,8 @@ set(FILES
     Source/Rendering/WhiteBoxRenderMeshInterface.h
     Source/Rendering/WhiteBoxRenderData.cpp
     Source/Rendering/WhiteBoxRenderData.h
+    Source/Rendering/WhiteBoxRenderDataUtil.cpp
+    Source/Rendering/WhiteBoxRenderDataUtil.h
     Source/Rendering/WhiteBoxMaterial.cpp
     Source/Rendering/WhiteBoxMaterial.h
     Source/Rendering/WhiteBoxNullRenderMesh.cpp

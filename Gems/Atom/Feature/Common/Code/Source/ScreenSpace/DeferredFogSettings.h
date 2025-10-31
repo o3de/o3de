@@ -49,7 +49,7 @@ namespace AZ
         public:
             AZ_RTTI(DeferredFogSettings, "{FD822CC5-4E7B-4471-AA7D-1FCDF6CAC979}",
                 AZ::Render::DeferredFogSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(AZ::Render::DeferredFogSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::Render::DeferredFogSettings, SystemAllocator);
 
             DeferredFogSettings(PostProcessFeatureProcessor* featureProcessor);
             DeferredFogSettings();
@@ -66,12 +66,6 @@ namespace AZ
                 m_needUpdate = needUpdate;
             }
 
-            void SetEnabled(bool value) override;
-            bool GetEnabled() const override
-            {
-                return m_enabled;
-            }
-
             void SetInitialized(bool isInitialized) override
             {
                 m_isInitialized = isInitialized;
@@ -79,24 +73,6 @@ namespace AZ
             bool IsInitialized() override
             {
                 return m_isInitialized;
-            }
-
-            void SetUseNoiseTextureShaderOption(bool value) override
-            {
-                m_useNoiseTextureShaderOption = value;
-            }
-            bool GetUseNoiseTextureShaderOption() override
-            {
-                return m_useNoiseTextureShaderOption;
-            }
-
-            void SetEnableFogLayerShaderOption(bool value) override
-            {
-                m_enableFogLayerShaderOption = value;
-            }
-            bool GetEnableFogLayerShaderOption() override
-            {
-                return m_enableFogLayerShaderOption;
             }
 
             // Called by the post effects feature processor for doing per frame prep if required
@@ -150,28 +126,25 @@ namespace AZ
 
             // Macro to replace only the image macro for defining only image resources
 #undef  AZ_GFX_TEXTURE2D_PARAM
-#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                \
-            Data::Instance<AZ::RPI::Image> MemberName##Image;                 \
+#define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)            \
+            Data::Instance<AZ::RPI::Image> MemberName##Image;             \
+            AZStd::string MemberName##CurrentlyLoaded;
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             PostProcessSettings* m_parentSettings = nullptr;
 
-            // 'm_enabled' indicates if the pass should be enabled. By default this is set to true since if the
+            // The 'm_enabled' member indicates if the pass should be enabled. By default this is set to true since if the
             // pass is data driven enabled, the default settings should not disable it.  If it is driven by
             // an engine component, these settings will be replaced by the component's settings controlled by
-            // the user.
-            bool m_enabled = true;
+            // the user. Defined using DeferredFogParams.inl, along with others.
 
             // Indication if the SRG indices were set
             bool m_isInitialized = false;
 
             // Indicates that the srg indices were set
             bool m_needUpdate = true;
-
-            bool m_useNoiseTextureShaderOption = true;
-            bool m_enableFogLayerShaderOption = true;
 
         };
 

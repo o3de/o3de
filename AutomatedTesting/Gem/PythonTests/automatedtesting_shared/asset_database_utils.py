@@ -98,7 +98,6 @@ class DBJob:
     builder_guid: bytes = None
     status: int = 0
     error_count: int = 0
-    warning_count: int = 0
     platform: str = None
     # Key: Product ID
     products: List[DBProduct] = field(default_factory=list)

@@ -10,10 +10,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/TagRegistry.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        using DrawListTagRegistry = TagRegistry<DrawListTag, Limits::Pipeline::DrawListTagCountMax>;
-    }
+    using DrawListTagRegistry = TagRegistry<DrawListTag::IndexType, Limits::Pipeline::DrawListTagCountMax>;
 }

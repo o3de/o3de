@@ -6,10 +6,10 @@
  *
  */
 
-
+#include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
-#include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
 
@@ -35,39 +35,54 @@ namespace AZ
             return m_shader;
         }
 
-        void SkinnedMeshComputePass::SetFeatureProcessor(SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor)
+        void SkinnedMeshComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
-            m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
+            {
+                featureProcessor->SetupSkinningScope(frameGraph, Pass::GetDeviceIndex());
+            }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
         }
-        
+
         void SkinnedMeshComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            if (m_skinnedMeshFeatureProcessor)
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
             {
-                RHI::CommandList* commandList = context.GetCommandList();
+                SetSrgsForDispatch(context);
 
-                SetSrgsForDispatch(commandList);
-
-                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(commandList);
+                featureProcessor->SubmitSkinningDispatchItems(
+                    context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
 
         void SkinnedMeshComputePass::OnShaderReinitialized(const RPI::Shader& shader)
         {
             ComputePass::OnShaderReinitialized(shader);
-            if (m_skinnedMeshFeatureProcessor)
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
             {
-                m_skinnedMeshFeatureProcessor->OnSkinningShaderReinitialized(m_shader);
+                featureProcessor->OnSkinningShaderReinitialized(m_shader);
             }
         }
 
         void SkinnedMeshComputePass::OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant)
         {
             ComputePass::OnShaderVariantReinitialized(shaderVariant);
-            if (m_skinnedMeshFeatureProcessor)
+            if (auto featureProcessor = GetSkinnedMeshFeatureProcessor())
             {
-                m_skinnedMeshFeatureProcessor->OnSkinningShaderReinitialized(m_shader);
+                featureProcessor->OnSkinningShaderReinitialized(m_shader);
             }
+        }
+
+        SkinnedMeshFeatureProcessor* SkinnedMeshComputePass::GetSkinnedMeshFeatureProcessor()
+        {
+            AZ::RPI::Scene* scene{ GetScene() };
+            if (!scene)
+            {
+                return nullptr;
+            }
+            auto result = scene->GetFeatureProcessor<SkinnedMeshFeatureProcessor>();
+            return result;
         }
     }   // namespace Render
 }   // namespace AZ

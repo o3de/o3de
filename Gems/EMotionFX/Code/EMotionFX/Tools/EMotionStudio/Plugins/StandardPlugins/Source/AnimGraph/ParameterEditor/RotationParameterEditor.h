@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include "ValueParameterEditor.h"
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Quaternion.h>
-#include <QPushButton>
+#include <AzToolsFramework/Manipulators/RotationManipulators.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 
-namespace MCommon
-{
-    class RotateManipulator;
-}
+class QPushButton;
 
 namespace EMStudio
 {
     class RotationParameterEditor
         : public ValueParameterEditor
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_RTTI(RotationParameterEditor, "{55C122A9-AA80-49FB-8663-2113C7AC97C0}", ValueParameterEditor)
@@ -48,6 +47,9 @@ namespace EMStudio
         AZ::Quaternion GetCurrentValue() const { return m_currentValue; }
 
     private:
+        // AZ::TickBus::Handler overrides ...
+        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
+
         void OnValueChanged();
 
         AZ::Quaternion GetMinValue() const;
@@ -58,7 +60,7 @@ namespace EMStudio
         AZ::Quaternion m_currentValue;
 
         QPushButton* m_gizmoButton;
-        MCommon::RotateManipulator* m_transformationGizmo;
+        AzToolsFramework::RotationManipulators m_rotationManipulator;
         AZStd::function<void()> m_manipulatorCallback;
     };
 }

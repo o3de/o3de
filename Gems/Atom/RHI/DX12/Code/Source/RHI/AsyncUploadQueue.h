@@ -9,16 +9,12 @@
 
 #include <RHI/CommandQueue.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct BufferStreamRequest;
-        struct StreamingImageExpandRequest;
-    }
-
     namespace DX12
     {
         class Device;
@@ -50,16 +46,19 @@ namespace AZ
 
             // Queue copy commands to upload buffer resource
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
+            uint64_t QueueUpload(const RHI::DeviceBufferStreamRequest& request);
 
             // Queue copy commands to upload image subresources.
             // @param residentMip is the resident mip level the expand request starts from. 
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            uint64_t QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
             
             // Queue tile mapping to map tiles from allocate heap for reserved resource. This is usually required before upload data to 
             // reserved resource in this copy queue
-            void QueueTileMapping(CommandList::TileMapRequest& request);
+            void QueueTileMapping(const CommandList::TileMapRequest& request);
+
+            // Queue a wait command
+            void QueueWaitFence(const Fence& fence, uint64_t fenceValue);
 
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(uint64_t fenceValue);
@@ -98,10 +97,6 @@ namespace AZ
             // Fence for external upload request
             Fence m_uploadFence;
             FenceEvent m_uploadFenceEvent{ "Wait For Upload" };
-
-            // For tile mapping command
-            AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;
-            AZStd::vector<uint32_t> m_rangeCounts;
 
             // pending upload callbacks and their corresponding fence values
             AZStd::queue<AZStd::pair<AZStd::function<void()>, uint64_t>> m_callbacks;

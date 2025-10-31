@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <Cry_Math.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/TubeShapeComponentBus.h>
@@ -28,20 +29,23 @@ namespace LmbrCentral
     {
     public:
         AZ_RTTI(TubeShape, "{8DF865F3-D155-402D-AF64-9342CE9E9E60}")
-        AZ_CLASS_ALLOCATOR(TubeShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TubeShape, AZ::SystemAllocator)
 
+        TubeShape() = default;
+        TubeShape(const TubeShape& rhs);
         static void Reflect(AZ::SerializeContext& context);
 
         void Activate(AZ::EntityId entityId);
         void Deactivate();
 
         // ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Tube", 0xfd30de9e); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Tube"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceFromPoint(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // TubeShapeComponentRequestsBus
         void SetRadius(float radius) override;
@@ -74,6 +78,7 @@ namespace LmbrCentral
         AZ::Transform m_currentTransform; ///< Caches the current World transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         float m_radius = 1.f; ///< Radius of the tube.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     /// Generates a Tube mesh with filled surface and outlines.
@@ -85,7 +90,7 @@ namespace LmbrCentral
     /// Configuration for how TubeShape debug drawing should appear (tesselation parameters etc).
     struct TubeShapeMeshConfig
     {
-        AZ_CLASS_ALLOCATOR(TubeShapeMeshConfig, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TubeShapeMeshConfig, AZ::SystemAllocator)
         AZ_RTTI(TubeShapeMeshConfig, "{90791900-060F-4F0B-9552-D6E67572B317}")
 
         TubeShapeMeshConfig() = default;

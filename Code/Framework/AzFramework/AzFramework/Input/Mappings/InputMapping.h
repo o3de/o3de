@@ -13,6 +13,7 @@
 
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -24,7 +25,7 @@ namespace AzFramework
     //! Derived classes should provide additional functions that allow their parent input context to
     //! update the state and value(s) of the input mapping as raw input is received from the system,
     //! and they can (optionally) override the virtual GetCustomData function to return custom data.
-    class InputMapping : public InputChannel
+    class AZF_API InputMapping : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(InputChannelNameFilteredByDeviceType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InputChannelNameFilteredByDeviceType, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -97,7 +98,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(ConfigBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ConfigBase, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -134,7 +135,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputMapping, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

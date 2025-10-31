@@ -11,6 +11,7 @@
 #include <QAbstractItemModel>
 #include <QDialog>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -39,7 +40,7 @@ namespace ScriptCanvasEditor
         : public QSortFilterProxyModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageFilterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageFilterModel, AZ::SystemAllocator);
 
         ScriptCanvasAssetNodeUsageFilterModel();
 
@@ -51,7 +52,7 @@ namespace ScriptCanvasEditor
     private:
 
         QString m_filter;
-        QRegExp m_regex;
+        QRegularExpression m_regex;
 
         ScriptCanvas::NodeTypeIdentifier m_nodeIdentifier;
     };
@@ -63,7 +64,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(StatisticsDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StatisticsDialog, AZ::SystemAllocator);
 
         StatisticsDialog(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* scriptCanvasAssetModel, QWidget* widget = nullptr);
         ~StatisticsDialog();

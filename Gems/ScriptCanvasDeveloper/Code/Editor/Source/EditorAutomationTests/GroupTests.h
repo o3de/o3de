@@ -31,7 +31,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/GraphActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/VariableActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorautomationTest that will test out various methods creating a group
@@ -56,6 +56,7 @@ namespace ScriptCanvasDeveloper
             : public CustomActionState
         {
         public:
+            AZ_CLASS_ALLOCATOR(OffsetPositionByNodeDimension, AZ::SystemAllocator)
             // -1 to 1 will decide how much and which direction we manipulate the specified value by our width/height.
             OffsetPositionByNodeDimension(float horizontalDimension, float verticalDimension, AutomationStateModelId nodeId, AutomationStateModelId position);
             ~OffsetPositionByNodeDimension() override = default;

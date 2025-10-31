@@ -15,7 +15,7 @@
 
 namespace AZ::IO
 {
-    struct DriveInformation
+    struct AZCORE_API DriveInformation
     {
         AZ_TYPE_INFO(AZ::IO::DriveInformation, "{89BEC62B-4B61-4878-8E40-E4C7A0DC717E}");
 

@@ -43,8 +43,9 @@ namespace AzNetworking
 
         //! Opens the TCP socket and connects to the requested remote address.
         //! @param address the remote endpoint to connect to
+        //! @param localPort the local port to open a connection from, 0 binds to any available port
         //! @return boolean true on success
-        virtual bool Connect(const IpAddress& address);
+        virtual bool Connect(const IpAddress& address, uint16_t localPort);
 
         //! Closes an open socket.
         virtual void Close();
@@ -81,10 +82,16 @@ namespace AzNetworking
         virtual int32_t ReceiveInternal(uint8_t* outData, uint32_t size) const;
 
         bool BindSocketForListenInternal(uint16_t port);
-        bool BindSocketForConnectInternal(const IpAddress& address);
+        bool BindSocketForConnectInternal(const IpAddress& address, uint16_t localPort);
         bool SocketCreateInternal();
 
         SocketFd m_socketFd;
+
+        // prevent warning spam for bind failure, if something is sitting on the port.
+        // These threads usually try 100x a second or faster, so warning for every bind failure is bad
+        // We'll remember the last warned port so that if the app layer responds to a listen failure
+        // by trying another port, that will show up.
+        uint16_t m_warnedBindForPortFailure = 0; //! Which port have we most recently warned for?
     };
 }
 

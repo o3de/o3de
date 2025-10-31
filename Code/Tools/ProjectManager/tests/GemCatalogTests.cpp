@@ -14,7 +14,7 @@
 namespace O3DE::ProjectManager
 {
     class GemCatalogTests 
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -102,7 +102,7 @@ namespace O3DE::ProjectManager
             gemfilterFeature.m_name = "F";
 
             gemfilterDisplayName.m_displayName = "Display Name";
-            gemfilterCreator.m_creator = "Johnathon Doe";
+            gemfilterCreator.m_origin = "Johnathon Doe";
             gemfilterSummary.m_summary = "Unique Summary";
             gemfilterFeature.m_features.append("Creative Feature");
 
@@ -324,6 +324,7 @@ namespace O3DE::ProjectManager
         // Selected dependencies should also be shown
         m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Selected);
 
+        EXPECT_TRUE(m_proxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Selected);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[SelectedDep].row(), QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Unselected].row(), QModelIndex()));
@@ -338,6 +339,7 @@ namespace O3DE::ProjectManager
         // Unselected dependencies should also be shown
         m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Unselected);
 
+        EXPECT_TRUE(m_proxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Unselected);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[SelectedDep].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Unselected].row(), QModelIndex()));
@@ -351,6 +353,7 @@ namespace O3DE::ProjectManager
         // Check both un/selected filter
         m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Both);
 
+        EXPECT_TRUE(m_proxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Both);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[SelectedDep].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Unselected].row(), QModelIndex()));
@@ -365,6 +368,7 @@ namespace O3DE::ProjectManager
         // Active dependencies should also be shown
         m_proxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Active);
 
+        EXPECT_TRUE(m_proxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[SelectedDep].row(), QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Unselected].row(), QModelIndex()));
@@ -378,6 +382,7 @@ namespace O3DE::ProjectManager
         // Check inactive filter
         m_proxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Inactive);
 
+        EXPECT_TRUE(m_proxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[Selected].row(), QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemIndices[SelectedDep].row(), QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemIndices[Unselected].row(), QModelIndex()));
@@ -445,18 +450,21 @@ namespace O3DE::ProjectManager
     {
         m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Open3DEngine);
 
+        EXPECT_TRUE(m_proxyModel->GetGemOrigins() == GemInfo::GemOrigin::Open3DEngine);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Local);
 
+        EXPECT_TRUE(m_proxyModel->GetGemOrigins() == GemInfo::GemOrigin::Local);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Remote);
 
+        EXPECT_TRUE(m_proxyModel->GetGemOrigins() == GemInfo::GemOrigin::Remote);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
@@ -475,18 +483,21 @@ namespace O3DE::ProjectManager
     {
         m_proxyModel->SetTypes(GemInfo::Type::Code);
 
+        EXPECT_TRUE(m_proxyModel->GetTypes() == GemInfo::Type::Code);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetTypes(GemInfo::Type::Tool);
 
+        EXPECT_TRUE(m_proxyModel->GetTypes() == GemInfo::Type::Tool);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetTypes(GemInfo::Type::Asset);
 
+        EXPECT_TRUE(m_proxyModel->GetTypes() == GemInfo::Type::Asset);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
@@ -505,18 +516,21 @@ namespace O3DE::ProjectManager
     {
         m_proxyModel->SetPlatforms(GemInfo::Platform::Windows);
 
+        EXPECT_TRUE(m_proxyModel->GetPlatforms() == GemInfo::Platform::Windows);
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetPlatforms(GemInfo::Platform::Android);
 
+        EXPECT_TRUE(m_proxyModel->GetPlatforms() == GemInfo::Platform::Android);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetPlatforms(GemInfo::Platform::macOS);
 
+        EXPECT_TRUE(m_proxyModel->GetPlatforms() == GemInfo::Platform::macOS);
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
@@ -535,18 +549,21 @@ namespace O3DE::ProjectManager
     {
         m_proxyModel->SetFeatures({ "Audio" });
 
+        EXPECT_TRUE(m_proxyModel->GetFeatures().contains("Audio"));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetFeatures({ "Tools", });
 
+        EXPECT_TRUE(m_proxyModel->GetFeatures().contains("Tools"));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
 
         m_proxyModel->SetFeatures({ "Environment" });
 
+        EXPECT_TRUE(m_proxyModel->GetFeatures().contains( "Environment" ));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
@@ -556,6 +573,7 @@ namespace O3DE::ProjectManager
     {
         m_proxyModel->SetFeatures({ "Assets", "Framework" });
 
+        EXPECT_TRUE(m_proxyModel->GetFeatures().contains({ "Assets", "Framework" }));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_TRUE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
@@ -569,5 +587,26 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[DefaultAudio], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
+    }
+
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_ResetFilters_FiltersReset)
+    {
+        // Set up all filter values that are reset
+        m_proxyModel->SetSearchString("Name");
+        m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Selected);
+        m_proxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Active);
+        m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Open3DEngine);
+        m_proxyModel->SetPlatforms(GemInfo::Platform::Windows);
+        m_proxyModel->SetTypes(GemInfo::Type::Code);
+        m_proxyModel->SetFeatures({ "Audio" });
+        
+        m_proxyModel->ResetFilters(true);
+
+        EXPECT_TRUE(m_proxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::NoFilter);
+        EXPECT_TRUE(m_proxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::NoFilter);
+        EXPECT_TRUE(m_proxyModel->GetGemOrigins() == GemInfo::GemOrigins({}));
+        EXPECT_TRUE(m_proxyModel->GetPlatforms() == GemInfo::Platforms({}));
+        EXPECT_TRUE(m_proxyModel->GetTypes() == GemInfo::Types({}));
+        EXPECT_TRUE(m_proxyModel->GetFeatures().isEmpty());
     }
 }

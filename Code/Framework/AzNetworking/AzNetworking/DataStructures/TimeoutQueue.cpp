@@ -22,6 +22,8 @@ namespace AzNetworking
 
     TimeoutId TimeoutQueue::RegisterItem(uint64_t userData, AZ::TimeMs timeoutMs)
     {
+        AZStd::lock_guard lock(m_mutex);
+
         const TimeoutId timeoutId = m_nextTimeoutId;
         const AZ::TimeMs timeoutTimeMs = AZ::GetElapsedTimeMs() + timeoutMs;
         AZLOG(TimeoutQueue, "Pushing timeoutid %u with user data %" PRIu64 " to expire at time %u",
@@ -40,6 +42,8 @@ namespace AzNetworking
 
     TimeoutQueue::TimeoutItem *TimeoutQueue::RetrieveItem(TimeoutId timeoutId)
     {
+        AZStd::lock_guard lock(m_mutex);
+
         TimeoutItemMap::iterator iter = m_timeoutItemMap.find(timeoutId);
         if (iter != m_timeoutItemMap.end())
         {
@@ -50,11 +54,15 @@ namespace AzNetworking
 
     void TimeoutQueue::RemoveItem(TimeoutId timeoutId)
     {
+        AZStd::lock_guard lock(m_mutex);
+
         m_timeoutItemMap.erase(timeoutId);
     }
 
     void TimeoutQueue::UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts)
     {
+        AZStd::lock_guard lock(m_mutex);
+
         int32_t numTimeouts = 0;
         if (maxTimeouts < 0)
         {
@@ -119,6 +127,7 @@ namespace AzNetworking
                 mapItem.m_userData,
                 aznumeric_cast<uint32_t>(mapItem.m_nextTimeoutTimeMs),
                 aznumeric_cast<uint32_t>(currentTimeMs));
+
             m_timeoutItemMap.erase(itemTimeoutId);
         }
     }

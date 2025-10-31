@@ -1,0 +1,49 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This file provides utilities for common handling of inputs for baked occlusion maps for PBR materials.
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_OCCLUSION(prefix)        \
+float       prefix##m_diffuseOcclusionFactor;      \
+Texture2D   prefix##m_diffuseOcclusionMap;         \
+uint        prefix##m_diffuseOcclusionMapUvIndex;  \
+float       prefix##m_specularOcclusionFactor;     \
+Texture2D   prefix##m_specularOcclusionMap;        \
+uint        prefix##m_specularOcclusionMapUvIndex;
+
+#define COMMON_OPTIONS_OCCLUSION(prefix) \
+option bool prefix##o_diffuseOcclusion_useTexture; \
+option bool prefix##o_specularOcclusion_useTexture; 
+
+real GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, real factor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
+{
+    real occlusion = 1.0;
+    if(useTexture)
+    {
+        if (customDerivatives)
+        {
+            occlusion = real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            #ifdef CS_SAMPLERS
+            occlusion = real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
+            occlusion = real(map.Sample(mapSampler, uv).r);
+            #endif
+        }
+        occlusion = pow(occlusion, factor);
+    }
+    return occlusion;
+}

@@ -15,5 +15,5 @@ ly_add_source_properties(
 ly_add_source_properties(
     SOURCES External/MaskedOcclusionCulling/MaskedOcclusionCulling.cpp
     PROPERTY COMPILE_OPTIONS
-    VALUES -mno-avx
+    VALUES -mno-avx -mxsave
 )

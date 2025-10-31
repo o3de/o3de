@@ -15,7 +15,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicTypeContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicTypeContract, AZ::SystemAllocator);
         AZ_RTTI(DynamicTypeContract, "{00822E5B-7DD0-4D52-B1A8-9CE9C1A5C4FB}", Contract);
         
         ~DynamicTypeContract() override = default;

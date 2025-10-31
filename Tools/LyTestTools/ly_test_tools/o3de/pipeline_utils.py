@@ -25,6 +25,7 @@ from typing import Dict, List, Tuple, Optional, Callable
 # Import LyTestTools
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
+import ly_test_tools._internal.exceptions as exceptions
 from ly_test_tools.o3de.ap_log_parser import APLogParser
 
 logger = logging.getLogger(__name__)
@@ -165,7 +166,7 @@ def get_files_hashsum(path_to_files_dir: str) -> Dict[str, int]:
             with open(os.path.join(path_to_files_dir, fname), "rb") as fopen:
                 checksum_dict[fname] = hashlib.sha256(fopen.read()).digest()
     except IOError:
-        logger.error("An error occurred trying to read file")
+        logger.error("An error occurred in LyTestTools when trying to read file.")
     return checksum_dict
 
 
@@ -196,7 +197,7 @@ def create_asset_processor_backup_directories(backup_root_directory: str, test_b
     :return: None
     """
     if not os.path.exists(os.path.join(backup_root_directory, test_backup_directory)):
-        os.makedirs(os.path.join(backup_root_directory, test_backup_directory))
+        os.makedirs(os.path.join(backup_root_directory, test_backup_directory), exist_ok=True)
 
 
 def backup_asset_processor_logs(bin_directory: str, backup_directory: str) -> None:
@@ -251,7 +252,7 @@ def safe_subprocess(command: str or List[str], **kwargs: Dict) -> ProcessOutput:
         # Set object flag
         subprocess_output.exception_occurred = True
         # If error occurs when **kwargs includes check=True Exceptions are possible
-        logger.warning(f'Command "{cmd_string}" failed with returncode {e.returncode}, output:\n{e.output}')
+        logger.warning(f'Command "{cmd_string}" failed in LyTestTools with returncode {e.returncode}, output:\n{e.output}')
         # Read and process error outputs
         subprocess_output.stderr = e.output.read().decode()
         # Save error return code
@@ -275,7 +276,7 @@ def processes_with_substring_in_name(substring: str) -> tuple:
             if substring.lower() in p.name().lower():
                 targeted_processes.append(p)
         except psutil.NoSuchProcess as e:
-            logger.info(f"Process {p} was killed during processes_with_substring_in_name()!\nError: {e}")
+            logger.info(f"Process {p} was killed in LyTestTools during processes_with_substring_in_name()!\nError: {e}")
             continue
     return tuple(targeted_processes)
 
@@ -305,7 +306,8 @@ def process_cpu_usage_below(process_name: str, cpu_usage_threshold: float) -> bo
     """
     # Get all instances of targeted process
     targeted_processes = processes_with_substring_in_name(process_name)
-    assert len(targeted_processes) > 0, f"No instances of {process_name} were found"
+    if not len(targeted_processes) > 0:
+        raise exceptions.LyTestToolsFrameworkException(f"No instances of {process_name} were found")
 
     # Return whether all instances of targeted process are idle
     for targeted_process in targeted_processes:
@@ -350,31 +352,40 @@ def get_relative_file_paths(start_dir: str, ignore_list: Optional[List[str]] = N
                 all_files.append(os.path.relpath(full_path, start_dir))
     return all_files
 
+def get_differences_between_lists(first: List[str], second: List[str]) -> (List[str], List[str]):
+    """
+        Returns two lists that contain unique entries in lists, missing from the other list.
+    """
+    first_set = set(first)
+    second_set = set(second)
+    diff_first = [x for x in first_set if x not in second]
+    diff_second = [x for x in second_set if x not in first]
+    
+    if diff_first or diff_second:
+        # Print a simple header if there are differences, to make it easier to follow log output on build machines.
+        logger.info("Differences were found comparing the given lists.")
+
+    # Log difference between actual and expected (if any). Easier for troubleshooting
+    if diff_first:
+        logger.info("The following entries were actually found but not expected:")
+        for list_entry in diff_first:
+            logger.info("   " + list_entry)
+    if diff_second:
+        logger.info("The following entries were expected to be found but were actually not:")
+        for list_entry in diff_second:
+            logger.info("   " + list_entry)
+
+    return diff_first, diff_second
+    
 
 def compare_lists(actual: List[str], expected: List[str]) -> bool:
     """Compares the two lists of strings. Returns false and prints any discrepancies if present."""
 
     # Find difference between expected and actual
-    diff = {"actual": [], "expected": []}
-    for asset in actual:
-        if asset not in expected:
-            diff["actual"].append(asset)
-    for asset in expected:
-        if asset not in actual:
-            diff["expected"].append(asset)
-
-    # Log difference between actual and expected (if any). Easier for troubleshooting
-    if diff["actual"]:
-        logger.info("The following assets were actually found but not expected:")
-        for asset in diff["actual"]:
-            logger.info("   " + asset)
-    if diff["expected"]:
-        logger.info("The following assets were expected to be found but were actually not:")
-        for asset in diff["expected"]:
-            logger.info("   " + asset)
+    diff_actual, diff_expected = get_differences_between_lists(actual, expected)
 
     # True ONLY IF both diffs are empty
-    return not diff["actual"] and not diff["expected"]
+    return not diff_actual and not diff_expected
 
 
 def delete_MoveOutput_folders(search_path: List[str] or str) -> None:
@@ -537,29 +548,37 @@ def get_paths_from_wildcard(root_path: str, wildcard_str: str) -> List[str]:
     return [os.path.join(root_path, item) for item in rel_path_list]
 
 
-def check_for_perforce():
+def check_for_perforce(error_on_no_perforce=True):
     command_list = ['p4', 'info']
     try:
         p4_output = subprocess.check_output(command_list).decode('utf-8')
     except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to call {command_list} with error {e}")
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
+        return False
+    except FileNotFoundError as e:
+        if error_on_no_perforce:
+            logger.error(f"Failed to call {command_list} in LyTestTools with error {e}")
         return False
 
     if not p4_output.startswith("User name:"):
-        logger.warning(f"Perforce not found, output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Perforce not found, output was {p4_output}")
         return False
 
     client_root_match = re.search(r"Client root: (.*)\r", p4_output)
     if client_root_match is None:
-        logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
+        if error_on_no_perforce:
+            logger.warning(f"Could not determine client root for p4 workspace. Perforce output was {p4_output}")
         return False
     else:
         # This requires the tests to be in the Perforce path that the tests run against.
         working_path = os.path.realpath(__file__).replace("\\", "/").lower()
         client_root = client_root_match.group(1).replace("\\", "/").lower()
         if not working_path.startswith(client_root):
-            logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
-                        Please run this test with a Perforce workspace that contains the test asset directory path.""")
+            if error_on_no_perforce:
+                logger.error(f"""Perforce client root '{client_root}' does not contain current test directory '{working_path}'.
+                            Please run this test with a Perforce workspace that contains the test asset directory path.""")
             return False
 
     logger.info(f"Perforce found, output was {p4_output}")
@@ -567,7 +586,9 @@ def check_for_perforce():
 
 
 def get_file_hash(filePath, hashBufferSize = 65536):
-    assert os.path.exists(filePath), f"Cannot get file hash, file at path '{filePath}' does not exist."
+    if not os.path.exists(filePath):
+        raise exceptions.LyTestToolsFrameworkException(f"Cannot get file hash, file at path '{filePath}' does not exist.")
+
     sha1 = hashlib.sha1()
     with open(filePath, 'rb') as cacheFile:
         while True:

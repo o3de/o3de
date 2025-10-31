@@ -1,0 +1,2323 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "Graph",
+    "ClassData": {
+        "m_nodes": [
+            {
+                "Key": 32,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Metallic "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{FFDB5C41-25C6-5217-BD6B-D392CBF79843}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "materials/presets/macbeth/19_white_9-5_0-05d_srgb.tif.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 33,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Emissive "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{3239444A-46F8-5709-B650-3766F17C892E}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "testdata/textures/cc0/lava004_1k_emission.jpg.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 34,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Roughness "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{97036A27-A440-5695-ACDC-3432DC3D4241}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "testdata/textures/cc0/lava004_1k_roughness.jpg.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 35,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inApplySpecularAA"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inCastShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDoubleSided"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableAreaLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableClearCoat"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableClearCoatNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": false
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableDirectionalLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableIBL"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnablePunctualLights"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEnableShadows"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inOpacityAffectsSpecularFactor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inOpacityMode"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Opaque"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inUseForwardPassIBLSpecular"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "bool",
+                                    "Value": true
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inAlpha"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inBaseColor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inClearCoatFactor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inClearCoatNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inClearCoatRoughness"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDiffuseAmbientOcclusion"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inEmissive"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inMetallic"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inNormal"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inOpacityFactor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inPositionOffset"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector3",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inRoughness"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSpecularF0Factor"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 0.0
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSpecularOcclusion"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "float",
+                                    "Value": 1.0
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{81F5EB68-12A1-47C2-BDC0-3A08A033D85A}"
+                }
+            },
+            {
+                "Key": 36,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Opacity "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{FFDB5C41-25C6-5217-BD6B-D392CBF79843}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "materials/presets/macbeth/19_white_9-5_0-05d_srgb.tif.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 37,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Normal "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{6F1A36C7-290F-5114-9063-4AB6526873ED}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "testdata/textures/cc0/lava004_1k_normal.jpg.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            },
+            {
+                "Key": 38,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inIndex"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "unsigned int",
+                                    "Value": 0
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{8E836C09-FA68-42B0-B302-CAC3FD6E4EA2}"
+                }
+            },
+            {
+                "Key": 39,
+                "Value": {
+                    "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Base Color "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "Texture "
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inSampler"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "SamplerState"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
+                                    "Value": {
+                                        "assetId": {
+                                            "guid": "{6C1CDE19-9556-5FA1-BB8C-D2348E0E736C}",
+                                            "subId": 1000
+                                        },
+                                        "assetHint": "testdata/textures/cc0/lava004_1k_color.jpg.streamingimage"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "m_inputDataSlots": [
+                        {
+                            "Key": {
+                                "m_name": "inUV"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector2",
+                                    "Value": [
+                                        0.0,
+                                        0.0
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "toolId": {
+                        "Value": 2034248906
+                    },
+                    "configId": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}"
+                }
+            }
+        ],
+        "m_connections": [
+            {
+                "m_sourceEndpoint": [
+                    36,
+                    {
+                        "m_name": "outR"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inAlpha"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    37,
+                    {
+                        "m_name": "outColor"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inNormal"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    34,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    33,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    32,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    37,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    36,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    38,
+                    {
+                        "m_name": "outUV"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    39,
+                    {
+                        "m_name": "inUV"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    33,
+                    {
+                        "m_name": "outColor"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inEmissive"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    39,
+                    {
+                        "m_name": "outColor"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inBaseColor"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    32,
+                    {
+                        "m_name": "outR"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inMetallic"
+                    }
+                ]
+            },
+            {
+                "m_sourceEndpoint": [
+                    34,
+                    {
+                        "m_name": "outR"
+                    }
+                ],
+                "m_targetEndpoint": [
+                    35,
+                    {
+                        "m_name": "inRoughness"
+                    }
+                ]
+            }
+        ],
+        "m_uiMetadata": {
+            "m_sceneMetadata": {
+                "ComponentData": {
+                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                        "$type": "SceneComponentSaveData",
+                        "ViewParams": {
+                            "Scale": 0.277335264301231,
+                            "AnchorX": -1150.232421875,
+                            "AnchorY": -1597.3446044921875
+                        }
+                    }
+                }
+            },
+            "m_nodeMetadata": [
+                {
+                    "Key": 1,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    760.0,
+                                    60.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{511B8F7B-A774-433B-A32A-AFA3CC6F16C3}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 2,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    160.0,
+                                    20.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{4C4E3947-3E98-4910-A4F4-8100D1FF5001}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 3,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    -140.0,
+                                    60.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{5D827D86-CE01-4945-ABFC-1BA9C099220C}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 4,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    140.0,
+                                    200.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{484A0950-FB28-4DD1-B818-EBEB1E584E99}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 5,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    440.0,
+                                    180.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{DB9054D5-09CB-4F61-8371-E9EBB6E4D960}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 6,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    820.0,
+                                    180.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{EBB7064B-BD95-4E7B-9535-05CF3EBE3BB1}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 7,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    420.0,
+                                    440.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{57A27AE2-8DA4-4637-BF40-3D7B30C05C5C}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 8,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    420.0,
+                                    720.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{54FC6CEA-B54B-41F3-88C3-0EA72D1C8BF3}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 9,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    1000.0,
+                                    300.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{ABCAFAC2-97E0-4782-B88F-BE7439EAF3A5}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 10,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    320.0,
+                                    320.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{3149A87E-5C99-4CCA-A350-DDBC29CBD7AD}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 11,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    600.0,
+                                    840.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{C8CB22D1-0E8C-4EDB-BB82-3C04F8D4C3E3}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 12,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    580.0,
+                                    20.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{E5ED2A23-9921-44A4-8476-B09E0707078F}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 13,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    600.0,
+                                    560.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{64F6468D-C506-4DBF-8D46-9ACB84E5CB5D}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 14,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    600.0,
+                                    300.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{B33C3CBB-9939-4045-879E-574E185BA7BB}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 15,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    600.0,
+                                    -300.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{CEF19742-95B7-4B2F-938E-12B9A154F7A0}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 16,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -120.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{4AA5A59E-5B4D-4B05-9653-91726A043F4C}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 17,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -380.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{5A10232D-8B84-43D8-A37D-E0B6C8C114AD}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 18,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -1400.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{343F1F66-E756-4051-95D5-8205B9B9FFDE}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 19,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    1060.0,
+                                    -1400.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{EBD3E289-FF2B-41EB-B451-54BBAB5B6BD1}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 20,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -880.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{45992852-143F-4246-8FC0-B562091CA6AF}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 21,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    200.0,
+                                    -1400.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{641EF7F3-9BF7-4D06-BB61-2FA1DAB429BC}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 22,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -1140.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{AA5852CE-67F5-401F-9EA4-04A128F7E5E1}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 23,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    620.0,
+                                    -620.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{99245EFF-E9F5-4F67-98D1-0AD75F5A1C50}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 24,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -1380.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{EDB618A4-2BF1-4EFA-B9AE-3EFED78A90F8}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 25,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    1220.0,
+                                    -1380.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{37F90450-025F-462B-B9B7-B5B39C2FD5C5}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 26,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -600.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{08D76420-2B98-4F9A-A4C3-4DAE742F9F9B}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 27,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -860.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{6AA77FA1-6DFD-47E9-A430-73545566DED1}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 28,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -1120.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{66FEE0B9-CE0D-4838-9573-2AD4F404B319}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 29,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -100.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{0F05B011-EA68-4780-9A04-586BDD073621}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 30,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    780.0,
+                                    -360.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{C3A3C217-7416-4355-8D47-DBAD5443FFF1}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 31,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    360.0,
+                                    -1380.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{290A2980-ACB0-4A35-B110-44219A80EC05}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 32,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    -660.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{EBC15F13-0E1D-4827-8EC3-4E0CF6CCF926}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 33,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    -160.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{EABC5211-ACBC-4D47-AB9F-2E8CFFF24BFF}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 34,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    -400.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{52B764D7-C316-4098-9786-057C513C6372}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 35,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "MaterialOutputNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    1360.0,
+                                    -1180.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{9C18F30D-AC1D-4FAB-B154-1B04726E26E4}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 36,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    100.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{CB910A2E-B3BC-4CDF-BC9C-D34D128C40BF}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 37,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    -1180.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{4210FFA4-AE85-467E-A940-7622D7BE1322}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 38,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "VertexNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    500.0,
+                                    -1180.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{7DC8AB40-6289-4C68-BCB6-7C72C8EDBA18}"
+                            }
+                        }
+                    }
+                },
+                {
+                    "Key": 39,
+                    "Value": {
+                        "ComponentData": {
+                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                "$type": "NodeSaveData"
+                            },
+                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                "$type": "GeneralNodeTitleComponentSaveData",
+                                "PaletteOverride": "TexturingNodeTitlePalette"
+                            },
+                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                "$type": "GeometrySaveData",
+                                "Position": [
+                                    920.0,
+                                    -920.0
+                                ]
+                            },
+                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                "$type": "StylingComponentSaveData"
+                            },
+                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                "$type": "PersistentIdComponentSaveData",
+                                "PersistentId": "{74F4F7A7-702F-4F51-814E-07372A49ED13}"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

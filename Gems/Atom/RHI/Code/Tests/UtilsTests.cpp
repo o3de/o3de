@@ -21,6 +21,12 @@ namespace UnitTest
         UtilsTests()
             : m_application{ AZStd::make_unique<AzFramework::Application>() }
         {
+            // Add the Atom_RHI as an active gem for the Atom_Utils test in order
+            // to have the @gemroot:Atom_RHI@ alias set
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("Atom_RHI", *settingsRegistry, AZ::IO::FileIOBase::GetInstance());
+            }
         }
 
         ~UtilsTests() override
@@ -28,7 +34,7 @@ namespace UnitTest
             m_application.reset();
         }
 
-        static constexpr const char TestDataFolder[] = "@engroot@/Gems/Atom/RHI/Code/Tests/UtilsTestsData/";
+        static constexpr const char TestDataFolder[] = "@gemroot:Atom_RHI@/Code/Tests/UtilsTestsData/";
 
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };
@@ -39,7 +45,11 @@ namespace UnitTest
         AZ::Outcome<AZStd::string, AZStd::string> outcome = AZ::RHI::LoadFileString(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
         auto& str = outcome.GetValue();
-        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        auto itr = AZStd::remove(str.begin(), str.end(), '\r');
+        if (itr != str.end())
+        {
+            str.erase(itr);
+        }
         EXPECT_EQ(AZStd::string("Hello World!\n"), str);
     }
 
@@ -50,7 +60,11 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
         AZStd::string expectedText = "Hello World!\n";
         auto& str = outcome.GetValue();
-        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        auto itr = AZStd::remove(str.begin(), str.end(), '\r');
+        if (itr != str.end())
+        {
+            str.erase(itr);
+        }
         EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), str);
     }
 

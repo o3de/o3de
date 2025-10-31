@@ -11,9 +11,11 @@
 #include <AzCore/std/typetraits/integral_constant.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/MeshFactory.h>
+
+#include <numeric>
 
 namespace EMotionFX
 {

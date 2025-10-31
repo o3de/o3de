@@ -8,12 +8,12 @@
             "PassClass": "SsaoParentPass",
             "Slots": [
                 {
-                    "Name": "LinearDepth",
+                    "Name": "Modulate",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "Modulate",
+                    "Name": "DepthLinear",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
@@ -42,7 +42,7 @@
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "LinearDepth"
+                                "Attachment": "DepthLinear"
                             }
                         }
                     ]
@@ -90,7 +90,7 @@
                             "LocalSlot": "FullResDepth",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "LinearDepth"
+                                "Attachment": "DepthLinear"
                             }
                         },
                         {
@@ -134,7 +134,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
                         },
-                        "Make Fullscreen Pass": true
+                        "FullscreenDispatch": true
                     }
                 }
             ]

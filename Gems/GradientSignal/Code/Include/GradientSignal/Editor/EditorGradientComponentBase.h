@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
@@ -64,8 +65,6 @@ namespace GradientSignal
     template<typename TComponent, typename TConfiguration>
     class EditorGradientComponentBase
         : public LmbrCentral::EditorWrappedComponentBase<TComponent, TConfiguration>
-        , protected GradientPreviewContextRequestBus::Handler
-        , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , protected LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
@@ -74,8 +73,6 @@ namespace GradientSignal
         using BaseClassType::SetDirty;
 
         AZ_RTTI((EditorGradientComponentBase, "{7C529503-AD3F-4EAB-9AB1-E4BCF8EDA114}", TComponent, TConfiguration), BaseClassType);
-
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -94,34 +91,8 @@ namespace GradientSignal
 
         AZ::u32 ConfigurationChanged() override;
 
-        // This is used by the preview so we can pass an invalid entity Id if our component is disabled
-        AZ::EntityId GetGradientEntityId() const;
-
     private:
-
-        //////////////////////////////////////////////////////////////////////////
-        // GradientPreviewContextRequestBus::Handler
-        AZ::EntityId GetPreviewEntity() const override;
-        AZ::Aabb GetPreviewBounds() const override;
-        bool GetConstrainToShape() const override;
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::EntitySelectionEvents::Bus::Handler
-        void OnSelected() override;
-        void OnDeselected() override;
-
-        AZ::u32 GetPreviewPositionVisibility() const;
-        AZ::u32 GetPreviewSizeVisibility() const;
-        AZ::u32 GetPreviewConstrainToShapeVisibility() const;
-        AZ::u32 PreviewSettingsAndSettingsVisibilityChanged() const;
-        void UpdatePreviewSettings() const;
-        AzToolsFramework::EntityIdList CancelPreviewRendering() const;
-    private:
-        AZ::EntityId m_previewEntityId;
-        AZ::Vector3 m_previewPosition = AZ::Vector3(0.0f);
-        AZ::Vector3 m_previewSize = AZ::Vector3(1.0f); //1m sq preview...arbitrary default box size in meters chosen by design 
-        bool m_constrainToShape = false;
-        AZ::EntityId m_gradientEntityId;
+        GradientPreviewer m_previewer;
     };
 
 } // namespace GradientSignal

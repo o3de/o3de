@@ -1,89 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- These are examples on how to create different kinds of nodes, by default they do not show 
-on the Script Canvas node palette, to show them, remove the following attribute from the desired 
-node:
-
-EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
--->
-
 <ScriptCanvas Include="Source/Nodes/Nodeables/ValuePointerReferenceExample.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Class Name="ReturnTypeExample"
-            QualifiedName="ScriptCanvasTesting::Nodeables::ReturnTypeExample"
-            PreferredClassName="Return Type Example"
-            Base="ScriptCanvas::Nodeable"
-            Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Examples"
-            GeneratePropertyFriend="True"
-            Namespace="None"
-            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-            Description="Example of returning by value, pointer and reference.">
-    <Input Name="Return By Value"  >
-      <Return Name="Value" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
-    </Input>
-    <Input Name="Return By Pointer"  >
-      <Return Name="Pointer" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*" />
-    </Input>
-    <Input Name="Return By Reference" >
-      <Return Name="Reference" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" />
-    </Input>
-  </Class>
-  <Class Name="BranchInputTypeExample"
-            QualifiedName="ScriptCanvasTesting::Nodeables::BranchInputTypeExample"
-            PreferredClassName="Branch Input Type Example"
-            Base="ScriptCanvas::Nodeable"
-            Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Examples"
-            GeneratePropertyFriend="True"
-            Namespace="None"
-            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-            Description="Example of branch passing as input by value, pointer and reference.">
-    <Input Name="Get Internal Vector" Description="">
-      <Return Name="Result" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
-    </Input>
-    <Input Name="Branches On Input Type" Description="" DisplayGroup="Branches On Input Type">
-      <Parameter Name="Input Type" Type="AZStd::string"/>
-      <Branch Name="By Value" Description="" DisplayGroup="Branches On Input Type">
-        <Return Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" DisplayGroup="Branches On Input Type"/>
-      </Branch>
-      <Branch Name="By Pointer" Description="" DisplayGroup="Branches On Input Type">
-        <Return Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*" DisplayGroup="Branches On Input Type"/>
-      </Branch>
-    </Input>
-  </Class>
-  <Class Name="InputTypeExample"
-            QualifiedName="ScriptCanvasTesting::Nodeables::InputTypeExample"
-            PreferredClassName="Input Type Example"
-            Base="ScriptCanvas::Nodeable"
-            Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Examples"
-            GeneratePropertyFriend="True"
-            Namespace="None"
-            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-            Description="Example of passing as input by value, pointer and reference.">
-    <Input Name="Clear By Value" Description="">
-      <Parameter Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
-    </Input>
-    <Input Name="Clear By Pointer" Description="">
-      <Parameter Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*"/>
-    </Input>
-    <Input Name="Clear By Reference" Description="">
-      <Parameter Name="Reference Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;"/>
-    </Input>
-  </Class>
-  <Class Name="PropertyExample"
-            QualifiedName="ScriptCanvasTesting::Nodeables::PropertyExample"
-            PreferredClassName="Property Example"
-            Base="ScriptCanvas::Nodeable"
-            Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Examples"
-            GeneratePropertyFriend="True"
-            Namespace="None"
-            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-            Description="Example of using properties.">
-    <Input Name="In" Description=""/>
-    <Property Name="Numbers" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
-    <Property Name="Slang" Type="ScriptCanvas::Data::StringType"/>
-    <Property Name="Position" Type="ScriptCanvas::Data::Vector3Type"/>
-  </Class>
+    <Class Name="ReturnTypeExample"
+        QualifiedName="ScriptCanvasTesting::Nodeables::ReturnTypeExample"
+        PreferredClassName="Return Type Example"
+        Category="Examples"
+        Description="Example of returning by value, pointer and reference.">
+        <Input Name="Return By Value"  >
+            <Return Name="Value" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
+        </Input>
+        <Input Name="Return By Pointer"  >
+            <Return Name="Pointer" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*" />
+        </Input>
+        <Input Name="Return By Reference" >
+            <Return Name="Reference" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" />
+        </Input>
+    </Class>
+    
+    <Class Name="BranchInputTypeExample"
+        QualifiedName="ScriptCanvasTesting::Nodeables::BranchInputTypeExample"
+        PreferredClassName="Branch Input Type Example"
+        Category="Examples"
+        Description="Example of branch passing as input by value, pointer and reference.">
+        <Input Name="Get Internal Vector" Description="">
+            <Return Name="Result" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
+        </Input>
+        <Input Name="Branches On Input Type" Description="" DisplayGroup="Branches On Input Type">
+            <Parameter Name="Input Type" Type="AZStd::string"/>
+            <Branch Name="By Value" Description="" DisplayGroup="Branches On Input Type">
+                <Return Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" DisplayGroup="Branches On Input Type"/>
+            </Branch>
+            <Branch Name="By Pointer" Description="" DisplayGroup="Branches On Input Type">
+                <Return Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*" DisplayGroup="Branches On Input Type"/>
+            </Branch>
+        </Input>
+    </Class>
+    
+    <Class Name="InputTypeExample"
+        QualifiedName="ScriptCanvasTesting::Nodeables::InputTypeExample"
+        PreferredClassName="Input Type Example"
+        Category="Examples"
+        Description="Example of passing as input by value, pointer and reference.">
+        <Input Name="Clear By Value" Description="">
+            <Parameter Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
+        </Input>
+        <Input Name="Clear By Pointer" Description="">
+            <Parameter Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*"/>
+        </Input>
+        <Input Name="Clear By Reference" Description="">
+            <Parameter Name="Reference Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;"/>
+        </Input>
+    </Class>
 </ScriptCanvas>

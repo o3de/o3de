@@ -41,7 +41,7 @@ namespace GraphCanvas
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(FocusableTextEdit, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FocusableTextEdit, AZ::SystemAllocator);
             FocusableTextEdit()
                 : m_eatEnterKey(false)
             {
@@ -114,7 +114,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(CommentTextGraphicsWidget, "{1779F401-6A9F-42A8-B4B7-F7732DBEC462}");
-        AZ_CLASS_ALLOCATOR(CommentTextGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentTextGraphicsWidget, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context) = delete;
 
         CommentTextGraphicsWidget(const AZ::EntityId& targetId);
@@ -188,7 +188,6 @@ namespace GraphCanvas
         AZStd::string        m_style;
         
         QPointF m_initialClick;
-        bool m_pressed;
 
         AZ::EntityId m_entityId;
     };

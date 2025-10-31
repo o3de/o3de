@@ -15,15 +15,15 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-    #if defined(TOOLS_SUPPORT_JASPER)
-        #include <Platform/Jasper/RHI.Builders/ShaderPlatformInterface_Jasper.h>
-    #endif
-    #if defined(TOOLS_SUPPORT_PROVO)
-        #include <Platform/Provo/RHI.Builders/ShaderPlatformInterface_Provo.h>
-    #endif
-    #if defined(TOOLS_SUPPORT_SALEM)
-        #include <Platform/Salem/RHI.Builders/ShaderPlatformInterface_Salem.h>
-    #endif
+#   if defined(TOOLS_SUPPORT_JASPER)
+#       include AZ_RESTRICTED_FILE_EXPLICIT(RHI.Builders/ShaderPlatformInterface, Jasper)
+#   endif
+#   if defined(TOOLS_SUPPORT_PROVO)
+#       include AZ_RESTRICTED_FILE_EXPLICIT(RHI.Builders/ShaderPlatformInterface, Provo)
+#   endif
+#   if defined(TOOLS_SUPPORT_SALEM)
+#       include AZ_RESTRICTED_FILE_EXPLICIT(RHI.Builders/ShaderPlatformInterface, Salem)
+#   endif
 #endif
 
 #include <Atom/RHI.Reflect/DX12/Base.h>
@@ -45,7 +45,7 @@ namespace AZ
 
         void ShaderPlatformInterfaceSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AzslShaderBuilderService", 0x09315a40));
+            dependent.push_back(AZ_CRC_CE("AzslShaderBuilderService"));
         }
 
         void ShaderPlatformInterfaceSystemComponent::Activate()

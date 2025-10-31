@@ -29,7 +29,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, EditorRandomGradientComponent::s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "GenerateRandomSeed", "Generate a new random seed")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -45,6 +45,6 @@ namespace GradientSignal
         // The random seed has to be at least 1 to be valid for this gradient type
         m_configuration.m_randomSeed = AZStd::max(rand(), 1);
 
-        return EditorGradientComponentBase::ConfigurationChanged();
+        return AZ::Crc32(EditorGradientComponentBase::ConfigurationChanged());
     }
 }

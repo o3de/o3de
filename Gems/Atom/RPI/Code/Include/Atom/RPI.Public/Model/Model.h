@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -26,14 +27,14 @@ namespace AZ
     {
         class ModelAsset;
 
-        class Model final
+        class ATOM_RPI_PUBLIC_API Model final
             : public Data::InstanceData
         {
             friend class ModelSystem;
 
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
-            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator);
 
             static Data::Instance<Model> FindOrCreate(const Data::Asset<ModelAsset>& modelAsset);
 
@@ -51,7 +52,7 @@ namespace AZ
             size_t GetLodCount() const;
 
             //! Returns the full list of Lods, where index 0 is the most detailed, and N-1 is the least.
-            AZStd::array_view<Data::Instance<ModelLod>> GetLods() const;
+            AZStd::span<const Data::Instance<ModelLod>> GetLods() const;
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;

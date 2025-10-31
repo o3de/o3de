@@ -148,14 +148,6 @@ namespace MCore
          */
         bool Intersects(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, AZ::Vector3* intersect = nullptr, float* baryU = nullptr, float* baryV = nullptr) const;
 
-        /**
-         * Perform a ray/AABB (Axis Aligned Bounding Box) intersection test.
-         * @param b The box to test with.
-         * @param intersectA If not nullptr, the closest intersection point will be stored in this vector, in case of an intersection.
-         * @param intersectB If not nullptr, the farthest intersection point will be stored in this vector, in case of an intersection.
-         * @result Returns true when an intersection occured, otherwise false. If there is no intersection, 'intersectA' and 'intersectB' won't be modified.
-         */
-        bool Intersects(const AABB& b, AZ::Vector3* intersectA = nullptr, AZ::Vector3* intersectB = nullptr) const;
 
         /**
          * Calculates the length of the ray.

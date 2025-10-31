@@ -18,8 +18,15 @@ namespace JsonSerializationTests
         AZ_RTTI(SimpleNullPointer, "{81087FE6-2C52-4FD4-8706-D1F4CB757937}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
+        SimpleNullPointer() = default;
         virtual ~SimpleNullPointer();
+        SimpleNullPointer(const SimpleNullPointer& rhs);
+        SimpleNullPointer(SimpleNullPointer&& rhs);
+        SimpleNullPointer& operator=(const SimpleNullPointer& rhs);
+        SimpleNullPointer& operator=(SimpleNullPointer&& rhs);
+
         bool Equals(const SimpleNullPointer& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<SimpleNullPointer> GetInstanceWithSomeDefaults();
@@ -34,6 +41,7 @@ namespace JsonSerializationTests
         AZ_RTTI(SimpleAssignedPointer, "{33EB4300-88C7-4006-8650-9C3AA25F17E5}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         SimpleAssignedPointer();
         SimpleAssignedPointer(const SimpleAssignedPointer& rhs);
@@ -57,6 +65,7 @@ namespace JsonSerializationTests
         AZ_RTTI(ComplexAssignedPointer, "{CB62638C-5B49-4953-89E5-F65A19E1163C}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         ComplexAssignedPointer();
         ComplexAssignedPointer(const ComplexAssignedPointer& rhs);
@@ -79,15 +88,21 @@ namespace JsonSerializationTests
         AZ_RTTI(ComplexNullInheritedPointer, "{F21CFB49-3F7C-4849-8E1F-EA337CD7D8EF}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
+        ComplexNullInheritedPointer() = default;
         virtual ~ComplexNullInheritedPointer();
-        
+        ComplexNullInheritedPointer(const ComplexNullInheritedPointer& rhs);
+        ComplexNullInheritedPointer(ComplexNullInheritedPointer&& rhs);
+        ComplexNullInheritedPointer& operator=(const ComplexNullInheritedPointer& rhs);
+        ComplexNullInheritedPointer& operator=(ComplexNullInheritedPointer&& rhs);
+
         bool Equals(const ComplexNullInheritedPointer& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<ComplexNullInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexNullInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // only used as SimpleInheritence in tests
     };
 
     struct ComplexAssignedDifferentInheritedPointer
@@ -95,6 +110,7 @@ namespace JsonSerializationTests
         AZ_RTTI(ComplexAssignedDifferentInheritedPointer, "{DCFFEDFB-300B-40FE-A787-159D627DD7DA}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         ComplexAssignedDifferentInheritedPointer();
         ComplexAssignedDifferentInheritedPointer(const ComplexAssignedDifferentInheritedPointer& rhs);
@@ -109,7 +125,7 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<ComplexAssignedDifferentInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexAssignedDifferentInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // used as multiple types in tests
     };
 
     struct ComplexAssignedSameInheritedPointer
@@ -117,6 +133,7 @@ namespace JsonSerializationTests
         AZ_RTTI(ComplexAssignedSameInheritedPointer, "{6D633C34-584C-42CD-BF6E-4FCB0C398F34}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         ComplexAssignedSameInheritedPointer();
         ComplexAssignedSameInheritedPointer(const ComplexAssignedSameInheritedPointer& rhs);
@@ -131,7 +148,7 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<ComplexAssignedSameInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexAssignedSameInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // only used as SimpleInheritence in tests
     };
 
     struct PrimitivePointerInContainer
@@ -139,6 +156,7 @@ namespace JsonSerializationTests
         AZ_RTTI(PrimitivePointerInContainer, "{8CB57BE0-371B-4712-88FD-64CA47AE81B4}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = false;
 
         AZStd::vector<int*> m_array;
 
@@ -161,6 +179,7 @@ namespace JsonSerializationTests
         AZ_RTTI(SimplePointerInContainer, "{46263461-112C-4E12-A056-63148C085B35}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         SimplePointerInContainer() = default;
         SimplePointerInContainer(const SimplePointerInContainer& rhs);
@@ -183,6 +202,7 @@ namespace JsonSerializationTests
         AZ_RTTI(InheritedPointerInContainer, "{ADADFF87-B541-4BD6-A3DB-B54A1277F2A7}");
 
         static const bool SupportsPartialDefaults = true;
+        static const bool PartialDefaultReportingIsStrict = true;
 
         InheritedPointerInContainer() = default;
         InheritedPointerInContainer(const InheritedPointerInContainer& rhs);
@@ -197,6 +217,6 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<InheritedPointerInContainer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<InheritedPointerInContainer> GetInstanceWithoutDefaults();
 
-        AZStd::vector<BaseClass*> m_array;
+        AZStd::vector<BaseClass*> m_array; 
     };
 } // namespace JsonSerializationTests

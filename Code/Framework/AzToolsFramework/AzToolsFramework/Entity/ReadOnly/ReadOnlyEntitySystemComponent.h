@@ -10,15 +10,15 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
-
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! System Component to track read-only entity registration.
     //! An entity registered as ReadOnly cannot be altered in the Editor.
-    class ReadOnlyEntitySystemComponent final
+    class AZTF_API ReadOnlyEntitySystemComponent final
         : public AZ::Component
         , private ReadOnlyEntityPublicInterface
         , private ReadOnlyEntityQueryInterface
@@ -37,15 +37,15 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
-        // ReadOnlyEntityPublicNotifications overrides ...
+        // ReadOnlyEntityPublicInterface overrides ...
         bool IsReadOnly(const AZ::EntityId& entityId) override;
-        
+
         // ReadOnlyEntityQueryInterface overrides ...
         void RefreshReadOnlyState(const EntityIdList& entityIds) override;
         void RefreshReadOnlyStateForAllEntities() override;
 
         // EditorEntityContextNotificationBus overrides ...
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
 
     private:
         void QueryReadOnlyStateForEntity(const AZ::EntityId& entityId);

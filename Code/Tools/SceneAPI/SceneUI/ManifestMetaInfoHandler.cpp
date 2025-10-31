@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/ManifestMetaInfoHandler.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
@@ -13,13 +14,14 @@
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISkinGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IAnimationGroup.h>
 
+
 namespace AZ
 {
     namespace SceneAPI
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestMetaInfoHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestMetaInfoHandler, SystemAllocator);
 
             ManifestMetaInfoHandler::ManifestMetaInfoHandler()
             {
@@ -33,9 +35,10 @@ namespace AZ
 
             void ManifestMetaInfoHandler::GetIconPath(AZStd::string& iconPath, const DataTypes::IManifestObject& target)
             {
+                // Icons for classes that don't have edit serialize contexts
                 if (target.RTTI_IsTypeOf(DataTypes::IMeshGroup::TYPEINFO_Uuid()))
                 {
-                    iconPath = ":/SceneUI/Manifest/MeshGroupIcon.png";
+                    iconPath = ":/SceneUI/Manifest/MeshGroupIcon.svg";
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkeletonGroup::TYPEINFO_Uuid()))
                 {

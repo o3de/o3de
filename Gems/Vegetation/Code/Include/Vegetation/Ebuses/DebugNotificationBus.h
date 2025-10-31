@@ -16,7 +16,7 @@
 
 namespace Vegetation
 {
-    using TimePoint = AZStd::chrono::system_clock::time_point;
+    using TimePoint = AZStd::chrono::steady_clock::time_point;
     using TimeSpan = AZStd::sys_time_t;
     using FilterReasonCount = AZStd::unordered_map<AZStd::string_view, AZ::u32>;
 

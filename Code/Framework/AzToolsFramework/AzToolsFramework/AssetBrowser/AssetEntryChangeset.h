@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,7 +29,7 @@ namespace AzToolsFramework
     {
         class AssetEntryChange;
 
-        class AssetEntryChangeset
+        class AZTF_API AssetEntryChangeset
         {
         public:
             AssetEntryChangeset(
@@ -58,11 +59,10 @@ namespace AzToolsFramework
             AZStd::atomic_bool m_fullUpdate;
             bool m_updated;
 
-            AZStd::vector<AssetEntryChange*> m_changes;
-
-            AZStd::vector<AZ::s64> m_fileIdsToAdd;
-            AZStd::vector<AZ::Uuid> m_sourceUuidsToAdd;
-            AZStd::vector<AZ::Data::AssetId> m_productAssetIdsToAdd;
+            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> m_changes;
+            AZStd::unordered_set<AZ::s64> m_fileIdsToAdd;
+            AZStd::unordered_set<AZ::Uuid> m_sourceUuidsToAdd;
+            AZStd::unordered_set<AZ::Data::AssetId> m_productAssetIdsToAdd;
 
             AZStd::string m_relativePath;
 

@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 
 #include "Debugger.h"
 #include "Messages/Notify.h"
@@ -32,7 +33,7 @@ namespace ScriptCanvas
             else if (m_state == SCDebugState_Interactive)
             {
                 Lock guard(m_msgMutex);
-                m_msgQueue.push_back(AzFramework::TmMsgPtr(aznew Message::ContinueRequest()));
+                m_msgQueue.push_back(AzFramework::RemoteToolsMessagePointer(aznew Message::ContinueRequest()));
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Debugger attached to new connection, continuing");
             }
             else
@@ -46,16 +47,20 @@ namespace ScriptCanvas
             m_activeEntityStatusDirty = true;
             m_activeGraphStatusDirty = true;
 
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::Connected(m_self));
+            auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+            if (remoteToolsInterface)
+            {
+                remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::Connected(m_self));
+            }
         }
 
-        Message::Request* ServiceComponent::FilterMessage(AzFramework::TmMsgPtr& msg)
+        Message::Request* ServiceComponent::FilterMessage(AzFramework::RemoteToolsMessagePointer& msg)
         {
-            AzFramework::TargetInfo client;
-            AzFramework::TargetManager::Bus::BroadcastResult(client, &AzFramework::TargetManager::GetTargetInfo, msg->GetSenderTargetId());
+            AzFramework::RemoteToolsEndpointInfo client =
+                AzFramework::RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::ScriptCanvasToolsKey, msg->GetSenderTargetId());
 
             // cull messages without a target match
-            if (m_client.m_info.GetNetworkId() != client.GetNetworkId())
+            if (!m_client.m_info.IsIdentityEqualTo(client))
             {
                 if (auto connection = azrtti_cast<Message::ConnectRequest*>(msg.get()))
                 {
@@ -68,10 +73,10 @@ namespace ScriptCanvas
                 }
 
                 // \todo send a connection denied message
-                // AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, sender, Message::Denied());
+                // remoteToolsInterface->SendRemoteToolsMessage(sender, Message::Denied());
                 return nullptr;
             }
-            else if (auto disconnection = azrtti_cast<Message::DisconnectRequest*>(msg.get()))
+            else if (azrtti_cast<Message::DisconnectRequest*>(msg.get()))
             {
                 DisconnectFromClient();
             }
@@ -88,7 +93,7 @@ namespace ScriptCanvas
                 while (true)
                 {
                     // the events aren't getting dispatched from another thread, so force them out here
-                    AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::DispatchMessages, k_clientRequestsMsgSlotId);
+                    // remoteToolsInterface->DispatchMessages(k_clientRequestsMsgSlotId);
 
                     // process any new ones
                     ProcessMessages();
@@ -112,7 +117,7 @@ namespace ScriptCanvas
 
         void ServiceComponent::ProcessMessages()
         {
-            AzFramework::TmMsgQueue messages;
+            AzFramework::RemoteToolsMessageQueue messages;
 
             while (true)
             {
@@ -129,7 +134,7 @@ namespace ScriptCanvas
 
                 while (!messages.empty())
                 {
-                    AzFramework::TmMsgPtr msg = *messages.begin();
+                    AzFramework::RemoteToolsMessagePointer msg = *messages.begin();
                     messages.pop_front();
 
                     if (Message::Request* request = FilterMessage(msg))
@@ -140,7 +145,25 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::OnReceivedMsg(AzFramework::TmMsgPtr msg)
+        void ServiceComponent::OnSystemTick()
+        {
+            AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                const AzFramework::ReceivedRemoteToolsMessages* messages =
+                    remoteTools->GetReceivedMessages(AzFramework::ScriptCanvasToolsKey);
+                if (messages)
+                {
+                    for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
+                    {
+                        OnReceivedMsg(msg);
+                    }
+                    remoteTools->ClearReceivedMessagesForNextTick(AzFramework::ScriptCanvasToolsKey);
+                }
+            }
+        }
+
+        void ServiceComponent::OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg)
         {
             if (!msg)
             {
@@ -168,11 +191,11 @@ namespace ScriptCanvas
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("service is rejecting the message");
                 // \todo send a connection denied message
-                // AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, sender, Message::Acknowledge(0, AZ_CRC("AccessDenied", 0xde72ce21)));
+                // remoteToolsInterface->SendRemoteToolsMessage(sender, Message::Acknowledge(0, AZ_CRC_CE("AccessDenied")));
             }
         }
 
-        void ServiceComponent::TargetLeftNetwork(AzFramework::TargetInfo info)
+        void ServiceComponent::RemoteToolsEndpointLeft(const AzFramework::RemoteToolsEndpointInfo& info)
         {
             if (m_client.m_info.IsIdentityEqualTo(info))
             {
@@ -181,27 +204,38 @@ namespace ScriptCanvas
         }
 
         void ServiceComponent::Init()
-        {}
+        {
+        }
 
         void ServiceComponent::Activate()
         {
             m_state = SCDebugState_Detached;
-            AzFramework::TmMsgBus::Handler::BusConnect(k_clientRequestsMsgSlotId);
-            AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
             ExecutionNotificationsBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
-            AzFramework::TargetContainer targets;
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::EnumTargetInfos, targets);
+            m_remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (!m_remoteTools)
+                return;
+
+            m_endpointLeftEventHandler = AzFramework::RemoteToolsEndpointStatusEvent::Handler(
+                [this](AzFramework::RemoteToolsEndpointInfo info)
+                {
+                    this->RemoteToolsEndpointLeft(info);
+                });
+            m_remoteTools->RegisterRemoteToolsEndpointLeftHandler(AzFramework::ScriptCanvasToolsKey, m_endpointLeftEventHandler);
+
+            AzFramework::RemoteToolsEndpointContainer targets;
+            m_remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
             for (auto& idAndInfo : targets)
             {
-                if (idAndInfo.second.GetStatusFlags() & AzFramework::TF_SELF)
+                if (idAndInfo.second.IsSelf())
                 {
                     m_self.m_info = idAndInfo.second;
                     SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self found!");
                 }
             }
 
-            if (!m_self.m_info.GetDisplayName())
+            if (!m_self.m_info.IsValid())
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Self NOT found!");
             }
@@ -209,13 +243,12 @@ namespace ScriptCanvas
 
         void ServiceComponent::Deactivate()
         {
+            m_remoteTools = nullptr;
             if (m_state != SCDebugState_Detached)
             {
                 //\todo DetachAll();
             }
 
-            AzFramework::TmMsgBus::Handler::BusDisconnect(k_clientRequestsMsgSlotId);
-            AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
             ExecutionNotificationsBus::Handler::BusDisconnect();
 
             {
@@ -226,17 +259,17 @@ namespace ScriptCanvas
 
         void ServiceComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasDebugService", 0x7ece424b));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasDebugService"));
         }
 
         void ServiceComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ScriptCanvasDebugService", 0x7ece424b));
+            incompatible.push_back(AZ_CRC_CE("ScriptCanvasDebugService"));
         }
 
         void ServiceComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("ScriptCanvasService", 0x41fd58f3));
+            dependent.push_back(AZ_CRC_CE("ScriptCanvasService"));
         }
 
         void ServiceComponent::Reflect(AZ::ReflectContext* context)
@@ -248,18 +281,15 @@ namespace ScriptCanvas
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ServiceComponent, AZ::Component>()
-                    ->Version(1)
-                    ;
+                serializeContext->Class<ServiceComponent, AZ::Component>()->Version(1);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<ServiceComponent>("Script Canvas Runtime Debugger", "Provides remote debugging services for Script Canvas")
+                    editContext
+                        ->Class<ServiceComponent>("Script Canvas Runtime Debugger", "Provides remote debugging services for Script Canvas")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
-                        ;
+                        ->Attribute(AZ::Edit::Attributes::Category, "Scripting");
                 }
             }
         }
@@ -316,14 +346,15 @@ namespace ScriptCanvas
                 {
                     ActiveGraphStatus graphStatus;
                     graphStatus.m_instanceCounter = 1;
-                    graphStatus.m_isObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
 
+                    graphStatus.m_isObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
                     entityStatus->m_activeGraphs.insert(AZStd::make_pair(graphInfo.m_graphIdentifier, graphStatus));
                 }
                 else
                 {
                     // We received a double activation signal for the same graph without a deactivate?
-                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Accounting error. An activated graph was already found for the entity the active list");
+                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER(
+                        "Accounting error. An activated graph was already found for the entity the active list");
                 }
             }
 
@@ -333,11 +364,14 @@ namespace ScriptCanvas
 
                 while (clientStaticEntityIter != m_client.m_script.m_staticEntities.end())
                 {
-
                     AZ::EntityId runtimeEntityId;
 
                     AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
-                    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(runtimeEntityId, m_contextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::FindLoadedEntityIdMapping, clientStaticEntityIter->first);
+                    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
+                        runtimeEntityId,
+                        m_contextId,
+                        &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::FindLoadedEntityIdMapping,
+                        clientStaticEntityIter->first);
 
                     if (runtimeEntityId == graphInfo.m_runtimeEntity)
                     {
@@ -347,7 +381,9 @@ namespace ScriptCanvas
                         {
                             auto insertResult = m_self.m_script.m_entities.insert(runtimeEntityId);
                             auto selfStaticEntityIter = m_self.m_script.m_staticEntities.find(staticEntity);
-                            AZ_Assert(selfStaticEntityIter != m_self.m_script.m_staticEntities.end(), "self scripts miss match with client scripts");
+                            AZ_Assert(
+                                selfStaticEntityIter != m_self.m_script.m_staticEntities.end(),
+                                "self scripts miss match with client scripts");
                             // Once debugger supports multiple same graphs per entity, we can directly copy over without comparing,
                             // because the component id should be hooked between editor and runtime component
                             for (auto graphIdentifier : selfStaticEntityIter->second)
@@ -395,10 +431,13 @@ namespace ScriptCanvas
 
             GraphActivation payload = graphInfo;
             payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphActivated(payload));
+            if (m_remoteTools)
+            {
+                m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::GraphActivated(payload));
+            }
         }
 
-        void ServiceComponent::GraphDeactivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphDeactivated(const GraphDeactivation& graphInfo)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphDeactivated: %s", graphInfo.ToString().data());
 
@@ -434,7 +473,8 @@ namespace ScriptCanvas
 
                 if (graphIterator == entityStatus.m_activeGraphs.end())
                 {
-                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Accounting error. A deactivated graph was not found for the entity the active list");
+                    SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER(
+                        "Accounting error. A deactivated graph was not found for the entity the active list");
                 }
                 else
                 {
@@ -450,7 +490,11 @@ namespace ScriptCanvas
 
             GraphActivation payload = graphInfo;
             payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphDeactivated(payload));
+
+            if (m_remoteTools)
+            {
+                m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::GraphDeactivated(payload));
+            }
         }
 
         bool ServiceComponent::IsAssetObserved(const AZ::Data::AssetId& assetId) const
@@ -469,7 +513,7 @@ namespace ScriptCanvas
             }
 
             return m_client.m_script.IsObservingAsset(assetId);
-#endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
+#endif // defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
         bool ServiceComponent::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
@@ -488,7 +532,7 @@ namespace ScriptCanvas
             }
 
             return m_client.m_script.IsObserving(entityId, identifier);
-#endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
+#endif // defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
         bool ServiceComponent::IsVariableObserved(const VariableId& /*variableId*/)
@@ -498,7 +542,7 @@ namespace ScriptCanvas
 #else
             // \todo finish me!
             return true;
-#endif//defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
+#endif // defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
         void ServiceComponent::NodeSignaledOutput(const OutputSignal& nodeSignal)
@@ -511,13 +555,17 @@ namespace ScriptCanvas
             NodeSignalled<InputSignal, Message::SignaledInput>(nodeSignal);
         }
 
+        void ServiceComponent::GraphSignaledReturn([[maybe_unused]] const ReturnSignal& graphSignal)
+        {
+        }
+
         void ServiceComponent::NodeStateUpdated(const NodeStateChange&)
         {
             // \todo decide whether or not this should break
-//             if (m_state == SCDebugState_Interactive)
-//             {
-//                 Interact();
-//             }
+            //             if (m_state == SCDebugState_Interactive)
+            //             {
+            //                 Interact();
+            //             }
         }
 
         void ServiceComponent::VariableChanged(const VariableChange& variableChange)
@@ -531,7 +579,10 @@ namespace ScriptCanvas
             if (m_client.m_script.m_logExecution || m_state == SCDebugState_Interactive || m_state == SCDebugState_InteractOnNext)
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Interactive: %s", variableChange.ToString().data());
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::VariableChanged(variableChange));
+                if (m_remoteTools)
+                {
+                    m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::VariableChanged(variableChange));
+                }
 
                 if (m_state == SCDebugState_Interactive || m_state == SCDebugState_InteractOnNext)
                 {
@@ -542,25 +593,22 @@ namespace ScriptCanvas
 
         void ServiceComponent::AnnotateNode(const AnnotateNodeSignal& annotateNode)
         {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::AnnotateNode(annotateNode));
+            if (m_remoteTools)
+            {
+                m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::AnnotateNode(annotateNode));
+            }
         }
 
-        void ServiceComponent::Visit(Message::AddBreakpointRequest&)
+        void ServiceComponent::Visit(Message::AddBreakpointRequest& request)
         {
             Lock lock(m_mutex);
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("The debugger has received an add breakpoint request!");
-            // translate to runtime component values
 
-            // !add the graph to the list of graphs being debugged!
-
-
-            /*
             if (m_breakpoints.find(request.m_breakpoint) == m_breakpoints.end())
             {
                 m_breakpoints.insert(request.m_breakpoint);
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::BreakpointAdded(request.m_breakpoint));
+                m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointAdded(request.m_breakpoint));
             }
-            */
         }
 
         void ServiceComponent::Visit(Message::AddTargetsRequest& request)
@@ -612,12 +660,12 @@ namespace ScriptCanvas
                 SetTargetsObserved(request.m_initialTargets.m_entities, true);
                 SetTargetsObserved(request.m_initialTargets.m_staticEntities, true);
 
-
                 m_contextId = AzFramework::EntityContextId::CreateNull();
 
                 if (!request.m_initialTargets.m_staticEntities.empty())
                 {
-                    AzFramework::GameEntityContextRequestBus::BroadcastResult(m_contextId, &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
+                    AzFramework::GameEntityContextRequestBus::BroadcastResult(
+                        m_contextId, &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
                 }
             }
         }
@@ -652,7 +700,10 @@ namespace ScriptCanvas
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("The debugger is CONTINUING TO RUN!");
                 m_state = SCDebugState_Attached;
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::Continued());
+                if (m_remoteTools)
+                {
+                    m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::Continued());
+                }
             }
             else
             {
@@ -670,7 +721,11 @@ namespace ScriptCanvas
                 RefreshActiveEntityStatus();
                 RefreshActiveGraphStatus();
 
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::AvailableScriptTargetsResult(AZStd::make_pair(m_activeEntities, m_activeGraphs)));
+                if (m_remoteTools)
+                {
+                    m_remoteTools->SendRemoteToolsMessage(
+                        m_client.m_info, Message::AvailableScriptTargetsResult(AZStd::make_pair(m_activeEntities, m_activeGraphs)));
+                }
             }
         }
 
@@ -683,7 +738,10 @@ namespace ScriptCanvas
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("sending Message::GetActiveEntitiesResult: %d", m_activeEntities.size());
 
                 RefreshActiveEntityStatus();
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::ActiveEntitiesResult(m_activeEntities));
+                if (m_remoteTools)
+                {
+                    m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::ActiveEntitiesResult(m_activeEntities));
+                }
             }
         }
 
@@ -696,7 +754,10 @@ namespace ScriptCanvas
                 SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("sending Message::GetActiveGraphsResult: %d", m_activeGraphs.size());
 
                 RefreshActiveGraphStatus();
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::ActiveGraphsResult(m_activeGraphs));
+                if (m_remoteTools)
+                {
+                    m_remoteTools->SendRemoteToolsMessage(m_client.m_info, Message::ActiveGraphsResult(m_activeGraphs));
+                }
             }
         }
 
@@ -708,12 +769,11 @@ namespace ScriptCanvas
 
             // !remove the graph from the list of graphs being debugged!
 
-
             /*
             if (m_breakpoints.find(request.m_breakpoint) == m_breakpoints.end())
             {
             m_breakpoints.insert(request.m_breakpoint);
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::BreakpointAdded(request.m_breakpoint));
+            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointAdded(request.m_breakpoint));
             }
             */
         }
@@ -731,11 +791,12 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::RuntimeError([[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier, [[maybe_unused]] const AZStd::string_view& description)
+        void ServiceComponent::RuntimeError(
+            [[maybe_unused]] const ExecutionState& executionState, [[maybe_unused]] const AZStd::string_view& description)
         {
         }
 
-        void ServiceComponent::SetTargetsObserved(const TargetEntities& targetEntities, bool /*observedState*/)
+        void ServiceComponent::SetTargetsObserved(const TargetEntities& targetEntities, [[maybe_unused]] bool observedState)
         {
             for (auto target : targetEntities)
             {
@@ -757,7 +818,8 @@ namespace ScriptCanvas
                         {
                             auto runtimeComponent = (*graphIter);
 
-                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
+                            if (graphIdentifier.m_assetId.m_guid ==
+                                runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
                             {
                                 // TODO: Gate on ComponentId
                                 // runtimeComponent->SetIsGraphObserved(observedState);
@@ -774,30 +836,33 @@ namespace ScriptCanvas
         {
             m_state = SCDebugState_Detaching;
 
-            AzFramework::TargetInfo targetInfo = m_client.m_info;
+            AzFramework::RemoteToolsEndpointInfo targetInfo = m_client.m_info;
 
             m_client = Target();
             m_self.m_script = ScriptTarget();
 
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, targetInfo, Message::Disconnected());
+            if (m_remoteTools)
+            {
+                m_remoteTools->SendRemoteToolsMessage(targetInfo, Message::Disconnected());
+            }
 
             m_state = SCDebugState_Detached;
         }
 
         void ServiceComponent::RefreshActiveEntityStatus()
         {
-            if (m_activeEntityStatusDirty)
-            {
-                m_activeEntityStatusDirty = false;
-
-                for (auto& entityPair : m_activeEntities)
-                {
-                    for (auto& graphPair : entityPair.second.m_activeGraphs)
-                    {
-                        graphPair.second.m_isObserved = IsGraphObserved(entityPair.first, graphPair.first);
-                    }
-                }
-            }
+            //             if (m_activeEntityStatusDirty)
+            //             {
+            //                 m_activeEntityStatusDirty = false;
+            //
+            //                 for (auto& entityPair : m_activeEntities)
+            //                 {
+            //                      for (auto& graphPair : entityPair.second.m_activeGraphs)
+            //                      {
+            //                          graphPair.second.m_isObserved = IsGraphObserved(entityPair.first, graphPair.first);
+            //                      }
+            //                 }
+            //             }
         }
 
         void ServiceComponent::RefreshActiveGraphStatus()
@@ -812,5 +877,5 @@ namespace ScriptCanvas
                 }
             }
         }
-    }
-}
+    } // namespace Debugger
+} // namespace ScriptCanvas

@@ -8,7 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QtGui/qstandarditemmodel.h>
+#include <QStandardItemModel>
 #include <QFileIconProvider>
 #include <QThread>
 #include <AzCore/Asset/AssetCommon.h>
@@ -17,6 +17,8 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 #endif
+
+class QRegularExpression;
 
 ///////////////////////////////////////////////////////////////////////////////
 struct DatabaseEntry
@@ -45,7 +47,7 @@ public:
     };
 
     AssetCatalogEntry() {}
-    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator);
 
     bool operator<(const QStandardItem& other) const override;
 
@@ -63,7 +65,7 @@ class AssetCatalogModel
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator);
 
     AssetCatalogModel(QObject* parent = 0);
     ~AssetCatalogModel() override;
@@ -107,7 +109,7 @@ protected:
 
     void BuildFilter(QStringList& criteriaList, AzToolsFramework::FilterOperatorType filterOperator);
     void InvalidateFilter();
-    void SetFilterRegExp(const AZStd::string& filterType, const QRegExp& regExp);
+    void SetFilterRegExp(const AZStd::string& filterType, const QRegularExpression& regExp);
     void ClearFilterRegExp(const AZStd::string& filterType = AZStd::string());
 
     AZ::Data::AssetType GetAssetType(const QString &filename) const;

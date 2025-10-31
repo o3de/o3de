@@ -41,7 +41,6 @@ namespace ScriptCanvasUnitTest
             const char* GetExecutableFolder() const override { return nullptr; }
             const char* GetBinFolder() const { return nullptr; }
             const char* GetAppRoot() override { return nullptr; }
-            AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
             void EnumerateEntities(const EntityCallback& /*callback*/) override {}
 
             // AssetBuilderBus
@@ -91,7 +90,6 @@ namespace ScriptCanvasUnitTest
             m_testHandler->Init(m_behaviorContext, m_serializeContext);
             m_testHandler->Activate();
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
             m_pluginComponent = aznew ScriptCanvasBuilder::PluginComponent();
@@ -102,7 +100,6 @@ namespace ScriptCanvasUnitTest
             m_pluginComponent->Deactivate();
             delete m_pluginComponent;
             AZ::Data::AssetManager::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
             m_testHandler->Deactivate();
             delete m_testHandler;

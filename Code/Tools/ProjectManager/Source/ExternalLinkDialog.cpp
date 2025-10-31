@@ -8,9 +8,7 @@
 
 #include <ExternalLinkDialog.h>
 #include <LinkWidget.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QDialogButtonBox>
 #include <QLabel>
@@ -32,12 +30,12 @@ namespace O3DE::ProjectManager
         setModal(true);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(30);
+        hLayout->setContentsMargins(30, 30, 30, 30);
         hLayout->setAlignment(Qt::AlignTop);
         setLayout(hLayout);
 
         QVBoxLayout* warningLayout = new QVBoxLayout();
-        warningLayout->setMargin(0);
+        warningLayout->setContentsMargins(0, 0, 0, 0);
         warningLayout->setAlignment(Qt::AlignTop);
         hLayout->addLayout(warningLayout);
 
@@ -48,7 +46,7 @@ namespace O3DE::ProjectManager
         warningLayout->addStretch();
 
         QVBoxLayout* layout = new QVBoxLayout();
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->setAlignment(Qt::AlignTop);
         hLayout->addLayout(layout);
 
@@ -62,11 +60,10 @@ namespace O3DE::ProjectManager
         QLabel* bodyLabel = new QLabel(tr("If you trust this source, you can proceed to this link, or click \"Cancel\" to return."));
         layout->addWidget(bodyLabel);
 
-        // Don't actually set linkUrl we are just using LinkLabel superficially here
-        LinkLabel* linkLabel = new LinkLabel(url.toString(), {}, 12);
+        QLabel* linkLabel = new QLabel(url.toString());
+        linkLabel->setObjectName("externalLink");
+        linkLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
         layout->addWidget(linkLabel);
-
-        layout->addSpacing(40);
 
         QCheckBox* skipDialogCheckbox = new QCheckBox(tr("Do not show this again"));
         layout->addWidget(skipDialogCheckbox);
@@ -80,6 +77,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* acceptButton = dialogButtons->addButton(tr("Proceed"), QDialogButtonBox::ApplyRole);
+        acceptButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(acceptButton, &QPushButton::clicked, this, &QDialog::accept);
@@ -87,12 +85,6 @@ namespace O3DE::ProjectManager
 
     void ExternalLinkDialog::SetSkipDialogSetting(bool state)
     {
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            QString settingsKey = GetExternalLinkWarningKey();
-            settingsRegistry->Set(settingsKey.toStdString().c_str(), state);
-            SaveProjectManagerSettings();
-        }
+        SettingsInterface::Get()->Set(ISettings::ExternalLinkWarningKey, state);
     }
 } // namespace O3DE::ProjectManager

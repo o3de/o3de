@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -28,7 +29,7 @@ namespace Physics
 namespace AzPhysics
 {
     //! Dynamic rigid body.
-    struct RigidBody
+    struct AZF_API RigidBody
         : public SimulatedBody
     {
     public:
@@ -39,12 +40,15 @@ namespace AzPhysics
 
         virtual void AddShape(AZStd::shared_ptr<Physics::Shape> shape) = 0;
         virtual void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) = 0;
-        virtual AZ::u32 GetShapeCount() { return 0; }
-        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]]AZ::u32 index) { return nullptr; }
+        virtual AZ::u32 GetShapeCount() const { return 0; }
+        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) { return nullptr; }
+        virtual AZStd::shared_ptr<const Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) const { return nullptr; }
 
         virtual AZ::Vector3 GetCenterOfMassWorld() const = 0;
         virtual AZ::Vector3 GetCenterOfMassLocal() const = 0;
 
+        virtual AZ::Matrix3x3 GetInertiaWorld() const = 0;
+        virtual AZ::Matrix3x3 GetInertiaLocal() const = 0;
         virtual AZ::Matrix3x3 GetInverseInertiaWorld() const = 0;
         virtual AZ::Matrix3x3 GetInverseInertiaLocal() const = 0;
 

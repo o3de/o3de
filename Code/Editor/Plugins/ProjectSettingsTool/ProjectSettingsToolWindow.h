@@ -16,6 +16,8 @@
 #include "ProjectSettingsSerialization.h"
 #include "ValidatorBus.h"
 
+#include <AzCore/Math/Guid.h>
+
 #include <QProcess>
 #include <QScopedPointer>
 #include <QWidget>
@@ -46,6 +48,7 @@ namespace ProjectSettingsTool
         BaseSettings base;
         AndroidSettings android;
         IosSettings ios;
+        WindowsSettings windows;
     };
 
     // Main window for Project Settings tool
@@ -149,9 +152,6 @@ namespace ProjectSettingsTool
 
         AZStd::string m_projectRoot;
         AZStd::string m_projectName;
-
-        // Used to initialize the settings container's pLists
-        ProjectSettingsContainer::PlistInitVector m_plistsInitVector;
 
         // Container to manage settings files per platform
         AZStd::unique_ptr<ProjectSettingsContainer> m_settingsContainer;

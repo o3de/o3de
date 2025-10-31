@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(BloomComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::BloomComponentConfig, "{23545754-0FAE-4220-99AF-0AA0045F4D8D}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

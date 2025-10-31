@@ -1,0 +1,36 @@
+{
+    "Type": "JsonSerialization",
+    "Description": "This is the pass template that renders the sky volume LUT",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyVolumeLUTTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "SkyTransmittanceLUTInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_transmittanceLUT"
+                },
+                {
+                    "Name": "SkyVolumeLUTOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_skyVolumeLUTOutput"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ThreadCountX": "32",
+                "ThreadCountY": "32",
+                "ThreadCountZ": "32",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/SkyAtmosphere/SkyVolumeLUT.shader"
+                },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

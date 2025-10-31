@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/BuilderSettings.h>
 #include <AzCore/base.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/set.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 
 #include <QDateTime>
 #include <QFileSystemWatcher>
@@ -47,7 +47,7 @@ namespace ImageProcessingAtom
 
     public:
         AZ_TYPE_INFO(BuilderSettingManager, "{8E95726D-4E3A-446C-99A6-D02863640EAC}");
-        AZ_CLASS_ALLOCATOR(BuilderSettingManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderSettingManager, AZ::SystemAllocator);
         
         static BuilderSettingManager* Instance();
         // life cycle management:
@@ -102,6 +102,19 @@ namespace ImageProcessingAtom
         //! Otherwise, the preset's file path can be retrieved in GetPreset() function
         AZStd::vector<AZStd::string> GetPossiblePresetPaths(const PresetName& presetName) const;
 
+        //! Extract the file mask of a file path
+        AZStd::string GetFileMask(AZStd::string_view imageFilePath) const;
+
+        //! Return the default opaque preset name
+        PresetName GetDefaultPreset() const;
+
+        //! Return the default alpha preset name
+        PresetName GetDefaultAlphaPreset() const;
+
+        //! Return all preset names associated with this file mask
+        AZStd::vector<PresetName> GetPresetsForFileMask(const FileMask& fileMask) const;
+
+        //! Return true if the preset name is valid
         bool IsValidPreset(PresetName presetName) const;
 
         bool DoesSupportPlatform(AZStd::string_view platformId);
@@ -112,7 +125,7 @@ namespace ImageProcessingAtom
         static const PlatformName s_defaultPlatform;
 
         // The relative folder where the default image builder configuration files (builder setting, presets) are. 
-        static const char* s_defaultConfigRelativeFolder;
+        static const char* s_defaultConfigFolder;
         // The relative folder where project's image builder configuration files are
         static const char* s_projectConfigRelativeFolder;
         // Builder setting file name

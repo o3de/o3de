@@ -58,24 +58,38 @@ namespace AZ
             AZStd::unordered_set<AZ::RPI::View*> allSceneViews;
             for (const AZ::EntityId& cameraEntityId : cameraEntityList)
             {
-                // Get the view pointer associated to each camera entity
-                AZ::RPI::ViewPtr view = nullptr;
-                AZ::RPI::ViewProviderBus::EventResult(
-                    view,
-                    cameraEntityId,
-                    &AZ::RPI::ViewProvider::GetView
-                );
 
-                if (view != nullptr)
+                for (uint32_t i = 0; i < AZ::RPI::MaxViewTypes; i++)
                 {
-                    allSceneViews.insert(view.get());
+                    if (i == AZ::RPI::DefaultViewType)
+                    {
+                        // Get the view pointer associated to each camera entity
+                        AZ::RPI::ViewPtr view = nullptr;
+                        AZ::RPI::ViewProviderBus::EventResult(view, cameraEntityId, &AZ::RPI::ViewProvider::GetView);
+
+                        if (view != nullptr)
+                        {
+                            allSceneViews.insert(view.get());
+                        }
+                    }
+                    else
+                    {
+                        AZ::RPI::ViewPtr stereoscopicView = nullptr;
+                        AZ::RPI::ViewProviderBus::EventResult(
+                            stereoscopicView, cameraEntityId, &AZ::RPI::ViewProvider::GetStereoscopicView, static_cast<AZ::RPI::ViewType>(i));
+
+                        if (stereoscopicView != nullptr)
+                        {
+                            allSceneViews.insert(stereoscopicView.get());
+                        }
+                    }
                 }
             }
 
             // Add the current view which can potentially be the editor view
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            auto currentView = atomViewportRequests->GetCurrentView(contextName);
+            auto currentView = atomViewportRequests->GetCurrentViewGroup(contextName)->GetView();
             if (IsEditorView(currentView))
             {
                 allSceneViews.insert(currentView.get());
@@ -105,9 +119,12 @@ namespace AZ
             }
 
             // copy cameraToBlendWeight data to settings
-            m_postProcessInterface = m_featureProcessorInterface->GetOrCreateSettingsInterface(m_entityId);
-            m_postProcessInterface->CopyViewToBlendWeightSettings(perViewBlendWeights);
-            m_postProcessInterface->OnConfigChanged();
+            if (m_postProcessInterface)
+            {
+                m_postProcessInterface = m_featureProcessorInterface->GetOrCreateSettingsInterface(m_entityId);
+                m_postProcessInterface->CopyViewToBlendWeightSettings(perViewBlendWeights);
+                m_postProcessInterface->OnConfigChanged();
+            }
         }
 
         void PostFxLayerComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -136,7 +153,7 @@ namespace AZ
 
         void PostFxLayerComponentController::OnEntityTagRemoved(const AZ::EntityId& entityId)
         {
-            m_taggedCameraEntities.erase(entityId);
+            m_taggedCameraEntities.erase(entityId);  
         }
 
         void PostFxLayerComponentController::OnCameraAdded(const AZ::EntityId& cameraId)

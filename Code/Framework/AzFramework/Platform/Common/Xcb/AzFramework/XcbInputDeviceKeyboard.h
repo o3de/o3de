@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/XcbEventHandler.h>
@@ -12,6 +13,7 @@
 
 #include <xcb/xcb.h>
 #include <xkbcommon/xkbcommon.h>
+#include <xcb/xcb_keysyms.h>
 
 struct xcb_xkb_state_notify_event_t;
 
@@ -22,10 +24,11 @@ namespace AzFramework
         , public XcbEventHandlerBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator);
 
         using InputDeviceKeyboard::Implementation::Implementation;
         XcbInputDeviceKeyboard(InputDeviceKeyboard& inputDevice);
+        ~XcbInputDeviceKeyboard() override;
 
         bool IsConnected() const override;
 
@@ -35,6 +38,7 @@ namespace AzFramework
         void TickInputDevice() override;
 
         void HandleXcbEvent(xcb_generic_event_t* event) override;
+        void ResetStoredInputStates() override;
 
     private:
         [[nodiscard]] const InputChannelId* InputChannelFromKeyEvent(xcb_keycode_t code) const;
@@ -50,5 +54,7 @@ namespace AzFramework
         uint8_t m_xkbEventCode{0};
         bool m_initialized{false};
         bool m_hasTextEntryStarted{false};
+        xcb_connection_t* m_connection = nullptr;
+        AZStd::array<uint8_t, 32> m_lastKeysStates;
     };
 } // namespace AzFramework

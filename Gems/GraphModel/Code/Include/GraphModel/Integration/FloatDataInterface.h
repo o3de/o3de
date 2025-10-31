@@ -9,7 +9,7 @@
 #pragma once
 
 // Graph Canvas
-#include <GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h>
+#include <GraphCanvas/Components/NodePropertyDisplay/NumericDataInterface.h>
 
 // Graph Model
 #include <GraphModel/Model/Slot.h>
@@ -17,25 +17,21 @@
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing float property widgets in nodes.
-    class FloatDataInterface
-        : public GraphCanvas::NumericDataInterface
+    class FloatDataInterface : public GraphCanvas::NumericDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator);
 
         FloatDataInterface(GraphModel::SlotPtr slot);
         ~FloatDataInterface() = default;
-        
+
         double GetNumber() const override;
         void SetNumber(double value) override;
-
-        int GetDecimalPlaces() const override;
-        int GetDisplayDecimalPlaces() const override;
 
         double GetMin() const override;
         double GetMax() const override;
 
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
-    };  
-}
+    };
+} // namespace GraphModelIntegration

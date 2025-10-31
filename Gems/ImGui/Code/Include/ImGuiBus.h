@@ -13,6 +13,7 @@
 
 // Forward Declares
 struct ImVec2;
+struct ImDrawData;
 
 namespace ImGui
 {
@@ -22,8 +23,7 @@ namespace ImGui
     enum class DisplayState
     {
         Hidden,
-        Visible,
-        VisibleNoMouse
+        Visible
     };
 
     // Notes:   LockToResolution - Lock ImGui Render to a supplied resolution, regardless of LY Render Resolution
@@ -74,10 +74,8 @@ namespace ImGui
 
         static const char* GetUniqueName() { return "IImGuiManager"; }
 
-        virtual DisplayState GetEditorWindowState() const = 0;
-        virtual void SetEditorWindowState(DisplayState state) = 0;
-        virtual DisplayState GetClientMenuBarState() const = 0;
-        virtual void SetClientMenuBarState(DisplayState state) = 0;  
+        virtual DisplayState GetDisplayState() const = 0;
+        virtual void SetDisplayState(DisplayState state) = 0;  
         virtual bool IsControllerSupportModeEnabled(ImGuiControllerModeFlags::FlagType controllerMode) const = 0;
         virtual void EnableControllerSupportMode(ImGuiControllerModeFlags::FlagType controllerMode, bool enable) = 0;
         virtual void SetControllerMouseSensitivity(float sensitivity) = 0;
@@ -91,9 +89,10 @@ namespace ImGui
         virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void RestoreRenderWindowSizeToDefault() = 0;
         virtual void ToggleThroughImGuiVisibleState() = 0;
+        virtual void ToggleToImGuiVisibleState(DisplayState state) = 0;
         virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
         virtual float GetDpiScalingFactor() const = 0;
-        virtual void Render() = 0;
+        virtual ImDrawData* GetImguiDrawData() = 0;
 
         using ImGuiSetEnabledEvent = AZ::Event<bool>;
         ImGuiSetEnabledEvent m_setEnabledEvent;

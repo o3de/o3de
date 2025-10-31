@@ -7,30 +7,31 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/Component/Component.h>
 
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    class ATOM_RHI_REFLECT_API ReflectSystemComponent
+        : public AZ::Component
     {
-        class ReflectSystemComponent
-            : public AZ::Component
-        {
-        public:
-            ReflectSystemComponent() = default;
-            virtual ~ReflectSystemComponent() = default;
-            AZ_COMPONENT(ReflectSystemComponent, "{5FC0BA8B-C6B9-4E7A-9C47-589373291F6A}");
+    public:
+        ReflectSystemComponent() = default;
+        virtual ~ReflectSystemComponent() = default;
+        AZ_COMPONENT(ReflectSystemComponent, "{5FC0BA8B-C6B9-4E7A-9C47-589373291F6A}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            // Optional reflection to support save/load named enums using json serializer
-            static void ReflectNamedEnums(AZ::ReflectContext* context);
+        // Optional reflection to support save/load named enums using json serializer
+        static void ReflectNamedEnums(AZ::ReflectContext* context);
 
-        private:
-            void Activate() override {}
-            void Deactivate() override {}
-        };
-    }
+    private:
+        void Activate() override {}
+        void Deactivate() override {}
+    };
 }

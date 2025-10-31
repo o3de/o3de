@@ -9,6 +9,9 @@
 #include "Core.h"
 #include "ExecutionNotificationsBus.h"
 
+#include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
+
 namespace ScriptCanvas
 {
     void ReflectExecutionBusArguments(AZ::ReflectContext* context)
@@ -20,10 +23,15 @@ namespace ScriptCanvas
             NamedSlotId::Reflect(context);
 
             serializeContext->Class<GraphIdentifier>()
-
                 ->Version(0)
                 ->Field("uniqueIdentifier", &GraphIdentifier::m_componentId)
                 ->Field("assetId", &GraphIdentifier::m_assetId)
+                ;
+
+            serializeContext->Class<GraphInfo>()
+                ->Version(0)
+                ->Field("graphIdentifier", &GraphInfo::m_graphIdentifier)
+                ->Field("runtimeEntity", &GraphInfo::m_runtimeEntity)
                 ;
 
             serializeContext->Class<ActiveGraphStatus>()
@@ -35,12 +43,6 @@ namespace ScriptCanvas
                 ->Version(0)
                 ->Field("NamedEntityId", &ActiveEntityStatus::m_namedEntityId)
                 ->Field("ActiveGraphs", &ActiveEntityStatus::m_activeGraphs)
-                ;
-
-            serializeContext->Class<GraphInfo>()
-                ->Version(0)
-                ->Field("runtimeEntityId", &GraphInfo::m_runtimeEntity)
-                ->Field("graphIdentifier", &GraphInfo::m_graphIdentifier)
                 ;
 
             serializeContext->Class<DatumValue>()
@@ -96,6 +98,7 @@ namespace ScriptCanvas
                 ;
 
             OutputSignal::Reflect(context);
+            ReturnSignal::Reflect(context);
             VariableChange::Reflect(context);
         }
     }
@@ -111,7 +114,7 @@ namespace ScriptCanvas
 
     AZStd::string ActivationInfo::ToString() const
     {
-        return AZStd::string::format("Entity: %s, Graph: %s, Variables: %s", m_runtimeEntity.ToString().data(), GraphInfo::ToString().data(), ScriptCanvas::ToString(m_variableValues).data());
+        return AZStd ::string::format("Graph: %s, Variables: %s", GraphInfo::ToString().data(), ScriptCanvas::ToString(m_variableValues).data());
     }
 
     ///////////////
@@ -150,11 +153,6 @@ namespace ScriptCanvas
     ExecutionThreadBeginning::ExecutionThreadBeginning()
     {}
 
-    LoggableEvent* ExecutionThreadBeginning::Duplicate() const
-    {
-        return aznew ExecutionThreadBeginning(*this);
-    }
-
     Timestamp ExecutionThreadBeginning::GetTimestamp() const
     {
         return m_timestamp;
@@ -185,28 +183,41 @@ namespace ScriptCanvas
         return AZStd::string::format("Asset: %s, ComponentId: %llu", m_assetId.ToString<AZStd::string>().data(), m_componentId);
     }
 
+    GraphInfo::GraphInfo(ExecutionStateWeakConstPtr executionState)
+    {
+        const auto userData = AZStd::any_cast<const RuntimeComponentUserData>(&executionState->GetUserData());
+        if (!userData)
+        {
+            AZ_Error("GraphInfo", false, "Failed to get user data from graph. Constructed with invalid values");
+            return;
+        }
+
+        const GraphIdentifier graphIdentifier(executionState->GetAssetId(), userData->component.GetId());
+        m_graphIdentifier = graphIdentifier;
+        m_runtimeEntity = userData->entity;
+    }
+
+    GraphInfo::GraphInfo(const NamedActiveEntityId& runtimeEntity, const GraphIdentifier& graphIdentifier)
+        : m_runtimeEntity(runtimeEntity)
+        , m_graphIdentifier(graphIdentifier)
+    {
+    }
+
     bool GraphInfo::operator==(const GraphInfo& other) const
     {
-        return m_runtimeEntity == other.m_runtimeEntity
-            && m_graphIdentifier == other.m_graphIdentifier;
+        return m_graphIdentifier == other.m_graphIdentifier;
     }
 
     AZStd::string GraphInfo::ToString() const
     {
-        return AZStd::string::format("Entity: %s, %s", m_runtimeEntity.ToString().data(), m_graphIdentifier.ToString().data());
+        return AZStd::string::format("GraphIdentifier: %s", m_graphIdentifier.ToString().data());
     }
 
     NodeStateChange::NodeStateChange()
     {}
 
-    LoggableEvent* NodeStateChange::Duplicate() const
-    {
-        return aznew NodeStateChange(*this);
-    }
-
     AZStd::string NodeStateChange::ToString() const
     {
-        // \todo I think....this should get...cut...it's not actually a script canvas level feature
         return "NodeStateChange";
     }
 
@@ -248,11 +259,6 @@ namespace ScriptCanvas
         , m_annotation(annotation)
         , m_assetNodeId(assetId)
     {
-    }
-
-    LoggableEvent* AnnotateNodeSignal::Duplicate() const
-    {
-        return aznew AnnotateNodeSignal((*this));
     }
 
     AZStd::string AnnotateNodeSignal::ToString() const

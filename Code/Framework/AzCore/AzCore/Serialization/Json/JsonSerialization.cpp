@@ -89,6 +89,14 @@ namespace AZ
         }
     } // namespace JsonSerializationInternal
 
+
+    // RegisteredReflectionContextResult struct boolean conversion implementation
+    RegisteredReflectionContextResult::operator bool() const
+    {
+        // A positive value indicates that the type is reflected with at least one reflection context
+        return m_reflectContextValue > RegisteredReflectionContext::None;
+    }
+
     JsonSerializationResult::ResultCode JsonSerialization::ApplyPatch(
         rapidjson::Value& target, rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch, JsonMergeApproach approach,
         const JsonApplyPatchSettings& settings)
@@ -442,6 +450,44 @@ namespace AZ
         settings.m_resolveFlags = ImportTracking::None;
 
         return JsonImportResolver::RestoreImports(jsonDoc, allocator, settings);
+    }
+
+    RegisteredReflectionContextResult JsonSerialization::IsTypeSerializable(const AZ::TypeId& typeId, JsonSerializerSettings settings)
+    {
+        auto componentApplicationInterface = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (settings.m_registrationContext == nullptr)
+        {
+            // Look up the JSON registration context in the ComponentApplication interface if not supplied
+            settings.m_registrationContext =
+                componentApplicationInterface != nullptr ? componentApplicationInterface->GetJsonRegistrationContext() : nullptr;
+        }
+
+        // Check if the typeID is registered with the JSON Registration Context first
+        const BaseJsonSerializer* jsonSerializer{ settings.m_registrationContext != nullptr
+                                            ? settings.m_registrationContext->GetSerializerForType(typeId)
+                                            : nullptr };
+        if (jsonSerializer != nullptr)
+        {
+            return { RegisteredReflectionContext::JsonRegistrationContext };
+        }
+
+        if (settings.m_serializeContext == nullptr)
+        {
+            // Look up the serialize context in the ComponentApplication interface if not supplied
+            settings.m_serializeContext =
+                componentApplicationInterface != nullptr ? componentApplicationInterface->GetSerializeContext() : nullptr;
+        }
+
+        // Next check if the type is registered with the SerializeContext
+        const SerializeContext::ClassData* classData{ settings.m_serializeContext != nullptr
+                                                          ? settings.m_serializeContext->FindClassData(typeId)
+                                                          : nullptr };
+        if (classData != nullptr)
+        {
+            return { RegisteredReflectionContext::SerializeContext };
+        }
+
+        return { RegisteredReflectionContext::None };
     }
 
     JsonSerializationResult::ResultCode JsonSerialization::DefaultIssueReporter(AZStd::string& scratchBuffer,

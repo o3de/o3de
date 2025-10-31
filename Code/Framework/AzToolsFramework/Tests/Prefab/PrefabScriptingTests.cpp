@@ -48,11 +48,43 @@ namespace UnitTest
         }
     };
 
+    TEST_F(PrefabScriptingTest, CreatePrefabTemplate_GeneratesComponentsWithTypeNamesAsSerializedIdentifiers)
+    {
+        AZ::EntityId entityId;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(entityId, &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity, "test");
+        TemplateId templateId1;
+        PrefabSystemScriptingBus::BroadcastResult(templateId1, &PrefabSystemScriptingBus::Events::CreatePrefabTemplate, AZStd::vector{ entityId }, "test.prefab");
+
+        auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+
+        auto instance1 = prefabSystemComponentInterface->InstantiatePrefab(templateId1);
+
+        // Clear all templates to reset the system
+        prefabSystemComponentInterface->RemoveAllTemplates();
+
+        TemplateId templateId2;
+        PrefabSystemScriptingBus::BroadcastResult(templateId2, &PrefabSystemScriptingBus::Events::CreatePrefabTemplate, AZStd::vector{ entityId }, "test.prefab");
+
+        auto instance2 = prefabSystemComponentInterface->InstantiatePrefab(templateId2);
+
+        auto referenceWrapper1 = instance1->GetContainerEntity();
+        auto referenceWrapper2 = instance2->GetContainerEntity();
+
+        ASSERT_TRUE(referenceWrapper1);
+        ASSERT_TRUE(referenceWrapper2);
+
+        auto transformComponent1 = referenceWrapper1->get().FindComponent<AzToolsFramework::Components::TransformComponent>();
+        auto transformComponent2 = referenceWrapper2->get().FindComponent<AzToolsFramework::Components::TransformComponent>();
+
+        EXPECT_EQ(transformComponent1->GetSerializedIdentifier(), transformComponent1->RTTI_GetTypeName());
+        EXPECT_EQ(transformComponent2->GetSerializedIdentifier(), transformComponent1->RTTI_GetTypeName());
+    }
+
     TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab)
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-        
+
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
@@ -76,7 +108,7 @@ namespace UnitTest
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-        
+
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
@@ -99,7 +131,7 @@ namespace UnitTest
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-        
+
         sc.BindTo(behaviorContext);
         AZ_TEST_START_TRACE_SUPPRESSION;
         sc.Execute(R"LUA(
@@ -119,7 +151,7 @@ namespace UnitTest
     {
         AZ::ScriptContext sc;
         auto behaviorContext = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->GetBehaviorContext();
-        
+
         sc.BindTo(behaviorContext);
         sc.Execute(R"LUA(
             my_id = EntityUtilityBus.Broadcast.CreateEditorReadyEntity("test")
@@ -132,7 +164,7 @@ namespace UnitTest
                 g_globalPrefabString = my_result:GetValue()
             end
             )LUA");
-        
+
         auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
         prefabSystemComponentInterface->RemoveAllTemplates();
 
@@ -169,5 +201,5 @@ namespace UnitTest
 
         g_globalPrefabString.set_capacity(0); // Free all memory
     }
-    
+
 }

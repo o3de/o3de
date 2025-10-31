@@ -57,7 +57,7 @@ if settings.DCCSI_DEV_MODE:
 try:
     azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
     params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
-    params is not None and params.mainWindowId is not 0
+    params is not None and params.mainWindowId != 0
     from PySide2 import QtWidgets
 except Exception as e:
     _LOGGER.error(f'Pyside not available, exception: {e}')
@@ -118,7 +118,7 @@ def clicked_launch_sub_builder():
         print(debug_msg)
         _LOGGER.debug(debug_msg)
 
-    _SUB_BUILDER_PATH = Path(settings.DCCSIG_PATH,
+    _SUB_BUILDER_PATH = Path(settings.PATH_DCCSIG,
                              'SDK',
                              'Substance',
                              'builder')

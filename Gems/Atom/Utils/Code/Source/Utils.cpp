@@ -12,37 +12,25 @@ namespace AZ
 {
     namespace Render
     {
-        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::Buffer> buffer, const void* data, size_t dataSize)
+        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::DeviceBuffer> buffer, const void* data, size_t dataSize)
         {
             // Map the buffer, copy data to the mapped pointer, and unmap it.
+            RHI::DeviceBufferMapRequest mapRequest(*buffer, 0, dataSize);
+            RHI::DeviceBufferMapResponse response;
+            RHI::DeviceBufferPool* bufferPool = static_cast<RHI::DeviceBufferPool*>(buffer->GetPool());
+            RHI::ResultCode resultCode = bufferPool->MapBuffer(mapRequest, response);
 
-            if (dataSize > buffer->GetDescriptor().m_byteCount)
+            if (resultCode != RHI::ResultCode::Success)
             {
-                AZ_Error("AZ::Render::WriteToBuffer", false, "Unable to map buffer %s, provided data is too big.", buffer->GetName().GetCStr());
                 return AZ::Failure();
             }
-
-            if (dataSize == 0)
-            {
-                AZ_Warning("AZ::Render::WriteToBuffer", false, "Provided data was empty, no data was written to the buffer.");
-                return AZ::Failure();
-            }
-
-            RHI::BufferMapRequest mapRequest(*buffer, 0, dataSize);
-            RHI::BufferMapResponse response;
-            RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
-            bufferPool->MapBuffer(mapRequest, response);
 
             if (response.m_data)
             {
                 memcpy(response.m_data, data, dataSize);
                 bufferPool->UnmapBuffer(*buffer);
             }
-            else
-            {
-                AZ_Error("AZ::Render::WriteToBuffer", false, "Unable to map buffer: %s, map request failed.", buffer->GetName().GetCStr());
-                return AZ::Failure();
-            }
+
             return AZ::Success();
         }
     } // namespace Render

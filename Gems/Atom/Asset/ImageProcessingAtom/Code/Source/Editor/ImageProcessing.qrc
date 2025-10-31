@@ -1,0 +1,11 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file alias="arrow_left-default.svg">../../Icons/arrow_left-default.svg</file>
+    <file alias="arrow_right-default.svg">../../Icons/arrow_right-default.svg</file>
+    <file alias="question.svg">../../Icons/question.svg</file>
+    <file alias="refresh.svg">../../Icons/refresh.svg</file>
+    <file alias="refresh-active.svg">../../Icons/refresh-active.svg</file>
+    <file alias="warning.svg">../../Icons/warning.svg</file>
+    <file alias="info.svg">../../Icons/info.svg</file>
+  </qresource>
+</RCC>

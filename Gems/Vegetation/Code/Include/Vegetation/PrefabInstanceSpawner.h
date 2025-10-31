@@ -23,7 +23,7 @@ namespace Vegetation
     {
     public:
         AZ_RTTI(PrefabInstanceSpawner, "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}", InstanceSpawner);
-        AZ_CLASS_ALLOCATOR(PrefabInstanceSpawner, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabInstanceSpawner, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         PrefabInstanceSpawner();

@@ -13,4 +13,7 @@ namespace AZStd
 {
     using std::is_integral;
     using std::is_integral_v;
+
+    template<class T>
+    /*concept*/ constexpr bool integral = is_integral_v<T>;
 }

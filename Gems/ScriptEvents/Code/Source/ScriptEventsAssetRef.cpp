@@ -99,7 +99,7 @@ namespace ScriptEvents
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    void ScriptEventsAssetRef::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventsAssetRef::OnAssetReady([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         if (ScriptEventsAsset* scriptEventAsset = m_asset.GetAs<ScriptEventsAsset>())
         {
@@ -120,16 +120,5 @@ namespace ScriptEvents
     void ScriptEventsAssetRef::OnAssetUnloaded(
         [[maybe_unused]] const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetType assetType)
     {
-        if (ScriptEventsAsset* ebusAsset = m_asset.GetAs<ScriptEventsAsset>())
-        {
-            bool isRegistered = false;
-            // ScriptEventsLegacy::RegistrationRequestBus::BroadcastResult(isRegistered,
-            // &ScriptEventsLegacy::RegistrationRequestBus::Events::IsBusRegistered, ebusAsset->m_scriptEventsDefinition.m_name);
-            if (isRegistered)
-            {
-                // ScriptEventsLegacy::RegistrationRequestBus::Broadcast(&ScriptEventsLegacy::RegistrationRequestBus::Events::Unregister,
-                // ebusAsset->m_scriptEventsDefinition.m_name);
-            }
-        }
     }
 } // namespace ScriptEvents

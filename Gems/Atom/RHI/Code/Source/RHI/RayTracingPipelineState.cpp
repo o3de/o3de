@@ -8,143 +8,130 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    DeviceRayTracingPipelineStateDescriptor RayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
+        int deviceIndex) const
     {
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::Build()
+        AZ_Assert(m_pipelineState, "No PipelineState available\n");
+
+        DeviceRayTracingPipelineStateDescriptor descriptor;
+
+        descriptor.m_configuration = m_configuration;
+        descriptor.m_shaderLibraries = m_shaderLibraries;
+        descriptor.m_hitGroups = m_hitGroups;
+
+        if (m_pipelineState)
         {
-            return this;
+            descriptor.m_pipelineState = m_pipelineState->GetDevicePipelineState(deviceIndex).get();
         }
 
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
-        {
-            AZ_Assert(IsTopLevelBuildContext(), "MaxPayloadSize can only be added to the top level of the RayTracingPipelineState");
-            m_configuration.m_maxPayloadSize = maxPayloadSize;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
-        {
-            AZ_Assert(IsTopLevelBuildContext(), "MaxAttributeSize can only be added to the top level of the RayTracingPipelineState");
-            m_configuration.m_maxAttributeSize = maxAttributeSize;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxRecursionDepth(uint32_t maxRecursionDepth)
-        {
-            AZ_Assert(IsTopLevelBuildContext(), "MaxRecursionDepth can only be added to the top level of the RayTracingPipelineState");
-            m_configuration.m_maxRecursionDepth = maxRecursionDepth;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(const RHI::PipelineState* pipelineState)
-        {
-            AZ_Assert(IsTopLevelBuildContext(), "PipelineState can only be added to the top level of the RayTracingPipelineState");
-            m_pipelineState = pipelineState;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor)
-        {
-            ClearBuildContext();
-
-            m_shaderLibraries.push_back({descriptor});
-            m_shaderLibraryBuildContext = &m_shaderLibraries.back();
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RayGenerationShaderName(const AZ::Name& name)
-        {
-            AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "RayGenerationShaderName can only be added to a ShaderLibrary");
-            m_shaderLibraryBuildContext->m_rayGenerationShaderName = name;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MissShaderName(const AZ::Name& name)
-        {
-            AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "MissShaderName can only be added to a ShaderLibrary");
-            m_shaderLibraryBuildContext->m_missShaderName = name;
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
-        {
-            AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "ClosestHitShaderName can only be added to a ShaderLibrary or a HitGroup");
-
-            if (m_hitGroupBuildContext)
-            {
-                m_hitGroupBuildContext->m_closestHitShaderName = closestHitShaderName;
-            }
-            else
-            {
-                m_shaderLibraryBuildContext->m_closestHitShaderName = closestHitShaderName;
-            }
-
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AnyHitShaderName(const AZ::Name& anyHitShaderName)
-        {
-            AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "AnyHitShaderName can only be added to a ShaderLibrary or a HitGroup");
-
-            if (m_hitGroupBuildContext)
-            {
-                m_hitGroupBuildContext->m_anyHitShaderName = anyHitShaderName;
-            }
-            else
-            {
-                m_shaderLibraryBuildContext->m_anyHitShaderName = anyHitShaderName;
-            }
-
-            return this;
-        }
-
-        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
-        {
-            ClearBuildContext();
-
-            m_hitGroups.emplace_back();
-            m_hitGroupBuildContext = &m_hitGroups.back();
-            m_hitGroupBuildContext->m_hitGroupName = hitGroupName;
-            return this;
-        }
-
-        void RayTracingPipelineStateDescriptor::ClearBuildContext()
-        {
-            m_shaderLibraryBuildContext = nullptr;
-            m_hitGroupBuildContext = nullptr;
-        }
-
-        bool RayTracingPipelineStateDescriptor::IsTopLevelBuildContext()
-        {
-            return (m_shaderLibraryBuildContext == nullptr && m_hitGroupBuildContext == nullptr);
-        }
-
-        RHI::Ptr<RHI::RayTracingPipelineState> RayTracingPipelineState::CreateRHIRayTracingPipelineState()
-        {
-            RHI::Ptr<RHI::RayTracingPipelineState> rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
-            AZ_Error("RayTracingPipelineState", rayTracingPipelineState, "Failed to create RHI::RayTracingPipelineState");
-            return rayTracingPipelineState;
-        }
-
-        ResultCode RayTracingPipelineState::Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor)
-        {
-            m_descriptor = *descriptor;
-
-            ResultCode resultCode = InitInternal(device, descriptor);
-            if (resultCode == ResultCode::Success)
-            {
-                DeviceObject::Init(device);
-            }
-            return resultCode;
-        }
-
-        void RayTracingPipelineState::Shutdown()
-        {
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        return descriptor;
     }
-}
+
+    void RayTracingPipelineStateDescriptor::AddRayGenerationShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& rayGenerationShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_rayGenerationShaderName = rayGenerationShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddMissShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& missShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_missShaderName = missShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddCallableShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& callableShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_callableShaderName = callableShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddClosestHitShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& closestHitShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_closestHitShaderName = closestHitShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddAnyHitShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& anyHitShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_anyHitShaderName = anyHitShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddIntersectionShaderLibrary(
+        const PipelineStateDescriptorForRayTracing& descriptor, const Name& intersectionShaderName)
+    {
+        auto& shaderLibrary = m_shaderLibraries.emplace_back();
+        shaderLibrary.m_descriptor = descriptor;
+        shaderLibrary.m_intersectionShaderName = intersectionShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddHitGroup(const Name& hitGroupName, const Name& closestHitShaderName)
+    {
+        auto& hitGroup = m_hitGroups.emplace_back();
+        hitGroup.m_hitGroupName = hitGroupName;
+        hitGroup.m_closestHitShaderName = closestHitShaderName;
+    }
+
+    void RayTracingPipelineStateDescriptor::AddHitGroup(
+        const Name& hitGroupName, const Name& closestHitShaderName, const Name& intersectionShaderName)
+    {
+        auto& hitGroup = m_hitGroups.emplace_back();
+        hitGroup.m_hitGroupName = hitGroupName;
+        hitGroup.m_closestHitShaderName = closestHitShaderName;
+        hitGroup.m_intersectionShaderName = intersectionShaderName;
+    }
+
+    ResultCode RayTracingPipelineState::Init(
+        MultiDevice::DeviceMask deviceMask, const RayTracingPipelineStateDescriptor& descriptor)
+    {
+        m_descriptor = descriptor;
+
+        MultiDeviceObject::Init(deviceMask);
+
+        ResultCode resultCode{ ResultCode::Success };
+
+        IterateDevices(
+            [this, &resultCode](int deviceIndex)
+            {
+                auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingPipelineState();
+
+                auto descriptor{ m_descriptor.GetDeviceRayTracingPipelineStateDescriptor(deviceIndex) };
+                resultCode = GetDeviceRayTracingPipelineState(deviceIndex)->Init(*device, &descriptor);
+                return resultCode == ResultCode::Success;
+            });
+
+        if (resultCode != ResultCode::Success)
+        {
+            // Reset already initialized device-specific DeviceRayTracingPipelineState and set deviceMask to 0
+            m_deviceObjects.clear();
+            MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
+        }
+
+        if (const auto& name = GetName(); !name.IsEmpty())
+        {
+            SetName(name);
+        }
+
+        return resultCode;
+    }
+
+    void RayTracingPipelineState::Shutdown()
+    {
+        MultiDeviceObject::Shutdown();
+    }
+} // namespace AZ::RHI

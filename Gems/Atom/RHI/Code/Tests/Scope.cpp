@@ -21,7 +21,7 @@ namespace UnitTest
         AZ_Assert(IsActive() == false, "Is Active");
     }
 
-    void Scope::CompileInternal([[maybe_unused]] AZ::RHI::Device& device)
+    void Scope::CompileInternal()
     {
         for (const AZ::RHI::ScopeAttachment* scopeAttachment : GetAttachments())
         {
@@ -46,10 +46,8 @@ namespace UnitTest
         const AZ::RHI::FrameAttachment& attachment = scopeAttachment->GetFrameAttachment();
 
         bool found = false;
-        for (
-            const AZ::RHI::ScopeAttachment* search = attachment.GetFirstScopeAttachment();
-            search;
-            search = search->GetNext())
+        for (const AZ::RHI::ScopeAttachment* search = attachment.GetFirstScopeAttachment(GetDeviceIndex()); search;
+             search = search->GetNext())
         {
             if (search == scopeAttachment)
             {

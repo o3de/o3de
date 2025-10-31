@@ -1,0 +1,160 @@
+ProductName: OneMeshOneMaterial.Fbx.dbgsg
+debugSceneGraphVersion: 1
+OneMeshOneMaterial
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Cube
+Node Path: RootNode.Cube
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Name: Cube_OneMeshOneMaterial_optimized
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Name: transform
+Node Path: RootNode.Cube.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Cube.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.Cube.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UVMap
+
+Node Name: CubeMaterial
+Node Path: RootNode.Cube.CubeMaterial
+Node Type: MaterialData
+	MaterialName: CubeMaterial
+	UniqueId: 973942033197978066
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 36.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.400000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshOneMaterial/FBXTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshOneMaterial/FBXTestTexture.png
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cube.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cube.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: CubeMaterial
+Node Path: RootNode.Cube_OneMeshOneMaterial_optimized.CubeMaterial
+Node Type: MaterialData
+	MaterialName: CubeMaterial
+	UniqueId: 973942033197978066
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 36.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.400000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: OneMeshOneMaterial/FBXTestTexture.png
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: OneMeshOneMaterial/FBXTestTexture.png
+

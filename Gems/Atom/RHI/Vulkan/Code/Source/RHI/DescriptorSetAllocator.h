@@ -93,7 +93,7 @@ namespace AZ
             using ObjectType = DescriptorSet;
 
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorSetAllocator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorSetAllocator, AZ::SystemAllocator);
 
             struct Descriptor
             {

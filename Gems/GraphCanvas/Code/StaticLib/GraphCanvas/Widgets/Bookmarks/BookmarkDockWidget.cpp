@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <qapplication.h>
-#include <qheaderview.h>
-#include <qlineedit.h>
-#include <qmessagebox.h>
-#include <qmenu.h>
-#include <qtableview.h>
+#include <QApplication>
+#include <QHeaderView>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QMenu>
+#include <QTableView>
 
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
 #include <StaticLib/GraphCanvas/Widgets/Bookmarks/ui_BookmarkDockWidget.h>
@@ -19,7 +19,6 @@
 #include <GraphCanvas/Editor/GraphModelBus.h>
 #include <GraphCanvas/Editor/GraphCanvasProfiler.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.h>
-#include <GraphCanvas/Widgets/Resources/Resources.h>
 
 namespace
 {

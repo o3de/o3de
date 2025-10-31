@@ -6,7 +6,7 @@
  *
  */
 
-#include <scenesrg.srgi>
+#include <scenesrg_all.srgi>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
 #define TILE_DIM_X 16
@@ -244,7 +244,7 @@ void MainCS(
     // Anti-flickering - Reduce current frame weight the more it deviates from the history based on the standard deviation of the neighborhood.
     // Start reducing weight at differences greater than m_maxDeviationBeforeDampening standard deviations in luminance.
     float standardDeviationWeight = standardDeviation.r * PassSrg::m_maxDeviationBeforeDampening; 
-    float3 sdFromLastFrame = standardDeviationWeight / abs(lastFrameClampedColor.r - thisFrameColor.r);
+    float sdFromLastFrame = standardDeviationWeight / abs(lastFrameClampedColor.r - thisFrameColor.r);
 
     float currentFrameWeight = PassSrg::m_currentFrameContribution;
     currentFrameWeight *= saturate(sdFromLastFrame * sdFromLastFrame);

@@ -12,8 +12,6 @@
 #include "RCCommon.h"
 
 #include <QObject>
-#include <QProcess>
-#include <QDir>
 #include <QList>
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -45,8 +43,7 @@ namespace AssetProcessor
             cmdExecute,
             cmdTerminate
         };
-        RCController() = default;
-        explicit RCController(int minJobs, int maxJobs, QObject* parent = 0);
+        explicit RCController(QObject* parent = 0);
         virtual ~RCController();
 
         AssetProcessor::RCJobListModel* GetQueueModel();
@@ -56,8 +53,6 @@ namespace AssetProcessor
 
         int NumberOfPendingJobsPerPlatform(QString platform);
         bool IsIdle();
-
-        void SetQueueSortOnDBSourceName();
 
     Q_SIGNALS:
         void FileCompiled(JobEntry entry, AssetBuilderSDK::ProcessJobResponse response);
@@ -71,7 +66,7 @@ namespace AssetProcessor
         void JobStarted(QString inputFile, QString platform);
         void JobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobsInQueuePerPlatform(QString platform, int jobs);
-        void ActiveJobsCountChanged(unsigned int jobs); // This is the count of jobs which are either queued or inflight 
+        void ActiveJobsCountChanged(unsigned int jobs); // This is the count of jobs which are either queued or inflight
 
         void BecameIdle();
 
@@ -99,7 +94,7 @@ namespace AssetProcessor
         void SetDispatchPaused(bool pause);
 
         //! All jobs which match this source will be cancelled or removed.  Note that relSourceFile should have any applicable output prefixes!
-        void RemoveJobsBySource(QString relSourceFileDatabaseName);
+        void RemoveJobsBySource(const AssetProcessor::SourceAssetReference& sourceAsset);
 
         // when the AP is truly done with a particular job and its going to be deleted and nothing more cares about it,
         // this function is called. this allows us to synchronize the various threads (catalog, queue, etc) to know that
@@ -107,10 +102,21 @@ namespace AssetProcessor
         void OnJobComplete(JobEntry completeEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnAddedToCatalog(JobEntry jobEntry);
 
+        //! The config about # of jobs and slots may have changed, recompute it.
+        void UpdateAndComputeJobSlots();
+
+        //! When a new source file appears in the intermediate source folder, we can potentially resolve job dependencies
+        //! That we could not resolve before.
+        void OnIntermediateSourceAppeared(QString sourceRef);
+
+    protected:
+        AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
+
     private:
         void FinishJob(AssetProcessor::RCJob* rcJob);
 
-        unsigned int m_maxJobs;
+        unsigned int m_maxJobs = 0; //<! 0 means autocompute, read from registry key
+        bool m_alwaysUseMaxJobs = false; //<! normally, it only uses maxJobs cpu cores when critical or escalated work is present to save CPU usage
 
         bool m_dispatchingJobs = false;
         bool m_shuttingDown = false;
@@ -120,7 +126,6 @@ namespace AssetProcessor
         QMap<QString, int> m_jobsCountPerPlatform;// This stores the count of jobs per platform in the RC Queue
         QMap<QString, int> m_pendingCriticalJobsPerPlatform;// This stores the count of pending critical jobs per platform in the RC Queue
         AssetProcessor::RCJobListModel m_RCJobListModel;
-        AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
 
         //! An Asset Compile Group is a set of assets that we're tracking the compilation of
         //! It consists of a whole bunch of assets and is considered to be "complete" when either one of the assets in the group fails
@@ -133,7 +138,7 @@ namespace AssetProcessor
         };
 
         QList<AssetCompileGroup> m_activeCompileGroups;
-        
+
     };
 } // namespace AssetProcessor
 

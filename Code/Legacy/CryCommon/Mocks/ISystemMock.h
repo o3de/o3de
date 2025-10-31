@@ -67,8 +67,6 @@ public:
         ICryFont * ());
     MOCK_METHOD0(GetIMovieSystem,
         IMovieSystem * ());
-    MOCK_METHOD0(GetIAudioSystem,
-        Audio::IAudioSystem * ());
     MOCK_METHOD0(GetIConsole,
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,
@@ -113,8 +111,6 @@ public:
         bool());
     MOCK_METHOD0(GetLocalizationManager,
         ILocalizationManager * ());
-    MOCK_METHOD0(GetNoiseGen,
-        CPNoise3 * ());
     MOCK_METHOD1(RegisterErrorObserver,
         bool(IErrorObserver * errorObserver));
     MOCK_METHOD1(UnregisterErrorObserver,

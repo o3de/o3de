@@ -33,8 +33,8 @@ namespace EMotionFX
     const char* AnimGraphMotionCondition::s_functionIsMotionAssigned = "Is Motion Assigned?";
     const char* AnimGraphMotionCondition::s_functionIsMotionNotAssigned = "Is Motion Not Assigned?";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition, AnimGraphConditionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition, AnimGraphConditionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphMotionCondition::AnimGraphMotionCondition()
         : AnimGraphTransitionCondition()
@@ -464,7 +464,7 @@ namespace EMotionFX
 
         // Read the old eventType and eventParameter fields
         AZStd::string eventType;
-        const int eventTypeIndex = rootElementNode.FindElement(AZ_CRC("eventType", 0xd07a8b00));
+        const int eventTypeIndex = rootElementNode.FindElement(AZ_CRC_CE("eventType"));
         if (eventTypeIndex < 0)
         {
             return false;
@@ -476,7 +476,7 @@ namespace EMotionFX
         }
 
         AZStd::string eventParameter;
-        const int eventParameterIndex = rootElementNode.FindElement(AZ_CRC("eventParameter", 0x42bb3da0));
+        const int eventParameterIndex = rootElementNode.FindElement(AZ_CRC_CE("eventParameter"));
         if (eventParameterIndex < 0)
         {
             return false;
@@ -495,8 +495,8 @@ namespace EMotionFX
         }
 
         // Remove the old fields
-        rootElementNode.RemoveElementByName(AZ_CRC("eventType", 0xd07a8b00));
-        rootElementNode.RemoveElementByName(AZ_CRC("eventParameter", 0x42bb3da0));
+        rootElementNode.RemoveElementByName(AZ_CRC_CE("eventType"));
+        rootElementNode.RemoveElementByName(AZ_CRC_CE("eventParameter"));
         return true;
     }
 
@@ -528,10 +528,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphMotionNodeId", 0xe19a0672), &AnimGraphMotionCondition::m_motionNodeId, "Motion", "The motion node to use.")
+            ->DataElement(AZ_CRC_CE("AnimGraphMotionNodeId"), &AnimGraphMotionCondition::m_motionNodeId, "Motion", "The motion node to use.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphMotionCondition::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphMotionCondition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphMotionCondition::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphMotionCondition::m_testFunction, "Test Function", "The type of test function or condition.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                 ->EnumAttribute(FUNCTION_EVENT,                 s_functionMotionEvent)
@@ -549,9 +549,9 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::Min, -std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Max,  std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphMotionCondition::GetPlayTimeVisibility)
-            ->DataElement(AZ_CRC("EMotionFX::EventData", 0xca242382), &AnimGraphMotionCondition::m_eventDatas, "Event Parameters", "The event parameters to match.")
+            ->DataElement(AZ_CRC_CE("EMotionFX::EventData"), &AnimGraphMotionCondition::m_eventDatas, "Event Parameters", "The event parameters to match.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphMotionCondition::GetEventPropertiesVisibility)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("EMotionFX::EventData", 0xca242382))
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("EMotionFX::EventData"))
             ;
     }
 } // namespace EMotionFX

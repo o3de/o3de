@@ -12,7 +12,6 @@ set(FILES
     Tests/VegetationComponentModifierTests.cpp
     Tests/VegetationComponentDescriptorTests.cpp
     Tests/VegetationComponentFilterTests.cpp
-    Tests/DynamicSliceInstanceSpawnerTests.cpp
     Tests/EmptyInstanceSpawnerTests.cpp
     Tests/PrefabInstanceSpawnerTests.cpp
     Tests/VegetationAreaSystemComponentTest.cpp

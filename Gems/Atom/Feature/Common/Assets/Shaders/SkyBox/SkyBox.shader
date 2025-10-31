@@ -2,7 +2,7 @@
     "Source" : "SkyBox.azsl",
 
     "DepthStencilState" : { 
-        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual", "WriteMask" : "Zero" }
     },
 
     "DrawList" : "forward",

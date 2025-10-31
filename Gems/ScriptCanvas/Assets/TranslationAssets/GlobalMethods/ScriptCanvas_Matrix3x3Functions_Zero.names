@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix3x3Functions_Zero",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Zero",
+                "category": "Math/Matrix3x3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix3x3Functions_Zero",
+                    "details": {
+                        "name": "Zero",
+                        "tooltip": "Returns the zero matrix"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -7,16 +7,18 @@
  */
 #pragma once
 
+
 #include <AzCore/Module/Module.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    class AzToolsFrameworkModule
+    class AZTF_API AzToolsFrameworkModule
         : public AZ::Module
     {
     public:
         AZ_RTTI(AzToolsFrameworkModule, "{FC9FEAC4-ADF5-426B-B26D-96A3413F3AF2}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzToolsFrameworkModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzToolsFrameworkModule, AZ::OSAllocator);
 
         AzToolsFrameworkModule();
         ~AzToolsFrameworkModule() override = default;

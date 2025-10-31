@@ -62,7 +62,7 @@ public:
         const char* error = dlerror();
         if (error)
         {
-            std::cerr << "Fail to open symbols file: " << symbol << std::endl
+            std::cout << "Fail to open symbols file: " << symbol << std::endl
                       << "Error from dlsym(): " << error << std::endl;
         }
     }
@@ -144,12 +144,6 @@ namespace AZ
         void Platform::Printf(const char* format, ...)
         {
             // Not currently supported
-        }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            // Not currently supported
-            return nullptr;
         }
     } // Test
 } // AZ

@@ -16,7 +16,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionLimitContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionLimitContract, AZ::SystemAllocator);
         AZ_RTTI(ConnectionLimitContract, "{C66FB68F-63D5-4EE2-BC28-D566EC2E5159}", Contract);
 
         ConnectionLimitContract(AZ::s32 limit = -1);

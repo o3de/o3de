@@ -10,32 +10,75 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 
+#if !defined(Q_MOC_RUN)
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#include <QRegularExpression>
+AZ_POP_DISABLE_WARNING
+#endif
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
         namespace
         {
-            FilterConstType ProductsNoFoldersFilter()
+            QSharedPointer<AssetBrowserEntryFilter> CreateCompositeFilter_And(
+                const AZStd::vector<QSharedPointer<AssetBrowserEntryFilter>>& filters,
+                AssetBrowserEntryFilter::PropagateDirection direction = AssetBrowserEntryFilter::PropagateDirection::None)
             {
-                EntryTypeFilter* productFilter = new EntryTypeFilter();
-                productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
-                // in case entry is a source or folder, it may still contain relevant product
-                productFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-
-                EntryTypeFilter* foldersFilter = new EntryTypeFilter();
-                foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
-
-                InverseFilter* noFoldersFilter = new InverseFilter();
-                noFoldersFilter->SetFilter(FilterConstType(foldersFilter));
-
-                CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-                compFilter->AddFilter(FilterConstType(productFilter));
-                compFilter->AddFilter(FilterConstType(noFoldersFilter));
-
-                return FilterConstType(compFilter);
+                QSharedPointer<CompositeFilter> compositeFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
+                for (const auto& filter : filters)
+                {
+                    compositeFilter->AddFilter(filter);
+                }
+                compositeFilter->SetFilterPropagation(direction);
+                return compositeFilter;
             }
-        }
+
+            QSharedPointer<AssetBrowserEntryFilter> CreateCompositeFilter_Or(
+                const AZStd::vector<QSharedPointer<AssetBrowserEntryFilter>>& filters,
+                AssetBrowserEntryFilter::PropagateDirection direction = AssetBrowserEntryFilter::PropagateDirection::None)
+            {
+                QSharedPointer<CompositeFilter> compositeFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR));
+                for (const auto& filter : filters)
+                {
+                    compositeFilter->AddFilter(filter);
+                }
+                compositeFilter->SetFilterPropagation(direction);
+                return compositeFilter;
+            }
+
+            QSharedPointer<AssetBrowserEntryFilter> CreateEntryTypeFilter(
+                const AZStd::vector<AssetBrowserEntry::AssetEntryType>& entryTypes,
+                AssetBrowserEntryFilter::PropagateDirection direction = AssetBrowserEntryFilter::PropagateDirection::None)
+            {
+                QSharedPointer<CustomFilter> entryTypeFilter(new CustomFilter(
+                    [entryTypes](const AssetBrowserEntry* entry)
+                    {
+                        return entryTypes.empty() ||
+                            (entry && AZStd::find(entryTypes.begin(), entryTypes.end(), entry->GetEntryType()) != entryTypes.end());
+                    }));
+                entryTypeFilter->SetFilterPropagation(direction);
+                return entryTypeFilter;
+            }
+
+            QSharedPointer<AssetBrowserEntryFilter> CreateAssetTypeFilter(
+                const AZStd::vector<AZ::Data::AssetType>& assetTypes,
+                AssetBrowserEntryFilter::PropagateDirection direction = AssetBrowserEntryFilter::PropagateDirection::None)
+            {
+                QSharedPointer<CustomFilter> assetTypeFilter(new CustomFilter(
+                    [assetTypes](const AssetBrowserEntry* entry)
+                    {
+                        const ProductAssetBrowserEntry* product = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                            ? static_cast<const ProductAssetBrowserEntry*>(entry)
+                            : nullptr;
+                        return assetTypes.empty() ||
+                            (product && AZStd::find(assetTypes.begin(), assetTypes.end(), product->GetAssetType()) != assetTypes.end());
+                    }));
+                assetTypeFilter->SetFilterPropagation(direction);
+                return assetTypeFilter;
+            }
+        } // namespace
 
         AssetSelectionModel::AssetSelectionModel()
             : m_multiselect(false)
@@ -79,13 +122,33 @@ namespace AzToolsFramework
 
         void AssetSelectionModel::SetSelectedAssetIds(const AZStd::vector<AZ::Data::AssetId>& selectedAssetIds)
         {
+            m_selectedFilePaths.clear();
             m_selectedAssetIds = selectedAssetIds;
         }
 
         void AssetSelectionModel::SetSelectedAssetId(const AZ::Data::AssetId& selectedAssetId)
         {
+            m_selectedFilePaths.clear();
             m_selectedAssetIds.clear();
             m_selectedAssetIds.push_back(selectedAssetId);
+        }
+
+        const AZStd::vector<AZStd::string>& AssetSelectionModel::GetSelectedFilePaths() const
+        {
+            return m_selectedFilePaths;
+        }
+
+        void AssetSelectionModel::SetSelectedFilePaths(const AZStd::vector<AZStd::string>& selectedFilePaths)
+        {
+            m_selectedAssetIds.clear();
+            m_selectedFilePaths = selectedFilePaths;
+        }
+
+        void AssetSelectionModel::SetSelectedFilePath(const AZStd::string& selectedFilePath)
+        {
+            m_selectedAssetIds.clear();
+            m_selectedFilePaths.clear();
+            m_selectedFilePaths.push_back(selectedFilePath);
         }
 
         void AssetSelectionModel::SetDefaultDirectory(AZStd::string_view defaultDirectory)
@@ -105,7 +168,7 @@ namespace AzToolsFramework
 
         const AssetBrowserEntry* AssetSelectionModel::GetResult()
         {
-            return m_results.front();
+            return !m_results.empty() ? m_results.front() : nullptr;
         }
 
         bool AssetSelectionModel::IsValid() const
@@ -120,93 +183,75 @@ namespace AzToolsFramework
 
         QString AssetSelectionModel::GetTitle() const
         {
-            return m_title.isEmpty() ? GetDisplayFilter()->GetName() : m_title;
+            if (!m_title.isEmpty())
+            {
+                return m_title;
+            }
+
+            auto displayFilter = GetDisplayFilter();
+            if (displayFilter && !displayFilter->GetName().isEmpty())
+            {
+                return displayFilter->GetName();
+            }
+
+            return "Asset";
         }
 
-        AssetSelectionModel AssetSelectionModel::AssetTypeSelection(const AZ::Data::AssetType& assetType, bool multiselect)
+        AssetSelectionModel AssetSelectionModel::AssetTypeSelection(
+            const AZ::Data::AssetType& assetType, bool multiselect, bool supportSelectingSources)
         {
-            AssetSelectionModel selection;
-
-            AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
-            assetTypeFilter->SetAssetType(assetType);
-            assetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            auto assetTypeFilterPtr = FilterConstType(assetTypeFilter);
-
-            selection.SetDisplayFilter(assetTypeFilterPtr);
-
-            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            compFilter->AddFilter(assetTypeFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
-
-            selection.SetSelectionFilter(FilterConstType(compFilter));
-            selection.SetMultiselect(multiselect);
-
-            return selection;
+            return AssetTypeSelection(AZStd::vector<AZ::Data::AssetType>{ assetType }, multiselect, supportSelectingSources);
         }
 
-        AssetSelectionModel AssetSelectionModel::AssetTypeSelection(const char* assetTypeName, bool multiselect)
+        AssetSelectionModel AssetSelectionModel::AssetTypeSelection(
+            const char* assetTypeName, bool multiselect, bool supportSelectingSources)
         {
             EBusFindAssetTypeByName result(assetTypeName);
             AZ::AssetTypeInfoBus::BroadcastResult(result, &AZ::AssetTypeInfo::GetAssetType);
-            return AssetTypeSelection(result.GetAssetType(), multiselect);
+            return AssetTypeSelection(result.GetAssetType(), multiselect, supportSelectingSources);
         }
 
-        AssetSelectionModel AssetSelectionModel::AssetTypesSelection(const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect) 
+        AssetSelectionModel AssetSelectionModel::AssetTypeSelection(
+            const AZStd::vector<AZ::Data::AssetType>& assetTypes, bool multiselect, bool supportSelectingSources)
         {
+            auto entryTypeFilter = supportSelectingSources
+                ? CreateEntryTypeFilter({ AssetBrowserEntry::AssetEntryType::Product, AssetBrowserEntry::AssetEntryType::Source })
+                : CreateEntryTypeFilter({ AssetBrowserEntry::AssetEntryType::Product });
+
+            auto assetTypeFilter = supportSelectingSources
+                ? CreateAssetTypeFilter(assetTypes, AssetBrowserEntryFilter::PropagateDirection::Down)
+                : CreateAssetTypeFilter(assetTypes, AssetBrowserEntryFilter::PropagateDirection::None);
+
+            auto selectionFilter = CreateCompositeFilter_And({ assetTypeFilter, entryTypeFilter });
+
             AssetSelectionModel selection;
-
-            CompositeFilter* anyAssetTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
-            anyAssetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            auto anyAssetTypeFilterPtr = FilterConstType(anyAssetTypeFilter);
-
-            for (const auto& assetType : assetTypes) {
-                AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
-                assetTypeFilter->SetAssetType(assetType);
-                anyAssetTypeFilter->AddFilter(FilterConstType(assetTypeFilter));
-            }
-
-            selection.SetDisplayFilter(anyAssetTypeFilterPtr);
-
-            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            compFilter->AddFilter(anyAssetTypeFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
-
-            selection.SetSelectionFilter(FilterConstType(compFilter));
+            selection.SetDisplayFilter(assetTypeFilter);
+            selection.SetSelectionFilter(selectionFilter);
             selection.SetMultiselect(multiselect);
-
             return selection;
         }
 
-        AssetSelectionModel AssetSelectionModel::AssetGroupSelection(const char* group, bool multiselect)
+        AssetSelectionModel AssetSelectionModel::SourceAssetTypeSelection(const QRegularExpression& pattern, bool multiselect)
         {
+            QSharedPointer<RegExpFilter> patternFilter(new RegExpFilter());
+            patternFilter->SetFilterPattern(pattern);
+
+            QSharedPointer<AssetBrowserEntryFilter> compositeFilter(
+                CreateCompositeFilter_And({ CreateEntryTypeFilter({ AssetBrowserEntry::AssetEntryType::Source }), patternFilter }));
+
             AssetSelectionModel selection;
-
-            AssetGroupFilter* assetGroupFilter = new AssetGroupFilter();
-            assetGroupFilter->SetAssetGroup(group);
-            assetGroupFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            auto assetGroupFilterPtr = FilterConstType(assetGroupFilter);
-
-            selection.SetDisplayFilter(assetGroupFilterPtr);
-
-            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            compFilter->AddFilter(assetGroupFilterPtr);
-            compFilter->AddFilter(ProductsNoFoldersFilter());
-
-            selection.SetSelectionFilter(FilterConstType(compFilter));
+            selection.SetDisplayFilter(compositeFilter);
+            selection.SetSelectionFilter(compositeFilter);
             selection.SetMultiselect(multiselect);
-
             return selection;
         }
 
-        AssetSelectionModel AssetSelectionModel::EverythingSelection(bool multiselect) 
+        AssetSelectionModel AssetSelectionModel::EverythingSelection(bool multiselect)
         {
             AssetSelectionModel selection;
-         
-            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
-            selection.SetDisplayFilter(FilterConstType(compFilter));
-            selection.SetSelectionFilter(ProductsNoFoldersFilter());
+            selection.SetDisplayFilter(CreateCompositeFilter_Or({}));
+            selection.SetSelectionFilter(CreateEntryTypeFilter({}));
             selection.SetMultiselect(multiselect);
-
             return selection;
         }
     } // namespace AssetBrowser

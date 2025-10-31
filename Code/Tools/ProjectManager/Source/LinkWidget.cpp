@@ -8,9 +8,7 @@
 
 #include <LinkWidget.h>
 #include <ExternalLinkDialog.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QDesktopServices>
 #include <QEvent>
@@ -20,7 +18,7 @@
 namespace O3DE::ProjectManager
 {
     LinkLabel::LinkLabel(const QString& text, const QUrl& url, int fontSize, QWidget* parent)
-        : QLabel(text, parent)
+        : AzQtComponents::ElidingLabel(text, parent)
         , m_url(url)
         , m_fontSize(fontSize)
     {
@@ -33,18 +31,12 @@ namespace O3DE::ProjectManager
         {
             // Check if user request not to be shown external link warning dialog
             bool skipDialog = false;
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-
-            if (settingsRegistry)
-            {
-                QString settingsKey = GetExternalLinkWarningKey();
-                settingsRegistry->Get(skipDialog, settingsKey.toStdString().c_str());
-            }
+            SettingsInterface::Get()->Get(skipDialog, ISettings::ExternalLinkWarningKey);
 
             if (!skipDialog)
             {
                 // Style does not apply if LinkLabel is parent so use parentWidget as parent instead
-                ExternalLinkDialog* linkDialog = new ExternalLinkDialog(m_url.toString(), parentWidget());
+                ExternalLinkDialog* linkDialog = new ExternalLinkDialog(m_url, parentWidget());
                 if (linkDialog->exec() == QDialog::Accepted)
                 {
                     QDesktopServices::openUrl(m_url);
@@ -67,6 +59,11 @@ namespace O3DE::ProjectManager
     void LinkLabel::leaveEvent([[maybe_unused]] QEvent* event)
     {
         SetDefaultStyle();
+    }
+
+    QUrl LinkLabel::GetUrl() const
+    {
+        return m_url;
     }
 
     void LinkLabel::SetUrl(const QUrl& url)

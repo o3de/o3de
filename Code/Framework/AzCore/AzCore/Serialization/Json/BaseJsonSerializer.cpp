@@ -204,6 +204,22 @@ namespace AZ
     // BaseJsonSerializer
     //
 
+    JsonSerializationResult::Result BaseJsonSerializer::Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+        JsonDeserializerContext& context)
+    {
+        JsonSerializationResult::ResultCode result(JsonSerializationResult::Tasks::ReadField);
+        result.Combine(ContinueLoading(outputValue, outputValueTypeId, inputValue, context, ContinuationFlags::IgnoreTypeSerializer));
+        return context.Report(result, "Ignoring custom serialization during load");
+    }
+
+    JsonSerializationResult::Result BaseJsonSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
+        const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        JsonSerializationResult::ResultCode result(JsonSerializationResult::Tasks::WriteValue);
+        result.Combine(ContinueStoring(outputValue, inputValue, defaultValue, valueTypeId, context, ContinuationFlags::IgnoreTypeSerializer));
+        return context.Report(result, "Ignoring custom serialization during store");
+    }
+
     BaseJsonSerializer::OperationFlags BaseJsonSerializer::GetOperationsFlags() const
     {
         return OperationFlags::None;

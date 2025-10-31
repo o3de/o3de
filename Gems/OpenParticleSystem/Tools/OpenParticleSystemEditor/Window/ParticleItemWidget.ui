@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>particleItemWidget</class>
+ <widget class="QWidget" name="particleItemWidget">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>213</width>
+    <height>486</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Item</string>
+  </property>
+  <property name="inputMethodHints">
+   <set>Qt::ImhNone</set>
+  </property>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>211</width>
+     <height>481</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="titleWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: qlineargradient(spread:pad, x1:0, x2:0, y1:0, y2:1, stop:0 rgba(223, 169, 112, 255), stop:1 rgba(217, 141, 50, 255));
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+border-bottom-left-radius: 1px;
+border-bottom-right-radius: 1px;
+</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <widget class="QToolButton" name="toolButton">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="btnParticleName">
+         <property name="text">
+          <string>Particle_name</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkSolo">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">
+               QCheckBox::indicator:unchecked{image: url(:/Gallery/Asset_File.svg);}
+               QCheckBox::indicator:checked{image: url(:/Gallery/Favorite_File.svg);}
+             </string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkParticleName">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="emitterWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_25">
+       <item>
+        <widget class="QToolButton" name="toolButton_21">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/ColorPickerDialog/ColorGrid/toggle-normal-on.svg</normaloff>:/ColorPickerDialog/ColorGrid/toggle-normal-on.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Emitter</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="spawnWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_24">
+       <item>
+        <widget class="QToolButton" name="toolButton_20">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/Gallery/Grid-small.svg</normaloff>:/Gallery/Grid-small.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>Spawn</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkSpawn">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="particlesWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_17">
+       <item>
+        <widget class="QToolButton" name="toolButton_10">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/particle.svg</normaloff>:/stylesheet/img/UI20/toolbar/particle.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Particles</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkParticles">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="locationWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_18">
+       <item>
+        <widget class="QToolButton" name="toolButton_11">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/SketchMode.svg</normaloff>:/stylesheet/img/UI20/toolbar/SketchMode.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>Shape</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkLocation">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>13</width>
+           <height>13</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="velocityWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_19">
+       <item>
+        <widget class="QToolButton" name="toolButton_12">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/joints/SwingLimits.svg</normaloff>:/stylesheet/img/UI20/toolbar/joints/SwingLimits.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Velocity</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkVelocity">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="colorWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_26">
+       <item>
+        <widget class="QToolButton" name="toolButton_17">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/ColorPickerDialog/ColorGrid/eyedropper-normal.svg</normaloff>:/ColorPickerDialog/ColorGrid/eyedropper-normal.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Color</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkColor">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="sizeWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_20">
+       <item>
+        <widget class="QToolButton" name="toolButton_13">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/Measure.svg</normaloff>:/stylesheet/img/UI20/toolbar/Measure.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Size</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkSize">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="forceWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_21">
+       <item>
+        <widget class="QToolButton" name="toolButton_14">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/joints/MaxForce.svg</normaloff>:/stylesheet/img/UI20/toolbar/joints/MaxForce.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Force</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkForce">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="lightWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_27">
+       <item>
+        <widget class="QToolButton" name="toolButton_18">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/Lighting.svg</normaloff>:/stylesheet/img/UI20/toolbar/Lighting.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_18">
+         <property name="text">
+          <string>Light</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkLight">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="subUVWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_22">
+       <item>
+        <widget class="QToolButton" name="toolButton_15">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/XY2_copy.svg</normaloff>:/stylesheet/img/UI20/toolbar/XY2_copy.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>SubUV</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkSubUV">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="eventWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_28">
+       <item>
+        <widget class="QToolButton" name="toolButton_19">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/logging/pending.svg</normaloff>:/stylesheet/img/logging/pending.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_19">
+         <property name="text">
+          <string>Event</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkEvent">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="OpenParticleSystemEditor::ParticleLineWidget" name="rendererWidget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: #474747;
+border-radius: 1px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_23">
+       <item>
+        <widget class="QToolButton" name="toolButton_16">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+           <normaloff>:/stylesheet/img/UI20/toolbar/AutoFit.svg</normaloff>:/stylesheet/img/UI20/toolbar/AutoFit.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>Renderer</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkRenderer">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
+QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+  <widget class="Line" name="lineLeft">
+   <property name="geometry">
+    <rect>
+     <x>2</x>
+     <y>2</y>
+     <width>2</width>
+     <height>474</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+  </widget>
+  <widget class="Line" name="lineRight">
+   <property name="geometry">
+    <rect>
+     <x>207</x>
+     <y>2</y>
+     <width>2</width>
+     <height>474</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+  </widget>
+  <widget class="Line" name="lineBotton">
+   <property name="geometry">
+    <rect>
+     <x>2</x>
+     <y>476</y>
+     <width>207</width>
+     <height>2</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="Line" name="lineTop">
+   <property name="geometry">
+    <rect>
+     <x>2</x>
+     <y>2</y>
+     <width>207</width>
+     <height>2</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>OpenParticleSystemEditor::ParticleLineWidget</class>
+   <extends>QWidget</extends>
+   <header>ParticleLineWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="OpenParticleEditor.qrc"/>
+ </resources>
+ <connections/>
+</ui>

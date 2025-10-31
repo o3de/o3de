@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the PixelGeometryData class in this file without making it the final PixelGeometryData
+// used in your shader. Simply #define PixelGeometryData to your custom definition before including this file
+//
+#ifndef PixelGeometryData
+#define PixelGeometryData       PixelGeometryData_Eye
+#endif
+
+#include "../BasePBR/BasePBR_PixelGeometryData.azsli"
+
+class PixelGeometryData_Eye
+{
+    // BasePBR
+    float3 positionWS;
+    float2 uvs[UvSetCount];
+    float3 tangents[UvSetCount];
+    float3 bitangents[UvSetCount];
+    real3 vertexNormal;
+    bool isFrontFace;
+
+    // Eye
+    float4x4 objectToWorld;
+    float3x3 objectToWorldIT;
+    float3 localPosition;
+};

@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
+
 namespace AzFramework
 {
-    class CommunicatorHandleImpl
+    class AZF_API CommunicatorHandleImpl
     {
     public:
         ~CommunicatorHandleImpl() = default;
@@ -25,7 +27,7 @@ namespace AzFramework
 
     };
 
-    struct StartupInfo
+    struct AZF_API StartupInfo
     {
         ~StartupInfo();
 

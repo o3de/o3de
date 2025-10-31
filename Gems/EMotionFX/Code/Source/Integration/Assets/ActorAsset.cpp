@@ -17,8 +17,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(ActorAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(ActorAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ActorAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(ActorAssetHandler, EMotionFXAllocator)
 
         ActorAsset::ActorAsset(AZ::Data::AssetId id)
             : EMotionFXAsset(id)
@@ -103,6 +103,17 @@ namespace EMotionFX
         const char* ActorAssetHandler::GetBrowserIcon() const
         {
             return "Editor/Images/AssetBrowser/Actor_16.svg";
+        }
+
+        int ActorAssetHandler::GetAssetTypeDragAndDropCreationPriority() const
+        {
+            // this function is used when the user drags and drops a file that produces
+            // many different kinds of assets into the viewport (for example, dragging a FBX file
+            // that produces both an actor and a mesh).  It is used to select which component
+            // is ultimately chosen to spawn in the viewport, since only one can be chosen to represent
+            // the dropped object.  In the case of an imported file which produces an actor, its very likely
+            // that the actor is representative of the file, moreso than other parts.
+            return AZ::AssetTypeInfo::s_HighPriority;
         }
     } //namespace Integration
 } // namespace EMotionFX

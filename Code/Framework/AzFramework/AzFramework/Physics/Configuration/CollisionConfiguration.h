@@ -16,6 +16,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AzPhysics
     //! Collision configuration is a convenience storage class for /ref CollisionLayers and /ref CollisionGroups,
     //! as they are frequently used together. It can be retrieved/mutated through
     //! the SystemConfiguration (for global settings) and the SceneConfiguration (for scene modifications).
-    class CollisionConfiguration
+    class AZF_API CollisionConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;

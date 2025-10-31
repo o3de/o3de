@@ -8,44 +8,60 @@
 
 #pragma once
 
-#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
-void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+#ifndef SimplePointLightUtil
+#define SimplePointLightUtil SimplePointLightUtil_PBR
+#endif
+
+
+class SimplePointLightUtil_PBR
 {
-    float3 posToLight = light.m_position - surface.position;
-    float d2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = d2 * light.m_invAttenuationRadiusSquared;
-    
-    // Only calculate shading if light is in range
-    if (falloff < 1.0f)
+    real3 m_surfaceToLightDirection;
+    real  m_lightDistanceSquared;
+    real  m_falloff;
+
+    static SimplePointLightUtil_PBR Init(SimplePointLight light, Surface surface)
+    {
+        SimplePointLightUtil_PBR result;
+
+        real3 posToLight = real3(light.m_position - surface.position);
+        result.m_lightDistanceSquared = dot(posToLight, posToLight); // light distance squared
+        result.m_falloff = result.m_lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
+        result.m_surfaceToLightDirection = normalize(posToLight);
+        return result;
+    }
+
+    real3 GetSurfaceToLightDirection()
+    {
+        return m_surfaceToLightDirection;
+    }
+
+    real GetFalloff()
+    {
+        return m_falloff;
+    }
+
+    void Apply(SimplePointLight light, Surface surface, real litRatio, inout LightingData lightingData)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (m_falloff * m_falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
-        
-        // Standard quadratic falloff
-        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
+
+        // Standard quadratic m_falloff
+        m_lightDistanceSquared = max(0.001 * 0.001, m_lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
+        real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / m_lightDistanceSquared) * radiusAttenuation;
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, m_surfaceToLightDirection) * litRatio;
 
-        // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Specular contribution
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, lightIntensity, m_surfaceToLightDirection, viewIndex) * litRatio;
+        }
     }
-}
+};
 
-void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
-{
-    lightingData.tileIterator.LoadAdvance();
-                
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
-        lightingData.tileIterator.LoadAdvance();
-    
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
-        ApplySimplePointLight(light, surface, lightingData);
-    }
-}

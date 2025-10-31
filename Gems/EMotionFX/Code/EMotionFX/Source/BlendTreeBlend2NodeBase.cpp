@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeBlend2NodeBase::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -222,13 +222,13 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlend2NodeBase::m_syncMode)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlend2NodeBase::m_eventMode)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlend2NodeBase::m_extractionMode)
-            ->DataElement(AZ_CRC("ActorWeightedNodes", 0x689c0537), &BlendTreeBlend2NodeBase::m_weightedNodeMask, "Mask", "The mask to apply on the Pose 1 input port.")
+            ->DataElement(AZ_CRC_CE("ActorWeightedNodes"), &BlendTreeBlend2NodeBase::m_weightedNodeMask, "Mask", "The mask to apply on the Pose 1 input port.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeBlend2NodeBase::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeBlend2NodeBase::GetNodeMaskNodeName)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("ActorWeightedJointElement", 0xe84566a0))
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ActorWeightedJointElement"))
         ;
     }
 

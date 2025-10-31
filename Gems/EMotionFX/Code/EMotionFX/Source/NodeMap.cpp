@@ -20,12 +20,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NodeMap, NodeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NodeMap, NodeAllocator)
 
 
     // constructor
     NodeMap::NodeMap()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_sourceActor            = nullptr;
     }

@@ -21,7 +21,7 @@ namespace GraphCanvas
         friend class SlotConnectionFilter;
     public:
         AZ_RTTI(DataSlotTypeFilter, "{D625AE2F-5F71-461E-A553-554402A824BF}", ConnectionFilter);
-        AZ_CLASS_ALLOCATOR(DataSlotTypeFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotTypeFilter, AZ::SystemAllocator);
 
         DataSlotTypeFilter()
         {
@@ -97,7 +97,7 @@ namespace GraphCanvas
                         // Only want to try to convert to references when we have no connections
                         if (!hasConnections)
                         {
-                            DataSlotRequestBus::EventResult(acceptConnection, sourceEndpoint.GetSlotId(), &DataSlotRequests::CanConvertToReference);
+                            DataSlotRequestBus::EventResult(acceptConnection, sourceEndpoint.GetSlotId(), &DataSlotRequests::CanConvertToReference, false);
                         }
                     }
                     else if (targetType == DataSlotType::Value)
@@ -115,7 +115,7 @@ namespace GraphCanvas
                         // Only want to try to convert to references when we have no connections
                         if (!hasConnections)
                         {
-                            DataSlotRequestBus::EventResult(acceptConnection, targetEndpoint.GetSlotId(), &DataSlotRequests::CanConvertToReference);
+                            DataSlotRequestBus::EventResult(acceptConnection, targetEndpoint.GetSlotId(), &DataSlotRequests::CanConvertToReference, false);
                         }
                     }
                     else if (sourceType == DataSlotType::Value)

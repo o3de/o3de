@@ -248,7 +248,7 @@ class MayaToLumberyard(QtWidgets.QWidget):
         # Setup Lumberyard Material File Values
         self.map_materials()
         print ('MaterialDefinitions:'.format(self.material_definitions))
-        print json.dumps(self.material_definitions, sort_keys=True, indent=4)
+        print(json.dumps(self.material_definitions, sort_keys=True, indent=4))
 
         # Update UI Layout
         self.set_material_view()
@@ -387,7 +387,7 @@ class MayaToLumberyard(QtWidgets.QWidget):
         material = {'description': name,
                     'materialType': default_settings.get('materialType'),
                     'parentMaterial': default_settings.get('parentMaterial'),
-                    'propertyLayoutVersion': default_settings.get('propertyLayoutVersion'),
+                    'materialTypeVersion': default_settings.get('materialTypeVersion'),
                     'properties': self.get_shader_properties(name, material_type, file_connections)}
         self.material_definitions[name if name not in self.material_definitions.keys() else self.get_increment(name)] = material
 

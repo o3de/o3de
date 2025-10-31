@@ -13,6 +13,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -144,6 +145,11 @@ namespace AZ
 
     const Transform g_transformIdentity = Transform::CreateIdentity();
 
+    const Transform& Transform::Identity()
+    {
+        return g_transformIdentity;
+    }
+
     size_t TransformSerializer::Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian)
     {
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);
@@ -178,6 +184,8 @@ namespace AZ
 
     size_t TransformSerializer::TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for strtod to be invariant
+
         const size_t dataBufferSize = AZStd::max(AZStd::max(NumFloatsVersion1, NumFloatsVersion0), NumFloats);
         const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : (textVersion == 1 ? NumFloatsVersion1 : NumFloats);
 
@@ -293,7 +301,7 @@ namespace AZ
             behaviorContext->Class<Transform>()->
                 Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)->
                 Attribute(Script::Attributes::Module, "math")->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
                 Constructor<const Vector3&, const Quaternion&, float>()->
@@ -312,35 +320,35 @@ namespace AZ
                     Attribute(Script::Attributes::Ignore, 0)-> // ignore for script since we already got the generic multiply above
                 Method<Transform(Transform::*)(const Transform&) const>("MultiplyTransform", &Transform::operator*)->
                     Attribute(Script::Attributes::Ignore, 0)-> // ignore for script since we already got the generic multiply above
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("Equal", &Transform::operator==)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Equal)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("Clone", [](const Transform& rhs) -> Transform { return rhs; })->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("GetTranslation", &Transform::GetTranslation)->
                 Method("GetBasisAndTranslation", &Transform::GetBasisAndTranslation)->
                     Attribute(Script::Attributes::MethodOverride, &Internal::TransformGetBasisAndTranslationMultipleReturn)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("TransformVector", &Transform::TransformVector)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method<void (Transform::*)(const Vector3&)>("SetTranslation", &Transform::SetTranslation)->
                     Attribute(Script::Attributes::MethodOverride, &Internal::TransformSetTranslationGeneric)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("GetRotation", &Transform::GetRotation)->
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
                 Method("GetUniformScale", &Transform::GetUniformScale)->
                 Method("SetUniformScale", &Transform::SetUniformScale)->
                 Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("MultiplyByUniformScale", &Transform::MultiplyByUniformScale)->
                 Method("GetInverse", &Transform::GetInverse)->
                 Method("Invert", &Transform::Invert)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("IsOrthogonal", &Transform::IsOrthogonal, behaviorContext->MakeDefaultValues(Constants::Tolerance))->
                 Method("GetOrthogonalized", &Transform::GetOrthogonalized)->
                 Method("Orthogonalize", &Transform::Orthogonalize)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Method("IsClose", &Transform::IsClose, behaviorContext->MakeDefaultValues(Constants::Tolerance))->
                 Method("IsFinite", &Transform::IsFinite)->
                 Method("CreateIdentity", &Transform::CreateIdentity)->
@@ -354,6 +362,7 @@ namespace AZ
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("CreateLookAt", &Transform::CreateLookAt)->
+                Method("GetEulerDegrees", &Transform::GetEulerDegrees)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }
     }

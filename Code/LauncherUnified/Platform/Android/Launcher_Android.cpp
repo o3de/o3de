@@ -89,7 +89,7 @@ namespace
             bool continueRunning = true;
             while (continueRunning) 
             {
-                continueRunning = PumpEvents(&ALooper_pollAll);
+                continueRunning = PumpEvents(&ALooper_pollOnce);
             }
         }
 
@@ -206,6 +206,7 @@ namespace
         {
             case APP_CMD_GAINED_FOCUS:
             {
+                androidEnv->SetIsRunning(true);
                 AzFramework::AndroidLifecycleEvents::Bus::Broadcast(
                     &AzFramework::AndroidLifecycleEvents::Bus::Events::OnGainedFocus);
             }
@@ -228,7 +229,6 @@ namespace
 
             case APP_CMD_RESUME:
             {
-                androidEnv->SetIsRunning(true);
                 AzFramework::AndroidLifecycleEvents::Bus::Broadcast(
                     &AzFramework::AndroidLifecycleEvents::Bus::Events::OnResume);
             }
@@ -297,9 +297,10 @@ namespace
 // It runs in its own thread, with its own event loop for receiving input events
 void android_main(android_app* appState)
 {
+    const AZ::Debug::Trace tracer;
     // Adding a start up banner so you can see when the game is starting up in amongst the logcat spam
     LOGI("****************************************************************");
-    LOGI("*             Amazon Lumberyard - Launching Game...            *");
+    LOGI("*                      Launching Game...                       *");
     LOGI("****************************************************************");
 
     // setup the system command handler which are guaranteed to be called on the same
@@ -314,7 +315,6 @@ void android_main(android_app* appState)
     appState->activity->callbacks->onNativeWindowRedrawNeeded = OnWindowRedrawNeeded;
 
     // setup the android environment
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
     {
         AZ::Android::AndroidEnv::Descriptor descriptor;
 
@@ -331,7 +331,6 @@ void android_main(android_app* appState)
         if (!AZ::Android::AndroidEnv::Create(descriptor))
         {
             AZ::Android::AndroidEnv::Destroy();
-            AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
             MAIN_EXIT_FAILURE(appState, "Failed to create the AndroidEnv");
         }
 
@@ -422,7 +421,6 @@ void android_main(android_app* appState)
     ReturnCode status = Run(mainInfo);
 
     AZ::Android::AndroidEnv::Destroy();
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
 
     if (status != ReturnCode::Success)
     {

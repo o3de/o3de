@@ -154,37 +154,6 @@
     <file alias="error_report_warning.svg">res/error_report_warning.svg</file>
     <file alias="error_report_comment.svg">res/error_report_comment.svg</file>
     <file alias="error_report_helper.svg">res/error_report_helper.svg</file>
-    <file>particles_tree_00.png</file>
-    <file>particles_tree_01.png</file>
-    <file>particles_tree_02.png</file>
-    <file>particles_tree_03.png</file>
-    <file>particles_tree_04.png</file>
-    <file>particles_tree_05.png</file>
-    <file>particles_tree_06.png</file>
-    <file>particles_tree_07.png</file>
-    <file>arhitype_tree_00.png</file>
-    <file>arhitype_tree_01.png</file>
-    <file>arhitype_tree_02.png</file>
-    <file>arhitype_tree_03.png</file>
-    <file>water.png</file>
-    <file>bmp00005_00.png</file>
-    <file>bmp00005_01.png</file>
-    <file>bmp00005_02.png</file>
-    <file>bmp00005_03.png</file>
-    <file>bmp00005_04.png</file>
-    <file>bmp00005_05.png</file>
-    <file>bmp00005_06.png</file>
-    <file>bmp00005_07.png</file>
-    <file>bmp00005_08.png</file>
-    <file>bmp00005_09.png</file>
-    <file>bmp00006_00.png</file>
-    <file>bmp00006_01.png</file>
-    <file>bmp00006_02.png</file>
-    <file>bmp00006_03.png</file>
-    <file>bmp00006_04.png</file>
-    <file>bmp00006_05.png</file>
-    <file>bmp00006_06.png</file>
-    <file>bmp00006_07.png</file>
  </qresource>
   <qresource prefix="/cursors">
     <file>res/arr_addkey.cur</file>

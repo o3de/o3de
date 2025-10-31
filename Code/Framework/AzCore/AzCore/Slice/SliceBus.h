@@ -136,3 +136,7 @@ namespace AZ
     /// @deprecated Use SliceBus.
     using PrefabBus = SliceBus;
 } // namespace AZ
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::SliceInstanceEvents);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::SliceAssetSerializationNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::SliceEntityHierarchyInterface);

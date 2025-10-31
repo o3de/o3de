@@ -9,6 +9,9 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -23,19 +26,11 @@ namespace AzToolsFramework
     {
     public:
         //! Get the X/Y/Z dimensions of the box shape/collider.
-        virtual AZ::Vector3 GetDimensions() = 0;
+        virtual AZ::Vector3 GetDimensions() const = 0;
         //! Set the X/Y/Z dimensions of the box shape/collider.
         virtual void SetDimensions(const AZ::Vector3& dimensions) = 0;
-        //! Get the transform of the box shape/collider.
-        //! This is used by \ref BoxComponentMode instead of the \ref \AZ::TransformBus
-        //! because a collider may have an additional translation/orientation offset from
-        //! the Entity transform.
-        virtual AZ::Transform GetCurrentTransform() = 0;
-        //! Get the scale currently applied to the box.
-        //! With the Box Shape, the largest x/y/z component is taken
-        //! so scale is always uniform, with colliders the scale may
-        //! be different per component.
-        virtual AZ::Vector3 GetBoxScale() = 0;
+        //! Get the transform of the box relative to the entity.
+        virtual AZ::Transform GetCurrentLocalTransform() const = 0;
 
     protected:
         ~BoxManipulatorRequests() = default;
@@ -44,3 +39,5 @@ namespace AzToolsFramework
     //! Type to inherit to implement BoxManipulatorRequests
     using BoxManipulatorRequestBus = AZ::EBus<BoxManipulatorRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::BoxManipulatorRequests);

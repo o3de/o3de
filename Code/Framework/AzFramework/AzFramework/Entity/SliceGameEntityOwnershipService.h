@@ -10,16 +10,17 @@
 
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class SliceGameEntityOwnershipService
+    class AZF_API SliceGameEntityOwnershipService
         : public SliceEntityOwnershipService
         , private SliceGameEntityOwnershipServiceRequestBus::Handler
         , private SliceInstantiationResultBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceGameEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceGameEntityOwnershipService, AZ::SystemAllocator);
         explicit SliceGameEntityOwnershipService(const EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 
         virtual ~SliceGameEntityOwnershipService();

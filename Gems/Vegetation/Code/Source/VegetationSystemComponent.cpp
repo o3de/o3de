@@ -8,9 +8,8 @@
 #include "VegetationSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
-#include <GradientSignal/ImageSettings.h>
-#include <GradientSignal/ImageAsset.h>
 #include <Vegetation/DescriptorListAsset.h>
 #include <Vegetation/AreaComponentBase.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
@@ -19,11 +18,23 @@
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/InstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
-#include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/PrefabInstanceSpawner.h>
+
+AZ_DEFINE_BUDGET(Vegetation);
 
 namespace Vegetation
 {
+    void InstanceSpawner::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serialize)
+        {
+            serialize->Class<InstanceSpawner>()
+                ->Version(0)
+                ;
+        }
+    }
+
     namespace Details
     {
         AzFramework::GenericAssetHandler<DescriptorListAsset>* s_vegetationDescriptorListAssetHandler = nullptr;
@@ -71,7 +82,6 @@ namespace Vegetation
     {
         InstanceSpawner::Reflect(context);
         EmptyInstanceSpawner::Reflect(context);
-        DynamicSliceInstanceSpawner::Reflect(context);
         PrefabInstanceSpawner::Reflect(context);
         Descriptor::Reflect(context);
         AreaConfig::Reflect(context);
@@ -89,7 +99,6 @@ namespace Vegetation
                 editContext->Class<VegetationSystemComponent>("Vegetation System", "Reflects types and defines required services for dynamic vegetation systems to function")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

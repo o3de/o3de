@@ -15,7 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiButtonComponent
@@ -53,22 +53,22 @@ protected: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
-        provided.push_back(AZ_CRC("UiNavigationService"));
-        provided.push_back(AZ_CRC("UiStateActionsService"));
+        provided.push_back(AZ_CRC_CE("UiInteractableService"));
+        provided.push_back(AZ_CRC_CE("UiNavigationService"));
+        provided.push_back(AZ_CRC_CE("UiStateActionsService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
-        incompatible.push_back(AZ_CRC("UiNavigationService"));
-        incompatible.push_back(AZ_CRC("UiStateActionsService"));
+        incompatible.push_back(AZ_CRC_CE("UiInteractableService"));
+        incompatible.push_back(AZ_CRC_CE("UiNavigationService"));
+        incompatible.push_back(AZ_CRC_CE("UiStateActionsService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);

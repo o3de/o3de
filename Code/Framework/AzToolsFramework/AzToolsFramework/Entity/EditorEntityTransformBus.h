@@ -8,12 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     //! Notifications about entity transform changes from the editor.
     class EditorTransformChangeNotifications : public AZ::EBusTraits
     {
@@ -30,3 +30,5 @@ namespace AzToolsFramework
 
     using EditorTransformChangeNotificationBus = AZ::EBus<EditorTransformChangeNotifications>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorTransformChangeNotifications);

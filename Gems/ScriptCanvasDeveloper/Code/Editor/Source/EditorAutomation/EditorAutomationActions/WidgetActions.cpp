@@ -24,7 +24,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorMouseActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorKeyActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     //////////////////////////
     // WriteToLineEditAction
@@ -45,8 +45,8 @@ namespace ScriptCanvasDeveloper
         // Cheaty clear for right now.
         m_targetEdit->clear();
 
-        AddAction(aznew ScriptCanvasDeveloper::MouseClickAction(Qt::MouseButton::LeftButton, targetPoint));
-        AddAction(aznew ScriptCanvasDeveloper::TypeStringAction(m_targetText));
+        AddAction(aznew ScriptCanvas::Developer::MouseClickAction(Qt::MouseButton::LeftButton, targetPoint));
+        AddAction(aznew ScriptCanvas::Developer::TypeStringAction(m_targetText));
 
         CompoundAction::SetupAction();
     }

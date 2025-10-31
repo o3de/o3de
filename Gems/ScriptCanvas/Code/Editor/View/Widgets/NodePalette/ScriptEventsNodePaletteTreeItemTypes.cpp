@@ -6,7 +6,7 @@
  *
  */
 
-#include <qmenu.h>
+#include <QMenu>
 #include <QPixmap>
 
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
@@ -145,7 +145,7 @@ namespace ScriptCanvasEditor
         ScriptEvents::ScriptEventsAsset* data = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
         if (data)
         {
-            const ScriptEvents::ScriptEvent* previousDefinition = nullptr;
+            [[maybe_unused]] const ScriptEvents::ScriptEvent* previousDefinition = nullptr;
             ScriptEvents::ScriptEventsAsset* previousData = m_asset.GetAs<ScriptEvents::ScriptEventsAsset>();
             if (previousData)
             {

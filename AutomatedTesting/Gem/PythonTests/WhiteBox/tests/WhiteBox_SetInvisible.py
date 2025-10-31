@@ -21,25 +21,16 @@ def C28798205_WhiteBox_SetInvisible():
     # note: This automated test does not fully replicate the test case in Test Rail as it's
     # not currently possible using the Hydra API to get an EntityComponentIdPair at runtime,
     # in future game_mode will be activated and a runtime White Box Component queried
-    import os
-    import sys
-    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
-    import editor_python_test_tools.hydra_editor_utils as hydra
 
-    import azlmbr.whitebox.api as api
-    import azlmbr.whitebox
     import azlmbr.bus as bus
     import azlmbr.editor as editor
-    import azlmbr.entity as entity
-    import azlmbr.legacy.general as general
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    import WhiteBoxInit as init
 
     from editor_python_test_tools.utils import Report
 
-    from editor_python_test_tools.utils import TestHelper as helper
-
     # open level
-    helper.init_idle()
-    general.open_level("EmptyLevel")
+    hydra.open_base_level()
 
     white_box_entity_name = 'WhiteBox-Visibility'
     white_box_visibility_path = 'White Box Material|Visible'
@@ -56,9 +47,6 @@ def C28798205_WhiteBox_SetInvisible():
     editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", white_box_mesh_component, white_box_visibility_path, False)
     visible_property = hydra.get_component_property_value(white_box_mesh_component, white_box_visibility_path)
     Report.result(Tests.white_box_set_to_invisible, not visible_property)
-
-    helper.close_editor()
-
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

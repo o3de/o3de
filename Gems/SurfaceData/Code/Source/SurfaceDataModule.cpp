@@ -7,9 +7,9 @@
  */
 
 #include <SurfaceDataModule.h>
-#include <SurfaceDataSystemComponent.h>
-#include <Components/SurfaceDataColliderComponent.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 namespace SurfaceData
 {
@@ -31,8 +31,9 @@ namespace SurfaceData
 }
 
 #if !defined(SURFACEDATA_EDITOR)
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), SurfaceData::SurfaceDataModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_SurfaceData, SurfaceData::SurfaceDataModule)
+#endif
 #endif

@@ -13,6 +13,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,8 +28,6 @@ namespace AzPhysics
 namespace Physics
 {
     class Shape;
-    class Material;
-    class MaterialConfiguration;
     class ColliderConfiguration;
     class ShapeConfiguration;
 
@@ -130,8 +129,6 @@ namespace Physics
 
         virtual AZStd::shared_ptr<Shape> CreateShape(const ColliderConfiguration& colliderConfiguration, const ShapeConfiguration& configuration) = 0;
 
-        virtual AZStd::shared_ptr<Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) = 0;
-
         /// Releases the height field object created by the physics backend.
         /// @param nativeHeightfieldObject Pointer to the height field object.
         virtual void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) = 0;
@@ -202,3 +199,8 @@ namespace Physics
     typedef AZ::EBus<SystemDebugRequests> SystemDebugRequestBus;
 
 } // namespace Physics
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::DefaultWorldRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::EditorWorldRequests)
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZF_API, Physics::SystemRequests, Physics::SystemRequestsTraits);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, Physics::SystemDebugRequests);

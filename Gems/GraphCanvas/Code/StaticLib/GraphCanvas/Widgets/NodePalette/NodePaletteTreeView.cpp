@@ -30,6 +30,8 @@ namespace GraphCanvas
         setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
         setDragDropMode(QAbstractItemView::DragDropMode::DragOnly);
         setMouseTracking(true);
+        setSortingEnabled(true);
+        sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
         QObject::connect(this, &AzToolsFramework::QTreeViewWithStateSaving::clicked, this, &NodePaletteTreeView::OnClicked);
         QObject::connect(this, &AzToolsFramework::QTreeViewWithStateSaving::doubleClicked, this, &NodePaletteTreeView::OnDoubleClicked);

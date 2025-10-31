@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef LOGENTRY_H
-#define LOGENTRY_H
-
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -23,7 +22,7 @@ namespace AzToolsFramework
     namespace Logging
     {
         class LogLine;
-        class LogEntry
+        class AZTF_API LogEntry
         {
         public:
             enum class Severity
@@ -46,7 +45,7 @@ namespace AzToolsFramework
                 AZStd::string m_value;
             };
             
-            AZ_CLASS_ALLOCATOR(LogEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogEntry, AZ::SystemAllocator);
 
             using FieldStorage = AZStd::unordered_map<AZ::Crc32, Field>;
 
@@ -87,5 +86,3 @@ namespace AzToolsFramework
         };
     } // Logging
 } // AzToolsFramework
-
-#endif

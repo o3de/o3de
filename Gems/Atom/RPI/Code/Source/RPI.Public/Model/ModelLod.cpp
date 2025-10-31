@@ -10,9 +10,9 @@
 #include <Atom/RPI.Public/Material/Material.h>
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ
@@ -24,12 +24,12 @@ namespace AZ
             AZStd::any modelAssetAny{&modelAsset};
 
             return Data::InstanceDatabase<ModelLod>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(lodAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(lodAsset),
                 lodAsset,
                 &modelAssetAny);
         }
 
-        AZStd::array_view<ModelLod::Mesh> ModelLod::GetMeshes() const
+        AZStd::span<ModelLod::Mesh> ModelLod::GetMeshes()
         {
             return m_meshes;
         }
@@ -52,15 +52,15 @@ namespace AZ
 
         RHI::ResultCode ModelLod::Init(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
-                Mesh meshInstance;
+                Mesh meshInstance{ RHI::GeometryView{ RHI::MultiDevice::AllDevices } };
 
                 const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
-                if (indexBufferAsset)
+                if (indexBufferAsset.GetId().IsValid())
                 {
                     Data::Instance<Buffer> indexBuffer = Buffer::FindOrCreate(indexBufferAsset);
 
@@ -83,16 +83,16 @@ namespace AZ
                         return RHI::ResultCode::InvalidOperation;
                     }
 
-                    meshInstance.m_indexBufferView = RHI::IndexBufferView(
-                        *indexBuffer->GetRHIBuffer(),
-                        bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
-                        bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
-                        indexFormat);
+                    meshInstance.SetIndexBufferView(
+                        RHI::IndexBufferView(
+                            *indexBuffer->GetRHIBuffer(),
+                            bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
+                            bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
+                            indexFormat));
 
                     RHI::DrawIndexed drawIndexed;
                     drawIndexed.m_indexCount = bufferViewDescriptor.m_elementCount;
-                    drawIndexed.m_instanceCount = 1;
-                    meshInstance.m_drawArguments = drawIndexed;
+                    meshInstance.SetDrawArguments(drawIndexed);
 
                     TrackBuffer(indexBuffer);
                 }
@@ -109,6 +109,7 @@ namespace AZ
                 const ModelMaterialSlot& materialSlot = modelAsset->FindMaterialSlot(mesh.GetMaterialSlotId());
 
                 meshInstance.m_materialSlotStableId = materialSlot.m_stableId;
+                meshInstance.m_materialSlotName = materialSlot.m_displayName;
 
                 if (materialSlot.m_defaultMaterialAsset.IsReady())
                 {
@@ -257,20 +258,17 @@ namespace AZ
 
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
-            StreamBufferViewList& streamBufferViewsOut,
+            RHI::StreamBufferIndices& streamIndicesOut,
             UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
             const ShaderInputContract& contract,
             size_t meshIndex,
             const MaterialModelUvOverrideMap& materialModelUvMap,
-            const MaterialUvNameMap& materialUvNameMap) const
+            const MaterialUvNameMap& materialUvNameMap)
         {
-            streamBufferViewsOut.clear();
-
             RHI::InputStreamLayoutBuilder layoutBuilder;
-
-            const Mesh& mesh = m_meshes[meshIndex];
-
+            Mesh& mesh = m_meshes[meshIndex];
             bool success = true;
+            streamIndicesOut.Reset();
 
             // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
             auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
@@ -288,35 +286,27 @@ namespace AZ
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
-                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        // The configuration of the dummy input stream is a bit touchy, and could result in crashes or validation failures that are platform-specific.
+                        // If you modify this code, be sure to test with "-rhi-device-validation=enable" on every platform.
+                        // Here are some criteria that we've noticed before, even for empty buffers:
+                        // Metal: Mesh stream formats need to be at least 4 byte aligned.
+                        // Vulkan: Mesh stream data type (float vs uint) must match the shader, or validation errors are reported
+                        //        ("does not match vertex shader input type")
+                        // Vulkan: We can't just use a null buffer pointer because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
+                        // Dx12: Mesh stream data type (float vs uint) must match the shader, or validation warnings are reported
+                        //       ("the matching entry in the Input Layout declaration ... specifies mismatched format").
+                        //
+                        // The stride value does not seem to matter, just the Format type. Still, we use GetFormatSize to set an accurate stride.
+
+                        RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
-                        // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
-                        streamBufferViewsOut.push_back(dummyBuffer);
 
-                        // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible
-                        // with another platform, consider trying one of the approaches below.
-
-                        //RHI::Format formatDoesntReallyMatter = RHI::Format::R8_UNORM;
-                        //layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
-                        //RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 0};
-                        //streamBufferViewsOut.push_back(dummyBuffer);
-
-                        //RHI::Format formatDoesntReallyMatter = RHI::Format::R8G8B8A8_UINT;
-                        //layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
-                        //RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 4, 4};
-                        //streamBufferViewsOut.push_back(dummyBuffer);
-
-                        //RHI::Format formatDoesntMatter = RHI::Format::R32G32B32A32_FLOAT;
-                        //layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntMatter);
-                        //RHI::StreamBufferView emptyBuffer{*m_buffers[0]->GetRHIBuffer(), 0, 16, 16};
-                        //streamBufferViewsOut.push_back(emptyBuffer);
-
-                        //RHI::Format formatDoesntMatter = RHI::Format::R32G32B32A32_FLOAT;
-                        //layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntMatter);
-                        //RHI::StreamBufferView emptyBuffer{*m_buffers[0]->GetRHIBuffer(), 0, 0, 16};
-                        //streamBufferViewsOut.push_back(emptyBuffer);
+                        if (!mesh.HasDummyStreamBufferView())
+                        {
+                            RHI::StreamBufferView dummyBuffer{ *mesh.GetIndexBufferView().GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
+                            mesh.AddDummyStreamBufferView(dummyBuffer);
+                        }
+                        streamIndicesOut.AddIndex(mesh.GetDummyStreamBufferIndex());
                     }
                     else
                     {
@@ -338,11 +328,11 @@ namespace AZ
                     }
                     else
                     {
+                        size_t iterIndex = iter - mesh.m_streamInfo.begin();
+
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
-
-                        RHI::StreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
-                        streamBufferViewsOut.push_back(bufferView);
+                        streamIndicesOut.AddIndex(static_cast<u8>(iterIndex));
                     }
                 }
             }
@@ -350,8 +340,7 @@ namespace AZ
             if (success)
             {
                 layoutOut = layoutBuilder.End();
-
-                success &= RHI::ValidateStreamBufferViews(layoutOut, streamBufferViewsOut);
+                success &= RHI::ValidateStreamBufferViews(layoutOut, mesh, streamIndicesOut);
             }
 
             return success;
@@ -389,7 +378,7 @@ namespace AZ
             const ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo,
             Mesh& meshInstance)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             const Data::Asset<BufferAsset>& streamBufferAsset = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
             const Data::Instance<Buffer>& streamBuffer = Buffer::FindOrCreate(streamBufferAsset);
@@ -405,12 +394,14 @@ namespace AZ
             info.m_semantic = streamBufferInfo.m_semantic;
             info.m_customName = streamBufferInfo.m_customName;
             info.m_format = bufferViewDescriptor.m_elementFormat;
-            info.m_byteOffset = bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
-            info.m_byteCount = bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize;
-            info.m_stride = bufferViewDescriptor.m_elementSize;
             info.m_bufferIndex = TrackBuffer(streamBuffer);
-
             meshInstance.m_streamInfo.push_back(info);
+
+            u32 byteOffset = bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
+            u32 byteCount = bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize;
+            u32 byteStride = bufferViewDescriptor.m_elementSize;
+            RHI::StreamBufferView streamBufferView(*streamBuffer->GetRHIBuffer(), byteOffset, byteCount, byteStride);
+            meshInstance.AddStreamBufferView(streamBufferView);
 
             return true;
         }
@@ -441,5 +432,11 @@ namespace AZ
             m_buffers.emplace_back(buffer);
             return static_cast<uint32_t>(m_buffers.size() - 1);
         }
+
+        void ModelLod::ReleaseTrackedBuffers()
+        {
+            m_buffers.clear();
+        }
+
     } // namespace RPI
 } // namespace AZ

@@ -57,7 +57,7 @@ class TestLinuxLauncher(object):
         launcher = ly_test_tools.launchers.LinuxLauncher(mock.MagicMock(), ["dummy"])
         launcher._proc = mock_proc
 
-        launcher.kill()
+        launcher.stop()
 
         mock_proc.kill.assert_called_once()
-        mock_alive.assert_called_once()
+        mock_alive.assert_called()

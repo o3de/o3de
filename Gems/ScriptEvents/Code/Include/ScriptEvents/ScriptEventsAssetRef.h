@@ -32,7 +32,7 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAssetRef, "{9BF12D72-9FE5-4F0E-A115-B92D99FB1CD7}");
-        AZ_CLASS_ALLOCATOR(ScriptEventsAssetRef, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsAssetRef, AZ::SystemAllocator);
 
         using AssetChangedCB = AZStd::function<void(const AZ::Data::Asset<ScriptEventsAsset>&, void* userData)>;
 
@@ -82,9 +82,9 @@ namespace ScriptEvents
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override;
 
-        void OnAssetSaved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] bool isSuccessful) override
+        void OnAssetSaved([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] bool isSuccessful) override
         {
-            SetAsset(m_asset);
+            SetAsset(asset);
         }
         //=====================================================================
 

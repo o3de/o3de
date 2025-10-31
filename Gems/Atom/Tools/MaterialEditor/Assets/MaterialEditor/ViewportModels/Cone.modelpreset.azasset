@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Cone",
         "modelAsset": {
             "assetId": {
                 "guid": "{8E6D29E3-0019-5C5A-9F5D-61656BC02DD7}",

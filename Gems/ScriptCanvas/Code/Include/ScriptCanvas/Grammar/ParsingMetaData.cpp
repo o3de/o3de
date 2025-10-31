@@ -10,6 +10,7 @@
 
 #include <AzCore/std/sort.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 #include <ScriptCanvas/Libraries/Core/ExtractProperty.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
@@ -152,19 +153,19 @@ namespace ScriptCanvas
             {
                 if (azrtti_istypeof<Nodes::String::Format>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew FormatStringMetaData());
+                    return AZStd::make_shared<FormatStringMetaData>();
                 }
                 else if (azrtti_istypeof<Nodes::String::Print>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew PrintMetaData());
+                    return AZStd::make_shared<PrintMetaData>();
                 }
                 else if (azrtti_istypeof<Nodes::Math::MathExpression>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew MathExpressionMetaData());
+                    return AZStd::make_shared<MathExpressionMetaData>();
                 }
                 else if (execution->GetSymbol() == Symbol::FunctionCall)
                 {
-                    return MetaDataPtr(aznew FunctionCallDefaultMetaData());
+                    return AZStd::make_shared<FunctionCallDefaultMetaData>();
                 }
             }
 

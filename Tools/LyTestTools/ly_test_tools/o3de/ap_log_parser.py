@@ -248,7 +248,7 @@ class APLogParser(APOutputParser):
                 all_lines = log_file.readlines()
                 self._parse_lines(all_lines)
         except OSError:
-            logger.error(f"Error opening file: {self._file_path}")
+            logger.error(f"Error opening file in LyTestTools at path: {self._file_path}")
             self._runs = []
 
     def _trim_line(self, line: str) -> Tuple[str, int]:

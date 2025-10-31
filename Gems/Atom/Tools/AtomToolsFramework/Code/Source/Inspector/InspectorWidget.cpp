@@ -6,27 +6,70 @@
  *
  */
 
+#include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
+#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
+#include <AtomToolsFramework/Inspector/InspectorWidget.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <Inspector/ui_InspectorWidget.h>
+
 #include <QMenu>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSizePolicy>
 
-#include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
-#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
-#include <AtomToolsFramework/Inspector/InspectorWidget.h>
-#include <Source/Inspector/ui_InspectorWidget.h>
-
 namespace AtomToolsFramework
 {
+    void InspectorWidget::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->RegisterGenericType<AZStd::unordered_set<AZ::u32>>();
+
+            serialize->Class<InspectorWidget>()
+                ->Version(0);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<InspectorRequestBus>("InspectorRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
+                ->Event("ClearHeading", &InspectorRequestBus::Events::ClearHeading)
+                ->Event("Reset", &InspectorRequestBus::Events::Reset)
+                ->Event("AddGroupsBegin", &InspectorRequestBus::Events::AddGroupsBegin)
+                ->Event("AddGroupsEnd", &InspectorRequestBus::Events::AddGroupsEnd)
+                ->Event("SetGroupVisible", &InspectorRequestBus::Events::SetGroupVisible)
+                ->Event("IsGroupVisible", &InspectorRequestBus::Events::IsGroupVisible)
+                ->Event("IsGroupHidden", &InspectorRequestBus::Events::IsGroupHidden)
+                ->Event("RefreshGroup", &InspectorRequestBus::Events::RefreshGroup)
+                ->Event("RebuildGroup", &InspectorRequestBus::Events::RebuildGroup)
+                ->Event("RefreshAll", &InspectorRequestBus::Events::RefreshAll)
+                ->Event("RebuildAll", &InspectorRequestBus::Events::RebuildAll)
+                ->Event("ExpandGroup", &InspectorRequestBus::Events::ExpandGroup)
+                ->Event("CollapseGroup", &InspectorRequestBus::Events::CollapseGroup)
+                ->Event("IsGroupExpanded", &InspectorRequestBus::Events::IsGroupExpanded)
+                ->Event("ExpandAll", &InspectorRequestBus::Events::ExpandAll)
+                ->Event("CollapseAll", &InspectorRequestBus::Events::CollapseAll)
+                ;
+        }
+    }
+
     InspectorWidget::InspectorWidget(QWidget* parent)
         : QWidget(parent)
         , m_ui(new Ui::InspectorWidget)
     {
         m_ui->setupUi(this);
+        SetGroupSettingsPrefix("/O3DE/AtomToolsFramework/InspectorWidget");
     }
 
     InspectorWidget::~InspectorWidget()
     {
+        SetSettingsObject(m_collapsedGroupSettingName, m_collapsedGroups);
+        InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void InspectorWidget::AddHeading(QWidget* headingWidget)
@@ -52,6 +95,7 @@ namespace AtomToolsFramework
             delete child;
         }
         m_groups.clear();
+        InspectorRequestBus::Handler::BusDisconnect();
     }
 
     void InspectorWidget::AddGroupsBegin()
@@ -202,20 +246,31 @@ namespace AtomToolsFramework
         }
     }
 
+    void InspectorWidget::SetGroupSettingsPrefix(const AZStd::string& prefix)
+    {
+        if (!m_collapsedGroupSettingName.empty())
+        {
+            SetSettingsObject(m_collapsedGroupSettingName, m_collapsedGroups);
+        }
+
+        m_collapsedGroupSettingName = prefix + "/CollapsedGroups";
+        m_collapsedGroups = GetSettingsObject<AZStd::unordered_set<AZ::u32>>(m_collapsedGroupSettingName);
+    }
+
     bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
     {
-        AZ_UNUSED(groupName);
-        return true;
+        auto stateItr = m_collapsedGroups.find(AZ::Crc32(groupName));
+        return stateItr == m_collapsedGroups.end();
     }
 
     void InspectorWidget::OnGroupExpanded(const AZStd::string& groupName)
     {
-        AZ_UNUSED(groupName);
+        m_collapsedGroups.erase(AZ::Crc32(groupName));
     }
 
     void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupName)
     {
-        AZ_UNUSED(groupName);
+        m_collapsedGroups.insert(AZ::Crc32(groupName));
     }
 
     void InspectorWidget::OnHeaderClicked(const AZStd::string& groupName, QMouseEvent* event)

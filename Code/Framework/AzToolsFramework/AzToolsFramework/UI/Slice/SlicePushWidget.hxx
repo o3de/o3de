@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QWidget>
-#include <QtGui/QIcon>
+#include <QCheckBox>
+#include <QWidget>
+#include <QIcon>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Slice/SliceComponent.h>
@@ -43,7 +45,7 @@ namespace AzToolsFramework
     /**
      * Overlay to display if no data changes were detected.
      */
-    class NoChangesOverlay
+    class AZTF_API NoChangesOverlay
         : public QWidget
     {
         Q_OBJECT
@@ -109,7 +111,7 @@ namespace AzToolsFramework
     /**
      * Widget for pushing multiple entities/fields to slices.
      */
-    class SlicePushWidget
+    class AZTF_API SlicePushWidget
         : public QWidget
         , public AZ::Data::AssetBus::MultiHandler
     {

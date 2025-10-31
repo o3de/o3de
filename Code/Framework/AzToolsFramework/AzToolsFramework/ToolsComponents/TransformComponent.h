@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/TransformBus.h>
@@ -20,6 +21,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 
 #include "EditorComponentBase.h"
 #include "TransformComponentBus.h"
@@ -30,7 +32,7 @@ namespace AzToolsFramework
     {
         /// Manages transform data as separate vector fields for editing purposes.
         /// The TransformComponent is referenced by other components in the same entity, it is not an asset.
-        class TransformComponent
+        class AZTF_API TransformComponent
             : public EditorComponentBase
             , public AZ::TransformBus::Handler
             , public AZ::SliceEntityHierarchyRequestBus::Handler
@@ -164,6 +166,11 @@ namespace AzToolsFramework
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
 
+            // For tools
+            // Returns false if the component did not exist and failed to be added.
+            // Returns true otherwise, and always updates the non-uniform scale value.
+            bool AddNonUniformScaleComponent(const AZ::Vector3& nonUniformScale);
+
         private:
             // AZ::TransformNotificationBus - Connected to parent's ID
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -179,10 +186,7 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZ::Outcome<void, AZStd::string> ValidatePotentialParent(void* newValue, const AZ::Uuid& valueType);
-
             AZ::u32 TransformChangedInspector();
-            AZ::u32 ParentChangedInspector();
             AZ::u32 StaticChangedInspector();
 
             bool TransformChanged();
@@ -238,9 +242,10 @@ namespace AzToolsFramework
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
 
-            // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
-            // element is used rather than a data element.
-            bool m_addNonUniformScaleButton = false;
+            // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
+            bool m_initialized = false;
+
+            FocusModeInterface* m_focusModeInterface = nullptr;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

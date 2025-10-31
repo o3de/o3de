@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TwoStringEventData, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TwoStringEventData, MotionEventAllocator)
 
     bool StringEqual(const AZStd::string& lhs, const AZStd::string& rhs, bool ignoreEmpty)
     {
@@ -50,7 +50,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->Attribute(AZ_CRC("Creatable", 0x47bff8c4), true)
+                ->Attribute(AZ_CRC_CE("Creatable"), true)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &TwoStringEventData::m_subject, "Subject", "")
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &TwoStringEventData::m_parameters, "Parameters", "")
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &TwoStringEventData::m_mirrorSubject, "Mirror Subject", "")

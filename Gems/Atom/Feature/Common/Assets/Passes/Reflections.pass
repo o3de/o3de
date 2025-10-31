@@ -28,6 +28,10 @@
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input"
+                },
+                {
                     "Name": "SpecularInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
@@ -63,7 +67,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionprobestencil",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -88,7 +92,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionprobeblendweight",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionProbeBlendWeight.shader"
                         }
@@ -148,7 +152,7 @@
                             "FilePath": "Shaders/Reflections/ReflectionGlobalFullscreen.shader"
                         },
                         "StencilRef": 3, // See RenderCommon.h and ReflectionGlobalFullscreen.shader
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -202,7 +206,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionproberenderouter",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionProbeRenderOuter.shader"
                         }
@@ -252,7 +256,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "reflectionproberenderinner",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionProbeRenderInner.shader"
                         }
@@ -282,7 +286,13 @@
                             "AttachmentRef": {
                                 "Pass": "ReflectionProbeStencilPass",
                                 "Attachment": "DepthStencilInputOutput"
-
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
                             }
                         },
                         {

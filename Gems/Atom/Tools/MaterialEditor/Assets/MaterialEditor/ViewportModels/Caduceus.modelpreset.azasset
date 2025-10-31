@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Caduceus",
         "modelAsset": {
             "assetId": {
                 "guid": "{ECB56B93-12F2-56FF-94AB-E14F61885ACB}",

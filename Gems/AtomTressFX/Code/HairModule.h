@@ -22,7 +22,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(HairModule, "{0EF06CF0-8011-4668-A31F-A6851583EBDC}", AZ::Module);
-                AZ_CLASS_ALLOCATOR(HairModule, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairModule, AZ::SystemAllocator);
 
                 HairModule();
 
@@ -33,5 +33,8 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::Hair::HairModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AtomTressFX, AZ::Render::Hair::HairModule)
-
+#endif

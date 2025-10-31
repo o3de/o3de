@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +18,7 @@ namespace AzToolsFramework
     {
         class Instance;
 
-        class InstanceEntityIdMapper final
+        class AZTF_API InstanceEntityIdMapper final
             : public AZ::JsonEntityIdSerializer::JsonEntityIdMapper
         {
         public:
@@ -38,6 +39,8 @@ namespace AzToolsFramework
 
             void SetStoringInstance(const Instance& storingInstance);
             void SetLoadingInstance(Instance& loadingInstance);
+
+            const Instance* GetLoadingInstance() const;
 
             static AZ::EntityId GenerateEntityIdForAliasPath(const AliasPathView& aliasPath, uint64_t seedKey = SeedKey);
 

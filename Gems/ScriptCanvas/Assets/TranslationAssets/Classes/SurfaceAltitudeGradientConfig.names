@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetNumTags",
-                    "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumTags"
@@ -43,7 +42,6 @@
                 },
                 {
                     "base": "GetTag",
-                    "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTag"
@@ -82,7 +80,6 @@
                 },
                 {
                     "base": "RemoveTag",
-                    "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveTag"
@@ -113,7 +110,6 @@
                 },
                 {
                     "base": "AddTag",
-                    "context": "SurfaceAltitudeGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddTag"

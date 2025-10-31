@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Spawnable/ComponentRequirementsValidator.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h>
@@ -29,11 +31,11 @@ namespace AzToolsFramework::Components
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class EditorInfoRemover
+    class AZTF_API EditorInfoRemover
         : public PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover,
             "{50B48C7E-C9DE-48DE-8438-1A186A8EEAC8}", PrefabProcessor);
 
@@ -43,16 +45,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         using RemoveEditorInfoResult = AZ::Outcome<void, AZStd::string>;
         RemoveEditorInfoResult RemoveEditorInfo(
-            PrefabDom& prefab,
+            PrefabDocument& prefab,
             AZ::SerializeContext* serializeContext,
             PrefabProcessorContext& prefabProcessorContext);
 
         static void Reflect(AZ::ReflectContext* context);
 
      protected:
-        using EntityList = AZStd::vector<AZ::Entity*>;
-        static void GetEntitiesFromInstance(
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities);
+        static void GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities);
 
         static bool ReadComponentAttribute(
             AZ::Component* component,
@@ -70,7 +70,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using RemoveEditorOnlyEntitiesResult = AZ::Outcome<void, AZStd::string>;
         RemoveEditorOnlyEntitiesResult RemoveEditorOnlyEntities(EntityList& entities);
 
-        using ExportEntityResult = AZ::Outcome<AZ::Entity*, AZStd::string>;
+        using ExportEntityResult = AZ::Outcome<AZStd::unique_ptr<AZ::Entity>, AZStd::string>;
         ExportEntityResult ExportEntity(AZ::Entity* sourceEntity, PrefabProcessorContext& context);
 
         using ResolveExportedComponentResult = AZ::Outcome<AZ::ExportedComponent, AZStd::string>;

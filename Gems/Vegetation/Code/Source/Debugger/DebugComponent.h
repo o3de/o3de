@@ -36,7 +36,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugConfig, AZ::SystemAllocator);
         AZ_RTTI(DebugConfig, "{10750041-ABCA-4515-8D5D-B3E4769C3829}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -117,14 +117,14 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // BoundsRequestBus
-        AZ::Aabb GetWorldBounds() override
+        AZ::Aabb GetWorldBounds() const override
         {
             // DisplayEntityViewport relies on the BoundsRequestBus to get the entity bounds to determine when to call debug drawing
             // for that entity.  Since this is a level component that can draw infinitely far in every direction, we return an
             // effectively infinite AABB so that it always draws.
             return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-AZ::Constants::FloatMax), AZ::Vector3(AZ::Constants::FloatMax));
         }
-        AZ::Aabb GetLocalBounds() override
+        AZ::Aabb GetLocalBounds() const override
         {
             // The local and world bounds will be the same for this component.
             return GetWorldBounds();

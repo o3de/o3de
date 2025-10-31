@@ -18,14 +18,14 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodePicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodeHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodePicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodeHandler, EditorAllocator)
 
     ActorGoalNodePicker::ActorGoalNodePicker(QWidget* parent)
         : QWidget(parent)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
 
         m_pickButton = new QPushButton(this);
         connect(m_pickButton, &QPushButton::clicked, this, &ActorGoalNodePicker::OnPickClicked);
@@ -148,7 +148,7 @@ namespace EMotionFX
 
     AZ::u32 ActorGoalNodeHandler::GetHandlerName() const
     {
-        return AZ_CRC("ActorGoalNode", 0xaf1e8a3a);
+        return AZ_CRC_CE("ActorGoalNode");
     }
 
 
@@ -158,7 +158,8 @@ namespace EMotionFX
 
         connect(picker, &ActorGoalNodePicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

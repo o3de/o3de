@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString CapsuleShapeNode::TITLE = QObject::tr("Capsule Shape");
+    const char* CapsuleShapeNode::TITLE = "Capsule Shape";
 
     CapsuleShapeNode::CapsuleShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

@@ -26,7 +26,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DistributionFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DistributionFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(DistributionFilterConfig, "{7E304208-5FDF-4384-BC28-E7CDD2A15BEC}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         
@@ -40,7 +40,7 @@ namespace Vegetation
         GradientSignal::GradientSampler* GetSampler();
     };
 
-    static const AZ::Uuid DistributionFilterComponentTypeId = "{7A1D2AB7-2F32-4CBE-B7F1-2C08D427BE50}";
+    inline constexpr AZ::TypeId DistributionFilterComponentTypeId{ "{7A1D2AB7-2F32-4CBE-B7F1-2C08D427BE50}" };
 
     /**
     * Component implementing VegetationFilterRequestBus that accepts/rejects based on noise generator passing threshold

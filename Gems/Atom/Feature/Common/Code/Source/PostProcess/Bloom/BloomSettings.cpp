@@ -7,7 +7,6 @@
  */
 
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

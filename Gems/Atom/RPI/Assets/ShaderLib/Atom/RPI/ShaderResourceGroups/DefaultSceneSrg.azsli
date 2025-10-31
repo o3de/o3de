@@ -12,6 +12,9 @@
 
 partial ShaderResourceGroup SceneSrg
 {
-    float m_time;
+    float m_time; // number of seconds since the application started
+    // m_prevTime is the value of m_time when the SceneSRG was last updated.
+    // If your shader runs on a different frequency from SceneSRG, you will get unexpected results from using m_prevTime.
+    float m_prevTime;
 }
 

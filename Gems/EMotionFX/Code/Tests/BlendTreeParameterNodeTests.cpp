@@ -50,12 +50,12 @@ namespace EMotionFX
 
         // Add new parameter to the anim graph and check if a output port got added for the parameter node.
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 0);
-        ExecuteCommands({std::string{"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + startParameterName});
+        ExecuteCommands({std::string{"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + startParameterName});
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
         EXPECT_STREQ(parameterNode->GetOutputPorts()[0].GetName(), startParameterName);
 
         // Rename anim graph parameter and check if the output port of the parameter node also got renamed.
-        ExecuteCommands({std::string{"AnimGraphAdjustParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + startParameterName + " -newName " + renamedParameterName});
+        ExecuteCommands({std::string{"AnimGraphAdjustParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + startParameterName + " -newName " + renamedParameterName});
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
         EXPECT_STREQ(parameterNode->GetOutputPorts()[0].GetName(), renamedParameterName);
 
@@ -77,9 +77,9 @@ namespace EMotionFX
 
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 0);
         ExecuteCommands({
-            {"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P0"},
-            {"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P1"},
-            {"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P2"},
+            {"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P0"},
+            {"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P1"},
+            {"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name P2"},
         });
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 3);
         EXPECT_EQ(parameterNode->GetParameterIndex(0), 0);
@@ -95,14 +95,14 @@ namespace EMotionFX
         EXPECT_EQ(parameterNode->GetParameterIndex(1), 2);
         EXPECT_THAT(parameterNode->GetParameters(), ::testing::Pointwise(::testing::Eq(), StringVector{"P1", "P2"}));
 
-        ExecuteCommands({{"AnimGraphRemoveParameter -animGraphID 0 -name P0"}});
+        ExecuteCommands({{"AnimGraphRemoveParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -name P0"}});
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 2);
         // All the parameters in the mask shifted, ports and parameter indices line up again
         EXPECT_EQ(parameterNode->GetParameterIndex(0), 0);
         EXPECT_EQ(parameterNode->GetParameterIndex(1), 1);
         EXPECT_THAT(parameterNode->GetParameters(), ::testing::Pointwise(::testing::Eq(), StringVector{"P1", "P2"}));
 
-        ExecuteCommands({{"AnimGraphRemoveParameter -animGraphID 0 -name P1"}});
+        ExecuteCommands({{"AnimGraphRemoveParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -name P1"}});
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
         EXPECT_EQ(parameterNode->GetParameterIndex(0), 0);
         EXPECT_THAT(parameterNode->GetParameters(), ::testing::Pointwise(::testing::Eq(), StringVector{"P2"}));
@@ -132,9 +132,9 @@ namespace EMotionFX
 
         // 1. Add two parameters (Param0 and Param1) to the anim graph and check if a output port got added for the parameter node.
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 0);
-        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName0 });
+        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName0 });
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
-        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName1 });
+        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName1 });
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 2);
 
         // 2. Change the parameter mask to contain Param1.
@@ -143,7 +143,7 @@ namespace EMotionFX
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
 
         // 3. Add the 3rd parameter (Param2). The parameter mask should stay the same. 
-        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID 0 -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName2 });
+        ExecuteCommands({ std::string{"AnimGraphCreateParameter -animGraphID " + std::to_string(GetAnimGraph()->GetID()) + " -type {2ED6BBAF-5C82-4EAA-8678-B220667254F2} -name "} + parameterName2 });
         EXPECT_EQ(parameterNode->GetOutputPorts().size(), 1);
         EXPECT_THAT(parameterNode->GetParameters(), ::testing::Pointwise(::testing::Eq(), StringVector{ "Param1" }));
         EXPECT_STREQ(parameterNode->GetOutputPorts()[0].GetName(), parameterName1);

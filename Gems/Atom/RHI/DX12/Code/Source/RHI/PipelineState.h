@@ -8,7 +8,7 @@
 #pragma once
 
 #include <RHI/PipelineLayout.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -37,16 +37,16 @@ namespace AZ
         };        
 
         class PipelineState final
-            : public RHI::PipelineState
+            : public RHI::DevicePipelineState
         {
             friend class PipelineStatePool;
         public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<PipelineState> Create();
 
             /// Returns the pipeline layout associated with this PSO.
-            const PipelineLayout& GetPipelineLayout() const;
+            const PipelineLayout* GetPipelineLayout() const;
 
             /// Returns the platform pipeline state object.
             ID3D12PipelineState* Get() const;
@@ -57,10 +57,10 @@ namespace AZ
             PipelineState() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
+            // RHI::DevicePipelineState
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

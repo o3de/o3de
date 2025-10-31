@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>

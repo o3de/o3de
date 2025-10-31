@@ -38,7 +38,7 @@ namespace GraphCanvas
     public:
 
         AZ_RTTI(TranslationAsset, "{6A1A3B00-3DF2-4297-96BB-3BA067A978E6}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(TranslationAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TranslationAsset, AZ::SystemAllocator);
 
         TranslationAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded);
 
@@ -112,7 +112,7 @@ namespace GraphCanvas
         , protected AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(TranslationAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TranslationAssetHandler, AZ::SystemAllocator);
         AZ_RTTI(TranslationAssetHandler, "{C161AB3B-86F6-4CB1-9DAE-83F2DE084CF4}", AZ::Data::AssetHandler);
 
         TranslationAssetHandler();

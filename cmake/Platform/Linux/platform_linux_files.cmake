@@ -12,9 +12,12 @@ set(FILES
     ../Common/Install_common.cmake
     ../Common/PackagingPostBuild_common.cmake
     ../Common/PackagingPreBuild_common.cmake
+    ../Common/Toolchain_scriptonly_common.cmake
     CompilerSettings_linux.cmake
-    Configurations_linux.cmake
+    Configurations_linux_aarch64.cmake
+    Configurations_linux_x86_64.cmake
     Install_linux.cmake
+    libzstd_linux.cmake
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
     Packaging_linux.cmake
@@ -25,5 +28,6 @@ set(FILES
     PALDetection_linux.cmake
     RPathChange.cmake
     runtime_dependencies_linux.cmake.in
-    RuntimeDependencies_linux.cmake    
+    RuntimeDependencies_linux.cmake
+    Toolchain_scriptonly_linux.cmake
 )

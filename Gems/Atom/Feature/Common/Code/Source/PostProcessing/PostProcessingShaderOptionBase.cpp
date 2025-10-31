@@ -25,7 +25,7 @@ namespace AZ
 
             auto shaderVariant = shader->GetVariant(shaderOption.GetShaderVariantId());
 
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOption);
             pipelineStateDescriptor.m_renderAttachmentConfiguration = renderAttachmentConfiguration;
             pipelineStateDescriptor.m_renderStates.m_multisampleState = multisampleState;
 
@@ -37,7 +37,7 @@ namespace AZ
             pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
 
             m_shaderVariantTable[variationKey].m_pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_shaderVariantTable[variationKey].m_isFullyBaked = shaderVariant.IsFullyBaked();
+            m_shaderVariantTable[variationKey].m_isFullyBaked = !shaderVariant.UseKeyFallback();
         }
 
         void PostProcessingShaderOptionBase::UpdateShaderVariant(const AZ::RPI::ShaderOptionGroup& shaderOption)
@@ -74,7 +74,7 @@ namespace AZ
         const PostProcessingShaderOptionBase::ShaderVariantInformation* PostProcessingShaderOptionBase::GetShaderVariant(AZ::u64 key) const
         {
             auto result = m_shaderVariantTable.find(key);
-            return result != nullptr ? &result->second : nullptr;
+            return result != m_shaderVariantTable.end() ? &result->second : nullptr;
         }
 
     }   // namespace Render

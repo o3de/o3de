@@ -9,24 +9,32 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/std/string/conversions.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/Debug/EventTrace.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzFramework/Asset/AssetSeedList.h>
-#include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
+#include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests);
+
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_BUDGET(AzFramework);
+#else
+AZ_DECLARE_BUDGET_SHARED(AzFramework);
+#endif // defined(AZ_MONOLITHIC_BUILD)
 
 namespace AzFramework
 {
@@ -50,6 +58,8 @@ namespace AzFramework
 
     namespace AssetSystem
     {
+        static constexpr const char* S_RegKey_AllowSyncRequests = "/O3DE/AssetSystem/AllowSyncRequests";
+
         void OnAssetSystemMessage(unsigned int /*typeId*/, const void* buffer, unsigned int bufferSize, AZ::SerializeContext* context)
         {
             AssetNotificationMessage message;
@@ -81,7 +91,7 @@ namespace AzFramework
                 AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
                 if (notificationInterface)
                 {
-                    notificationInterface->AssetChanged(message);
+                    notificationInterface->AssetChanged({ message });
                 }
             }
             break;
@@ -95,7 +105,7 @@ namespace AzFramework
                 AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
                 if (notificationInterface)
                 {
-                    notificationInterface->AssetRemoved(message);
+                    notificationInterface->AssetRemoved({ message });
                 }
             }
             break;
@@ -155,7 +165,12 @@ namespace AzFramework
 
             EnableSocketConnection();
 
-            m_cbHandle = m_socketConn->AddMessageHandler(AZ_CRC("AssetProcessorManager::AssetNotification", 0xd6191df5),
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(m_allowSyncRequests, S_RegKey_AllowSyncRequests);
+            }
+
+            m_cbHandle = m_socketConn->AddMessageHandler(AssetNotificationMessage::MessageType,
                 [context](unsigned int typeId, unsigned int /*serial*/, const void* data, unsigned int dataLength)
             {
                 if (dataLength)
@@ -163,6 +178,58 @@ namespace AzFramework
                     OnAssetSystemMessage(typeId, data, dataLength, context);
                 }
             });
+
+            m_bulkMessageHandle = m_socketConn->AddMessageHandler(
+                BulkAssetNotificationMessage::MessageType,
+                [context](unsigned int /*typeId*/, unsigned int /*serial*/, const void* data, unsigned int dataLength)
+                {
+                    if (dataLength)
+                    {
+                        BulkAssetNotificationMessage bulkMessage;
+
+                        // note that we forbid asset loading and we set STRICT mode.  These messages are all the kind of message that is
+                        // supposed to be transmitted between the same version of software, and are created at runtime, not loaded from
+                        // disk, so they should not contain errors - if they do, it requires investigation.
+                        if (!AZ::Utils::LoadObjectFromBufferInPlace(
+                                data,
+                                dataLength,
+                                bulkMessage,
+                                context,
+                                AZ::ObjectStream::FilterDescriptor(
+                                    &AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_STRICT)))
+                        {
+                            AZ_WarningOnce(
+                                "AssetSystem",
+                                false,
+                                "BulkAssetNotificationMessage received but unable to deserialize it.  Is AssetProcessor.exe up to date?");
+                            return;
+                        }
+
+                        AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface =
+                            AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
+
+                        if (!notificationInterface)
+                        {
+                            return;
+                        }
+
+                        switch(bulkMessage.m_type)
+                        {
+                        case AssetNotificationMessage::AssetChanged:
+                            notificationInterface->AssetChanged(bulkMessage.m_messages, true);
+                            break;
+                        case AssetNotificationMessage::AssetRemoved:
+                            notificationInterface->AssetRemoved(bulkMessage.m_messages);
+                            break;
+                        default:
+                            AZ_Warning(
+                                "AssetSystem",
+                                false,
+                                "BulkAssetNotificationMessage received with invalid/unsupported type %d",
+                                int(bulkMessage.m_type));
+                        }
+                    }
+                });
 
             AssetSystemRequestBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
@@ -176,7 +243,8 @@ namespace AzFramework
 
             AZ::SystemTickBus::Handler::BusDisconnect();
             AssetSystemRequestBus::Handler::BusDisconnect();
-            m_socketConn->RemoveMessageHandler(AZ_CRC("AssetProcessorManager::AssetNotification", 0xd6191df5), m_cbHandle);
+            m_socketConn->RemoveMessageHandler(AssetNotificationMessage::MessageType, m_cbHandle);
+            m_socketConn->RemoveMessageHandler(BulkAssetNotificationMessage::MessageType, m_bulkMessageHandle);
             m_socketConn->Disconnect(true);
 
             DisableSocketConnection();
@@ -206,6 +274,7 @@ namespace AzFramework
             RegisterSourceAssetRequest::Reflect(context);
             UnregisterSourceAssetRequest::Reflect(context);
             ShowAssetProcessorRequest::Reflect(context);
+            UpdateSourceControlStatusRequest::Reflect(context);
             ShowAssetInAssetProcessorRequest::Reflect(context);
             FileOpenRequest::Reflect(context);
             FileCloseRequest::Reflect(context);
@@ -227,6 +296,8 @@ namespace AzFramework
             FindFilesRequest::Reflect(context);
 
             FileTreeRequest::Reflect(context);
+
+            AssetChangeReportRequest::Reflect(context);
 
             // Responses
             GetUnresolvedDependencyCountsResponse::Reflect(context);
@@ -256,10 +327,13 @@ namespace AzFramework
 
             FileTreeResponse::Reflect(context);
 
+            AssetChangeReportResponse::Reflect(context);
+
             SaveAssetCatalogRequest::Reflect(context);
             SaveAssetCatalogResponse::Reflect(context);
 
             AssetNotificationMessage::Reflect(context);
+            BulkAssetNotificationMessage::Reflect(context);
             AssetSeedListReflector::Reflect(context);
             SeedInfo::Reflect(context);
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
@@ -272,12 +346,12 @@ namespace AzFramework
 
         void AssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AssetProcessorConnection", 0xf0cd75cd));
+            provided.push_back(AZ_CRC_CE("AssetProcessorConnection"));
         }
 
         void AssetSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AssetProcessorConnection", 0xf0cd75cd));
+            incompatible.push_back(AZ_CRC_CE("AssetProcessorConnection"));
         }
 
         void AssetSystemComponent::EnableSocketConnection()
@@ -302,7 +376,7 @@ namespace AzFramework
         // SystemTickBus overrides
         void AssetSystemComponent::OnSystemTick()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(AzFramework);
             LegacyAssetEventBus::ExecuteQueuedEvents();
         }
 
@@ -532,9 +606,9 @@ namespace AzFramework
                     }
                     else
                     {
-                        AZStd::chrono::time_point startConnectFromLaunchTime = AZStd::chrono::system_clock::now();
+                        auto startConnectFromLaunchTime = AZStd::chrono::steady_clock::now();
                         connectionEstablished = WaitUntilAssetProcessorConnected(connectionSettings.m_launchTimeout);
-                        AZStd::chrono::time_point endConnectFromLaunchTime = AZStd::chrono::system_clock::now();
+                        auto endConnectFromLaunchTime = AZStd::chrono::steady_clock::now();
                         if (!connectionEstablished && NegotiationWithAssetProcessorFailed())
                         {
                             AZ_Error(connectionSettings.m_connectionIdentifier.c_str(), false, "Negotiation with asset processor failed");
@@ -607,12 +681,15 @@ namespace AzFramework
 
         bool AssetSystemComponent::WaitUntilAssetProcessorConnected(AZStd::chrono::duration<float> timeout)
         {
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (!ConnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < timeout)
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (!ConnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < timeout)
             {
+                AssetSystemStatusBus::Broadcast(&AssetSystemStatusBus::Events::AssetSystemWaiting);
+
                 if (NegotiationWithAssetProcessorFailed())
                 {
-                    EBUS_EVENT(AzFramework::AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                    AzFramework::AssetSystemConnectionNotificationsBus::Broadcast(
+                        &AzFramework::AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                     StartDisconnectingAssetProcessor();
                     return false;
                 }
@@ -621,7 +698,12 @@ namespace AzFramework
                 AZStd::this_thread::yield();
             }
 
-            return ConnectedWithAssetProcessor();
+            bool connected = ConnectedWithAssetProcessor();
+            if ((!connected) && (m_socketConn->GetLastResult() != 0))
+            {
+                AZ_Warning("AssetProcessorConnection", false, "%s", m_socketConn->GetLastErrorMessage().c_str());
+            }
+            return connected;            
         }
 
         bool AssetSystemComponent::WaitUntilAssetProcessorReady(AZStd::chrono::duration<float> timeout)
@@ -638,11 +720,13 @@ namespace AzFramework
                 AZ_TracePrintf("AssetSystem", "Ping time to asset processor: %0.2f milliseconds\n", pingTime);
             }
 
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
             bool isAssetProcessorReady = false;
-            while (!isAssetProcessorReady && (AZStd::chrono::system_clock::now() - start) < timeout)
+            while (!isAssetProcessorReady && (AZStd::chrono::steady_clock::now() - start) < timeout)
             {
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
+
+                AssetSystemStatusBus::Broadcast(&AssetSystemStatusBus::Events::AssetSystemWaiting);
 
                 if (!ConnectedWithAssetProcessor())
                 {
@@ -712,8 +796,8 @@ namespace AzFramework
 
         bool AssetSystemComponent::WaitUntilAssetProcessorDisconnected(AZStd::chrono::duration<float> timeout)
         {
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (!DisconnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < timeout)
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (!DisconnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < timeout)
             {
                 //yield
                 AZStd::this_thread::yield();
@@ -724,22 +808,38 @@ namespace AzFramework
 
         AssetStatus AssetSystemComponent::CompileAssetSync(const AZStd::string& assetPath)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, false));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, false));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSync_FlushIO(const AZStd::string& assetPath)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, true));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetPath.c_str(), false, true));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSyncById(const AZ::Data::AssetId& assetId)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetId, false, false));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetId, false, false));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::CompileAssetSyncById_FlushIO(const AZ::Data::AssetId& assetId)
         {
-            return SendAssetStatusRequest(RequestAssetStatus(assetId, false, true));
+            if (m_allowSyncRequests)
+            {
+                return SendAssetStatusRequest(RequestAssetStatus(assetId, false, true));
+            }
+            return AssetStatus_Unknown; // not sent, sync requests are not allowed.
         }
 
         AssetStatus AssetSystemComponent::GetAssetStatus(const AZStd::string& assetPath)
@@ -837,12 +937,12 @@ namespace AzFramework
                 return 0.0f;
             }
 
-            AZStd::chrono::system_clock::time_point beforePing = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point beforePing = AZStd::chrono::steady_clock::now();
             RequestPing pingeRequest;
             ResponsePing pingRespose;
             if (SendRequest(pingeRequest, pingRespose))
             {
-                AZStd::chrono::duration<float, AZStd::milli> difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::system_clock::now() - beforePing);
+                AZStd::chrono::duration<float, AZStd::milli> difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::steady_clock::now() - beforePing);
                 return difference.count();
             }
 

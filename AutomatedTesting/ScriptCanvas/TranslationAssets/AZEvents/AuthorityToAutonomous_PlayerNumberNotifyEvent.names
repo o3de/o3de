@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "AuthorityToAutonomous_PlayerNumber Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Authority To Autonomous_ Player Number Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "player_number",
+                    "details": {
+                        "name": "player_number"
+                    }
+                },
+                {
+                    "base": "AuthorityToAutonomous_PlayerNumber Notify Event",
+                    "details": {
+                        "name": "AuthorityToAutonomous_PlayerNumber Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

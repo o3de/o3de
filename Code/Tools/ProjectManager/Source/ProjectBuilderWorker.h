@@ -38,7 +38,7 @@ namespace O3DE::ProjectManager
         void BuildProject();
 
     signals:
-        void UpdateProgress(int progress);
+        void UpdateProgress(QString lastLine);
         void Done(QString result = "");
 
     private:
@@ -54,7 +54,5 @@ namespace O3DE::ProjectManager
         QProcess* m_configProjectProcess = nullptr;
         QProcess* m_buildProjectProcess = nullptr;
         ProjectInfo m_projectInfo;
-
-        int m_progressEstimate;
     };
 } // namespace O3DE::ProjectManager

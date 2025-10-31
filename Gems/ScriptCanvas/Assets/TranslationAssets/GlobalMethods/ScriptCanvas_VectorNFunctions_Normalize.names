@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_VectorNFunctions_Normalize",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Normalize"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_VectorNFunctions_Normalize",
+                    "details": {
+                        "name": "Normalize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "VectorN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

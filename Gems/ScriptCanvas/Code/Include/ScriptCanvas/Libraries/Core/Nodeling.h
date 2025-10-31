@@ -43,9 +43,9 @@ namespace ScriptCanvas
                     ~Nodeling() = default;
 
                     AZStd::string GetSlotDisplayGroup() const { return "NodelingSlotDisplayGroup"; }
-                    AZ::Crc32 GetSlotDisplayGroupId() const { return AZ_CRC("NodelingSlotDisplayGroup", 0xedf94173); }
+                    AZ::Crc32 GetSlotDisplayGroupId() const { return AZ_CRC_CE("NodelingSlotDisplayGroup"); }
 
-                    AZ::Crc32 GetPropertyId() const { return AZ_CRC("NodeNameProperty", 0xe967a10a); }
+                    AZ::Crc32 GetPropertyId() const { return AZ_CRC_CE("NodeNameProperty"); }
 
                     const AZ::Uuid& GetIdentifier() const { return m_identifier; }
 

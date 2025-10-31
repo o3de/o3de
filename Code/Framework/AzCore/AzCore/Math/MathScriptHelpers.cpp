@@ -11,23 +11,30 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Serialization/Locale.h>
 
 namespace AZ
 {
     AZStd::string Vector3ToString(const Vector3& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Vector3 <---> string interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()));
     }
 
 
     AZStd::string Vector4ToString(const Vector4& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Vector4 <---> string interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }
 
 
     AZStd::string QuaternionToString(const Quaternion& v)
     {
+        AZ::Locale::ScopedSerializationLocale locale; // Quaternion <---> string should be interpreted in the "C" Locale.
+
         return AZStd::string::format("(x=%.7f,y=%.7f,z=%.7f,w=%.7f)", static_cast<float>(v.GetX()), static_cast<float>(v.GetY()), static_cast<float>(v.GetZ()), static_cast<float>(v.GetW()));
     }
 
@@ -55,7 +62,7 @@ namespace AZ
 
         const Uuid* uuidPtr = reinterpret_cast<const Uuid*>(classPtr);
 
-        return static_cast<size_t>(stream.Write(16, reinterpret_cast<const void*>(uuidPtr->data)));
+        return static_cast<size_t>(stream.Write(AZStd::ranges::size(*uuidPtr), AZStd::ranges::data(*uuidPtr)));
     }
 
 
@@ -69,8 +76,7 @@ namespace AZ
         }
 
         Uuid value;
-        void* dataPtr = reinterpret_cast<void*>(&value.data);
-        in.Read(16, dataPtr);
+        in.Read(AZStd::ranges::size(value), AZStd::ranges::data(value));
 
         char str[128];
         value.ToString(str, 128);
@@ -88,7 +94,7 @@ namespace AZ
 
         Uuid uuid = Uuid::CreateString(text);
         stream.Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
-        return static_cast<size_t>(stream.Write(16, uuid.data));
+        return static_cast<size_t>(stream.Write(AZStd::ranges::size(uuid), AZStd::ranges::data(uuid)));
     }
 
 
@@ -103,7 +109,7 @@ namespace AZ
         }
 
         Uuid* uuidPtr = reinterpret_cast<Uuid*>(classPtr);
-        if (stream.Read(GuidSizeBytes, reinterpret_cast<void*>(&uuidPtr->data)) == GuidSizeBytes)
+        if (stream.Read(GuidSizeBytes, reinterpret_cast<void*>(AZStd::ranges::data(*uuidPtr))) == GuidSizeBytes)
         {
             return true;
         }
@@ -120,6 +126,8 @@ namespace AZ
 
     size_t FloatArrayTextSerializer::DataToText(const float* floats, size_t numFloats, char* textBuffer, size_t textBufferSize, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for printf-ing floats to be invariant
+
         size_t numWritten = 0;
         for (size_t i = 0; i < numFloats; ++i)
         {
@@ -148,6 +156,8 @@ namespace AZ
 
     size_t FloatArrayTextSerializer::TextToData(const char* text, float* floats, size_t numFloats, bool isDataBigEndian)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // for parsing floats via strtod to be invariant
+
         size_t nextNumberIndex = 0;
         while (text != nullptr && nextNumberIndex < numFloats)
         {

@@ -40,8 +40,7 @@ namespace AZ
     //-------------------------------------------------------------------------
     bool DataOverlayTarget::ElementBegin(NodeStack* nodeStack, const void* elemPtr, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* elementData)
     {
-        nodeStack->back()->m_subElements.push_back();
-        SerializeContext::DataElementNode* node = &nodeStack->back()->m_subElements.back();
+        SerializeContext::DataElementNode* node = &nodeStack->back()->m_subElements.emplace_back();
         nodeStack->push_back(node);
 
         node->m_classData = classData;

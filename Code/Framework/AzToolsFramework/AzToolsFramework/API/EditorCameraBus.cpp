@@ -7,7 +7,8 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include "EditorCameraBus.h"
+
+#include <AzToolsFramework/API/EditorCameraBus.h>
 
 namespace Camera
 {
@@ -20,10 +21,14 @@ namespace Camera
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("SetViewFromEntityPerspective", &EditorCameraRequestBus::Events::SetViewFromEntityPerspective)
-                ->Event("SetViewAndMovementLockFromEntityPerspective", &EditorCameraRequestBus::Events::SetViewAndMovementLockFromEntityPerspective)
                 ->Event("GetCurrentViewEntityId", &EditorCameraRequestBus::Events::GetCurrentViewEntityId)
                 ->Event("GetActiveCameraPosition", &EditorCameraRequestBus::Events::GetActiveCameraPosition)
                 ;
         }
     }
 }
+
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraSystemRequests);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraNotifications);
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraViewRequests);

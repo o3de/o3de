@@ -1,0 +1,21 @@
+{
+    "Amazon":
+    {
+        "Tools":
+        {
+            "Prefab":
+            {
+                "Processing":
+                {
+                    "Stack": {
+                        "IntegrationTests": 
+                        [
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

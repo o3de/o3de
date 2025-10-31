@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"metallic.textureMap", "metallic.useTexture"}
+    return {"textureMap", "useTexture"}
 end
  
 function GetShaderOptionDependencies()
@@ -18,26 +18,26 @@ function GetShaderOptionDependencies()
 end
 
 function Process(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("metallic.textureMap")
-    local useTexture = context:GetMaterialPropertyValue_bool("metallic.useTexture")
+    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
     context:SetShaderOptionValue_bool("o_metallic_useTexture", useTexture and textureMap ~= nil)
 end
 
 function ProcessEditor(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("metallic.textureMap")
-    local useTexture = context:GetMaterialPropertyValue_bool("metallic.useTexture")
+    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
 
     if(nil == textureMap) then
-        context:SetMaterialPropertyVisibility("metallic.useTexture", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("metallic.textureMapUv", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("metallic.factor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Enabled)
     elseif(not useTexture) then
-        context:SetMaterialPropertyVisibility("metallic.useTexture", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("metallic.textureMapUv", MaterialPropertyVisibility_Disabled)
-        context:SetMaterialPropertyVisibility("metallic.factor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Disabled)
+        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Enabled)
     else
-        context:SetMaterialPropertyVisibility("metallic.useTexture", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("metallic.textureMapUv", MaterialPropertyVisibility_Enabled)
-        context:SetMaterialPropertyVisibility("metallic.factor", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("textureMapUv", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("factor", MaterialPropertyVisibility_Hidden)
     end
 end

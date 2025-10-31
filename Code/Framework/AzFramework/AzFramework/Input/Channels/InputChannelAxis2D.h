@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Vector2.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,14 +19,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit two dimensional axis input values.
     //! Example: game-pad thumb-stick x and y
-    class InputChannelAxis2D : public InputChannel
+    class AZF_API InputChannelAxis2D : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom data struct for two dimensional axis data
         struct AxisData2D : public InputChannel::CustomData
         {
-            AZ_CLASS_ALLOCATOR(AxisData2D, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AxisData2D, AZ::SystemAllocator);
             AZ_RTTI(AxisData2D, "{AA0FF4D4-ED98-4AEE-A3AB-B442287E2B7B}", CustomData);
             ~AxisData2D() override = default;
 
@@ -36,7 +37,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelAxis2D, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelAxis2D, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

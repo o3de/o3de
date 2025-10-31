@@ -13,12 +13,15 @@
 
 namespace EMotionFX
 {
+    class ColorParameter;
+    AZ_TYPE_INFO_SPECIALIZE(ColorParameter, "{F6F59F14-0A81-4BA0-BEB5-E5DFEE6787A0}");
+
     class ColorParameter
         : public RangedValueParameter<AZ::Color, ColorParameter>
     {
         using BaseType = RangedValueParameter<AZ::Color, ColorParameter>;
     public:
-        AZ_RTTI(ColorParameter, "{F6F59F14-0A81-4BA0-BEB5-E5DFEE6787A0}", BaseType);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL
 
         ColorParameter()

@@ -8,16 +8,22 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/Viewport/ViewportBus.h>
+
 #include <QLabel>
 #include <QMainWindow>
 #include <QPointer>
 #include <QToolButton>
+#include <QMargins>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -28,8 +34,12 @@ class QPoint;
 namespace AzToolsFramework::ViewportUi::Internal
 {
     //! Used to track info for each widget in the Viewport UI.
-    struct ViewportUiElementInfo
+    struct AZTF_API ViewportUiElementInfo
     {
+        ViewportUiElementInfo();
+        ViewportUiElementInfo(AZStd::shared_ptr<QWidget> widget, ViewportUiElementId elementId,
+            bool anchored);
+        ~ViewportUiElementInfo();
         AZStd::shared_ptr<QWidget> m_widget; //!< Reference to the widget.
         ViewportUiElementId m_viewportUiElementId; //!< Corresponding ViewportUiElementId of the widget.
         bool m_anchored = true; //!< Whether the widget is anchored to one position or moves with camera/entity.
@@ -44,15 +54,15 @@ namespace AzToolsFramework::ViewportUi::Internal
     using ViewportUiElementIdInfoLookup = AZStd::unordered_map<ViewportUiElementId, ViewportUiElementInfo>;
 
     //! Helper function to give a widget a transparent background
-    void SetTransparentBackground(QWidget* widget);
+    AZTF_API void SetTransparentBackground(QWidget* widget);
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay
+    class AZTF_API ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
-        ~ViewportUiDisplay();
+        ~ViewportUiDisplay() override;
 
         void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
@@ -63,6 +73,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
+        void SetSwitcherButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
@@ -91,10 +102,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
+        void ChangeViewportBorderText(const char* borderTitle);
         void RemoveViewportBorder();
+        bool GetViewportBorderVisible() const;
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
+
+        // ViewportImGuiNotificationBus overrides ...
+        void OnImGuiActivated() override;
+        void OnImGuiDeactivated() override;
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
         ViewportUiElementId GetViewportUiElementId(QPointer<QWidget> widget);
@@ -103,6 +120,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
         void PositionUiOverlayOverRenderViewport();
 
+        //! Returns the margin required for Viewport elements.
+        QMargins ViewportElementMargins() const;
         bool UiDisplayEnabled() const;
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);
@@ -123,6 +142,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
         int64_t m_numViewportElements = 0;
         int m_viewportId = 0;
+
+        bool m_imGuiActive = false;
 
         ViewportUiElementIdInfoLookup m_viewportUiElements;
     };

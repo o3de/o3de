@@ -33,11 +33,7 @@ namespace ScriptCanvas
                 void Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result) override;
 
             protected:
-
-                void InitializeSlot(const SlotId& slotId, const ScriptCanvas::Data::Type& dataType) override;
                 bool IsValidArithmeticSlot(const SlotId& slotId) const override;
-
-                void OnResetDatumToDefaultValue(ModifiableDatumView& datumView) override;
             };
         }
     }

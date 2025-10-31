@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 
@@ -18,7 +20,7 @@ namespace AzToolsFramework
     class ViewportEditorModeTrackerInterface;
 
     //! The default selection/input handler for the editor (includes handling ComponentMode).
-    class EditorDefaultSelection
+    class AZTF_API EditorDefaultSelection
         : public ViewportInteraction::InternalViewportSelectionRequests
         , private ActionOverrideRequestBus::Handler
         , private ComponentModeFramework::ComponentModeSystemRequestBus::Handler
@@ -27,7 +29,8 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR_DECL
 
         //! @cond
-        EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
+        EditorDefaultSelection(
+            const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         EditorDefaultSelection(const EditorDefaultSelection&) = delete;
         EditorDefaultSelection& operator=(const EditorDefaultSelection&) = delete;
         virtual ~EditorDefaultSelection();
@@ -66,6 +69,7 @@ namespace AzToolsFramework
         void Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
         bool AddedToComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid& componentType) override;
         void AddSelectedComponentModesOfType(const AZ::Uuid& componentType) override;
+        void ChangeComponentMode(const AZ::Uuid& componentType) override;
         bool SelectNextActiveComponentMode() override;
         bool SelectPreviousActiveComponentMode() override;
         bool SelectActiveComponentMode(const AZ::Uuid& componentType) override;
@@ -85,10 +89,8 @@ namespace AzToolsFramework
         QWidget m_phantomWidget; //!< The phantom widget responsible for holding QActions while in ComponentMode.
         QWidget* m_phantomOverrideWidget = nullptr; //!< It's possible to override the phantom widget in special circumstances (eg testing).
         ComponentModeFramework::ComponentModeCollection m_componentModeCollection; //!< Handles all active ComponentMode types.
-        AZStd::unique_ptr<EditorTransformComponentSelection> m_transformComponentSelection =
-            nullptr; //!< Viewport selection (responsible for
-                     //!< manipulators and transform modifications).
-        const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< Reference to cached visible EntityData.
+        //! Viewport selection (responsible for manipulators and transform modifications).
+        AZStd::unique_ptr<EditorTransformComponentSelection> m_transformComponentSelection = nullptr;
 
         //! Mapping between passed ActionOverride (AddActionOverride) and allocated QAction.
         struct ActionOverrideMapping
@@ -101,7 +103,7 @@ namespace AzToolsFramework
             {
             }
 
-            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'com.o3de.action.---").
+            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'org.o3de.action.---").
             AZStd::vector<AZStd::function<void()>> m_callbacks; //!< Callbacks associated with this Action (note: with multi-selections
                                                                 //!< there will be a callback per Entity/Component).
             AZStd::unique_ptr<QAction> m_action; //!< The QAction associated with the overrideWidget for all ComponentMode actions.
@@ -112,7 +114,7 @@ namespace AzToolsFramework
 
         AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager; //!< The default manipulator manager.
         ViewportInteraction::MouseInteraction m_currentInteraction; //!< Current mouse interaction to be used for drawing manipulators.
-        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
-
+        //! Tracker for activating/deactivating viewport editor modes.
+        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; 
     };
 } // namespace AzToolsFramework

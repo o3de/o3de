@@ -27,7 +27,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
             ],
@@ -57,7 +57,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "depthTransparentMin",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     },
                     "Connections": [
                         {
@@ -75,7 +75,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "depthTransparentMax",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     },
                     "Connections": [
                         {

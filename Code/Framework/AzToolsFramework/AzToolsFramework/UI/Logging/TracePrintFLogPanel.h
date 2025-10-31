@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Debug/TraceMessageBus.h>
@@ -26,13 +28,13 @@ namespace AzToolsFramework
         //! You'd plug this into a UI of your choice and let it do its thing.
         //! You might want to also connect to the signal BaseLogPanel::TabsReset() which will get fired when the user says
         //! reset to default.
-        class TracePrintFLogPanel
+        class AZTF_API TracePrintFLogPanel
             : public BaseLogPanel
         {
             Q_OBJECT;
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code
-            //AZ_CLASS_ALLOCATOR(TracePrintFLogPanel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(TracePrintFLogPanel, AZ::SystemAllocator);
 
             TracePrintFLogPanel(QWidget* pParent = nullptr);
 
@@ -49,14 +51,14 @@ namespace AzToolsFramework
         //! AZTracePrintFLogTab - a Log View listening on AZ Traceprintfs and puts them in a ring buffer
         //! of particular interest is perhaps how it adds a "clear" option to the context menu in its constructor.
         //! it uses the RingBufferLogDataModel, below.
-        class AZTracePrintFLogTab
+        class AZTF_API AZTracePrintFLogTab
             : public BaseLogView
             , protected AZ::Debug::TraceMessageBus::Handler
             , protected AZ::SystemTickBus::Handler
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(AZTracePrintFLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZTracePrintFLogTab, AZ::SystemAllocator);
             AZTracePrintFLogTab(QWidget* pParent, const TabSettings& in_settings);
             virtual ~AZTracePrintFLogTab();
 

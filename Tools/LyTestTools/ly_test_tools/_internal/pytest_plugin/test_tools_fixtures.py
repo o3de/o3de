@@ -12,7 +12,6 @@ import getpass
 import logging
 import os
 import socket
-import time
 from datetime import datetime
 
 import pytest
@@ -25,7 +24,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +45,7 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
+
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -54,6 +54,10 @@ def pytest_configure(config):
     """
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
+
+    # patch to work around https://github.com/pytest-dev/pytest/issues/10604
+    monkeypatch_pytest()
+
 
 def _get_build_directory(config):
     """
@@ -65,10 +69,12 @@ def _get_build_directory(config):
     if custom_build_directory:
         logger.debug(f'Custom build directory set via cli arg to: {custom_build_directory}')
         if not os.path.exists(custom_build_directory):
-            raise ValueError(f'Pytest argument "--build-directory" does not exist at: {custom_build_directory}')
+            raise ValueError(f'Pytest custom argument "--build-directory" does not exist at: {custom_build_directory}')
+        if custom_build_directory.endswith('debug'):
+            pytest.exit("Python debug modules are not available. LyTestTools test skipped.", 0)
     else:
         # only warn when unset, allowing non-LyTT tests to still use pytest
-        logger.warning(f'Pytest argument "--build-directory" was not provided, tests using LyTestTools will fail')
+        logger.warning(f'Pytest custom argument "--build-directory" was not provided, tests using LyTestTools will fail')
 
     return custom_build_directory
 
@@ -83,12 +89,16 @@ def _get_output_path(config):
         logger.debug(f'Custom output_path set to: {str(custom_output_path)}')
         output_path = custom_output_path
     else:
-        # from pytest_runner
-        output_path = os.path.join(os.getcwd(),
-                                   "TestResults",
-                                   datetime.now().strftime(TIMESTAMP_FORMAT),
-                                   "pytest_results")
-        logger.debug(f'Defaulting output_path to: {str(output_path)}')
+        custom_build_directory = config.getoption('--build-directory', '')
+        if custom_build_directory: # default into known build folder
+            default_output_path = os.path.join(custom_build_directory, 'Testing', 'LyTestTools')
+        else:  # should already create a separate warning in _get_build_directory()
+            default_output_path = os.getcwd()
+        output_path = os.path.join(default_output_path,
+                                   "pytest_results",
+                                   datetime.now().strftime(TIMESTAMP_FORMAT))
+        logger.warning(f'Pytest custom argument "--output-path" was not provided, '
+                       f'defaulting Test Results output to: {str(output_path)}')
 
     os.makedirs(output_path, exist_ok=True)
     return output_path
@@ -234,11 +244,11 @@ def _launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
-            workspace, launcher_platform, ['+map', level])
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
+            workspace, launcher_platform, ['+LoadLevel', level])
 
     def teardown():
         launcher.stop()
@@ -246,48 +256,6 @@ def _launcher(request, workspace, launcher_platform, level=""):
     request.addfinalizer(teardown)
 
     return launcher
-
-
-@pytest.fixture(scope="function")
-def dedicated_launcher(request, workspace, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _dedicated_launcher(
-        request=request,
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_DEDICATED_SERVER),
-        level=get_fixture_argument(request, 'level', ''))
-
-
-def _dedicated_launcher(request, workspace, launcher_platform, level=""):
-    """Separate implementation to call directly during unit tests"""
-
-    if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
-            workspace, launcher_platform)
-    else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
-            workspace, launcher_platform, ['+map', level])
-
-    def teardown():
-        launcher.stop()
-
-    request.addfinalizer(teardown)
-
-    return launcher
-
-
-@pytest.fixture(scope="function")
-def generic_launcher(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _generic_launcher(
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
-        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
-
-
-def _generic_launcher(workspace, launcher_platform, exe_file_name):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
 
 
 @pytest.fixture
@@ -384,12 +352,18 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
 
         py_logging_util.terminate_logging()
 
-        workspace.artifact_manager.set_test_name()  # Reset log name for this test
+        workspace.artifact_manager.set_dest_path()  # Reset log name for this test
         helpers.teardown_builtin_workspace(workspace)
 
+    artifact_folder_count = request.session.testscollected  # Amount of folders to create for test_name.
+    # Skip workspace logging if batch or parallel test by checking the list of test names
+    if hasattr(request.node.cls, '_runners'):
+        for runner in request.node.cls._runners:
+            for func in runner.result_pytestfuncs:
+                if test_method == func.originalname:
+                    return workspace
     request.addfinalizer(teardown)
 
-    artifact_folder_count = request.session.testscollected  # Amount of folders to create for test_name.
     helpers.setup_builtin_workspace(workspace, test_name, artifact_folder_count)
 
     # Must be called after helpers.setup_builtin_workspace() above:
@@ -413,7 +387,7 @@ def crash_log_watchdog(request, workspace):
 
 def _crash_log_watchdog(request, workspace, raise_on_crash):
     """Separate implementation to call directly during unit tests"""
-    error_log = os.path.join(workspace.paths.project_log(), 'error.log')
+    error_log = workspace.paths.crash_log()
     crash_log_watchdog = ly_test_tools.environment.watchdog.CrashLogWatchdog(
         error_log, raise_on_condition=raise_on_crash)
 
@@ -448,3 +422,56 @@ def _asset_processor_platform(request):
         raise ValueError(
             f'asset_processor_platform: "{ap_platform}" is not valid. '
             f'Please select from one of the following: {ALL_PLATFORM_OPTIONS}')
+
+
+def monkeypatch_pytest():
+    """
+    Patches a file creation race condition in _pytest.junitxml.LogXML.pytest_sessionfinish
+    """
+    import types
+    import _pytest.junitxml
+    import platform
+    import xml.etree.ElementTree as ET
+    from _pytest import timing
+
+    # patch code from pytest 7.2.0, fetched at commit 7431750
+    def pytest_sessionfinish(self) -> None:
+        dirname = os.path.dirname(os.path.abspath(self.logfile))
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname, exist_ok=True)  # our patch
+
+        with open(self.logfile, "w", encoding="utf-8") as logfile:
+            suite_stop_time = timing.time()
+            suite_time_delta = suite_stop_time - self.suite_start_time
+
+            numtests = (
+                    self.stats["passed"]
+                    + self.stats["failure"]
+                    + self.stats["skipped"]
+                    + self.stats["error"]
+                    - self.cnt_double_fail_tests
+            )
+            logfile.write('<?xml version="1.0" encoding="utf-8"?>')
+
+            suite_node = ET.Element(
+                "testsuite",
+                name=self.suite_name,
+                errors=str(self.stats["error"]),
+                failures=str(self.stats["failure"]),
+                skipped=str(self.stats["skipped"]),
+                tests=str(numtests),
+                time="%.3f" % suite_time_delta,
+                timestamp=datetime.fromtimestamp(self.suite_start_time).isoformat(),
+                hostname=platform.node(),
+            )
+            global_properties = self._get_global_properties_node()
+            if global_properties is not None:
+                suite_node.append(global_properties)
+            for node_reporter in self.node_reporters_ordered:
+                suite_node.append(node_reporter.to_xml())
+            testsuites = ET.Element("testsuites")
+            testsuites.append(suite_node)
+            logfile.write(ET.tostring(testsuites, encoding="unicode"))
+
+    # override
+    _pytest.junitxml.LogXML.pytest_sessionfinish = pytest_sessionfinish

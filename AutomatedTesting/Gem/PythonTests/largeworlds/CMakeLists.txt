@@ -14,7 +14,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::DynamicVegetationTests_Main_Optimized
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Main.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -22,12 +22,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             AutomatedTesting.GameLauncher
         COMPONENT
             LargeWorlds
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::DynamicVegetationTests_Periodic_Optimized
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Periodic_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg/TestSuite_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -43,7 +44,21 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Main_Optimized
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Main.py
+        RUNTIME_DEPENDENCIES
+           AZ::AssetProcessor
+           Legacy::Editor
+           AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+        LABELS REQUIRES_tiaf
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::LandscapeCanvasTests_Sandbox_Optimized
+        TEST_SERIAL
+        TEST_SUITE sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Sandbox.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -58,7 +73,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::GradientSignalTests_Periodic_Optimized
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/TestSuite_Periodic_Optimized.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/TestSuite_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor

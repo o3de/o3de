@@ -15,12 +15,12 @@ namespace Vegetation
 {
     void EditorVegetationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("EditorVegetationSystemService", 0xfc666830));
+        services.push_back(AZ_CRC_CE("EditorVegetationSystemService"));
     }
 
     void EditorVegetationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("EditorVegetationSystemService", 0xfc666830));
+        services.push_back(AZ_CRC_CE("EditorVegetationSystemService"));
     }
 
     void EditorVegetationSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -40,7 +40,6 @@ namespace Vegetation
                 editContext->Class<EditorVegetationSystemComponent>("Editor Vegetation System", "Manages and discovers surface tag list assets that define the dictionary of selectable tags at edit time")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

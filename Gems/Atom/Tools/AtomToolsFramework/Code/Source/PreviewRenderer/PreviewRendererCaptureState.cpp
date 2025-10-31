@@ -15,28 +15,48 @@ namespace AtomToolsFramework
         : PreviewRendererState(renderer)
     {
         m_renderer->PoseContent();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     PreviewRendererCaptureState::~PreviewRendererCaptureState()
     {
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
         m_renderer->EndCapture();
     }
 
-    void PreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void PreviewRendererCaptureState::Update()
     {
-        if ((m_ticksToCapture-- <= 0) && m_renderer->StartCapture())
+        if (m_captureComplete)
         {
-            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-            AZ::TickBus::Handler::BusDisconnect();
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+            m_renderer->CompleteCaptureRequest();
+            return;
+        }
+
+        if (AZStd::chrono::steady_clock::now() > m_abortTime)
+        {
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+            m_renderer->CancelCaptureRequest();
+            return;
+        }
+
+        if (m_renderer->IsContentReadyToRender())
+        {
+            if (!AZ::Render::FrameCaptureNotificationBus::Handler::BusIsConnected())
+            {
+                // if the start capture call fails the capture will be retried next tick.
+                const AZ::Render::FrameCaptureId frameCaptureId = m_renderer->StartCapture();
+                if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+                {
+                    AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
+                }
+            }
         }
     }
 
-    void PreviewRendererCaptureState::OnCaptureFinished(
+    void PreviewRendererCaptureState::OnFrameCaptureFinished(
         [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_renderer->CompleteCaptureRequest();
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+        m_captureComplete = true;
     }
 } // namespace AtomToolsFramework

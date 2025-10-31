@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "AuthorityToAutonomous Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Authority To Autonomous Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "someFloat",
+                    "details": {
+                        "name": "someFloat"
+                    }
+                },
+                {
+                    "base": "AuthorityToAutonomous Notify Event",
+                    "details": {
+                        "name": "AuthorityToAutonomous Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -28,11 +29,17 @@ namespace AzToolsFramework
         virtual void ExecuteByString([[maybe_unused]] AZStd::string_view script, [[maybe_unused]] bool printResult) {}
 
         //! executes a Python script using a filename
-        virtual void ExecuteByFilename([[maybe_unused]] AZStd::string_view filename) {}
+        virtual bool ExecuteByFilename([[maybe_unused]] AZStd::string_view filename)
+        {
+            return false;
+        }
 
         //! executes a Python script using a filename and args
-        virtual void ExecuteByFilenameWithArgs(
-            [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
+        virtual bool ExecuteByFilenameWithArgs(
+            [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+        {
+            return false;
+        }
 
         //! executes a Python script as a test
         virtual bool ExecuteByFilenameAsTest(
@@ -47,3 +54,4 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPythonRunnerRequests);

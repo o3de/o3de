@@ -1,0 +1,91 @@
+name: 24.09 Release Bug Report
+description: Template for submitting a bug for the 24.09 O3DE Release
+title: '24.09 Release - BUG NAME'
+labels: "kind/bug-2409,needs-triage,needs-sig"
+assignees:
+  - Ulrick28
+body:
+- type: textarea
+  id: bug-description
+  attributes:
+    label: Bug Description
+    description: "A clear and concise description of what the bug is. Try to isolate the issue to help 
+    the community to reproduce it easily and increase chances for a fast fix."
+  validations:
+    required: true
+- type: textarea
+  id: assets-required
+  attributes:
+    label: Assets-Required
+    description: "Please provide sample assets needed to reproduce the issue, either as an 
+    [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) 
+    or as a link to a public asset in Github."
+  validations:
+    required: true
+- type: textarea
+  id: steps-to-reproduce
+  attributes:
+    label: Steps to Reproduce
+    description: "Steps to reproduce the behavior:
+    1. Go to '...'
+    2. Click on '...'
+    3. Select attached asset '...'
+    4. Scroll down to '...'
+    5. See error"
+  validations:
+    required: true
+- type: textarea
+  id: expected-behavior
+  attributes:
+    label: Expected Behavior
+    description: "A clear and concise description of what you expected to happen."
+  validations:
+    required: true
+- type: textarea
+  id: actual-behavior
+  attributes:
+    label: Actual Behavior
+    description: "A clear and concise description of what actually happened."
+  validations:
+    required: true
+- type: textarea
+  id: screenshots-videos
+  attributes:
+    label: Screenshots/Videos
+    description: "If applicable, add screenshots and/or a video to help explain your problem."
+  validations:
+    required: true
+- type: textarea
+  id: found-in-branch
+  attributes:
+    label: Found In Branch
+    description: "Name of or link to the branch where the issue occurs."
+  validations:
+    required: true
+- type: textarea
+  id: commit-ID-from
+  attributes:
+    label: Commit ID From
+    description: "Please provide the SHA/hash that identifies the latest commit from the o3de/o3de 
+    repository if the issue is reproducible in the development or other official branches. You can get 
+    the commit ID by running the `git rev-parse HEAD` command on your current branch."
+  validations:
+    required: true
+- type: textarea
+  id: desktop-device
+  attributes:
+    label: Desktop/Device
+    description: "Desktop/Device: Please please complete the following information
+     - Device: [e.g. PC, Mac, iPhone, Samsung] 
+     - OS: [e.g. Windows, macOS, iOS, Android]
+     - Version [e.g. 10, Monterey, Oreo]
+     - CPU [e.g. Intel I9-9900k , Ryzen 5900x, ]
+     - GPU [AMD 6800 XT, NVidia RTX 3090]
+     - Memory [e.g. 16GB]"
+  validations:
+    required: true
+- type: textarea
+  id: additional-context
+  attributes:
+    label: Additional Context
+    description: "Add any other context about the problem here."

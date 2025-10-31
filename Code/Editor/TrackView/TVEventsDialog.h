@@ -7,8 +7,6 @@
  */
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TVEVENTSDIALOG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TVEVENTSDIALOG_H
 #pragma once
 
 
@@ -51,5 +49,3 @@ private:
     QScopedPointer<Ui::TVEventsDialog> m_ui;
     QString m_lastAddedEvent;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TVEVENTSDIALOG_H

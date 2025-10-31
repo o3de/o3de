@@ -8,10 +8,11 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class AzFrameworkConfigurationSystemComponent
+    class AZF_API AzFrameworkConfigurationSystemComponent
         : public AZ::Component
     {
     public:

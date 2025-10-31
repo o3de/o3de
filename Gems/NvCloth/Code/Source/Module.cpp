@@ -27,7 +27,7 @@ namespace NvCloth
     {
     public:
         AZ_RTTI(Module, "{34C529D4-688F-4B51-BF60-75425754A7E6}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator);
 
         Module()
             : AZ::Module()
@@ -79,7 +79,8 @@ namespace NvCloth
     };
 } // namespace NvCloth
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), NvCloth::Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_NvCloth, NvCloth::Module)
+#endif

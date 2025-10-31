@@ -8,8 +8,8 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
 {
@@ -24,7 +24,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     // System component to handle requests to the AssetBundleCommands bus.
-    class AssetBundleComponent
+    class AZTF_API AssetBundleComponent
         : public AZ::Component
         , private AssetBundleCommands::Bus::Handler
     {
@@ -91,15 +91,5 @@ namespace AzToolsFramework
         //! Adds the delta catalog and any remaining files to the bundle
         //! We only create the delta catalog once we are sure about what all the files that will go in it. 
         bool AddCatalogAndFilesToBundle(const AZStd::vector<AZStd::string>& deltaCatalogEntries, const AZStd::vector<AZStd::string>& fileEntries, const AZStd::string& bundleFilePath, const char* assetAlias, const AzFramework::PlatformId& platformId);
-    };
-
-    class ScopedIOEventBusHandler :
-        public AZ::IO::FileIOEventBus::Handler
-    {
-    public:
-        ScopedIOEventBusHandler();
-        ~ScopedIOEventBusHandler();
-
-        void OnError(const AZ::IO::SystemFile* file, const char* fileName, int errorCode) override;
     };
 }

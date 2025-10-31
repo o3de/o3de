@@ -48,7 +48,7 @@ namespace AZ
             {
                 PassAttachmentBinding& outputBinding = GetOutputBinding(outputSlotIndex);
                 PassAttachmentBinding& inputBinding = GetInputBinding(m_connections[outputSlotIndex]);
-                outputBinding.m_attachment = inputBinding.m_attachment;
+                outputBinding.SetAttachment(inputBinding.GetAttachment());
             }
         }
 

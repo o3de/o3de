@@ -16,7 +16,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(IosIcons, "{A57F9F23-36F5-4425-B40A-56D60119E5C9}");
-        AZ_CLASS_ALLOCATOR(IosIcons, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IosIcons, AZ::SystemAllocator);
 
         IosIcons()
             : m_appStore("")
@@ -65,7 +65,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(IosLaunchscreens, "{1A34706F-9558-4081-9898-33758B026629}");
-        AZ_CLASS_ALLOCATOR(IosLaunchscreens, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IosLaunchscreens, AZ::SystemAllocator);
 
         IosLaunchscreens()
             : m_iphone640x960("")
@@ -100,7 +100,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(IosOrientations, "{A42CDF2E-CCE1-4D93-9D4E-2270CFC0F2ED}");
-        AZ_CLASS_ALLOCATOR(IosOrientations, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IosOrientations, AZ::SystemAllocator);
 
         IosOrientations()
             : m_landscapeRight(false)
@@ -121,7 +121,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(IosSettings, "{9EDF051E-0158-4ADE-92A3-B7AC230E0114}");
-        AZ_CLASS_ALLOCATOR(IosSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IosSettings, AZ::SystemAllocator);
 
         IosSettings()
             : m_bundleName("")

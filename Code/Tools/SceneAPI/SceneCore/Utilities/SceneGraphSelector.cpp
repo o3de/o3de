@@ -6,13 +6,16 @@
  *
  */
 
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Transform.h>
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ICustomPropertyData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 
 namespace AZ
 {
@@ -40,22 +43,71 @@ namespace AZ
                 return object && object->RTTI_IsTypeOf(DataTypes::IMeshData::TYPEINFO_Uuid());
             }
 
-            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex)
             {
-                const auto& nodeName = graph.GetNodeName(index);
-                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength()).append(OptimizedMeshSuffix);
-                if (auto optimizedIndex = graph.Find(optimizedName); optimizedIndex.IsValid())
+                return RemapNodeIndex(graph, unoptimizedMeshNodeIndex, SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
+            }
+
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOriginalUnoptimizedMesh(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& optimizedMeshNodeIndex)
+            {
+                return RemapNodeIndex(graph, optimizedMeshNodeIndex, SceneAPI::Utilities::OriginalUnoptimizedMeshPropertyMapKey);
+            }
+
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapNodeIndex(
+                const Containers::SceneGraph& graph,
+                const Containers::SceneGraph::NodeIndex& index,
+                const AZStd::string_view customPropertyKey)
+            {
+                // Search the immediate children for an ICustomPropertyData node to lookup the optimized mesh index
+                const Containers::SceneGraph::NodeIndex customPropertyIndex =
+                    GetImmediateChildOfType(graph, index, azrtti_typeid<AZ::SceneAPI::DataTypes::ICustomPropertyData>());
+
+                if (customPropertyIndex.IsValid())
                 {
-                    return optimizedIndex;
+                    const DataTypes::ICustomPropertyData* customPropertyDataNode =
+                        azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(customPropertyIndex).get());
+
+                    // Now look up the optimized index
+                    const auto& propertyMap = customPropertyDataNode->GetPropertyMap();
+                    const auto iter = propertyMap.find(customPropertyKey);
+
+                    if (iter != propertyMap.end())
+                    {
+                        const AZStd::any& remappedNodeIndex = iter->second;
+
+                        if (!remappedNodeIndex.empty() && remappedNodeIndex.is<Containers::SceneGraph::NodeIndex>())
+                        {
+                            return AZStd::any_cast<Containers::SceneGraph::NodeIndex>(remappedNodeIndex);
+                        }
+                    }
                 }
+
+                // Return the original index if there is no optimized mesh node
                 return index;
             }
 
-            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list, NodeFilterFunction nodeFilter, NodeRemapFunction nodeRemap)
+            AZStd::string SceneGraphSelector::GenerateOptimizedMeshNodeName(
+                const Containers::SceneGraph& graph,
+                const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex,
+                const DataTypes::ISceneNodeGroup& sceneNodeGroup)
+            {
+                const auto& nodeName = graph.GetNodeName(unoptimizedMeshNodeIndex);
+
+                return AZStd::string::format(
+                    "%s_%s%s", nodeName.GetName(), sceneNodeGroup.GetName().c_str(), SceneAPI::Utilities::OptimizedMeshSuffix.data());
+            }
+
+            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(
+                const Containers::SceneGraph& graph,
+                const DataTypes::ISceneNodeSelectionList& list,
+                NodeFilterFunction nodeFilter,
+                NodeRemapFunction nodeRemap)
             {
                 AZStd::vector<AZStd::string> targetNodes;
-                AZStd::set<AZStd::string> selectedNodesSet;
-                AZStd::set<AZStd::string> unselectedNodesSet;
+                AZStd::unordered_set<AZStd::string> selectedNodesSet;
+                AZStd::unordered_set<AZStd::string> unselectedNodesSet;
                 CopySelectionToSet(selectedNodesSet, unselectedNodesSet, list);
                 CorrectRootNode(graph, selectedNodesSet, unselectedNodesSet);
 
@@ -162,8 +214,8 @@ namespace AZ
 
             void SceneGraphSelector::UpdateNodeSelection(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list)
             {
-                AZStd::set<AZStd::string> selectedNodesSet;
-                AZStd::set<AZStd::string> unselectedNodesSet;
+                AZStd::unordered_set<AZStd::string> selectedNodesSet;
+                AZStd::unordered_set<AZStd::string> unselectedNodesSet;
                 CopySelectionToSet(selectedNodesSet, unselectedNodesSet, list);
                 CorrectRootNode(graph, selectedNodesSet, unselectedNodesSet);
 
@@ -245,32 +297,50 @@ namespace AZ
                 }
             }
 
-            void SceneGraphSelector::CopySelectionToSet(AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected, const DataTypes::ISceneNodeSelectionList& list)
+            void SceneGraphSelector::CopySelectionToSet(
+                AZStd::unordered_set<AZStd::string>& selected, AZStd::unordered_set<AZStd::string>& unselected,
+                const DataTypes::ISceneNodeSelectionList& list)
             {
-                for (size_t i = 0; i < list.GetSelectedNodeCount(); ++i)
-                {
-                    selected.insert(list.GetSelectedNode(i));
-                }
-                for (size_t i = 0; i < list.GetUnselectedNodeCount(); ++i)
-                {
-                    unselected.insert(list.GetUnselectedNode(i));
-                }
+                list.EnumerateSelectedNodes([&selected](const AZStd::string& name)
+                    {
+                        selected.insert(name);
+                        return true;
+                    });
+
+                list.EnumerateUnselectedNodes([&unselected](const AZStd::string& name)
+                    {
+                        unselected.insert(name);
+                        return true;
+                    });
             }
 
             void SceneGraphSelector::CorrectRootNode(const Containers::SceneGraph& graph,
-                AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected)
+                AZStd::unordered_set<AZStd::string>& selected, AZStd::unordered_set<AZStd::string>& unselected)
             {
+                // If both of the unselected and selected node lists are empty or don't exist, deselect all the nodes
+                // in the graph by deselecting the root node.
+                // 
+                // If only the unselected node list is empty or doesn't exist, deselect the root node (which will deselect
+                // all the nodes in the graph) by default and then reselect nodes based on the selected node list.
+                // 
+                // Otherwise select the root node (which will select all the nodes in the graph) by default and then
+                // remove selected nodes based on the deselected list.
+                bool selectRootNode = !unselected.empty();
                 AZStd::string rootNodeName = graph.GetNodeName(graph.GetRoot()).GetPath();
-                if (selected.find(rootNodeName) == selected.end())
+                auto& nodeSetToAdd = selectRootNode ? selected : unselected;
+                auto& nodeSetToRemove = selectRootNode ? unselected : selected;
+
+                if (nodeSetToAdd.find(rootNodeName) == nodeSetToAdd.end())
                 {
-                    selected.insert(rootNodeName);
+                    nodeSetToAdd.insert(rootNodeName);
                 }
-                auto root = unselected.find(rootNodeName);
-                if (root != unselected.end())
+                auto root = nodeSetToRemove.find(rootNodeName);
+                if (root != nodeSetToRemove.end())
                 {
-                    unselected.erase(root);
+                    nodeSetToRemove.erase(root);
                 }
             }
         }
     }
-}
+} // namespace AZ
+

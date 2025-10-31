@@ -14,10 +14,18 @@ set(FILES
     SceneImporter.cpp
     SceneSystem.h
     SceneSystem.cpp
+    ImportContextRegistry.h
+    ImportContextRegistryComponent.h
+    ImportContextRegistryComponent.cpp
+    ImportContextRegistryManager.h
+    ImportContextRegistryManager.cpp
     ImportContexts/ImportContexts.h
     ImportContexts/ImportContexts.cpp
+    ImportContexts/ImportContextProvider.h
     ImportContexts/AssImpImportContexts.h
     ImportContexts/AssImpImportContexts.cpp
+    ImportContexts/AssImpImportContextProvider.h
+    ImportContexts/AssImpImportContextProvider.cpp
     Importers/Utilities/AssImpMeshImporterUtilities.h
     Importers/Utilities/AssImpMeshImporterUtilities.cpp
     Importers/Utilities/RenamedNodesMap.h
@@ -32,6 +40,8 @@ set(FILES
     Importers/AssImpBoneImporter.cpp
     Importers/AssImpColorStreamImporter.h
     Importers/AssImpColorStreamImporter.cpp
+    Importers/AssImpCustomPropertyImporter.h
+    Importers/AssImpCustomPropertyImporter.cpp
     Importers/AssImpImporterUtilities.h
     Importers/AssImpImporterUtilities.cpp
     Importers/AssImpMaterialImporter.h

@@ -34,12 +34,12 @@ namespace AZ
                     editContext->Class<EditorDecalComponent>(
                         "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                        ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Decal.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/decal/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/decal/")
                     ;
 
                     editContext->Class<DecalComponentController>(
@@ -62,10 +62,18 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_normalMapOpacity, "Normal Map Opacity", "The opacity of the decal's normal map.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_sortKey, "Sort Key", "Decals with a larger sort key appear over top of smaller sort keys.")
                         ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<uint8_t>::min())
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<uint8_t>::max())
 
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &DecalComponentConfig::m_decalColor, "Decal Color", "Decal Color can be applied as a multiplier")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_decalColorFactor, "Decal Color Factor", "The factor associated with decal color which also acts as a multiplier. ")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 5.f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset, "Material", "The material of the decal.")
                         ;
                 }
@@ -172,7 +180,7 @@ namespace AZ
             return hitResult;
         }
 
-        AZ::Aabb EditorDecalComponent::GetWorldBounds()
+        AZ::Aabb EditorDecalComponent::GetWorldBounds() const
         {
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -180,7 +188,7 @@ namespace AZ
             return GetLocalBounds().GetTransformedAabb(transform);
         }
 
-        AZ::Aabb EditorDecalComponent::GetLocalBounds()
+        AZ::Aabb EditorDecalComponent::GetLocalBounds() const
         {
             AZ::Aabb bbox = AZ::Aabb::CreateNull();
             bbox.AddPoint(AZ::Vector3(-1, -1, 0));

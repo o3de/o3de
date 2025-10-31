@@ -79,6 +79,7 @@ namespace ImageProcessingAtom
     };
 
     bool IsASTCFormat(EPixelFormat fmt);
+    bool IsHDRFormat(EPixelFormat fmt);
 } // namespace ImageProcessingAtom
 
 namespace AZ

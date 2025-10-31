@@ -8,9 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Math/VertexContainer.h>
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/Manipulators/EditorVertexSelectionBus.h>
 #include <AzToolsFramework/Manipulators/HoverSelection.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Manipulators/SelectionManipulator.h>
@@ -20,6 +23,15 @@
 
 namespace AzToolsFramework
 {
+    //! Registers the Actions provided by the EditorVertexSelection while it is active to the Action Manager.
+    //! e.g. Vertex deletion, duplication etc.
+    struct AZTF_API EditorVertexSelectionActionManagement
+    {
+        static void RegisterEditorVertexSelectionActions();
+        static void BindEditorVertexSelectionActionsToMenus();
+        static void DisableComponentModeEndOnVertexSelection();
+    };
+
     //! Concrete implementation of AZ::VariableVertices backed by an AZ::VertexContainer.
     template<typename Vertex>
     class VariableVerticesVertexContainer : public AZ::VariableVertices<Vertex>
@@ -291,7 +303,8 @@ namespace AzToolsFramework
     //! EditorVertexSelectionFixed provides selection and editing for a fixed length number of
     //! vertices. New vertices cannot be inserted/added or removed.
     template<typename Vertex>
-    class EditorVertexSelectionFixed : public EditorVertexSelectionBase<Vertex>
+    class AZTF_API EditorVertexSelectionFixed
+        : public EditorVertexSelectionBase<Vertex>
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -313,17 +326,26 @@ namespace AzToolsFramework
     //! EditorVertexSelectionVariable provides selection and editing for a variable length number of
     //! vertices. New vertices can be inserted/added or removed from the collection.
     template<typename Vertex>
-    class EditorVertexSelectionVariable : public EditorVertexSelectionBase<Vertex>
+    class AZTF_API EditorVertexSelectionVariable
+        : public EditorVertexSelectionBase<Vertex>
+        , private AzToolsFramework::EditorVertexSelectionVariableRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
         EditorVertexSelectionVariable() = default;
         EditorVertexSelectionVariable(EditorVertexSelectionVariable&&) = default;
-        EditorVertexSelectionVariable& operator=(EditorVertexSelectionVariable&&) = default;
+        explicit EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        ~EditorVertexSelectionVariable();
 
         void DuplicateSelected();
         void DestroySelected();
+
+        // EditorVertexSelectionVariableRequestBus overrides ...
+        void DuplicateSelectedVertices() override;
+        void DeleteSelectedVertices() override;
+        void ClearVertexSelection() override;
+        int GetSelectedVerticesCount() override;
 
     protected:
         // EditorVertexSelectionBase
@@ -354,4 +376,9 @@ namespace AzToolsFramework
     template<typename Vertex>
     void SafeRemoveVertex(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
+
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector2&);
+    extern template void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t, const AZ::Vector3&);
+    extern template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
+    extern template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 } // namespace AzToolsFramework

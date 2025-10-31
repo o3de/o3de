@@ -92,7 +92,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(OverloadContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OverloadContract, AZ::SystemAllocator);
         AZ_RTTI(OverloadContract, "{45622160-13C5-46E3-94D9-AE2EAFE6AC64}", Contract);
 
         static void Reflect(AZ::ReflectContext* reflection);

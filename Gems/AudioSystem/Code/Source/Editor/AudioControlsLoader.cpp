@@ -24,6 +24,7 @@
 #include <Util/UndoUtil.h>
 
 #include <QStandardItem>
+#include <QRegularExpression>
 
 namespace AudioControls
 {
@@ -85,8 +86,7 @@ namespace AudioControls
         const CUndoSuspend suspendUndo;
 
         // Get the relative path (under asset root) where the controls live.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = AZ::Interface<Audio::IAudioSystem>::Get()->GetControlsPath();
 
         // Get the full path up to asset root.
         AZ::IO::FixedMaxPath controlsFullPath = AZ::Utils::GetProjectPath();
@@ -190,7 +190,7 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     QStandardItem* CAudioControlsLoader::AddUniqueFolderPath(QStandardItem* parentItem, const QString& path)
     {
-        QStringList folderNames = path.split(QRegExp("(\\\\|\\/)"), Qt::SkipEmptyParts);
+        QStringList folderNames = path.split(QRegularExpression("(\\\\|\\/)"), Qt::SkipEmptyParts);
         const int size = folderNames.length();
         for (int i = 0; i < size; ++i)
         {

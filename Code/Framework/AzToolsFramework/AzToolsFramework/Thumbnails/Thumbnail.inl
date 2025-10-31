@@ -15,22 +15,11 @@ namespace AzToolsFramework
         template <class ThumbnailType, class Hasher, class EqualKey>
         ThumbnailCache<ThumbnailType, Hasher, EqualKey>::ThumbnailCache()
         {
-            BusConnect();
         }
 
         template <class ThumbnailType, class Hasher, class EqualKey>
         ThumbnailCache<ThumbnailType, Hasher, EqualKey>::~ThumbnailCache()
         {
-            BusDisconnect();
-        }
-
-        template <class ThumbnailType, class Hasher, class EqualKey>
-        void ThumbnailCache<ThumbnailType, Hasher, EqualKey>::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
-        {
-            for (auto& kvp : m_cache)
-            {
-                kvp.second->UpdateTime(deltaTime);
-            }
         }
 
         template <class ThumbnailType, class Hasher, class EqualKey>

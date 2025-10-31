@@ -14,6 +14,31 @@
 
 namespace GraphCanvas
 {
+    // Implement the GraphCanvas Endpoint RTTI and functions in a cpp file
+    AZ_CLASS_ALLOCATOR_IMPL(Endpoint, AZ::SystemAllocator);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(Endpoint, "Endpoint", "{4AF80E61-8E0A-43F3-A560-769C925A113B}");
+
+    void Endpoint::Reflect(AZ::ReflectContext* reflection)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
+        if (serializeContext)
+        {
+            serializeContext->Class<Endpoint>()
+                ->Version(1)
+                ->Field("nodeId", &Endpoint::m_nodeId)
+                ->Field("slotId", &Endpoint::m_slotId)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<Endpoint>("Endpoint", "Endpoint")
+                    ->DataElement(0, &Endpoint::m_nodeId, "Node Id", "Node Id portion of endpoint")
+                    ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushable)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
+                    ;
+            }
+        }
+    }
     //////////////
     // GraphData
     //////////////

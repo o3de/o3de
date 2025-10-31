@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Transform.h>
+
+namespace OpenParticleSystem
+{
+    struct CameraTransform
+    {
+        bool m_valid = false;
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+    };
+    class ParticleEditorRequest
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        using MutexType = AZStd::recursive_mutex;
+
+        virtual const CameraTransform& GetParticleEditorCameraTransform() = 0;
+    };
+
+    using ParticleEditorRequestBus = AZ::EBus<ParticleEditorRequest>;
+} // namespace OpenParticle

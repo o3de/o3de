@@ -43,12 +43,6 @@ EDITOR_CORE_API IEditor* GetIEditor();
 //! Attach the editorcore dll to the system environmen in the System DLL
 EDITOR_CORE_API void SetEditorCoreEnvironment(struct SSystemGlobalEnvironment* pEnv);
 
-//! Attach the editorcore dll to the AZ Environment which allows ebus and memory allocation - should be done really early
-EDITOR_CORE_API void AttachEditorCoreAZEnvironment(AZ::EnvironmentInstance pAzEnv);
-
-//! Detach the editorcore dll from the AZ Environment, should be done last.
-EDITOR_CORE_API void DetachEditorCoreAZEnvironment();
-
 #if defined(AZ_PLATFORM_WINDOWS)
 #include "../IEditor.h"
 #endif

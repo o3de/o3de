@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -19,7 +20,7 @@ namespace AzFramework
     //! The defaults here reflect the defaults when creating a new
     //! WindowGeometry object. Different window implementations may 
     //! have their own separate default window sizes.
-    struct WindowGeometry
+    struct AZF_API WindowGeometry
     {
         WindowGeometry() = default;
 
@@ -37,7 +38,7 @@ namespace AzFramework
     };
 
     //! A simple structure to encapsulate different native window style masks.
-    struct WindowStyleMasks
+    struct AZF_API WindowStyleMasks
     {
         //! Platform agnostic window style bitmasks.
         static constexpr uint32_t WINDOW_STYLE_BORDERED     = 0x0001; //!< Should the window have a border?
@@ -92,11 +93,11 @@ namespace AzFramework
     //! - Calling Activate (when not active) will result in the OnWindowResized notification
     //! - Calling Deactivate (when active) will result in the OnWindowClosed notification
     //! - destroying the NativeWindow when active will result in Deactivate being called
-    class NativeWindow final
+    class AZF_API NativeWindow final
         : public WindowRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator);
 
         //! Constructor
         //! \param[in] title The title of the window (may or may not be displayed depending on the platform).
@@ -120,12 +121,16 @@ namespace AzFramework
         bool IsActive() const;
 
         //! Get the native window handle. This is used as the bus id for the WindowRequestBus and WindowNotificationBus
-        NativeWindowHandle GetWindowHandle() const { return m_pimpl->GetWindowHandle(); }
+        NativeWindowHandle GetWindowHandle() const { return (m_pimpl != nullptr) ? m_pimpl->GetWindowHandle() : nullptr; }
 
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         WindowSize GetClientAreaSize() const override;
-        void ResizeClientArea(WindowSize clientAreaSize) override;
+        WindowSize GetMaximumClientAreaSize() const override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
+        bool SupportsClientAreaResize() const override;
+        WindowSize GetRenderResolution() const override;
+        void SetRenderResolution(WindowSize resolution) override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
@@ -134,6 +139,9 @@ namespace AzFramework
         uint32_t GetSyncInterval() const override;
         bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
+
+        //! Get whether the default window supports client area resizing.
+        static bool SupportsClientAreaResizeOfDefaultWindow();
 
         //! Get the full screen state of the default window.
         //! \return True if the default window is currently in full screen, false otherwise.
@@ -153,13 +161,14 @@ namespace AzFramework
         //! The NativeWindow implementation.
         //! Extend this to provide windowing capabilities per platform.
         //! It's expected that only one Implementation::Create method will be available per-platform.
-        class Implementation
+        class AZF_API Implementation
         {
         public:
             static Implementation* Create();
             virtual ~Implementation() = default;
 
-            virtual void InitWindow(const AZStd::string& title,
+            void InitWindow(const AZStd::string& title, const WindowGeometry& geometry, const WindowStyleMasks& styleMasks);
+            virtual void InitWindowInternal(const AZStd::string& title,
                                     const WindowGeometry& geometry,
                                     const WindowStyleMasks& styleMasks) = 0;
 
@@ -171,7 +180,11 @@ namespace AzFramework
 
             virtual void SetWindowTitle(const AZStd::string& title);
             virtual WindowSize GetClientAreaSize() const;
-            virtual void ResizeClientArea(WindowSize clientAreaSize);
+            virtual WindowSize GetMaximumClientAreaSize() const;
+            virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options);
+            virtual bool SupportsClientAreaResize() const;
+            virtual WindowSize GetRenderResolution() const;
+            virtual void SetRenderResolution(WindowSize resolution);
             virtual bool GetFullScreenState() const;
             virtual void SetFullScreenState(bool fullScreenState);
             virtual bool CanToggleFullScreenState() const;
@@ -182,6 +195,17 @@ namespace AzFramework
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             bool m_activated = false;
+            WindowSize m_renderResolution;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The factory class to create a custom implementation for this native window
+        class AZF_API ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create() = 0;
         };
 
     private:

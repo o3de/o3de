@@ -36,6 +36,10 @@ namespace AZ
                 void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "SceneAPI::MeshGroup";
+                }
 
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene) const;
@@ -43,7 +47,7 @@ namespace AZ
 
                 bool SceneHasMeshGroup(const Containers::Scene& scene) const;
 
-                static const int s_meshGroupPreferredTabOrder;
+                static constexpr int s_meshGroupPreferredTabOrder{ 0 };
             };
         } // Behaviors
     } // SceneAPI

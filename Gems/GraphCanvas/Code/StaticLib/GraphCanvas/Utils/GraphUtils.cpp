@@ -110,7 +110,7 @@ namespace GraphCanvas
             ConnectionId m_connectionId;
         };
 
-        AZ_CLASS_ALLOCATOR(OrganizationHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OrganizationHelper, AZ::SystemAllocator);
         OrganizationHelper() = default;
 
         OrganizationHelper(const NodeId& nodeId, const AlignConfig& alignConfig, const QRectF& overallBoundingRect)
@@ -489,6 +489,22 @@ namespace GraphCanvas
     ScopedGraphUndoBlocker::~ScopedGraphUndoBlocker()
     {
         GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestPopPreventUndoStateUpdate);
+    }
+
+    ///////////////////////////
+    // ScopedGraphUndoBatch
+    ///////////////////////////
+
+    ScopedGraphUndoBatch::ScopedGraphUndoBatch(const GraphId& graphId)
+        : m_graphId(graphId)
+    {
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestPushPreventUndoStateUpdate);
+    }
+
+    ScopedGraphUndoBatch::~ScopedGraphUndoBatch()
+    {
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestPopPreventUndoStateUpdate);
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestUndoPoint);
     }
 
     ///////////////////////////
@@ -2439,7 +2455,7 @@ namespace GraphCanvas
                     // Find each of the connections that will be triggered by the current node
                     for (SlotId slotId : slotIds)
                     {
-                        if (IsSlotVisible(slotId) && IsSlotType(slotId, ConnectionType::CT_Output))
+                        if (IsSlotVisible(slotId) && IsSlotType(slotId, AZ::Crc32(ConnectionType::CT_Output)))
                         {
                             AZStd::vector< ConnectionId > connectionIds;
                             SlotRequestBus::EventResult(connectionIds, slotId, &SlotRequests::GetConnections);                            

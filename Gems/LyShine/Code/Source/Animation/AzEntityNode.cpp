@@ -13,35 +13,23 @@
 #include "ISystem.h"
 #include "CompoundSplineTrack.h"
 #include "UiAnimationSystem.h"
-#include "PNoise3.h"
 #include "AnimSequence.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
-#include <CryCommon/StaticInstance.h>
-
-#define s_nodeParamsInitialized s_nodeParamsInitializedEnt
-#define s_nodeParams s_nodeParamsEnt
-#define AddSupportedParam AddSupportedParamEnt
 
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
     const char* kScriptTablePrefix = "ScriptTable:";
 
-    bool s_nodeParamsInitialized = false;
-    StaticInstance<std::vector<CUiAnimNode::SParamInfo>> s_nodeParams;
-
-    void AddSupportedParam(std::vector<CUiAnimNode::SParamInfo>& nodeParams, const char* sName, int paramId, EUiAnimValue valueType, int flags = 0)
-    {
-        CUiAnimNode::SParamInfo param;
-        param.name = sName;
-        param.paramType = paramId;
-        param.valueType = valueType;
-        param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
-        nodeParams.push_back(param);
-    }
+    AZStd::array<CUiAnimNode::SParamInfo, 1> s_nodeParams{ { {
+        /*.name =*/"Component Field float",
+        /*.paramType =*/eUiAnimParamType_AzComponentField,
+        /*.valueType =*/eUiAnimValue_Float,
+        /*.flags =*/(IUiAnimNode::ESupportedParamFlags)0,
+    } } };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,25 +54,12 @@ CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
     #endif
 
     UiAnimNodeBus::Handler::BusConnect(this);
-
-    CUiAnimAzEntityNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode()
     : CUiAnimAzEntityNode(0)
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimAzEntityNode::Initialize()
-{
-    if (!s_nodeParamsInitialized)
-    {
-        s_nodeParamsInitialized = true;
-        s_nodeParams.reserve(1);
-        AddSupportedParam(s_nodeParams, "Component Field float", eUiAnimParamType_AzComponentField, eUiAnimValue_Float);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -276,12 +251,12 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 {
     // Get the serialize context for the application
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     // Get the AZ entity that this node is animating
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -416,7 +391,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
     }
 
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -551,7 +526,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
         m_bIgnoreSetParam = false;
     }
 
-    EBUS_EVENT_ID(m_entityId, UiAnimateEntityBus, PropertyValuesChanged);
+    UiAnimateEntityBus::Event(m_entityId, &UiAnimateEntityBus::Events::PropertyValuesChanged);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -637,7 +612,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::GetTrackForAzField(const UiAnimParamData& par
 IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& param)
 {
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     IUiAnimTrack* track = nullptr;
@@ -945,20 +920,6 @@ void CUiAnimAzEntityNode::PrecacheStatic([[maybe_unused]] float time)
 void CUiAnimAzEntityNode::PrecacheDynamic([[maybe_unused]] float time)
 {
     // Used to update durations of all character animations.
-}
-
-//////////////////////////////////////////////////////////////////////////
-Vec3 CUiAnimAzEntityNode::Noise::Get(float time) const
-{
-    Vec3 noise;
-    const float phase = time * m_freq;
-    const Vec3 phase0 = Vec3(15.0f * m_freq, 55.1f * m_freq, 101.2f * m_freq);
-
-    noise.x = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.x) * m_amp;
-    noise.y = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.y) * m_amp;
-    noise.z = gEnv->pSystem->GetNoiseGen()->Noise1D(phase + phase0.z) * m_amp;
-
-    return noise;
 }
 
 IUiAnimTrack* CUiAnimAzEntityNode::CreateVectorTrack(const UiAnimParamData& param, EUiAnimValue valueType, int numElements)

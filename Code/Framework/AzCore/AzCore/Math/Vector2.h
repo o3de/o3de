@@ -18,7 +18,7 @@ namespace AZ
     class ReflectContext;
 
     //! 2-dimensional vector class.
-    class Vector2
+    class AZCORE_API Vector2
     {
     public:
 
@@ -28,8 +28,8 @@ namespace AZ
         //! @param context reflection context
         static void Reflect(ReflectContext* context);
 
+        //! Default constructor, components are uninitialized.
         Vector2() = default;
-
         Vector2(const Vector2& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
@@ -216,6 +216,8 @@ namespace AZ
         Vector2 operator*(float multiplier) const;
         Vector2 operator/(float divisor) const;
         Vector2 operator/(const Vector2& rhs) const;
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector2 GetSin() const;
@@ -282,9 +284,14 @@ namespace AZ
         //! P = (v.Dot(Normal) * normal)
         Vector2 GetProjectedOnNormal(const Vector2& normal);
 
+        //! Returns true if the vector contains no nan or inf values, false if at least one element is not finite.
         bool IsFinite() const;
 
+        //! Returns the underlying SIMD vector.
         Simd::Vec2::FloatType GetSimdValue() const;
+
+        //! Directly sets the underlying SIMD vector.
+        void SetSimdValue(Simd::Vec2::FloatArgType value);
 
     private:
 

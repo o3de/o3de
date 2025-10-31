@@ -225,25 +225,6 @@ namespace ProjectSettingsTool
                 }
             }
         }
-        else if (attrib == Attributes::LinkedProperty)
-        {
-            AZStd::string linked;
-            if (attrValue->Read<AZStd::string>(linked))
-            {
-                auto result = m_ctrlToIdentAndLink.find(GUI);
-                if (result != m_ctrlToIdentAndLink.end())
-                {
-                    result->second.linkedIdentifier = linked;
-                }
-                else
-                {
-                    m_ctrlToIdentAndLink.insert(AZStd::pair<PropertyLinkedCtrl*, IdentAndLink>(GUI, IdentAndLink{ "", linked }));
-                    m_ctrlInitOrder.push_back(GUI);
-                }
-
-                GUI->SetLinkTooltip(linked.data());
-            }
-        }
         else
         {
             GUI->ConsumeAttribute(attrib, attrValue, debugName);
@@ -277,6 +258,11 @@ namespace ProjectSettingsTool
         for (PropertyLinkedCtrl* ctrlPointer : m_ctrlInitOrder)
         {
             auto property = m_ctrlToIdentAndLink.find(ctrlPointer);
+            // If it's not linked to another property then continue
+            if (property->second.linkedIdentifier.empty())
+            {
+                continue;
+            }
             auto link = m_identToCtrl.find(property->second.linkedIdentifier);
             if (link != m_identToCtrl.end())
             {

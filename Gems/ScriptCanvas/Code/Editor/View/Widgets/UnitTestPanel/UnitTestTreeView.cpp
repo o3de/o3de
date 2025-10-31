@@ -6,11 +6,11 @@
  *
  */
 
-#include <qaction.h>
-#include <qevent.h>
-#include <qheaderview.h>
-#include <qitemselectionmodel.h>
-#include <qscrollbar.h>
+#include <QAction>
+#include <QEvent>
+#include <QHeaderView>
+#include <QItemSelectionModel>
+#include <QScrollBar>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/Utils.h>
@@ -33,7 +33,7 @@
 #include <Editor/QtMetaTypes.h>
 
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>

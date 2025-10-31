@@ -13,7 +13,8 @@ def CreatePrefab_UnderAnEntity():
     Test is successful if the new instanced prefab of the child has the parent entity id
     """
 
-    CAR_PREFAB_FILE_NAME = 'car_prefab'
+    from pathlib import Path
+    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
@@ -34,6 +35,10 @@ def CreatePrefab_UnderAnEntity():
 
     # Asserts if prefab creation doesn't succeed
     child_prefab, child_instance = Prefab.create_prefab([child_entity], CAR_PREFAB_FILE_NAME)
+
+    # Test undo/redo on prefab creation
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(child_instance, parent_entity.id)
+
     child_entity_on_child_instance = child_instance.get_direct_child_entities()[0]
     assert child_instance.container_entity.get_parent_id().IsValid(), "Newly instanced entity has no parent"
     assert child_instance.container_entity.get_parent_id() == parent_entity.id, "Newly instanced entity parent does not match the expected parent"
@@ -46,6 +51,7 @@ def CreatePrefab_UnderAnEntity():
     child_translation = child_entity_on_child_instance.get_world_translation()
     assert child_translation.IsClose(azlmbr.math.Vector3(200.0, 200.0, 200.0)), f"Entity position{child_translation.ToString()} of the instance didn't get updated" \
                                                                                 f" to the same position as the parent{parent_entity.get_world_translation().ToString()}"
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report

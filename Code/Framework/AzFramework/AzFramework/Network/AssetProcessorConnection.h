@@ -22,6 +22,7 @@
 
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -43,7 +44,7 @@ namespace AzFramework
         * It is primarily used for the AssetProcessor to connect to the game
         * and stream files across the network
         */
-        class AssetProcessorConnection
+        class AZF_API AssetProcessorConnection
             : public SocketConnection
         {
             struct ThreadState
@@ -93,6 +94,8 @@ namespace AzFramework
             //! @return returns a value that can be passed to /ref RemoveMessageHandler .
             SocketConnection::TMessageCallbackHandle AddMessageHandler(AZ::u32 typeId, TMessageCallback callback) override;
             void RemoveMessageHandler(AZ::u32 typeId, TMessageCallbackHandle callbackHandle) override;
+            AZ::s32 GetLastResult() const override;
+            AZStd::string GetLastErrorMessage() const override;
             //////////////////////////////////////////////////////////////////////////
 
             bool NegotiationFailed() { return m_negotiationFailed; } //hold whether the last connection attempt failed negotiation or not
@@ -208,7 +211,8 @@ namespace AzFramework
             // has yet to finish cleaning everything up.
             AZStd::atomic_bool m_isBusyDisconnecting;
 
-            
+            AZ::s32 m_lastErrorResult = 0;
+            AZStd::string m_lastErrorMessage;
         };
 
         typedef AZStd::vector<AZ::u8, AZ::OSStdAllocator> MessageBuffer;

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
@@ -22,8 +24,8 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        //! A widget used to display thumbnail. To display thumbnails within item views, use ThumbnailDelegate
-        class ThumbnailWidget
+        //! A widget used to display thumbnail
+        class AZTF_API ThumbnailWidget
             : public QWidget
         {
             Q_OBJECT
@@ -32,7 +34,7 @@ namespace AzToolsFramework
             ~ThumbnailWidget() override = default;
 
             //! Call this to set what thumbnail widget will display
-            void SetThumbnailKey(SharedThumbnailKey key, const char* contextName = "Default");
+            void SetThumbnailKey(SharedThumbnailKey key);
             //! Remove current thumbnail
             void ClearThumbnail();
 
@@ -44,10 +46,9 @@ namespace AzToolsFramework
 
         private:
             SharedThumbnailKey m_key;
-            AZStd::string m_contextName;
 
         private Q_SLOTS:
-            void KeyUpdatedSlot();
+            void RepaintThumbnail();
         };
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

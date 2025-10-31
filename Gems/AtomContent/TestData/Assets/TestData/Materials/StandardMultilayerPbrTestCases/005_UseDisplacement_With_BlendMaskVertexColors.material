@@ -1,0 +1,10 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 3,
+    "parentMaterial": "005_UseDisplacement.material",
+    "propertyValues": {
+        "blend.blendSource": "Displacement_With_BlendMaskVertexColors",
+        "blend.displacementBlendDistance": 0.02387000061571598,
+        "parallax.enable": false
+    }
+}

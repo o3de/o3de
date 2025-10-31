@@ -40,14 +40,12 @@ SANDBOX_API void LogV(const char* format, va_list argList);
 SANDBOX_API void Warning(const char* format, ...);
 SANDBOX_API void WarningV(const char* format, va_list argList);
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /*!
  *  CLogFile implements ILog interface.
  */
 class SANDBOX_API CLogFile
     : public ILogCallback
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     static const char* GetLogFileName();
     static void AttachListBox(QListWidget* hWndListBox);
@@ -66,9 +64,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // ILogCallback
     //////////////////////////////////////////////////////////////////////////
-    virtual void OnWrite([[maybe_unused]] const char* sText, [[maybe_unused]] IMiniLog::ELogType type) override {};
-    virtual void OnWriteToConsole(const char* sText, bool bNewLine) override;
-    virtual void OnWriteToFile(const char* sText, bool bNewLine) override;
+    virtual void OnWrite([[maybe_unused]] AZStd::string_view sText, [[maybe_unused]] IMiniLog::ELogType type) override {};
+    virtual void OnWriteToConsole(AZStd::string_view sText, bool bNewLine) override;
+    virtual void OnWriteToFile(AZStd::string_view sText, bool bNewLine) override;
     //////////////////////////////////////////////////////////////////////////
 
     // logs some useful information

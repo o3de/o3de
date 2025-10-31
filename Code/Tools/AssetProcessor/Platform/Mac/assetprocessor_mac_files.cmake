@@ -8,4 +8,6 @@
 
 set(FILES
     native/FileWatcher/FileWatcher_macos.cpp
+    native/FileWatcher/FileWatcher_mac.h
+    native/FileWatcher/FileWatcher_platform.h
 )

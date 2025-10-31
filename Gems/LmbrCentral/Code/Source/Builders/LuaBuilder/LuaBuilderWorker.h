@@ -34,19 +34,11 @@ namespace LuaBuilder
         void ShutDown() override;
         //////////////////////////////////////////////////////////////////////////
 
-        void ParseDependencies(const AZStd::string& file, AssetBuilderSDK::ProductPathDependencySet& outDependencies);
+        static AZStd::string GetAnalysisFingerprint();
+
+        static void ParseDependencies(const AZStd::string& file, AssetBuilderSDK::ProductPathDependencySet& outDependencies);
 
     private:
         bool m_isShuttingDown = false;
-
-        using JobStepOutcome = AZ::Outcome<AssetBuilderSDK::JobProduct, AssetBuilderSDK::ProcessJobResultCode>;
-
-        JobStepOutcome RunCompileJob(const AssetBuilderSDK::ProcessJobRequest& request);
-        JobStepOutcome RunCopyJob(const AssetBuilderSDK::ProcessJobRequest& request);
-        JobStepOutcome WriteAssetInfo(
-            const AssetBuilderSDK::ProcessJobRequest& request,
-            AZStd::string_view destFileName,
-            AZStd::string_view debugName,
-            AZ::ScriptContext& scriptContext);
     };
 } // namespace LuaBuilder

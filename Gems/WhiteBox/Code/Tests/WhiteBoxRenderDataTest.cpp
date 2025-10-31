@@ -94,12 +94,12 @@ namespace UnitTest
         EXPECT_EQ(numOutTriangles, numInTriangles - faceData.m_numCulledFaces);
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         NonDegenerateFaceList, WhiteBoxVertexDataTestFixture, ::testing::Values(NonDegenerateFaceList));
 
-    INSTANTIATE_TEST_CASE_P(DegenerateFaceList, WhiteBoxVertexDataTestFixture, ::testing::Values(DegenerateFaceList));
+    INSTANTIATE_TEST_SUITE_P(DegenerateFaceList, WhiteBoxVertexDataTestFixture, ::testing::Values(DegenerateFaceList));
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         DegenerateAndNonDegenerateFaceList, WhiteBoxVertexDataTestFixture,
         ::testing::Values(DegenerateAndNonDegenerateFaceList));
 } // namespace UnitTest

@@ -14,44 +14,19 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static constexpr const int LoadingThumbnailSize = 128;
+        static constexpr const int LoadingThumbnailSize = 1;
 
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static constexpr const char* LoadingIconPath = "Assets/Editor/Icons/AssetBrowser/in_progress.gif";
-
         LoadingThumbnail::LoadingThumbnail()
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
-            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / LoadingIconPath;
-            m_loadingMovie.setFileName(absoluteIconPath.c_str());
-            m_loadingMovie.setCacheMode(QMovie::CacheMode::CacheAll);
-            m_loadingMovie.setScaledSize(QSize(LoadingThumbnailSize, LoadingThumbnailSize));
-            m_loadingMovie.start();
-            m_pixmap = m_loadingMovie.currentPixmap();
+            m_pixmap = QPixmap(LoadingThumbnailSize, LoadingThumbnailSize);
+            m_pixmap.fill(Qt::black);
             m_state = State::Ready;
-
-            BusConnect();
         }
-
-        LoadingThumbnail::~LoadingThumbnail()
-        {
-            BusDisconnect();
-        }
-
-        void LoadingThumbnail::UpdateTime(float)
-        {
-            m_pixmap = m_loadingMovie.currentPixmap();
-            Q_EMIT Updated();
-        }
-
-        void LoadingThumbnail::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
-        {
-            UpdateTime(deltaTime);
-        }
-
-    } // namespace Thumbnailer
+   } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
 #include "Thumbnails/moc_LoadingThumbnail.cpp"

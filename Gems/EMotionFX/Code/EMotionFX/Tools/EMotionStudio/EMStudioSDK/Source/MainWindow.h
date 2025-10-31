@@ -72,7 +72,6 @@ namespace EMStudio
 {
     // forward declaration
     class DirtyFileManager;
-    class EMStudioPlugin;
     class FileManager;
     class MainWindow;
     class NativeEventFilter;
@@ -129,7 +128,7 @@ namespace EMStudio
 
         GUIOptions& GetOptions()                                                { return m_options; }
 
-        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr);
+        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr, bool addDefaultMotionSet = true);
 
         // settings
         void SavePreferences();
@@ -164,6 +163,8 @@ namespace EMStudio
         void AddRecentActorFile(const QString& fileName);
 
         void LoadKeyboardShortcuts();
+
+        void UpdatePlugins(float timeDelta);
 
     public slots:
         void OnAutosaveTimeOut();
@@ -310,8 +311,6 @@ namespace EMStudio
         // AZ::TickBus::Handler overrides
         void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
         int GetTickOrder() override;
-
-        void UpdatePlugins(float timeDelta);
 
         void EnableUpdatingPlugins();
         void DisableUpdatingPlugins();

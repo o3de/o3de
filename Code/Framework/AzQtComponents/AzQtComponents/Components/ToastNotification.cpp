@@ -96,7 +96,7 @@ namespace AzQtComponents
             QPainter p(this);
             p.setPen(Qt::transparent);
             QColor painterColor;
-            painterColor.setRgbF(0, 0, 0, 255);
+            painterColor.setRgbF(0.f, 0.f, 0.f, 1.f);
             p.setBrush(painterColor);
             p.setRenderHint(QPainter::Antialiasing);
             p.drawRoundedRect(rect(), m_borderRadius, m_borderRadius);

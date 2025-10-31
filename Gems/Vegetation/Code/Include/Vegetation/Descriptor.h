@@ -23,7 +23,7 @@ namespace Vegetation
     static constexpr float s_defaultUpperSurfaceDistanceInMeters = 1000.0f;
     struct SurfaceTagDistance final
     {
-        AZ_CLASS_ALLOCATOR(SurfaceTagDistance, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceTagDistance, AZ::SystemAllocator);
         AZ_TYPE_INFO(SurfaceTagDistance, "{2AB6096D-C7C0-4C5E-AA84-7CA804A9680C}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -52,14 +52,14 @@ namespace Vegetation
         Extend, // Combine component level values with descriptor level values
     };
 
-    static const AZ::Uuid VegetationDescriptorTypeId = "{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}";
+    inline constexpr AZ::TypeId VegetationDescriptorTypeId{ "{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}" };
 
     /**
     * Details used to create vegetation instances
     */
     struct Descriptor final
     {
-        AZ_CLASS_ALLOCATOR(Descriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Descriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(Descriptor, VegetationDescriptorTypeId);
         static void Reflect(AZ::ReflectContext* context);
 

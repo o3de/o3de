@@ -1,0 +1,47 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "DiffuseProbeGridQueryFullscreenWithAlbedoPass",
+        "TemplateName": "DiffuseProbeGridQueryFullscreenWithAlbedoPassTemplate",
+        "Enabled": true,
+        "Connections": [
+            {
+                "LocalSlot": "Output",
+                "AttachmentRef": {
+                    "Pass": "ReflectionScreenSpaceRayTracingPass",
+                    "Attachment": "FallbackColor"
+                }
+            },
+            {
+                "LocalSlot": "AlbedoInput",
+                "AttachmentRef": {
+                    "Pass": "ReflectionScreenSpaceRayTracingPass",
+                    "Attachment": "FallbackAlbedo"
+                }
+            },
+            {
+                "LocalSlot": "NormalInput",
+                "AttachmentRef": {
+                    "Pass": "ReflectionScreenSpaceRayTracingPass",
+                    "Attachment": "FallbackNormal"
+                }
+            },
+            {
+                "LocalSlot": "PositionInput",
+                "AttachmentRef": {
+                    "Pass": "ReflectionScreenSpaceRayTracingPass",
+                    "Attachment": "FallbackPosition"
+                }
+            },
+            {
+                "LocalSlot": "DirectionInput",
+                "AttachmentRef": {
+                    "Pass": "ReflectionScreenSpaceRayTracingPass",
+                    "Attachment": "FallbackNormal"
+                }
+            }
+       ]
+    }
+}

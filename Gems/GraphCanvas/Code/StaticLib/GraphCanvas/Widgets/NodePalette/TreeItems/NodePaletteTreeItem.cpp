@@ -68,26 +68,6 @@ namespace GraphCanvas
                 return GetName();
             case Qt::EditRole:
                 return GetName();
-            case Qt::ForegroundRole:
-                if (!IsEnabled())
-                {
-                    QVariant variant = OnData(index, role);
-
-                    if (variant.type() == QVariant::Type::Color)
-                    {
-                        QColor fontColor = variant.value<QColor>();
-
-                        int fontAlpha = aznumeric_cast<int>(fontColor.alpha() * 0.5f);
-                        fontAlpha = AZStd::min(AZStd::min(fontAlpha, 127), fontColor.alpha());
-
-                        fontColor.setAlpha(fontAlpha);
-
-                        variant.setValue(fontColor);
-                    }
-
-                    return variant;
-                }
-                break;
             case Qt::DecorationRole:
                 if (HasError())
                 {

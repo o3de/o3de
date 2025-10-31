@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "MultiplayerSystemComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer System Component"
+            },
+            "methods": [
+                {
+                    "base": "ClearAllEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear All Entities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear All Entities is invoked"
+                    },
+                    "details": {
+                        "name": "Clear All Entities"
+                    }
+                },
+                {
+                    "base": "GetCurrentBlendFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Current Blend Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Current Blend Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Current Blend Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

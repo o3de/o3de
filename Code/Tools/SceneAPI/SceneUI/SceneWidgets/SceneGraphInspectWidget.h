@@ -59,11 +59,9 @@ namespace AZ
             protected:
                 void OnSelectionChanged(AZStd::shared_ptr<const DataTypes::IGraphObject> item);
 
-                AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 QScopedPointer<Ui::SceneGraphInspectWidget> ui;
                 QScopedPointer<SceneGraphWidget> m_graphView;
                 QScopedPointer<AzToolsFramework::ReflectedPropertyEditor> m_propertyEditor;
-                AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
                 SerializeContext* m_context;
             };

@@ -88,7 +88,16 @@ namespace AzFramework::AssetSystem::Platform
 
             if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
             {
-                return false;
+                // Now try with the "Default" permutation
+                constexpr const char* BuildPermutation = "Default";
+
+                assetProcessorPath =
+                    AZ::IO::FixedMaxPath{ engineRoot } / "bin" / AZ_TRAIT_OS_PLATFORM_NAME /
+                    AZ_BUILD_CONFIGURATION_TYPE / BuildPermutation / "AssetProcessor";
+                if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
+                {
+                    return false;
+                }
             }
         }
 
@@ -134,7 +143,7 @@ namespace AzFramework::AssetSystem::Platform
                 return true;
             }
             // wait for first child to exit to ensure the second child was started
-            int status = 0; 
+            int status = 0;
             pid_t ret = waitpid(firstChildPid, &status, 0);
             return (ret == firstChildPid) && (status == 0);
         }

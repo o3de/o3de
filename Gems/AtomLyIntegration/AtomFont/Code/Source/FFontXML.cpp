@@ -20,6 +20,7 @@
 #include <CryCommon/Cry_Math.h>
 #include <CryCommon/CryPath.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Serialization/Locale.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Main loading function
@@ -37,9 +38,16 @@ bool AZ::FFont::Load(const char* xmlFile)
         return false;
     }
 
+    
     AtomFontInternal::XmlFontShader xmlfs(this);
-    xmlfs.ScanXmlNodesRecursively(root);
 
+    {
+        // use the invariant culture so that if the user has a machine that has comma as the decimal separator,
+        // the font file will still be parsed correctly.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
+        xmlfs.ScanXmlNodesRecursively(root);
+    }
     // if this was not a valid font XML file then return false
     if (!m_fontTexture || !m_fontBuffer)
     {
@@ -63,6 +71,8 @@ bool AZ::FFont::Load(const char* xmlFile)
                 xmlFile);
             m_effects.clear();
         }
+
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
 
         // parse the font effects file, adding to this font object
         AtomFontInternal::XmlFontShader xmlfsEffect(this);

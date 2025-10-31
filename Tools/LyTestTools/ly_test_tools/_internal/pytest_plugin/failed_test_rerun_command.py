@@ -10,16 +10,23 @@ import sys
 from ly_test_tools import WINDOWS
 
 
-def _get_test_launcher_cmd(build_dir=None):
+def _get_test_launcher_cmd():
     """
     Helper function to determine the test launcher command for the current platform
-    :param build_dir: the --build-directory arg that is passed to determine which build dir to use. Can also be None
     :return: The test launcher command
     """
-    build_arg = ""
-    if build_dir:
-        build_arg = f" --build-directory {build_dir} "
-
+    is_option = False
+    build_args = ''
+    # We want all args that aren't the pytest executable or target test/module being ran
+    for arg in sys.argv[1:]:
+        # Add any options
+        if arg.startswith('-'):
+            is_option = True
+            build_args = f"{build_args} {arg}"
+        # Add any values passed in
+        elif is_option:
+            is_option = False
+            build_args = f"{build_args} {arg}"
     python_runner = "python.cmd"
     if not WINDOWS:
         python_runner = "python.sh"
@@ -30,12 +37,12 @@ def _get_test_launcher_cmd(build_dir=None):
     for _ in range(10):
         python_wrapper = os.path.join(current_dir, python_runner)
         if os.path.exists(python_wrapper):
-            return f"{python_wrapper} -m pytest{build_arg} "
+            return f"{python_wrapper} -m pytest{build_args} "
         # Using an explicit else to avoid aberrant behavior from following filesystem links
         else:
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
-    return f"{sys.executable} -m pytest{build_arg} "
+    return f"{sys.executable} -m pytest{build_args} "
 
 
 def _format_cmd(launcher_cmd, test_path, nodeid):
@@ -66,18 +73,17 @@ def _format_cmd(launcher_cmd, test_path, nodeid):
     return f"{launcher_cmd}{test_id_argument}"
 
 
-def build_rerun_commands(test_path, nodeids, build_dir=None):
+def build_rerun_commands(test_path, nodeids):
     """
     Builds a list of commands to run tests
 
     :param test_path: File or directory that contains the test(s) that were run
     :param nodeids: List of test node ids, with parametrized values
-    :param build_dir: the --build-directory arg that is passed to determine which build dir to use. Can also be None
     :return: A list of commands to re-run tests
     """
 
     commands = []
-    test_launcher_cmd = _get_test_launcher_cmd(build_dir)
+    test_launcher_cmd = _get_test_launcher_cmd()
 
     for nodeid in nodeids:
         commands.append(_format_cmd(test_launcher_cmd, test_path, nodeid))

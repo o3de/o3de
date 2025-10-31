@@ -16,6 +16,7 @@
 
 #ifndef _RELEASE
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/std/time.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #endif
 
@@ -50,6 +51,9 @@ namespace LyShine
     {
         m_textures[0].m_texture = texture;
         m_textures[0].m_isClampTextureMode = isClampTextureMode;
+
+        m_combinedVertices.reserve(1024);
+        m_combinedIndices.reserve(1024);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,12 +73,18 @@ namespace LyShine
         m_textures[0].m_isClampTextureMode = isClampTextureMode;
         m_textures[1].m_texture = maskTexture;
         m_textures[1].m_isClampTextureMode = isClampTextureMode;
+
+        m_combinedVertices.reserve(1024);
+        m_combinedIndices.reserve(1024);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     PrimitiveListRenderNode::~PrimitiveListRenderNode()
     {
         m_primitives.clear();
+
+        m_combinedVertices.clear();
+        m_combinedIndices.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,14 +132,10 @@ namespace LyShine
         uint32_t isClampTextureMode = 0;
         for (int i = 0; i < m_numTextures; ++i)
         {
-            const AZ::RHI::ImageView* imageView = m_textures[i].m_texture ? m_textures[i].m_texture->GetImageView() : nullptr;
-
-            if (!imageView)
-            {
-                // Default to white texture
-                auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-                imageView = image->GetImageView();
-            }
+            // Default to white texture
+            const AZ::Data::Instance<AZ::RPI::Image>& image = m_textures[i].m_texture ? m_textures[i].m_texture
+                : AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+            const auto imageView = image->GetImageView();
 
             if (imageView)
             {
@@ -138,6 +144,9 @@ namespace LyShine
                 {
                     isClampTextureMode |= (1 << i);
                 }
+#ifndef _RELEASE
+                uiRenderer->DebugUseTexture(image);
+#endif
             }
         }
 
@@ -148,35 +157,43 @@ namespace LyShine
         drawSrg->SetConstant(uiShaderData.m_viewProjInputIndex, modelViewProjMat);
 
         drawSrg->Compile();
-
+        
         // Add the indexed primitives to the dynamic draw context for drawing
-        //
-        // [LYSHINE_ATOM_TODO][ATOM-15073] - need to combine into a single DrawIndexed call to take advantage of the draw call
-        // optimization done by this RenderGraph. This option will be added to DynamicDrawContext. For
-        // now we could combine the vertices ourselves
-        for (const DynUiPrimitive& primitive : m_primitives)
-        {
-            dynamicDraw->DrawIndexed(primitive.m_vertices, primitive.m_numVertices, primitive.m_indices, primitive.m_numIndices, AZ::RHI::IndexFormat::Uint16, drawSrg);
-        }
+        // TODO (GHI 17444): Vertex data for primitives is currently merged within AddPrimitive and then passed to 
+        // DynamicDrawContext. This can probably be further optimized whereby we dont waste extra memory and 
+        // provide the primitives directly to DynamicDrawContext to be added to its Ring buffer memory. 
+        dynamicDraw->DrawIndexed(&m_combinedVertices[0], (uint32_t)m_combinedVertices.size(), &m_combinedIndices[0],  (uint32_t)m_combinedIndices.size(), AZ::RHI::IndexFormat::Uint16, drawSrg);
 
         uiRenderer->SetBaseState(prevBaseState);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void PrimitiveListRenderNode::AddPrimitive(DynUiPrimitive* primitive)
+    void PrimitiveListRenderNode::AddPrimitive(LyShine::UiPrimitive* primitive)
     {
         // always clear the next pointer before adding to list
         primitive->m_next = nullptr;
         m_primitives.push_back(*primitive);
+
+        uint16 vertex_start = aznumeric_caster(m_combinedVertices.size());
+        uint16 index_start = aznumeric_caster(m_combinedIndices.size());
+
+        // Add the vertices at the end of the combined buffer.  We need to update the vertex indices with their new offset separately.
+        m_combinedVertices.insert(m_combinedVertices.end(), primitive->m_vertices, primitive->m_vertices + primitive->m_numVertices);
+        m_combinedIndices.resize_no_construct(m_combinedIndices.size() + primitive->m_numIndices);
+
+        for (int i = 0; i < primitive->m_numIndices; i++)
+        {
+            m_combinedIndices[index_start + i] = vertex_start + primitive->m_indices[i];
+        }
 
         m_totalNumVertices += primitive->m_numVertices;
         m_totalNumIndices += primitive->m_numIndices;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    DynUiPrimitiveList& PrimitiveListRenderNode::GetPrimitives() const
+    LyShine::UiPrimitiveList& PrimitiveListRenderNode::GetPrimitives() const
     {
-        return const_cast<DynUiPrimitiveList&>(m_primitives);
+        return const_cast<LyShine::UiPrimitiveList&>(m_primitives);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +215,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool PrimitiveListRenderNode::HasSpaceToAddPrimitive(DynUiPrimitive* primitive) const
+    bool PrimitiveListRenderNode::HasSpaceToAddPrimitive(LyShine::UiPrimitive* primitive) const
     {
         return primitive->m_numVertices + m_totalNumVertices < std::numeric_limits<uint16>::max();
     }
@@ -222,9 +239,9 @@ namespace LyShine
     {
         size_t numPrims = m_primitives.size();
         size_t primCount = 0;
-        const DynUiPrimitive* lastPrim = nullptr;
+        const LyShine::UiPrimitive* lastPrim = nullptr;
         int highestTexUnit = 0;
-        for (const DynUiPrimitive& primitive : m_primitives)
+        for (const LyShine::UiPrimitive& primitive : m_primitives)
         {
             if (primCount > numPrims)
             {
@@ -510,6 +527,10 @@ namespace LyShine
             if (!m_dynamicDraw)
             {
                 m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName());
+                if (m_dynamicDraw)
+                {
+                    m_dynamicDraw->SetViewport(AZ::RHI::Viewport(0.0f, m_viewportWidth, 0.0f, m_viewportHeight));
+                }
             }
 
             if (m_dynamicDraw)
@@ -530,7 +551,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     const char* RenderTargetRenderNode::GetRenderTargetName() const
     {
-        return m_attachmentImage->GetRHIImage()->GetName().GetCStr();
+        return m_attachmentImage ? m_attachmentImage->GetRHIImage()->GetName().GetCStr() : "";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -616,7 +637,7 @@ namespace LyShine
         m_isDirty = true;
         m_renderToRenderTargetCount = 0;
 
-#ifndef _RELEASE  
+#ifndef _RELEASE
         m_wasBuiltThisFrame = true;
         m_timeGraphLastBuiltMs = AZStd::GetTimeUTCMilliSecond();
 #endif
@@ -666,13 +687,6 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::BeginRenderToTexture([[maybe_unused]] int renderTargetHandle, [[maybe_unused]] SDepthTexture* renderTargetDepthSurface,
-        [[maybe_unused]] const AZ::Vector2& viewportTopLeft, [[maybe_unused]] const AZ::Vector2& viewportSize, [[maybe_unused]] const AZ::Color& clearColor)
-    {
-        // LYSHINE_ATOM_TODO - this function will be removed when all IRenderer references are gone from UI components
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     void RenderGraph::BeginRenderToTexture(AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,
         const AZ::Vector2& viewportTopLeft, const AZ::Vector2& viewportSize, const AZ::Color& clearColor)
     {
@@ -705,7 +719,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+    void RenderGraph::AddPrimitive(LyShine::UiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
         bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode)
     {
         AZStd::vector<RenderNode*>* renderNodeList = m_renderNodeListStack.top();
@@ -778,7 +792,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::AddAlphaMaskPrimitiveAtom(DynUiPrimitive* primitive,
+    void RenderGraph::AddAlphaMaskPrimitive(LyShine::UiPrimitive* primitive,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage,
         AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage,
         bool isClampTextureMode,
@@ -862,7 +876,7 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    DynUiPrimitive* RenderGraph::GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor)
+    LyShine::UiPrimitive* RenderGraph::GetDynamicQuadPrimitive(const AZ::Vector2* positions, uint32 packedColor)
     {
         const int numVertsInQuad = 4;
         const int numIndicesInQuad = 6;
@@ -952,18 +966,12 @@ namespace LyShine
         defaultBlendModeState.m_writeMask = uiRenderer->GetBaseState().m_blendStateWriteMask;
         dynamicDraw->SetTarget0BlendState(defaultBlendModeState);
 
-        // First render the render targets, they are sorted so that more deeply nested ones are rendered first.
-        // They only need to be rendered the first time that a render graph is rendered after it has been built.
-        if (m_renderToRenderTargetCount == 0)
-        {
-            // Enable the Rtt passes to draw onto the render targets
-            SetRttPassesEnabled(uiRenderer, true);
-        }
-
         // LYSHINE_ATOM_TODO - It is currently necessary to render to the targets twice. Needs investigation
+        // Note, the rtt pass might not be created when the first time the render is called. So we enable rtt pass in both frames when render the node.
         constexpr int timesToRenderToRenderTargets = 2;
         if (m_renderToRenderTargetCount < timesToRenderToRenderTargets)
         {
+            SetRttPassesEnabled(uiRenderer, true);
             for (RenderNode* renderNode : m_renderTargetRenderNodes)
             {
                 renderNode->Render(uiRenderer, uiRenderer->GetModelViewProjectionMatrix(), dynamicDraw);
@@ -1016,7 +1024,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     bool RenderGraph::IsEmpty()
     {
-        return m_renderNodes.empty();
+        return m_renderNodes.empty() && m_renderTargetRenderNodes.empty();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1038,8 +1046,11 @@ namespace LyShine
                         attachmentImages.emplace_back(childRenderTargetRenderNode->GetRenderTarget());
                     }
                 }
-
-                attachmentImagesAndDependencies.emplace_back(AttachmentImageAndDependentsPair(renderTargetRenderNode->GetRenderTarget(), attachmentImages));
+                if (renderTargetRenderNode->GetRenderTarget())
+                {
+                    attachmentImagesAndDependencies.emplace_back(
+                        AttachmentImageAndDependentsPair(renderTargetRenderNode->GetRenderTarget(), attachmentImages));
+                }
             }
         }
     }
@@ -1096,7 +1107,7 @@ namespace LyShine
                 GetDebugInfoRenderNodeList(childNodeList, info, uniqueTextures);
             }
         }
-    
+
         // walk the graph recursively to add up all of the data
         GetDebugInfoRenderNodeList(m_renderNodes, info, uniqueTextures);
 
@@ -1153,11 +1164,11 @@ namespace LyShine
                 }
 
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
-                
-                DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
+
+                LyShine::UiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
                 info.m_numPrimitives += static_cast<int>(primitives.size());
                 {
-                    for (const DynUiPrimitive& primitive : primitives)
+                    for (const LyShine::UiPrimitive& primitive : primitives)
                     {
                         info.m_numTriangles += primitive.m_numIndices / 3;
                     }
@@ -1213,7 +1224,7 @@ namespace LyShine
 
                 AZ::Color clearColor = renderTargetRenderNode->GetClearColor();
                 AZStd::string logLine = AZStd::string::format("RenderTarget %s (ClearColor=(%f,%f,%f), ClearAlpha=%f, Viewport=(%f,%f,%f,%f)) :\r\n",
-                    renderTargetName, 
+                    renderTargetName,
                     static_cast<float>(clearColor.GetR()), static_cast<float>(clearColor.GetG()), static_cast<float>(clearColor.GetB()), static_cast<float>(clearColor.GetA()),
                     renderTargetRenderNode->GetViewportX(),
                     renderTargetRenderNode->GetViewportY(),
@@ -1261,7 +1272,7 @@ namespace LyShine
                 AZStd::string newIndent = indent + "    ";
 
                 logLine = AZStd::string::format("%sMask (MaskEnabled=%d, UseAlphaTest=%d, DrawBehind=%d, DrawInFront=%d) :\r\n",
-                    indent.c_str(), 
+                    indent.c_str(),
                     static_cast<int>(maskRenderNode->GetIsMaskingEnabled()),
                     static_cast<int>(maskRenderNode->GetUseAlphaTest()),
                     static_cast<int>(maskRenderNode->GetDrawBehind()),
@@ -1281,7 +1292,7 @@ namespace LyShine
             else if (renderNode->GetType() == RenderNodeType::PrimitiveList)
             {
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
-                
+
                 bool nodeExistsBecauseOfExceedingMaxTextures = false;
                 if (prevPrimListNode)
                 {
@@ -1338,10 +1349,10 @@ namespace LyShine
                     previousNodeAlreadyCounted = false;
                 }
 
-                DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
+                LyShine::UiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
                 int numPrimitives = static_cast<int>(primitives.size());
                 int numTriangles = 0;
-                for (const DynUiPrimitive& primitive : primitives)
+                for (const LyShine::UiPrimitive& primitive : primitives)
                 {
                     numTriangles += primitive.m_numIndices / 3;
                 }

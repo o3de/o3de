@@ -1,0 +1,27 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+        ],
+        // Commenting this out because it causes the `AssetProcessor` to never
+        // complete the compilation of this material. The solution is to run
+        // the Editor and open the `Material Instance Editor` and pick this
+        // same attachment image for the `baseColor.textureMap`. The actual
+        // GUID of the asset is stored in `ShaderLoadTest.prefab` (which is
+        // how Material Instance Properties are stored).
+        // "baseColor.textureMap": "Levels/ShaderReloadTest/billboard_visualize_rtt.attimage",
+        "emissive.color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "opacity.factor": 1.0,
+        "roughness.factor": 0.5527864098548889
+    }
+}

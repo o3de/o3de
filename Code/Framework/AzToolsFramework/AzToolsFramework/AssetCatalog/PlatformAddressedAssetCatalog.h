@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -24,13 +25,13 @@ namespace AzToolsFramework
     /*
      * Implements an asset catalog for a particular platform, listening to requests based on platform ID
      */
-    class PlatformAddressedAssetCatalog :
+    class AZTF_API PlatformAddressedAssetCatalog :
         public AzFramework::AssetCatalog,
         public AzToolsFramework::AssetCatalog::PlatformAddressedAssetCatalogRequestBus::Handler
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalog, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalog, AZ::SystemAllocator)
 
         explicit PlatformAddressedAssetCatalog(AzFramework::PlatformId platformId, bool directConnections = false);
 

@@ -8,38 +8,18 @@
 
 #include "RecentAssetPath.h"
 #include "CommonSettingsConfigurations.h"
-
 #include <QSettings>
 
 #define SCRIPTCANVASEDITOR_SETTINGS_RECENT_OPEN_FILE_LOCATION_KEY (QString("Recent Open File Location") + " " + QString::fromLocal8Bit(ScriptCanvasEditor::GetEditingGameDataFolder().c_str()) + "/")
 
 namespace ScriptCanvasEditor
 {
-    AZ::Data::AssetId ReadRecentAssetId()
+    void SetRecentAssetId(SourceHandle assetId)
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
             SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
 
-        QString recentOpenFileLocation;
-
-        settings.beginGroup(SCRIPTCANVASEDITOR_NAME_SHORT);
-        recentOpenFileLocation = settings.value(SCRIPTCANVASEDITOR_SETTINGS_RECENT_OPEN_FILE_LOCATION_KEY).toString();
-        settings.endGroup();
-
-        if (recentOpenFileLocation.isEmpty())
-        {
-            return {};
-        }
-        AZ::Data::AssetId assetId(recentOpenFileLocation.toUtf8().constData());
-        return assetId;
-    }
-
-    void SetRecentAssetId(const AZ::Data::AssetId& assetId)
-    {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, 
-            SCRIPTCANVASEDITOR_AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME);
-
-        AZStd::string guidStr = assetId.m_guid.ToString<AZStd::string>();
+        AZStd::string guidStr = assetId.Id().ToString<AZStd::string>();
 
         settings.beginGroup(SCRIPTCANVASEDITOR_NAME_SHORT);
         settings.setValue(SCRIPTCANVASEDITOR_SETTINGS_RECENT_OPEN_FILE_LOCATION_KEY, 

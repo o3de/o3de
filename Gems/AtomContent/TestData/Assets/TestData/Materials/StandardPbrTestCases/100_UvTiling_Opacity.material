@@ -1,0 +1,11 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "UvTilingBase.material",
+    "propertyValues": {
+        "opacity.alphaSource": "Split",
+        "opacity.factor": 0.8999999761581421,
+        "opacity.mode": "Cutout",
+        "opacity.textureMap": "../../Objects/cube/cube_diff.tif"
+    }
+}

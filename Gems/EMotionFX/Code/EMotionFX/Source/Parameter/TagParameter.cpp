@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TagParameter, AnimGraphAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(TagParameter, AnimGraphAllocator);
         
     const char* TagParameter::GetTypeDisplayName() const
     {

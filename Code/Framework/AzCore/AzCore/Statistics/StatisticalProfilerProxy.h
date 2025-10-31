@@ -10,7 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Statistics/StatisticalProfiler.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/parallel/shared_spin_mutex.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 
 
 namespace AZ::Statistics
@@ -44,13 +44,13 @@ namespace AZ::Statistics
     //! The StatisticalProfilerProxySystemComponent guarantees that the StatisticalProfilerProxy singleton exists
     //! as soon as the AZ::Environment is fully initialized.
     //! See StatisticalProfiler.h for more details and info.
-    class StatisticalProfilerProxy
+    class AZCORE_API StatisticalProfilerProxy
     {
     public:
         AZ_TYPE_INFO(StatisticalProfilerProxy, "{1103D0EB-1C32-4854-B9D9-40A2D65BDBD2}");
 
         using StatIdType = AZ::Crc32;
-        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_spin_mutex>;
+        using StatisticalProfilerType = StatisticalProfiler<StatIdType, AZStd::shared_mutex>;
 
         //! A Convenience class used to measure time performance of scopes of code
         //! with constructor/destructor. Suitable to be used as part of a macro
@@ -64,43 +64,48 @@ namespace AZ::Statistics
                 : m_profilerId(profilerId)
                 , m_statId(statId)
             {
-                if (!m_profilerProxy)
+                StatisticalProfilerProxy* profilerProxy = TimedScope::GetProfilerProxy();
+                if (!profilerProxy)
                 {
-                    m_profilerProxy = AZ::Interface<StatisticalProfilerProxy>::Get();
-                    if (!m_profilerProxy)
+                    profilerProxy = AZ::Interface<StatisticalProfilerProxy>::Get();
+                    if (!profilerProxy)
                     {
                         return;
                     }
+                    TimedScope::SetProfilerProxy(profilerProxy);
                 }
-                if (!m_profilerProxy->IsProfilerActive(profilerId))
+                if (!profilerProxy->IsProfilerActive(profilerId))
                 {
                     return;
                 }
-                m_startTime = AZStd::chrono::high_resolution_clock::now();
+                m_startTime = AZStd::chrono::steady_clock::now();
             }
 
             ~TimedScope()
             {
-                if (!m_profilerProxy)
+                StatisticalProfilerProxy* profilerProxy = TimedScope::GetProfilerProxy();
+                if (!profilerProxy)
                 {
                     return;
                 }
-                AZStd::chrono::system_clock::time_point stopTime = AZStd::chrono::high_resolution_clock::now();
-                AZStd::chrono::microseconds duration = stopTime - m_startTime;
-                m_profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
+                auto stopTime = AZStd::chrono::steady_clock::now();
+                auto duration = stopTime - m_startTime;
+                profilerProxy->PushSample(m_profilerId, m_statId, static_cast<double>(duration.count()));
             }
 
             //! Required only for UnitTests
             static void ClearCachedProxy()
             {
-                m_profilerProxy = nullptr;
+                TimedScope::SetProfilerProxy(nullptr);
             }
 
         private:
-            static StatisticalProfilerProxy* m_profilerProxy;
+            AZCORE_API static StatisticalProfilerProxy* GetProfilerProxy();
+            AZCORE_API static void SetProfilerProxy(StatisticalProfilerProxy* profilerProxy);
+
             const StatisticalProfilerId m_profilerId;
             const StatIdType& m_statId;
-            AZStd::chrono::system_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
         }; // class TimedScope
 
         friend class TimedScope;
@@ -170,6 +175,14 @@ namespace AZ::Statistics
             for (auto& iter : m_profilers)
             {
                 iter.second.m_profiler.GetStatsManager().GetAllStatisticsOfUnits(stats, units);
+            }
+        }
+        
+        void ResetAllStatistics()
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().ResetAllStatistics();
             }
         }
 

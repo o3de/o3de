@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/string/string.h>
@@ -22,7 +23,7 @@ namespace AzToolsFramework
     //! The constructor automatically builds the InstanceDataHierarchy for the object provided
     //! and maps the property paths to the respective InstanceDataNode for easy access.
     //! Used to allow editor scripts to access and edit properties of Components, CryMaterials and more.
-    class PropertyTreeEditor
+    class AZTF_API PropertyTreeEditor
     {
     public:
         AZ_RTTI(PropertyTreeEditor, "{704E727E-E941-47EE-9C70-065BC3AD66F3}")
@@ -112,7 +113,6 @@ namespace AzToolsFramework
 
         struct ContainerData final
         {
-            ContainerData() = default;
             ~ContainerData() = default;
 
             const PropertyTreeEditorNode* m_propertyTreeEditorNode = nullptr;
@@ -122,7 +122,6 @@ namespace AzToolsFramework
 
         struct AssociatePairInfo final
         {
-            AssociatePairInfo() = default;
             ~AssociatePairInfo() = default;
 
             const AZ::SerializeContext::ClassData* m_pairClass = nullptr;

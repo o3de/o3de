@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Components/GradientSurfaceDataComponent.h>
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 
@@ -33,7 +33,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Enables a gradient to emit surface tags";
         static constexpr const char* const s_icon = "Editor/Icons/Components/SurfaceData.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/SurfaceData.png";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/surface-data/gradient-surface-tag-emitter/";
         
     private:
         AZ::u32 ConfigurationChanged() override;

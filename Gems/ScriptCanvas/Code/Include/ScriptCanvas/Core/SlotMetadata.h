@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 namespace ScriptCanvas
@@ -15,7 +16,7 @@ namespace ScriptCanvas
     struct SlotMetadata
     {
         AZ_TYPE_INFO(SlotMetadata, "{315C9851-1747-4D68-9A4A-B699FA9FC754}");
-        AZ_CLASS_ALLOCATOR(SlotMetadata, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotMetadata, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflectContext);
         SlotId m_slotId;
         Data::Type m_dataType;

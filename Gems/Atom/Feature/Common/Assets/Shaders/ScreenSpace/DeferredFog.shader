@@ -13,7 +13,7 @@
         }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
@@ -21,11 +21,6 @@
     },
 
     "DrawList" : "forward",
-
-    "CompilerHints" : { 
-        "DisableOptimizations" : false,
-        "GenerateDebugInfo" : false
-    },
 
     "ProgramSettings":
     {
@@ -40,5 +35,14 @@
           "type": "Fragment"
         }
       ]
-    }   
+    },
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "AddBuildArguments": {
+                "azslc": ["--no-subpass-input"]
+            }
+        }
+    ]   
 }

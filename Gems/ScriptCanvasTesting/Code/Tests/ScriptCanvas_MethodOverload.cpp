@@ -27,8 +27,8 @@ private:
     using ClassName = SingleTypeNodeable<Type>;
 
 public:
-    AZ_RTTI(((SingleTypeNodeable<Type>), "{62F173B5-596B-4872-B88B-E03DFCD5D059}", Type), ScriptCanvas::Nodeable);
-    AZ_CLASS_ALLOCATOR(SingleTypeNodeable<Type>, AZ::SystemAllocator, 0);
+    AZ_RTTI((SingleTypeNodeable, "{62F173B5-596B-4872-B88B-E03DFCD5D059}", Type), ScriptCanvas::Nodeable);
+    AZ_CLASS_ALLOCATOR(SingleTypeNodeable<Type>, AZ::SystemAllocator);
 
     static void Reflect(AZ::ReflectContext* reflectContext)
     {

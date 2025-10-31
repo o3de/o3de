@@ -18,6 +18,10 @@
 
 namespace ScriptCanvas
 {
+    constexpr const char* InternalValidationErrorId = "DV-0000";
+    static const AZ::Crc32 InternalValidationErrorCrc = AZ_CRC_CE(InternalValidationErrorId);
+
+
     //! Base class for all parser validation events, they will all share the same
     //! behavior
     class ParserValidation
@@ -28,13 +32,30 @@ namespace ScriptCanvas
     public:
 
         AZ_RTTI(ParserValidation, "{1B91C6DC-B258-463C-B7EE-05338F6635E2}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(ParserValidation, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ParserValidation, AZ::SystemAllocator);
 
-        ParserValidation(AZ::EntityId nodeId, ValidationSeverity severity, const AZStd::string_view& description)
+        ParserValidation
+            ( AZ::EntityId nodeId
+            , ValidationSeverity severity
+            , const AZStd::string_view& description
+            , AZ::Crc32 idCRC = {}
+            , const AZStd::string& id = {})
             : ValidationEvent(severity)
             , m_nodeId(nodeId)
+            , m_idCrc(idCRC)
+            , m_identifier(id)
         {
             SetDescription(description);
+        }
+
+        AZStd::string GetIdentifier() const override
+        {
+            return m_identifier;
+        }
+
+        AZ::Crc32 GetIdCrc() const override
+        {
+            return m_idCrc;
         }
 
         AZStd::string_view GetTooltip() const override
@@ -57,10 +78,10 @@ namespace ScriptCanvas
         ////
 
     private:
-
         AZ::EntityId m_nodeId;
+        AZStd::string m_identifier;
+        AZ::Crc32 m_idCrc;
     };
-
 
     // \todo this must be removed before it goes even into preview
     class NotYetImplemented
@@ -68,7 +89,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(NotYetImplemented, "{9439177C-DDFA-4B90-A6A4-8F9BEF8E6E0C}", ParserValidation);
-        AZ_CLASS_ALLOCATOR(NotYetImplemented, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NotYetImplemented, AZ::SystemAllocator);
 
         NotYetImplemented(AZ::EntityId nodeId, const AZStd::string_view& description)
             : ParserValidation(nodeId, ValidationSeverity::Error, description)
@@ -93,7 +114,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(InactiveGraph, "{315F5191-D990-40DA-9E92-1ADBA72CC00E}", ParserValidation);
-        AZ_CLASS_ALLOCATOR(InactiveGraph, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InactiveGraph, AZ::SystemAllocator);
 
         InactiveGraph()
             : ParserValidation(AZ::EntityId(), ValidationSeverity::Warning, ParseErrors::InactiveGraph)
@@ -117,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(MultipleExecutionOutConnections, "{2C7D74F0-382D-4C99-B2E8-A76C351B21DA}", ParserValidation);
-        AZ_CLASS_ALLOCATOR(MultipleExecutionOutConnections, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultipleExecutionOutConnections, AZ::SystemAllocator);
 
         MultipleExecutionOutConnections(AZ::EntityId nodeId)
             : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::MultipleExecutionOutConnections)
@@ -141,7 +162,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(MultipleStartNodes, "{C6623D43-1D8F-4932-A426-E243A3C85A93}", ParserValidation);
-        AZ_CLASS_ALLOCATOR(MultipleStartNodes, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultipleStartNodes, AZ::SystemAllocator);
 
         MultipleStartNodes(AZ::EntityId nodeId)
             : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::MultipleStartNodes)
@@ -170,7 +191,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(DependencyRetrievalFailiure, "{5EDBD642-2EC8-402E-AC9D-DA0DF444A208}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(DependencyRetrievalFailiure, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DependencyRetrievalFailiure, AZ::SystemAllocator);
 
             DependencyRetrievalFailiure(AZ::EntityId nodeId)
                 : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::DependencyRetrievalFailiure)
@@ -193,7 +214,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(NodeOutOfDate, "{A4051A2D-E471-41C7-9D2C-A54418747AF8}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(NodeOutOfDate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodeOutOfDate, AZ::SystemAllocator);
 
             NodeOutOfDate(AZ::EntityId nodeId, const AZStd::string_view& nodeName)
                 : ParserValidation(nodeId, ValidationSeverity::Error, nodeName)
@@ -218,7 +239,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(NewBackendUnsupportedNode, "{A4051A2D-E471-41C7-9D2C-A54418747AF8}", ValidationEvent);
-            AZ_CLASS_ALLOCATOR(NewBackendUnsupportedNode, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NewBackendUnsupportedNode, AZ::SystemAllocator);
 
             NewBackendUnsupportedNode(const AZ::EntityId& nodeId, const AZStd::string_view& nodeName)
                 : ValidationEvent(ValidationSeverity::Error)
@@ -259,7 +280,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(ParseError, "{1C36835A-2BAE-483A-BE13-5D1BEABB659B}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(ParseError, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ParseError, AZ::SystemAllocator);
 
             ParseError(AZ::EntityId nodeId, const AZStd::string_view& description)
                 : ParserValidation(nodeId, ValidationSeverity::Error, description)
@@ -283,7 +304,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(AddOutputNameFailure, "{45BE27AA-A80B-45B1-BBD7-A174A5791764}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(AddOutputNameFailure, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AddOutputNameFailure, AZ::SystemAllocator);
 
             AddOutputNameFailure(AZ::EntityId nodeId, const AZStd::string_view&)
                 : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::AddOutputNameFailure)
@@ -306,7 +327,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(DuplicateInputProcessed, "{69B056F5-7E10-4067-A50E-BDCE26222BD7}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(DuplicateInputProcessed, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DuplicateInputProcessed, AZ::SystemAllocator);
 
             DuplicateInputProcessed(AZ::EntityId nodeId, const AZStd::string_view&)
                 : ParserValidation(nodeId, ValidationSeverity::Error, ParseErrors::DuplicateInputProcessed)
@@ -329,7 +350,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(NullEntityInGraph, "{920C0FBE-ADC0-45FF-A0C1-84ABF050FCFC}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(NullEntityInGraph, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullEntityInGraph, AZ::SystemAllocator);
 
             NullEntityInGraph()
                 : ParserValidation(AZ::EntityId(), ValidationSeverity::Error, ParseErrors::NullEntityInGraph)
@@ -352,7 +373,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_RTTI(NullNodeInGraph, "{D5945CEF-149B-4065-9E60-58C17CD11864}", ParserValidation);
-            AZ_CLASS_ALLOCATOR(NullNodeInGraph, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullNodeInGraph, AZ::SystemAllocator);
 
             NullNodeInGraph(AZ::EntityId nodeId, AZStd::string_view nodeName)
                 : ParserValidation(nodeId, ValidationSeverity::Error, nodeName)

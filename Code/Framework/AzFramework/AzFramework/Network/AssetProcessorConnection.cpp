@@ -11,6 +11,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Platform.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
@@ -73,12 +74,12 @@ namespace AzFramework
             m_retryAfterDisconnect = false;
             m_isBusyDisconnecting = false;
 
-            m_sendThread.m_desc.m_name = "APConnection::SendThread";
+            m_sendThread.m_desc.m_name = "APConnectSend";
             m_sendThread.m_main = AZStd::bind(&AssetProcessorConnection::SendThread, this);
 
-            m_recvThread.m_desc.m_name = "APConnection::RecvThread";
+            m_recvThread.m_desc.m_name = "APConnectRecv";
             m_recvThread.m_main = AZStd::bind(&AssetProcessorConnection::RecvThread, this);
-            
+
             // Put the AP send and receive threads on a core not shared by the main thread or render thread.
             // We have found cases where render thread would stall on a Send request, but the main thread would be running on core 0
             // and starve the send and receive threads.  Putting them on a lighter CPU prevents this starvation.
@@ -128,11 +129,11 @@ namespace AzFramework
             va_start(va, format);
             azvsnprintf(msg.data(), msg.size(), format, va);
             va_end(va);
-            
+
             static_assert(sizeof(AZStd::thread_id) <= sizeof(uintptr_t), "Thread Id should less than a size of a pointer");
             uintptr_t numericThreadId{};
             *reinterpret_cast<AZStd::thread_id*>(&numericThreadId) = AZStd::this_thread::get_id();
-            
+
             AZStd::array<char, MaxMessageSize> buffer;
             azsnprintf(buffer.data(), buffer.size(), "(%p/%#" PRIxPTR "): %s\n", this, numericThreadId, msg.data());
 
@@ -197,7 +198,7 @@ namespace AzFramework
             //send the connecting event
             DebugMessage("AssetProcessorConnection::ConnectThread - Sending connecting event.");
             m_connectionState = EConnectionState::Connecting;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Connecting, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connecting, this);
 
             //set the address
             AZ::AzSock::AzSocketAddress socketAddress;
@@ -228,7 +229,9 @@ namespace AzFramework
             AZ::s32 result = AZ::AzSock::Connect(m_socket, socketAddress);
             if (AZ::AzSock::SocketErrorOccured(result))
             {
-                AZ_Warning(ConnectThreadWindow, false, "Network connection attempt failure, Connect returned error %s", AZ::AzSock::GetStringForError(result));
+                m_lastErrorResult = result;
+                m_lastErrorMessage = AZStd::string::format("Network connection attempt failure, Connect returned error %s", AZ::AzSock::GetStringForError(result));
+                DebugMessage("%s", m_lastErrorMessage.c_str());
 
                 if (m_connectThread.m_join)
                 {
@@ -242,7 +245,9 @@ namespace AzFramework
             result = AZ::AzSock::EnableTCPNoDelay(m_socket, true);
             if (result)
             {
-                AZ_Warning(ConnectThreadWindow, false, "Network connection attempt failure, EnableTCPNoDelay returned an error %s", AZ::AzSock::GetStringForError(result));
+                m_lastErrorResult = result;
+                m_lastErrorMessage = AZStd::string::format("Network connection attempt failure, EnableTCPNoDelay returned an error %s", AZ::AzSock::GetStringForError(result));
+                DebugMessage("%s", m_lastErrorMessage.c_str());
                 if (m_connectThread.m_join)
                 {
                     return;
@@ -253,6 +258,9 @@ namespace AzFramework
 
             DebugMessage("AssetProcessorConnection::ConnectThread - socket connected to %s:%u, Negotiate...", m_connectAddr.c_str(), m_port);
 
+            m_lastErrorResult = 0;
+            m_lastErrorMessage.clear();
+
             //we connected, start the send recv threads so we can negotiate
             StartSendRecvThreads();
 
@@ -262,7 +270,7 @@ namespace AzFramework
                 DebugMessage("AssetProcessorConnection::ConnectThread - Negotiation with %s:%u, Successful.", m_connectAddr.c_str(), m_port);
                 //we successfully negotiated, send the connected event
                 m_connectionState = EConnectionState::Connected;
-                EBUS_EVENT(EngineConnectionEvents::Bus, Connected, this);
+                EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connected, this);
                 return;
             }
 
@@ -273,7 +281,7 @@ namespace AzFramework
 
             //we failed start the disconnect thread and try again if retry is set
             AZ_Warning(ConnectThreadWindow, false, "Network connection attempt failure, negotiation with %s:%u failed.", m_connectAddr.c_str(), m_port);
-            // when we are the one connecting outbound, a negotiation failure is terminal 
+            // when we are the one connecting outbound, a negotiation failure is terminal
             // we cannot recover, the thing we're trying to connect to is not an asset processor, so disable automatic retry:
             m_retryAfterDisconnect = false;
             StartDisconnecting();
@@ -337,7 +345,7 @@ namespace AzFramework
 
             //set disconnecting state
             m_connectionState = EConnectionState::Disconnecting;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Disconnecting, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Disconnecting, this);
 
             FlushResponseHandlers();
 
@@ -389,13 +397,13 @@ namespace AzFramework
             //set disconnected state
             DebugMessage("AssetProcessorConnection::DisconnectThread - All threads joined, Setting Disconnected state.");
             m_connectionState = EConnectionState::Disconnected;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Disconnected, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Disconnected, this);
 
             DebugMessage("AssetProcessorConnection::DisconnectThread - crossing the isBusyDisconnecting line");
-            // once we cross this line, we would need to restart the disconnect thread in order to properly disconnect 
+            // once we cross this line, we would need to restart the disconnect thread in order to properly disconnect
             // since we're about to potentially start other threads if m_retryAfterDisconnect is true.
             m_isBusyDisconnecting = false;
-            
+
             // if necessary, start the listening or connect thread to begin another attempt.
             {
                 DebugMessage("AssetProcessorConnection::DisconnectThread - m_retryAfterDisconnect = %s", m_retryAfterDisconnect ? "True" : "False");
@@ -434,7 +442,7 @@ namespace AzFramework
             engineInfo.m_negotiationInfoMap.insert(AZStd::make_pair(NegotiationInfo_Platform, AZ::OSString(m_assetPlatform.c_str())));
             engineInfo.m_negotiationInfoMap.insert(AZStd::make_pair(NegotiationInfo_BranchIndentifier, AZ::OSString(m_branchToken.c_str())));
             engineInfo.m_negotiationInfoMap.insert(AZStd::make_pair(NegotiationInfo_ProjectName, AZ::OSString(m_projectName.c_str())));
-            
+
             if (m_connectThread.m_join)
             {
                 return false;
@@ -450,7 +458,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotateWithServer - negotiation invalid.Version Mismatch");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -466,7 +474,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiateWithServer - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -534,7 +542,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiateWithServer - negotiation invalid.Version Mismatch");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -550,7 +558,7 @@ namespace AzFramework
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));    //Sleeping to make sure that the message get delivered to AP before socket get disconnected
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiationWithClient - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -565,7 +573,7 @@ namespace AzFramework
             {
                 m_negotiationFailed = true;
                 DebugMessage("AssetProcessorConnection::NegotiationWithClient - negotiation invalid");
-                EBUS_EVENT(AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                AssetSystemConnectionNotificationsBus::Broadcast(&AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                 return false;
             }
 
@@ -590,7 +598,7 @@ namespace AzFramework
         void AssetProcessorConnection::StartThread(ThreadState& thread)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> locker(thread.m_mutex);
-            
+
             DebugMessage("StartThread: Starting %s", thread.m_desc.m_name);
             thread.m_join = false;
             thread.m_thread = AZStd::thread(thread.m_desc, thread.m_main);
@@ -634,7 +642,7 @@ namespace AzFramework
                 // or the disconnection sequence is already running and has not yet started any other threads again during retry
                 // so its safe to just return - things are already being taken care of.
                 DebugMessage("StartDisconnecting - someone else is already starting the disconnection sequence.");
-                return; 
+                return;
             }
 
             DebugMessage("StartDisconnecting - this thread is now in control of the disconnection sequence.");
@@ -645,7 +653,7 @@ namespace AzFramework
             JoinThread(m_disconnectThread);
             StartThread(m_disconnectThread);
         }
-               
+
         void AssetProcessorConnection::Configure(const char* branchToken, const char* platform, const char* identifier, const char* projectName)
         {
             m_branchToken = branchToken;
@@ -711,7 +719,7 @@ namespace AzFramework
             }
 
             m_connectionState = EConnectionState::Listening;
-            EBUS_EVENT(EngineConnectionEvents::Bus, Listening, this);
+            EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Listening, this);
 
             // Listen for one connection
             result = AZ::AzSock::Listen(m_socket, 1);
@@ -779,7 +787,7 @@ namespace AzFramework
                 }
 
                 m_connectionState = EConnectionState::Connected;
-                EBUS_EVENT(EngineConnectionEvents::Bus, Connected, this);
+                EngineConnectionEvents::Bus::Broadcast(&EngineConnectionEvents::Bus::Events::Connected, this);
                 return;
             }
 
@@ -904,7 +912,7 @@ namespace AzFramework
                     {
                         // Got a complete payload
                         DebugMessage("AzSockConnection::Recv: Recv'ed type=0x%08x, serial=%u, size=%u", currentMessageType, currentMessageSerial, currentPayloadSize);
-                        
+
                         // This is for backward compatibility, since we should always negotiate and invoke the response handler
                         if (currentMessageType == NegotiationMessage::MessageType)
                         {
@@ -1093,6 +1101,16 @@ namespace AzFramework
                 }
             }
             DebugMessage("AzSockConnection::RemoveMessageHandler - Tried to remove a type callback that didn't exist");
+        }
+
+        AZ::s32 AssetProcessorConnection::GetLastResult() const
+        {
+            return m_lastErrorResult;
+        }
+
+        AZStd::string AssetProcessorConnection::GetLastErrorMessage() const
+        {
+            return m_lastErrorMessage;
         }
 
         void AssetProcessorConnection::InvokeMessageHandler(AZ::u32 typeId, AZ::u32 serial, const void* dataBuffer, AZ::u32 dataLength)

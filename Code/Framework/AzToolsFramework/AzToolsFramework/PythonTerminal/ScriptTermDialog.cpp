@@ -30,10 +30,7 @@
 // Editor
 #include "ScriptHelpDialog.h"
 
-
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzToolsFramework/PythonTerminal/ui_ScriptTermDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace AzToolsFramework
 {
@@ -103,7 +100,7 @@ namespace AzToolsFramework
             bgColor = Qt::white;
             AzQtComponents::ScrollBar::applyDarkStyle(ui->SCRIPT_OUTPUT);
         }
-        ui->SCRIPT_OUTPUT->setStyleSheet(QString("QPlainTextEdit{ background: %1 }").arg(bgColor.name(QColor::HexRgb)));
+        ui->SCRIPT_OUTPUT->setStyleSheet(QString("background: %1 ").arg(bgColor.name(QColor::HexRgb)));
 
         // Clear out the console text when we change our background color since
         // some of the previous text colors may not be appropriate for the

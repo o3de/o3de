@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_STANDARDPLUGINSCONFIG_H
-#define __EMSTUDIO_STANDARDPLUGINSCONFIG_H
+#pragma once
 
 // include the EMotion FX config and mem categories on default
 #include <EMotionFX/Source/EMotionFXConfig.h>
@@ -32,5 +31,3 @@ enum
     MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH       = 1001,
     MEMCATEGORY_STANDARDPLUGINS_RESEARCH        = 1002
 };
-
-#endif

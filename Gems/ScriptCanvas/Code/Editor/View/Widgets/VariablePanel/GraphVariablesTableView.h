@@ -9,7 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QSortFilterProxyModel>
 #include <QTableView>
@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
 
         static const char* GetMimeType() { return "o3de/x-scriptcanvas-varpanel"; }
 
-        AZ_CLASS_ALLOCATOR(GraphVariablesModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphVariablesModel, AZ::SystemAllocator);
         GraphVariablesModel(QObject* parent = nullptr);
         ~GraphVariablesModel();
 
@@ -87,6 +87,10 @@ namespace ScriptCanvasEditor
         void OnVariablePriorityChanged() override;
         ////
 
+        // VariableNotificationBus
+        void OnVariableRenamed(AZStd::string_view newVariableName) override;
+        ///
+
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 
@@ -106,8 +110,6 @@ namespace ScriptCanvasEditor
 
         void PopulateSceneVariables();
 
-        AZ::Data::AssetType m_assetType;
-
         AZStd::vector<ScriptCanvas::GraphScopedVariableId> m_variableIds;
         ScriptCanvas::ScriptCanvasId m_scriptCanvasId;
     };
@@ -117,7 +119,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphVariablesModelSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphVariablesModelSortFilterProxyModel, AZ::SystemAllocator);
         GraphVariablesModelSortFilterProxyModel(QObject* parent);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
@@ -127,7 +129,7 @@ namespace ScriptCanvasEditor
 
     private:
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
 
         ScriptCanvas::GraphVariable::Comparator m_variableComparator;
     };
@@ -142,8 +144,9 @@ namespace ScriptCanvasEditor
         static void CopyVariableToClipboard(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const ScriptCanvas::VariableId& variableId);
         static bool HandleVariablePaste(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
-        AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator, 0);
-        GraphVariablesTableView(QWidget* parent);
+        AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator);
+        explicit GraphVariablesTableView(QWidget* parent);
+        ~GraphVariablesTableView();
 
         void SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         void SetFilter(const QString& filterString);

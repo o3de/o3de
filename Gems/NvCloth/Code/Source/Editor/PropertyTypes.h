@@ -20,7 +20,7 @@ namespace NvCloth
 {
     namespace Editor
     {
-        const static AZ::Crc32 MeshNodeSelector = AZ_CRC("MeshNodeSelector", 0x50f06073);
+        const static AZ::Crc32 MeshNodeSelector = AZ_CRC_CE("MeshNodeSelector");
 
         AZStd::vector<AzToolsFramework::PropertyHandlerBase*> RegisterPropertyTypes();
         void UnregisterPropertyTypes(AZStd::vector<AzToolsFramework::PropertyHandlerBase*>& handlers);

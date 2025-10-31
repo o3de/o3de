@@ -10,7 +10,6 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -27,7 +26,7 @@ namespace UnitTest
         const auto worldResult =
             AzFramework::ScreenNdcToWorld(ndcPoint, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
         const auto ndcResult = AzFramework::WorldToScreenNdc(worldResult, CameraView(cameraState), CameraProjection(cameraState));
-        return AZ::Vector3ToVector2(ndcResult);
+        return AZ::Vector2(ndcResult);
     }
 
     // transform a point from screen space to world space, and then from world space back to screen space
@@ -43,7 +42,7 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
@@ -76,7 +75,7 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(1024, 768);
         const auto cameraTransform =
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -93,7 +92,7 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(-90.0f));
 
@@ -109,7 +108,7 @@ namespace UnitTest
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
@@ -142,7 +141,7 @@ namespace UnitTest
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -159,7 +158,7 @@ namespace UnitTest
     {
         using NdcPoint = AZ::Vector2;
 
-        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(800, 600);
         const auto cameraTransform =
             AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(-90.0f));
 
@@ -353,7 +352,7 @@ namespace UnitTest
     // Other tests
     TEST(ViewportScreen, CanGetCameraTransformFromCameraViewAndBack)
     {
-        const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);
+        const auto screenDimensions = AzFramework::ScreenSize(1024, 768);
         const auto transform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(5.0f)) *
             AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
 
@@ -373,7 +372,7 @@ namespace UnitTest
     {
         using ::testing::FloatNear;
 
-        auto cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AZ::Vector2(800.0f, 600.0f));
+        auto cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzFramework::ScreenSize(800, 600));
 
         {
             const float fovRadians = AZ::DegToRad(45.0f);

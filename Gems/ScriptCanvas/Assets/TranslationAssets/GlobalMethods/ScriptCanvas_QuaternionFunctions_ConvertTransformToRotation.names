@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_QuaternionFunctions_ConvertTransformToRotation",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Convert Transform To Rotation",
+                "category": "Math/Quaternion"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_QuaternionFunctions_ConvertTransformToRotation",
+                    "details": {
+                        "name": "Convert Transform To Rotation",
+                        "tooltip": "Converts transform to quaternion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

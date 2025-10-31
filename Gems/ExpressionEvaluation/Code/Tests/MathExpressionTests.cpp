@@ -287,7 +287,7 @@ namespace ExpressionEvaluation
             PushPrimitive(tree, 1.0);
             PushOperator(tree, Interfaces::MathOperators, MathExpressionOperators::AddOperator());
 
-            auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+            auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
 
             ConfirmResult<double>(result, 3.0+1.0);
         }
@@ -307,7 +307,7 @@ namespace ExpressionEvaluation
             PushPrimitive(tree, 2.0);
             PushOperator(tree, Interfaces::MathOperators, MathExpressionOperators::DivideOperator());
 
-            auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+            auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
 
             ConfirmResult<double>(result, ((2.0 + 2.0)*(4.0 - 3.0)) / 2.0);
         }
@@ -315,7 +315,7 @@ namespace ExpressionEvaluation
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_MathTest_BasicParserPass)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("3+1");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("3+1");
 
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
@@ -323,13 +323,13 @@ namespace ExpressionEvaluation
 
         EXPECT_EQ(tree.GetTreeSize(), 3);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, 3+1);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_MathTest_BasicParserPassMultiOperator)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("3+1*5");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("3+1*5");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         const ExpressionTree& tree = treeOutcome.GetValue();
@@ -337,26 +337,26 @@ namespace ExpressionEvaluation
         // 3 Values + 2 Operators
         EXPECT_EQ(tree.GetTreeSize(), 3 + 2);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, 3 + 1 * 5);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_ComplexParserPass)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("(3 + 1)");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("(3 + 1)");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         const ExpressionTree& tree = treeOutcome.GetValue();
 
         EXPECT_EQ(tree.GetTreeSize(), 3);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, (3.0 + 1.0));
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_ComplexParserPassMultiOperator)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("((2.0 + 2.0)*(4.0 - 3.0)) / 2.0");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("((2.0 + 2.0)*(4.0 - 3.0)) / 2.0");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         const ExpressionTree& tree = treeOutcome.GetValue();
@@ -364,13 +364,13 @@ namespace ExpressionEvaluation
         // 5 values + 4 operators
         EXPECT_EQ(tree.GetTreeSize(), 5 + 4);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, ((2.0 + 2.0)*(4.0 - 3.0)) / 2.0);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_ObtuseParserPassMultiOperator)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("((   ((   )  )(       2.0) + 2.0)*(4.0 - 3.0)) / (((2.0              )))");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("((   ((   )  )(       2.0) + 2.0)*(4.0 - 3.0)) / (((2.0              )))");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         const ExpressionTree& tree = treeOutcome.GetValue();
@@ -378,26 +378,26 @@ namespace ExpressionEvaluation
         // 5 values + 4 operators
         EXPECT_EQ(tree.GetTreeSize(), 5 + 4);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, ((2.0 + 2.0)*(4.0 - 3.0)) / 2.0);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_AdvancedParserPass)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("(3 + 1) % 2");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("(3 + 1) % 2");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         const ExpressionTree& tree = treeOutcome.GetValue();
 
         EXPECT_EQ(tree.GetTreeSize(), 3 + 2);
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, (3+1)%2);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_BasicVariablePass)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("{A}+{B}");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("{A}+{B}");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         ExpressionTree& tree = treeOutcome.GetValue();
@@ -421,13 +421,13 @@ namespace ExpressionEvaluation
             tree.SetVariable(variable, 1.0);
         }
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, 3.0+1.0);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_BasicRepeatedVariablePass)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseExpression("{A}+{B}+{A}");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseExpression("{A}+{B}+{A}");
         EXPECT_TRUE(treeOutcome.IsSuccess());
 
         ExpressionTree& tree = treeOutcome.GetValue();
@@ -451,34 +451,34 @@ namespace ExpressionEvaluation
             tree.SetVariable(variable, 1.0);
         }
 
-        auto result = ExpressionEvaluationRequests()->Evaluate(tree);
+        auto result = GetExpressionEvaluationRequests()->Evaluate(tree);
         ConfirmResult<double>(result, 3.0 + 1.0 + 3.0);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_BasicFail)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "true || false");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "true || false");
         EXPECT_FALSE(treeOutcome.IsSuccess());
         EXPECT_EQ(treeOutcome.GetError().m_offsetIndex, 0);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_NumericParser_ComplexFail)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "2+2 || 1+3");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "2+2 || 1+3");
         EXPECT_FALSE(treeOutcome.IsSuccess());
         EXPECT_EQ(treeOutcome.GetError().m_offsetIndex, 4);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_ParenParser_UnbalancedCloseFail)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "1+1)");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "1+1)");
         EXPECT_FALSE(treeOutcome.IsSuccess());
         EXPECT_EQ(treeOutcome.GetError().m_offsetIndex, 3);
     }
 
     TEST_F(ExpressionEngineTestFixture, ExpressionEngine_ParenParser_UnbalancedOpenFail)
     {
-        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = ExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "(1+1");
+        AZ::Outcome<ExpressionTree, ParsingError> treeOutcome = GetExpressionEvaluationRequests()->ParseRestrictedExpression(MathOnlyOperatorRestrictions(), "(1+1");
         EXPECT_FALSE(treeOutcome.IsSuccess());
         EXPECT_EQ(treeOutcome.GetError().m_offsetIndex, 0);
     }

@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Sphere (Polar)",
         "modelAsset": {
             "assetId": {
                 "guid": "{6373F5F5-C403-5126-A9A9-8682C321579B}",

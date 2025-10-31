@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
 #include <AzCore/PlatformDef.h>
-#include <pybind11/pybind11.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
@@ -64,7 +64,7 @@ namespace UnitTest
     // test class/struts
     struct CustomTypeHolder
     {
-        AZ_TYPE_INFO(MyTemplate, "{46543B40-D8AF-4498-BCD0-2FF2A040B42C}");
+        AZ_TYPE_INFO(CustomTypeHolder, "{46543B40-D8AF-4498-BCD0-2FF2A040B42C}");
 
         CustomTest::MyTemplate<float> m_testFloat;
         CustomTest::MyTemplate<AZStd::string> m_testString;

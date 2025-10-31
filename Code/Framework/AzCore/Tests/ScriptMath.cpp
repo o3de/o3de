@@ -15,6 +15,8 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 
+#include <Math/MathTest.h>
+
 using namespace AZ;
 
 namespace UnitTest
@@ -39,12 +41,12 @@ namespace UnitTest
     }
 
     class ScriptMathTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             behavior = aznew BehaviorContext();
             behavior->Method("AZTestAssert", &AZTestAssert);
@@ -62,7 +64,7 @@ namespace UnitTest
             delete script;
             delete behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* behavior = nullptr;
@@ -354,7 +356,14 @@ namespace UnitTest
         script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0)))");
         script->Execute("v1:Set(3, 4, 0)");
         script->Execute("v1:SetLengthEstimate(10)");
-        script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0), 0.001))");
+
+
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        #define LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "0.0195" // 10*2^(-9) ~= 0.0195 <- NEON Reciprocal ~ 9 bits
+        #else
+        #define LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "0.0049" // 10*2^(-11) ~= 0.0049 <- x86 Reciprocal ~ 11 bits
+        #endif
+        script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0), " LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "))");
 
         ////distance
         script->Execute("v1:Set(1, 2, 3)");
@@ -1409,13 +1418,17 @@ namespace UnitTest
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y,-1)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().z,0)");
 
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         script->Execute("pl:Set(12, 13, 14, 15)");
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         script->Execute("AZTestAssertFloatClose(pl:GetDistance(), 15)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().x, 12)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y, 13)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().z, 14)");
 
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         script->Execute("pl:Set(Vector3(22, 23, 24), 25)");
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         script->Execute("AZTestAssertFloatClose(pl:GetDistance(), 25)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().x, 22)");
         script->Execute("AZTestAssertFloatClose(pl:GetNormal().y, 23)");
@@ -1493,7 +1506,9 @@ namespace UnitTest
 
         script->Execute("pl:Set(1, 0, 0, 0)");
         script->Execute("AZTestAssert(pl:IsFinite())");
+        AZ_MATH_TEST_START_TRACE_SUPPRESSION;
         script->Execute("pl:Set(math.huge, math.huge, math.huge, math.huge)");
+        AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         script->Execute("AZTestAssert( not pl:IsFinite())");
     }
 

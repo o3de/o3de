@@ -6,39 +6,54 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 class Tests:
-    creation_undo = (
-        "UNDO Entity creation success",
-        "UNDO Entity creation failed")
-    creation_redo = (
-        "REDO Entity creation success",
-        "REDO Entity creation failed")
     postfx_layer_entity_creation = (
         "PostFX Layer Entity successfully created",
-        "PostFX Layer Entity failed to be created")
+        "P0: PostFX Layer Entity failed to be created")
     postfx_layer_component_added = (
         "Entity has a PostFX Layer component",
-        "Entity failed to find PostFX Layer component")
+        "P0: Entity failed to find PostFX Layer component")
+    postfx_layer_component_removed = (
+        "Remove PostFX Layer component success",
+        "P0: Remove PostFX Layer component failed")
     enter_game_mode = (
         "Entered game mode",
-        "Failed to enter game mode")
+        "P0: Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "Couldn't exit game mode")
+        "P0: Couldn't exit game mode")
     is_visible = (
-        "Entity is visible",
+        "P0: Entity is visible",
         "Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "Entity was not hidden")
+        "P0: Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "Entity was not deleted")
+        "P0: Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "UNDO deletion failed")
+        "P0: UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "REDO deletion failed")
+        "P0: REDO deletion failed")
+    priority = (
+        "'Priority' property set",
+        "P1: 'Priority' property failed to set")
+    weight = (
+        "'Weight' property set",
+        "P1: 'Weight' property failed to set")
+    selected_container = (
+        "'Select Camera Tags Only' is a container property",
+        "P1: 'Select Camera Tags Only' is not a container property")
+    selected_append = (
+        "'Select Camera Tags Only' container property appended string value",
+        "P1: 'Select Camera Tags Only' container property failed to append string value")
+    excluded_container = (
+        "'Excluded Camera Tags' is a container property",
+        "P1: 'Excluded Camera Tags' is not a container property")
+    excluded_append = (
+        "'Excluded Camera Tags' container property appended string value",
+        "P1: 'Excluded Camera Tags' container property failed to append string value")
 
 
 def AtomEditorComponents_postfx_layer_AddedToEntity():
@@ -57,15 +72,20 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
     Test Steps:
     1) Create a PostFX Layer entity with no components.
     2) Add a PostFX Layer component to PostFX Layer entity.
-    3) UNDO the entity creation and component addition.
+    3) Remove PostFX Layer component.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete PostFX Layer entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) Set each 'Layer Category' value.
+    6) Set 'Priority' property.
+    7) Set 'Weight' property.
+    8) Set a 'Select Camera Tags Only' tag.
+    9) Set an 'Excluded Camera Tags' tag.
+    10) Enter/Exit game mode.
+    11) Test IsHidden.
+    12) Test IsVisible.
+    13) Delete PostFX Layer entity.
+    14) UNDO deletion.
+    15) REDO deletion.
+    16) Look for errors.
 
     :return: None
     """
@@ -74,13 +94,13 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, POSTFX_LAYER_CATEGORY
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a PostFX Layer entity with no components.
@@ -93,57 +113,100 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
             Tests.postfx_layer_component_added,
             postfx_layer_entity.has_component(AtomComponentProperties.postfx_layer()))
 
-        # 3. UNDO the entity creation and component addition.
-        # -> UNDO component addition.
-        general.undo()
-        # -> UNDO naming entity.
-        general.undo()
-        # -> UNDO selecting entity.
-        general.undo()
-        # -> UNDO entity creation.
+        # 3. Remove PostFX Layer component.
+        postfx_layer_component.remove()
+        general.idle_wait_frames(1)
+        Report.result(
+            Tests.postfx_layer_component_removed,
+            not postfx_layer_entity.has_component(AtomComponentProperties.postfx_layer()))
+
+        # 4. UNDO component removal.
         general.undo()
         general.idle_wait_frames(1)
-        Report.result(Tests.creation_undo, not postfx_layer_entity.exists())
+        Report.critical_result(
+            Tests.postfx_layer_component_added,
+            postfx_layer_entity.has_component(AtomComponentProperties.postfx_layer()))
 
-        # 4. REDO the entity creation and component addition.
-        # -> REDO entity creation.
-        general.redo()
-        # -> REDO selecting entity.
-        general.redo()
-        # -> REDO naming entity.
-        general.redo()
-        # -> REDO component addition.
-        general.redo()
-        general.idle_wait_frames(1)
-        Report.result(Tests.creation_redo, postfx_layer_entity.exists())
+        # 5. Set each 'Layer Category' value.
+        for category in POSTFX_LAYER_CATEGORY:
+            postfx_layer_component.set_component_property_value(
+                AtomComponentProperties.postfx_layer('Layer Category'), POSTFX_LAYER_CATEGORY[category])
+            general.idle_wait_frames(1)
+            layer_category = (f"'Layer Category' set to {category}", f"P1: 'Layer Category' failed to set {category}")
+            Report.result(
+                layer_category,
+                postfx_layer_component.get_component_property_value(
+                    AtomComponentProperties.postfx_layer('Layer Category')) == POSTFX_LAYER_CATEGORY[category])
 
-        # 5. Enter/Exit game mode.
+        # 6. Set 'Priority' property.
+        postfx_layer_component.set_component_property_value(AtomComponentProperties.postfx_layer('Priority'), 20)
+        Report.result(
+            Tests.priority,
+            postfx_layer_component.get_component_property_value(AtomComponentProperties.postfx_layer('Priority')) == 20)
+
+        # 7. Set 'Weight' property.
+        postfx_layer_component.set_component_property_value(AtomComponentProperties.postfx_layer('Weight'), 0.5)
+        Report.result(
+            Tests.weight,
+            postfx_layer_component.get_component_property_value(AtomComponentProperties.postfx_layer('Weight')) == 0.5)
+
+        # 8. Set a 'Select Camera Tags Only' tag.
+        Report.result(
+            Tests.selected_container,
+            postfx_layer_component.is_property_container(
+                AtomComponentProperties.postfx_layer('Select Camera Tags Only')))
+        # https://github.com/o3de/o3de/issues/10464
+        # postfx_layer_component.reset_container(AtomComponentProperties.postfx_layer('Select Camera Tags Only'))
+        # postfx_layer_component.append_container_item(
+        #     AtomComponentProperties.postfx_layer('Select Camera Tags Only'), value='yes')
+        # Report.result(
+        #     Tests.selected_append,
+        #     postfx_layer_component.get_container_item(
+        #         AtomComponentProperties.postfx_layer('Select Camera Tags Only'), key=0) == 'yes')
+
+        # 9. Set an 'Excluded Camera Tags' tag.
+        Report.result(
+            Tests.excluded_container,
+            postfx_layer_component.is_property_container(
+                AtomComponentProperties.postfx_layer('Excluded Camera Tags')))
+        # https://github.com/o3de/o3de/issues/10464
+        # postfx_layer_component.reset_container(AtomComponentProperties.postfx_layer('Excluded Camera Tags'))
+        # postfx_layer_component.append_container_item(
+        #     AtomComponentProperties.postfx_layer('Excluded Camera Tags'), 'not this camera')
+        # Report.result(
+        #     Tests.excluded_append,
+        #     postfx_layer_component.get_container_item(
+        #         AtomComponentProperties.postfx_layer('Excluded Camera Tags'), key=0) == 'not this camera')
+
+        # 10. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 11. Test IsHidden.
         postfx_layer_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, postfx_layer_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 12. Test IsVisible.
         postfx_layer_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, postfx_layer_entity.is_visible() is True)
 
-        # 8. Delete PostFX Layer entity.
+        # 13. Delete PostFX Layer entity.
         postfx_layer_entity.delete()
         Report.result(Tests.entity_deleted, not postfx_layer_entity.exists())
 
-        # 9. UNDO deletion.
+        # 14. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, postfx_layer_entity.exists())
 
-        # 10. REDO deletion.
+        # 15. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not postfx_layer_entity.exists())
 
-        # 11. Look for errors or asserts.
+        # 16. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

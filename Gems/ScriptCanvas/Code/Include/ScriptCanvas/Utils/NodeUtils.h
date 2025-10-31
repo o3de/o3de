@@ -42,6 +42,6 @@ namespace ScriptCanvas
         static NodeTypeIdentifier ConstructSetVariableNodeIdentifier(const VariableId& variableId);
         static NodeTypeIdentifier ConstructAzEventIdentifier(AzEventIdentifier azEventIdentifier);
 
-        static void InitializeNode(Node* node, const NodeConfiguration& config);
+        static void InitializeNode(Node* node, const NodeReplacementConfiguration& config);
     };
 }

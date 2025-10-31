@@ -27,10 +27,10 @@ namespace AzToolsFramework
         TypeFingerprint TypeFingerprinter::CreateFingerprint(const AZ::SerializeContext::ClassData& classData)
         {
             // Ensures hash will change if a service is moved from, say, required to dependent.
-            static const size_t kRequiredServiceKey = AZ_CRC("RequiredServiceKey", 0x22e125a6);
-            static const size_t kDependentServiceKey = AZ_CRC("DependentServiceKey", 0x380e6c63);
-            static const size_t kProvidedServiceKey = AZ_CRC("ProvidedServiceKey", 0xd3cc7058);
-            static const size_t kIncompatibleServiceKey = AZ_CRC("IncompatibleServiceKey", 0x95ee560f);
+            static const size_t kRequiredServiceKey = AZ_CRC_CE("RequiredServiceKey");
+            static const size_t kDependentServiceKey = AZ_CRC_CE("DependentServiceKey");
+            static const size_t kProvidedServiceKey = AZ_CRC_CE("ProvidedServiceKey");
+            static const size_t kIncompatibleServiceKey = AZ_CRC_CE("IncompatibleServiceKey");
 
             TypeFingerprint fingerprint = 0;
 
@@ -76,7 +76,7 @@ namespace AzToolsFramework
             for (const AZ::SerializeContext::ClassElement& element : classData.m_elements)
             {
                 AZStd::hash_combine(fingerprint, element.m_typeId);
-                AZStd::hash_range(fingerprint, element.m_name, element.m_name + strlen(element.m_name));
+                AZStd::hash_combine(fingerprint, AZStd::string_view(element.m_name));
                 AZStd::hash_combine(fingerprint, element.m_flags);
             }
 

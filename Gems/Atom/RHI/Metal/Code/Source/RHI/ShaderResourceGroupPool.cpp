@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -35,21 +34,21 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
-            
+
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
             {
                 auto argBuffer = ArgumentBuffer::Create();
-                argBuffer->Init(m_device, m_srgLayout, group, this);
+                argBuffer->Init(m_device, m_srgLayout, this);
                 group.m_compiledArgBuffers[i] = argBuffer;
             }
 
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
@@ -59,62 +58,57 @@ namespace AZ
             Base::ShutdownResourceInternal(resourceBase);
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData)
         {
+            typedef AZ::RHI::DeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
+
             group.UpdateCompiledDataIndex();
-
-            if (!groupData.IsAnyResourceTypeUpdated())
-            {
-                return RHI::ResultCode::Success;
-            }
-
             ArgumentBuffer& argBuffer = *group.m_compiledArgBuffers[group.m_compiledDataIndex];
-            argBuffer.ClearResourceTracking();
 
             auto constantData = groupData.GetConstantData();
-            if (!constantData.empty() && groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ConstantDataMask)))
+            if (!constantData.empty() && groupBase.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ConstantDataMask)))
             {
                 argBuffer.UpdateConstantBufferViews(groupData.GetConstantData());
             }
 
             const RHI::ShaderResourceGroupLayout* layout = groupData.GetLayout();
             uint32_t shaderInputIndex = 0;
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewMask)))
+            if (groupBase.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::ImageViewMask)))
             {
                 for (const RHI::ShaderInputImageDescriptor& shaderInputImage : layout->GetShaderInputListForImages())
                 {
                     const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
-                    AZStd::array_view<RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
-                    argBuffer.UpdateImageViews(shaderInputImage, imageInputIndex, imageViews);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
+                    argBuffer.UpdateImageViews(shaderInputImage, imageViews);
                     ++shaderInputIndex;
                 }
             }
 
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
-            {
-                shaderInputIndex = 0;
-                for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : layout->GetShaderInputListForSamplers())
-                {
-                    const RHI::ShaderInputSamplerIndex samplerInputIndex(shaderInputIndex);
-                    AZStd::array_view<RHI::SamplerState> samplerStates = groupData.GetSamplerArray(samplerInputIndex);
-                    argBuffer.UpdateSamplers(shaderInputSampler, samplerInputIndex, samplerStates);
-                    ++shaderInputIndex;
-                }
-            }
-
-            if (groupData.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewMask)))
+            if (groupBase.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::BufferViewMask)))
             {
                 shaderInputIndex = 0;
                 for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : layout->GetShaderInputListForBuffers())
                 {
                     const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
-                    AZStd::array_view<RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
-                    argBuffer.UpdateBufferViews(shaderInputBuffer, bufferInputIndex, bufferViews);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
+                    argBuffer.UpdateBufferViews(shaderInputBuffer, bufferViews);
                     ++shaderInputIndex;
                 }
             }
-
+            
+            if (groupBase.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(ResourceMask::SamplerMask)))
+            {
+                shaderInputIndex = 0;
+                for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : layout->GetShaderInputListForSamplers())
+                {
+                    const RHI::ShaderInputSamplerIndex samplerInputIndex(shaderInputIndex);
+                    AZStd::span<const RHI::SamplerState> samplerStates = groupData.GetSamplerArray(samplerInputIndex);
+                    argBuffer.UpdateSamplers(shaderInputSampler, samplerStates);
+                    ++shaderInputIndex;
+                }
+            }
+            
             return RHI::ResultCode::Success;
         }
 

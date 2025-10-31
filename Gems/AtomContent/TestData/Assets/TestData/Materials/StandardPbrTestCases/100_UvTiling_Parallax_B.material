@@ -1,0 +1,23 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "UvTilingBase.material",
+    "propertyValues": {
+        "baseColor.textureMap": "../../Objects/cube/cube_diff.tif",
+        "metallic.factor": 1.0,
+        "metallic.textureMap": "../../Textures/checker8x8_512.png",
+        "parallax.quality": "High",
+        "parallax.textureMap": "../../Objects/cube/cube_diff.tif",
+        "roughness.textureMap": "../../Textures/checker8x8_flip_512.png",
+        "uv.center": [
+            0.5,
+            0.25
+        ],
+        "uv.offsetU": 1.0,
+        "uv.offsetV": -1.0,
+        "uv.rotateDegrees": 90.0,
+        "uv.scale": 1.2000000476837158,
+        "uv.tileU": 0.699999988079071,
+        "uv.tileV": 1.7999999523162842
+    }
+}

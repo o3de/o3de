@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/math.h>
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -20,6 +21,7 @@
 #include <limits>
 #include <math.h>
 #include <utility>
+#include <inttypes.h>
 
 // We have a separate inline define for math functions.
 // The performance of these functions is very sensitive to inlining, and some compilers don't deal well with this.
@@ -70,8 +72,8 @@ namespace AZ
         return (testValue & (testValue - 1)) == 0;
     }
 
-    //! Calculates at compile-time the integral log base 2 of the input value.
-    constexpr uint32_t Log2(uint64_t maxValue)
+    //! Calculates at compile-time the number of bits required to represent the given max value.
+    constexpr uint32_t RequiredBitsForValue(uint64_t maxValue)
     {
         uint32_t bits = 0;
         do
@@ -256,13 +258,13 @@ namespace AZ
     struct ClampedIntegralLimits
     {
         //! If SourceType and ClampType are different, returns the greater value of 
-        //! std::numeric_limits<SourceType>::lowest() and std::numeric_limits<ClampType>::lowest(),
-        //! otherwise returns std::numeric_limits<SourceType>::lowest().
+        //! AZStd::numeric_limits<SourceType>::lowest() and AZStd::numeric_limits<ClampType>::lowest(),
+        //! otherwise returns AZStd::numeric_limits<SourceType>::lowest().
         static constexpr SourceType Min();
 
         //! If SourceType and ClampType are different, returns the lesser value of 
-        //! std::numeric_limits<SourceType>::max() and std::numeric_limits<ClampType>::max(),
-        //! otherwise returns std::numeric_limits<SourceType>::max().
+        //! AZStd::numeric_limits<SourceType>::max() and AZStd::numeric_limits<ClampType>::max(),
+        //! otherwise returns AZStd::numeric_limits<SourceType>::max().
         static constexpr SourceType Max();
 
         //! Safely clamps a value of type ValueType to the [Min(), Max()] range as determined by the
@@ -361,6 +363,29 @@ namespace AZ
         return a > b ? a : b;
     }
 
+    //! Return the gcd of 2 values.
+    //! \note we don't use names like clamp, min and max because many implementations define it as a macro.
+    template<typename T>
+    constexpr T GetGCD(T a, T b)
+    {
+        static_assert(std::is_integral<T>::value);
+        T c = a % b;
+        while (c != 0)
+        {
+            a = b;
+            b = c;
+            c = a % b;
+        }
+        return b;
+    }
+
+    //! Returns a linear interpolation between 2 values.
+    template<typename T>
+    constexpr T Lerp(const T& a, const T& b, float t)
+    {
+        return static_cast<T>(a + (b - a) * t);
+    }
+
     //! Returns a linear interpolation between 2 values.
     constexpr float Lerp(float a, float b, float t)
     {
@@ -372,15 +397,59 @@ namespace AZ
         return a + (b - a) * t;
     }
 
-    //! Returns a value t where Lerp(a, b, t) == value (or 0 if a == b).
+    // note that the following functions may raise C4723 on some compilers (potential divide by zero)
+    // but this is an erroneous warning as the function guards against this case by checking that
+    // a and b are close to epsilon before performing the division.
+    AZ_PUSH_DISABLE_WARNING(4723, "-Wunknown-warning-option") // potential divide by 0 (needs to wrap the function)
     inline float LerpInverse(float a, float b, float value)
     {
-        return IsClose(a, b, std::numeric_limits<float>::epsilon()) ? 0.0f : (value - a) / (b - a);
+        return IsClose(a, b, AZStd::numeric_limits<float>::epsilon()) ? 0.0f : (value - a) / (b - a);
+        
     }
 
     inline double LerpInverse(double a, double b, double value)
     {
-        return IsClose(a, b, std::numeric_limits<double>::epsilon()) ? 0.0 : (value - a) / (b - a);
+        return IsClose(a, b, AZStd::numeric_limits<double>::epsilon()) ? 0.0 : (value - a) / (b - a);
+    }
+    AZ_POP_DISABLE_WARNING
+
+    //! Smooths a value towards a target using a critically damped spring system.
+    //! This function adjusts `value` towards `target` while maintaining continuity of `value` and its rate of change (`valueRate`).
+    //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
+    //!
+    //! @param[in,out] value      The value to be smoothed.
+    //! @param[in,out] valueRate  The rate of change of the value.
+    //! @param[in]     timeDelta  The time interval since the last update (in seconds).
+    //! @param[in]     target     The target value to smooth towards.
+    //! @param[in]     smoothTime The timescale for smoothing (lag time or 2/omega, where omega is the spring frequency).
+    //!
+    //! @note This implements a critically damped spring system for smooth ease-in/ease-out behavior.
+    //! @note Uses a polynomial approximation to the exponential function for performance, accurate within 0.1% when
+    //!       smoothTime > 2 * timeDelta. For stiff springs or large frame spikes, accuracy may degrade slightly.
+    //! @note Based on "Critically Damped Ease-In/Ease-Out Smoothing" by Thomas Lowe, Game Programming Gems IV.
+    template<typename T>
+    AZ_MATH_INLINE void SmoothCriticallyDamped(T& value, T& valueRate, float timeDelta, const T& target, float smoothTime)
+    {
+        if (smoothTime > 0.0f)
+        {
+            const float omega = 2.0f / smoothTime;
+            const float x = omega * timeDelta;
+            const float exp = 1.0f / (1.0f + x + 0.48f * x * x + 0.235f * x * x * x);
+            const T change = value - target;
+            const T temp = static_cast<T>((valueRate + change * omega) * timeDelta);
+            valueRate = static_cast<T>((valueRate - temp * omega) * exp);
+            value = static_cast<T>(target + (change + temp) * exp);
+        }
+        else if (timeDelta > 0.0f)
+        {
+            valueRate = static_cast<T>((target - value) / timeDelta);
+            value = target;
+        }
+        else
+        {
+            value = target;
+            valueRate = T(0); // Zero the rate
+        }
     }
 
     //! Returns true if the number provided is even.
@@ -431,19 +500,19 @@ namespace AZ
 
     AZ_MATH_INLINE float GetFloatQNaN()
     {
-        return std::numeric_limits<float>::quiet_NaN();
+        return AZStd::numeric_limits<float>::quiet_NaN();
     }
 
     //! IsCloseMag(x, y, epsilon) returns true if y and x are sufficiently close, taking magnitude of x and y into account in the epsilon
     template<typename T>
-    AZ_MATH_INLINE bool IsCloseMag(T x, T y, T epsilonValue = std::numeric_limits<T>::epsilon())
+    AZ_MATH_INLINE bool IsCloseMag(T x, T y, T epsilonValue = AZStd::numeric_limits<T>::epsilon())
     {
         return (AZStd::abs(x - y) <= epsilonValue * GetMax<T>(GetMax<T>(T(1.0), AZStd::abs(x)), AZStd::abs(y)));
     }
 
     //! ClampIfCloseMag(x, y, epsilon) returns y when x and y are within epsilon of each other (taking magnitude into account).  Otherwise returns x.
     template<typename T>
-    AZ_MATH_INLINE T ClampIfCloseMag(T x, T y, T epsilonValue = std::numeric_limits<T>::epsilon())
+    AZ_MATH_INLINE T ClampIfCloseMag(T x, T y, T epsilonValue = AZStd::numeric_limits<T>::epsilon())
     {
         return IsCloseMag<T>(x, y, epsilonValue) ? y : x;
     }
@@ -461,6 +530,36 @@ namespace AZ
         return (azisfinite(x) != 0);
     }
 
+    //! Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
+    //! Example: alignment: 4
+    //! Value:  0 1 2 3 4 5 6 7 8
+    //! Result: 0 1 1 1 1 2 2 2 2
+    //! @param value The numerator.
+    //! @param alignment The denominator. The result will be rounded up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
+    template<typename T>
+    constexpr T DivideAndRoundUp(T value, T alignment)
+    {
+        AZ_MATH_ASSERT(alignment != 0, "0 is an invalid multiple to round to.");
+        AZ_MATH_ASSERT(
+            AZStd::numeric_limits<T>::max() - value >= alignment,
+            "value and alignment will overflow when added together during DivideAndRoundUp.");
+        return (value + alignment - 1) / alignment;
+    }
+    
+    //! Returns the value rounded up to a multiple of alignment.
+    //! This function will work for non power of two alignments.
+    //! If your alignment is guaranteed to be a power of two, SizeAlignUp in base.h is a more efficient implementation.
+    //! Example: roundTo: 4
+    //! Value:  0 1 2 3 4 5 6 7 8
+    //! Result: 0 4 4 4 4 8 8 8 8
+    //! @param value The number to round up.
+    //! @param alignment Round up to the nearest multiple of alignment. Must be non-zero or it will lead to undefined behavior
+    template<typename T>
+    constexpr T RoundUpToMultiple(T value, T alignment)
+    {
+        return DivideAndRoundUp(value, alignment) * alignment;
+    }
+
     //! Returns the maximum value for SourceType as constrained by the numerical range of ClampType.
     template <typename SourceType, typename ClampType>    
     constexpr SourceType ClampedIntegralLimits<SourceType, ClampType>::Min()
@@ -474,8 +573,8 @@ namespace AZ
         {
             // Both SourceType and ClampType are signed, take the greater of the lower limits of each type
             return sizeof(SourceType) < sizeof(ClampType) ? 
-                (std::numeric_limits<SourceType>::lowest)() : 
-                static_cast<SourceType>((std::numeric_limits<ClampType>::lowest)());
+                (AZStd::numeric_limits<SourceType>::lowest)() : 
+                static_cast<SourceType>((AZStd::numeric_limits<ClampType>::lowest)());
         }
     }
 
@@ -486,12 +585,12 @@ namespace AZ
         if constexpr (sizeof(SourceType) < sizeof(ClampType))
         {
             // If SourceType is narrower than ClampType, the upper limit will be SourceType's
-            return (std::numeric_limits<SourceType>::max)();
+            return (AZStd::numeric_limits<SourceType>::max)();
         }
         else if constexpr (sizeof(SourceType) > sizeof(ClampType))
         {
             // If SourceType is wider than ClampType, the upper limit will be ClampType's
-            return static_cast<SourceType>((std::numeric_limits<ClampType>::max)());
+            return static_cast<SourceType>((AZStd::numeric_limits<ClampType>::max)());
         }
         else
         {
@@ -499,13 +598,13 @@ namespace AZ
             {
                 // SourceType and ClampType are the same width, ClampType is signed
                 // so our upper limit will be ClampType
-                return static_cast<SourceType>((std::numeric_limits<ClampType>::max)());
+                return static_cast<SourceType>((AZStd::numeric_limits<ClampType>::max)());
             }       
             else
             {
                 // SourceType and ClampType are the same width, ClampType is unsigned
                 // then our upper limit will be SourceType
-                return (std::numeric_limits<SourceType>::max)();
+                return (AZStd::numeric_limits<SourceType>::max)();
             }
         }
     }
@@ -588,7 +687,7 @@ namespace AZ
             // LeftTypeSize <= RightTypeSize
             // LeftType is signed
             // RightType is unsigned
-            RightType max = static_cast<RightType>((std::numeric_limits<LeftType>::max)());
+            RightType max = static_cast<RightType>((AZStd::numeric_limits<LeftType>::max)());
 
             if (rhs > max)
             {
@@ -604,7 +703,7 @@ namespace AZ
             // LeftType < RightType
             // LeftType is unsigned
             // RightType is signed
-            RightType max = static_cast<RightType>((std::numeric_limits<LeftType>::max)());
+            RightType max = static_cast<RightType>((AZStd::numeric_limits<LeftType>::max)());
 
             if (rhs < 0)
             {
@@ -637,5 +736,5 @@ namespace AZ
 
     //! Creates a unit quaternion uniformly sampled from the space of all possible rotations.
     //! See Graphics Gems III, chapter 6.
-    Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
+    AZCORE_API Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng);
 }

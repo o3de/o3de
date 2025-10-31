@@ -21,7 +21,7 @@ namespace ScriptCanvasEditor
             , private LogBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Log, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Log, AZ::SystemAllocator);
 
             void Activate() override;
             void Clear() override;

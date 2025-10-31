@@ -6,11 +6,13 @@
  *
  */
 
+#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // Verify a project path can be found, launch the project manager and shut down otherwise
     if (AzFramework::ProjectManager::CheckProjectPathProvided(argc, argv) == AzFramework::ProjectManager::ProjectPathCheckResult::ProjectManagerLaunched)
     {
@@ -19,11 +21,8 @@ int main(int argc, char* argv[])
     using CryEditMain = int (*)(int, char*[]);
     constexpr const char CryEditMainName[] = "CryEditMain";
 
-    AZ::Environment::Attach(AZ::Environment::GetInstance());
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-
     auto handle = AZ::DynamicModuleHandle::Create("EditorLib");
-    [[maybe_unused]] const bool loaded = handle->Load(true);
+    [[maybe_unused]] const bool loaded = handle->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
     AZ_Assert(loaded, "EditorLib could not be loaded");
 
     int ret = 1;
@@ -33,7 +32,5 @@ int main(int argc, char* argv[])
     }
 
     handle = {};
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    AZ::Environment::Detach();
     return ret;
 }

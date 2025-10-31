@@ -6,7 +6,7 @@
  *
  */
 
-#include <qmenu.h>
+#include <QMenu>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
@@ -14,7 +14,7 @@
 
 #include <ScriptCanvasDeveloperEditor/WrapperMock.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {

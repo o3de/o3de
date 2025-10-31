@@ -172,5 +172,5 @@ namespace AZ
         }
     };
 
-    AZ_CLASS_ALLOCATOR_IMPL(ExpressionTreeVariableDescriptorSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ExpressionTreeVariableDescriptorSerializer, SystemAllocator);
 }

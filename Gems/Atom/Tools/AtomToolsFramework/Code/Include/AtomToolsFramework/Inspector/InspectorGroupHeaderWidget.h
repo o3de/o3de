@@ -22,7 +22,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT //AUTOMOC
     public:
-        AZ_CLASS_ALLOCATOR(InspectorGroupHeaderWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InspectorGroupHeaderWidget, AZ::SystemAllocator);
 
         explicit InspectorGroupHeaderWidget(QWidget* parent = nullptr);
         void SetExpanded(bool expand);

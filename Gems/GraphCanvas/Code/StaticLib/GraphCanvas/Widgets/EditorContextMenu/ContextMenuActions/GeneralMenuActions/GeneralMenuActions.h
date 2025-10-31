@@ -19,7 +19,7 @@ namespace GraphCanvas
         : public QAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(EndpointSelectionAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EndpointSelectionAction, AZ::SystemAllocator);
 
         EndpointSelectionAction(const Endpoint& endpoint);
         ~EndpointSelectionAction() = default;

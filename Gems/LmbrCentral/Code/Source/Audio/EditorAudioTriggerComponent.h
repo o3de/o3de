@@ -57,7 +57,6 @@ namespace LmbrCentral
         AzToolsFramework::CReflectedVarAudioControl m_defaultStopTrigger;
         Audio::ObstructionType m_obstructionType = Audio::ObstructionType::Ignore;
         bool m_playsImmediately = false;
-        bool m_notifyWhenTriggerFinishes = false;
     };
 
 } // namespace LmbrCentral

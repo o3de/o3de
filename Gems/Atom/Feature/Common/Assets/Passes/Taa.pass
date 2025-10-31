@@ -17,7 +17,12 @@
                     "Name": "InputDepth",
                     "SlotType": "Input",
                     "ShaderInputName": "m_inputDepth",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "MotionVectors",
@@ -54,8 +59,8 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "BindFlags": "3",
-                        "SharedQueueMask": "1"
+                        "BindFlags": "ShaderReadWrite",
+                        "SharedQueueMask": "Graphics"
                     }
                 },
                 {
@@ -73,8 +78,8 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "BindFlags": "3",
-                        "SharedQueueMask": "1"
+                        "BindFlags": "ShaderReadWrite",
+                        "SharedQueueMask": "Graphics"
                     }
                 }
             ],
@@ -89,7 +94,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/Taa.shader"
                 },
-                "Make Fullscreen Pass": true,
+                "FullscreenDispatch": true,
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {

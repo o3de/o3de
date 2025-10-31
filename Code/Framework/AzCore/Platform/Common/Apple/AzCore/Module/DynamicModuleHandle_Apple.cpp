@@ -6,32 +6,36 @@
  *
  */
 
-#include <AzCore/std/string/osstring.h>
+#include <AzCore/Utils/SystemUtilsApple_Platform.h>
 #include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
 
-namespace AZ
+namespace AZ::Platform
 {
-    namespace Platform
+    AZ::IO::FixedMaxPath GetModulePath()
     {
-        AZ::IO::FixedMaxPath GetModulePath()
-        {
-            return AZ::Utils::GetExecutableDirectory();
-        }
-
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
-        {
-            void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
-            alreadyOpen = (handle != nullptr);
-            if (!alreadyOpen)
-            {
-                handle = dlopen(fileName.c_str(), RTLD_NOW);
-            }
-            return handle;
-        }
-
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
-        {
-        }
+        return AZ::Utils::GetExecutableDirectory();
     }
-}
+
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
+    {
+    }
+
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName)
+    {
+        AZ::IO::FixedMaxPath frameworksPath;
+        AZ::IO::FixedMaxPathString& frameworksPathString = frameworksPath.Native();
+        auto GetBundleFrameworkPath = [](char* buffer, size_t size) -> size_t
+        {
+            auto frameworkPathOutcome = AZ::SystemUtilsApple::GetPathToApplicationFrameworks(AZStd::span(buffer, size));
+            return frameworkPathOutcome ? frameworkPathOutcome.GetValue().size() : 0U;
+        };
+        frameworksPathString.resize_and_overwrite(frameworksPathString.capacity(), GetBundleFrameworkPath);
+        if (!frameworksPath.empty())
+        {
+            frameworksPath /= moduleName;
+        }
+
+        return frameworksPath;
+    }
+} // namespace AZ::Platform

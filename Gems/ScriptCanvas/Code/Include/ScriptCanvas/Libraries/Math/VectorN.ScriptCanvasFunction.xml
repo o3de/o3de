@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/VectorN.h"
+        Namespace="ScriptCanvas::VectorNFunctions"
+        Category="Math/VectorN">
+
+        <Function Name="Zero">
+            <Parameter Name="Size"/>
+        </Function>
+
+        <Function Name="One">
+            <Parameter Name="Size"/>
+        </Function>
+
+        <Function Name="Random">
+            <Parameter Name="Size"/>
+        </Function>
+
+        <Function Name="GetDimensionality">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="GetElement">
+            <Parameter Name="Source"/>
+            <Parameter Name="Index"/>
+        </Function>
+
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+
+        <Function Name="IsZero">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="Data::ToleranceEpsilon()"/>
+        </Function>
+
+        <Function Name="GetMin">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+
+        <Function Name="GetMax">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+
+        <Function Name="GetClamp">
+            <Parameter Name="Source"/>
+            <Parameter Name="Min"/>
+            <Parameter Name="Max"/>
+        </Function>
+
+        <Function Name="LengthSquared">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Length">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Normalize">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Absolute">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Square">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Dot">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

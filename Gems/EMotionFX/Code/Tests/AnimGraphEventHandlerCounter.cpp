@@ -11,7 +11,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphEventHandlerCounter, AnimGraphEventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphEventHandlerCounter, AnimGraphEventHandlerAllocator)
 
     const AZStd::vector<EventTypes> AnimGraphEventHandlerCounter::GetHandledEventTypes() const
     {

@@ -11,6 +11,9 @@
 #include <Profiler/ProfilerImGuiBus.h>
 
 #include <ImGuiCpuProfiler.h>
+#include <ImGuiHeapMemoryProfiler.h>
+
+#include "ImGuiTreemapImpl.h"
 
 #include <AzCore/Component/Component.h>
 
@@ -57,8 +60,11 @@ namespace Profiler
 
     private:
 #if defined(IMGUI_ENABLED)
+        ImGuiTreemapFactoryImpl m_imguiTreemapFactory;
         ImGuiCpuProfiler m_imguiCpuProfiler;
+        ImGuiHeapMemoryProfiler m_imguiHeapMemoryProfiler;
         bool m_showCpuProfiler{ false };
+        bool m_showHeapMemoryProfiler{ false };
 #endif // defined(IMGUI_ENABLED)
     };
 

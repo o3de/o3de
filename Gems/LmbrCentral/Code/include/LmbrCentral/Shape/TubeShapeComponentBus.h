@@ -13,10 +13,10 @@
 namespace LmbrCentral
 {
     /// Type ID for TubeShapeComponent
-    static const AZ::Uuid TubeShapeComponentTypeId = "{9C39E3A4-EEE8-4047-ADE2-376A1BFCB3D1}";
+    inline constexpr AZ::TypeId TubeShapeComponentTypeId{ "{9C39E3A4-EEE8-4047-ADE2-376A1BFCB3D1}" };
 
     /// Type ID for EditorTubeShapeComponent
-    static const AZ::Uuid EditorTubeShapeComponentTypeId = "{F969BE9D-08E3-4E6B-B16D-E73E1F3C740A}";
+    inline constexpr AZ::TypeId EditorTubeShapeComponentTypeId{ "{F969BE9D-08E3-4E6B-B16D-E73E1F3C740A}" };
 
     /// Services provided by the TubeShapeComponent
     class TubeShapeComponentRequests

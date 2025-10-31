@@ -6,59 +6,50 @@
  *
  */
 
-#ifndef UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL
-#define UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include "PropertyEditorAPI.h"
+#include <UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <QWidget>
+#include <QToolButton>
+#include <QComboBox>
 #endif
-
-class QComboBox;
 
 namespace AzToolsFramework
 {
-    class PropertyStringComboBoxCtrl
-        : public QWidget
+    class AZTF_API PropertyStringComboBoxCtrl
+        : public GenericComboBoxCtrl<AZStd::string>
     {
+        Q_OBJECT
+        using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
+
         friend class StringEnumPropertyComboBoxHandler;
         template<typename T>
         friend class PropertyComboBoxHandlerCommon;
-        Q_OBJECT
+
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringComboBoxCtrl, AZ::SystemAllocator, 0);
+        AZ_RTTI(PropertyStringComboBoxCtrl, "{886E5B2C-46F5-4046-B0A3-89C28CB28B38}", ComboBoxBase);
+        AZ_CLASS_ALLOCATOR(PropertyStringComboBoxCtrl, AZ::SystemAllocator);
 
         PropertyStringComboBoxCtrl(QWidget* pParent = NULL);
         ~PropertyStringComboBoxCtrl() override;
 
-        AZStd::string value() const;
-
         void Add(const AZStd::string& value);
         void Add(const AZStd::vector<AZStd::string>& value);
-        int GetCount() const;
-        uint32_t GetCurrentIndex() const;
+        int GetCount();
+        uint32_t GetCurrentIndex();
 
-        QWidget* GetFirstInTabOrder();
-        QWidget* GetLastInTabOrder();
-        void UpdateTabOrder();
-
-    signals:
-        void valueChanged(const AZStd::string& newValue);
-
-    public slots:
-        void setValue(const AZStd::string& str);
-
-    protected slots:
-        void onChildComboBoxValueChange(int comboBoxIndex);
-
-    private:
-        QComboBox* m_pComboBox;
-        AZStd::vector<AZStd::string> m_values;
+        void UpdateTabOrder() override;
     };
 
     template <class ValueType>
@@ -66,14 +57,11 @@ namespace AzToolsFramework
         : public PropertyHandler<ValueType, PropertyStringComboBoxCtrl>
     {
         AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::ComboBox; }
-        QWidget* GetFirstInTabOrder(PropertyStringComboBoxCtrl* widget) override { return widget->GetFirstInTabOrder(); }
-        QWidget* GetLastInTabOrder(PropertyStringComboBoxCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyStringComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }
-
         void ConsumeAttribute(PropertyStringComboBoxCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
     };
 
-    class StringEnumPropertyComboBoxHandler
+    class AZTF_API StringEnumPropertyComboBoxHandler
         : QObject
         , public PropertyComboBoxHandlerCommon < AZStd::string >
     {
@@ -81,14 +69,12 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StringEnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StringEnumPropertyComboBoxHandler, AZ::SystemAllocator);
 
         void WriteGUIValuesIntoProperty(size_t index, PropertyStringComboBoxCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyStringComboBoxCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
         QWidget* CreateGUI(QWidget* pParent) override;
     };
 
-    void RegisterStringComboBoxHandler();
+    AZTF_API void RegisterStringComboBoxHandler();
 };
-
-#endif // UI_PROPERTYEDITOR_PROPERTYSTRINGCOMBOBOX_CTRL

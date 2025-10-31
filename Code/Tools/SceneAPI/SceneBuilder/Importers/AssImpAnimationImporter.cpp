@@ -414,8 +414,8 @@ namespace AZ
                         const aiMeshMorphAnim* nodeAnim = animation->mMorphMeshChannels[channelIndex];
                         // Morph animations need a regular animation on the node, as well.
                         // If there is no bone animation on the current node, then generate one here.
-                        AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
-                            AZStd::make_shared<SceneData::GraphData::AnimationData>();
+                        AZStd::shared_ptr<AZ::SceneData::GraphData::AnimationData> createdAnimationData =
+                            AZStd::make_shared<AZ::SceneData::GraphData::AnimationData>();
 
                         const size_t numKeyframes = GetNumKeyFrames(
                             nodeAnim->mNumKeys,
@@ -436,7 +436,9 @@ namespace AZ
                             createdAnimationData->AddKeyFrame(localTransform);
                         }
 
-                        const AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        RenamedNodesMap::SanitizeNodeName(stubBoneAnimForMorphName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
+
                         Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
                             context.m_currentGraphPosition, stubBoneAnimForMorphName.c_str(), AZStd::move(createdAnimationData));
                         context.m_scene.GetGraph().MakeEndPoint(addNode);
@@ -445,17 +447,39 @@ namespace AZ
                     return combinedAnimationResult.GetResult();
                 }
 
-                AZStd::unordered_set<AZStd::string> boneList;
+                AZStd::unordered_set<AZStd::string> nonPivotBoneList;
 
                 for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[meshIndex];
+                    if (!mesh)
+                    {
+                        AZ_Error(
+                            "AnimationImporter",
+                            false,
+                            "Mesh at index %d is invalid. This scene file may be corrupt and may need to be re-exported.",
+                            meshIndex);
+                        continue;
+                    }
 
                     for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         aiBone* bone = mesh->mBones[boneIndex];
+                        if (!bone)
+                        {
+                            AZ_Error(
+                                "AnimationImporter",
+                                false,
+                                "Bone at index %d for mesh %s is invalid. This scene file may be corrupt and may need to be re-exported.",
+                                boneIndex,
+                                mesh->mName.C_Str());
+                            continue;
+                        }
 
-                        boneList.insert(bone->mName.C_Str());
+                        if (!IsPivotNode(bone->mName))
+                        {
+                            nonPivotBoneList.insert(bone->mName.C_Str());
+                        }
                     }
                 }
 
@@ -464,37 +488,34 @@ namespace AZ
                 // Go through all the animations and make sure we create placeholder animations for any bones missing them
                 for (auto&& anim : boneAnimations)
                 {
-                    for (auto boneName : boneList)
+                    for (auto boneName : nonPivotBoneList)
                     {
-                        if (!IsPivotNode(aiString(boneName.c_str())))
+                        if (!boneAnimations.contains(boneName) &&
+                            !fillerAnimations.contains(boneName))
                         {
-                            if (!boneAnimations.contains(boneName) &&
-                                !fillerAnimations.contains(boneName))
-                            {
-                                // Create 1 key for each type that just copies the current transform
-                                ConsolidatedNodeAnim emptyAnimation;
-                                auto node = scene->mRootNode->FindNode(boneName.c_str());
-                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
+                            // Create 1 key for each type that just copies the current transform
+                            ConsolidatedNodeAnim emptyAnimation;
+                            auto node = scene->mRootNode->FindNode(boneName.c_str());
+                            aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
 
-                                aiVector3D position, scale;
-                                aiQuaternion rotation;
+                            aiVector3D position, scale;
+                            aiQuaternion rotation;
 
-                                globalTransform.Decompose(scale, rotation, position);
+                            globalTransform.Decompose(scale, rotation, position);
 
-                                emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
+                            emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
 
-                                emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
-                                emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
+                            emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
+                            emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
 
-                                emptyAnimation.m_ownedRotationKeys.emplace_back(0, rotation);
-                                emptyAnimation.mRotationKeys = emptyAnimation.m_ownedRotationKeys.data();
+                            emptyAnimation.m_ownedRotationKeys.emplace_back(0, rotation);
+                            emptyAnimation.mRotationKeys = emptyAnimation.m_ownedRotationKeys.data();
 
-                                emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
-                                emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
+                            emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
+                            emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
                                 
-                                fillerAnimations.insert(
-                                    AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
-                            }
+                            fillerAnimations.insert(
+                                AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                         }
                     }
                 }
@@ -544,8 +565,8 @@ namespace AZ
                         animation->mDuration,
                         animation->mTicksPerSecond);
 
-                    AZStd::shared_ptr<SceneData::GraphData::AnimationData> createdAnimationData =
-                       AZStd::make_shared<SceneData::GraphData::AnimationData>();
+                    AZStd::shared_ptr<AZ::SceneData::GraphData::AnimationData> createdAnimationData =
+                       AZStd::make_shared<AZ::SceneData::GraphData::AnimationData>();
                     createdAnimationData->ReserveKeyFrames(numKeyFrames);
                     createdAnimationData->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
@@ -642,8 +663,8 @@ namespace AZ
                             mesh->mName.C_Str(), meshIdx, mesh->mNumAnimMeshes);
                         continue;
                     }
-                    AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
-                        AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
+                    AZStd::shared_ptr<AZ::SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
+                        AZStd::make_shared<AZ::SceneData::GraphData::BlendShapeAnimationData>();
 
                     const size_t numKeyFrames = GetNumKeyFrames(static_cast<AZ::u32>(keys.size()), animation->mDuration, animation->mTicksPerSecond);
                     morphAnimNode->ReserveKeyFrames(numKeyFrames);

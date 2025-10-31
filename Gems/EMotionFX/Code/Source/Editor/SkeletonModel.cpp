@@ -22,12 +22,14 @@ namespace EMotionFX
     const char* SkeletonModel::s_ragdollJointLimitIconPath = ":/EMotionFX/RagdollJointLimit.svg";
     const char* SkeletonModel::s_simulatedJointIconPath = ":/EMotionFX/SimulatedObjectColored.svg";
     const char* SkeletonModel::s_simulatedColliderIconPath = ":/EMotionFX/SimulatedObjectCollider.svg";
+    const char* SkeletonModel::s_characterIconPath = ":/EMotionFX/Character.svg";
 
     SkeletonModel::SkeletonModel()
         : m_selectionModel(this)
         , m_skeleton(nullptr)
         , m_actor(nullptr)
         , m_actorInstance(nullptr)
+        , m_characterRootNode(Node::Create("Character", nullptr))
         , m_jointIcon(s_jointIconPath)
         , m_clothColliderIcon(s_clothColliderIconPath)
         , m_hitDetectionColliderIcon(s_hitDetectionColliderIconPath)
@@ -35,6 +37,7 @@ namespace EMotionFX
         , m_ragdollJointLimitIcon(s_ragdollJointLimitIconPath)
         , m_simulatedJointIcon(s_simulatedJointIconPath)
         , m_simulatedColliderIcon(s_simulatedColliderIconPath)
+        , m_characterIcon(s_characterIconPath)
     {
         m_selectionModel.setModel(this);
 
@@ -68,6 +71,8 @@ namespace EMotionFX
     {
         // Calling Reset will trigger the modelReset signal, thus notify other widgets to clear cached information about this model.
         Reset();
+
+        m_characterRootNode->Destroy();
 
         ActorEditorNotificationBus::Handler::BusDisconnect();
     }
@@ -117,6 +122,18 @@ namespace EMotionFX
         {
             const Node* parentNode = static_cast<const Node*>(parent.internalPointer());
 
+            if (parentNode == m_characterRootNode) {
+                if (row >= static_cast<int>(m_skeleton->GetNumRootNodes()))
+                {
+                    AZ_Assert(false, "Cannot get model index. Row out of range.");
+                    return QModelIndex();
+                }
+
+                const size_t rootNodeIndex = m_skeleton->GetRootNodeIndex(row);
+                Node* rootNode = m_skeleton->GetNode(rootNodeIndex);
+                return createIndex(row, column, rootNode);
+            }
+
             if (row >= static_cast<int>(parentNode->GetNumChildNodes()))
             {
                 AZ_Assert(false, "Cannot get model index. Row out of range.");
@@ -129,15 +146,15 @@ namespace EMotionFX
         }
         else
         {
-            if (row >= static_cast<int>(m_skeleton->GetNumRootNodes()))
+            // The root node is now only the character root node, and all skeleton root nodes
+            // are its children. We never expect more than one node at the root level.
+            if (row >= 1)
             {
                 AZ_Assert(false, "Cannot get model index. Row out of range.");
                 return QModelIndex();
             }
 
-            const size_t rootNodeIndex = m_skeleton->GetRootNodeIndex(row);
-            Node* rootNode = m_skeleton->GetNode(rootNodeIndex);
-            return createIndex(row, column, rootNode);
+            return createIndex(row, column, m_characterRootNode);
         }
     }
 
@@ -151,33 +168,47 @@ namespace EMotionFX
 
         AZ_Assert(child.isValid(), "Expected valid child model index.");
         Node* childNode = static_cast<Node*>(child.internalPointer());
-        Node* parentNode = childNode->GetParentNode();
-        if (parentNode)
+
+        // The virtual character root node has no parent
+        if (childNode == m_characterRootNode)
         {
-            Node* grandParentNode = parentNode->GetParentNode();
-            if (grandParentNode)
+            return QModelIndex();
+        }
+
+        // Actual roots from the skeleton tree (nodes that have no parent node on the skeleton tree)
+        // are children of the virtual character root
+        Node* parentNode = childNode->GetParentNode();
+        if (!parentNode)
+        {
+            return createIndex(0, 0, m_characterRootNode);
+        }
+
+        // Children of skeleton root nodes have their parent node (GetParentNode()) as parent,
+        // and the row value is computed through GetNumRootNodes()/GetRootNodeIndex()
+        Node* grandParentNode = parentNode->GetParentNode();
+        if (!grandParentNode)
+        {
+            const int numRootNodes = aznumeric_caster(m_skeleton->GetNumRootNodes());
+            for (int i = 0; i < numRootNodes; ++i)
             {
-                const int numChildNodes = aznumeric_caster(grandParentNode->GetNumChildNodes());
-                for (int i = 0; i < numChildNodes; ++i)
+                const Node* rootNode = m_skeleton->GetNode(m_skeleton->GetRootNodeIndex(i));
+                if (rootNode == parentNode)
                 {
-                    const Node* grandParentChildNode = m_skeleton->GetNode(grandParentNode->GetChildIndex(i));
-                    if (grandParentChildNode == parentNode)
-                    {
-                        return createIndex(i, 0, parentNode);
-                    }
+                    return createIndex(i, 0, parentNode);
                 }
             }
-            else
+            AZ_Assert(false, "Cannot get parent model index. Skeleton invalid.");
+        }
+
+        // Other skeleton nodes nodes have their parent node (GetParentNode()) as parent,
+        // and the row value needs to be computed through GetNumChildNodes()/GetChildIndex() w.r.t. the parent
+        const int numChildNodes = aznumeric_caster(grandParentNode->GetNumChildNodes());
+        for (int i = 0; i < numChildNodes; ++i)
+        {
+            const Node* grandParentChildNode = m_skeleton->GetNode(grandParentNode->GetChildIndex(i));
+            if (grandParentChildNode == parentNode)
             {
-                const int numRootNodes = aznumeric_caster(m_skeleton->GetNumRootNodes());
-                for (int i = 0; i < numRootNodes; ++i)
-                {
-                    const Node* rootNode = m_skeleton->GetNode(m_skeleton->GetRootNodeIndex(i));
-                    if (rootNode == parentNode)
-                    {
-                        return createIndex(i, 0, parentNode);
-                    }
-                }
+                return createIndex(i, 0, parentNode);
             }
         }
 
@@ -194,11 +225,18 @@ namespace EMotionFX
         if (parent.isValid())
         {
             const Node* parentNode = static_cast<const Node*>(parent.internalPointer());
+
+            if (parentNode == m_characterRootNode)
+            {
+                return static_cast<int>(m_skeleton->GetNumRootNodes());
+            }
+
             return static_cast<int>(parentNode->GetNumChildNodes());
         }
         else
         {
-            return static_cast<int>(m_skeleton->GetNumRootNodes());
+            // We only have m_characterRootNode as root node, and all skeleton root nodes as their children, by construction.
+            return 1;
         }
     }
 
@@ -234,9 +272,45 @@ namespace EMotionFX
         Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
+        const bool isRootNode = node == m_characterRootNode;
         const size_t nodeIndex = node->GetNodeIndex();
-        const NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
+        const NodeInfo& nodeInfo = GetNodeInfo(node);
 
+        // Handle roles for the special case with a root node
+        if (isRootNode)
+        {
+            switch (role)
+            {
+            case Qt::DecorationRole:
+                {
+                    switch (index.column())
+                    {
+                    case COLUMN_NAME:
+                        return m_characterIcon;
+                    case COLUMN_RAGDOLL_LIMIT:
+                    case COLUMN_RAGDOLL_COLLIDERS:
+                    case COLUMN_HITDETECTION_COLLIDERS:
+                    case COLUMN_CLOTH_COLLIDERS:
+                    case COLUMN_SIMULATED_JOINTS:
+                    case COLUMN_SIMULATED_COLLIDERS:
+                        return {};
+                    default:
+                        break;
+                    }
+                    break;
+                }
+            case ROLE_RAGDOLL:
+            case ROLE_HITDETECTION:
+            case ROLE_CLOTH:
+            case ROLE_SIMULATED_JOINT:
+            case ROLE_SIMULATED_OBJECT_COLLIDER:
+                return {};
+            default:
+                break;
+            }
+        }
+
+        // Handle roles for all other nodes
         switch (role)
         {
         case Qt::ToolTipRole:
@@ -390,6 +464,8 @@ namespace EMotionFX
         }
         case ROLE_NODE_INDEX:
             return qulonglong(nodeIndex);
+        case ROLE_IS_CHARACTER_ROOT_NODE:
+            return isRootNode;
         case ROLE_POINTER:
             return QVariant::fromValue(node);
         case ROLE_ACTOR_POINTER:
@@ -474,8 +550,7 @@ namespace EMotionFX
         Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
-        const size_t nodeIndex = node->GetNodeIndex();
-        const NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
+        const NodeInfo& nodeInfo = GetNodeInfo(node);
 
         if (nodeInfo.m_checkable)
         {
@@ -496,8 +571,7 @@ namespace EMotionFX
         const Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
-        const size_t nodeIndex = node->GetNodeIndex();
-        NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
+        NodeInfo& nodeInfo = GetNodeInfo(node);
 
         switch (role)
         {
@@ -520,6 +594,11 @@ namespace EMotionFX
         if (!node)
         {
             return QModelIndex();
+        }
+
+        if (node == m_characterRootNode)
+        {
+            return createIndex(0, 0, node);
         }
 
         Node* parentNode = node->GetParentNode();
@@ -607,6 +686,24 @@ namespace EMotionFX
         SetActorInstance(actorInstance);
     }
 
+    SkeletonModel::NodeInfo& SkeletonModel::GetNodeInfo(const Node* node)
+    {
+        if (node == m_characterRootNode)
+        {
+            return m_nodeInfos[0];
+        }
+        return m_nodeInfos[node->GetNodeIndex() + 1];
+    }
+
+    const SkeletonModel::NodeInfo& SkeletonModel::GetNodeInfo(const Node* node) const
+    {
+        if (node == m_characterRootNode)
+        {
+            return m_nodeInfos[0];
+        }
+        return m_nodeInfos[node->GetNodeIndex() + 1];
+    }
+
     void SkeletonModel::UpdateNodeInfos(Actor* actor)
     {
         if (!actor)
@@ -618,7 +715,13 @@ namespace EMotionFX
         const size_t numLodLevels = actor->GetNumLODLevels();
         const Skeleton* skeleton = actor->GetSkeleton();
         const size_t numNodes = skeleton->GetNumNodes();
-        m_nodeInfos.resize(numNodes);
+
+        // We need to keep NodeInfo information for the "virtual" character root node that we add in this model.
+        // That node is not coming from the skeleton so we need to manually make room for an extra NodeInfo struct
+        // and adjust indices accordingly.
+        // The info struct for the root node will be in m_nodeInfos[0] and all the other will be stored in
+        // m_nodeInfos[node.index + 1]
+        m_nodeInfos.resize(numNodes + 1);
 
         AZStd::vector<AZStd::vector<size_t> > boneListPerLodLevel;
         boneListPerLodLevel.resize(numLodLevels);
@@ -627,26 +730,40 @@ namespace EMotionFX
             actor->ExtractBoneList(lodLevel, &boneListPerLodLevel[lodLevel]);
         }
 
-        for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+        // Starting from 1 to skip character root node info (we use default values for that node).
+        for (size_t nodeIndex = 1; nodeIndex < numNodes; ++nodeIndex)
         {
             NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
             // Is bone?
             nodeInfo.m_isBone = AZStd::any_of(begin(boneListPerLodLevel), end(boneListPerLodLevel), [nodeIndex](const AZStd::vector<size_t>& lodLevel)
             {
-                return AZStd::find(begin(lodLevel), end(lodLevel), nodeIndex) != end(lodLevel);
+                return AZStd::find(begin(lodLevel), end(lodLevel), nodeIndex - 1) != end(lodLevel);
             });
 
             // Has mesh?
             nodeInfo.m_hasMesh = false;
             for (size_t lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
             {
-                if (actor->GetMesh(lodLevel, nodeIndex))
+                if (actor->GetMesh(lodLevel, nodeIndex - 1))
                 {
                     nodeInfo.m_hasMesh = true;
                     break;
                 }
             }
         }
+    }
+
+    bool SkeletonModel::IndexIsRootNode(const QModelIndex& idx)
+    {
+        return idx.data(SkeletonModel::ROLE_IS_CHARACTER_ROOT_NODE).template value<bool>();
+    }
+
+    bool SkeletonModel::IndicesContainRootNode(const QModelIndexList& indices)
+    {
+        return AZStd::ranges::any_of(indices, [](const auto& index)
+        {
+            return index.data(SkeletonModel::ROLE_IS_CHARACTER_ROOT_NODE).template value<bool>();
+        });
     }
 } // namespace EMotionFX

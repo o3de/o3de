@@ -6,9 +6,13 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <IEditor.h>
+#include <QLabel>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
 
@@ -20,10 +24,8 @@ namespace ScriptCanvasEditor
 
     TargetManagerModel::TargetManagerModel()
     {
-        AzFramework::TargetInfo editorTargetInfo(0, "Editor");
+        AzFramework::RemoteToolsEndpointInfo editorTargetInfo("Editor");
         m_targetInfo.push_back(editorTargetInfo);
-
-        AzFramework::TargetManager::Bus::BroadcastResult(m_selfInfo, &AzFramework::TargetManager::GetMyTargetInfo);
 
         ScrapeTargetInfo();
     }
@@ -44,7 +46,7 @@ namespace ScriptCanvasEditor
         {
         case Qt::DisplayRole:
         {
-            const AzFramework::TargetInfo& targetInfo = m_targetInfo[index.row()];
+            const AzFramework::RemoteToolsEndpointInfo& targetInfo = m_targetInfo[index.row()];
             if (index.row() > 0)
             {
                 return QString("%1 (%2)").arg(targetInfo.GetDisplayName(), QString::number(targetInfo.GetPersistentId(), 16));
@@ -62,9 +64,9 @@ namespace ScriptCanvasEditor
         return QVariant();
     }
 
-    void TargetManagerModel::TargetJoinedNetwork(AzFramework::TargetInfo info)
+    void TargetManagerModel::TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
-        if (!info.IsIdentityEqualTo(m_selfInfo))
+        if (!info.IsSelf())
         {
             int element = GetRowForTarget(info.GetPersistentId());
 
@@ -81,7 +83,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void TargetManagerModel::TargetLeftNetwork(AzFramework::TargetInfo info)
+    void TargetManagerModel::TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         int element = GetRowForTarget(info.GetPersistentId());
 
@@ -95,11 +97,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AzFramework::TargetInfo TargetManagerModel::FindTargetInfoForRow(int row)
+    AzFramework::RemoteToolsEndpointInfo TargetManagerModel::FindTargetInfoForRow(int row)
     {
         if (row < 0 && row >= m_targetInfo.size())
         {
-            return AzFramework::TargetInfo();
+            return AzFramework::RemoteToolsEndpointInfo();
         }
 
         return m_targetInfo[row];
@@ -120,12 +122,16 @@ namespace ScriptCanvasEditor
 
     void TargetManagerModel::ScrapeTargetInfo()
     {
-        AzFramework::TargetContainer targets;
-        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::EnumTargetInfos, targets);
+        AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+        AzFramework::RemoteToolsEndpointContainer targets;
+        if (remoteTools)
+        {
+            remoteTools->EnumTargetInfos(AzFramework::ScriptCanvasToolsKey, targets);
+        }
 
         for (const auto& targetPair : targets)
         {
-            if (!targetPair.second.IsIdentityEqualTo(m_selfInfo))
+            if (!targetPair.second.IsSelf())
             {
                 m_targetInfo.push_back(targetPair.second);
             }
@@ -138,7 +144,7 @@ namespace ScriptCanvasEditor
 
     AZStd::intrusive_ptr<LiveLoggingUserSettings> LiveLoggingUserSettings::FindSettingsInstance()
     {
-        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC("ScriptCanvas::LiveLoggingUserSettings", 0xc79efe7b), AZ::UserSettings::CT_LOCAL);
+        return AZ::UserSettings::CreateFind<LiveLoggingUserSettings>(AZ_CRC_CE("ScriptCanvas::LiveLoggingUserSettings"), AZ::UserSettings::CT_LOCAL);
     }
 
     void LiveLoggingUserSettings::Reflect(AZ::ReflectContext* reflectContext)
@@ -181,12 +187,9 @@ namespace ScriptCanvasEditor
 
     LiveLoggingWindowSession::LiveLoggingWindowSession(QWidget* parent)
         : LoggingWindowSession(parent)
-        , m_startedSession(false)
         , m_encodeStaticEntities(false)
         , m_isCapturing(false)
     {
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
-
         m_targetManagerModel = aznew TargetManagerModel();
 
         {
@@ -194,7 +197,6 @@ namespace ScriptCanvasEditor
             m_ui->targetSelector->setModel(m_targetManagerModel);
         }
 
-        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusConnect();
 
         SetDataId(m_liveDataAggregator.GetDataId());
@@ -219,12 +221,19 @@ namespace ScriptCanvasEditor
 
         m_ui->autoCaptureToggle->setChecked(m_userSettings->IsAutoCaptureEnabled());
         QObject::connect(m_ui->autoCaptureToggle, &QToolButton::toggled, this, &LiveLoggingWindowSession::OnAutoCaptureToggled);
+
+        if (!AzFramework::RemoteToolsInterface::Get())
+        {
+            m_ui->logTree->setHidden(true);
+            m_ui->verticalLayout->setAlignment(Qt::AlignTop);
+            QLabel* warnMessage = new QLabel("Please enable the **Remote Tools Connection** gem to use graph debugging features");
+            warnMessage->setTextFormat(Qt::MarkdownText);
+            m_ui->verticalLayout->addWidget(warnMessage);
+        }
     }
 
     LiveLoggingWindowSession::~LiveLoggingWindowSession()
     {
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusDisconnect();
     }
 
@@ -255,10 +264,8 @@ namespace ScriptCanvasEditor
 
             if (connected)
             {
-                AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-
-                AzFramework::TargetInfo desiredInfo;
-                AzFramework::TargetManager::Bus::BroadcastResult(desiredInfo, &AzFramework::TargetManager::GetDesiredTarget);
+                const AzFramework::RemoteToolsEndpointInfo& desiredInfo =
+                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey);
 
                 if (desiredInfo.IsValid() && !desiredInfo.IsSelf())
                 {
@@ -281,17 +288,13 @@ namespace ScriptCanvasEditor
             
             if (useFallback)
             {
-                if (!AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusIsConnected())
-                {
-                    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-                }
 
                 m_ui->targetSelector->setCurrentIndex(0);
             }
         }
     }
 
-    void LiveLoggingWindowSession::TargetJoinedNetwork(AzFramework::TargetInfo info)
+    void LiveLoggingWindowSession::TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         {
             QSignalBlocker signalBlocker(m_ui->targetSelector);
@@ -300,7 +303,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LiveLoggingWindowSession::TargetLeftNetwork(AzFramework::TargetInfo info)
+    void LiveLoggingWindowSession::TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         {
             QSignalBlocker signalBlocker(m_ui->targetSelector);
@@ -309,33 +312,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LiveLoggingWindowSession::OnStartPlayInEditorBegin()
-    {
-        if (isVisible())
-        {
-            m_encodeStaticEntities = true;
-            ScriptCanvas::Debugger::ClientUIRequestBus::Broadcast(&ScriptCanvas::Debugger::ClientUIRequests::StartEditorSession);
-
-            if ((m_userSettings->IsAutoCaptureEnabled()) || m_startedSession)
-            {
-                SetIsCapturing(true);
-            }
-        }
-    }
-
-    void LiveLoggingWindowSession::OnStopPlayInEditor()
-    {
-        if (isVisible())
-        {
-            SetIsCapturing(false);
-            m_startedSession = false;
-
-            ScriptCanvas::Debugger::ClientUIRequestBus::Broadcast(&ScriptCanvas::Debugger::ClientUIRequests::StopEditorSession);
-            m_encodeStaticEntities = false;
-        }
-    }
-
-    void LiveLoggingWindowSession::Connected([[maybe_unused]] const ScriptCanvas::Debugger::Target& target)
+    void LiveLoggingWindowSession::Connected([[maybe_unused]] ScriptCanvas::Debugger::Target& target)
     {
         if (m_userSettings->IsAutoCaptureEnabled() && isVisible())
         {
@@ -345,35 +322,6 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingWindowSession::OnCaptureButtonPressed()
     {
-        bool isSelfTarget = false;
-        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelfTarget, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
-
-        if (isSelfTarget)
-        {
-            if (!m_startedSession)
-            {
-                bool isRunningGame = false;
-                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(isRunningGame, &AzToolsFramework::EditorEntityContextRequests::IsEditorRunningGame);
-
-                if (!isRunningGame)
-                {
-                    if (GetIEditor()->IsLevelLoaded())
-                    {
-                        m_startedSession = true;
-
-                        GetIEditor()->SetInGameMode(true);
-                    }
-
-                    return;
-                }
-            }
-            else
-            {
-                GetIEditor()->SetInGameMode(false);
-                return;
-            }
-        }
-
         SetIsCapturing(!m_isCapturing);
     }
 
@@ -404,21 +352,21 @@ namespace ScriptCanvasEditor
 
         optionsMenu.exec(point);
     }
-    
+
     void LiveLoggingWindowSession::OnTargetChanged(int index)
     {
         // Special case out the editor
         if (index == 0)
         {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, 0);
+            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, 0);
         }
         else
         {
-            AzFramework::TargetInfo info = m_targetManagerModel->FindTargetInfoForRow(index);
+            AzFramework::RemoteToolsEndpointInfo info = m_targetManagerModel->FindTargetInfoForRow(index);
 
             if (info.IsValid())
             {
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, info.GetNetworkId());
+                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(AzFramework::ScriptCanvasToolsKey, info.GetPersistentId());
             }
         }
     }
@@ -523,7 +471,8 @@ namespace ScriptCanvasEditor
 
         for (const auto& graphIdentifier : registrationSet)
         {
-            captureInfo.m_graphs.insert(graphIdentifier.m_assetId);
+            // Graphs capture is using runtime asset subID, need this conversion else comparison won't match
+            captureInfo.m_graphs.insert(AZ::Data::AssetId(graphIdentifier.m_assetId.m_guid, ScriptCanvas::RuntimeDataSubId));
         }
     }
 

@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -13,6 +13,14 @@
 #include <AzCore/Script/ScriptContext.h>
 
 struct lua_State;
+
+// #define SCRIPT_SYSTEM_SCRIPT_LOADED_DIAGNOSTICS_ENABLED
+
+#if defined(SCRIPT_SYSTEM_SCRIPT_LOADED_DIAGNOSTICS_ENABLED)
+#define SCRIPT_SYSTEM_SCRIPT_STATUS(window, ...) AZ_TracePrintf(window, __VA_ARGS__);
+#else
+#define SCRIPT_SYSTEM_SCRIPT_STATUS(window, ...)
+#endif
 
 namespace AZ
 {
@@ -103,3 +111,5 @@ namespace AZ
 
 #endif // AZCORE_SCRIPT_SYSTEM_BUS_H
 #pragma once
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::ScriptSystemRequests);

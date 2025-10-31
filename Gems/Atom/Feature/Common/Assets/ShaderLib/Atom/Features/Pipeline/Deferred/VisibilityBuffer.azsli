@@ -1,0 +1,113 @@
+#pragma once
+
+struct VisibilityBuffer
+{
+    int m_meshInfoIndex;      // MeshInfoIndex of the mesh (max 30 bit)
+    uint m_triangleId;        // rasterized triangle ID
+    bool m_isFrontFace;       // stored in the first bit of the meshInfoIndex
+
+    float3 m_barycentrics;    // barycentrics for the triangle
+    // dx / dy of the barycentrics, needed to calculate the mip-level for the various UV channels 
+    float3 m_barycentricsDx;   
+    float3 m_barycentricsDy;
+};
+
+#define MESHINFO_BITS 30
+#define MAX_MESHINFO (1 << MESHINFO_BITS)
+#define MESHINFO_MASK (MAX_MESHINFO - 1)
+#define MESHINFO_INVALID_BIT 31
+#define MESHINFO_INVALID_MASK (1 << MESHINFO_INVALID_BIT)
+#define FRONTFACE_BIT 30
+#define FRONTFACE_MASK (1 << FRONTFACE_BIT)
+
+
+
+// packing and unpacking is mostly for convenience
+void packVisibilityBuffer(VisibilityBuffer vbuffer, inout float4 first, inout float4 second)
+{
+    uint flagsAndMeshInfoIndex = 0;
+
+    // remove the top n bits from the meshinfo, we need space for flags
+    flagsAndMeshInfoIndex = MESHINFO_MASK & vbuffer.m_meshInfoIndex;
+
+    // First flag: m_meshInfoIndex is invalid
+    // Note: an invalid meshInfoIndex is usually -1, so this flag would already be set, but we strip the top bits, so we have to re-add it
+    bool meshInfoInvalid = vbuffer.m_meshInfoIndex < 0;
+    flagsAndMeshInfoIndex |= meshInfoInvalid << MESHINFO_INVALID_BIT;
+    
+    // second flag: triangle is frontfacing
+    flagsAndMeshInfoIndex |= vbuffer.m_isFrontFace << FRONTFACE_BIT;
+
+    first.x = asfloat(flagsAndMeshInfoIndex);
+    first.y = asfloat(vbuffer.m_triangleId);
+
+    // we can reconstruct the third barycentric coordinate
+    first.zw = vbuffer.m_barycentrics.xy;
+    second.xy = vbuffer.m_barycentricsDx.xy;
+    second.zw = vbuffer.m_barycentricsDy.xy;
+}
+
+bool GetMeshInfoIndex(const float4 first, inout int meshInfoIndex)
+{
+    // The visibility buffer has two invalid states: 
+    // - It is initialized with float4(-0.0, 0.0, 0.0, 0.0): No mesh is visible at this pixel
+    // - The m_meshInfoIndex is negative: This can happen if the MeshInfo-Buffer and the Draw-Srg are not (yet) fully updated 
+    if (first.x != -0.0f)
+    {
+        uint flagsAndMeshInfoIndex = asuint(first.x);
+        // first flag
+        bool meshInfoIndexInvalid = (MESHINFO_INVALID_MASK & flagsAndMeshInfoIndex) > 0u;
+        // meshInfoIndex
+        meshInfoIndex = (MESHINFO_MASK & flagsAndMeshInfoIndex);
+
+        // if the meshInfoIndex was invalid, we need to make it negative
+        if (meshInfoIndexInvalid)
+        {
+            meshInfoIndex *= -1;
+        }
+        return !meshInfoIndexInvalid;
+    }
+    return false;
+}
+
+
+bool unpackVisibilityBuffer(float4 first, float4 second, inout VisibilityBuffer vbuffer)
+{
+    uint flagsAndMeshInfoIndex = asuint(first.x);
+    // first flag
+    bool meshInfoIndexInvalid = (MESHINFO_INVALID_MASK & flagsAndMeshInfoIndex) > 0u;
+    // second flag
+    vbuffer.m_isFrontFace = (FRONTFACE_MASK & flagsAndMeshInfoIndex) > 0u;
+
+    vbuffer.m_meshInfoIndex = (MESHINFO_MASK & flagsAndMeshInfoIndex);
+
+    if (meshInfoIndexInvalid)
+    {
+        vbuffer.m_meshInfoIndex *= -1;
+    }
+  
+    vbuffer.m_triangleId = asuint(first.y);
+
+    vbuffer.m_barycentrics.xy = first.zw;
+    // reconstruct the third barycentric coordinate
+    vbuffer.m_barycentrics.z = 1.0f - (vbuffer.m_barycentrics.x + vbuffer.m_barycentrics.y);
+
+    vbuffer.m_barycentricsDx.xy = second.xy;
+    // create the neighboring barycentrics in x
+    float3 barycentricsX = float3(vbuffer.m_barycentrics.x + vbuffer.m_barycentricsDx.x, vbuffer.m_barycentrics.y + vbuffer.m_barycentricsDx.y, 1.0f);
+    // reconstruct the third barycentric coord of the neighbor
+    barycentricsX.z -= (barycentricsX.x + barycentricsX.y);
+    // calc the dx value for the third coord
+    vbuffer.m_barycentricsDx.z = barycentricsX.z - vbuffer.m_barycentrics.z; 
+
+    vbuffer.m_barycentricsDy.xy = second.zw;
+    // create the neighboring barycentrics in y
+    float3 barycentricsY = float3(vbuffer.m_barycentrics.x + vbuffer.m_barycentricsDy.x, vbuffer.m_barycentrics.y + vbuffer.m_barycentricsDy.y, 1.0f);
+    // reconstruct the third barycentric coord of the neighbor
+    barycentricsY.z -= (barycentricsY.x + barycentricsY.y);
+    // calc the dy value for the third coord
+    vbuffer.m_barycentricsDy.z = barycentricsY.z - vbuffer.m_barycentrics.z;
+ 
+    return first.x != -0.0 && !meshInfoIndexInvalid;
+}
+

@@ -22,14 +22,14 @@ namespace CryMT
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
-    // Multi-Thread safe queue container, can be used instead of std::vector.
+    // Multi-Thread safe queue container.
     //////////////////////////////////////////////////////////////////////////
     template <class T, class Alloc = std::allocator<T> >
     class queue
     {
     public:
         typedef T   value_type;
-        typedef std::vector<T, Alloc>   container_type;
+        typedef std::queue<T, std::deque<T, Alloc>>   container_type;
         typedef AZStd::lock_guard<AZStd::recursive_mutex> AutoLock;
 
         //////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ namespace CryMT
         //////////////////////////////////////////////////////////////////////////
         const T& front() const      { AutoLock lock(m_cs); return v.front(); };
         const T& back() const { AutoLock lock(m_cs);    return v.back(); }
-        void    push(const T& x)    { AutoLock lock(m_cs); return v.push_back(x); };
+        void    push(const T& x)    { AutoLock lock(m_cs); return v.push(x); };
         void reserve(const size_t n) { AutoLock lock(m_cs); v.reserve(n); };
 
         AZStd::recursive_mutex& get_lock() const { return m_cs; }
@@ -57,7 +57,7 @@ namespace CryMT
             if (!v.empty())
             {
                 returnValue = v.front();
-                v.erase(v.begin());
+                v.pop();
                 return true;
             }
             return false;

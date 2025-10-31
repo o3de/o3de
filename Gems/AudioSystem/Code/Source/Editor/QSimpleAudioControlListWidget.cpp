@@ -225,6 +225,36 @@ namespace AudioControls
             {
                 pItem->setFlags(pItem->flags() & ~Qt::ItemIsDragEnabled);
             }
+
+            if (compatibleType == EACEControlType::eACET_SWITCH_STATE)
+            {
+                IAudioSystemControl* pControl = pAudioSystemEditorImpl->GetControl(GetItemId(pItem));
+                if (pControl && !pControl->IsLocalized())
+                {
+                    size_t nConnect = 0;
+                    for (int i = 0; i < pControl->GetParent()->ChildCount(); ++i)
+                    {
+                        IAudioSystemControl* child = pControl->GetParent()->GetChildAt(i);
+                        if (child && child->IsConnected())
+                        {
+                            ++nConnect;
+                        }
+                    }
+
+                    QTreeWidgetItem* pParentItem = GetItem(pControl->GetParent()->GetId(), pControl->GetParent()->IsLocalized());
+                    if (pParentItem)
+                    {
+                        if (nConnect > 0 && nConnect == pControl->GetParent()->ChildCount())
+                        {
+                            pParentItem->setForeground(0, m_connectedColor);
+                        }
+                        else
+                        {
+                            pParentItem->setForeground(0, m_disconnectedColor);
+                        }
+                    }
+                }
+            }
         }
     }
 

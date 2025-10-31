@@ -1,6 +1,0 @@
-<download name="C4044697_Terrain_ValidMaterialBehaviour" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39203" md5="6d896e4aca3395b213bd08ebd44e2111"/>
- </files>
-</download>

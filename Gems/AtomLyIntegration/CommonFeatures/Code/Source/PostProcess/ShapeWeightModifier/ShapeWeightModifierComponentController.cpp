@@ -25,10 +25,6 @@ namespace AZ
                     ->Version(0)
                     ->Field("Configuration", &ShapeWeightModifierComponentController::m_configuration);
             }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-            }
         }
 
         void ShapeWeightModifierComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -44,7 +40,7 @@ namespace AZ
         void ShapeWeightModifierComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("PostFXLayerService"));
-            required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            required.push_back(AZ_CRC_CE("ShapeService"));
         }
 
         ShapeWeightModifierComponentController::ShapeWeightModifierComponentController(const ShapeWeightModifierComponentConfig& config)

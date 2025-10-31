@@ -20,6 +20,7 @@ class TestRerunCommand(object):
     MOCK_FOO_EXE = os.path.join('foo', 'path')
 
     @mock.patch('os.path.join')
+    @mock.patch('sys.argv', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_GetLauncherCommand_PythonScriptFound_CmdReturned(self, mock_join):
         mock_python = 'python'
@@ -30,6 +31,7 @@ class TestRerunCommand(object):
 
         assert under_test == expected
 
+    @mock.patch('sys.argv', mock.MagicMock())
     @mock.patch('os.path.abspath', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.sys.executable', MOCK_FOO_EXE)
@@ -43,6 +45,7 @@ class TestRerunCommand(object):
 
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.sys.executable', MOCK_FOO_EXE)
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.WINDOWS', True)
+    @mock.patch('sys.argv', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_GetLauncherCommand_WindowsPythonInterpreter_WindowsPythonEntrypointReturned(self):
         python_script = 'python.cmd'
@@ -53,6 +56,7 @@ class TestRerunCommand(object):
 
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.sys.executable', MOCK_FOO_EXE)
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.WINDOWS', False)
+    @mock.patch('sys.argv', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_GetLauncherCommand_NonWindowsPythonInterpreter_NonWindowsPythonEntrypointReturned(self):
         python_script = 'python.sh'
@@ -62,6 +66,18 @@ class TestRerunCommand(object):
 
         assert under_test == expected
 
+    @mock.patch('sys.argv', ['mock_python_exe', '-mock_arg1', '--mock_arg2', 'mock_arg3', 'mock_python_module'])
+    @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.sys.executable', MOCK_FOO_EXE)
+    @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.WINDOWS', True)
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
+    def test_GetLauncherCommand_WindowsPythonInterpreter_SysArgsAppended(self):
+        under_test = failed_test_rerun_command._get_test_launcher_cmd()
+
+        assert 'mock_python_exe' not in under_test
+        assert 'mock_python_module' not in under_test
+        assert '-mock_arg1' in under_test
+        assert '--mock_arg2' in under_test
+        assert 'mock_arg3' in under_test
 
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.os.path.abspath')
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.os.path.dirname')

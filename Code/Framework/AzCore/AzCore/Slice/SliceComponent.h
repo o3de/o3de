@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Slice/SliceAsset.h>
@@ -23,7 +23,7 @@ namespace AZ
      * of game objects. Otherwise all slices should be exported as list of entities (flat structure). There is an exception with the
      * "dynamic" slices, which should still be a flat list of entities that you "clone" for dynamic reuse.
      */
-    class SliceComponent
+    class AZCORE_API SliceComponent
         : public Component
         , public Data::AssetBus::MultiHandler
     {
@@ -41,7 +41,7 @@ namespace AZ
         /**
          * Points to a specific instantiation of a nested slice.
          */
-        class SliceInstanceAddress
+        class AZCORE_API SliceInstanceAddress
         {
         public:
             AZ_TYPE_INFO(SliceInstanceAddress, "{94142EA2-1319-44D5-82C8-A6D9D34A63BC}");
@@ -113,10 +113,10 @@ namespace AZ
          *
          * Care is taken to prune this datastructure so that no empty entries are stored.
          */
-        class DataFlagsPerEntity
+        class AZCORE_API DataFlagsPerEntity
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator);
             AZ_TYPE_INFO(DataFlagsPerEntity, "{57FE7B9E-B2AF-4F6F-9F8D-87F671E91C99}");
             static void Reflect(ReflectContext* context);
 
@@ -223,9 +223,9 @@ namespace AZ
         /**
          * Container for instantiated entities (which are not serialized), but build from the source object and deltas \ref DataPatch.
          */
-        struct InstantiatedContainer
+        struct AZCORE_API InstantiatedContainer
         {
-            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator);
             AZ_TYPE_INFO(InstantiatedContainer, "{05038EF7-9EF7-40D8-A29B-503D85B85AF8}");
 
             InstantiatedContainer(bool deleteEntitiesOnDestruction = true);
@@ -252,7 +252,7 @@ namespace AZ
          * provided to SliceComponent::RestoreEntity() to restore the entity, at which point the owning
          * reference and instance will be re-created if needed.
          */
-        struct EntityRestoreInfo
+        struct AZCORE_API EntityRestoreInfo
         {
             AZ_TYPE_INFO(EntityRestoreInfo, "{AF2BE53F-C212-4BA4-880C-E1859BE75EA9}");
 
@@ -289,7 +289,7 @@ namespace AZ
          * Represents a slice instance in the current slice. For example if you refer to a base slice "lamppost"
          * you can have multiple instances of that slice (all of them with custom overrides) in the current slice.
          */
-        class SliceInstance
+        class AZCORE_API SliceInstance
         {
             friend class SliceComponent;
         public:
@@ -411,7 +411,7 @@ namespace AZ
          * Reference to a dependent slice. Each dependent slice can have one or more
          * instances in the current slice.
          */
-        class SliceReference
+        class AZCORE_API SliceReference
         {
             friend class SliceComponent;
         public:
@@ -524,7 +524,11 @@ namespace AZ
                 const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper = nullptr);
 
             /// Instantiate all instances (by default we just hold the deltas - data patch), the Slice component controls the instantiate state
-            bool Instantiate(const AZ::ObjectStream::FilterDescriptor& filterDesc);
+            /// serializeContext and relativeToAbsoluteSlicePaths arguments are used for a specific case when asset processor is not available
+            bool Instantiate(
+                const AZ::ObjectStream::FilterDescriptor& filterDesc,
+                AZ::SerializeContext* serializeContext = nullptr,
+                AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
 
             void UnInstantiate();
 
@@ -936,8 +940,11 @@ namespace AZ
 
         /**
         * Instantiate entities for this slice, otherwise only the data are stored.
+        * \param serializeContext and relativeToAbsoluteSlicePaths are used for a specific case when asset processor is not available
         */
-        InstantiateResult Instantiate();
+        InstantiateResult Instantiate(
+            AZ::SerializeContext* serializeContext = nullptr,
+            AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths = nullptr);
         bool IsInstantiated() const;
         /**
          * Generate new entity Ids and remap references
@@ -1084,6 +1091,7 @@ namespace AZ
         class EntityIdAccessor final : public AZ::Entity
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityIdAccessor, SystemAllocator)
             void ForceSetId(AZ::EntityId id)
             {
                 m_id = id;
@@ -1121,6 +1129,9 @@ namespace AZ
 
             return replaced;
         }
+
+        // Deserialize a slice without using asset processor and read root entity from it
+        AZCORE_API AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
     } // namespace EntityUtils
 
     namespace IdUtils

@@ -69,6 +69,7 @@ namespace EMotionFX
         m_motionSet = nullptr;
 
         m_animGraph.reset();
+        m_actor.reset();
 
         SystemComponentFixture::TearDown();
     }

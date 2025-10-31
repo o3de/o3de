@@ -27,7 +27,7 @@ namespace AZ
             class OverlayWidget : public AzQtComponents::OverlayWidget
             {
             public:
-                AZ_CLASS_ALLOCATOR(OverlayWidget, SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(OverlayWidget, SystemAllocator);
 
                 using AzQtComponents::OverlayWidget::OverlayWidget;
             };

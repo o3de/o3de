@@ -20,6 +20,8 @@
 
 namespace EMotionFX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(MotionLayerSystem, MotionAllocator)
+
     MotionLayerSystem::MotionLayerSystem(ActorInstance* actorInstance)
         : MotionSystem(actorInstance)
     {
@@ -154,13 +156,10 @@ namespace EMotionFX
             {
                 // if numloops not infinite and numloops-1 is the current number of loops
                 // and the current time - blendouttime has been reached
-                if (source->GetBlendOutBeforeEnded())
+                if (source->GetBlendOutBeforeEnded() && !source->GetIsPlayingForever())
                 {
                     // if the motion has to stop
-                    if ((!source->GetIsPlayingForever() &&
-                        (source->GetNumCurrentLoops() >= source->GetMaxLoops()) &&
-                        (source->GetTimeDifToLoopPoint() <= source->GetFadeTime()) &&
-                        !source->GetFreezeAtLastFrame()) ||
+                    if ((source->GetTimeDifToLoopPoint() <= source->GetFadeTime() && !source->GetFreezeAtLastFrame()) ||
                         (source->GetHasEnded() && !source->GetFreezeAtLastFrame()))
                     {
                         // if we have haven't looped yet, so we are still in time to fade out
@@ -207,7 +206,7 @@ namespace EMotionFX
             }
 
             // if the layer faded out, remove it when we should
-            if (source->GetWeight() <= 0.0f && (source->GetDeleteOnZeroWeight() || source->GetIsStopping()))
+            if (source->GetWeight() <= 0.0f && (source->GetDeleteOnZeroWeight() && source->GetIsStopping())) // was ||
             {
                 RemoveMotionInstance(source);
                 i--;

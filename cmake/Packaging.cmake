@@ -34,8 +34,12 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts."
 )
 
+set(CPACK_SNAP_DISTRO "" CACHE STRING
+  "Sets the base snap OS distro (core20, 22, etc) for the snap build"
+)
+
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+set(CPACK_DESIRED_CMAKE_VERSION 3.24.0)
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
@@ -50,8 +54,17 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
 set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+# prefer the display engine version if available.
+# during development, the display version will be "00.00" or "" in which case we want
+# to use the actual engine version  
+if(NOT ((${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "")))
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_DISPLAY_VERSION_STRING}")
+else()
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_VERSION_STRING}")
+endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
+
+message(STATUS "CPack Package Version: ${CPACK_PACKAGE_VERSION}")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
 
@@ -73,11 +86,12 @@ set(CPACK_PROJECT_CONFIG_FILE ${CPACK_SOURCE_DIR}/PackagingConfig.cmake)
 set(CPACK_AUTO_GEN_TAG ${LY_INSTALLER_AUTO_GEN_TAG})
 
 # attempt to apply platform specific settings
-ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
 if(NOT CPACK_GENERATOR)
+    message(STATUS "Packaging is not supported for this platform/configuration")
     return()
 endif()
 
@@ -93,6 +107,26 @@ endif()
 # We download it to a different location because CPACK_PACKAGING_INSTALL_PREFIX will be removed during
 # cpack generation. CPACK_BINARY_DIR persists across cpack invocations
 set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+
+# Scan the source and 3p packages for licenses, then add the generated license results to the binary output folder.
+# These results will be installed to the root of the install folder and copied to the S3 bucket specific to each platform
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
+
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
+    ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+
+cmake_path(SET _destination_normalized NORMALIZE .)
+
+ly_install(FILES ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE}
+    DESTINATION ${_destination_normalized}
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
 
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake

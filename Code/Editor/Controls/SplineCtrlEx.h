@@ -16,7 +16,9 @@
 #include "Controls/WndGridHelper.h"
 #include "IKeyTimeSet.h"
 #include "Undo/IUndoObject.h"
+#include <Util/EditorUtils.h>
 #include <QWidget>
+#include <Range.h>
 #endif
 
 // Custom styles for this control.
@@ -37,8 +39,10 @@
 #define SPLN_KEY_SELECTION_CHANGE (0x0005)
 
 #ifndef NM_CLICK
-#define NM_CLICK (-2)
-#define NM_RCLICK (-5)
+// from commctrl.h
+#define NM_FIRST (0U - 0U)
+#define NM_CLICK (NM_FIRST - 2)
+#define NM_RCLICK (NM_FIRST - 5)
 #endif
 
 #ifdef LoadCursor
@@ -233,7 +237,7 @@ protected:
 
     void SetHorizontalExtent(int min, int max);
 
-    virtual void SendNotifyEvent(int nEvent) = 0;
+    virtual void SendNotifyEvent(const uint32_t nEvent) = 0;
 
     virtual void SelectRectangle(const QRect& rc, bool bSelect);
     //////////////////////////////////////////////////////////////////////////
@@ -403,7 +407,7 @@ protected:
 
     void DrawTangentHandle(QPainter* pDC, int nSpline, int nKey, int nDimension);
 
-    void SendNotifyEvent(int nEvent) override;
+    void SendNotifyEvent(const uint32_t nEvent) override;
 
     void captureMouseImpl() override { grabMouse(); }
     void releaseMouseImpl() override { releaseMouse(); }

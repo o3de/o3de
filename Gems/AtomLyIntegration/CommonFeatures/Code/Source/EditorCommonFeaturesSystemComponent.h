@@ -12,7 +12,6 @@
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <SharedPreview/SharedPreviewerFactory.h>
 #include <SharedPreview/SharedThumbnailRenderer.h>
 
@@ -25,10 +24,7 @@ namespace AZ
         //! This is the editor-counterpart to this gem's main CommonSystemComponent class.
         class EditorCommonFeaturesSystemComponent
             : public AZ::Component
-            , public AzToolsFramework::EditorLevelNotificationBus::Handler
-            , public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
             , public AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
-            , public AzFramework::AssetCatalogEventBus::Handler
             , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         {
         public:
@@ -50,17 +46,6 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
-            // EditorLevelNotificationBus overrides ...
-            void OnNewLevelCreated() override;
-
-            // SliceEditorEntityOwnershipServiceBus overrides ...
-            void OnSliceInstantiated(
-                const AZ::Data::AssetId&, AZ::SliceComponent::SliceInstanceAddress&, const AzFramework::SliceInstantiationTicket&) override;
-            void OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&) override;
-
-            // AzFramework::AssetCatalogEventBus::Handler overrides ...
-            void OnCatalogLoaded(const char* catalogFile) override;
-
             // AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler overrides...
             const AzToolsFramework::AssetBrowser::PreviewerFactory* GetPreviewerFactory(
                 const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const override;
@@ -80,6 +65,7 @@ namespace AZ
 
             AZStd::unique_ptr<AZ::LyIntegration::SharedThumbnailRenderer> m_thumbnailRenderer;
             AZStd::unique_ptr<LyIntegration::SharedPreviewerFactory> m_previewerFactory;
+            AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
         };
     } // namespace Render
 } // namespace AZ

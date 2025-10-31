@@ -17,6 +17,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // We need to pass in the engine path since we won't be able to find it by searching upwards.
     // We can't use any containers that use our custom allocator till after the call to ComponentApplication::Create()
     AZ::IO::FixedMaxPath processPath = AZ::Utils::GetExecutableDirectory();

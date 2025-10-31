@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -48,6 +45,7 @@ namespace AZ
             : public SkyBoxFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SkyBoxFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SkyBoxFeatureProcessor, "{CB7D1F95-2A02-4152-86F1-BB29DC802CF7}", AZ::Render::SkyBoxFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

@@ -23,8 +23,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
@@ -224,11 +222,11 @@ namespace EMStudio
         }
 
         // Update motion list window to select motion.
-        EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        MotionWindowPlugin* motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-        if (motionWindowPlugin)
+        EMStudioPlugin* motionSetBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
+        MotionSetsWindowPlugin* motionSetWindowPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
+        if (motionSetWindowPlugin)
         {
-            motionWindowPlugin->ReInit();
+            motionSetWindowPlugin->ReInit();
         }
 
         // Update time view plugin with new motion related data.

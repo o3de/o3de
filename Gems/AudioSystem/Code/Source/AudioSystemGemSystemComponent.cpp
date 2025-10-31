@@ -6,16 +6,17 @@
  *
  */
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
-#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/ILogger.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSystem.h>
 #include <NullAudioSystem.h>
 
@@ -23,14 +24,14 @@
     #include <AzToolsFramework/API/ToolsApplicationAPI.h>
     #include <AudioControlsEditorPlugin.h>
     struct IEditor;
+
+    #include <Atom/RPI.Public/View.h>
+    #include <Atom/RPI.Public/ViewportContext.h>
 #endif // AUDIO_SYSTEM_EDITOR
 
 
 namespace Audio
 {
-    // Module globals/statics
-    CAudioLogger g_audioLogger;
-
     namespace Platform
     {
         void InitializeAudioAllocators();
@@ -56,7 +57,6 @@ namespace AudioSystemGem
             {
                 ec->Class<AudioSystemGemSystemComponent>("Audio System Gem", "Audio System handles requests and managages data related to the audio sub-system")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -65,12 +65,12 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemGemService"));
+        provided.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemGemService"));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemGemService"));
     }
 
     void AudioSystemGemSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -86,6 +86,7 @@ namespace AudioSystemGem
     AudioSystemGemSystemComponent::AudioSystemGemSystemComponent()
     {
         Audio::Platform::InitializeAudioAllocators();
+        CreateAudioSystem();
     }
 
     AudioSystemGemSystemComponent::~AudioSystemGemSystemComponent()
@@ -98,68 +99,77 @@ namespace AudioSystemGem
 
     void AudioSystemGemSystemComponent::Init()
     {
-        m_loseFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        m_loseFocusRequest.pData = &m_loseFocusData;
+    #if defined(AUDIO_SYSTEM_EDITOR)
+        m_cameraTransformHandler = AZ::RPI::MatrixChangedEvent::Handler(
+            []([[maybe_unused]] const AZ::Matrix4x4& matrix)
+            {
+                auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                auto viewportContext = atomViewportRequests->GetDefaultViewportContext();
 
-        m_getFocusRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        m_getFocusRequest.pData = &m_getFocusData;
+                if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                    audioSystem != nullptr && viewportContext != nullptr)
+                {
+                    Audio::ListenerRequest::SetWorldTransform setWorldTM;
+                    setWorldTM.m_transform = viewportContext->GetCameraTransform();
+                    audioSystem->PushRequest(AZStd::move(setWorldTM));
+                }
+            });
+    #endif // AUDIO_SYSTEM_EDITOR
     }
 
     void AudioSystemGemSystemComponent::Activate()
     {
-        Audio::Gem::AudioSystemGemRequestBus::Handler::BusConnect();
+        Audio::Gem::SystemRequestBus::Handler::BusConnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto defaultContextName = atomViewportRequests->GetDefaultViewportContextName();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(defaultContextName);
     #endif // AUDIO_SYSTEM_EDITOR
     }
 
     void AudioSystemGemSystemComponent::Deactivate()
     {
-        Audio::Gem::AudioSystemGemRequestBus::Handler::BusDisconnect();
+        Audio::Gem::SystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_SYSTEM_EDITOR)
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        m_cameraTransformHandler.Disconnect();
     #endif // AUDIO_SYSTEM_EDITOR
     }
 
-    bool AudioSystemGemSystemComponent::Initialize(const SSystemInitParams* initParams)
+    bool AudioSystemGemSystemComponent::Initialize()
     {
         using namespace Audio;
 
-        // When nullptr is passed, create a NullAudioSystem instead of the real thing.
-        if (!initParams)
+        bool success = AZ::Interface<Audio::IAudioSystem>::Get()->Initialize();
+        if (success)
         {
-            return CreateNullAudioSystem();
-        }
-
-        bool success = false;
-
-        if (CreateAudioSystem())
-        {
-            g_audioLogger.Log(eALT_ALWAYS, "AudioSystem created!");
-
             // Initialize the implementation module...
             bool initImplSuccess = false;
-            Gem::AudioEngineGemRequestBus::BroadcastResult(initImplSuccess, &Gem::AudioEngineGemRequestBus::Events::Initialize);
+            Gem::EngineRequestBus::BroadcastResult(initImplSuccess, &Gem::EngineRequestBus::Events::Initialize);
 
             if (initImplSuccess)
             {
                 PrepareAudioSystem();
-
-                GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
             }
             else
             {
-                if (Gem::AudioEngineGemRequestBus::HasHandlers())
+                if (Gem::EngineRequestBus::HasHandlers())
                 {
-                    g_audioLogger.Log(eALT_ERROR, "The Audio Engine did not initialize correctly!");
+                    AZLOG_ERROR("%s", "The Audio Engine did not initialize correctly!");
                 }
                 else
                 {
-                    g_audioLogger.Log(eALT_WARNING, "Running without any AudioEngine!");
+                    AZLOG_NOTICE("%s", "Running without any Audio Engine!");
                 }
             }
 
@@ -169,50 +179,40 @@ namespace AudioSystemGem
         return success;
     }
 
-    bool AudioSystemGemSystemComponent::CreateNullAudioSystem()
-    {
-        m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
-        return (m_audioSystem != nullptr);
-    }
-
     void AudioSystemGemSystemComponent::Release()
     {
-        using namespace Audio;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::Release);
-        Gem::AudioEngineGemRequestBus::Broadcast(&Gem::AudioEngineGemRequestBus::Events::Release);
+        AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr, "The IAudioSystem interface has already been unregistered!");
+        AZ::Interface<Audio::IAudioSystem>::Get()->Release();
 
-        // Delete the Audio System
-        // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
-        m_audioSystem.reset();
-
-        GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+        Audio::Gem::EngineRequestBus::Broadcast(&Audio::Gem::EngineRequestBus::Events::Release);
     }
 
-    void AudioSystemGemSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    void AudioSystemGemSystemComponent::OnLoadingStart([[maybe_unused]] const char* levelName)
     {
-        switch (event)
-        {
-            case ESYSTEM_EVENT_LEVEL_LOAD_START:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-            case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-            {
-                AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
-                break;
-            }
-        }
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
+    }
+
+    void AudioSystemGemSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GarbageCollect();
     }
 
     void AudioSystemGemSystemComponent::OnApplicationConstrained(Event)
     {
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, m_loseFocusRequest);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::LoseFocus loseFocus;
+            audioSystem->PushRequest(AZStd::move(loseFocus));
+        }
     }
 
     void AudioSystemGemSystemComponent::OnApplicationUnconstrained(Event)
     {
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, m_getFocusRequest);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            Audio::SystemRequest::GetFocus getFocus;
+            audioSystem->PushRequest(AZStd::move(getFocus));
+        }
     }
 
 #if defined(AUDIO_SYSTEM_EDITOR)
@@ -233,52 +233,62 @@ namespace AudioSystemGem
             m_editorPlugin.reset(new CAudioControlsEditorPlugin(g_editor));
         }
     }
+
+    void AudioSystemGemSystemComponent::OnViewportDefaultViewChanged([[maybe_unused]] AZ::RPI::ViewPtr view)
+    {
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto viewportContext = atomViewportRequests->GetDefaultViewportContext();
+
+        if (viewportContext != nullptr)
+        {
+            m_cameraTransformHandler.Disconnect();
+            viewportContext->ConnectViewMatrixChangedHandler(m_cameraTransformHandler);
+        }
+    }
 #endif // AUDIO_SYSTEM_EDITOR
 
-    bool AudioSystemGemSystemComponent::CreateAudioSystem()
+    void AudioSystemGemSystemComponent::CreateAudioSystem()
     {
-        AZ_Assert(!Audio::AudioSystemRequestBus::HasHandlers(), "CreateAudioSystem - The AudioSystemRequestBus is already set up and connected!");
-
-        bool success = false;
-        m_audioSystem = AZStd::make_unique<Audio::CAudioSystem>();
-        if (m_audioSystem)
+        int audioIsDisabled = 0;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(success, &Audio::AudioSystemRequestBus::Events::Initialize);
+            [[maybe_unused]] auto result = console->GetCvarValue("sys_audio_disable", audioIsDisabled);
+            AZ_Warning("AudioSystem", result == AZ::GetValueResult::Success,
+                "Failed to get the 's_AudioDisable' Cvar, result is %d\n", static_cast<int>(result));
+        }
+
+        if (audioIsDisabled)
+        {
+            m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
+            AZLOG_INFO("%s", "Null AudioSystem created!");
         }
         else
         {
-            Audio::g_audioLogger.Log(Audio::eALT_ERROR, "Could not create AudioSystem!");
+            m_audioSystem = AZStd::make_unique<Audio::CAudioSystem>();
+            AZLOG_INFO("%s", "AudioSystem created!");
         }
-
-        return success;
     }
 
     void AudioSystemGemSystemComponent::PrepareAudioSystem()
     {
         using namespace Audio;
+        if (auto audioSystem = AZ::Interface<IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            // This is called when a new audio implementation has been set,
+            // so update the controls path before we start loading data...
+            audioSystem->UpdateControlsPath();
+            const char* controlsPath = audioSystem->GetControlsPath();
 
-        // This is called when a new audio implementation has been set,
-        // so update the controls path before we start loading data...
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::UpdateControlsPath);
+            Audio::SystemRequest::LoadControls loadControls;
+            loadControls.m_controlsPath = (controlsPath ? controlsPath : "");
+            loadControls.m_scope = eADS_GLOBAL;
+            audioSystem->PushRequestBlocking(AZStd::move(loadControls));
 
-        // Must be blocking requests.
-        SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING;
-
-        const char* controlsPath = nullptr;
-        AudioSystemRequestBus::BroadcastResult(controlsPath, &AudioSystemRequestBus::Events::GetControlsPath);
-
-        SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> oAMData(controlsPath, eADS_GLOBAL);
-        oAudioRequestData.pData = &oAMData;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> oAMData2(controlsPath, eADS_GLOBAL);
-        oAudioRequestData.pData = &oAMData2;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(ATLInternalControlIDs::GlobalPreloadRequestID);
-        oAudioRequestData.pData = &oAMData3;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+            Audio::SystemRequest::LoadBank loadBank;
+            loadBank.m_asyncLoad = false;
+            loadBank.m_preloadRequestId = ATLInternalControlIDs::GlobalPreloadRequestID;
+            audioSystem->PushRequestBlocking(AZStd::move(loadBank));
+        }
     }
 
 } // namespace AudioSystemGem

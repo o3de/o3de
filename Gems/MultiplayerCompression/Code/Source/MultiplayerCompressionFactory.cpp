@@ -18,8 +18,8 @@ namespace MultiplayerCompression
         return AZStd::make_unique<LZ4Compressor>();
     }
 
-    AZ::Name MultiplayerCompressionFactory::GetFactoryName() const
+    const AZStd::string_view MultiplayerCompressionFactory::GetFactoryName() const
     {
-        return m_name;
+        return s_compressorName;
     }
 }

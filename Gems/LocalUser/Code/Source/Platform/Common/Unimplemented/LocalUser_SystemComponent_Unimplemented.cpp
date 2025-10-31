@@ -12,7 +12,7 @@
 namespace LocalUser
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    LocalUserSystemComponent::Implementation* LocalUserSystemComponent::Implementation::Create(LocalUserSystemComponent&)
+    LocalUserSystemComponent::Implementation* LocalUserSystemComponent::Implementation::Create()
     {
         return nullptr;
     }

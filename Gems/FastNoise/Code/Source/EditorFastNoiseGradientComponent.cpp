@@ -29,7 +29,7 @@ namespace FastNoiseGem
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, EditorFastNoiseGradientComponent::s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "GenerateRandomSeed", "Generate a new random seed")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -55,6 +55,6 @@ namespace FastNoiseGem
         // The random seed has to be at least 1 to be valid on all platforms for this gradient type
         m_configuration.m_seed = AZ::GetMax(rand(), 1);
 
-        return ConfigurationChanged();
+        return AZ::Crc32(ConfigurationChanged());
     }
 } //namespace FastNoiseGem

@@ -10,13 +10,13 @@
 #include <UI/PropertyEditor/PropertyAudioCtrl.h>
 #include <UI/PropertyEditor/PropertyQTConstants.h>
 
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QToolButton>
+#include <QLabel>
+#include <QLineEdit>
+#include <QToolButton>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
-#include <QtWidgets/QHBoxLayout>
-#include <QtGui/QMouseEvent>
+#include <QHBoxLayout>
+#include <QMouseEvent>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -26,6 +26,25 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    void CReflectedVarAudioControl::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CReflectedVarAudioControl>()
+                ->Version(1)
+                ->Field("controlName", &CReflectedVarAudioControl::m_controlName)
+                ->Field("propertyType", &CReflectedVarAudioControl::m_propertyType)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CReflectedVarAudioControl>("VarAudioControl", "AudioControl")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ;
+            }
+        }
+    }
+
     //=============================================================================
     // Audio Control SelectorWidget
     //=============================================================================
@@ -194,7 +213,8 @@ namespace AzToolsFramework
         connect(newCtrl, &AudioControlSelectorWidget::ControlNameChanged, this,
             [newCtrl] ()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             }
         );

@@ -10,6 +10,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
@@ -99,7 +100,7 @@ namespace AzFramework
         AZStd::wstring editableCommandLine;
         AZStd::wstring processExecutableString;
         AZStd::wstring workingDirectory;
-        AZStd::to_wstring(editableCommandLine, processLaunchInfo.m_commandlineParameters);
+        AZStd::to_wstring(editableCommandLine, processLaunchInfo.GetCommandLineParametersAsString());
         AZStd::to_wstring(processExecutableString, processLaunchInfo.m_processExecutableString);
         AZStd::to_wstring(workingDirectory, processLaunchInfo.m_workingDirectory);
 
@@ -132,6 +133,13 @@ namespace AzFramework
         processData.jobHandle = CreateJobObject(nullptr, nullptr);
         if (processData.jobHandle)
         {
+            if (processLaunchInfo.m_tetherLifetime)
+            {
+                JOBOBJECT_EXTENDED_LIMIT_INFORMATION info = {};
+                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                ::SetInformationJobObject(processData.jobHandle, JobObjectExtendedLimitInformation, &info, sizeof(info));
+            }
+
             processData.jobCompletionPort.CompletionKey = processData.jobHandle;
             processData.jobCompletionPort.CompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
 
@@ -355,4 +363,39 @@ namespace AzFramework
             ::TerminateProcess(m_pWatcherData->processInformation.hProcess, exitCode);
         }
     }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        struct CommandLineParametersVisitor
+        {
+            AZStd::string operator()(const AZStd::string& commandLine) const
+            {
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+
+                // When re-constructing a command line from an argument list (on windows), if an argument
+                // is double-quoted, then the double-quotes must be escaped properly otherwise
+                // it will be absorbed by the native argument parser and possibly evaluated as
+                // multiple values for arguments
+                AZStd::vector<AZStd::string> preprocessedCommandArray;
+
+                for (const auto& commandArg : commandLineArray)
+                {
+                    AZStd::string replacedArg = commandArg;
+                    AZ::StringFunc::Replace(replacedArg, R"(")", R"("\")", false, true, true);
+                    preprocessedCommandArray.emplace_back(replacedArg);
+                }
+                AZ::StringFunc::Join(commandLineResult, preprocessedCommandArray.begin(), preprocessedCommandArray.end(), " ");
+
+                return commandLineResult;
+            }
+        };
+
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
+    }
+
 } // namespace AzFramework

@@ -36,7 +36,7 @@ namespace TextureAtlasBuilder
     {
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "Atlas Worker Builder";
-        builderDescriptor.m_version = 1;
+        builderDescriptor.m_version = 2; // Add MipImageAsset allocator
         builderDescriptor.m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern("*.texatlas", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         builderDescriptor.m_busId = azrtti_typeid<AtlasBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&AtlasBuilderWorker::CreateJobs, &m_atlasBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -74,12 +74,12 @@ namespace TextureAtlasBuilder
 
     void AtlasBuilderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("Atlas Builder Plugin Service", 0x35974d0d));
+        provided.push_back(AZ_CRC_CE("Atlas Builder Plugin Service"));
     }
 
     void AtlasBuilderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("Atlas Builder Plugin Service", 0x35974d0d));
+        incompatible.push_back(AZ_CRC_CE("Atlas Builder Plugin Service"));
     }
 
     void AtlasBuilderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

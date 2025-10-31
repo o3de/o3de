@@ -1,0 +1,392 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CameraPipeline",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
+                    }
+                ]
+            },
+            "PassRequests": [
+                {
+                    "Name": "MorphTargetPass",
+                    "TemplateName": "MorphTargetPassTemplate"
+                },
+                {
+                    "Name": "SkinningPass",
+                    "TemplateName": "SkinningPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshOutputStream",
+                            "AttachmentRef": {
+                                "Pass": "MorphTargetPass",
+                                "Attachment": "MorphTargetDeltaOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "RayTracingAccelerationStructurePass",
+                    "TemplateName": "RayTracingAccelerationStructurePassTemplate"
+                },
+                {
+                    "Name": "DepthPrePass",
+                    "TemplateName": "DepthParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MotionVectorPass",
+                    "TemplateName": "MotionVectorParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LightCullingPass",
+                    "TemplateName": "LightCullingParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthMSAA",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Shadows",
+                    "TemplateName": "ShadowParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "OpaquePass",
+                    "TemplateName": "OpaqueParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedESM",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "TransparentPass",
+                    "TemplateName": "TransparentParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedESM",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "DeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
+                        },
+                        "BindViewSrg": true
+                    }
+                },
+                {
+                    "Name": "ReflectionCopyFrameBufferPass",
+                    "TemplateName": "ReflectionCopyFrameBufferPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DeferredFogPass",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "PostProcessPass",
+                    "TemplateName": "PostProcessParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInput",
+                            "AttachmentRef": {
+                                "Pass": "DeferredFogPass",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    "Name": "CopyToSwapChain",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "PostProcessPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

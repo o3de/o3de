@@ -21,7 +21,7 @@
         "CullMode" : "None"
     },
 
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : false
     },
@@ -39,5 +39,6 @@
           "type": "Fragment"
         }
       ]
-    }
+    },
+    "DisabledRHIBackends": ["metal"]
 }

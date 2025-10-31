@@ -1,0 +1,43 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 4,
+    "propertyValues": {
+        "blend.blendSource": "Displacement",
+        "blend.displacementBlendDistance": 0.008999999612569809,
+        "blend.enableLayer2": true,
+        "blend.enableLayer3": true,
+        "layer1.baseColor.textureMap": "../../Textures/cc0/Ground033_1K_Color.jpg",
+        "layer1.normal.textureMap": "../../Textures/cc0/Ground033_1K_Normal.jpg",
+        "layer1.occlusion.diffuseTextureMap": "../../Textures/cc0/Ground033_1K_AmbientOcclusion.jpg",
+        "layer1.parallax.factor": 0.017000000923871994,
+        "layer1.parallax.offset": -0.006000000052154064,
+        "layer1.parallax.textureMap": "../../Textures/cc0/Ground033_1K_Displacement.jpg",
+        "layer1.roughness.textureMap": "../../Textures/cc0/Ground033_1K_Roughness.jpg",
+        "layer2.baseColor.textureMap": "../../Textures/cc0/Rock030_2K_Color.jpg",
+        "layer2.normal.textureMap": "../../Textures/cc0/Rock030_2K_Normal.jpg",
+        "layer2.occlusion.diffuseTextureMap": "../../Textures/cc0/Rocks002_1K_AmbientOcclusion.jpg",
+        "layer2.parallax.factor": 0.03099999949336052,
+        "layer2.parallax.offset": 0.0020000000949949026,
+        "layer2.parallax.textureMap": "../../Textures/cc0/Rock030_2K_Displacement.jpg",
+        "layer2.roughness.textureMap": "../../Textures/cc0/Rock030_2K_Roughness.jpg",
+        "layer2.uv.center": [
+            0.0,
+            0.0
+        ],
+        "layer2.uv.offsetU": 0.1599999964237213,
+        "layer2.uv.offsetV": 0.07999999821186066,
+        "layer2.uv.rotateDegrees": 90.0,
+        "layer3.baseColor.textureMap": "../../Textures/cc0/Rocks002_1K_Color.jpg",
+        "layer3.normal.textureMap": "../../Textures/cc0/Rocks002_1K_Normal.jpg",
+        "layer3.parallax.factor": 0.027000000700354576,
+        "layer3.parallax.textureMap": "../../Textures/cc0/Rocks002_1K_Displacement.jpg",
+        "layer3.roughness.textureMap": "../../Textures/cc0/Rocks002_1K_Roughness.jpg",
+        "layer3.uv.center": [
+            0.0,
+            0.0
+        ],
+        "layer3.uv.scale": 3.4999988079071045,
+        "parallax.algorithm": "Relief",
+        "parallax.pdo": true
+    }
+}

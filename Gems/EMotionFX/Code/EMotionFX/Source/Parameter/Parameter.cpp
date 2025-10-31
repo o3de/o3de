@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Parameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Parameter, AnimGraphAllocator)
 
 
     void Parameter::Reflect(AZ::ReflectContext* context)

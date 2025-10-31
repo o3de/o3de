@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor
     ////////////////////
 
     ContainerWizard::ContainerWizard(QWidget* parent)
-        : QDialog(parent, Qt::FramelessWindowHint)
+        : QDialog(parent)
         , m_serializeContext(nullptr)
         , m_validationAction(nullptr)
         , m_invalidIcon(":/ScriptCanvasEditorResources/Resources/error_icon.png")
@@ -270,7 +270,7 @@ namespace ScriptCanvasEditor
 
             if (m_ui->checkBox->isChecked())
             {
-                AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+                AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
                 if (settings)
                 {       

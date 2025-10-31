@@ -25,10 +25,7 @@
                 {
                     "Name": "OutputColor",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "LoadAction": "DontCare"
-                    }     
+                    "ScopeAttachmentUsage": "RenderTarget"
                 }
             ],
             "Connections": [

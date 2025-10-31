@@ -80,14 +80,14 @@ void UiRadioButtonGroupComponent::AddRadioButton(AZ::EntityId radioButton)
     if (RegisterRadioButton(radioButton))
     {
         // Let it know it is now in the group
-        EBUS_EVENT_ID(radioButton, UiRadioButtonCommunicationBus, SetGroup, GetEntityId());
+        UiRadioButtonCommunicationBus::Event(radioButton, &UiRadioButtonCommunicationBus::Events::SetGroup, GetEntityId());
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiRadioButtonGroupComponent::RemoveRadioButton(AZ::EntityId radioButton)
 {
-    EBUS_EVENT_ID(radioButton, UiRadioButtonCommunicationBus, SetGroup, AZ::EntityId());
+    UiRadioButtonCommunicationBus::Event(radioButton, &UiRadioButtonCommunicationBus::Events::SetGroup, AZ::EntityId());
     UnregisterRadioButton(radioButton);
 }
 
@@ -123,13 +123,13 @@ bool UiRadioButtonGroupComponent::RegisterRadioButton(AZ::EntityId radioButton)
         {
             // If the button that is getting added is already checked, uncheck the currently checked one
             bool isOn;
-            EBUS_EVENT_ID_RESULT(isOn, radioButton, UiRadioButtonBus, GetState);
+            UiRadioButtonBus::EventResult(isOn, radioButton, &UiRadioButtonBus::Events::GetState);
             if (isOn)
             {
                 if (m_checkedEntity.IsValid())
                 {
                     // Uncheck our currently checked entity
-                    EBUS_EVENT_ID(m_checkedEntity, UiRadioButtonCommunicationBus, SetState, false, false);
+                    UiRadioButtonCommunicationBus::Event(m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, false);
                     m_checkedEntity.SetInvalid();
                 }
                 m_checkedEntity = radioButton;
@@ -204,7 +204,7 @@ void UiRadioButtonGroupComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiRadioButtonGroup.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiRadioButtonGroup.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Settings group
@@ -256,16 +256,19 @@ void UiRadioButtonGroupComponent::SetStateCommon(AZ::EntityId radioButton, bool 
             // Check if we currently have a checked radio button
             if (m_checkedEntity.IsValid())
             {
-                EBUS_EVENT_ID(m_checkedEntity, UiRadioButtonCommunicationBus, SetState, false, sendNotifications);
+                UiRadioButtonCommunicationBus::Event(
+                    m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
                 m_checkedEntity.SetInvalid();
             }
 
             m_checkedEntity = radioButton;
-            EBUS_EVENT_ID(m_checkedEntity, UiRadioButtonCommunicationBus, SetState, true, sendNotifications);
+            UiRadioButtonCommunicationBus::Event(
+                m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, true, sendNotifications);
         }
         else if (m_allowUncheck && radioButton == m_checkedEntity) // && isOn == false
         {
-            EBUS_EVENT_ID(m_checkedEntity, UiRadioButtonCommunicationBus, SetState, false, sendNotifications);
+            UiRadioButtonCommunicationBus::Event(
+                m_checkedEntity, &UiRadioButtonCommunicationBus::Events::SetState, false, sendNotifications);
             m_checkedEntity.SetInvalid();
         }
         else // we didn't change anything, don't send events
@@ -278,10 +281,11 @@ void UiRadioButtonGroupComponent::SetStateCommon(AZ::EntityId radioButton, bool 
             if (!m_changedActionName.empty())
             {
                 AZ::EntityId canvasEntityId;
-                EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-                EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_changedActionName);
+                UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+                UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changedActionName);
             }
-            EBUS_EVENT_ID(GetEntityId(), UiRadioButtonGroupNotificationBus, OnRadioButtonGroupStateChange, m_checkedEntity);
+            UiRadioButtonGroupNotificationBus::Event(
+                GetEntityId(), &UiRadioButtonGroupNotificationBus::Events::OnRadioButtonGroupStateChange, m_checkedEntity);
         }
     }
 }

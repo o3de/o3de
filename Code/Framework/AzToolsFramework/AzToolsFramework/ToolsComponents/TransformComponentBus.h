@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef TRANSFORMCOMPONENTBUS_H_
-#define TRANSFORMCOMPONENTBUS_H_
-
-#include <AzCore/base.h>
-#include <AzCore/Math/Transform.h>
-
 #pragma once
+
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzToolsFramework
 {
@@ -69,4 +70,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-#endif // TRANSFORMCOMPONENTBUS_H_
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::Components::TransformComponentMessages);

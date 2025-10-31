@@ -19,20 +19,20 @@ namespace AZ
     {
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
-            char resolvedSourceFilePath[AZ::IO::MaxPathLength] = {0};
-            ResolvePath(sourceFilePath, resolvedSourceFilePath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedSourcePath;
+            ResolvePath(resolvedSourcePath, sourceFilePath);
 
-            char resolvedDestinationFilePath[AZ::IO::MaxPathLength] = {0};
-            ResolvePath(destinationFilePath, resolvedDestinationFilePath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedDestPath;
+            ResolvePath(resolvedDestPath, destinationFilePath);
 
             // Use standard C++ method of file copy.
             {
-                std::ifstream  src(resolvedSourceFilePath, std::ios::binary);
+                std::ifstream src(resolvedSourcePath.c_str(), std::ios::binary);
                 if (src.fail())
                 {
                     return ResultCode::Error;
                 }
-                std::ofstream  dst(resolvedDestinationFilePath, std::ios::binary);
+                std::ofstream dst(resolvedDestPath.c_str(), std::ios::binary);
 
                 if (dst.fail())
                 {
@@ -45,16 +45,14 @@ namespace AZ
 
         Result LocalFileIO::FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback)
         {
-            char resolvedPath[AZ::IO::MaxPathLength] = {0};
-            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
+            resolvedPath = resolvedPath.LexicallyNormal();
 
-            AZStd::string withoutSlash = RemoveTrailingSlash(resolvedPath);
-            DIR* dir = opendir(withoutSlash.c_str());
+            DIR* dir = opendir(resolvedPath.c_str());
 
             if (dir != nullptr)
             {
-                AZ::IO::FixedMaxPath tempBuffer;
-
                 errno = 0;
                 struct dirent* entry = readdir(dir);
 
@@ -63,14 +61,9 @@ namespace AZ
                 {
                     AZStd::string_view filenameView = entry->d_name;
                     // Skip over the current and parent directory paths
-                    if (filenameView != "." && filenameView != ".." && NameMatchesFilter(entry->d_name, filter))
+                    if (filenameView != "." && filenameView != ".." && AZStd::wildcard_match(filter, entry->d_name))
                     {
-                        AZStd::string foundFilePath = CheckForTrailingSlash(resolvedPath);
-                        foundFilePath += entry->d_name;
-                        // if aliased, dealias!
-                        ConvertToAlias(tempBuffer, AZ::IO::PathView{ foundFilePath });
-
-                        if (!callback(tempBuffer.c_str()))
+                        if (!callback((resolvedPath / filenameView).c_str()))
                         {
                             break;
                         }
@@ -89,38 +82,29 @@ namespace AZ
 
         Result LocalFileIO::CreatePath(const char* filePath)
         {
-            char resolvedPath[AZ::IO::MaxPathLength] = {0};
-            ResolvePath(filePath, resolvedPath, AZ::IO::MaxPathLength);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
 
             // create all paths up to that directory.
             // its not an error if the path exists.
-            if ((Exists(resolvedPath)) && (!IsDirectory(resolvedPath)))
+            if (Exists(resolvedPath.c_str()) && !IsDirectory(resolvedPath.c_str()))
             {
                 return ResultCode::Error; // that path exists, but is not a directory.
             }
 
             // make directories from bottom to top.
-            AZStd::string buf;
-            size_t pathLength = strlen(resolvedPath);
-            buf.reserve(pathLength);
-            for (size_t pos = 0; pos < pathLength; ++pos)
+            FixedMaxPath directoryPath = resolvedPath.RootPath();
+            for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
-                if ((resolvedPath[pos] == '\\') || (resolvedPath[pos] == '/'))
+                directoryPath /= pathSegment;
+                mkdir(directoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                if (!IsDirectory(directoryPath.c_str()))
                 {
-                    if (pos > 0)
-                    {
-                        mkdir(buf.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                        if (!IsDirectory(buf.c_str()))
-                        {
-                            return ResultCode::Error;
-                        }
-                    }
+                    return ResultCode::Error;
                 }
-                buf.push_back(resolvedPath[pos]);
             }
 
-            mkdir(buf.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            return IsDirectory(resolvedPath) ? ResultCode::Success : ResultCode::Error;
+            return IsDirectory(resolvedPath.c_str()) ? ResultCode::Success : ResultCode::Error;
         }
     } // namespace IO
 } // namespace AZ

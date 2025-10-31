@@ -107,18 +107,18 @@ namespace Vegetation
 
     void SurfaceMaskDepthFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationSurfaceMaskDepthFilterService", 0xece0905b));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceMaskDepthFilterService"));
     }
 
     void SurfaceMaskDepthFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSurfaceMaskDepthFilterService", 0xece0905b));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceMaskDepthFilterService"));
     }
 
     void SurfaceMaskDepthFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void SurfaceMaskDepthFilterComponent::Reflect(AZ::ReflectContext* context)
@@ -203,33 +203,45 @@ namespace Vegetation
 
     bool SurfaceMaskDepthFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && !instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags.empty();
         const SurfaceData::SurfaceTagVector& surfaceTagsToCompare = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags : m_configuration.m_depthComparisonTags;
         float lowerZDistanceRange = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_lowerDistanceInMeters : m_configuration.m_lowerDistance;
         float upperZDistanceRange = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_upperDistanceInMeters : m_configuration.m_upperDistance;
 
+        bool passesFilter = false;
+
         if (!surfaceTagsToCompare.empty())
         {
-            m_points.clear();
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, surfaceTagsToCompare, m_points);
+            m_points.Clear();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(instanceData.m_position, surfaceTagsToCompare, m_points);
 
             float instanceZ = instanceData.m_position.GetZ();
-            for (auto& point : m_points)
-            {
-                float pointZ = point.m_position.GetZ();
-                float zDistance = instanceZ - pointZ;
-                if (lowerZDistanceRange <= zDistance && zDistance <= upperZDistanceRange)
+            m_points.EnumeratePoints(
+                [instanceZ, lowerZDistanceRange, upperZDistanceRange, &passesFilter](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
+                    float pointZ = position.GetZ();
+                    float zDistance = instanceZ - pointZ;
+                    if (lowerZDistanceRange <= zDistance && zDistance <= upperZDistanceRange)
+                    {
+                        passesFilter = true;
+                        return false;
+                    }
                     return true;
-                }
-            }
+                });
         }
 
-        // if we get here instance is marked filtered
-        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceDepthMaskFilter")));
-        return false;
+        if (!passesFilter)
+        {
+            // if we get here instance is marked filtered
+            VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(
+                &DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceDepthMaskFilter")));
+        }
+
+        return passesFilter;
     }
 
     FilterStage SurfaceMaskDepthFilterComponent::GetFilterStage() const

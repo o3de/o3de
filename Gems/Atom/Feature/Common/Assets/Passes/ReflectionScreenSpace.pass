@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "ReflectionScreenSpacePassTemplate",
-            "PassClass": "ParentPass",
+            "PassClass": "ReflectionScreenSpacePass",
             "Slots": [
                 {
                     "Name": "NormalInput",
@@ -28,12 +28,141 @@
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input"
+                },
+                {
                     "Name": "ReflectionInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "RayTracingCoordsOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "FallbackColor",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "RayTracingCoordsImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "FallbackColorImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "RayTracingCoordsOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "RayTracingCoordsImage"
+                    }
+                },
+                {
+                    "LocalSlot": "FallbackColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "FallbackColorImage"
+                    }
                 }
             ],
             "PassRequests": [
+                {
+                    "Name": "ReflectionScreenSpaceRayTracingPass",
+                    "TemplateName": "ReflectionScreenSpaceRayTracingPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "NormalInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularF0Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpecularF0Input"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RayTracingCoordsOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FallbackColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "FallbackColor"
+                            }
+                        }
+                    ]
+                },
                 {
                     "Name": "ReflectionScreenSpaceTracePass",
                     "TemplateName": "ReflectionScreenSpaceTracePassTemplate",
@@ -43,6 +172,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "DepthStencilInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
                             }
                         },
                         {
@@ -65,6 +201,33 @@
                                 "Pass": "Parent",
                                 "Attachment": "ReflectionInputOutput"
                             }
+                        },
+                        {
+                            "LocalSlot": "RayTracingCoordsInput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceRayTracingPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FallbackColorInput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceRayTracingPass",
+                                "Attachment": "FallbackColor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                    "TemplateName": "ReflectionScreenSpaceDownsampleDepthLinearPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
                         }
                     ]
                 },
@@ -73,13 +236,6 @@
                     "TemplateName": "ReflectionScreenSpaceBlurPassTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "DepthInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthStencilInput"
-                            }
-                        },
-                        {
                             "LocalSlot": "ScreenSpaceReflectionInputOutput",
                             "AttachmentRef": {
                                 "Pass": "ReflectionScreenSpaceTracePass",
@@ -87,30 +243,23 @@
                             }
                         },
                         {
-                            "LocalSlot": "DownsampledDepthInputOutput",
+                            "LocalSlot": "DownsampledDepthLinear",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceTracePass",
-                                "Attachment": "DownsampledDepthOutput"
+                                "Pass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                                "Attachment": "DownsampledDepthLinearInputOutput"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "ReflectionScreenSpaceCompositePass",
-                    "TemplateName": "ReflectionScreenSpaceCompositePassTemplate",
+                    "Name": "ReflectionScreenSpaceFilterPass",
+                    "TemplateName": "ReflectionScreenSpaceFilterPassTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "ReflectionInput",
+                            "LocalSlot": "DepthStencilTextureInput",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceBlurPass",
-                                "Attachment": "ScreenSpaceReflectionInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DownsampledDepthInput",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceBlurPass",
-                                "Attachment": "DownsampledDepthInputOutput"
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInput"
                             }
                         },
                         {
@@ -128,17 +277,78 @@
                             }
                         },
                         {
-                            "LocalSlot": "DepthStencilTextureInput",
+                            "LocalSlot": "ScreenSpaceReflectionInputOutput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthStencilInput"
+                                "Pass": "ReflectionScreenSpaceTracePass",
+                                "Attachment": "ScreenSpaceReflectionOutput"
                             }
                         },
                         {
-                            "LocalSlot": "PreviousFrameInputOutput",
+                            "LocalSlot": "TraceCoordsInput",
                             "AttachmentRef": {
                                 "Pass": "ReflectionScreenSpaceTracePass",
-                                "Attachment": "PreviousFrameInputOutput"
+                                "Attachment": "TraceCoordsOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionScreenSpaceCopyHistoryPass",
+                    "TemplateName": "ReflectionScreenSpaceCopyHistoryPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Attachment": "History"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionScreenSpaceCompositePass",
+                    "TemplateName": "ReflectionScreenSpaceCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DownsampledDepthLinearInput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+                                "Attachment": "DownsampledDepthLinearInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "NormalInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularF0Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SpecularF0Input"
                             }
                         },
                         {

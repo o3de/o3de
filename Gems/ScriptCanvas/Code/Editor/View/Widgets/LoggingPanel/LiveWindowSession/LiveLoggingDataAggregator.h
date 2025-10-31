@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
-
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
 
@@ -23,16 +21,10 @@ namespace ScriptCanvasEditor
         , public ScriptCanvas::Debugger::ServiceNotificationsBus::Handler
         , public ScriptCanvas::Debugger::ClientUINotificationBus::Handler
     {
-        enum CaptureType
-        {
-            Editor,
-            External
-        };
-
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator);
         LiveLoggingDataAggregator();
-        ~LiveLoggingDataAggregator();
+        ~LiveLoggingDataAggregator() override;
 
         // ClientUINotificationBus
         void OnCurrentTargetChanged() override;
@@ -52,7 +44,7 @@ namespace ScriptCanvasEditor
 
         // ServiceNotifications
         //// Logging Notifications
-        void Connected(const ScriptCanvas::Debugger::Target& target) override;
+        void Connected(ScriptCanvas::Debugger::Target& target) override;
         void GraphActivated(const ScriptCanvas::GraphActivation& activatedSignal) override;
         void GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivatedSignal) override;
         
@@ -82,7 +74,6 @@ namespace ScriptCanvasEditor
         void SetupEditorEntities();
         void SetupExternalEntities();
 
-        CaptureType m_captureType;
         bool m_isCapturingData;
         bool m_ignoreRegistrations;
 

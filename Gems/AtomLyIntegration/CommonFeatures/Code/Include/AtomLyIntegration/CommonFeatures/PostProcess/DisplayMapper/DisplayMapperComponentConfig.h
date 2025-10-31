@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(DisplayMapperComponentConfig, "{98560BEC-EA7F-4600-AA55-F76FDC07E950}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(DisplayMapperComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperComponentConfig, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

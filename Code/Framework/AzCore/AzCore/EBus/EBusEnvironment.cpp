@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzCore/Math/Crc.h>
 #include <AzCore/EBus/EBus.h>
 
 namespace AZ
@@ -37,7 +38,8 @@ namespace AZ
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ_THREAD_LOCAL EBusEnvironment* EBusEnvironmentTLSAccessors::s_tlsCurrentEnvironment = nullptr;
+
+        static AZ_THREAD_LOCAL EBusEnvironment* s_tlsCurrentEnvironment = nullptr; ///< Pointer to the current environment for the current thread.
 
         //////////////////////////////////////////////////////////////////////////
         EBusEnvironmentTLSAccessors::EBusEnvironmentTLSAccessors()
@@ -50,7 +52,7 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         u32 EBusEnvironmentTLSAccessors::GetId()
         {
-            return AZ_CRC("EBusEnvironmentTLSAccessors", 0x2fe98c39);
+            return AZ_CRC_CE("EBusEnvironmentTLSAccessors");
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -64,29 +66,6 @@ namespace AZ
         {
             s_tlsCurrentEnvironment = environment;
         }
-
-        EBusEnvironmentAllocator::EBusEnvironmentAllocator()
-            : m_name("EBusEnvironmentAllocator")
-        {
-            m_allocator = Environment::GetInstance()->GetAllocator();
-        }
-
-        EBusEnvironmentAllocator::EBusEnvironmentAllocator(const EBusEnvironmentAllocator& rhs)
-            : m_name(rhs.m_name)
-            , m_allocator(rhs.m_allocator)
-        {
-        }
-
-        EBusEnvironmentAllocator::pointer_type EBusEnvironmentAllocator::allocate(size_t byteSize, size_t alignment, int)
-        {
-            return m_allocator->Allocate(byteSize, alignment);
-        }
-        
-        void EBusEnvironmentAllocator::deallocate(pointer_type ptr, size_type, size_type)
-        {
-            m_allocator->DeAllocate(ptr);
-        }
-
     } // namespace Internal
 
     //////////////////////////////////////////////////////////////////////////

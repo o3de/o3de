@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -17,12 +19,12 @@
 
 namespace AzToolsFramework
 {
-    class EntityIdQLineEdit
+    class AZTF_API EntityIdQLineEdit
         : public QLineEdit
     {
         Q_OBJECT // AUTOMOC
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdQLineEdit, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdQLineEdit, AZ::SystemAllocator);
 
         explicit EntityIdQLineEdit(QWidget* parent = nullptr);
         ~EntityIdQLineEdit() override;

@@ -16,7 +16,7 @@ namespace AZStd
         int len = _vscwprintf(format, argList);
         if (len > 0)
         {
-            result.resize(len);
+            result.resize_no_construct(len);
             len = azvsnwprintf(result.data(), result.capacity() + 1, format, argList);
             AZ_Assert(len == static_cast<int>(result.size()), "azvsnwprintf failed!");
         }

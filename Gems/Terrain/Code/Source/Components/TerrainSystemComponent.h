@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 namespace Terrain
 {
@@ -36,5 +37,11 @@ namespace Terrain
         ////////////////////////////////////////////////////////////////////////
 
         TerrainSystem* m_terrainSystem{ nullptr };
+
+    private:
+        //! Used for loading the pass templates of the terrain gem.
+        AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+
+        void LoadPassTemplateMappings();
     };
 }

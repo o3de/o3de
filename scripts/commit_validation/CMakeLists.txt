@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
 
 ly_add_pytest(
     NAME test_commit_validation

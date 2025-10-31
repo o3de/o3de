@@ -10,7 +10,6 @@
 #include "VariablePropertyType.h"
 
 #include "Variable.h"
-#include "UIEnumsDatabase.h"
 #include "IEditor.h"
 
 namespace Prop
@@ -33,7 +32,7 @@ namespace Prop
         { IVariable::DT_PERCENT, "Float", ePropertyInt, 13 },
         { IVariable::DT_BOOLEAN, "Boolean", ePropertyBool, 2 },
         { IVariable::DT_COLOR, "Color", ePropertyColor, 1 },
-        { IVariable::DT_COLORA, "ColorA", ePropertyColor, 1 },
+        { IVariable::DT_COLORA, "ColorA", ePropertyColorA, 1 },
         { IVariable::DT_CURVE | IVariable::DT_PERCENT, "FloatCurve", ePropertyFloatCurve, 13 },
         { IVariable::DT_CURVE | IVariable::DT_COLOR, "ColorCurve", ePropertyColorCurve, 1 },
         { IVariable::DT_ANGLE, "Angle", ePropertyAngle, 0 },
@@ -72,7 +71,6 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(nullptr)
     {
     }
 
@@ -86,7 +84,6 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(nullptr)
     {
         if (!pVar)
         {
@@ -160,11 +157,6 @@ namespace Prop
             m_rangeMin = max(-360.0f, m_rangeMin);
             m_rangeMax = min(360.0f, m_rangeMax);
         }
-        else if (type == IVariable::DT_UIENUM)
-        {
-            m_pEnumDBItem = GetIEditor()->GetUIEnumsDatabase()->FindEnum(m_name);
-        }
-
 
         const bool useExplicitStep = (pVar->GetFlags() & IVariable::UI_EXPLICIT_STEP);
         if (!useExplicitStep)

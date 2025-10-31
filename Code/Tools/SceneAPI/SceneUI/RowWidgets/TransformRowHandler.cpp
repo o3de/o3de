@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(TranformRowHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(TranformRowHandler, SystemAllocator);
 
             TranformRowHandler* TranformRowHandler::s_instance = nullptr;
 
@@ -29,7 +29,7 @@ namespace AZ
 
             u32 TranformRowHandler::GetHandlerName() const
             {
-                return AZ_CRC("TranformRow", 0x795295be);
+                return AZ_CRC_CE("TranformRow");
             }
 
             bool TranformRowHandler::AutoDelete() const

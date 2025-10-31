@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
@@ -20,13 +22,15 @@ AZ_POP_DISABLE_WARNING
 #include <QIcon>
 #endif
 
+#include <AzToolsFramework/UI/Logging/LogLine.h>
+
 namespace AzToolsFramework
 {
     namespace Logging
     {
         class LogLine;
 
-        class LogTableModel
+        class AZTF_API LogTableModel
             : public AzQtComponents::TableViewModel
         {
             Q_OBJECT
@@ -86,7 +90,7 @@ namespace AzToolsFramework
             QIcon m_infoImage;
         };
 
-        class ContextDetailsLogTableModel
+        class AZTF_API ContextDetailsLogTableModel
             : public AzQtComponents::TableViewModel
         {
             Q_OBJECT

@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Default",
         "skyboxImageAsset": {
             "assetId": {
                 "guid": "{A5767C6B-5DB4-5999-A717-4587BEDF5CDE}",

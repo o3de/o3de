@@ -123,6 +123,10 @@ namespace ImageProcessingAtomEditor
         {
             readableString = "iOS";
         }
+        else if (platformStrLowerCase == "salem")
+        {
+            readableString = "Salem";
+        }
         else if (platformStrLowerCase == "jasper")
         {
             readableString = "Jasper";
@@ -139,7 +143,10 @@ namespace ImageProcessingAtomEditor
     EditorTextureSetting::EditorTextureSetting(const AZ::Uuid& sourceTextureId)
     {
         const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* fullDetails = AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry::GetSourceByUuid(sourceTextureId);
-        InitFromPath(fullDetails->GetFullPath());
+        if (fullDetails)
+        {
+            InitFromPath(fullDetails->GetFullPath());
+        }
     }
 
     EditorTextureSetting::EditorTextureSetting(const AZStd::string& texturePath)

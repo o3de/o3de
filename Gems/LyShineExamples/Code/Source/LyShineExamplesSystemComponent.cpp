@@ -34,7 +34,6 @@ namespace LyShineExamples
                 ec->Class<LyShineExamplesSystemComponent>("LyShineExamples", "This provides example code using LyShine and code used by sample UI canvases and levels")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -43,17 +42,17 @@ namespace LyShineExamples
 
     void LyShineExamplesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LyShineExamplesService"));
+        provided.push_back(AZ_CRC_CE("LyShineExamplesService"));
     }
 
     void LyShineExamplesSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LyShineExamplesService"));
+        incompatible.push_back(AZ_CRC_CE("LyShineExamplesService"));
     }
 
     void LyShineExamplesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("LyShineService"));;
+        required.push_back(AZ_CRC_CE("LyShineService"));;
     }
 
     void LyShineExamplesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

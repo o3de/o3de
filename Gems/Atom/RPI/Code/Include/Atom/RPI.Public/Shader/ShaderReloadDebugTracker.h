@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/Trace.h>
 
@@ -21,7 +22,7 @@ namespace AZ
         //! Utility for printing trace statements about the callstack when doing shader and material hot-reload activities.
         //! (nothing about this class is necessarily specific to shader and material hot-reload though, so the class could
         //!  be generalized if needed elsewhere).
-        class ShaderReloadDebugTracker final
+        class ATOM_RPI_PUBLIC_API ShaderReloadDebugTracker final
         {
         public:
             static void Init();
@@ -72,20 +73,34 @@ namespace AZ
             }
 
             //! Use this utility to call BeginSection(), and automatically call EndSection() when the object goes out of scope.
-            class ScopedSection final
+            class ATOM_RPI_PUBLIC_API ScopedSection final
             {
             public:
-                template<typename ... Args>
-                ScopedSection(const char* sectionNameFormat, Args... args)
+                static constexpr uint32_t MaxSectionNameLength = 1024;
+                using SectionName = AZStd::fixed_string<MaxSectionNameLength>;
+
+                ScopedSection([[maybe_unused]] const char* sectionNameFormat, ...)
                 {
-                    m_sectionName = AZStd::string::format(sectionNameFormat, args...);
-                    ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
+#ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
+                    if (IsEnabled())
+                    {
+                        va_list args;
+                        va_start(args, sectionNameFormat);
+
+                        m_sectionName = SectionName::format_arg(sectionNameFormat, args);
+                        ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
+                        m_shouldEndSection = true;
+
+                        va_end(args);
+                    }
+#endif
                 }
 
                 ~ScopedSection();
 
             private:
-                AZStd::string m_sectionName;
+                SectionName m_sectionName;
+                [[maybe_unused]] bool m_shouldEndSection = false;
             };
 
         private:

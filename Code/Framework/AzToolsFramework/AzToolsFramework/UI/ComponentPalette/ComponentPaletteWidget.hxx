@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -17,6 +19,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
                                                                // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
 #include <QFrame>
 #include <QString>
+#include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -34,7 +37,7 @@ namespace AzToolsFramework
 {
     class ComponentPaletteModel;
 
-    class ComponentPaletteWidget
+    class AZTF_API ComponentPaletteWidget
         : public QFrame
     {
         Q_OBJECT
@@ -47,8 +50,8 @@ namespace AzToolsFramework
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::EntityIdList& selectedEntityIds,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter);
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter);
 
         void Present();
 
@@ -58,7 +61,7 @@ namespace AzToolsFramework
         void OnAddComponentCancel();
 
     protected:
-        void focusOutEvent(QFocusEvent *event) override;
+        void focusOutEvent(QFocusEvent* event) override;
 
     private slots:
         void UpdateContent();
@@ -76,7 +79,7 @@ namespace AzToolsFramework
         bool BranchHasNoChildren(QStandardItem* item);
         void SetExpanded(QModelIndex itemIndex);
 
-        QRegExp m_searchRegExp;
+        QRegularExpression m_searchRegExp;
         QFrame* m_searchFrame = nullptr;
         QLineEdit* m_searchText = nullptr;
         QTreeView* m_componentTree = nullptr;
@@ -84,8 +87,8 @@ namespace AzToolsFramework
         AZ::SerializeContext* m_serializeContext = nullptr;
         EntityIdList m_selectedEntityIds;
         ComponentFilter m_componentFilter;
-        AZStd::vector<AZ::ComponentServiceType> m_serviceFilter;
-        AZStd::vector<AZ::ComponentServiceType> m_incompatibleServiceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType m_serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServiceFilter;
         AZStd::map<QString, bool> m_categoryExpandedState;
     };
 }

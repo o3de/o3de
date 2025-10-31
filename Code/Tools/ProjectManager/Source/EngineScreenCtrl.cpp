@@ -35,10 +35,10 @@ namespace O3DE::ProjectManager
         m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
 
         m_engineSettingsScreen = new EngineSettingsScreen();
-        m_gemRepoScreen = new GemRepoScreen();
+        m_gemRepoScreen = new GemRepoScreen(parent);
 
         m_tabWidget->addTab(m_engineSettingsScreen, tr("General"));
-        m_tabWidget->addTab(m_gemRepoScreen, tr("Gem Repositories"));
+        m_tabWidget->addTab(m_gemRepoScreen, tr("Remote Sources"));
 
         // when tab changes, notify the current screen so it can refresh
         connect(m_tabWidget, &QTabWidget::currentChanged, this, &EngineScreenCtrl::TabChanged);
@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
 
     void EngineScreenCtrl::NotifyCurrentScreen()
     {
-        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        ScreenWidget* screen = static_cast<ScreenWidget*>(m_tabWidget->currentWidget());
         if (screen)
         {
             screen->NotifyCurrentScreen();

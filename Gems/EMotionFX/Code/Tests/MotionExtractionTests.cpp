@@ -339,7 +339,7 @@ namespace EMotionFX
         EXPECT_EQ(m_animGraphInstance->GetEventBuffer().GetNumEvents(), 0);
     }
     
-    INSTANTIATE_TEST_CASE_P(MotionExtraction_OutputTests,
+    INSTANTIATE_TEST_SUITE_P(MotionExtraction_OutputTests,
         MotionExtractionFixture,
         ::testing::Combine(
             ::testing::Bool(),

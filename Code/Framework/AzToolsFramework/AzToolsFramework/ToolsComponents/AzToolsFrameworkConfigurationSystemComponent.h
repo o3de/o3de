@@ -7,11 +7,13 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 
 namespace AzToolsFramework
 {
-    class AzToolsFrameworkConfigurationSystemComponent
+    class AZTF_API AzToolsFrameworkConfigurationSystemComponent
         : public AZ::Component
     {
     public:

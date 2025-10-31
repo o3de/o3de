@@ -126,7 +126,7 @@ namespace GraphCanvas
 
     const char* TranslationAssetHandler::GetBrowserIcon() const
     {
-        return "Icons/Components/Names.svg";
+        return "Icons/AssetBrowser/Default_16.svg";
     }
 
     AZ::Uuid TranslationAssetHandler::GetComponentTypeId() const
@@ -195,7 +195,7 @@ namespace GraphCanvas
                     }
                     else
                     {
-                        AZ_Error("TranslationAsset", false, "Serialization of the TranslationFormat failed for: %s", asset.GetHint().c_str());
+                        AZ_Warning("TranslationAsset", false, "Serialization of the TranslationFormat failed for: %s", asset.GetHint().c_str());
                     }
                 }
             }

@@ -6,6 +6,9 @@
 #
 #
 
+set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
+set(O3DE_FETCHCONTENT_MESSAGE_LEVEL "ERROR" CACHE STRING "Message level when fetching 3rd party libraries.  Set to DEBUG or VERBOSE to debug")
+
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"
     FULL_DOCS [[
@@ -28,7 +31,7 @@ function(get_default_third_party_folder output_third_party_path)
     
     # 1. Highest priority, cache variable, that will override the value of any of the cases below
     # 2. if defined in an env variable, take it from there
-    if($ENV{LY_3RDPARTY_PATH})
+    if(DEFINED ENV{LY_3RDPARTY_PATH})
         set(${output_third_party_path} $ENV{LY_3RDPARTY_PATH} PARENT_SCOPE)
         return()
     endif()
@@ -186,7 +189,7 @@ function(ly_add_external_target)
         endif()
 
         # Check if there is a pal file
-        ly_get_absolute_pal_filename(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+        o3de_pal_dir(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
         if(NOT EXISTS ${pal_file})
             set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
         endif()
@@ -355,14 +358,90 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
 
 endfunction()
 
+# Utility function, pass it a single target or a list of targets, and it will do the following to them
+# 1. Turn off warnings as errors (we are not responsible for warnings in 3p libraries)
+# 2. Make sure its output directory is set to be different for each configuration so that binaries
+#    do not overwrite each other between, for example, debug and release.
+# 3. If the IDE the user is using has a visual display of folders, put the targets generated in that
+#    folder instead of the root folder for visual display.
+# 4. Specify that the target be installed
+#
+# Parameters:
+#    IDE_FOLDER string - optional, default is "3rdParty Dependencies" - The folder to use in the IDE.
+#    TARGETS list      - required - The targets to fix up (can be a list or a single)
+function(o3de_fixup_fetchcontent_targets)
+    set(options)
+    set(oneValueArgs IDE_FOLDER)
+    set(multiValueArgs TARGETS)
+
+    cmake_parse_arguments(o3de_fixup_fetchcontent_targets "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT o3de_fixup_fetchcontent_targets_IDE_FOLDER)
+        set(o3de_fixup_fetchcontent_targets_IDE_FOLDER "3rdParty Dependencies")
+    endif()
+
+    if(NOT o3de_fixup_fetchcontent_targets_TARGETS)
+        message(FATAL_ERROR "o3de_fixup_fetchcontent_targets requires TARGETS to be specified")
+        return()
+    endif()
+
+    # Suppress any developer warnings, fixing 3p libraries themselves are out of scope for us.
+    set(PRIOR_SUPPRESS_DEVELOPER_WARNINGS ${CMAKE_SUPPRESS_DEVELOPER_WARNINGS}) # save the old CMAKE_SUPPRESS_DEVELOPER_WARNINGS
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE)
+
+    set(BASE_LIBRARY_FOLDER "lib/${PAL_PLATFORM_NAME}")
+    foreach(TARGET_TO_FIXUP ${o3de_fixup_fetchcontent_targets_TARGETS})
+        if (NOT TARGET ${TARGET_TO_FIXUP})
+            message(FATAL_ERROR "o3de_fixup_fetchcontent_targets invoked on non-existent target ${TARGET_TO_FIXUP}")
+            continue()
+        endif()
+        get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+        ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
+
+        # Set the location that the library shows up in the IDE:
+        set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY FOLDER "${relative_this_gem_root}/External")
+        
+        # alias it with 3rdParty::targetname
+        add_library(3rdParty::${TARGET_TO_FIXUP} ALIAS ${TARGET_TO_FIXUP})
+
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+
+            # make sure that when building, the library and executable files end up in a place
+            # that does not overwrite each other in different configs.
+            set_target_properties(${TARGET_TO_FIXUP} PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY_${UCONF} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF}}
+                LIBRARY_OUTPUT_DIRECTORY_${UCONF} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_${UCONF}}
+                )
+
+            # 3p targets don't use warning-as-error
+            target_compile_options(${TARGET_TO_FIXUP} ${O3DE_COMPILE_OPTION_DISABLE_WARNINGS})
+
+            # install any libraries to the install/lib/<Profile/Debug/Release> folder
+            ly_install(TARGETS ${TARGET_TO_FIXUP}
+                ARCHIVE
+                    DESTINATION "${BASE_LIBRARY_FOLDER}/${conf}"
+                    COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                    CONFIGURATIONS ${conf}
+            )
+        endforeach()
+    endforeach()
+    # restore the prior value of CMAKE_SUPPRESS_DEVELOPER_WARNINGS
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ${PRIOR_SUPPRESS_DEVELOPER_WARNINGS} CACHE BOOL "" FORCE)
+endfunction() # o3de_fixup_fetchcontent_targets
+
+
 # Add the 3rdParty folder to find the modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
 if(NOT INSTALLED_ENGINE)
     # Add the 3rdParty cmake files to the IDE
     ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
-    ly_get_absolute_pal_filename(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME})
+    o3de_pal_dir(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+    if(O3DE_RADEON_GPU_ANALYZER_ENABLED)
+        include(cmake/3rdParty/FetchRGA.cmake)
+    endif()
 endif()

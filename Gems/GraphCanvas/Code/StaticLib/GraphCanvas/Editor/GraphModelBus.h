@@ -125,12 +125,12 @@ namespace GraphCanvas
             return false;
         }
 
-        virtual bool ConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint)
+        virtual bool ConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] bool isNewSlot)
         {
             return false;
         }
 
-        virtual bool CanConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint)
+        virtual bool CanConvertSlotToReference([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] bool isNewSlot)
         {
             return false;
         }
@@ -145,12 +145,13 @@ namespace GraphCanvas
             return false;
         }
 
-        virtual bool CanPromoteToVariable([[maybe_unused]] const Endpoint& endpoint) const
+        virtual bool CanPromoteToVariable([[maybe_unused]] const Endpoint& endpoint, [[maybe_unused]] bool isNewSlot = false) const
         {
             return false;
         }
 
-        virtual bool PromoteToVariableAction([[maybe_unused]] const Endpoint& endpoint)
+        virtual bool PromoteToVariableAction([[maybe_unused]] const Endpoint& endpoint
+            , [[maybe_unused]] bool isNewSlot)
         {
             return false;
         }
@@ -212,7 +213,16 @@ namespace GraphCanvas
         {
         }
         ////
-        
+
+        //////////////////////////////////////
+        // Breakpoint handling
+
+        virtual void AddBreakpoints([[maybe_unused]] const AZStd::unordered_set<NodeId>& nodeIds)
+        {
+        }
+
+        //////////////////////////////////////
+
         //////////////////////////////////////
         // Node Wrapper Optional Overrides
 
@@ -251,3 +261,5 @@ namespace GraphCanvas
 
     using GraphModelNotificationBus = AZ::EBus<GraphModelNotifications>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::GraphModelRequests);

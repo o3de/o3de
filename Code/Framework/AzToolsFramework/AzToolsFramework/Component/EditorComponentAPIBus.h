@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -38,7 +38,7 @@ namespace AzToolsFramework
 
         //! Return a list of type ids for components that match the required services filter,
         //! and don't conflict with any of the incompatible services filter
-        virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) = 0;
+        virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(AZStd::span<const AZ::ComponentServiceType> serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) = 0;
 
         //! Finds the component names from their type ids
         virtual AZStd::vector<AZStd::string> FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds) = 0;
@@ -114,5 +114,6 @@ namespace AzToolsFramework
         virtual void SetVisibleEnforcement(bool enforceVisiblity) = 0;
     };
     using EditorComponentAPIBus = AZ::EBus<EditorComponentAPIRequests>;
+} // namespace AzToolsFramework
 
-}
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorComponentAPIRequests)

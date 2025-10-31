@@ -8,22 +8,19 @@
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <AzCore/Utils/TypeHash.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        TransientBufferDescriptor::TransientBufferDescriptor(
-            const AttachmentId& attachmentId,
-            const BufferDescriptor& bufferDescriptor)
-            : m_attachmentId{attachmentId}
-            , m_bufferDescriptor{bufferDescriptor}
-        {}
+    TransientBufferDescriptor::TransientBufferDescriptor(
+        const AttachmentId& attachmentId,
+        const BufferDescriptor& bufferDescriptor)
+        : m_attachmentId{attachmentId}
+        , m_bufferDescriptor{bufferDescriptor}
+    {}
 
-        HashValue64 TransientBufferDescriptor::GetHash(HashValue64 seed) const
-        {
-            seed = TypeHash64(m_attachmentId.GetHash(), seed);
-            seed = m_bufferDescriptor.GetHash(seed);
-            return seed;
-        }
+    HashValue64 TransientBufferDescriptor::GetHash(HashValue64 seed) const
+    {
+        seed = TypeHash64(m_attachmentId.GetHash(), seed);
+        seed = m_bufferDescriptor.GetHash(seed);
+        return seed;
     }
 }

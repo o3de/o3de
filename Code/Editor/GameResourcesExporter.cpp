@@ -17,7 +17,6 @@
 // Editor
 #include "UsedResources.h"
 #include "GameEngine.h"
-#include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
 
@@ -55,8 +54,6 @@ void CGameResourcesExporter::GatherAllLoadedResources()
             m_files.push_back(filename);
         }
     }
-
-    GetFilesFromObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,17 +118,4 @@ void CGameResourcesExporter::Save(const QString& outputDirectory)
     }
     CLogFile::WriteLine("===========================================================================");
     m_files.clear();
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Go through all editor objects and gathers files from thier properties.
-//
-//////////////////////////////////////////////////////////////////////////
-void CGameResourcesExporter::GetFilesFromObjects()
-{
-    CUsedResources rs;
-    GetIEditor()->GetObjectManager()->GatherUsedResources(rs);
-
-    AZStd::copy(rs.files.begin(), rs.files.end(), AZStd::back_inserter(m_files));
 }

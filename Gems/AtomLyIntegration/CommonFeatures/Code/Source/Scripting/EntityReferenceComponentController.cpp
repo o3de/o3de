@@ -27,12 +27,12 @@ namespace AZ
 
         void EntityReferenceComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("EntityReferenceService"));
+            provided.push_back(AZ_CRC_CE("EntityReferenceService"));
         }
 
         void EntityReferenceComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("EntityReferenceService"));
+            incompatible.push_back(AZ_CRC_CE("EntityReferenceService"));
         }
 
         EntityReferenceComponentController::EntityReferenceComponentController(const EntityReferenceComponentConfig& config)

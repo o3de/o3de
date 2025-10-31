@@ -1,4 +1,0 @@
-<Entity
- Name="[ENTITY_NAME]"
- Script="Scripts/Entities/[CATEGORY_NAME]/[ENTITY_NAME].lua"
- />

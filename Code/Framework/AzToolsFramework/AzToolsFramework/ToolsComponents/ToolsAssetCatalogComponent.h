@@ -7,6 +7,9 @@
  */
 
 #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -30,14 +33,14 @@ namespace AssetProcessor
 
     //! Tools replacement for the AssetCatalogComponent
     //! Services the AssetCatalogRequestBus by interfacing with the AssetProcessor over a network connection
-    class ToolsAssetCatalogComponent :
+    class AZTF_API ToolsAssetCatalogComponent :
         public AZ::Component,
         public AZ::Interface<IToolsAssetCatalog>::Registrar,
         public AZ::Data::AssetCatalogRequestBus::Handler,
         public AZ::Data::AssetCatalog
     {
     public:
-        
+
         AZ_COMPONENT(ToolsAssetCatalogComponent, "{AE68E46B-0E21-499A-8309-41408BCBE4BF}");
 
         ToolsAssetCatalogComponent() = default;

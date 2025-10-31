@@ -11,17 +11,27 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 
 namespace AZ
 {
     namespace IO
     {
-        static constexpr char ContextName[] = "Context";
+        static constexpr const char* ContextName = "Context";
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
-        static constexpr char LatePredictionName[] = "Early completions";
-        static constexpr char MissedDeadlinesName[] = "Missed deadlines";
+        static constexpr const char* PredictionAccuracyName = "Prediction accuracy";
+        static constexpr const char* LatePredictionName = "Early completions";
+        static constexpr const char* MissedDeadlinesName = "Missed deadlines";
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
+
+        StreamerContext::StreamerContext()
+            : m_taskExecutor(AZ::TaskExecutor::Instance())
+        {
+            m_taskDescriptor.taskName = "Completion callback";
+            m_taskDescriptor.taskGroup = "AZ::IO:Streamer";     
+        }
+
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
@@ -152,13 +162,20 @@ namespace AZ
             m_externalRecycleBin.push_back(request);
         }
 
+        size_t StreamerContext::GetOutstandingTaskCount() const
+        {
+            return m_outstandingTaskCount.load();
+        }
+
         bool StreamerContext::FinalizeCompletedRequests()
         {
             AZ_PROFILE_FUNCTION(AzCore);
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            auto now = AZStd::chrono::system_clock::now();
+            auto now = AZStd::chrono::steady_clock::now();
 #endif
+            TaskGraph task("FinalizeCompletedRequests");
+                            
             bool hasCompletedRequests = false;
             while (true)
             {
@@ -169,7 +186,7 @@ namespace AZ
                 }
                 if (completed.empty())
                 {
-                    return hasCompletedRequests;
+                    break;
                 }
 
                 hasCompletedRequests = true;
@@ -179,14 +196,13 @@ namespace AZ
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
                     // It's possible for a request to be queued internally and processed between scheduling passes. In those
                     // cases, don't check the request for accurate prediction.
-                    if (top->m_estimatedCompletion > AZStd::chrono::system_clock::time_point())
+                    if (top->m_estimatedCompletion > AZStd::chrono::steady_clock::time_point())
                     {
                         if (top->m_estimatedCompletion < now)
                         {
-                            auto estimationDeltaUs = AZStd::chrono::microseconds(now - top->m_estimatedCompletion).count();
-                            m_predictionAccuracyUsStat.PushSample(aznumeric_cast<double>(estimationDeltaUs));
-                            Statistic::PlotImmediate(ContextName, PredictionAccuracyName,
-                                m_predictionAccuracyUsStat.GetMostRecentSample());
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(now - top->m_estimatedCompletion);
+                            m_predictionAccuracyStat.PushEntry(estimationDelta);
+                            Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 
                             m_latePredictionsPercentageStat.PushSample(0.0);
                             Statistic::PlotImmediate(ContextName, LatePredictionName,
@@ -194,17 +210,16 @@ namespace AZ
                         }
                         else
                         {
-                            auto estimationDeltaUs = AZStd::chrono::microseconds(top->m_estimatedCompletion - now).count();
-                            m_predictionAccuracyUsStat.PushSample(aznumeric_cast<double>(estimationDeltaUs));
-                            Statistic::PlotImmediate(ContextName, PredictionAccuracyName,
-                                m_predictionAccuracyUsStat.GetMostRecentSample());
+                            auto estimationDelta = AZStd::chrono::duration_cast<Statistic::TimeValue>(top->m_estimatedCompletion - now);
+                            m_predictionAccuracyStat.PushEntry(estimationDelta);
+                            Statistic::PlotImmediate(ContextName, PredictionAccuracyName, aznumeric_cast<double>(estimationDelta.count()));
 
                             m_latePredictionsPercentageStat.PushSample(1.0);
                             Statistic::PlotImmediate(ContextName, LatePredictionName,
                                 m_latePredictionsPercentageStat.GetMostRecentSample());
                         }
                     }
-                    auto readRequest = AZStd::get_if<FileRequest::ReadRequestData>(&top->GetCommand());
+                    auto readRequest = AZStd::get_if<Requests::ReadRequestData>(&top->GetCommand());
                     if (readRequest != nullptr)
                     {
                         m_missedDeadlinePercentageStat.PushSample(now < readRequest->m_deadline ? 0.0 : 1.0);
@@ -215,36 +230,103 @@ namespace AZ
                     // Get all information before calling the completion routine as it's technically possible that an external
                     // request is recycled during the callback.
                     IStreamerTypes::RequestStatus status = top->GetStatus();
-                    FileRequest* parent = top->m_parent;
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
-
-                    {
-                        AZ_PROFILE_SCOPE(AzCore,
-                            isInternal ? "Completion callback internal" : "Completion callback external");
-                        top->m_onCompletion(*top);
-                        AZ_PROFILE_INTERVAL_END(AzCore, top);
-                    }
-                    
-                    if (parent)
-                    {
-                        AZ_Assert(parent->m_dependencies > 0,
-                            "A file request with a parent has completed, but the request wasn't registered as a dependency with the parent.");
-                        --parent->m_dependencies;
-
-                        parent->SetStatus(status);
-                        if (parent->m_dependencies == 0)
-                        {
-                            completed.push(parent);
-                        }
-                    }
 
                     if (isInternal)
                     {
+                        {
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
+                            TIMED_AVERAGE_WINDOW_SCOPE(m_internalCompletionTimeAverage);
+#endif
+                            AZ_PROFILE_SCOPE(AzCore, "Completion callback internal");
+                            if (top->m_onCompletion)
+                            {
+                                top->m_onCompletion(*top);
+                            }
+                            AZ_PROFILE_INTERVAL_END(AzCore, top);
+                        }
+                        if (FileRequest* parent = top->m_parent; parent != nullptr)
+                        {
+                            AZ_Assert(
+                                parent->m_dependencies > 0,
+                                "A file request with a parent has completed, but the request wasn't registered as a dependency with "
+                                "the parent.");
+                            parent->SetStatus(status);
+                            if (parent->m_dependencies-- == 1)
+                            {
+                                completed.push(parent);
+                            }
+                        }
+
                         RecycleRequest(top);
+                    }
+                    else
+                    {
+                        if (top->m_onCompletion)
+                        {
+                            m_outstandingTaskCount++;
+                            task.AddTask(
+                                m_taskDescriptor,
+                                [this, top]()
+                                {
+                                    top->m_onCompletion(*top);
+                                    FileRequest* parent = top->m_parent;
+                                    // For external requests the only parent is the reference holder. It's not needed to wake up the
+                                    // scheduler because it would only do a bunch of work to collect a few additional internal requests
+                                    // that would also be picked up by any regular iteration of the scheduler. Not waking up the scheduler
+                                    // in this case will not prevent any important requests from completing.
+                                    if (parent)
+                                    {
+                                        parent->SetStatus(top->GetStatus());
+                                        AZ_Assert(
+                                            parent->m_dependencies > 0,
+                                            "A file request with a parent has completed, but the request wasn't registered as a dependency "
+                                            "with the parent.");
+                                        if (parent->m_dependencies-- == 1)
+                                        {
+                                            MarkRequestAsCompleted(parent);
+                                            if (m_outstandingTaskCount-- == 1)
+                                            {
+                                                WakeUpSchedulingThread();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            m_outstandingTaskCount--;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        m_outstandingTaskCount--;
+                                    }
+                                });
+                        }
+                        else
+                        {
+                            if (FileRequest* parent = top->m_parent; parent != nullptr)
+                            {
+                                AZ_Assert(
+                                    parent->m_dependencies > 0,
+                                    "A file request with a parent has completed, but the request wasn't registered as a dependency "
+                                    "with the parent.");
+                                parent->SetStatus(status);
+                                if (parent->m_dependencies-- == 1)
+                                {
+                                    completed.push(parent);
+                                }
+                            }
+                        }
+                        AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
 
                     completed.pop();
                 }
+            }
+
+            if (!task.IsEmpty())
+            {
+                task.Detach();
+                task.SubmitOnExecutor(m_taskExecutor);
             }
             return hasCompletedRequests;
         }
@@ -266,16 +348,46 @@ namespace AZ
 
         void StreamerContext::CollectStatistics(AZStd::vector<Statistic>& statistics)
         {
-            statistics.push_back(
-                Statistic::CreateInteger(ContextName, "Pending requests", aznumeric_caster(m_preparedRequests.size())));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "Pending requests", aznumeric_caster(m_preparedRequests.size()),
+                "The number of requests that are waiting to be queued for processing. These are the requests that can still be scheduled. "
+                "Larger numbers allow the scheduler to do more optimizations."));
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            statistics.push_back(Statistic::CreateFloat(ContextName, PredictionAccuracyName, m_predictionAccuracyUsStat.GetAverage() / 1000.0));
-            statistics.push_back(Statistic::CreatePercentage(ContextName, LatePredictionName, m_latePredictionsPercentageStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(ContextName, MissedDeadlinesName, m_missedDeadlinePercentageStat.GetAverage()));
+            statistics.push_back(Statistic::CreateTimeRange(
+                ContextName, PredictionAccuracyName, m_predictionAccuracyStat.CalculateAverage(), m_predictionAccuracyStat.GetMinimum(),
+                m_predictionAccuracyStat.GetMaximum(),
+                "The delta between time the scheduler predicated the request would be done and the actual time the request completed in "
+                "milliseconds. The smaller this value, the more accurate the scheduler is."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                ContextName, LatePredictionName, m_latePredictionsPercentageStat.GetAverage(), m_latePredictionsPercentageStat.GetMinimum(),
+                m_latePredictionsPercentageStat.GetMaximum(),
+                "The amount of requests that were predicted to be done later than the actual completion time. If this value is small it "
+                "means that the scheduler may do immediate reads too often, although this is preferable over the alternative as that would "
+                "lead to requests coming in too late. How impactful this value is will depend largely on the prediction accuracy."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                ContextName, MissedDeadlinesName, m_missedDeadlinePercentageStat.GetAverage(), m_missedDeadlinePercentageStat.GetMinimum(),
+                m_missedDeadlinePercentageStat.GetMaximum(),
+                "The percentage of requests that were completed after their deadline. This value should be kept as low as possible. Other "
+                "statistics may provide information on what the reason is too many requests miss their deadline."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                ContextName, "Internal callback duration", m_internalCompletionTimeAverage.CalculateAverage(),
+                m_internalCompletionTimeAverage.GetMinimum(), m_internalCompletionTimeAverage.GetMaximum(),
+                "The average amount of time in microseconds spend on processing internal callbacks."));
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILNG_INFO
-            statistics.push_back(Statistic::CreateInteger(ContextName, "Total requests", aznumeric_caster(m_pendingIdCounter)));
-            statistics.push_back(Statistic::CreateInteger(ContextName, "Internal bucket size", aznumeric_caster(m_internalRecycleBin.size())));
-            statistics.push_back(Statistic::CreateInteger(ContextName, "External bucket size", aznumeric_caster(m_externalRecycleBin.size())));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "Total requests", aznumeric_caster(m_pendingIdCounter), "The total number of requests Streamer has processed.",
+                Statistic::GraphType::None));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "Outstanding tasks", aznumeric_caster(m_outstandingTaskCount.load()),
+                "The number of tasks, such as completion tasks, the context is still waiting to be completed by the Task Graph."));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "Internal bucket size", aznumeric_caster(m_internalRecycleBin.size()),
+                "The total number of requests available in the internal recycle bin. Having at least a few available helps avoids memory "
+                "allocations from Streamer for internal management."));
+            statistics.push_back(Statistic::CreateInteger(
+                ContextName, "External bucket size", aznumeric_caster(m_externalRecycleBin.size()),
+                "The total number of requests available in the external recycle bin. Having at least a few available helps avoid memory "
+                "allocations from Streamer and speeds up creating new requests to issue to Streamer."));
         }
 
         FileRequestPtr StreamerContext::GetNewExternalRequestUnguarded()

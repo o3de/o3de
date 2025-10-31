@@ -31,6 +31,8 @@
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
+#include <AzCore//std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/functional.h>
 
 #define SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(lambdaInterior)\
     int dummy[]{ 0, ( lambdaInterior , 0)... };\
@@ -60,6 +62,7 @@ namespace ScriptCanvas
         struct CallHelper;
     }
     class Graph;    
+    class Node;
 
     struct BehaviorContextMethodHelper;
 
@@ -135,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {
@@ -214,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -280,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;
@@ -384,16 +387,23 @@ namespace ScriptCanvas
         AZStd::string               m_originalName;
     };
 
-    struct NodeConfiguration
+    struct NodeReplacementConfiguration
     {
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
+        AZStd::function<Node*(const Node&)> create;
+
+        bool m_tolerateIndividualSlotUpdateFailures = true;
+        bool m_tolerateNoMatchingPreviousSlot = true;
+        bool m_tolerateFailureToUpdateData = true;
+        bool m_tolerateFailureToReplaceConnections = true;
+        bool m_warnOnToleratedErrors = true;
 
         bool IsValid()
         {
-            return !m_type.IsNull();
+            return !m_type.IsNull() || create != nullptr;
         }
     };
 
@@ -424,7 +434,10 @@ namespace ScriptCanvas
         using ExploredDynamicGroupCache = AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set< AZ::Crc32 >>;
 
     private:
-
+        AZStd::string m_name = "";
+        AZStd::string m_toolTip = "";
+        AZStd::string m_nodeStyle = "";
+        AZ::Crc32 m_nodeLexicalId;
         struct IteratorCache
         {
         public:
@@ -476,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;
@@ -498,7 +512,7 @@ namespace ScriptCanvas
         void SanityCheckDynamicDisplay();
         void SanityCheckDynamicDisplay(ExploredDynamicGroupCache& exploredGroupCache);
 
-        bool ConvertSlotToReference(const SlotId& slotId);
+        bool ConvertSlotToReference(const SlotId& slotId, bool isNewSlot = false);
         bool ConvertSlotToValue(const SlotId& slotId);
 
         NamedEndpoint CreateNamedEndpoint(SlotId slotId) const;
@@ -528,6 +542,13 @@ namespace ScriptCanvas
         virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
+        virtual const AZStd::string& GetNodeToolTip() const;
+        virtual const AZStd::string& GetNodeStyle() const;
+
+        virtual void SetNodeName(const AZStd::string& name);
+        virtual void SetNodeToolTip(const AZStd::string& toolTip);
+        virtual void SetNodeStyle(const AZStd::string& nodeStyle);
+        virtual void SetNodeLexicalId(const AZ::Crc32& nodeLexicalId);
 
         AZStd::string GetSlotName(const SlotId& slotId) const;
 
@@ -564,12 +585,14 @@ namespace ScriptCanvas
         SlotId FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const override;
 
         const Datum* FindDatum(const SlotId& slotId) const override;
-        void FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
+        bool FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView) override;
 
         AZStd::vector<SlotId> GetSlotIds(AZStd::string_view slotName) const override;
         const ScriptCanvasId& GetOwningScriptCanvasId() const override { return m_scriptCanvasId; }
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
+
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
 
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
@@ -649,7 +672,8 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
-        virtual NodeConfiguration GetReplacementNodeConfiguration() const { return {}; };
+        // Use following function to backup node replacement configuration
+        virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
         // Use following function to customize node replacement
@@ -718,6 +742,8 @@ namespace ScriptCanvas
         virtual VariableId GetVariableIdRead(const Slot*) const;
 
         virtual VariableId GetVariableIdWritten(const Slot*) const;
+
+        virtual const Slot* GetVariableInputSlot() const;
 
         virtual const Slot* GetVariableOutputSlot() const;
 
@@ -809,6 +835,12 @@ namespace ScriptCanvas
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
+        // Returns the provided slot's corresponding execution slot
+        const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding data slots
+        AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
+
         void ClearDisplayType(const SlotId& slotId);
         void SetDisplayType(const SlotId& slotId, const Data::Type& dataType);
 
@@ -857,10 +889,6 @@ namespace ScriptCanvas
         //! returns a list of all slots, regardless of type
         SlotList& ModSlots() { return m_slots; }
         
-        // \todo make fast query to the system debugger
-        AZ_INLINE static bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier);
-        AZ_INLINE static bool IsVariableObserved(const VariableId& variableId);
-
         const Datum* FindDatumByIndex(size_t index) const;
         void FindModifiableDatumViewByIndex(size_t index, ModifiableDatumView& controller);
 
@@ -900,13 +928,6 @@ protected:
 
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
-
-        Signal CreateNodeInputSignal(const SlotId& slotId) const;
-        Signal CreateNodeOutputSignal(const SlotId& slotId) const;
-
-        NodeStateChange CreateNodeStateUpdate() const;
-        VariableChange CreateVariableChange(const GraphVariable& graphVariable) const;
-        VariableChange CreateVariableChange(const Datum& variableDatum, const VariableId& variableId) const;
 
         void ClearDisplayType(const AZ::Crc32& dynamicGroup)
         {
@@ -1059,24 +1080,7 @@ protected:
 
         template<typename ResultType, typename t_Traits, typename>
         friend struct Internal::OutputSlotHelper;
-
-        template<size_t... inputDatumIndices>
-        friend struct SetDefaultValuesByIndex;
     };
-
-    bool Node::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, entityId, identifier);
-        return isObserved;
-    }
-
-    bool Node::IsVariableObserved(const VariableId& variableId)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsVariableObserved, variableId);
-        return isObserved;
-    }
 
     namespace Internal
     {
@@ -1098,7 +1102,7 @@ protected:
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<ResultType>>());
                 slotConfiguration.SetConnectionType(ConnectionType::Output);
 
-                node.AddSlot(slotConfiguration);
+                AZ_VerifyError("ScriptCanvas", node.AddSlot(slotConfiguration).IsValid(), "Node failed to add a required Data Out slot");
             }
         };
 
@@ -1115,12 +1119,11 @@ protected:
             static void CreateDataSlot(Node& node, ConnectionType connectionType)
             {
                 DataSlotConfiguration slotConfiguration;
-
                 slotConfiguration.m_name = t_Traits::GetResultName(Index);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>());
-
                 slotConfiguration.SetConnectionType(connectionType);                
-                node.AddSlot(slotConfiguration);
+
+                AZ_VerifyError("ScriptCanvas", node.AddSlot(slotConfiguration).IsValid(), "Node failed to add a required Data Out slot");
             }
 
             template<AZStd::size_t... Is>

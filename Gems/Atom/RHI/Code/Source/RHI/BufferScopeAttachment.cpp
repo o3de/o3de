@@ -6,77 +6,84 @@
  *
  */
 
-#include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferView.h>
+ #include <Atom/RHI/BufferScopeAttachment.h>
+ #include <Atom/RHI/BufferFrameAttachment.h>
+ #include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBuffer.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    BufferScopeAttachment::BufferScopeAttachment(
+        Scope& scope,
+        FrameAttachment& attachment,
+        ScopeAttachmentUsage usage,
+        ScopeAttachmentAccess access,
+        ScopeAttachmentStage stage,
+        const BufferScopeAttachmentDescriptor& descriptor)
+        : ScopeAttachment(scope, attachment, usage, access, stage)
+        , m_descriptor{descriptor}
     {
-        BufferScopeAttachment::BufferScopeAttachment(
-            Scope& scope,
-            FrameAttachment& attachment,
-            ScopeAttachmentUsage usage,
-            ScopeAttachmentAccess access,
-            const BufferScopeAttachmentDescriptor& descriptor)
-            : ScopeAttachment(scope, attachment, usage, access)
-            , m_descriptor{descriptor}
-        {
-            AZ_Assert(
-                m_descriptor.m_bufferViewDescriptor.m_elementSize > 0 &&
-                m_descriptor.m_bufferViewDescriptor.m_elementCount > 0,
-                "Invalid buffer view for attachment.");
+        AZ_Assert(
+            m_descriptor.m_bufferViewDescriptor.m_elementSize > 0 &&
+            m_descriptor.m_bufferViewDescriptor.m_elementCount > 0,
+            "Invalid buffer view for attachment.");
 
-            if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear)
-            {
-                AZ_Error("FrameScheduler", access == ScopeAttachmentAccess::ReadWrite, "Attempting to clear an attachment that is read-only");
-            }
-        }
-
-        const BufferScopeAttachmentDescriptor& BufferScopeAttachment::GetDescriptor() const
+        if (m_descriptor.m_loadStoreAction.m_loadAction == AttachmentLoadAction::Clear)
         {
-            return m_descriptor;
+            AZ_Error(
+                "FrameScheduler",
+                CheckBitsAny(access, ScopeAttachmentAccess::Write),
+                "Attempting to clear an attachment that is read-only");
         }
+    }
 
-        const BufferView* BufferScopeAttachment::GetBufferView() const
-        {
-            return static_cast<const BufferView*>(ScopeAttachment::GetResourceView());
-        }
+    const BufferScopeAttachmentDescriptor& BufferScopeAttachment::GetDescriptor() const
+    {
+        return m_descriptor;
+    }
 
-        void BufferScopeAttachment::SetBufferView(ConstPtr<BufferView> bufferView)
-        {
-            SetResourceView(AZStd::move(bufferView));
-        }
+    const BufferView* BufferScopeAttachment::GetBufferView() const
+    {
+        return static_cast<const BufferView*>(ScopeAttachment::GetResourceView());
+    }
 
-        const BufferFrameAttachment& BufferScopeAttachment::GetFrameAttachment() const
-        {
-            return static_cast<const BufferFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
-        }
+    void BufferScopeAttachment::SetBufferView(ConstPtr<BufferView> bufferView)
+    {
+        SetResourceView(AZStd::move(bufferView));
+    }
 
-        BufferFrameAttachment& BufferScopeAttachment::GetFrameAttachment()
-        {
-            return static_cast<BufferFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
-        }
+    const ScopeAttachmentDescriptor& BufferScopeAttachment::GetScopeAttachmentDescriptor() const
+    {
+        return GetDescriptor();
+    }
 
-        const BufferScopeAttachment* BufferScopeAttachment::GetPrevious() const
-        {
-            return static_cast<const BufferScopeAttachment*>(ScopeAttachment::GetPrevious());
-        }
+    const BufferFrameAttachment& BufferScopeAttachment::GetFrameAttachment() const
+    {
+        return static_cast<const BufferFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
+    }
 
-        BufferScopeAttachment* BufferScopeAttachment::GetPrevious()
-        {
-            return static_cast<BufferScopeAttachment*>(ScopeAttachment::GetPrevious());
-        }
+    BufferFrameAttachment& BufferScopeAttachment::GetFrameAttachment()
+    {
+        return static_cast<BufferFrameAttachment&>(ScopeAttachment::GetFrameAttachment());
+    }
 
-        const BufferScopeAttachment* BufferScopeAttachment::GetNext() const
-        {
-            return static_cast<const BufferScopeAttachment*>(ScopeAttachment::GetNext());
-        }
+    const BufferScopeAttachment* BufferScopeAttachment::GetPrevious() const
+    {
+        return static_cast<const BufferScopeAttachment*>(ScopeAttachment::GetPrevious());
+    }
 
-        BufferScopeAttachment* BufferScopeAttachment::GetNext()
-        {
-            return static_cast<BufferScopeAttachment*>(ScopeAttachment::GetNext());
-        }
+    BufferScopeAttachment* BufferScopeAttachment::GetPrevious()
+    {
+        return static_cast<BufferScopeAttachment*>(ScopeAttachment::GetPrevious());
+    }
+
+    const BufferScopeAttachment* BufferScopeAttachment::GetNext() const
+    {
+        return static_cast<const BufferScopeAttachment*>(ScopeAttachment::GetNext());
+    }
+
+    BufferScopeAttachment* BufferScopeAttachment::GetNext()
+    {
+        return static_cast<BufferScopeAttachment*>(ScopeAttachment::GetNext());
     }
 }

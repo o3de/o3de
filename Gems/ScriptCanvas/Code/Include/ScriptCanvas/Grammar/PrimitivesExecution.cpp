@@ -13,6 +13,7 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 #include <ScriptCanvas/Translation/Configuration.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -34,6 +35,11 @@ namespace ScriptCanvas
 
         void ExecutionTree::AddInput(const ExecutionInput& input)
         {
+            if (!RefersToSelfEntityId() && IsSelfInput(input))
+            {
+                MarkRefersToSelfEntityId();
+            }
+
             m_input.push_back(input);
         }
 
@@ -44,6 +50,11 @@ namespace ScriptCanvas
 
         void ExecutionTree::AddReturnValue(const Slot* slot, ReturnValueConstPtr returnValue)
         {
+            if (!RefersToSelfEntityId() && IsSelfReturnValue(returnValue))
+            {
+                MarkRefersToSelfEntityId();
+            }
+
             m_returnValues.emplace_back(slot, returnValue);
         }
 
@@ -244,6 +255,11 @@ namespace ScriptCanvas
             return m_metaData;
         }
 
+        const AZStd::any& ExecutionTree::GetMetaDataEx() const
+        {
+            return m_metaDataEx;
+        }
+
         const AZStd::string& ExecutionTree::GetName() const
         {
             return m_name;
@@ -398,6 +414,11 @@ namespace ScriptCanvas
             m_isPure = true;    
         }
 
+        void ExecutionTree::MarkRefersToSelfEntityId()
+        {
+            ModRoot()->m_refersToSelfEntityId = true;
+        }
+
         void ExecutionTree::MarkRootLatent()
         {
             auto root = ModRoot();
@@ -427,6 +448,11 @@ namespace ScriptCanvas
         MetaDataPtr ExecutionTree::ModMetaData()
         {
             return m_metaData;
+        }
+
+        AZStd::any& ExecutionTree::ModMetaDataEx()
+        {
+            return m_metaDataEx;
         }
 
         ExecutionTreePtr ExecutionTree::ModParent()
@@ -520,6 +546,11 @@ namespace ScriptCanvas
                 m_input = newInput;
                 m_inputConversion = newInputConversion;
             }
+        }
+
+        bool ExecutionTree::RefersToSelfEntityId() const
+        {
+            return GetRoot()->m_refersToSelfEntityId;
         }
 
         AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> ExecutionTree::RemoveChild(const ExecutionTreeConstPtr& child)

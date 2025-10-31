@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::LightCullingTilePreparePass, "{3D8AEEF2-F679-4C0C-ADF0-2F7E347D8BF1}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(LightCullingTilePreparePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightCullingTilePreparePass, SystemAllocator);
             virtual ~LightCullingTilePreparePass() = default;
 
             static RPI::Ptr<LightCullingTilePreparePass> Create(const RPI::PassDescriptor& descriptor);
@@ -66,8 +66,8 @@ namespace AZ
             AZStd::array<float, 2> ComputeUnprojectConstants() const;
             AZ::RHI::Size GetDepthBufferDimensions();
             void ChooseShaderVariant();
-            const AZ::RPI::ShaderVariant& CreateShaderVariant();
-            void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
+            AZStd::pair<const AZ::RPI::ShaderVariant&, RPI::ShaderOptionGroup> CreateShaderVariant();
+            void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant, const RPI::ShaderOptionGroup& options);
             void SetConstantData();
             void OnShaderReloaded();
 

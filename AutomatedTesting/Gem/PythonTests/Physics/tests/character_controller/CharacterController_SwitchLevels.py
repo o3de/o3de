@@ -53,10 +53,12 @@ def CharacterController_SwitchLevels():
 
     import os
     import sys
+
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
+    import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Constants
     WAIT_FOR_ERRORS = 3.0
@@ -77,7 +79,7 @@ def CharacterController_SwitchLevels():
     helper.exit_game_mode(Tests.level1_exit_game_mode)
 
     # 2.1) Load level 2 (empty level)
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2.2) Enter game mode
     helper.enter_game_mode(Tests.level2_enter_game_mode)

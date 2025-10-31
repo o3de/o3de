@@ -1,0 +1,139 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileSubpass1ParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "ProjectedShadowmap",
+                    "SlotType": "Input"
+                },
+                // Outputs...
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "LightingOutput",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "DepthStencilOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "LightingOutput",
+                    "AttachmentRef": {
+                        "Pass": "MSAAResolvePass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "DepthStencilOutput",
+                    "AttachmentRef": {
+                        "Pass": "ForwardPass",
+                        "Attachment": "DepthStencilOutput"
+                    }
+                }
+            ],
+            "PassRequests": [                
+                {
+                    "Name": "ForwardPass",
+                    "TemplateName": "MobileForwardPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "mobileForward",
+                        "BindViewSrg": true,
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "SilhouetteGatherPass",
+                    "TemplateName": "SilhouetteGatherPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SkyBoxPass",
+                    "TemplateName": "MobileSkyBoxTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "LightingOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SkyBoxDepth",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MSAAResolvePass",
+                    "TemplateName": "MSAAResolveColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "LightingOutput"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "PassData": {
+                "MergeChildrenAsSubpasses": true,
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "Depth",
+                        "Slot": "DepthStencilOutput"
+                    }
+                ]
+            }
+        }
+    }
+}

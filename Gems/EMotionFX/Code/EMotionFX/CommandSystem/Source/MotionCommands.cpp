@@ -7,6 +7,9 @@
  */
 
 #include "MotionCommands.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "CommandManager.h"
 
 #include <MCore/Source/Compare.h>
@@ -20,16 +23,17 @@
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/EventManager.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
+
+#include <AzCore/Serialization/Locale.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator)
 
     const char* CommandStopAllMotionInstances::s_stopAllMotionInstancesCmdName = "StopAllMotionInstances";
 
@@ -78,6 +82,8 @@ namespace CommandSystem
 
     AZStd::string CommandPlayMotion::PlayBackInfoToCommandParameters(const EMotionFX::PlayBackInfo* playbackInfo)
     {
+        AZ::Locale::ScopedSerializationLocale localeScope; // ensures that %f uses '.' as decimal separator
+
         return AZStd::string::format("-blendInTime %f -blendOutTime %f -playSpeed %f -targetWeight %f -eventWeightThreshold %f -maxPlayTime %f -numLoops %i -priorityLevel %i -blendMode %i -playMode %i -mirrorMotion %s -mix %s -playNow %s -motionExtraction %s -retarget %s -freezeAtLastFrame %s -enableMotionEvents %s -blendOutBeforeEnded %s -canOverwrite %s -deleteOnZeroWeight %s -inPlace %s",
             playbackInfo->m_blendInTime,
             playbackInfo->m_blendOutTime,
@@ -213,7 +219,8 @@ namespace CommandSystem
         AZStd::string filename;
         parameters.GetValue("filename", this, &filename);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (auto fileIoBase{ AZ::IO::FileIOBase::GetInstance() }; fileIoBase && filename.starts_with('@'))
         {
@@ -252,6 +259,7 @@ namespace CommandSystem
             if (undoObject.m_animGraphInstance)
             {
                 undoObject.m_animGraph = undoObject.m_animGraphInstance->GetAnimGraph();
+                undoObject.m_animGraphInstance->Destroy();
                 actorInstance->SetAnimGraphInstance(nullptr);
             }
 
@@ -508,36 +516,36 @@ namespace CommandSystem
     // CommandAdjustDefaultPlayBackInfo
     //--------------------------------------------------------------------------------
 
-    // constructor
     CommandAdjustDefaultPlayBackInfo::CommandAdjustDefaultPlayBackInfo(MCore::Command* orgCommand)
         : MCore::Command("AdjustDefaultPlayBackInfo", orgCommand)
     {
     }
 
-
-    // destructor
     CommandAdjustDefaultPlayBackInfo::~CommandAdjustDefaultPlayBackInfo()
     {
     }
 
-
-    // execute
-    bool CommandAdjustDefaultPlayBackInfo::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    EMotionFX::Motion* CommandAdjustDefaultPlayBackInfo::GetMotionFromFilenameParameter(MCore::Command* command, const MCore::CommandLine& parameters)
     {
-        // get the motion
-        AZStd::string filename;
-        parameters.GetValue("filename", this, &filename);
+        AZStd::string filename = parameters.GetValue("filename", command);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
             filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
         }
 
-        EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByFileName(filename.c_str());
+        return EMotionFX::GetMotionManager().FindMotionByFileName(filename.c_str());
+    }
+
+    bool CommandAdjustDefaultPlayBackInfo::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    {
+        EMotionFX::Motion* motion = GetMotionFromFilenameParameter(this, parameters);
         if (motion == nullptr)
         {
+            const AZStd::string filename = parameters.GetValue("filename", this);
             outResult = AZStd::string::format("Cannot find motion '%s' in motion library.", filename.c_str());
             return false;
         }
@@ -556,20 +564,10 @@ namespace CommandSystem
         return true;
     }
 
-
-    // undo the command
     bool CommandAdjustDefaultPlayBackInfo::Undo(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
-        // get the motion
-        AZStd::string filename;
-        parameters.GetValue("filename", this, &filename);
-        // Resolve the filename if it starts with a path alias
-        if (filename.starts_with('@'))
-        {
-            filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
-        }
-
-        EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByFileName(filename.c_str());
+        const AZStd::string filename = parameters.GetValue("filename", this);
+        EMotionFX::Motion* motion = GetMotionFromFilenameParameter(this, parameters);
         if (motion == nullptr)
         {
             outResult = AZStd::string::format("Cannot find motion '%s' in motion library.", filename.c_str());
@@ -592,116 +590,15 @@ namespace CommandSystem
         return true;
     }
 
-
-    // init the syntax of the command
     void CommandAdjustDefaultPlayBackInfo::InitSyntax()
     {
         SYNTAX_MOTIONCOMMANDS
     }
 
-
-    // get the description
     const char* CommandAdjustDefaultPlayBackInfo::GetDescription() const
     {
         return "This command can be used to adjust the default playback info of the given motion.";
     }
-
-
-    //--------------------------------------------------------------------------------
-    // CommandStopMotionInstances
-    //--------------------------------------------------------------------------------
-
-    // execute
-    bool CommandStopMotionInstances::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
-    {
-        // get the number of selected actor instances
-        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
-
-        // check if there is any actor instance selected and if not return false so that the command doesn't get called and doesn't get inside the action history
-        if (numSelectedActorInstances == 0)
-        {
-            return false;
-        }
-
-        // get the motion
-        AZStd::string filename;
-        parameters.GetValue("filename", this, &filename);
-
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
-        // Resolve the filename if it starts with a path alias
-        if (filename.starts_with('@'))
-        {
-            filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
-        }
-
-        EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByFileName(filename.c_str());
-        if (motion == nullptr)
-        {
-            outResult = AZStd::string::format("Cannot find motion '%s' in motion library.", filename.c_str());
-            return false;
-        }
-
-        // iterate through all actor instances and stop all selected motion instances
-        for (size_t i = 0; i < numSelectedActorInstances; ++i)
-        {
-            // get the actor instance and the corresponding motion system
-            EMotionFX::ActorInstance*   actorInstance   = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
-
-            if (actorInstance->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
-
-            EMotionFX::MotionSystem*    motionSystem    = actorInstance->GetMotionSystem();
-
-            // stop simulating the anim graph instance
-            EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
-            if (animGraphInstance)
-            {
-                animGraphInstance->Stop();
-            }
-
-            // get the number of motion instances and iterate through them
-            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
-            for (size_t j = 0; j < numMotionInstances; ++j)
-            {
-                EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
-
-                // stop the motion instance in case its from the given motion
-                if (motion == motionInstance->GetMotion())
-                {
-                    motionInstance->Stop();
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    // undo the command
-    bool CommandStopMotionInstances::Undo(const MCore::CommandLine& parameters, AZStd::string& outResult)
-    {
-        MCORE_UNUSED(parameters);
-        MCORE_UNUSED(outResult);
-        return true;
-    }
-
-
-    // init the syntax of the command
-    void CommandStopMotionInstances::InitSyntax()
-    {
-        GetSyntax().ReserveParameters(1);
-        GetSyntax().AddRequiredParameter("filename", "The filename of the motion file to stop all motion instances for.", MCore::CommandSyntax::PARAMTYPE_STRING);
-    }
-
-
-    // get the description
-    const char* CommandStopMotionInstances::GetDescription() const
-    {
-        return "Stop all motion instances for the currently selected motions on all selected actor instances.";
-    }
-
 
     //--------------------------------------------------------------------------------
     // CommandStopAllMotionInstances
@@ -942,7 +839,8 @@ namespace CommandSystem
     {
         AZStd::string filename;
         parameters.GetValue("filename", "", filename);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -1126,6 +1024,8 @@ namespace CommandSystem
 
         if (m_useUnitType == false)
         {
+            AZ::Locale::ScopedSerializationLocale locale;
+
             AZStd::string commandString;
             commandString = AZStd::string::format("ScaleMotionData -id %d -scaleFactor %.8f", m_motionId, 1.0f / m_scaleFactor);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
@@ -1323,6 +1223,33 @@ namespace CommandSystem
             {
                 AZ_Error("EMotionFX", false, result.c_str());
             }
+        }
+    }
+
+    void PlayMotions(const AZStd::span<EMotionFX::Motion*> motions)
+    {
+        AZStd::string command, commandParameters;
+        MCore::CommandGroup commandGroup("Play motions");
+
+        for (EMotionFX::Motion* motion : motions)
+        {
+            EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
+
+            // Don't blend in and out of the for previewing animations. We might only see a short bit of it for animations smaller than the blend in/out time.
+            defaultPlayBackInfo->m_blendInTime = 0.0f;
+            defaultPlayBackInfo->m_blendOutTime = 0.0f;
+            defaultPlayBackInfo->m_freezeAtLastFrame = (defaultPlayBackInfo->m_numLoops != EMFX_LOOPFOREVER);
+
+            commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
+
+            command = AZStd::string::format("PlayMotion -filename \"%s\" %s", motion->GetFileName(), commandParameters.c_str());
+            commandGroup.AddCommandString(command);
+        }
+
+        AZStd::string result;
+        if (!GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, result.c_str());
         }
     }
 } // namespace CommandSystem

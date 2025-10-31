@@ -1,0 +1,105 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Platform specific quality setting overrides go in this file 
+            "Groups": {
+                "q_general": {
+                    "Default": 1 // override the default level for this platform to be medium
+                },
+                "q_graphics": {
+                    "Default": 1, // override the default level for this platform to be medium
+                    
+                    // Setting overrides can be specified using an array to assign values to
+                    // quality levels. For example if you have 4 quality levels:
+                    // "<cvar>": [<low setting>, <medium setting>, <high setting>, <veryhigh setting>]
+                    "Settings": {
+                        
+                        //Render resolution scale to help with gpu performance
+                        "r_renderScale": [ 0.7, 0.8, 0.9, 1.0 ],
+
+                        //PostProcessing related cvars
+                        "r_enableFog": [ 0, 0, 1, 1 ],
+                        "r_fogLayerSupport": [0, 0, 1, 1],
+                        "r_fogTurbulenceSupport": [0, 0, 0, 1],
+                        "r_enableDOF": [ 0, 0, 1, 1 ],
+                        "r_enableBloom": [ 0, 0, 1, 1 ],
+
+                        //Set directional shadow filtering to ShadowFilterMethod::pcf as we are only building variants for that method
+                        "r_directionalShadowFilteringMethod": [1, 1, 1, 1],
+                        //ShadowFilterSampleCount mode: 0 = PcfTap4, 1 = PcfTap9
+                        "r_directionalShadowFilteringSampleCountMode": [0, 0, 1, 1]
+                    }
+                },
+                "q_shadows": {
+                    "Settings": {
+                        // Shadows console variable setting overrides go here
+                    }
+                }
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for this platform go here 
+                // Device rule groups can have whatever name makes sense to you
+                "DeviceLow": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        "Adreno500SeriesGPU" : { "GPUModel": "^Adreno \\(TM\\) (5\\d{2,})\\D*$" },
+                        "Adreno600-629GPU" : { "GPUModel": "^Adreno \\(TM\\) (6[0-2][0-9])\\D*$" },
+                        "MaliMidgard4thGenGPU" : { "GPUModel": "^Mali-T8[2368]0\\D*$" },
+                        "MaliBifrost1stGenGPU" : { "GPUModel": "^Mali-G[357]1\\D*$" },
+                        "MaliBifrost2ndGenGPU" : { "GPUModel": "^Mali-G[57]2\\D*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level to low
+                        "q_general": 0 
+                    }
+                },
+                "DeviceMedium": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        "Adreno630-649GPU" : { "GPUModel": "^Adreno \\(TM\\) (6[3-4][0-9])\\D*$" },
+                        "MaliG310-610GPU" : { "GPUModel": "^Mali-G[356]10\\D*$" },
+                        "MaliG68GPU" : { "GPUModel": "^Mali-G68\\D*$" },
+                        "MaliG57GPU" : { "GPUModel": "^Mali-G57\\D*$" },
+                        "MaliBifrost3rdGenGPU" : { "GPUModel": "^Mali-G76\\D*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level to medium (i.e setting 1)
+                        "q_general": 1
+                    }
+                },
+                "DeviceHigh": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        "Adreno650-699GPU" : { "GPUModel": "^Adreno \\(TM\\) (6[5-9][0-9])\\D*$" },
+                        "Adreno700-729GPU" : { "GPUModel": "^Adreno \\(TM\\) (7[0-2][0-9])\\D*$" },
+                        "MaliG710GPU" : { "GPUModel": "^Mali-G710\\D*$" },
+                        "MaliG78GPU" : { "GPUModel": "^Mali-G78\\D*$" },
+                        "MaliG77GPU" : { "GPUModel": "^Mali-G77\\D*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level for the device to high (i.e setting 2)
+                        "q_general": 2
+                    }
+                },
+                "DeviceVeryHigh": {
+                    "Rules": {
+                        // Device rules are regular expressions, only one of these rules needs to match
+                        "Adreno730OrHigherGPU" : { "GPUModel": "^Adreno \\(TM\\) ((7[3-9]|[8-9][0-9])[0-9]|\\d{4,})\\D*$" },                        
+                        "MaliValhall4thGenGPU" : { "GPUModel": "^Mali-G[67]15\\D*$" },
+                        // Mali-G720, Malig-G620 or a future Mali-G625 or similar
+                        "MaliValhall5thGenGPUOrHigherGPU" : { "GPUModel": "^Mali-G([6-9][2-9][0-9]|\\d{4,})\\D*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level for the device to high
+                        "q_general": 3 
+                    }
+                }
+            }
+        }
+    }
+}

@@ -6,6 +6,7 @@
  *
  */
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -13,8 +14,6 @@
 
 namespace AZ::Prefab
 {
-    static constexpr const char s_useProceduralPrefabsKey[] = "/O3DE/Preferences/Prefabs/UseProceduralPrefabs";
-
     // ProceduralPrefabAsset
 
     ProceduralPrefabAsset::ProceduralPrefabAsset(const AZ::Data::AssetId& assetId)
@@ -58,9 +57,7 @@ namespace AZ::Prefab
 
     bool ProceduralPrefabAsset::UseProceduralPrefabs()
     {
-        bool useProceduralPrefabs = false;
-        bool result = AZ::SettingsRegistry::Get()->GetObject(useProceduralPrefabs, s_useProceduralPrefabsKey);
-        return result && useProceduralPrefabs;
+        return true;
     }
 
     // PrefabDomData
@@ -82,6 +79,9 @@ namespace AZ::Prefab
 
     void PrefabDomData::CopyValue(const rapidjson::Value& inputValue)
     {
+        // Force a memory clear by first assigning to empty.  Simply calling copyfrom
+        // just allocates more memory without clearing existing memory usage.
+        m_prefabDom = AzToolsFramework::Prefab::PrefabDom();
         m_prefabDom.CopyFrom(inputValue, m_prefabDom.GetAllocator());
     }
 

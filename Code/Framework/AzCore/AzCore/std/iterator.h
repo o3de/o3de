@@ -8,19 +8,19 @@
 #pragma once
 
 #include <AzCore/std/base.h>
-#include <AzCore/std/typetraits/integral_constant.h>
-#include <AzCore/std/typetraits/void_t.h>
-#include <AzCore/std/typetraits/is_convertible.h>
 
-#include <AzCore/std/typetraits/is_base_of.h> // use by ConstIteratorCast
+#include <AzCore/std/iterator/iterator_primitives.h>
+#include <AzCore/std/typetraits/is_base_of.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/remove_cv.h>
-#include <AzCore/std/typetraits/is_reference.h>
+#include <AzCore/std/typetraits/void_t.h>
+#include <AzCore/std/utils.h>
 
 #include <iterator>
 
 namespace AZStd
 {
-    // Everything unless specified is based on C++ standard 24 (lib.iterators).
+    // Everything unless specified is based on C++ 20 (lib.iterators).
 
     /// Identifying tag for input iterators.
     using input_iterator_tag = std::input_iterator_tag;
@@ -35,6 +35,11 @@ namespace AZStd
     /// Identifying tag for contagious iterators
     struct contiguous_iterator_tag
         : public random_access_iterator_tag {};
+
+
+    /// Add the default_sentinel struct from C++20
+    struct default_sentinel_t {};
+    inline constexpr default_sentinel_t default_sentinel{};
 }
 
 namespace AZStd::Internal
@@ -50,16 +55,6 @@ namespace AZStd::Internal
         typename Iterator::pointer,
         typename Iterator::reference>
     > = true;
-
-
-    template <typename Iterator, typename = void>
-    inline constexpr bool has_iterator_category_v = false;
-    template <typename Iterator>
-    inline constexpr bool has_iterator_category_v<Iterator, AZStd::void_t<typename Iterator::iterator_category>> = true;
-    template <typename Iterator, typename = void>
-    inline constexpr bool has_iterator_concept_v = false;
-    template <typename Iterator>
-    inline constexpr bool has_iterator_concept_v<Iterator, AZStd::void_t<typename Iterator::iterator_concept>> = true;
 
     // Iterator iterator_category alias must be one of the iterator category tags
     template <typename Iterator, bool>
@@ -94,10 +89,12 @@ namespace AZStd
     /**
      * Default iterator traits struct.
     */
-    template <class Iterator>
+    template <class Iterator, class>
     struct iterator_traits
         : Internal::iterator_traits_type_aliases<Iterator, Internal::has_iterator_type_aliases_v<Iterator>>
     {
+        // Internal type alias meant to indicate that this is the primary template
+        using _is_primary_template = iterator_traits;
     };
 
     /**
@@ -114,45 +111,6 @@ namespace AZStd
         using iterator_category = random_access_iterator_tag;
         using iterator_concept = contiguous_iterator_tag;
     };
-
-}
-
-namespace AZStd::Internal
-{
-    // iterator_category tag testers
-    template <typename Iterator, typename Category, bool = has_iterator_category_v<iterator_traits<Iterator>>>
-    inline constexpr bool has_iterator_category_convertible_to_v = false;
-    template <typename Iterator, typename Category>
-    inline constexpr bool has_iterator_category_convertible_to_v<Iterator, Category, true> = is_convertible_v<typename iterator_traits<Iterator>::iterator_category, Category>;
-
-    template <typename Iterator>
-    inline constexpr bool is_input_iterator_v = has_iterator_category_convertible_to_v<Iterator, input_iterator_tag>;
-
-    template <typename Iterator>
-    inline constexpr bool is_forward_iterator_v = has_iterator_category_convertible_to_v<Iterator, forward_iterator_tag>;
-
-    template <typename Iterator>
-    inline constexpr bool is_bidirectional_iterator_v = has_iterator_category_convertible_to_v<Iterator, bidirectional_iterator_tag>;
-
-    template <typename Iterator>
-    inline constexpr bool is_random_access_iterator_v = has_iterator_category_convertible_to_v<Iterator, random_access_iterator_tag>;
-
-    template <typename Iterator>
-    inline constexpr bool is_contiguous_iterator_v = has_iterator_category_convertible_to_v<Iterator, contiguous_iterator_tag>;
-
-    template <typename Iterator>
-    inline constexpr bool is_exactly_input_iterator_v = has_iterator_category_convertible_to_v<Iterator, input_iterator_tag> && !has_iterator_category_convertible_to_v<Iterator, forward_iterator_tag>;
-
-    // iterator concept testers
-    template <typename Derived, typename Base>
-    inline constexpr bool derived_from = is_base_of_v<Base, Derived> && is_convertible_v<const volatile Derived*, const volatile Base*>;
-
-    template <typename Iterator, typename Concept, bool = has_iterator_concept_v<iterator_traits<Iterator>>>
-    inline constexpr bool satisfies_iterator_concept = false;
-    template <typename Iterator, typename Concept>
-    inline constexpr bool satisfies_iterator_concept<Iterator, Concept, true> = derived_from<typename iterator_traits<Iterator>::iterator_concept, Concept>;
-    template <typename Iterator>
-    inline constexpr bool satisfies_contiguous_iterator_concept_v = satisfies_iterator_concept<Iterator, contiguous_iterator_tag>;
 }
 
 namespace AZStd
@@ -161,10 +119,6 @@ namespace AZStd
     using std::reverse_iterator;
     using std::make_reverse_iterator;
 
-    // Alias the C++ standard move_iterator into the AZStd:: namespace
-    using std::move_iterator;
-    using std::make_move_iterator;
-
     // Alias the C++ standard insert iterators into the AZStd:: namespace
     using std::back_insert_iterator;
     using std::back_inserter;
@@ -172,7 +126,33 @@ namespace AZStd
     using std::front_inserter;
     using std::insert_iterator;
     using std::inserter;
-  
+
+#if !defined(__cpp_lib_concepts)
+    // In order for pre C++20 back_inserter_iterator, front_inserter_iterator and insert_iterator
+    // to work with the range algorithms which require a weakly_incrementable iterator
+    // the difference_type type alias must not be void as it is in C++17
+    // https://en.cppreference.com/w/cpp/iterator/back_insert_iterator
+    // We workaround this by specializing AZStd::iterator_traits for these types
+    // to provide a difference_type type alias
+    template<class Container>
+    struct iterator_traits<back_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+    template<class Container>
+    struct iterator_traits<front_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+    template<class Container>
+    struct iterator_traits<insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+#endif
+
     enum iterator_status_flag
     {
         isf_none = 0x00,     ///< Iterator is invalid.
@@ -200,7 +180,7 @@ namespace AZStd
     // Both functions are constexpr as of C++17
     using std::next;
     using std::prev;
-    
+
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -222,7 +202,7 @@ namespace AZStd
     using std::size;
     using std::empty;
     using std::data;
-   
+
     namespace Debug
     {
         // Keep macros around for backwards compatibility
@@ -244,9 +224,7 @@ namespace AZStd
             return *reinterpret_cast<Iterator*>(&iter);
         }
     }
-
-    using std::size;
-    using std::empty;
-    using std::data;
 } // namespace AZStd
 
+// Include the AZStd::move_iterator implementation after alias in the std:: iterator names
+#include <AzCore/std/iterator/move_iterator.h>

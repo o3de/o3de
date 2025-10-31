@@ -14,7 +14,12 @@
 
 namespace AZ
 {
-    class StackedString
+    constexpr char JsonPointerEscape = '~';
+    constexpr AZStd::string_view JsonPointerEncodedEscape = "~0";
+    constexpr char JsonPointerReferenceTokenPrefix = '/';
+    constexpr AZStd::string_view JsonPointerEncodedReferenceTokenPrefix = "~1";
+
+    class AZCORE_API StackedString
     {
     public:
         enum class Format
@@ -26,6 +31,11 @@ namespace AZ
         explicit StackedString(Format format);
 
         //! Push a new string part onto the stack.
+        //! Only supports a single reference token
+        //! i.e appending "Foo" onto "/O3DE" results in "/O3DE/Foo"
+        //! However appending "TokenWith/ForwardSlash" results in "/O3DE/Foo/TokenWith~1ForwardSlash"
+        //! as the forward slash is seen as part of a single reference token and encoded.
+        //! See the JSON pointer path spec for more info: https://www.rfc-editor.org/rfc/rfc6901#section-3
         void Push(AZStd::string_view value);
         //! Push an integer value to the stack. The value will be converted to a string.
         void Push(size_t value);
@@ -44,7 +54,7 @@ namespace AZ
     };
 
     //! Scoped object that manages the life cycle of a single entry on the string stack.
-    class ScopedStackedString
+    class AZCORE_API ScopedStackedString
     {
     public:
         //! Pushes a new entry on the stack.

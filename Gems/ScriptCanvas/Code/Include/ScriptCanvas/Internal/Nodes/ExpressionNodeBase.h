@@ -69,10 +69,10 @@ namespace ScriptCanvas
                 void SignalFormatChanged();
 
                 AZStd::string GetDisplayGroup() const { return "ExpressionDisplayGroup"; }
-                AZ::Crc32 GetDisplayGroupId() const { return AZ_CRC("ExpressionDisplayGroup", 0x770de38e); }
+                AZ::Crc32 GetDisplayGroupId() const { return AZ_CRC_CE("ExpressionDisplayGroup"); }
 
-                AZ::Crc32 GetExtensionId() const { return AZ_CRC("AddExpressionOperand", 0x5f5fdcab); }
-                AZ::Crc32 GetPropertyId() const { return AZ_CRC("FormatStringProperty", 0x2c587efa); }
+                AZ::Crc32 GetExtensionId() const { return AZ_CRC_CE("AddExpressionOperand"); }
+                AZ::Crc32 GetPropertyId() const { return AZ_CRC_CE("FormatStringProperty"); }
                 
             protected:
                 virtual ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString);

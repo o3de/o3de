@@ -8,7 +8,6 @@
 
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Casting/lossy_cast.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -36,7 +35,7 @@ namespace AZ
         
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             Device& device = static_cast<Device&>(deviceBase);
             SetResolver(AZStd::make_unique<StreamingImagePoolResolver>(device, this));
@@ -47,7 +46,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request)
         {
             Image& image = static_cast<Image&>(*request.m_image);
 
@@ -62,8 +61,8 @@ namespace AZ
             image.m_streamedMipLevel = request.m_descriptor.m_mipLevels - static_cast<uint32_t>(request.m_tailMipSlices.size());
 
             // Queue upload tail mip slices
-             RHI::StreamingImageExpandRequest uploadMipRequest;
-             uploadMipRequest.m_image = &image;
+             RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
+             uploadMipRequest.m_image = request.m_image;
              uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
              uploadMipRequest.m_waitForUpload = true;
              GetDevice().GetAsyncUploadQueue().QueueUpload(uploadMipRequest, request.m_descriptor.m_mipLevels);
@@ -71,7 +70,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             auto& image = static_cast<Image&>(resourceBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -87,9 +86,9 @@ namespace AZ
             image.m_memoryView = {};            
         }
         
-        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::StreamingImageExpandRequest& request)
+        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             auto& image = static_cast<Image&>(*request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -99,7 +98,7 @@ namespace AZ
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
             
             // Create new expand request and append callback from the StreamingImagePool.
-            RHI::StreamingImageExpandRequest newRequest = request;
+            RHI::DeviceStreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]()
             {
                 Image& imageCompleted = static_cast<Image&>(*request.m_image);
@@ -111,7 +110,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& imageBase, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::DeviceImage& imageBase, uint32_t targetMipLevel)
         {
             auto& image = static_cast<Image&>(imageBase);
             auto& device = static_cast<Device&>(GetDevice());

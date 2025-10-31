@@ -19,12 +19,15 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<SubsurfaceTransmissionParameterFunctorSourceData, RPI::MaterialFunctorSourceData>()
-                    ->Version(1)
+                    ->Version(2) // added shrinkFactor, transmissionNdLBias and distanceAttenuation
                     ->Field("mode", &SubsurfaceTransmissionParameterFunctorSourceData::m_mode)
                     ->Field("scale", &SubsurfaceTransmissionParameterFunctorSourceData::m_scale)
                     ->Field("power", &SubsurfaceTransmissionParameterFunctorSourceData::m_power)
                     ->Field("distortion", &SubsurfaceTransmissionParameterFunctorSourceData::m_distortion)
                     ->Field("attenuation", &SubsurfaceTransmissionParameterFunctorSourceData::m_attenuation)
+                    ->Field("shrinkFactor", &SubsurfaceTransmissionParameterFunctorSourceData::m_shrinkFactor)
+                    ->Field("transmissionNdLBias", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionNdLBias)
+                    ->Field("distanceAttenuation", &SubsurfaceTransmissionParameterFunctorSourceData::m_distanceAttenuation)
                     ->Field("tintColor", &SubsurfaceTransmissionParameterFunctorSourceData::m_tintColor)
                     ->Field("thickness", &SubsurfaceTransmissionParameterFunctorSourceData::m_thickness)
                     ->Field("enabled", &SubsurfaceTransmissionParameterFunctorSourceData::m_enabled)
@@ -33,7 +36,7 @@ namespace AZ
                     ->Field("scatterDistanceShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_scatterDistance)
                     ->Field("parametersShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionParams)
                     ->Field("tintThickenssShaderInput", &SubsurfaceTransmissionParameterFunctorSourceData::m_transmissionTintThickness);
-                    ;
+                ;
             }
         }
 
@@ -48,6 +51,9 @@ namespace AZ
             functor->m_power                    = context.FindMaterialPropertyIndex(Name{ m_power });
             functor->m_distortion               = context.FindMaterialPropertyIndex(Name{ m_distortion });
             functor->m_attenuation              = context.FindMaterialPropertyIndex(Name{ m_attenuation });
+            functor->m_shrinkFactor             = context.FindMaterialPropertyIndex(Name{ m_shrinkFactor });
+            functor->m_transmissionNdLBias      = context.FindMaterialPropertyIndex(Name{ m_transmissionNdLBias });
+            functor->m_distanceAttenuation      = context.FindMaterialPropertyIndex(Name{ m_distanceAttenuation });
             functor->m_tintColor                = context.FindMaterialPropertyIndex(Name{ m_tintColor });
             functor->m_thickness                = context.FindMaterialPropertyIndex(Name{ m_thickness });
             functor->m_enabled                  = context.FindMaterialPropertyIndex(Name{ m_enabled });
@@ -56,7 +62,8 @@ namespace AZ
 
             if (functor->m_mode.IsNull() || functor->m_scale.IsNull() || functor->m_power.IsNull() || functor->m_distortion.IsNull() ||
                 functor->m_tintColor.IsNull() || functor->m_thickness.IsNull() || functor->m_enabled.IsNull() || functor->m_attenuation.IsNull() || functor->m_scatterDistanceColor.IsNull() ||
-                functor->m_scatterDistanceIntensity.IsNull())
+                functor->m_scatterDistanceIntensity.IsNull() || functor->m_shrinkFactor.IsNull() || functor->m_transmissionNdLBias.IsNull() ||
+                functor->m_distanceAttenuation.IsNull())
             {
                 return Failure();
             }
@@ -66,33 +73,20 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_power);
             AddMaterialPropertyDependency(functor, functor->m_distortion);
             AddMaterialPropertyDependency(functor, functor->m_attenuation);
+            AddMaterialPropertyDependency(functor, functor->m_shrinkFactor);
+            AddMaterialPropertyDependency(functor, functor->m_transmissionNdLBias);
+            AddMaterialPropertyDependency(functor, functor->m_distanceAttenuation);
             AddMaterialPropertyDependency(functor, functor->m_tintColor);
             AddMaterialPropertyDependency(functor, functor->m_thickness);
             AddMaterialPropertyDependency(functor, functor->m_enabled);
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceColor);
             AddMaterialPropertyDependency(functor, functor->m_scatterDistanceIntensity);
 
-            functor->m_scatterDistance = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_scatterDistance });
-            functor->m_transmissionParams = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_transmissionParams });
-            functor->m_transmissionTintThickness = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{ m_transmissionTintThickness });
-
-            if (functor->m_scatterDistance.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_scatterDistance.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionParams.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionParams.c_str());
-                return Failure();
-            }
-
-            if (functor->m_transmissionTintThickness.IsNull())
-            {
-                AZ_Error("ShaderCollectionFunctorSourceData", false, "Could not find shader input '%s'", m_transmissionTintThickness.c_str());
-                return Failure();
-            }
+            functor->m_scatterDistance = RPI::MaterialShaderParameterNameIndex{ m_scatterDistance, context.GetNameContext() };
+            functor->m_transmissionParams = RPI::MaterialShaderParameterNameIndex{ m_transmissionParams, context.GetNameContext() };
+            functor->m_transmissionTintThickness =
+                RPI::MaterialShaderParameterNameIndex{ m_transmissionTintThickness, context.GetNameContext() };
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

@@ -12,7 +12,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QCompleter>
 #include <QAbstractItemModel>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QSortFilterProxyModel>
 #include <QTableView>
@@ -20,6 +20,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 #include <GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h>

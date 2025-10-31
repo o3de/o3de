@@ -8,6 +8,9 @@
 
 #include <ProfilerImGuiSystemComponent.h>
 
+#include "ImGuiTreemapImpl.h"
+
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -29,7 +32,6 @@ namespace Profiler
             {
                 ec->Class<ProfilerImGuiSystemComponent>("ProfilerImGui", "Provides in-game visualization of the performance data gathered by the ProfilerSystemComponent")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -60,12 +62,22 @@ namespace Profiler
         {
             ProfilerImGuiInterface::Register(this);
         }
+
+        if (!ImGuiTreemapFactory::Interface::Get())
+        {
+            ImGuiTreemapFactory::Interface::Register(&m_imguiTreemapFactory);
+        }
 #endif // defined(IMGUI_ENABLED)
     }
 
     ProfilerImGuiSystemComponent::~ProfilerImGuiSystemComponent()
     {
 #if defined(IMGUI_ENABLED)
+        if (ImGuiTreemapFactory::Interface::Get() == &m_imguiTreemapFactory)
+        {
+            ImGuiTreemapFactory::Interface::Unregister(&m_imguiTreemapFactory);
+        }
+
         if (ProfilerImGuiInterface::Get() == this)
         {
             ProfilerImGuiInterface::Unregister(this);
@@ -99,6 +111,10 @@ namespace Profiler
         {
             ShowCpuProfilerWindow(m_showCpuProfiler);
         }
+        if (m_showHeapMemoryProfiler)
+        {
+            m_imguiHeapMemoryProfiler.Draw(m_showHeapMemoryProfiler);
+        }
     }
 
     void ProfilerImGuiSystemComponent::OnImGuiMainMenuUpdate()
@@ -107,8 +123,9 @@ namespace Profiler
         {
             if (ImGui::MenuItem("CPU", "", &m_showCpuProfiler))
             {
-                CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
+                AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
             }
+            ImGui::MenuItem("Heap Memory", "", &m_showHeapMemoryProfiler);
             ImGui::EndMenu();
         }
     }

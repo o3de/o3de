@@ -27,11 +27,11 @@ namespace EMotionFX
         {
             static AZStd::fixed_vector<AZ::Crc32, g_maxLods> s_lodVirtualTypeKeys =
             {
-                AZ_CRC("LODMesh1", 0xcbea988c),
-                AZ_CRC("LODMesh2", 0x52e3c936),
-                AZ_CRC("LODMesh3", 0x25e4f9a0),
-                AZ_CRC("LODMesh4", 0xbb806c03),
-                AZ_CRC("LODMesh5", 0xcc875c95)
+                AZ_CRC_CE("LODMesh1"),
+                AZ_CRC_CE("LODMesh2"),
+                AZ_CRC_CE("LODMesh3"),
+                AZ_CRC_CE("LODMesh4"),
+                AZ_CRC_CE("LODMesh5")
             };
 
             size_t LODSelector::SelectLODBones(

@@ -29,7 +29,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(Style, "{61BD6B15-8AD6-4FC6-9287-9957FD076073}");
-            AZ_CLASS_ALLOCATOR(Style, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Style, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -67,7 +67,7 @@ namespace GraphCanvas
             friend GraphCanvas::StyleManager;
         };
 
-        using StyleVector = AZStd::vector<Style*>;
+        using StyleVector = AZStd::vector<AZStd::shared_ptr<Style>>;
 
 
         class ComputedStyle

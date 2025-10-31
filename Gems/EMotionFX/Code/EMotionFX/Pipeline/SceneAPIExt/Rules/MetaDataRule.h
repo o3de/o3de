@@ -42,7 +42,7 @@ namespace EMotionFX
             {
             public:
                 AZ_RTTI(MetaDataRule, "{8D759063-7D2E-4543-8EB3-AB510A5886CF}", AZ::SceneAPI::DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(MetaDataRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(MetaDataRule, AZ::SystemAllocator)
 
                 MetaDataRule() = default;
                 MetaDataRule(const AZStd::string& metaData);

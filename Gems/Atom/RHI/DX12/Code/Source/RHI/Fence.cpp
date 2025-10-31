@@ -8,6 +8,8 @@
 #include <RHI/Fence.h>
 #include <RHI/Device.h>
 
+#include <Atom/RHI.Reflect/DX12/DX12Bus.h>
+
 namespace AZ
 {
     namespace DX12
@@ -16,9 +18,7 @@ namespace AZ
             : m_EventHandle(nullptr)
             , m_name(name)
         {
-            AZStd::wstring nameW;
-            AZStd::to_wstring(nameW, name);
-            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+            m_EventHandle = CreateEvent(nullptr, false, false, nullptr);
         }
 
         FenceEvent::~FenceEvent()
@@ -31,10 +31,16 @@ namespace AZ
             return m_name;
         }
 
-        RHI::ResultCode Fence::Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState)
+        RHI::ResultCode Fence::Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState, bool usedForCrossDevice)
         {
             Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
-            if (FAILED(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            D3D12_FENCE_FLAGS flags = D3D12_FENCE_FLAG_NONE;
+            if (usedForCrossDevice)
+            {
+                flags |= D3D12_FENCE_FLAG_SHARED | D3D12_FENCE_FLAG_SHARED_CROSS_ADAPTER;
+            }
+            DX12RequirementBus::Broadcast(&DX12RequirementBus::Events::CollectFenceFlags, flags);
+            if (!AssertSuccess(dx12Device->CreateFence(0, flags, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
             {
                 AZ_Error("Fence", false, "Failed to initialize ID3D12Fence.");
                 return RHI::ResultCode::Fail;
@@ -46,14 +52,37 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Fence::InitCrossDevice(ID3D12DeviceX* dx12Device, Fence* originalDeviceFence, ID3D12DeviceX* originalDevice)
+        {
+            m_originalDeviceFence = originalDeviceFence;
+            HANDLE fenceHandle = nullptr;
+            if (!AssertSuccess(
+                    originalDevice->CreateSharedHandle(originalDeviceFence->m_fence.get(), nullptr, GENERIC_ALL, nullptr, &fenceHandle)))
+            {
+                AZ_Error("Fence", false, "Failed to create handle from ID3D12Fence.");
+                return RHI::ResultCode::Fail;
+            }
+            Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
+            if (!AssertSuccess(dx12Device->OpenSharedHandle(fenceHandle, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            {
+                AZ_Error("Fence", false, "Failed to ID3D12Fence from handle.");
+                CloseHandle(fenceHandle);
+                return RHI::ResultCode::Fail;
+            }
+            m_fence = fencePtr.Get();
+            CloseHandle(fenceHandle);
+            return RHI::ResultCode::Success;
+        }
+
         void Fence::Shutdown()
         {
             m_fence = nullptr;
+            m_originalDeviceFence = nullptr;
         }
 
         void Fence::Wait(FenceEvent& fenceEvent) const
         {
-            Wait(fenceEvent, m_pendingValue);
+            Wait(fenceEvent, GetPendingValue());
         }
 
         void Fence::Wait(FenceEvent& fenceEvent, uint64_t fenceValue) const
@@ -68,7 +97,7 @@ namespace AZ
 
         void Fence::Signal()
         {
-            m_fence->Signal(m_pendingValue);
+            m_fence->Signal(GetPendingValue());
         }
 
         RHI::FenceState Fence::GetFenceState() const
@@ -79,7 +108,9 @@ namespace AZ
 
         uint64_t Fence::GetPendingValue() const
         {
-            return m_pendingValue;
+            // If the m_originalDeviceFence is set we have cross device fence
+            // They share a shared value on the GPUs so they must also share a pending value here
+            return m_originalDeviceFence ? m_originalDeviceFence->m_pendingValue : m_pendingValue;
         }
 
         uint64_t Fence::GetCompletedValue() const
@@ -94,6 +125,7 @@ namespace AZ
 
         uint64_t Fence::Increment()
         {
+            AZ_Assert(m_originalDeviceFence == nullptr, "Incrementing a Fence referencing another devices Fence is not supported");
             return ++m_pendingValue;
         }
 
@@ -144,9 +176,19 @@ namespace AZ
             return aznew FenceImpl();
         }
 
-        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState)
+        RHI::ResultCode FenceImpl::InitInternal(RHI::Device& deviceBase, RHI::FenceState initialState, RHI::FenceFlags flags)
         {
-            return m_fence.Init(static_cast<Device&>(deviceBase).GetDevice(), initialState);
+            return m_fence.Init(
+                static_cast<Device&>(deviceBase).GetDevice(), initialState, RHI::CheckBitsAny(flags, RHI::FenceFlags::CrossDevice));
+        }
+
+        RHI::ResultCode FenceImpl::InitCrossDeviceInternal(RHI::Device& device, RHI::Ptr<RHI::DeviceFence> originalDeviceFence)
+        {
+            m_originalDeviceFence = originalDeviceFence;
+            auto originalDx12Fence = static_cast<FenceImpl*>(originalDeviceFence.get());
+            auto& originalDx12Device = static_cast<Device&>(originalDx12Fence->GetDevice());
+            return m_fence.InitCrossDevice(
+                static_cast<Device&>(device).GetDevice(), &originalDx12Fence->Get(), originalDx12Device.GetDevice());
         }
 
         void FenceImpl::ShutdownInternal()
@@ -156,6 +198,7 @@ namespace AZ
 
         void FenceImpl::ResetInternal()
         {
+            AZ_Assert(!m_originalDeviceFence, "Resetting a Fence referencing another devices Fence is not supported");
             m_fence.Increment();
         }
 

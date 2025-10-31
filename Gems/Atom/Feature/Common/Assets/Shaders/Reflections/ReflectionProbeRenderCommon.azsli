@@ -25,8 +25,13 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float4x4 obbTr
     // retrieve normal from the encoded buffer written by the forward pass
     float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
-    bool multiScatterCompensationEnabled = (encodedNormal.a > 0.0f);
+    bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
+    if (!enableIBL)
+    {
+        return false;
+    }
 
+    bool multiScatterCompensationEnabled = DecodeUnorm2BitFlag2(encodedNormal.a);
     float3 dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
     float NdotV = dot(normal, dirToCamera);
     NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.

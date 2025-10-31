@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 using namespace AZ;
@@ -15,7 +16,17 @@ using namespace AzFramework;
 namespace UnitTest
 {
 
-    using NativeWindowTest = AllocatorsFixture;
+    class NativeWindowTest : public LeakDetectionFixture
+    {
+    public:
+        NativeWindowTest()
+            : LeakDetectionFixture()
+        {
+            m_nativeUiComponent = AZStd::make_unique<AzFramework::NativeUISystemComponent>();
+        }
+    private:
+        AZStd::unique_ptr<AzFramework::NativeUISystemComponent> m_nativeUiComponent;
+    };
 
     class NativeWindowListener
         : public WindowNotificationBus::Handler

@@ -31,7 +31,6 @@ namespace AZ
             AssImpSkinWeightsImporter::AssImpSkinWeightsImporter()
             {
                 BindToCall(&AssImpSkinWeightsImporter::ImportSkinWeights);
-                BindToCall(&AssImpSkinWeightsImporter::SetupNamedBoneLinks);
             }
 
             void AssImpSkinWeightsImporter::Reflect(ReflectContext* context)
@@ -94,54 +93,36 @@ namespace AZ
                                 continue;
                             }
                             skinWeightData = AZStd::make_shared<SceneData::GraphData::SkinWeightData>();
+                            skinWeightData->ResizeContainerSpace(totalVertices);
                         }
-                        Pending pending;
-                        pending.m_bone = bone;
-                        pending.m_numVertices = static_cast<unsigned int>(totalVertices);
-                        pending.m_skinWeightData = skinWeightData;
-                        pending.m_vertOffset = vertexCount;
-                        m_pendingSkinWeights.push_back(pending);
+                        AZStd::string sanitizedName = bone->mName.C_Str();
+                        RenamedNodesMap::SanitizeNodeName(sanitizedName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
+                        int boneId = skinWeightData->GetBoneId(sanitizedName);
+                        for (unsigned weight = 0; weight < bone->mNumWeights; ++weight)
+                        {
+                            DataTypes::ISkinWeightData::Link link;
+                            link.boneId = boneId;
+                            link.weight = bone->mWeights[weight].mWeight;
+
+                            skinWeightData->AddAndSortLink(bone->mWeights[weight].mVertexId + vertexCount, link);
+                        }
                     }
                     vertexCount += mesh->mNumVertices;
                 }
 
                 Events::ProcessingResult skinWeightsResult;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, skinWeightData, weightsIndexForMesh, skinWeightName);
-                skinWeightsResult = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(
+                    context, skinWeightData, weightsIndexForMesh, skinWeightName);
+                skinWeightsResult = Events::Process(*dataPopulated);
 
                 if (skinWeightsResult != Events::ProcessingResult::Failure)
                 {
-                    skinWeightsResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                    skinWeightsResult = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
 
                 combinedSkinWeightsResult += skinWeightsResult;
 
                 return combinedSkinWeightsResult.GetResult();
-            }
-
-            Events::ProcessingResult AssImpSkinWeightsImporter::SetupNamedBoneLinks(AssImpFinalizeSceneContext& /*context*/)
-            {
-                AZ_TraceContext("Importer", "Skin Weights");
-
-                for (auto& it : m_pendingSkinWeights)
-                {
-                    it.m_skinWeightData->ResizeContainerSpace(it.m_numVertices);
-
-                    AZStd::string boneName = it.m_bone->mName.C_Str();
-                    int boneId = it.m_skinWeightData->GetBoneId(boneName);
-
-                    for(unsigned weight = 0; weight < it.m_bone->mNumWeights; ++weight)
-                    {
-                        DataTypes::ISkinWeightData::Link link;
-                        link.boneId = boneId;
-                        link.weight = it.m_bone->mWeights[weight].mWeight;
-
-                        it.m_skinWeightData->AddAndSortLink(it.m_bone->mWeights[weight].mVertexId + it.m_vertOffset, link);
-                    }
-                }
-                const auto result = m_pendingSkinWeights.empty() ? Events::ProcessingResult::Ignored : Events::ProcessingResult::Success;
-                m_pendingSkinWeights.clear();
-                return result;
             }
         } // namespace SceneBuilder
     } // namespace SceneAPI

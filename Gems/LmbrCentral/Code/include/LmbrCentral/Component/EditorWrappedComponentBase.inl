@@ -16,15 +16,15 @@ namespace LmbrCentral
             TConfiguration configData;
             AzToolsFramework::Components::EditorComponentBase editorComponentBaseData;
 
-            if (!classElement.FindSubElementAndGetData(AZ_CRC("Configuration", 0xa5e2a5d7), configData)
-                || !classElement.FindSubElementAndGetData(AZ_CRC("BaseClass1", 0xd4925735), editorComponentBaseData))
+            if (!classElement.FindSubElementAndGetData(AZ_CRC_CE("Configuration"), configData)
+                || !classElement.FindSubElementAndGetData(AZ_CRC_CE("BaseClass1"), editorComponentBaseData))
             {
                 AZ_Error("LmbrCentral", false, "Failed to find and get data from Configuration or BaseClass1 element");
                 return false;
             }
 
-            if (!classElement.RemoveElementByName(AZ_CRC("Configuration", 0xa5e2a5d7))
-                || !classElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
+            if (!classElement.RemoveElementByName(AZ_CRC_CE("Configuration"))
+                || !classElement.RemoveElementByName(AZ_CRC_CE("BaseClass1")))
             {
                 AZ_Error("LmbrCentral", false, "Failed to remove Configuration or BaseClass1 element");
                 return false;
@@ -34,8 +34,8 @@ namespace LmbrCentral
             int baseIndex = classElement.AddElementWithData(context, "BaseClass1", wrappedComponentBaseInstance);
 
             auto& wrappedComponentBaseElement = classElement.GetSubElement(baseIndex);
-            auto* editorComponentBaseElement = wrappedComponentBaseElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
-            auto* configurationElement = wrappedComponentBaseElement.FindSubElement(AZ_CRC("Configuration", 0xa5e2a5d7));
+            auto* editorComponentBaseElement = wrappedComponentBaseElement.FindSubElement(AZ_CRC_CE("BaseClass1"));
+            auto* configurationElement = wrappedComponentBaseElement.FindSubElement(AZ_CRC_CE("Configuration"));
 
             if (!editorComponentBaseElement || !configurationElement)
             {
@@ -96,7 +96,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, TDerivedClass::s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, TDerivedClass::s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, TDerivedClass::s_categoryName)
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -177,6 +177,7 @@ namespace LmbrCentral
     void EditorWrappedComponentBase<TComponent, TConfiguration>::Init()
     {
         AzToolsFramework::Components::EditorComponentBase::Init();
+        m_runtimeComponentActive = false;
         m_component.ReadInConfig(&m_configuration);
         m_component.Init();
     }
@@ -196,6 +197,7 @@ namespace LmbrCentral
         if (m_visible)
         {
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
     }
 
@@ -205,8 +207,10 @@ namespace LmbrCentral
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
+        m_runtimeComponentActive = false;
         m_component.Deactivate();
-        m_component.SetEntity(nullptr); // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        m_component.SetEntity(nullptr); 
     }
 
     template <typename TComponent, typename TConfiguration>
@@ -222,12 +226,18 @@ namespace LmbrCentral
     template <typename TComponent, typename TConfiguration>
     AZ::u32 EditorWrappedComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
-        m_component.Deactivate();
+        if (m_runtimeComponentActive)
+        {
+            m_runtimeComponentActive = false;
+            m_component.Deactivate();
+        }
+
         m_component.ReadInConfig(&m_configuration);
 
-        if (m_visible && m_component.GetEntity())
+        if (m_visible && !m_runtimeComponentActive)
         {
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
 
         return AZ::Edit::PropertyRefreshLevels::None;

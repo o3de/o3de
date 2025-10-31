@@ -29,7 +29,7 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GeometryService", 0x5676f10b));
+            provided.push_back(AZ_CRC_CE("GeometryService"));
         }
 
         // AZ::Component

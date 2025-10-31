@@ -863,7 +863,7 @@ namespace EMotionFX
                     const float jointRadius = joint->GetCollisionRadius() * scaleFactor;
                     if (PerformCollision(particle.m_pos, jointRadius, particle))
                     {
-                        particle.m_oldPos = MCore::LinearInterpolate<AZ::Vector3>(particle.m_oldPos, particle.m_pos, joint->GetFriction());
+                        particle.m_oldPos = particle.m_oldPos.Lerp(particle.m_pos, joint->GetFriction());
                     }
                 }
             }

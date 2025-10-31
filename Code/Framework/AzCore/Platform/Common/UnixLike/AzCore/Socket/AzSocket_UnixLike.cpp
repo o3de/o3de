@@ -276,12 +276,12 @@ namespace AZ::AzSock
     AZ::s32 Send(AZSOCKET sock, const char* buf, AZ::s32 len, AZ::s32 flags)
     {
         AZ::s32 msgNoSignal = MSG_NOSIGNAL;
-        return HandleSocketError(send(sock, buf, len, flags | msgNoSignal));
+        return HandleSocketError(static_cast<AZ::s32>(send(sock, buf, len, flags | msgNoSignal)));
     }
 
     AZ::s32 Recv(AZSOCKET sock, char* buf, AZ::s32 len, AZ::s32 flags)
     {
-        return HandleSocketError(recv(sock, buf, len, flags));
+        return HandleSocketError(static_cast<AZ::s32>(recv(sock, buf, len, flags)));
     }
 
     AZ::s32 Bind(AZSOCKET sock, const AzSocketAddress& addr)

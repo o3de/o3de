@@ -9,7 +9,9 @@
 
 #include "CrySystem_precompiled.h"
 #include "SystemEventDispatcher.h"
-#include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Debug/Profiler.h>
+
+AZ_DECLARE_BUDGET(CrySystem);
 
 CSystemEventDispatcher::CSystemEventDispatcher()
     : m_listeners(0)
@@ -72,7 +74,7 @@ void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, 
 //////////////////////////////////////////////////////////////////////////
 void CSystemEventDispatcher::Update()
 {
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
     assert(gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId());
 
     SEventParams params;

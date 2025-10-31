@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ::Render

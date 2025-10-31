@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <Editor/InspectorBus.h>
 #include <Source/Editor/ObjectEditor.h>
 
 
@@ -46,7 +47,7 @@ namespace EMStudio
         m_scrollArea             = new QScrollArea();
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(1);
         setLayout(mainLayout);
 
@@ -63,7 +64,7 @@ namespace EMStudio
             QVBoxLayout* verticalLayout = new QVBoxLayout();
             m_mainReflectedWidget->setLayout(verticalLayout);
             verticalLayout->setAlignment(Qt::AlignTop);
-            verticalLayout->setMargin(0);
+            verticalLayout->setContentsMargins(0, 0, 0, 0);
             verticalLayout->setSpacing(0);
             verticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
@@ -102,18 +103,18 @@ namespace EMStudio
                 m_conditionsWidget->setLayout(conditionsVerticalLayout);
                 m_conditionsWidget->setObjectName("EMFX.AttributesWindowWidget.NodeTransition.ConditionsWidget");
                 conditionsVerticalLayout->setAlignment(Qt::AlignTop);
-                conditionsVerticalLayout->setMargin(0);
+                conditionsVerticalLayout->setContentsMargins(0, 0, 0, 0);
                 conditionsVerticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
                 m_conditionsLayout = new QVBoxLayout();
                 m_conditionsLayout->setAlignment(Qt::AlignTop);
-                m_conditionsLayout->setMargin(0);
+                m_conditionsLayout->setContentsMargins(0, 0, 0, 0);
                 m_conditionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 conditionsVerticalLayout->addLayout(m_conditionsLayout);
 
                 m_addConditionButton = new AddConditionButton(m_plugin, m_conditionsWidget);
                 m_addConditionButton->setObjectName("EMFX.AttributesWindowWidget.NodeTransition.AddConditionsWidget");
-                connect(m_addConditionButton, &AddConditionButton::ObjectTypeChosen, this, [=](AZ::TypeId conditionType)
+                connect(m_addConditionButton, &AddConditionButton::ObjectTypeChosen, this, [this](AZ::TypeId conditionType)
                     {
                         AddCondition(conditionType);
                     });
@@ -128,17 +129,17 @@ namespace EMStudio
                 QVBoxLayout* actionVerticalLayout = new QVBoxLayout();
                 m_actionsWidget->setLayout(actionVerticalLayout);
                 actionVerticalLayout->setAlignment(Qt::AlignTop);
-                actionVerticalLayout->setMargin(0);
+                actionVerticalLayout->setContentsMargins(0, 0, 0, 0);
                 actionVerticalLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
                 m_actionsLayout = new QVBoxLayout();
                 m_actionsLayout->setAlignment(Qt::AlignTop);
-                m_actionsLayout->setMargin(0);
+                m_actionsLayout->setContentsMargins(0, 0, 0, 0);
                 m_actionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 actionVerticalLayout->addLayout(m_actionsLayout);
 
                 AddActionButton* addActionButton = new AddActionButton(m_plugin, m_actionsWidget);
-                connect(addActionButton, &AddActionButton::ObjectTypeChosen, this, [=](AZ::TypeId actionType)
+                connect(addActionButton, &AddActionButton::ObjectTypeChosen, this, [this](AZ::TypeId actionType)
                     {
                         const AnimGraphModel::ModelItemType itemType = m_displayingModelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
                         if (itemType == AnimGraphModel::ModelItemType::TRANSITION)
@@ -157,7 +158,10 @@ namespace EMStudio
             }
         }
 
-        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &AttributesWindow::OnSelectionChanged);
+        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+            {
+                UpdateAndShowInInspector();
+            });
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &AttributesWindow::OnDataChanged);
 
         Init(QModelIndex(), true);
@@ -167,6 +171,9 @@ namespace EMStudio
 
     AttributesWindow::~AttributesWindow()
     {
+        // Clear the inspector in case this window is currently shown.
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, this);
+
         AttributesWindowRequestBus::Handler::BusDisconnect();
 
         if (m_mainReflectedWidget)
@@ -509,7 +516,6 @@ namespace EMStudio
 
         QMenu contextMenu(this);
 
-
         QAction* deleteAction = contextMenu.addAction("Delete action");
         deleteAction->setProperty("actionIndex", actionIndex);
         if (itemType == AnimGraphModel::ModelItemType::TRANSITION)
@@ -521,18 +527,14 @@ namespace EMStudio
             connect(deleteAction, &QAction::triggered, this, &AttributesWindow::OnRemoveStateAction);
         }
 
-
         if (!contextMenu.isEmpty())
         {
             contextMenu.exec(position);
         }
     }
 
-    void AttributesWindow::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    void AttributesWindow::UpdateAndShowInInspector()
     {
-        AZ_UNUSED(selected);
-        AZ_UNUSED(deselected);
-
         const QModelIndexList modelIndexes = m_plugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
         if (!modelIndexes.empty())
         {
@@ -542,6 +544,8 @@ namespace EMStudio
         {
             Init();
         }
+
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, this);
     }
 
     void AttributesWindow::OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
@@ -819,7 +823,6 @@ namespace EMStudio
         MCore::CommandGroup commandGroup;
         commandGroup.SetGroupName("Pasted transition conditions");
 
-        AZ::u32 numPastedConditions = 0;
         const size_t numConditions = m_copyPasteClipboard.m_conditions.size();
         for (size_t i = 0; i < numConditions; ++i)
         {
@@ -837,7 +840,6 @@ namespace EMStudio
                 m_copyPasteClipboard.m_conditions[i].m_contents);
             commandGroup.AddCommand(addConditionCommand);
 
-            numPastedConditions++;
         }
 
         if (!commandGroup.IsEmpty())

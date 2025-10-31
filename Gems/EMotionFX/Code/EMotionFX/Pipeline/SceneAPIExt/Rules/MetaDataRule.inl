@@ -46,7 +46,7 @@ namespace EMotionFX
 
                 // Load the manifest from disk.
                 AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
-                SceneEvents::SceneSerializationBus::BroadcastResult(scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+                SceneEvents::SceneSerializationBus::BroadcastResult(scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull(), "");
                 if (!scene)
                 {
                     outResult = "Unable to save meta data to manifest due to failed scene loading.";

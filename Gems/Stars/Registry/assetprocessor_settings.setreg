@@ -1,0 +1,23 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC Stars Asset": {
+                  "glob": "*.stars",
+                  "params": "copy",
+                  "productAssetType": "{211938C1-C54D-417D-977A-9928D7C630B1}"
+                },
+                "ScanFolder Stars/Assets": {
+                  "watch": "@GEMROOT:Stars@/Assets",
+                  "recursive": 1,
+                  "order": 101
+                },
+                "ScanFolder Stars/Registry": {
+                  "watch": "@GEMROOT:Stars@/Registry",
+                  "recursive": 1,
+                  "order": 102
+                }
+            }
+        }
+    }
+}

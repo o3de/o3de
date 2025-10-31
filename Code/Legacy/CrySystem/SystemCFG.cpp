@@ -444,7 +444,7 @@ void CSystem::OnLoadConfigurationEntry(const char* szKey, const char* szValue, [
     {
         AZStd::string command(AZStd::string::format("%s %s", szKey, szValue));
 
-        azConsoleProcessed = console->PerformCommand(command.c_str());
+        azConsoleProcessed = static_cast<bool>(console->PerformCommand(command.c_str()));
     }
 
     if (!azConsoleProcessed)

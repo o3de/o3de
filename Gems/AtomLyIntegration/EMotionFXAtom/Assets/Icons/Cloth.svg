@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background: #A675FF;">
+    <title>Icons / Actor / Cloth / On-2</title>
+    <g id="Icons-/-Actor-/-Cloth-/-On-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#A675FF" x="0" y="0" width="24" height="24"></rect>
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M16.9852149,4 L16.9900183,3.9950022 L16.9951083,4 L22,8.91421356 L19.4142136,11.5 L17,9.08578644 L17,20 L7,20 L7,9.08578644 L4.58578644,11.5 L2,8.91421356 L6.99472957,3.99407993 L7.0004522,4 L9.55000906,4 C9.51721513,4.16155497 9.5,4.32876708 9.5,4.5 C9.5,5.88071187 10.6192881,7 12,7 C13.3807119,7 14.5,5.88071187 14.5,4.5 C14.5,4.32876708 14.4827849,4.16155497 14.4499909,4 L16.9852149,4 Z" id="Combined-Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+    </g>
+</svg>

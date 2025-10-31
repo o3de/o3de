@@ -126,5 +126,5 @@ namespace AZ
         m_onChangeNonUniformScaleCallback = onChangeNonUniformScale;
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(PolygonPrism, SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PolygonPrism, SystemAllocator);
 }

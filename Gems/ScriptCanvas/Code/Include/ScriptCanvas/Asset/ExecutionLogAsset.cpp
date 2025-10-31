@@ -8,6 +8,7 @@
 
 #include "ExecutionLogAsset.h"
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace ScriptCanvas
 {
@@ -15,27 +16,17 @@ namespace ScriptCanvas
     {
         *this = source;
     }
-    
-    ExecutionLogData::ExecutionLogData(ExecutionLogData&& other)
-        : m_events(AZStd::move(other.m_events))
-    {
-    }
-        
+
     ExecutionLogData::~ExecutionLogData()
     {
         Clear();
     }
-    
+
     void ExecutionLogData::Clear()
     {
-        for (auto entry : m_events)
-        {
-            delete entry;
-        }
-
-        m_events.resize(0);
+        m_events.clear();
     }
-    
+
     ExecutionLogData& ExecutionLogData::operator=(const ExecutionLogData& source)
     {
         Clear();
@@ -44,18 +35,7 @@ namespace ScriptCanvas
     
         for (auto entry : source.m_events)
         {
-            AZ_Assert(entry, "there should never bee a nullptr entry in an event log");
-            m_events.push_back(entry->Duplicate());
-        }
-
-        return *this;
-    }
-    
-    ExecutionLogData& ExecutionLogData::operator=(ExecutionLogData&& other)
-    {
-        if (this != &other)
-        {
-            m_events = AZStd::move(other.m_events);
+            m_events.push_back(entry);
         }
 
         return *this;
@@ -83,9 +63,12 @@ namespace ScriptCanvas
         }
     }
 
-    const char* ExecutionLogAsset::GetDefaultDirectoryRoot()
+    AZ::IO::FixedMaxPath ExecutionLogAsset::GetDefaultDirectoryPath()
     {
-        return AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
+        AZ::IO::FixedMaxPath logDirectoryPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(logDirectoryPath,
+            AZ::IO::PathView("@log@/ScriptCanvas/Assets/Logs"));
+        return logDirectoryPath;
     }
 
     ExecutionLogAsset::ExecutionLogAsset(const AZ::Data::AssetId& assetId, AZ::Data::AssetData::AssetStatus status)

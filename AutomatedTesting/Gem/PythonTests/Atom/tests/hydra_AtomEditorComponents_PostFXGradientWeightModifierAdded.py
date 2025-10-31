@@ -6,48 +6,84 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 class Tests:
-    creation_undo = (
-        "UNDO Entity creation success",
-        "UNDO Entity creation failed")
-    creation_redo = (
-        "REDO Entity creation success",
-        "REDO Entity creation failed")
     postfx_gradient_weight_creation = (
         "PostFX Gradient Weight Modifier Entity successfully created",
-        "PostFX Gradient Weight Modifier Entity failed to be created")
+        "P0: PostFX Gradient Weight Modifier Entity failed to be created")
     postfx_gradient_weight_component = (
         "Entity has a PostFX Gradient Weight Modifier component",
-        "Entity failed to find PostFX Gradient Weight Modifier component")
+        "P0: Entity failed to find PostFX Gradient Weight Modifier component")
+    postfx_gradient_weight_component_removed = (
+        "Entity has a PostFX Gradient Weight Modifier component",
+        "P0: Entity failed to find PostFX Gradient Weight Modifier component")
     postfx_gradient_weight_disabled = (
         "PostFX Gradient Weight Modifier component disabled",
-        "PostFX Gradient Weight Modifier component was not disabled.")
+        "P0: PostFX Gradient Weight Modifier component was not disabled.")
     postfx_layer_component = (
         "Entity has a PostFX Layer component",
-        "Entity did not have an PostFX Layer component")
+        "P0: Entity did not have an PostFX Layer component")
     postfx_gradient_weight_enabled = (
         "PostFX Gradient Weight Modifier component enabled",
-        "PostFX Gradient Weight Modifier component was not enabled.")
+        "P0: PostFX Gradient Weight Modifier component was not enabled.")
     enter_game_mode = (
         "Entered game mode",
-        "Failed to enter game mode")
+        "P0: Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "Couldn't exit game mode")
+        "P0: Couldn't exit game mode")
     is_visible = (
         "Entity is visible",
-        "Entity was not visible")
+        "P0: Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "Entity was not hidden")
+        "P0: Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "Entity was not deleted")
+        "P0: Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "UNDO deletion failed")
+        "P0: UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "REDO deletion failed")
+        "P0: REDO deletion failed")
+    gradient_entity_id = (
+        "Gradient Entity Id property set",
+        "P1: 'Gradient Entity Id' property failed to set")
+    opacity = (
+        "Opacity property set",
+        "P1: 'Opacity' property failed to set")
+    invert_input = (
+        "Invert Input property set",
+        "P1: 'Invert Input' property failed to set")
+    enable_levels = (
+        "Enable Levels property set",
+        "P1: 'Enable Levels' property failed to set")
+    input_max = (
+        "Input Max property set",
+        "P1: 'Input Max' property failed to set")
+    input_min = (
+        "Input Min property set",
+        "P1: 'Input Min' property failed to set")
+    input_mid = (
+        "Input Mid property set",
+        "P1: 'Input Mid' property failed to set")
+    output_max = (
+        "Output Max property set",
+        "P1: 'Output Max' property failed to set")
+    output_min = (
+        "Output Min property set",
+        "P1: 'Output Min' property failed to set")
+    enable_transform = (
+        "Enable Transform property set",
+        "P1: 'Enable Transform' property failed to set")
+    scale = (
+        "Scale property set",
+        "P1: 'Scale' property failed to set")
+    rotate = (
+        "Rotate property set",
+        "P1: 'Rotate' property failed to set")
+    translate = (
+        "Translate property set",
+        "P1: 'Translate' property failed to set")
 
 
 def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
@@ -66,24 +102,38 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
     Test Steps:
     1) Create a PostFX Gradient Weight Modifier entity with no components.
     2) Add a PostFX Gradient Weight Modifier component to PostFX Gradient Weight Modifier entity.
-    3) UNDO the entity creation and component addition.
-    4) REDO the entity creation and component addition.
+    3) Remove PostFX Gradient Weight Modifier component.
+    4) UNDO component removal.
     5) Verify PostFX Gradient Weight Modifier component not enabled.
     6) Add PostFX Layer component since it is required by the PostFX Gradient Weight Modifier component.
     7) Verify PostFX Gradient Weight Modifier component is enabled.
-    8) Enter/Exit game mode.
-    9) Test IsHidden.
-    10) Test IsVisible.
-    11) Delete PostFX Gradient Weight Modifier entity.
-    12) UNDO deletion.
-    13) REDO deletion.
-    14) Look for errors.
+    8) Set 'Gradient Entity Id' property
+    9) Set 'Opacity' property
+    10) Toggle 'Invert Input' property
+    11) Toggle 'Enable Levels' property
+    12) Set 'Input Max' property
+    13) Set 'Input Min' property
+    14) Set 'Input Mid' property
+    15) Set 'Output Max' property
+    16) Set 'Output Min' property
+    17) Toggle 'Enable Transform' property
+    18) Set 'Scale' property
+    19) Set 'Rotate' property
+    20) Set 'Translate' property
+    21) Enter/Exit game mode.
+    22) Test IsHidden.
+    23) Test IsVisible.
+    24) Delete PostFX Gradient Weight Modifier entity.
+    25) UNDO deletion.
+    26) REDO deletion.
+    27) Look for errors.
 
     :return: None
     """
 
     import azlmbr.legacy.general as general
 
+    from azlmbr.math import Vector3, Math_IsClose
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties
@@ -92,7 +142,7 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a PostFX Gradient Weight Modifier entity with no components.
@@ -106,29 +156,19 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
             Tests.postfx_gradient_weight_component,
             postfx_gradient_weight_entity.has_component(AtomComponentProperties.postfx_gradient()))
 
-        # 3. UNDO the entity creation and component addition.
-        # -> UNDO component addition.
-        general.undo()
-        # -> UNDO naming entity.
-        general.undo()
-        # -> UNDO selecting entity.
-        general.undo()
-        # -> UNDO entity creation.
-        general.undo()
+        # 3. Remove PostFX Gradient Weight Modifier component.
+        postfx_gradient_weight_component.remove()
         general.idle_wait_frames(1)
-        Report.result(Tests.creation_undo, not postfx_gradient_weight_entity.exists())
+        Report.critical_result(
+            Tests.postfx_gradient_weight_component_removed,
+            not postfx_gradient_weight_entity.has_component(AtomComponentProperties.postfx_gradient()))
 
-        # 4. REDO the entity creation and component addition.
-        # -> REDO entity creation.
-        general.redo()
-        # -> REDO selecting entity.
-        general.redo()
-        # -> REDO naming entity.
-        general.redo()
-        # -> REDO component addition.
-        general.redo()
+        # 4. UNDO component removal.
+        general.undo()
         general.idle_wait_frames(1)
-        Report.result(Tests.creation_redo, postfx_gradient_weight_entity.exists())
+        Report.critical_result(
+            Tests.postfx_gradient_weight_component,
+            postfx_gradient_weight_entity.has_component(AtomComponentProperties.postfx_gradient()))
 
         # 5. Verify PostFX Gradient Weight Modifier component not enabled.
         Report.result(Tests.postfx_gradient_weight_disabled, not postfx_gradient_weight_component.is_enabled())
@@ -142,33 +182,151 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
         # 7. Verify PostFX Gradient Weight Modifier component is enabled.
         Report.result(Tests.postfx_gradient_weight_enabled, postfx_gradient_weight_component.is_enabled())
 
-        # 8. Enter/Exit game mode.
+        # 8. Set 'Gradient Entity Id' property
+        gradient_entity = EditorEntity.create_editor_entity('Gradient Entity')
+        gradient_entity.add_components(['FastNoise Gradient', 'Gradient Transform Modifier', 'Box Shape'])
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Gradient Entity Id'), gradient_entity.id)
+        Report.result(
+            Tests.gradient_entity_id,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Gradient Entity Id')) == gradient_entity.id)
+
+        # 9. Set 'Opacity' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Opacity'), 0.9)
+        Report.result(
+            Tests.opacity,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Opacity')), 0.9))
+
+        # 10. Toggle 'Invert Input' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Invert Input'), True)
+        Report.result(
+            Tests.invert_input,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Invert Input')) is True)
+
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Invert Input'), False)
+        Report.result(
+            Tests.invert_input,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Invert Input')) is False)
+
+        # 11. Toggle 'Enable Levels' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Enable Levels'), True)
+        Report.result(
+            Tests.enable_levels,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Enable Levels')) is True)
+
+        # 12. Set 'Input Max' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Input Max'), 0.9)
+        Report.result(
+            Tests.input_max,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Input Max')), 0.9))
+
+        # 13. Set 'Input Min' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Input Min'), 0.1)
+        Report.result(
+            Tests.input_min,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Input Min')), 0.1))
+
+        # 14. Set 'Input Mid' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Input Mid'), 2.0)
+        Report.result(
+            Tests.input_mid,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Input Mid')), 2.0))
+
+        # 15. Set 'Output Max' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Output Max'), 0.9)
+        Report.result(
+            Tests.output_max,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Output Max')), 0.9))
+
+        # 16. Set 'Output Min' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Output Min'), 0.1)
+        Report.result(
+            Tests.output_min,
+            Math_IsClose(postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Output Min')), 0.1))
+
+        # 17. Toggle 'Enable Transform' property
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Enable Transform'), True)
+        Report.result(
+            Tests.enable_transform,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Enable Transform')) is True)
+
+        # 18. Set 'Scale' property
+        x2 = Vector3(2.0, 2.0, 2.0)
+        postfx_gradient_weight_component.set_component_property_value(
+            AtomComponentProperties.postfx_gradient('Scale'), x2)
+        Report.result(
+            Tests.scale,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Scale')) == x2)
+
+        # 19. Set 'Rotate' property
+        rotation = Vector3(5.0, 5.0, 5.0)
+        postfx_gradient_weight_component.set_component_property_value(
+           AtomComponentProperties.postfx_gradient('Rotate'), rotation)
+        Report.result(
+            Tests.rotate,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Rotate')) == rotation)
+
+        # 20. Set 'Translate' property
+        translation = Vector3(1.0, 1.0, 0.0)
+        postfx_gradient_weight_component.set_component_property_value(
+           AtomComponentProperties.postfx_gradient('Translate'), translation)
+        Report.result(
+            Tests.translate,
+            postfx_gradient_weight_component.get_component_property_value(
+                AtomComponentProperties.postfx_gradient('Translate')) == translation)
+
+        # 21. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 9. Test IsHidden.
+        # 22. Test IsHidden.
         postfx_gradient_weight_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, postfx_gradient_weight_entity.is_hidden() is True)
 
-        # 10. Test IsVisible.
+        # 23. Test IsVisible.
         postfx_gradient_weight_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, postfx_gradient_weight_entity.is_visible() is True)
 
-        # 11. Delete PostFX Gradient Weight Modifier entity.
+        # 24. Delete PostFX Gradient Weight Modifier entity.
         postfx_gradient_weight_entity.delete()
         Report.result(Tests.entity_deleted, not postfx_gradient_weight_entity.exists())
 
-        # 12. UNDO deletion.
+        # 25. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, postfx_gradient_weight_entity.exists())
 
-        # 13. REDO deletion.
+        # 26. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not postfx_gradient_weight_entity.exists())
 
-        # 14. Look for errors or asserts.
+        # 27. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

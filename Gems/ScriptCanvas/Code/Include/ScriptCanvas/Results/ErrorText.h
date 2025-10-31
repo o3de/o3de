@@ -21,6 +21,10 @@ namespace ScriptCanvas
         constexpr const char* CustomParsingRequiredForVariable = "Nodeable variable should have been made for this node, or it needs custom parsing";
         constexpr const char* CycleDetected = "Execution cycle detected. Use a looping node like While or For";
         constexpr const char* DependencyRetrievalFailiure = "A node failed to retrieve its dependencies.";
+        constexpr const char* DirectEntityReferencesNotAllowed =
+                "Direct Entity References from the ScriptCanvas Editor are not allowed. "
+                "Make and EntityId variable, and select 'FromComponent' as the initial Value. "
+                "Then choose the required entity from the scene editor after the graph has been assigned to a component.";
         constexpr const char* DuplicateInputProcessed = "Input to the slot at this execution has already been found";
         constexpr const char* EmptyGraph = "Completely Empty Graph";
         constexpr const char* ExecutionAfterSelfDeactivation = "No execution can occur after self deactivation. Such execution has been detected.";
@@ -36,8 +40,11 @@ namespace ScriptCanvas
         constexpr const char* FailedToDeduceExpression = "Failed to deduce an expression on a node reported to be an expression";
         constexpr const char* FailedToParseIfBranch = "Failed parse a node that declared itself an if branch";
         constexpr const char* FailedToRemoveChild = "Failed to remove child expected in parent children list";
+        constexpr const char* FunctionNodeFailedToReturnInterface = "FunctionCallNode failed to return latest SubgraphInterface";
+        constexpr const char* FunctionNodeFailedToReturnUseableName = "FunctionCallNode failed to return a useable name";
         constexpr const char* FunctionDefinitionCannotStart = "Function definition graph has on graph start that can't get called";
         constexpr const char* FunctionDefinitionNodeDidNotReturnSlot = "Function definition node didn't return 1 and only execution in slot";
+        constexpr const char* GetOrSetVariableOutputNotSupplied = "the ACM output data for Get/Set should already have been supplied, but is missing";
         constexpr const char* InactiveGraph = "This graph defines no functions, it is never activated, and will never execute. Add a Start node or connect an event handler or define functions.";
         constexpr const char* InfiniteLoopWritingToVariable = "infinite loop when writing to variable";
         constexpr const char* InfiniteSelfActivationLoop = "infinite loop when activating the entity that owns this graph";
@@ -72,7 +79,7 @@ namespace ScriptCanvas
         constexpr const char* NoOutSlotInFunctionDefinitionStart = "No 'Out' slot in start of function definition";
         constexpr const char* NoOutSlotInStart = "No 'Out' slot in start node";
         constexpr const char* NoOutputInExtraction = "No output found in property extraction node";
-        constexpr const char* NotEnoughArgsForArithmeticOperator = "Less then two valid arguments for arithmetic operator";
+        constexpr const char* NotEnoughArgsForArithmeticOperator = "Less than two valid arguments for arithmetic operator";
         constexpr const char* NotEnoughBranchesForReturn = "Not enough branches for defined out return values.";
         constexpr const char* NotEnoughInputForArithmeticOperator = "Not enough input for arithmetic operator";
         constexpr const char* NullEntityInGraph = "Null entity pointer in graph";

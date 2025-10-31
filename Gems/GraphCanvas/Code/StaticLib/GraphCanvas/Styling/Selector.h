@@ -19,7 +19,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(SelectorImplementation, "{A37E7DCF-4F24-4969-A030-D72750B1213D}");
-            AZ_CLASS_ALLOCATOR(SelectorImplementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SelectorImplementation, AZ::SystemAllocator);
 
             virtual ~SelectorImplementation() = default;
 
@@ -38,7 +38,7 @@ namespace GraphCanvas
         {
         public:
             AZ_TYPE_INFO(Selector, "{A0BF8631-31C3-4BC8-9D7A-09DF2AD611DB}");
-            AZ_CLASS_ALLOCATOR(Selector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Selector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

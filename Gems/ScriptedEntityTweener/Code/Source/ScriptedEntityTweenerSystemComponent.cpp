@@ -100,12 +100,12 @@ namespace ScriptedEntityTweener
 
     void ScriptedEntityTweenerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptedEntityTweenerService"));
+        provided.push_back(AZ_CRC_CE("ScriptedEntityTweenerService"));
     }
 
     void ScriptedEntityTweenerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ScriptedEntityTweenerService"));
+        incompatible.push_back(AZ_CRC_CE("ScriptedEntityTweenerService"));
     }
 
     void ScriptedEntityTweenerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

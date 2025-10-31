@@ -1,0 +1,60 @@
+{
+    "entries": [
+        {
+            "base": "RecastNavigationMeshRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Recast Navigation Mesh Request Bus"
+            },
+            "methods": [
+                {
+                    "base": "UpdateNavigationMesh",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Update Navigation Mesh"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Update Navigation Mesh is invoked"
+                    },
+                    "details": {
+                        "name": "Update Navigation Mesh"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "False if another update operation is in progress"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "UpdateNavigationMeshAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Update Navigation Mesh Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Update Navigation Mesh Async is invoked"
+                    },
+                    "details": {
+                        "name": "Update Navigation Mesh Async"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "False if another update operation is in progress"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

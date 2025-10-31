@@ -18,6 +18,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(RadiusWeightModifierComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::RadiusWeightModifierComponentConfig, "{80218725-E3B5-4A01-89FF-11314AB2EFF8}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

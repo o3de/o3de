@@ -223,7 +223,7 @@ void BlurDirection(int2 ldsPosition, int2 direction, inout float outputs[OUTPUT_
 
     // Blur the pixels before the ones we write to
     [unroll]
-    for(int i = 0; i < LOOP_COUNT; ++i)
+    for(int j = 0; j < LOOP_COUNT; ++j)
     {
         BlurStep(ldsPosition, direction,
           previousValue, currentValue,

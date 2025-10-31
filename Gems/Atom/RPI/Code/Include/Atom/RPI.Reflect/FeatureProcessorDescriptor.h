@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
@@ -17,7 +18,7 @@ namespace AZ
     {
         //! struct FeatureProcessorDescriptor
         //! brief A collection of data describing how a FeatureProcessor should be set up
-        struct FeatureProcessorDescriptor
+        struct ATOM_RPI_REFLECT_API FeatureProcessorDescriptor
         {
             AZ_TYPE_INFO(FeatureProcessorDescriptor, "{3A7FFA35-9D92-4AAC-BA2B-0A90268F563C}");
             static void Reflect(AZ::ReflectContext* context);

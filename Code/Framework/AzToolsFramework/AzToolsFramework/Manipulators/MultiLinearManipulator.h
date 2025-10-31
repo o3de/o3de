@@ -13,12 +13,13 @@
 
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     //! MultiLinearManipulator serves as a visual tool for users to modify values
     //! in one or more dimensions on axes defined in 3D space.
-    class MultiLinearManipulator
+    class AZTF_API MultiLinearManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {
@@ -49,10 +50,12 @@ namespace AzToolsFramework
         //! This is the function signature of callbacks that will be invoked whenever a MultiLinearManipulator
         //! is clicked on or dragged.
         using MouseActionCallback = AZStd::function<void(const Action&)>;
+        using InvalidateActionCallback = AZStd::function<void()>;
 
         void InstallLeftMouseDownCallback(const MouseActionCallback& onMouseDownCallback);
         void InstallMouseMoveCallback(const MouseActionCallback& onMouseMoveCallback);
         void InstallLeftMouseUpCallback(const MouseActionCallback& onMouseUpCallback);
+        void InstallInvalidateCallback(const InvalidateActionCallback& onInvalidateCallback);
 
         // BaseManipulator ...
         void Draw(
@@ -89,6 +92,7 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         MouseActionCallback m_onMouseMoveCallback = nullptr;
+        InvalidateActionCallback m_onInvalidateCallback = nullptr;
 
         ManipulatorViews m_manipulatorViews; //!< Look of manipulator.
     };

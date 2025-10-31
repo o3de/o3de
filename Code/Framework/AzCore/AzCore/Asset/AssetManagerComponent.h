@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ASSETDATABASE_COMPONENT_H
-#define AZCORE_ASSETDATABASE_COMPONENT_H
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -17,7 +16,7 @@ namespace AZ
     /**
      *
      */
-    class AssetManagerComponent
+    class AZCORE_API AssetManagerComponent
         : public Component
         , public SystemTickBus::Handler
     {
@@ -48,6 +47,3 @@ namespace AZ
         static void Reflect(ReflectContext* reflection);
     };
 }
-
-#endif // AZCORE_ASSETDATABASE_COMPONENT_H
-#pragma once

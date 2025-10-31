@@ -16,16 +16,29 @@ set(FILES
     Tests/ClientHierarchyTests.cpp
     Tests/ServerHierarchyBenchmarks.cpp
     Tests/CommonHierarchySetup.h
+    Tests/CommonNetworkEntitySetup.h
     Tests/CommonBenchmarkSetup.h
     Tests/IMultiplayerConnectionMock.h
+    Tests/IMultiplayerSpawnerMock.h
     Tests/Main.cpp
     Tests/MockInterfaces.h
+    Tests/LocalPredictionPlayerInputTests.cpp
+    Tests/MultiplayerComponentTests.cpp
     Tests/MultiplayerSystemTests.cpp
+    Tests/NetworkCharacterTests.cpp
+    Tests/NetworkEntityTests.cpp
     Tests/NetworkInputTests.cpp
+    Tests/NetworkRigidBodyTests.cpp
     Tests/NetworkTransformTests.cpp
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
     Tests/ServerHierarchyTests.cpp
+    Tests/SimplePlayerSpawnerTests.cpp
     Tests/TestMultiplayerComponent.h
     Tests/TestMultiplayerComponent.cpp
+
+    Tests/LocalRpcTests.cpp
+    Tests/AutoGen/RpcUnitTesterComponent.AutoComponent.xml
+    Tests/RpcUnitTesterComponent.h
+    Tests/RpcUnitTesterComponent.cpp
 )

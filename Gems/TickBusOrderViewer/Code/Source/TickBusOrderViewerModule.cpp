@@ -152,7 +152,7 @@ namespace TickBusOrderViewer
     {
     public:
         AZ_RTTI(TickBusOrderViewerModule, "{DAE8B6D3-23ED-4547-9D0C-9F42CA812A06}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(TickBusOrderViewerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TickBusOrderViewerModule, AZ::SystemAllocator);
 
         TickBusOrderViewerModule()
             : CryHooksModule()
@@ -187,7 +187,8 @@ namespace TickBusOrderViewer
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), TickBusOrderViewer::TickBusOrderViewerModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_TickBusOrderViewer, TickBusOrderViewer::TickBusOrderViewerModule)
+#endif

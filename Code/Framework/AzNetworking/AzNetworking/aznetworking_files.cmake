@@ -58,7 +58,6 @@ set(FILES
     Serialization/ISerializer.inl
     Serialization/NetworkInputSerializer.cpp
     Serialization/NetworkInputSerializer.h
-    Serialization/NetworkInputSerializer.inl
     Serialization/NetworkOutputSerializer.cpp
     Serialization/NetworkOutputSerializer.h
     Serialization/NetworkOutputSerializer.inl
@@ -66,6 +65,8 @@ set(FILES
     Serialization/StringifySerializer.h
     Serialization/TrackChangedSerializer.h
     Serialization/TrackChangedSerializer.inl
+    Serialization/TypeValidatingSerializer.h
+    Serialization/TypeValidatingSerializer.inl
     TcpTransport/TcpConnection.cpp
     TcpTransport/TcpConnection.h
     TcpTransport/TcpConnection.inl
@@ -103,6 +104,8 @@ set(FILES
     UdpTransport/UdpConnectionSet.h
     UdpTransport/UdpFragmentQueue.cpp
     UdpTransport/UdpFragmentQueue.h
+    UdpTransport/UdpHeartbeatThread.cpp
+    UdpTransport/UdpHeartbeatThread.h
     UdpTransport/UdpNetworkInterface.cpp
     UdpTransport/UdpNetworkInterface.h
     UdpTransport/UdpPacketHeader.cpp

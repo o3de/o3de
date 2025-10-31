@@ -35,7 +35,6 @@ namespace AZ
             AZStd::vector<FrameAttachmentVisualizeInfo>& GetFrameAttachments();
             void Init(RHI::Device* device);
             void Draw(bool& draw);
-            void DrawTreeView();
             void Reset();
         protected:
             AZStd::vector<FrameAttachmentVisualizeInfo> m_framesAttachments;

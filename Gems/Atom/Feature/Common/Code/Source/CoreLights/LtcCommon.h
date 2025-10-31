@@ -24,8 +24,7 @@ namespace AZ::Render
     };
 
     // Class that handles basic setup for light types that use linearly transformed cosines.
-    class LtcCommon
-        : public ILtcCommon
+    class LtcCommon : public ILtcCommon
     {
     public:
         AZ_RTTI(AZ::Render::LtcCommon, "{7BB6BD58-A517-4D68-87EC-CAA2AADAAC02}", AZ::Render::ILtcCommon);
@@ -37,8 +36,6 @@ namespace AZ::Render
         void LoadMatricesForSrg(Data::Instance<RPI::ShaderResourceGroup> srg) override;
 
     private:
-        AZStd::map<AZ::Uuid, AZStd::vector<RPI::AssetUtils::AsyncAssetLoader>> m_assetLoaders;
-
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<AZStd::shared_ptr<RPI::AssetUtils::AsyncAssetLoader>>> m_assetLoaders;
     };
-}
-
+} // namespace AZ::Render

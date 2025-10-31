@@ -11,10 +11,20 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/PostProcessing/Tonemap.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/ShaderQualityOptions.azsli>
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#ifndef ENABLE_PHYSICAL_SKY
+#define ENABLE_PHYSICAL_SKY              1
+#endif
+
+#ifndef ENABLE_MERGE_FILMIC_TONEMAP
+#define ENABLE_MERGE_FILMIC_TONEMAP              0
+#endif
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -113,7 +123,8 @@ PSOutput MainPS(VSOutput input)
         discard;
     }
 
-    float3 color = float3(0.5,0.5,0.5);
+    real3 color = real3(0.5,0.5,0.5);
+#if ENABLE_PHYSICAL_SKY
     if(SceneSrg::m_physicalSky)
     {
         if(input.m_cubemapCoord.z >= 0.0)
@@ -163,16 +174,30 @@ PSOutput MainPS(VSOutput input)
         }
     }
     else
+#endif
     {
-        color = SceneSrg::m_skyboxCubemap.Sample(PassSrg::LinearSampler, GetCubemapCoords(input.m_cubemapCoord)).rgb;
+        color = real3(SceneSrg::m_skyboxCubemap.Sample(PassSrg::LinearSampler, GetCubemapCoords(input.m_cubemapCoord)).rgb);
+
+        //No need to go to acescg if the tonemap will be applied right away.
+#if !ENABLE_MERGE_FILMIC_TONEMAP
+        color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+#endif
 
         // apply the exposure for HDRi texture
-        float exposureFactor = pow(2.0, SceneSrg::m_cubemapExposure);
+        real exposureFactor = pow(2.0, real(SceneSrg::m_cubemapExposure));
         color *= exposureFactor;
     }
     
     // Clamp lower bounds of sky to prevent zero or negative values, which can leads to NaNs in other shaders like SMAA
-    color = max(0.000001f, color);
+    color = max(0.000001, color);
+
+#if ENABLE_MERGE_FILMIC_TONEMAP
+    // Apply manual exposure compensation
+    color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
+
+    // We could add Aces support here as well if perf allows.
+    color = TonemapFilmic(color);
+#endif
 
     PSOutput OUT;
     OUT.m_specular = float4(color, 1.0);

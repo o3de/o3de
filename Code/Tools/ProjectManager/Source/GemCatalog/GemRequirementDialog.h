@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     class GemRequirementDialog
         : public QDialog
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
     public:
         explicit GemRequirementDialog(GemModel* model, QWidget *parent = nullptr);
         ~GemRequirementDialog() = default;

@@ -19,7 +19,7 @@ namespace AZ
     /**
      * Class that manages all ReflectContexts and all reflection entry point functions
      */
-    class ReflectionManager
+    class AZCORE_API ReflectionManager
     {
     private:
         // Reusable check for whether or not a type is a reflect context
@@ -27,10 +27,12 @@ namespace AZ
         using IsReflectContextT = AZStd::enable_if_t<AZStd::is_base_of<ReflectContext, ReflectContextT>::value>;
 
     public:
-        AZ_CLASS_ALLOCATOR(ReflectionManager, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectionManager, SystemAllocator);
 
         ReflectionManager() = default;
         ~ReflectionManager();
+
+        AZ_DISABLE_COPY(ReflectionManager);
 
         /// Unreflect all entry points and contexts
         void Clear();

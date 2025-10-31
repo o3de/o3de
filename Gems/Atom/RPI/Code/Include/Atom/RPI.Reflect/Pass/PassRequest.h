@@ -8,12 +8,12 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/Handle.h>
-
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -27,10 +27,10 @@ namespace AZ
 
         //! This class represents a request for a Pass to be instantiated from a PassTemplate
         //! It also contains a list of inputs for the instantiated pass
-        struct PassRequest final
+        struct ATOM_RPI_REFLECT_API PassRequest final
         {
             AZ_TYPE_INFO(PassRequest, "{C43802D1-8501-4D7A-B642-85F8646DF46D}");
-            AZ_CLASS_ALLOCATOR(PassRequest, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassRequest, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             PassRequest() = default;
@@ -75,7 +75,7 @@ namespace AZ
         };
 
         using PassRequestList = AZStd::vector<PassRequest>;
-        using PassRequestListView = AZStd::array_view<PassRequest>;
+        using PassRequestListView = AZStd::span<const PassRequest>;
 
     }   // namespace RPI
 }   // namespace AZ

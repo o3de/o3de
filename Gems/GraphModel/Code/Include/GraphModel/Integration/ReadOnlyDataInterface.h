@@ -17,11 +17,10 @@
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing read only property widgets in nodes.
-    class ReadOnlyDataInterface
-        : public GraphCanvas::ReadOnlyDataInterface
+    class ReadOnlyDataInterface : public GraphCanvas::ReadOnlyDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReadOnlyDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReadOnlyDataInterface, AZ::SystemAllocator);
 
         ReadOnlyDataInterface(GraphModel::SlotPtr slot);
         ~ReadOnlyDataInterface() = default;
@@ -32,4 +31,4 @@ namespace GraphModelIntegration
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
     };
-}
+} // namespace GraphModelIntegration

@@ -8,7 +8,6 @@
 
 #include <AzQtComponents/Components/Widgets/ColorPicker/ColorController.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/ColorValidator.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/Palette.h> // needed for Q_DECLARE_METATYPE(AZ::Color);
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzCore/Math/MathUtils.h>
@@ -643,6 +642,36 @@ namespace AzQtComponents
             emitRgbaChangedSignals(previousColor);
             emitHslChangedSignals(previousColor);
             emit colorChanged(m_state->rgb());
+        }
+
+        void ColorController::setHSV(float hue, float saturation, float value)
+        {
+            const bool hChanged = !qFuzzyCompare(hue, hsvHue());
+            const bool sChanged = !qFuzzyCompare(saturation, hsvSaturation());
+            const bool vChanged = !qFuzzyCompare(value, this->value());
+            if (hChanged || sChanged || vChanged)
+            {
+                const ColorState previousColor = *m_state;
+                m_state->setHsv(hue, saturation, value);
+                validate();
+
+                if (hChanged)
+                {
+                    emit hsvHueChanged(hsvHue());
+                }
+                if (sChanged)
+                {
+                    emit hsvSaturationChanged(hsvSaturation());
+                }
+                if (vChanged)
+                {
+                    emit valueChanged(this->value());
+                }
+
+                emitRgbaChangedSignals(previousColor);
+                emitHslChangedSignals(previousColor);
+                emit colorChanged(m_state->rgb());
+            }
         }
 
         void ColorController::setAlpha(float alpha)

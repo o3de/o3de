@@ -54,5 +54,7 @@ namespace AssetProcessor
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
 
         QIcon m_errorIcon;
+        QIcon m_folderIcon;
+        QIcon m_fileIcon;
     };
 }

@@ -7,9 +7,10 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -34,6 +35,10 @@ namespace AzToolsFramework
         virtual bool AddChildEntityAtPosition(const AZ::EntityId& entityId, const AZ::EntityId& beforeEntity) = 0;
         virtual bool RemoveChildEntity(const AZ::EntityId& entityId) = 0;
         virtual AZ::u64 GetChildEntityIndex(const AZ::EntityId& entityId) = 0;
+        virtual bool CanMoveChildEntityUp(const AZ::EntityId& entityId) = 0;
+        virtual void MoveChildEntityUp(const AZ::EntityId& entityId) = 0;
+        virtual bool CanMoveChildEntityDown(const AZ::EntityId& entityId) = 0;
+        virtual void MoveChildEntityDown(const AZ::EntityId& entityId) = 0;
     };
     using EditorEntitySortRequestBus = AZ::EBus<EditorEntitySortRequests>;
 
@@ -53,3 +58,6 @@ namespace AzToolsFramework
     using EditorEntitySortNotificationBus = AZ::EBus<EditorEntitySortNotifications>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntitySortRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntitySortNotifications);

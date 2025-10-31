@@ -42,7 +42,7 @@ site.addsitedir(_MAYA_SCRIPTS)
 from atom_mat import AtomMaterial as atomMAT
 
 _ATOM_MAT_TEMPLATE = atomMAT(Path(_MAYA_SCRIPTS,
-                                  'StandardPBR_AllProperties.material').resolve())
+                                  'StandardPBR_AllProperties.json').resolve())
 
 
 import pymel.core as pm

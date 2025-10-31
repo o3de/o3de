@@ -19,7 +19,7 @@ namespace AZ
 {
     struct Uuid;
 
-    class JsonBaseContext
+    class AZCORE_API JsonBaseContext
     {
     public:
         JsonBaseContext(JsonSerializationMetadata& metadata, JsonSerializationResult::JsonIssueCallback reporting,
@@ -84,7 +84,7 @@ namespace AZ
         JsonRegistrationContext* m_registrationContext = nullptr;
     };
 
-    class JsonDeserializerContext final
+    class AZCORE_API JsonDeserializerContext final
         : public JsonBaseContext
     {
     public:
@@ -105,7 +105,7 @@ namespace AZ
         bool m_clearContainers = false;
     };
 
-    class JsonSerializerContext final
+    class AZCORE_API JsonSerializerContext final
         : public JsonBaseContext
     {
     public:
@@ -129,7 +129,7 @@ namespace AZ
         bool m_keepDefaults = false;
     };
 
-    class ScopedContextReporter
+    class AZCORE_API ScopedContextReporter
     {
     public:
         ScopedContextReporter(JsonBaseContext& context, JsonSerializationResult::JsonIssueCallback callback);
@@ -139,7 +139,7 @@ namespace AZ
         JsonBaseContext& m_context;
     };
 
-    class ScopedContextPath
+    class AZCORE_API ScopedContextPath
     {
     public:
         ScopedContextPath(JsonBaseContext& context, AZStd::string_view child);
@@ -152,7 +152,7 @@ namespace AZ
 
     //! The abstract class for primitive Json Serializers. 
     //! It is intentionally not templated, and uses void* for output value parameters.
-    class BaseJsonSerializer
+    class AZCORE_API BaseJsonSerializer
     {
     public:
         AZ_RTTI(BaseJsonSerializer, "{7291FFDC-D339-40B5-BB26-EA067A327B21}");
@@ -180,13 +180,16 @@ namespace AZ
 
         //! Transforms the data from the rapidjson Value to outputValue, if the conversion is possible and supported.
         //! The serializer is responsible for casting to the proper type and safely writing to the outputValue memory.
+        //! \note The default implementation is to load the object ignoring a custom serializers for the type, which allows for custom serializers
+        //! to modify the object after all default loading has occurred.
         virtual JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
-            JsonDeserializerContext& context) = 0;
+            JsonDeserializerContext& context);
         
         //! Write the input value to a rapidjson value if the default value is not null and doesn't match the input value, otherwise
         //! an error is returned and sets the rapidjson value to a null value.
+        //! \note The default implementation is to store the object ignoring custom serializers.
         virtual JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
-            const Uuid& valueTypeId, JsonSerializerContext& context) = 0;
+            const Uuid& valueTypeId, JsonSerializerContext& context);
 
         //! Returns the operation flags which tells the Json Serialization how this custom json serializer can be used.
         virtual OperationFlags GetOperationsFlags() const;

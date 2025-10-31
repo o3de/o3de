@@ -16,12 +16,12 @@ namespace Vegetation
 {
     void DebugSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDebugSystemService", 0x8cac3d67));
+        services.push_back(AZ_CRC_CE("VegetationDebugSystemService"));
     }
 
     void DebugSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDebugSystemService", 0x8cac3d67));
+        services.push_back(AZ_CRC_CE("VegetationDebugSystemService"));
     }
 
     void DebugSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -42,7 +42,6 @@ namespace Vegetation
                 editContext->Class<DebugSystemComponent>("Vegetation Debug System", "Stores and manages vegetation debug data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

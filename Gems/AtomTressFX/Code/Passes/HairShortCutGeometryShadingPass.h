@@ -34,7 +34,7 @@ namespace AZ
 
             public:
                 AZ_RTTI(HairShortCutGeometryShadingPass, "{11BA673D-0788-4B25-978D-9737BF4E48FE}", HairGeometryRasterPass);
-                AZ_CLASS_ALLOCATOR(HairShortCutGeometryShadingPass, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairShortCutGeometryShadingPass, SystemAllocator);
 
                 static RPI::Ptr<HairShortCutGeometryShadingPass> Create(const RPI::PassDescriptor& descriptor);
 
@@ -59,9 +59,9 @@ namespace AZ
 
                 // Pass behavior overrides
                 void BuildInternal() override;
+                void InitializeInternal() override;
 
                 HairGlobalSettings m_hairGlobalSettings;
-                AZ::RPI::ShaderVariantKey m_shaderOptions;
             };
 
         } // namespace Hair

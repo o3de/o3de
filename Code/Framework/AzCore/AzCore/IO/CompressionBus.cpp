@@ -8,6 +8,8 @@
 
 #include <AzCore/IO/CompressionBus.h>
 
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);
+
 namespace AZ::IO
 {
     CompressionInfo::CompressionInfo(CompressionInfo&& rhs)
@@ -32,10 +34,10 @@ namespace AZ::IO
 
     namespace CompressionUtils
     {
-        bool FindCompressionInfo(CompressionInfo& info, const AZStd::string_view filename)
+        bool FindCompressionInfo(CompressionInfo& info, const AZ::IO::PathView filePath)
         {
             bool result = false;
-            CompressionBus::Broadcast(&CompressionBus::Events::FindCompressionInfo, result, info, filename);
+            CompressionBus::Broadcast(&CompressionBus::Events::FindCompressionInfo, result, info, filePath);
             return result;
         }
     }

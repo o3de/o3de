@@ -32,9 +32,8 @@ namespace AZ
 
             virtual bool IsEnabled() const = 0;
 
-            //! Returns true if material property names should be included in azmaterials. This allows unlinking of dependencies for some
-            //! file types to materialtype files (e.g. fbx). 
-            virtual bool ShouldIncludeMaterialPropertyNames() const = 0;
+            //! Returns a fingerprint string that can be used to salt the SceneAPI builder's fingerprint.
+            virtual AZStd::string GetFingerprintInfo() const = 0;
 
             //! Converts data from a IMaterialData object to an Atom MaterialSourceData.
             //! Only works when IsEnabled() is true.

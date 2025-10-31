@@ -7,51 +7,23 @@
  */
 
 #include <AzCore/std/allocator.h>
+#include <AzCore/Memory/AllocatorInstance.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZStd
 {
-    //=========================================================================
-    // allocate
-    // [1/1/2008]
-    //=========================================================================
-    allocator::pointer_type
-    allocator::allocate(size_type byteSize, size_type alignment, int flags)
+    allocator::pointer allocator::allocate(size_type byteSize, size_type alignment)
     {
-        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(byteSize, alignment, flags, m_name, __FILE__, __LINE__, 1);
-    }
-    //=========================================================================
-    // deallocate
-    // [1/1/2008]
-    //=========================================================================
-    void
-    allocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Get().DeAllocate(ptr, byteSize, alignment);
+        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(byteSize, alignment);
     }
 
-    //=========================================================================
-    // resize
-    // [1/1/2008]
-    //=========================================================================
-    allocator::size_type
-    allocator::resize(pointer_type ptr, size_type newSize)
+    void allocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
-        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Resize(ptr, newSize);
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(ptr, byteSize, alignment);
     }
 
-    auto allocator::max_size() const -> size_type
+    allocator::pointer allocator::reallocate(pointer ptr, size_type newSize, align_type newAlignment)
     {
-        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetMaxContiguousAllocationSize();
+        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().reallocate(ptr, newSize, newAlignment);
     }
-
-    //=========================================================================
-    // get_allocated_size
-    // [1/1/2008]
-    //=========================================================================
-    allocator::size_type
-    allocator::get_allocated_size() const
-    {
-        return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().NumAllocatedBytes();
-    }
-}
+} // namespace AZStd

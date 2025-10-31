@@ -25,7 +25,7 @@
 #include <AzToolsFramework/Slice/SliceCompilation.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <LyShine/UiAssetTypes.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzQtComponents/Utilities/ScopedCleanup.h>
 
@@ -251,7 +251,7 @@ namespace LyShine
             return false;
         }
 
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
         {
@@ -297,7 +297,7 @@ namespace LyShine
         }
 
         // Emulate client flags.
-        AZ::PlatformTagSet platformTags = { AZ_CRC("renderer", 0xf199a19c) };
+        AZ::PlatformTagSet platformTags = { AZ_CRC_CE("renderer") };
 
         // Compile the source slice into the runtime slice (with runtime components).
         AzToolsFramework::UiEditorOnlyEntityHandler uiEditorOnlyEntityHandler;

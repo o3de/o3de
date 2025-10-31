@@ -34,6 +34,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Or>("Or", "An execution flow gate that continues True if either Boolean A or Boolean B are True, otherwise continues False")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                                    ->Attribute(AZ::Edit::Attributes::Category, "Logic")
                                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;

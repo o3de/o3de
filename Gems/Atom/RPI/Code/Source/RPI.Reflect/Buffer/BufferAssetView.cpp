@@ -41,5 +41,19 @@ namespace AZ
         {
             return m_bufferViewDescriptor;
         }
+
+        void BufferAssetView::LoadBufferAsset()
+        {
+            if (m_bufferAsset.QueueLoad())
+            {
+                m_bufferAsset.BlockUntilLoadComplete();
+            }
+        }
+
+        void BufferAssetView::ReleaseBufferAsset()
+        {
+            m_bufferAsset.Release();
+        }
+
     } // namespace RPI
 } // namespace AZ

@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix4x4Functions_FromScale",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Scale",
+                "category": "Math/Matrix4x4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix4x4Functions_FromScale",
+                    "details": {
+                        "name": "From Scale",
+                        "tooltip": "Returns a scale matrix using the supplied vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -23,13 +23,13 @@ namespace EMotionFX
     TEST_F(CanDeleteMotionSetWhenSameMotionInTwoMotionSetsFixture, ExecuteCommands)
     {
         ExecuteCommands({
-            R"str(CreateMotionSet -name MotionSet0)str",
-            R"str(CreateMotionSet -name MotionSet1)str",
-            R"str(MotionSetAddMotion -motionSetID 0 -motionFilenamesAndIds @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle)str",
-            R"str(MotionSetAddMotion -motionSetID 1 -motionFilenamesAndIds @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle)str",
-            R"str(MotionSetRemoveMotion -motionSetID 0 -motionIds rin_idle)str",
-            R"str(RemoveMotionSet -motionSetID 0)str",
-            R"str(RemoveMotion -filename @engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion)str",
+            R"str(CreateMotionSet -name MotionSet0 -motionSetID 100)str",
+            R"str(CreateMotionSet -name MotionSet1 -motionSetID 101)str",
+            R"str(MotionSetAddMotion -motionSetID 100 -motionFilenamesAndIds @gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle)str",
+            R"str(MotionSetAddMotion -motionSetID 101 -motionFilenamesAndIds @gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion;rin_idle)str",
+            R"str(MotionSetRemoveMotion -motionSetID 100 -motionIds rin_idle)str",
+            R"str(RemoveMotionSet -motionSetID 100)str",
+            R"str(RemoveMotion -filename @gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion)str",
         });
 
         EMStudio::MotionSetsWindowPlugin* motionSetsWindowPlugin = static_cast<EMStudio::MotionSetsWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionSetsWindowPlugin::CLASS_ID));

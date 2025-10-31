@@ -17,17 +17,21 @@
 #include <QPoint>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 
-
 #define NODEGRAPHWIDGET_USE_OPENGL
+
+namespace EMotionFX
+{
+    class AnimGraphNodeGroup;
+}
 
 namespace EMStudio
 {
     // forward declarations
     class NodeGraph;
     class GraphNode;
-    class GraphWidgetCallback;
     class NodePort;
     class NodeConnection;
     class AnimGraphPlugin;
@@ -53,8 +57,6 @@ namespace EMStudio
         void SetActiveGraph(NodeGraph* graph);
         NodeGraph* GetActiveGraph() const;
 
-        void SetCallback(GraphWidgetCallback* callback);
-        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return m_callback; }
         MCORE_INLINE const QPoint& GetMousePos() const                  { return m_mousePos; }
         MCORE_INLINE void SetMousePos(const QPoint& pos)                { m_mousePos = pos; }
         MCORE_INLINE void SetShowFPS(bool showFPS)                      { m_showFps = showFPS; }
@@ -63,7 +65,9 @@ namespace EMStudio
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
         QPoint GlobalToLocal(const QPoint& inPoint) const;
-        QPoint SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize = 10) const;
+
+        static constexpr uint32 s_snapCellSize = 10;
+        QPoint SnapLocalToGrid(const QPoint& inPoint) const;
 
         void CalcSelectRect(QRect& outRect);
 
@@ -138,7 +142,6 @@ namespace EMStudio
         int                         m_curHeight;
         GraphNode*                  m_moveNode;  // the node we're moving
         NodeGraph*                  m_activeGraph = nullptr;
-        GraphWidgetCallback*        m_callback;
         QFont                       m_font;
         QFontMetrics*               m_fontMetrics;
         AZ::Debug::Timer            m_renderTimer;
@@ -158,5 +161,7 @@ namespace EMStudio
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;
         QString                     m_titleBarText;
+
+        void SelectNodesInGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
     };
 } // namespace EMStudio

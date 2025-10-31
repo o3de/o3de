@@ -77,7 +77,7 @@ def setup_builtin_workspace(workspace, test_name, artifact_folder_count):
     :return: the configured workspace object, useful for method chaining
     """
     workspace.setup()
-    workspace.artifact_manager.set_test_name(test_name=test_name, amount=artifact_folder_count)
+    workspace.artifact_manager.set_dest_path(test_name=test_name, amount=artifact_folder_count)
 
     return workspace
 

@@ -57,6 +57,8 @@ namespace ScriptCanvas
 
                 VariableId GetVariableIdWritten(const Slot*) const override;
 
+                const Slot* GetVariableInputSlot() const override;
+
                 const Slot* GetVariableOutputSlot() const override;
 
                 PropertyFields GetPropertyFields() const override;

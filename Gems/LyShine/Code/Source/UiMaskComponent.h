@@ -13,6 +13,7 @@
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/IRenderGraph.h>
+#include <LyShine/UiRenderFormats.h>
 
 #include <AzCore/Component/Component.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
@@ -65,20 +66,20 @@ public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiMaskService", 0x806f6dac));
-        provided.push_back(AZ_CRC("UiRenderControlService", 0x4e302454));
+        provided.push_back(AZ_CRC_CE("UiMaskService"));
+        provided.push_back(AZ_CRC_CE("UiRenderControlService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiRenderControlService", 0x4e302454));
+        incompatible.push_back(AZ_CRC_CE("UiRenderControlService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         // Note that the UiVisualService is not required because a child mask element can be used instead.
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);
@@ -187,10 +188,6 @@ private: // data
 
     //! When rendering to a texture this is the attachment image for the render target
     AZ::RHI::AttachmentId m_contentAttachmentImageId;
-
-    //! When rendering to a texture this is our depth surface, we use the same one for rendering the mask elements
-    //! and the content elements - it is cleared in between.
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
     
     //! When rendering to a texture this is the texture ID of the render target
     //! When rendering to a texture this is the attachment image for the render target
@@ -205,7 +202,7 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
 
 #ifndef _RELEASE
     //! This variable is only used to prevent spamming a warning message each frame (for nested stencil masks)

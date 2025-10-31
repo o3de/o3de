@@ -13,12 +13,13 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+#include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SelectionProxyModel.h>
+#include <Editor/InspectorBus.h>
 #include <Editor/SkeletonSortFilterProxyModel.h>
 #include <QTreeView>
 #endif
-
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 
@@ -39,31 +40,37 @@ namespace EMotionFX
         ~SkeletonOutlinerPlugin() override;
 
         // EMStudioPlugin overrides
+        void Reflect(AZ::ReflectContext* context) override;
         const char* GetName() const override                { return "Skeleton Outliner"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
-        EMStudioPlugin* Clone() override                    { return new SkeletonOutlinerPlugin(); }
+        EMStudioPlugin* Clone() const override              { return new SkeletonOutlinerPlugin(); }
         bool Init() override;
 
         // SkeletalOutlinerRequestBus overrides
         Node* GetSingleSelectedNode() override;
         QModelIndex GetSingleSelectedModelIndex() override;
-        AZ::Outcome<const QModelIndexList&> GetSelectedRowIndices() override;
+        AZ::Outcome<QModelIndexList> GetSelectedRowIndices() override;
         SkeletonModel* GetModel() override;
         void DataChanged(const QModelIndex& modelIndex) override;
         void DataListChanged(const QModelIndexList& modelIndexList) override;
+
+        JointPropertyWidget* m_propertyWidget = nullptr;
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnTextFilterChanged(const QString& text);
         void OnTypeFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters);
+        void OnEntered(const QModelIndex& index);
         void Reinit();
 
         void OnContextMenu(const QPoint& position);
 
     private:
+        bool eventFilter(QObject* object, QEvent* event) override;
+
         QWidget*                                m_mainWidget;
         QLabel*                                 m_noSelectionLabel;
 
@@ -73,7 +80,7 @@ namespace EMotionFX
         AZStd::unique_ptr<SkeletonModel>        m_skeletonModel;
         QModelIndexList                         m_selectedRows;
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
-        static int                              s_iconSize;
+        static constexpr int s_iconSize = 16;
 
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins

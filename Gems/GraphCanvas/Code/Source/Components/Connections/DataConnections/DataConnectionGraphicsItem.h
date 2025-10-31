@@ -42,7 +42,7 @@ namespace GraphCanvas
         , public DataSlotNotificationBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DataConnectionGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataConnectionGraphicsItem, AZ::SystemAllocator);
         
         DataConnectionGraphicsItem(const AZ::EntityId& connectionEntityId);
         ~DataConnectionGraphicsItem() override = default;

@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class GradientMixerNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientMixerNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientMixerNode, AZ::SystemAllocator);
         AZ_RTTI(GradientMixerNode, "{D5AEAA23-12EB-4E55-B396-BEE13724FBDC}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -30,7 +30,7 @@ namespace LandscapeCanvas
         GradientMixerNode() = default;
         explicit GradientMixerNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
         const BaseNodeType GetBaseNodeType() const override;

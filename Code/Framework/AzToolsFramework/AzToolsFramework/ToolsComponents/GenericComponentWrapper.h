@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Slice/SliceBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -29,12 +30,12 @@ namespace AzToolsFramework
          * editor. It is used to add components without a specialized
          * editor component to an entity.
          */
-        class GenericComponentWrapper
+        class AZTF_API GenericComponentWrapper
             : public EditorComponentBase
             , private AzFramework::EntityDebugDisplayEventBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenericComponentWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericComponentWrapper, AZ::SystemAllocator);
             AZ_RTTI(GenericComponentWrapper, "{68D358CA-89B9-4730-8BA6-E181DEA28FDE}", EditorComponentBase);
 
             static AZ::ComponentDescriptor* CreateDescriptor();
@@ -56,7 +57,7 @@ namespace AzToolsFramework
             void Init() override;
             void Activate() override;
             void Deactivate() override;
-            const AZ::TypeId& GetUnderlyingComponentType() const override;
+            AZ::TypeId GetUnderlyingComponentType() const override;
 
             // AzFramework::DebugDisplayRequestBus
             void DisplayEntityViewport(
@@ -89,7 +90,7 @@ namespace AzToolsFramework
     /// Returns the component's type ID.
     /// If the component is a GenericComponentWrapper,
     /// then the type ID of the wrapped component is returned.
-    const AZ::Uuid& GetUnderlyingComponentType(const AZ::Component& component);
+    AZTF_API AZ::Uuid GetUnderlyingComponentType(const AZ::Component& component);
 
     /**
      * Find the component of the specified type on an entity.

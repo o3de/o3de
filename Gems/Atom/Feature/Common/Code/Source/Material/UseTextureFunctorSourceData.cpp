@@ -9,6 +9,7 @@
 #include "./UseTextureFunctorSourceData.h"
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 
 namespace AZ
 {
@@ -18,14 +19,12 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<UseTextureFunctorSourceData>()
-                    ->Version(6)
+                serializeContext->Class<UseTextureFunctorSourceData, RPI::MaterialFunctorSourceData>()
+                    ->Version(7) // added base class
                     ->Field("textureProperty", &UseTextureFunctorSourceData::m_texturePropertyName)
                     ->Field("useTextureProperty", &UseTextureFunctorSourceData::m_useTexturePropertyName)
                     ->Field("dependentProperties", &UseTextureFunctorSourceData::m_dependentProperties)
-                    ->Field("shaderTags", &UseTextureFunctorSourceData::m_shaderTags)
-                    ->Field("shaderOption", &UseTextureFunctorSourceData::m_useTextureOptionName)
-                    ;
+                    ->Field("shaderOption", &UseTextureFunctorSourceData::m_useTextureOptionName);
             }
         }
 
@@ -66,48 +65,10 @@ namespace AZ
             }
             AddMaterialPropertyDependency(functor, functor->m_useTexturePropertyIndex);
 
-            auto attachShaderOption = [&](const AZ::Name& shaderTag, bool reportOptionNotFoundError)
-            {
-                RPI::ShaderOptionIndex optionIndex = context.FindShaderOptionIndex(shaderTag, m_useTextureOptionName, reportOptionNotFoundError);
-                if (optionIndex.IsNull())
-                {
-                    return false;
-                }
+            functor->m_useTextureOptionName = m_useTextureOptionName;
+            context.GetNameContext()->ContextualizeShaderOption(functor->m_useTextureOptionName);
 
-                functor->m_shaderTags.push_back(shaderTag);
-                functor->m_useTextureOptionIndices[shaderTag] = optionIndex;
-
-                return true;
-            };
-
-            if (m_shaderTags.empty())
-            {
-                bool shaderOptionFound = false;
-
-                for (const auto& shaderTag : context.GetShaderTags())
-                {
-                    if (attachShaderOption(shaderTag, false))
-                    {
-                        shaderOptionFound = true;
-                    }
-                }
-
-                if (!shaderOptionFound)
-                {
-                    AZ_Error("UseTextureFunctorSourceData", false, "Could not find shader option '%s' in any of the available shaders.", m_useTextureOptionName.GetCStr());
-                    return Failure();
-                }
-            }
-            else
-            {
-                for (const auto& shaderTag : m_shaderTags)
-                {
-                    if (!attachShaderOption(shaderTag, true))
-                    {
-                        return Failure();
-                    }
-                }
-            }
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(Ptr<MaterialFunctor>(functor));
         }
@@ -141,6 +102,8 @@ namespace AZ
                 return Failure();
             }
             AddMaterialPropertyDependency(functor, functor->m_useTexturePropertyIndex);
+
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(context.GetNameContext()));
 
             return Success(Ptr<MaterialFunctor>(functor));
         }

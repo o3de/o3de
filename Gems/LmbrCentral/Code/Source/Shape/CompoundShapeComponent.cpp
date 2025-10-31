@@ -8,10 +8,29 @@
 
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
-
+#include <AzCore/Serialization/EditContext.h>
 
 namespace LmbrCentral
 {
+    void CompoundShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CompoundShapeConfiguration>()
+                ->Version(1)
+                ->Field("Child Shape Entities", &CompoundShapeConfiguration::m_childEntities);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CompoundShapeConfiguration>("Configuration", "Compound shape configuration parameters")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CompoundShapeConfiguration::m_childEntities,
+                        "Child Shape Entities", "A list of entities that have shapes on them which when combined, act as the compound shape")
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"));
+            }
+        }
+    }
+
     void CompoundShapeComponent::Reflect(AZ::ReflectContext* context)
     {
         CompoundShapeConfiguration::Reflect(context);
@@ -47,14 +66,14 @@ namespace LmbrCentral
 
     //////////////////////////////////////////////////////////////////////////
 
-    AZ::Aabb CompoundShapeComponent::GetEncompassingAabb()
+    AZ::Aabb CompoundShapeComponent::GetEncompassingAabb() const
     {
         AZ::Aabb finalAabb = AZ::Aabb::CreateNull();
 
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
             AZ::Aabb childAabb = AZ::Aabb::CreateNull();
-            EBUS_EVENT_ID_RESULT(childAabb, childEntity, ShapeComponentRequestsBus, GetEncompassingAabb);
+            ShapeComponentRequestsBus::EventResult(childAabb, childEntity, &ShapeComponentRequestsBus::Events::GetEncompassingAabb);
             if (childAabb.IsValid())
             {
                 finalAabb.AddAabb(childAabb);
@@ -63,7 +82,7 @@ namespace LmbrCentral
         return finalAabb;
     }
 
-    void CompoundShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void CompoundShapeComponent::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
@@ -98,12 +117,12 @@ namespace LmbrCentral
         }
     }
 
-    bool CompoundShapeComponent::IsPointInside(const AZ::Vector3& point)
+    bool CompoundShapeComponent::IsPointInside(const AZ::Vector3& point) const
     {
         bool result = false;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
-            EBUS_EVENT_ID_RESULT(result, childEntity, ShapeComponentRequestsBus, IsPointInside, point);
+            ShapeComponentRequestsBus::EventResult(result, childEntity, &ShapeComponentRequestsBus::Events::IsPointInside, point);
             if (result)
             {
                 break;
@@ -112,13 +131,14 @@ namespace LmbrCentral
         return result;
     }
 
-    float CompoundShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float CompoundShapeComponent::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         float smallestDistanceSquared = FLT_MAX;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
         {
             float currentDistanceSquared = FLT_MAX;
-            EBUS_EVENT_ID_RESULT(currentDistanceSquared, childEntity, ShapeComponentRequestsBus, DistanceSquaredFromPoint, point);
+            ShapeComponentRequestsBus::EventResult(
+                currentDistanceSquared, childEntity, &ShapeComponentRequestsBus::Events::DistanceSquaredFromPoint, point);
             if (currentDistanceSquared < smallestDistanceSquared)
             {
                 smallestDistanceSquared = currentDistanceSquared;
@@ -127,7 +147,7 @@ namespace LmbrCentral
         return smallestDistanceSquared;
     }
 
-    bool CompoundShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool CompoundShapeComponent::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         bool intersection = false;
         for (AZ::EntityId childEntity : m_configuration.GetChildEntities())
@@ -149,7 +169,10 @@ namespace LmbrCentral
 
         if (ShapeComponentRequestsBus::Handler::BusIsConnected() && CompoundShapeComponentRequestsBus::Handler::BusIsConnected())
         {
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
         }
     }
 
@@ -157,20 +180,30 @@ namespace LmbrCentral
     {
         m_currentlyActiveChildren--;
         ShapeComponentNotificationsBus::MultiHandler::BusDisconnect(id);
-        EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        ShapeComponentNotificationsBus::Event(
+            GetEntityId(),
+            &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void CompoundShapeComponent::OnShapeChanged(ShapeComponentNotifications::ShapeChangeReasons changeReason)
     {
         if (changeReason == ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged)
         {
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
         }
         else if (changeReason == ShapeComponentNotifications::ShapeChangeReasons::TransformChanged)
         {
-            // If there are multiple shapes in a compound shape, then moving one of them changes the overall compound shape, otherwise the transform change is bubbled up directly
-            EBUS_EVENT_ID(GetEntityId(), ShapeComponentNotificationsBus, OnShapeChanged, (m_currentlyActiveChildren > 1) ? ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged
-                          : ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+            // If there are multiple shapes in a compound shape, then moving one of them changes the overall compound shape, otherwise the
+            // transform change is bubbled up directly
+            ShapeComponentNotificationsBus::Event(
+                GetEntityId(),
+                &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                (m_currentlyActiveChildren > 1) ? ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged
+                                                : ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
         }
     }
 

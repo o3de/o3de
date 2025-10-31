@@ -76,7 +76,6 @@ namespace VideoPlaybackFramework
             {
                 ec->Class<VideoPlaybackFrameworkSystemComponent>("VideoPlaybackFramework", "Interface framework to play back video during gameplay.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -111,12 +110,12 @@ namespace VideoPlaybackFramework
 
     void VideoPlaybackFrameworkSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VideoPlaybackFrameworkService"));
+        provided.push_back(AZ_CRC_CE("VideoPlaybackFrameworkService"));
     }
 
     void VideoPlaybackFrameworkSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VideoPlaybackFrameworkService"));
+        incompatible.push_back(AZ_CRC_CE("VideoPlaybackFrameworkService"));
     }
 
     void VideoPlaybackFrameworkSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -137,11 +136,15 @@ namespace VideoPlaybackFramework
     {
         VideoPlaybackFrameworkRequestBus::Handler::BusConnect();
 
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnableCatalogForAsset, azrtti_typeid<VideoPlaybackAsset>());
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mp4");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mkv");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "webm");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mov");
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [](AZ::Data::AssetCatalogRequests* handler)
+            {
+                handler->EnableCatalogForAsset(azrtti_typeid<VideoPlaybackAsset>());
+                handler->AddExtension("mp4");
+                handler->AddExtension("mkv");
+                handler->AddExtension("webm");
+                handler->AddExtension("mov");
+            });
     }
 
     void VideoPlaybackFrameworkSystemComponent::Deactivate()

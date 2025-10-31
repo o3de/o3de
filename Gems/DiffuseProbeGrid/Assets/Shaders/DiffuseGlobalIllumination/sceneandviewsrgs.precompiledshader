@@ -1,0 +1,34 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PrecompiledShaderAssetSourceData",
+    "ClassData": 
+    {
+        "ShaderAssetFileName": "sceneandviewsrgs.azshader",
+        "PlatformIdentifiers": [
+            "pc",
+            "linux"
+        ],
+        "Supervariants": 
+        [
+            {
+                "Name": "",
+                "RootShaderVariantAssets": 
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "sceneandviewsrgs_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "sceneandviewsrgs_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "sceneandviewsrgs_null_0.azshadervariant"
+                    }
+                ]
+            }
+        ]
+    }
+}

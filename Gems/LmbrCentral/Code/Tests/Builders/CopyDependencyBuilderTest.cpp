@@ -16,10 +16,9 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
-
-#include <LyShine/UiAssetTypes.h>
 
 #include <Builders/CopyDependencyBuilder/CfgBuilderWorker/CfgBuilderWorker.h>
 #include <Builders/CopyDependencyBuilder/FontBuilderWorker/FontBuilderWorker.h>
@@ -34,19 +33,19 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class CopyDependencyBuilderTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
         , private AzToolsFramework::AssetSystemRequestBus::Handler
     {
     protected:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            m_app->Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app->Create(desc, startupParameters);
 
             if constexpr (AZ::g_currentPlatform == AZ::PlatformID::PLATFORM_WINDOWS_64)
             {
@@ -59,9 +58,11 @@ namespace UnitTest
             }
 
             // Startup default local FileIO (hits OSAllocator) if not already setup.
-            if (AZ::IO::FileIOBase::GetInstance() == nullptr)
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            if (fileIo == nullptr)
             {
-                AZ::IO::FileIOBase::SetInstance(aznew AZ::IO::LocalFileIO());
+                fileIo = aznew AZ::IO::LocalFileIO();
+                AZ::IO::FileIOBase::SetInstance(fileIo);
             }
 
             const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
@@ -70,6 +71,12 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
+
+            // Set the @gemroot:<gem-name> alias for active gems
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("LmbrCentral", *settingsRegistry, fileIo);
+            }
 
             SerializeContext* serializeContext;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationRequests::GetSerializeContext);
@@ -99,11 +106,9 @@ namespace UnitTest
 
             m_app->Destroy();
             m_app = nullptr;
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
-        static constexpr char testFileFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/";
+        static constexpr char testFileFolder[] = "@gemroot:LmbrCentral@/Code/Tests/";
 
         AZStd::string GetFullPath(AZStd::string_view fileName)
         {
@@ -230,6 +235,7 @@ namespace UnitTest
             assetSafeFolders.emplace_back(resolvedBuffer);
             return true;
         }
+        bool ClearFingerprintForAsset([[maybe_unused]] const AZStd::string& sourcePath) override { return false; }
 
         // When supressing AZ_Errors to count how many occur,
         // you need to tell it you expect double the number of errors.
@@ -894,7 +900,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-        request.m_watchFolder = "@engroot@/Gems/LmbrCentral/Code/";
+        request.m_watchFolder = "@gemroot:LmbrCentral@/Code/";
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));

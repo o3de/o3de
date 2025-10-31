@@ -46,7 +46,7 @@ namespace LmbrCentral
     {
     public:
         AZ_TYPE_INFO(MathUtils, "{BB7F7465-B355-4435-BB9D-44D8F586EE8B}");
-        AZ_CLASS_ALLOCATOR(MathUtils, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MathUtils, AZ::SystemAllocator);
 
         MathUtils() = default;
         ~MathUtils() = default;
@@ -56,7 +56,7 @@ namespace LmbrCentral
     {
     public:
         AZ_TYPE_INFO(AxisWrapper, "{86817913-7D0C-4883-8EDC-2B0DE643392B}");
-        AZ_CLASS_ALLOCATOR(AxisWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AxisWrapper, AZ::SystemAllocator);
 
         AxisWrapper() = default;
         ~AxisWrapper() = default;
@@ -75,7 +75,7 @@ namespace LmbrCentral
         {
             // Use defaults.
             outData->m_channel.SetInvalid();
-            outData->m_actionNameCrc = 0;
+            outData->m_actionNameCrc = AZ::Crc32();
             outData->m_payloadTypeId = AZ::Uuid::CreateNull();
         }
         else if (dc.GetNumArguments() == s_deprecatedConstructorArgCount 

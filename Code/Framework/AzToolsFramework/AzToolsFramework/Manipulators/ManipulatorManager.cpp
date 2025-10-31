@@ -14,8 +14,6 @@
 
 namespace AzToolsFramework
 {
-    const ManipulatorManagerId g_mainManipulatorManagerId = ManipulatorManagerId(AZ::Crc32("MainManipulatorManagerId"));
-
     ManipulatorManager::ManipulatorManager(const ManipulatorManagerId managerId)
         : m_manipulatorManagerId(managerId)
         , m_nextManipulatorIdToGenerate(ManipulatorId(1))
@@ -65,6 +63,11 @@ namespace AzToolsFramework
         {
             AZ_Error("Manipulators", false, "Attempting to unregister a null Manipulator");
             return;
+        }
+
+        if (m_activeManipulator && m_activeManipulator->GetManipulatorId() == manipulator->GetManipulatorId())
+        {
+            m_activeManipulator.reset();
         }
 
         m_manipulatorIdToPtrMap.erase(manipulator->GetManipulatorId());
@@ -146,7 +149,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : m_manipulatorIdToPtrMap)
         {
-            pair.second->Draw({ Interacting() }, debugDisplay, cameraState, mouseInteraction);
+            pair.second->Draw(ManipulatorManagerState{ Interacting() }, debugDisplay, cameraState, mouseInteraction);
         }
 
         RefreshMouseOverState(mouseInteraction.m_mousePick);
@@ -191,6 +194,7 @@ namespace AzToolsFramework
             {
                 if (manipulator->OnLeftMouseDown(interaction, intersectionDistance))
                 {
+                    m_mouseDownButton = ManipulatorMouseDownButton::Left;
                     m_activeManipulator = manipulator;
                     return true;
                 }
@@ -200,13 +204,14 @@ namespace AzToolsFramework
             {
                 if (manipulator->OnRightMouseDown(interaction, intersectionDistance))
                 {
+                    m_mouseDownButton = ManipulatorMouseDownButton::Right;
                     m_activeManipulator = manipulator;
                     return true;
                 }
             }
         }
 
-        return false;
+        return m_activeManipulator != nullptr;
     }
 
     bool ManipulatorManager::ConsumeViewportMouseRelease(const ViewportInteraction::MouseInteraction& interaction)
@@ -215,17 +220,21 @@ namespace AzToolsFramework
         // active manipulator - only notify mouse up if this was the case
         if (m_activeManipulator)
         {
-            if (interaction.m_mouseButtons.Left())
+            if (interaction.m_mouseButtons.Left() && m_mouseDownButton.has_value() &&
+                *m_mouseDownButton == ManipulatorMouseDownButton::Left)
             {
                 m_activeManipulator->OnLeftMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
+                m_mouseDownButton.reset();
                 return true;
             }
 
-            if (interaction.m_mouseButtons.Right())
+            if (interaction.m_mouseButtons.Right() && m_mouseDownButton.has_value() &&
+                *m_mouseDownButton == ManipulatorMouseDownButton::Right)
             {
                 m_activeManipulator->OnRightMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
+                m_mouseDownButton.reset();
                 return true;
             }
         }
@@ -295,4 +304,12 @@ namespace AzToolsFramework
             }
         }
     }
+
+    const ManipulatorManagerId g_mainManipulatorManagerId = ManipulatorManagerId(AZ::Crc32("MainManipulatorManagerId"));
+
+    ManipulatorManagerId GetMainManipulatorManagerId()
+    {
+        return g_mainManipulatorManagerId;
+    }
+
 } // namespace AzToolsFramework

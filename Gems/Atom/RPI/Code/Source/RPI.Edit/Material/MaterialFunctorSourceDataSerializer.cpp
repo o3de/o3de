@@ -9,7 +9,6 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -28,8 +27,8 @@ namespace AZ
             constexpr const char ArgsField[] = "args";
         }
 
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator, 0);
-        
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator);
+
         JsonSerializationResult::Result JsonMaterialFunctorSourceDataSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
@@ -50,17 +49,17 @@ namespace AZ
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Material functor data must be a JSON object.");
             }
 
-            Uuid functorTypeId = 0;
+            Uuid functorTypeId;
             if (!inputValue.HasMember(TypeField))
             {
-                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not specified.");
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Missing, "Functor type name is not specified.");
             }
 
             // Load the name first and find the type.
             AZStd::string functorName;
             result.Combine(ContinueLoadingFromJsonObjectField(&functorName, azrtti_typeid<AZStd::string>(), inputValue, TypeField, context));
             functorTypeId = MaterialFunctorSourceDataRegistration::Get()->FindMaterialFunctorTypeIdByName(functorName);
-            if (functorTypeId == 0)
+            if (functorTypeId.IsNull())
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not registered.");
             }
@@ -73,10 +72,6 @@ namespace AZ
                 if (inputValue.HasMember(ArgsField))
                 {
                     result.Combine(ContinueLoading(instance, functorTypeId, inputValue[ArgsField], context));
-                }
-                else
-                {
-                    result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
                 }
                 functorHolder->m_actualSourceData = reinterpret_cast<MaterialFunctorSourceData*>(instance);
             }
@@ -119,7 +114,8 @@ namespace AZ
 
             const AZStd::string emptyString;
             result.Combine(ContinueStoringToJsonObjectField(outputValue, TypeField, &functorName, &emptyString, azrtti_typeid<AZStd::string>(), context));
-            result.Combine(ContinueStoringToJsonObjectField(outputValue, ArgsField, functorHolder->m_actualSourceData.get(), nullptr, functorTypeId, context));
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue, ArgsField, functorHolder->m_actualSourceData.get(), nullptr, functorTypeId, context));
 
             return context.Report(result, "Successfully processed MaterialFunctorSourceData.");
         }

@@ -22,7 +22,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateNodeMimeEvent, "{95C84213-1FF8-42FF-96F3-37B80B7E2C20}", GraphCanvas::CreateSplicingNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeMimeEvent, AZ::SystemAllocator);
             
         static void Reflect(AZ::ReflectContext* reflectContext);
             
@@ -48,7 +48,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(SpecializedCreateNodeMimeEvent, "{7909C855-B6DA-47E4-97DB-BBC8315C30B1}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(SpecializedCreateNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpecializedCreateNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -66,7 +66,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(MultiCreateNodeMimeEvent, "{44A3F43F-E6D3-4EC7-8E80-82981661603E}", SpecializedCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(MultiCreateNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiCreateNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 

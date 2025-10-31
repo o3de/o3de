@@ -74,13 +74,17 @@ namespace LmbrCentral
 
     void QuadShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
+        AZStd::unique_lock lock(m_mutex);
         m_intersectionDataCache.InvalidateCache(reason);
     }
 
     void QuadShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentTransform = world;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
@@ -88,54 +92,69 @@ namespace LmbrCentral
 
     void QuadShape::OnNonUniformScaleChanged(const AZ::Vector3& scale)
     {
-        m_currentNonUniformScale = scale;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentNonUniformScale = scale;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    QuadShapeConfig QuadShape::GetQuadConfiguration()
+    const QuadShapeConfig& QuadShape::GetQuadConfiguration() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig;
     }
 
     void QuadShape::SetQuadWidth(float width)
     {
-        m_quadShapeConfig.m_width = width;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_quadShapeConfig.m_width = width;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float QuadShape::GetQuadWidth()
+    float QuadShape::GetQuadWidth() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig.m_width;
     }
 
     void QuadShape::SetQuadHeight(float height)
     {
-        m_quadShapeConfig.m_height = height;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_quadShapeConfig.m_height = height;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float QuadShape::GetQuadHeight()
+    float QuadShape::GetQuadHeight() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig.m_height;
     }
 
-    const AZ::Quaternion& QuadShape::GetQuadOrientation()
+    const AZ::Quaternion& QuadShape::GetQuadOrientation() const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
+
         return m_intersectionDataCache.m_quaternion;
     }
 
-    AZ::Aabb QuadShape::GetEncompassingAabb()
+    AZ::Aabb QuadShape::GetEncompassingAabb() const
     {
+        AZStd::shared_lock lock(m_mutex);
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         auto corners = m_quadShapeConfig.GetCorners();
 
@@ -147,8 +166,9 @@ namespace LmbrCentral
         return aabb;
     }
 
-    void QuadShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void QuadShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
+        AZStd::shared_lock lock(m_mutex);
         bounds = AZ::Aabb::CreateCenterHalfExtents(
             AZ::Vector3(0.0f, 0.0f, 0.0f),
             AZ::Vector3(m_quadShapeConfig.m_width * 0.5f, m_quadShapeConfig.m_height * 0.5f, 0.0f) * m_currentNonUniformScale
@@ -156,14 +176,15 @@ namespace LmbrCentral
         transform = m_currentTransform;
     }
 
-    bool QuadShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point)
+    bool QuadShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point) const
     {
         return false; // 2D object cannot have points that are strictly inside in 3d space.
     }
 
-    float QuadShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float QuadShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, m_currentNonUniformScale);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         // translate and rotate the point into the space of the quad.
         AZ::Vector3 tPoint = m_currentTransform.GetRotation().GetInverseFull().TransformVector(point - m_currentTransform.GetTranslation());
@@ -179,8 +200,9 @@ namespace LmbrCentral
         return xDist * xDist + yDist * yDist + zDist * zDist;
     }
 
-    bool QuadShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool QuadShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
+        AZStd::shared_lock lock(m_mutex);
         auto corners = m_quadShapeConfig.GetCorners();
 
         for (AZ::Vector3& corner : corners)
@@ -202,11 +224,6 @@ namespace LmbrCentral
         m_quaternion = currentTransform.GetRotation();
         m_scaledWidth = configuration.m_width * currentTransform.GetUniformScale() * currentNonUniformScale.GetX();
         m_scaledHeight = configuration.m_height * currentTransform.GetUniformScale() * currentNonUniformScale.GetY();
-    }
-
-    const QuadShapeConfig& QuadShape::GetQuadConfiguration() const
-    {
-        return m_quadShapeConfig;
     }
 
     void QuadShape::SetQuadConfiguration(const QuadShapeConfig& QuadShapeConfig)
@@ -237,7 +254,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawQuad(scaledWidth, scaledHeight);
+            debugDisplay.DrawQuad(scaledWidth, scaledHeight, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());

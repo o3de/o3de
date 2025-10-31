@@ -8,6 +8,11 @@
 
 #include <AssetBuilderApplication.h>
 
+void AssetBuilderApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
+{
+    appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool | AZ::ApplicationTypeQuery::Masks::AssetProcessor;
+}
+
 void AssetBuilderApplication::InstallCtrlHandler()
 {
 }

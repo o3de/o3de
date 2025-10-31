@@ -28,6 +28,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -53,6 +54,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QTimer>
 #include <QCursor>
 #include <QLabel>
+#include <QTextEdit>
 AZ_POP_DISABLE_WARNING
 
 // settings keys
@@ -397,6 +399,9 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     m_alphaSlider->setMinimum(0);
     m_alphaSlider->setMaximum(255);
 
+    // Set the default value on the slider.
+    m_alphaSlider->setValue(qRound(m_currentColorController->alpha() * 255.0f));
+
     connect(m_alphaSlider, &QSlider::valueChanged, this, [this](int alpha) {
         m_currentColorController->setAlpha(aznumeric_cast<float>(alpha)/255.0f);
     });
@@ -414,9 +419,8 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     connect(m_currentColorController, &Internal::ColorController::hsvHueChanged, m_colorGrid, &ColorGrid::setHue);
     connect(m_currentColorController, &Internal::ColorController::hsvSaturationChanged, m_colorGrid, &ColorGrid::setSaturation);
     connect(m_currentColorController, &Internal::ColorController::valueChanged, m_colorGrid, &ColorGrid::setValue);
-    connect(m_colorGrid, &ColorGrid::hueChanged, m_currentColorController, &Internal::ColorController::setHsvHue);
-    connect(m_colorGrid, &ColorGrid::saturationChanged, m_currentColorController, &Internal::ColorController::setHsvSaturation);
-    connect(m_colorGrid, &ColorGrid::valueChanged, m_currentColorController, &Internal::ColorController::setValue);
+    connect(m_colorGrid, &ColorGrid::hsvChanged, m_currentColorController, &Internal::ColorController::setHSV);
+
     connect(m_colorGrid, &ColorGrid::gridPressed, this, &ColorPicker::beginDynamicColorChange);
     connect(m_colorGrid, &ColorGrid::gridReleased, this, &ColorPicker::endDynamicColorChange);
 
@@ -602,6 +606,13 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     // Place the hex edit beneath the color slider tab group
     containerLayout->addWidget(m_hexEdit);
 
+    // Place the RGB float input fields
+
+    m_floatEditSeparator = makePaddedSeparator(this);
+    containerLayout->addWidget(m_floatEditSeparator);
+
+    containerLayout->addLayout(m_rgbLayout);
+
     // quick palette
 
     m_quickPaletteSeparator = makePaddedSeparator(this);
@@ -655,11 +666,27 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     // Final color space comment
     m_commentSeparator = makePaddedSeparator(this);
     containerLayout->addWidget(m_commentSeparator);
-    m_commentLabel = new QLabel(QObject::tr("sRGB Float"), this);
+    m_commentLabel = new QLabel(QObject::tr("Color space: sRGB"), this);
     containerLayout->addWidget(m_commentLabel);
 
-    // Place the RGB final input fields below the color space comment
-    containerLayout->addLayout(m_rgbLayout);
+    // Alternate color space info
+
+    // These widgets will be updated as needed in setAlternateColorspace* functions
+    m_alternateColorSpaceIntLabel = new QLabel(QObject::tr("Alternate Int"), this);
+    m_alternateColorSpaceFloatLabel = new QLabel(QObject::tr("Alternate Float"), this);
+    m_alternateColorSpaceIntValue = new QLineEdit(QObject::tr("Unspecified"), this);
+    m_alternateColorSpaceFloatValue = new QLineEdit(QObject::tr("Unspecified"), this);
+    m_alternateColorSpaceIntValue->setDisabled(true);
+    m_alternateColorSpaceFloatValue->setDisabled(true);
+
+    m_alternateColorSpaceInfoLayout = new QGridLayout();
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntLabel, 0, 0);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatLabel, 1, 0);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceIntValue, 0, 1);
+    m_alternateColorSpaceInfoLayout->addWidget(m_alternateColorSpaceFloatValue, 1, 1);
+    containerLayout->addLayout(m_alternateColorSpaceInfoLayout);
+
+    setAlternateColorspaceEnabled(false);
 
     // buttons
 
@@ -708,6 +735,29 @@ void ColorPicker::setComment(QString comment)
     m_commentLabel->setText(comment);
 }
 
+void ColorPicker::setAlternateColorspaceEnabled(bool enabled)
+{
+    m_alternateColorSpaceIntLabel->setVisible(enabled);
+    m_alternateColorSpaceFloatLabel->setVisible(enabled);
+    m_alternateColorSpaceIntValue->setVisible(enabled);
+    m_alternateColorSpaceFloatValue->setVisible(enabled);
+}
+
+void ColorPicker::setAlternateColorspaceName(const QString& name)
+{
+    m_alternateColorSpaceIntLabel->setText(name + " Int");
+    m_alternateColorSpaceFloatLabel->setText(name + " Float");
+}
+
+void ColorPicker::setAlternateColorspaceValue(const AZ::Color& color)
+{
+    QColor qColor = AzQtComponents::toQColor(color);
+
+    bool alphaChannelIncluded = m_configuration == Configuration::RGBA;
+    m_alternateColorSpaceIntValue->setText(AzQtComponents::MakePropertyDisplayStringInts(qColor, alphaChannelIncluded));
+    m_alternateColorSpaceFloatValue->setText(AzQtComponents::MakePropertyDisplayStringFloats(qColor, alphaChannelIncluded));
+}
+
 void ColorPicker::warnColorAdjusted(const QString& message)
 {
     m_warning->setToolTip(message);
@@ -716,6 +766,8 @@ void ColorPicker::warnColorAdjusted(const QString& message)
 
 void ColorPicker::setConfiguration(Configuration configuration)
 {
+    m_configuration = configuration;
+
     switch (configuration)
     {
     case Configuration::RGBA:
@@ -818,6 +870,7 @@ void ColorPicker::setCurrentColor(const AZ::Color& color)
         m_previousColor = color;
     }
     m_currentColorController->setColor(color);
+    m_currentColorController->setAlpha(color.GetA());
 }
 
 AZ::Color ColorPicker::selectedColor() const
@@ -1128,13 +1181,19 @@ void ColorPicker::addPaletteCard(QSharedPointer<PaletteCard> card, ColorLibrary 
     QString fileName = colorLibrary.fileName;
     bool loaded = loader.load(fileName);
 
-    if (!loaded || (loaded && loader.colors() != card->palette()->colors()))
+    // If we can't load the palette file, then mark the palette as modified
+    // If we loaded the data and it was different to what we know OR
+    // Either way, we only mark it as modified if it's non-empty
+    if (!loaded)
     {
-        // If we loaded the data and it was different to what we know OR
-        // If we can't load the palette file, then mark the palette as modified
-        // Either way, we only mark it as modified if it's non-empty
 
         card->setModified(!card->palette()->colors().empty());
+    }
+    else
+    {
+        QVector<AZ::Color> loadedColors = loader.colors();
+        QVector<AZ::Color> paletteColors = card->palette()->colors();
+        card->setModified(!paletteColors.empty() && !AZStd::ranges::equal(loadedColors, paletteColors));
     }
 
     m_colorLibraries[card] = colorLibrary;

@@ -32,7 +32,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(BlockerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockerConfig, AZ::SystemAllocator);
         AZ_RTTI(BlockerConfig, "{01F6E6C5-707E-42EC-91BB-F674B9F51A40}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -40,7 +40,7 @@ namespace Vegetation
         bool m_inheritBehavior = true;
     };
 
-    static const AZ::Uuid BlockerComponentTypeId = "{C8A7AAEB-C315-44CE-919D-F304B53ACA4A}";
+    inline constexpr AZ::TypeId BlockerComponentTypeId{ "{C8A7AAEB-C315-44CE-919D-F304B53ACA4A}" };
 
     /**
     * Blocking claim logic for vegetation in an area

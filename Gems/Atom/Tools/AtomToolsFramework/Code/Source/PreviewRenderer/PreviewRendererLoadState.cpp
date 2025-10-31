@@ -15,17 +15,15 @@ namespace AtomToolsFramework
         : PreviewRendererState(renderer)
     {
         m_renderer->LoadContent();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     PreviewRendererLoadState::~PreviewRendererLoadState()
     {
-        AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void PreviewRendererLoadState::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void PreviewRendererLoadState::Update()
     {
-        if ((m_timeRemainingS += deltaTime) > TimeOutS)
+        if (AZStd::chrono::steady_clock::now() > m_abortTime)
         {
             m_renderer->CancelLoadContent();
             return;
