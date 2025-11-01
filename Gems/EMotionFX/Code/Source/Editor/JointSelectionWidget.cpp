@@ -86,6 +86,10 @@ namespace EMotionFX
         m_treeView->hideColumn(SkeletonModel::COLUMN_RAGDOLL_LIMIT);
         m_treeView->hideColumn(SkeletonModel::COLUMN_RAGDOLL_COLLIDERS);
         m_treeView->hideColumn(SkeletonModel::COLUMN_HITDETECTION_COLLIDERS);
+        m_treeView->hideColumn(SkeletonModel::COLUMN_CLOTH_COLLIDERS);
+        m_treeView->hideColumn(SkeletonModel::COLUMN_SIMULATED_JOINTS);
+        m_treeView->hideColumn(SkeletonModel::COLUMN_SIMULATED_JOINTS);
+        m_treeView->hideColumn(SkeletonModel::COLUMN_SIMULATED_COLLIDERS);
     }
 
     void JointSelectionWidget::SelectByJointName(const AZStd::string& jointName, [[maybe_unused]] bool clearSelection)
@@ -135,6 +139,7 @@ namespace EMotionFX
         if (actorInstance)
         {
             m_treeView->setVisible(true);
+            m_treeView->header()->resizeSections(QHeaderView::Stretch);
             m_searchWidget->setVisible(true);
             m_noSelectionLabel->setVisible(false);
         }
