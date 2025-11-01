@@ -47,6 +47,7 @@ set(FILES
     AzCore/IPC/SharedMemory_Platform.h
     AzCore/IPC/SharedMemory_Mac.h
     AzCore/IPC/SharedMemory_Mac.cpp
+    ../Common/Apple/AzCore/Memory/OSAllocator_Apple.h
     ../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Mac.cpp

@@ -51,6 +51,7 @@ set(FILES
     AzCore/IPC/SharedMemory_Platform.h
     AzCore/IPC/SharedMemory_Windows.h
     AzCore/IPC/SharedMemory_Windows.cpp
+    ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h
     ../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Math/Random_Platform.h

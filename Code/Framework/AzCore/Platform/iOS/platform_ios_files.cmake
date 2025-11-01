@@ -45,6 +45,7 @@ set(FILES
     AzCore/IO/Streamer/StreamerContext_Platform.h
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
+    ../Common/Apple/AzCore/Memory/OSAllocator_Apple.h
     ../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Math/Internal/MathTypes_iOS.h

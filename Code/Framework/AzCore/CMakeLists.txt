@@ -23,7 +23,11 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     endif()
 endif()
 
-if(PAL_TRAIT_MIMALLOC_SUPPORTED)
+set(O3DE_OS_ALLOCATOR_USE_MIMALLOC ON CACHE BOOL "Enables mimalloc as the default OS allocator.")
+set(O3DE_SYSTEM_ALLOCATOR_USE_MALLOC OFF CACHE BOOL "Use OS allocator as the SystemAllocator schema.")
+
+if(PAL_TRAIT_MIMALLOC_SUPPORTED AND O3DE_OS_ALLOCATOR_USE_MIMALLOC)
+    set(AZCORE_OS_ALLOCATOR_DEFINITION AZCORE_OS_ALLOCATOR_USE_MIMALLOC)
     set(AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES 3rdParty::mimalloc)
 endif()
 
@@ -77,6 +81,8 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             AZCORE_EXPORTS
+        PUBLIC
+            ${AZCORE_OS_ALLOCATOR_DEFINITION}
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -123,7 +129,7 @@ ly_add_source_properties(
     VALUES ${O3DE_STACK_CAPTURE_DEPTH_DEFINE}
 )
 
-if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+if(LY_BUILD_WITH_ADDRESS_SANITIZER OR O3DE_SYSTEM_ALLOCATOR_USE_MALLOC)
     # Default to use Malloc schema so ASan works well
     ly_add_source_properties(
         SOURCES AzCore/Memory/SystemAllocator.cpp

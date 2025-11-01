@@ -11,3 +11,5 @@
 # NOTE: functions in cmake are global, therefore adding functions to this file
 # is being avoided to prevent overriding functions declared in other targets platfrom
 # specific cmake files
+
+set(PAL_TRAIT_MIMALLOC_SUPPORTED ON)

@@ -48,6 +48,7 @@ set(FILES
     AzCore/IO/SystemFile_Android.h
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
+    ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
     ../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h
     AzCore/Memory/OSAllocator_Platform.h
     ../Common/Default/AzCore/Module/Internal/ModuleManagerSearchPathTool_Default.cpp

@@ -7,4 +7,8 @@
  */
 #pragma once
 
+#if defined(AZCORE_OS_ALLOCATOR_USE_MIMALLOC)
+#include <../Common/Default/AzCore/Memory/OSAllocator_mimalloc.h>
+#else
 #include <../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h>
+#endif
