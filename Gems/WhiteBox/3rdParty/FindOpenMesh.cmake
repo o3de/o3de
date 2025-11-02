@@ -74,6 +74,7 @@ function(GetOpenMesh)
     set(OLD_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL}) # save the old CMAKE_MESSAGE_LOG_LEVEL
     set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE)
 
     # The rest of these are all specific settings that come from OpenMesh's CMakeLists.txt files.
     set(OPENMESH_BUILD_SHARED OFF)
