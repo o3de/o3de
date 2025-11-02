@@ -47,7 +47,6 @@ namespace OpenParticle
                     ->Attribute(AZ::Script::Attributes::Deprecated, true)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Visibility modification no longer needed in game mode")
-                ->VirtualProperty("Particle", "GetParticle", "SetParticle")
                 ->VirtualProperty("Visible", "GetVisible", "SetVisible");
 
             behaviorContext->Class<ParticleComponent>()->RequestBus("ParticleRequestBus");

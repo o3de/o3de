@@ -56,6 +56,7 @@ ly_add_target(
         NAMESPACE Gem
         FILES_CMAKE
             openparticlesystem_files.cmake
+            openparticlesystem_shared_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Source
@@ -84,8 +85,8 @@ ly_add_target(
             Gem::Atom_Utils.Static
 )
 
-ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name}.API)
-ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
 
 # If we are on a host platform, we want to add the host tools targets like the OpenParticleSystem.Editor target which
 # will also depend on OpenParticleSystem.Private.Static
