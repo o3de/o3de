@@ -215,7 +215,6 @@ namespace EMStudio
         ParameterWidgetByParameter m_parameterWidgets;
     };
 
-    class ParameterWindowTreeWidgetPrivate;
     class ParameterWindowTreeWidget
         : public QTreeWidget
     {
@@ -238,7 +237,5 @@ namespace EMStudio
         EMotionFX::AnimGraph* m_animGraph = nullptr;
         QTreeWidgetItem* m_draggedParam = nullptr;
         QTreeWidgetItem* m_draggedParentParam = nullptr;
-
-        Q_DECLARE_PRIVATE(ParameterWindowTreeWidget)
     };
 } // namespace EMStudio
