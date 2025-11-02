@@ -854,7 +854,10 @@ namespace AzQtComponents
         m_ui->assetTypeSelector->setMenu(m_selector);
         SetupPaintDelegates();
 
-        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {m_selector->Setup(m_typeFilters); });
+        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {
+            m_selector->Setup(m_typeFilters);
+            m_selector->show();
+        });
         connect(m_selector, &SearchTypeSelector::TypeToggled, this, &FilteredSearchWidget::SetFilterStateByIndex);
     }
 
