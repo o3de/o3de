@@ -1548,12 +1548,6 @@ namespace EMStudio
         }
     }
 
-    class ParameterWindowTreeWidgetPrivate
-        : public QAbstractItemViewPrivate
-    {
-        Q_DECLARE_PUBLIC(ParameterWindowTreeWidget);
-    };
-
     ParameterWindowTreeWidget::ParameterWindowTreeWidget(QWidget* parent)
         : QTreeWidget(parent)
     {
@@ -1566,8 +1560,6 @@ namespace EMStudio
 
     void ParameterWindowTreeWidget::startDrag(Qt::DropActions supportedActions)
     {
-        [[maybe_unused]] Q_D(ParameterWindowTreeWidget);
-
         QModelIndexList indexes = selectedIndexes();
         if (indexes.count() > 0)
         {
@@ -1594,52 +1586,92 @@ namespace EMStudio
 
     void ParameterWindowTreeWidget::dropEvent(QDropEvent* event)
     {
-        Q_D(ParameterWindowTreeWidget);
+        if (event->isAccepted())
+        {
+            return;
+        }
 
-        QModelIndex topIndex;
+        Qt::DropActions supportedDropActions = model() ? model()->supportedDropActions() : Qt::DropActions();
+        if (supportedDropActions & event->dropAction() == 0)
+        {
+            return;
+        }
+
+        // what index are we hovering over?
+        QModelIndex insertIndex = indexAt(event->position().toPoint());
+        if (!insertIndex.isValid())
+        {
+            insertIndex = rootIndex();
+        }
+
+        QAbstractItemView::DropIndicatorPosition dropPos = QAbstractItemView::OnViewport;
         int col = -1;
         int row = -1;
 
-        // Getting the target drop index from the private implementation
-        // of QAbstractItemView
-        //
-        // Documentation from QAbstractItemViewPrivate::dropOn
-        // if (row == -1 && col == -1)
-        //     // append to this drop index
-        // else
-        //     // place at row, col in drop index
-
-        if (d->dropOn(event, &row, &col, &topIndex))
+        if (insertIndex != rootIndex())
         {
-            QTreeWidgetItem* item = itemFromIndex(topIndex);
-            item = item ? item : invisibleRootItem();
-
-            const QString& dragParamName = m_draggedParam->data(0, Qt::UserRole).toString();
-            const QString& dropTopParamName = item->data(0, Qt::UserRole).toString();
-
-            // Attempting to group an element inside another element, need to check if
-            // the drop is being made on a group
-            if (row == -1 && col == -1)
+            dropPos = dropIndicatorPosition();
+            switch (dropPos)
             {
-                const EMotionFX::Parameter* parameter = m_animGraph->FindParameterByName(dropTopParamName.toUtf8().data());
-                if (azrtti_typeid(parameter) == azrtti_typeid<EMotionFX::GroupParameter>())
-                {
-                    QTreeWidget::dropEvent(event);
-                    // row will be -1 if a parameter is dragged on a group, we need
-                    // to place the parameter as the last child of the group
-                    emit ParameterMoved(item->childCount() - 1, dragParamName.toUtf8().data(), dropTopParamName);
-                    return;
-                }
+                case QAbstractItemView::AboveItem:
+                    // the mouse is hovering towards the top of the item, and the insertion
+                    // point should thus be at the index (since the index is where we insert it before)
+                    row = insertIndex.row();
+                    col = insertIndex.column();
+                    insertIndex = insertIndex.parent();
+                break;
+                case QAbstractItemView::BelowItem:
+                    // the mouse is hovering towards the bottom of the item, and the insertion
+                    // point should thus be after the index, the next row.  (Since insertion
+                    // specifies the index to insert before)
+                    row = insertIndex.row() + 1;
+                    col = insertIndex.column();
+                    insertIndex = insertIndex.parent();
+                    break;
+                case QAbstractItemView::OnItem:
+                    [[fallthrough]];
+                case QAbstractItemView::OnViewport:
+                    break;
             }
-            // Placing at col, row in as a child of topIndex, this is always allowed
-            else
+        }
+
+        // make sure we're not dropping on ourself.
+        if (event->dropAction() & Qt::MoveAction)
+        {
+            if (selectedIndexes().contains(insertIndex))
             {
-                const QString& dragParentName = m_draggedParentParam ? m_draggedParentParam->data(0, Qt::UserRole).toString() : QStringLiteral("");
-                QTreeWidget::dropEvent(event);
-                emit ParameterMoved(row - ((dragParentName == dropTopParamName) ? 1 : 0), dragParamName.toUtf8().data(), dropTopParamName);
-                // emit ParameterMoved(row, dragParamName.toUtf8().data(), dropTopParamName);
                 return;
             }
+        }
+
+        QTreeWidgetItem* item = itemFromIndex(insertIndex);
+        item = item ? item : invisibleRootItem();
+
+        const QString& dragParamName = m_draggedParam->data(0, Qt::UserRole).toString();
+        const QString& dropTopParamName = item->data(0, Qt::UserRole).toString();
+
+        // Attempting to group an element inside another element, need to check if
+        // the drop is being made on a group
+        if (row == -1 && col == -1)
+        {
+            const EMotionFX::Parameter* parameter = m_animGraph->FindParameterByName(dropTopParamName.toUtf8().data());
+            if (azrtti_typeid(parameter) == azrtti_typeid<EMotionFX::GroupParameter>())
+            {
+                QTreeWidget::dropEvent(event);
+                // row will be -1 if a parameter is dragged on a group, we need
+                // to place the parameter as the last child of the group
+                emit ParameterMoved(item->childCount() - 1, dragParamName.toUtf8().data(), dropTopParamName);
+                return;
+            }
+        }
+        // Placing at col, row in as a child of topIndex, this is always allowed
+        else
+        {
+            const QString& dragParentName = m_draggedParentParam ? m_draggedParentParam->data(0, Qt::UserRole).toString() : QStringLiteral("");
+            QTreeWidget::dropEvent(event);
+            emit ParameterMoved(row - ((dragParentName == dropTopParamName) ? 1 : 0), dragParamName.toUtf8().data(), dropTopParamName);
+            // emit ParameterMoved(row, dragParamName.toUtf8().data(), dropTopParamName);
+            return;
         }
     }
 
