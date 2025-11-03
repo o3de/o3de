@@ -31,6 +31,8 @@ function(Getmimalloc)
     set(MI_OVERRIDE OFF) # Not globally overriding malloc for now
     set(MI_OPT_ARCH ON)
     set(MI_LOCAL_DYNAMIC_TLS ON)
+    set(MI_SKIP_COLLECT_ON_EXIT ON)
+    set(MI_OPT_SIMD ON)
 
     message(STATUS "AzCore uses mimalloc ${MIMALLOC_VERSION_STRING} (MIT) from ${MIMALLOC_GIT_REPOSITORY}")
     FetchContent_MakeAvailable(mimalloc)
