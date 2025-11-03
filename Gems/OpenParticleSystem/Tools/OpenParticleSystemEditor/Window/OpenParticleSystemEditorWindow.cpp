@@ -12,15 +12,8 @@
 #include <OpenParticleSystemEditorWindow.h>
 #include <Editor/EditorParticleSystemComponentRequestBus.h>
 
-#include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AssetBrowser/AssetBrowserBus.h>
-
-#include <QMessageBox>
-#include <QStatusBar>
-#include <QLabel>
-#include <QFileDialog>
-
 #include <ViewInspector.h>
 #include <EmitterInspector.h>
 #include <LevelOfDetailInspector.h>
@@ -32,6 +25,11 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
+
+#include <QMessageBox>
+#include <QStatusBar>
+#include <QLabel>
+#include <QFileDialog>
 
 #define MAX_EMITTER_WIDGET_NUM 10
 
@@ -142,12 +140,21 @@ namespace OpenParticleSystemEditor
         m_menuFile->addSeparator();
 
         m_menuFile->addAction(
-        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save All"),
+        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save"),
         [this]()
         {
             SaveDocument();
         },
         QKeySequence::Save);
+
+
+        m_menuFile->addAction(
+        QCoreApplication::translate("OpenParticleSystemEditorWindow", "&Save All"),
+        [this]()
+        {
+            SaveAllDocuments();
+        },
+        QKeySequence::UnknownKey);
 
         // Add all View DockWidget panes.
         m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));
@@ -394,6 +401,17 @@ namespace OpenParticleSystemEditor
                  ParticleDocumentNotifyBus::Broadcast(&ParticleDocumentNotifyBus::Handler::OnDocumentInvisible);
              }
          });
+
+        connect(m_emitterTabWidget, &QTabWidget::currentChanged, [this](int index) {
+            if (index >= 0 && m_emitterTabWidget->tabText(index).isEmpty())
+            {
+                return;
+            }
+
+            const QString name = m_emitterTabWidget->tabText(index);
+            m_currentTabName = name.toUtf8().data();
+        });
+
         // Hide default emitter tab when any document opened
         m_emitterTabWidget->setTabVisible(0, false);
     }
@@ -460,12 +478,37 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleSystemEditorWindow::SaveDocument()
     {
+        if (m_emitterTabWidget && m_emitterTabWidget->count() > 0)
+        {
+            const int currentIndex = m_emitterTabWidget->currentIndex();
+            if (currentIndex >= 0)
+            {
+                const QString currentTabName = m_emitterTabWidget->tabText(currentIndex);
+                if (!currentTabName.isEmpty())
+                {
+                    const auto document = m_tabWidgetDocument.find(currentTabName.toUtf8().data());
+                    if (document != m_tabWidgetDocument.end() &&
+                        m_opened &&
+                        document->second->IsModified())
+                    {
+                        document->second->Save();
+
+                        SetStatusMessage(QString(tr("Particle saved: %1")).arg(currentTabName));
+                    }
+                }
+            }
+        }
+    }
+
+    void OpenParticleSystemEditorWindow::SaveAllDocuments()
+    {
         for (const auto& document : m_tabWidgetDocument)
         {
             if (m_opened && document.second->IsModified())
             {
                 document.second->Save();
-                SetStatusMessage(QString("Particle saved: %1").arg(document.first.c_str()));
+
+                SetStatusMessage(QString(tr("Particle saved: %1")).arg(document.first.c_str()));
             }
         }
     }

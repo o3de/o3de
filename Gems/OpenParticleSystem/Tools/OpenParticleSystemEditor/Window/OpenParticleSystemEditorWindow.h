@@ -51,6 +51,7 @@ namespace OpenParticleSystemEditor
         void OpenDocument(const AZStd::string& path) override;
         void CreateParticleFile(const AZStd::string& path) override;
         void SaveDocument() override;
+        void SaveAllDocuments();
 
         // EditorParticleOpenParticleRequestsBus
         void OpenParticleFile(const AZStd::string& sourcePath) override;
@@ -84,5 +85,6 @@ namespace OpenParticleSystemEditor
         AzQtComponents::FancyDocking* m_fancyDockingManager = nullptr;
         AzQtComponents::DockTabWidget* m_emitterTabWidget = nullptr;
         EffectorInspector* m_effectorInspector = nullptr;
+        AZStd::string m_currentTabName;
     };
 } // namespace OpenParticleSystemEditor

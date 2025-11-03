@@ -78,9 +78,6 @@ set(FILES
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.cpp
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.h
     OpenParticleSystemEditor/Viewport/OpenParticleViewportRendererRequestsBus.h
-    OpenParticleSystemEditor/Window/WidgetItem.h
-    OpenParticleSystemEditor/Window/WidgetItem.cpp
-    OpenParticleSystemEditor/Window/WidgetItem.ui
     OpenParticleSystemEditor/Window/Controls/CurveEditor.h
     OpenParticleSystemEditor/Window/Controls/CurveEditor.cpp
     OpenParticleSystemEditor/Window/Controls/InfoLineEdit.h

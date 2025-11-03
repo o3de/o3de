@@ -7,7 +7,11 @@
  */
 
 #include "EditorParticleComponent.h"
+#include "EditorParticleSystemComponentRequestBus.h"
 #include <OpenParticleSystem/ParticleFeatureProcessorInterface.h>
+
+#include <API/EditorAssetSystemAPI.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -45,6 +49,11 @@ namespace OpenParticle
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ParticleComponentConfig::m_autoPlay, "AutoPlay",
                             "Control whether this particle effect auto played after loaded, (e.g. loaded in editor or game beginning)")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_particleAsset, "Asset", "Particle Asset")
+                        ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
+                        ->Attribute("EditButton", "")
+                        ->Attribute("EditDescription", "Open in Particle Editor")
+                        ->Attribute("EditCallback", &EditorParticleComponent::OpenParticleEditor)
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_followActiveCamera, "Follow camera",
                             "Particles always generated around active camera and absolute position of particle system will be ignored, global space "
                             "used forcibly.");
@@ -103,5 +112,25 @@ namespace OpenParticle
     void EditorParticleComponent::OnEntityVisibilityChanged(bool visibility)
     {
         m_controller.SetVisible(visibility);
+    }
+
+    void EditorParticleComponent::OpenParticleEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
+    {
+        if (assetId.IsValid())
+        {
+            bool foundSourceInfo = false;
+            AZStd::string folderFoundIn;
+            AZ::Data::AssetInfo assetInfo;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(foundSourceInfo, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, assetId.m_guid, assetInfo, folderFoundIn);
+            if (foundSourceInfo)
+            {
+                const AZ::IO::Path assetFullPath = AZ::IO::Path(folderFoundIn) / AZ::IO::Path(assetInfo.m_relativePath);
+                EditorParticleSystemComponentRequestBus::Broadcast(&EditorParticleSystemComponentRequestBus::Events::OpenParticleEditor, assetFullPath.c_str());
+            }
+            else
+            {
+                AZ_Warning("EditorParticleComponent", false, "Could not find particle editor asset");
+            }
+        }
     }
 } // namespace OpenParticle
