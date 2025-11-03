@@ -225,7 +225,7 @@ namespace AZ
     //
     // [8/12/2011]
     //=========================================================================
-    auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
+    auto SystemAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const -> size_type
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             return AZ_OS_MSIZE(ptr, alignment);
