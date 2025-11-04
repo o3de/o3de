@@ -126,14 +126,14 @@ namespace SurfaceData
     {
         m_providerHandle = InvalidSurfaceDataRegistryHandle;
         m_modifierHandle = InvalidSurfaceDataRegistryHandle;
-        m_refresh = false;
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
         m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
-        UpdateColliderData();
+        m_refresh = true;
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void SurfaceDataColliderComponent::Deactivate()
