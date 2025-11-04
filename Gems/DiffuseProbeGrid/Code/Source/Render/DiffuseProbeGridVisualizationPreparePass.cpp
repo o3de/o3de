@@ -102,6 +102,8 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationPreparePass::FrameBeginInternal(FramePrepareParams params)
         {
+            RenderPass::FrameBeginInternal(params);
+
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -138,8 +140,6 @@ namespace AZ
                 visualizationTlas->CreateBuffers(
                     deviceMask, tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());
             }
-
-            RenderPass::FrameBeginInternal(params);
         }
 
         void DiffuseProbeGridVisualizationPreparePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
