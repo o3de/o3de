@@ -32,13 +32,17 @@ VectorElement::VectorElement(QWidget* parent)
     , m_spinBox(new AzQtComponents::DoubleSpinBox(this))
     , m_label(new QLabel(this))
 {
+    m_label->setAttribute(Qt::WA_Hover, true);
+    m_label->setObjectName(SpinBox::s_draggableLabelName);
     m_spinBox->setKeyboardTracking(false); // don't send valueChanged every time a character is typed (no need for undo/redo per digit of a double value)
 
     QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setSpacing(0);
     layout->setContentsMargins(0,0,0,0);
-    layout->setSpacing(2);
 
-    VectorElement::layout(this, m_spinBox, m_label, false);
+    m_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    layout->addWidget(m_label);
+    layout->addWidget(m_spinBox, 1);
 
     connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &VectorElement::onValueChanged);
     connect(m_spinBox, &AzQtComponents::DoubleSpinBox::editingFinished, this, &VectorElement::onSpinBoxEditingFinished);
@@ -137,35 +141,8 @@ void VectorElement::onValueChanged(double newValue)
     }
 }
 
-void VectorElement::layout(QWidget* element, QAbstractSpinBox* spinBox, QLabel* label, bool ui20)
+void VectorElement::layout(QWidget* , QAbstractSpinBox* , QLabel* , bool )
 {
-    QHBoxLayout* layout = qobject_cast<QHBoxLayout*>(element->layout());
-    if (!layout)
-    {
-        return;
-    }
-
-    if (layout->isEmpty())
-    {
-        layout->addWidget(spinBox, 1);
-    }
-
-    if (ui20)
-    {
-        label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-
-        layout->removeWidget(label);
-        label->setParent(spinBox);
-        label->move(0, 0);
-        label->show();
-    }
-    else
-    {
-        label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-        label->setParent(element);
-        layout->insertWidget(0, label);
-    }
 }
 
 QRect VectorElement::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex* option, const QWidget* widget, const SpinBox::Config& config)
@@ -202,8 +179,11 @@ bool VectorElement::polish(QProxyStyle* style, QWidget* widget, const SpinBox::C
         return false;
     }
 
-    VectorElement::layout(element, element->m_spinBox, element->m_label, true);
     element->resizeLabel();
+    if (auto label = element->findChild<QLabel*>(QString(), Qt::FindDirectChildrenOnly))
+    {
+        SpinBox::registerLabelToWatcher(label, true);
+    }
 
     return true;
 }
@@ -219,7 +199,10 @@ bool VectorElement::unpolish(QProxyStyle* style, QWidget* widget, const SpinBox:
         return false;
     }
 
-    VectorElement::layout(element, element->m_spinBox, element->m_label, false);
+    if (auto label = element->findChild<QLabel*>(QString(), Qt::FindDirectChildrenOnly))
+    {
+        SpinBox::registerLabelToWatcher(label, false);
+    }
 
     return true;
 }
